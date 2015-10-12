@@ -1,0 +1,583 @@
+* last: [[pipelining enable in tor after Pachenko]]
+* Teaser
+  "They who can give up essential liberty to obtain a little temporary
+  safety, deserve neither liberty nor safety" - [[franklin][Benjamin Franklin]]
+
+  In Germany, the basis of all laws is the "Grundgesetz", which
+  ensures free speech (Art. 5 GG) and protects private communication
+  (Art. 10 GG).
+
+  The Fourth Amendmend to the United States Constitution is
+  interpreted as providing similar protections to Art. 10 GG, as of
+  [[Katz][Katz v. United States]].
+
+  As new technologies for communication and information emerge,
+  challenges to secure these rights emerge also.
+
+  The internet has offered many new ways to communicate and,
+  conversely, wiretap, of which website fingerprinting and
+  page-marker detection are examples.
+
+  Yet, there may exist user-friendly ways to hamper, or even to deter,
+  this surveillance.
+** refs
+*** franklin
+    Remarks on the Propositions (A Plan which it is believed would
+    produce a permanent union between Great Britain and her Colonies),
+    in: William Temple Franklin (Hrsg.), Memoirs of the life and
+    writings of Benjamin Franklin, Vol. 1, Printed by T.S. Manning,
+    Philadelphia, 1818. S. 333-334.
+*** Katz
+    Katz v. United States, 389 U.S. 347
+    
+    389 U.S. 347
+    88 S. Ct. 507; 19 L. Ed. 2d 576; 1967 U.S. LEXIS 2
+** evtl rein
+   Auch in der DDR gab es das Recht auf freie Meinungsäußerung, nur
+   hat es niemand genutzt, da durch die Ueberwachung die Angst vor
+   Repressalien zu groß war. (td: quote)
+** WAIT may \to (ohne) (falls richtig)
+* Problem statement
+  For a long time, traffic analysis attacks against Tor had not
+  yielded results. Prior to [[Panchenko][Panchenko et al]], it was believed that Tor
+  introduced multiplexing, enough padding and latency into website
+  retrieval that this attack was not feasible.
+
+  After this attack was published, the [[experimental][Tor developers reacted]] by
+  adding a defense prototype into the Tor Browser, yet requested
+  further research.
+** ref
+*** Panchenko
+    Andriy Panchenko, Lukas Niessen, Andreas Zinnen, and Thomas
+    Engel. Website fingerprinting in onion routing based anonymization
+    networks. In WPES, 2011.
+*** experimental
+    mikeperry
+    Experimental Defense for Website Traffic Fingerprinting
+    https://blog.torproject.org/blog/experimental-defense-website-traffic-fingerprinting
+* What is Website Fingerprinting
+  Website fingerprinting is a form of traffic analysis, which is used
+  to find out which webpages a user is visiting.
+
+  When a user visits a webpage, the browser first sends a request for
+  the HTML page. The Webserver answers with that page. Then, the
+  client requests the objects embedded into that page, such as
+  stylesheets (=<link rel="stylesheet">=), fonts, images (=<img>=),
+  scripts(=<script>=), etc. Until recently ([[RFC7230]]), a browser opened
+  at most two connections ([[HTTP/1.1]]) per host to retrieve the files
+  one-by-one.
+
+  (The pipelining in [[HTTP/1.1]] creates problems with some servers, so
+  it is disabled by default in Firefox ([[firefox pipelining)]] and Chrome
+  ([[chromium pipelining]]), and not implemented in Internet Explorer ([[ie
+  pipelining]]).)
+
+  Each of these files has a specific size, which might be detected in
+  the TCP-flow. Thus, the objects embedded within a page could allow a
+  local passive observer to infer whether the user requests a specific
+  web page from a set of pages.
+
+  The website fingerprinting attack scenario is already described in
+  the original [[tor design]] paper. Previous to [[Panchenko]]s paper, this
+  attack was considered "less effective"([[tor-design]]) against Tor, due
+  to stream/circuit multiplexing and cell padding.
+** ref
+*** firefox pipelining
+   https://bugzilla.mozilla.org/show_bug.cgi?id=264354
+*** chromium pipelining
+    https://www.chromium.org/developers/design-documents/network-stack/http-pipelining
+*** ie pipelining
+http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp/expertzone/chats/transcripts/08_0814_ez_ie8.mspx
+*** HTTP/1.1
+     @techreport{rfc2616,
+       AUTHOR = "R. Fielding, J. Gettys, J. Mogul, H. Frystyk, L. Masinter, P. Leach, and T. Berners-Lee",
+       TITLE = "{Hypertext Transfer Protocol -- HTTP/1.1}",
+       HOWPUBLISHED = {Internet Requests for Comments},
+       TYPE="{RFC}",
+       NUMBER=2616,
+       PAGES = {1-176},
+       YEAR = {1999},
+       MONTH = {June},
+       PUBLISHER = "{RFC Editor}",
+       INSTITUTION = "{RFC Editor}",
+       URL={http://www.rfc-editor.org/rfc/rfc2616.txt}
+     }
+*** RFC7230
+     @techreport{rfc7230,
+       AUTHOR = "R. Fielding, Ed. and J. Reschke, Ed."
+       TITLE = "{Hypertext Transfer Protocol (HTTP/1.1): Message Syntax and Routing}",
+       HOWPUBLISHED = {Internet Requests for Comments},
+       TYPE="{RFC}",
+       NUMBER=7230,
+       PAGES = {1-89},
+       YEAR = {2014},
+       MONTH = {June},
+       PUBLISHER = "{RFC Editor}",
+       INSTITUTION = "{RFC Editor}",
+       URL={http://www.rfc-editor.org/rfc/rfc7230.txt}
+     }
+*** tor design
+    @article{tor-design,
+      title={Tor: The Second-Generation Onion Router},
+      author={Dingledine, Roger and Mathewson, Nick and Syverson, Paul},
+      year={2004},
+      link={https://svn.torproject.org/svn/projects/design-paper/tor-design.pdf}
+    }
+* LATER Adversary Model [0/1]
+  Tor does not attempt to protect against a global passive adversary,
+  who can observe all connections. A Tor adversary can([[tor design]])
+
+  - observe a fraction of all traffic
+  - generate, modify, and delete traffic
+  - operate its own Onion Routers
+  - compromise a fraction of the other ORs
+
+  This adversary is not purely passive, but lacks global information.
+** TODO maybe schneier re adversaries
+* Who could attack via WF
+  As website fingerprinting requires very litte resources, a specific
+  attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
+  state.
+* DONE Related Work [0/0]
+  The idea of using traffic analysis to analyse encrypted traffic was
+  mentioned by Schneier and Wagner in 1996([[SSL]]). The term /website
+  fingerprinting/ was coined by Hintz in 2002. A successful attack
+  against single-hop proxies was carried out by Herrmann et
+  al. in 2009.
+** SSL
+   @article{SSL,
+     title={Analysis of the SSL 3.0 protocol},
+     author={Wagner, David and Schneier, Bruce},
+     year={1997},
+     month = {April}
+   }
+** WAIT ref Herrmann, quote after read whole (1 of 4)
+** MAYBE torben
+  Torben is a deanonymization attack based on injected website content
+  in combination with Pattern Recognition. The authors show that when
+  the user's browser sends requests of certain sizes for responses of
+  certain sizes, this can be recognized in the encrypted TLS-Traffic
+  from the Guard Node to the Onion Proxy.
+
+  Each request/response pair corresponds to a certain amount of
+  information (the authors show their approach with four request and
+  response sizes, yielding a four-bit side-channel per request). This
+  channel is used to encode a hash of the currently visited page.
+
+  The requests are performed via XMLHttpRequest, but they authors also
+  mention using HTTP redirects for the same effect.
+
+
+
+  inject additional traffic into communication via JS XMLHttpRequest
+  fixed request/response sizes of 2k, 4k, 6k, 8k bytes
+  \to quad bits, concatenate, data transfer rate rate
+  after 30 or 120 ms (tor latency bigger)
+  detect via svm (how)
+  setzt auf tcp an statt auf ip, (weil tor ja tcp ! yeah!)
+* TODO Tor [0/6]
+  Tor is an anonymization network with a diverse user base. It has
+  6000 nodes and more than 3 million daily users.
+** how it works
+   It is using the concept of Onion Routing. Each message is
+   seperately encrypted and transferred by three nodes on a
+   user-determined path.
+
+   After the third /hop/, the message leaves the Tor network to any
+   TCP port and server in the Internet, or connects to a server hidden
+   via Tor's /hidden service/ concept.
+
+   The list of users consist of [[Tor Website]]
+
+   Tor is an anonymity service.
+   - decentralized
+   - biggest
+   - high throughput
+   - rather low latency, usable for web browsing
+   - also hidden services
+
+   Using a client called /Onion Proxy/ on the local computer, almost all 
+
+   Durch eine auf dem Rechner des Endnutzers installierte Software, den
+   , können fast saemtliche Internetverbindungen durch
+   Tor geleitet werden (es wird nur TCP unterstuetzt, was aber xx %
+   aller Internetverbindungen darstellt).
+
+   Es besteht aus vielen Servern im Internet, den /Onion Routern/, die
+   Nachrichten nach dem Tor-Protokoll weiterleiten. Am Ende eines
+   Pfades durch Tor werden die Verbindungen an einem, /Exit Node/
+   genannten, Onion Router aus dem Netzwerk an beliebige
+   Internetadressen geleitet.
+
+   - messages encrypted and passed between several routers
+   - standard TLS
+   - each router has 3 keys, two of which are rotated, one identity key
+   - fixed minimum messages size of 512 Byte
+     - extensions allow other sizes
+   - directory of all onion routers in directory servers
+   - encrypted from client to "guard node"
+   - passed to two other hosts, chosen by client "at random"
+   - exits at "exit node" as normal tcp connection (except for hidden services)
+** user base
+   From the beginning, Tor envisoned a broad user base.
+
+   Ursprünglich wurde das Netzwerk von einer Gruppe finanziert vom
+   Navy Office of Naval Research und der DARPA, also durch das
+   US-Militär, entwickelt. Von Anfang an wurde ein breiter Nutzerkreis
+   avisiert.
+
+   us government is main sponsor (navy originally)
+   privacy activists: ccc
+   chinese and iranian dissidents
+   "arab spring"
+*** TODO erfinder
+** Tor fails if
+   if someone can monitor a big amount of internet traffic (td: quote)
+   if someone can exploit your browser
+   if someone can own your computer
+   if you enter identifying information while using tor
+   if you enter passwords etc while using tor
+* TODO Tools [0/15]
+** TODO Mozilla Add-On Sdk [0/2]
+   The Add-on SDK by Mozilla aids in the development of Firefox-Addons.
+
+   It allows users to create new addons using HTML and JS only,
+   omitting the previous way of using XUL.
+*** Installation and Use of Jpm
+    (SDK-)addons can be built via the =jpm=-tool. This is available as
+    a NodeJS-Module via the (NodeJS-) built-in package manager =npm=,
+    the NodeJS Package Manager.
+
+    Installing =jpm= is thus a two-step process. Firstly, install
+    NodeJS via built-in tools (for example =apt-get install
+    nodejs-legacy= in Debian and Ubuntu) or via [[link npm][download]], then, do a
+
+    npm install jpm
+
+    to install jpm for the current user. Global installation is done
+    via =npm install -g jpm=.
+
+    Once =jpm= is installed, new addons are created via =jpm init=,
+    live-tested via =jpm run= and the addon package built via =jpm xpi=.
+**** link npm
+     nodejs.org
+*** index.js
+    The addon entry point can be configured via the =preferences.json=
+    file. By default, the main addon-script is called =index.js=.
+*** page-worker
+    A =page-worker= creates "a permanent, invisible page and
+    access[es] its DOM."  ([[link page-worker]]).
+
+    New pages can be loaded in the background, which would allow for
+    the retrieval of camouflage traffic ([[link panchenko]]).
+
+    A minimal new page-worker is created via
+
+    pageWorker = require("sdk/page-worker").Page({});
+
+    The page-worker's page can be set dynamically via
+
+    pageWorker.contentURL = "http://en.wikipedia.org/wiki/Cheese"
+
+    yet this fetches only the HTML file pointed to. The retrieval of
+    images, stylesheets, etc, is not automatic.
+**** link page-worker
+     developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html
+**** link panchenko
+     A. Panchenko, L. Niessen, A. Zinnen, and T. Engel. Website
+     Fingerprinting in Onion Routing Based Anonymization Networks. In
+     Proceedings of the 10th ACM Workshop on Privacy in the Electronic
+     Society, pages 103–114, 2011.
+*** page-mod
+   The page-mod module runs "scripts in the context of web pages whose
+   URL matches a given pattern." ([[link page-mod]])
+
+   If the pattern is given as ="*"= or (for minor differences) the regular
+   expression =/.*/=, then the scripts are run on every user-visited
+   page.
+
+   A page-mod example is
+
+pageMod.PageMod({
+    include: /.*/,
+    contentScriptFile: "./getLinks.js",
+    onAttach: function(worker) {
+	worker.port.on("links", function(JSONlinks) {
+	    addToCandidates(JSON.parse(JSONlinks));
+	});
+    }
+});
+
+   , which is run on every user page, applies the =getLinks.js= script
+   and listens for its feedback.
+
+   page-mod offers other parameters, such as the moment of the script
+   execution, stylesheet modification, etc.
+**** link page-mod
+     http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
+*** separation of scripts
+    As a security measure, there is a separation between (1) the
+    /add-on scripts/, which are run in the browser context, but cannot
+    access the web page, and (2) /content scripts/, which are run in
+    the page context. They can access the DOM, but neither browser nor
+    (3) /page scripts/ (those included via f.ex. =<script>=).
+
+    page-supplied scripts can by default neither access content scripts
+    nor add-on scripts.
+**** TODO index: page scripts, content scripts, add-on scripts
+*** message-passing
+    There is a mechanism to pass content from the add-on to the
+    content scripts, as shown in the example.
+
+    A single string can be passed between both sides. As the string
+    can be any serialized JSON object, this is not much of a
+    limitation. (It disallows the passing of functions and circular
+    objects).
+
+    In a content-script, a message can be sent via
+    =self.port.emit('message_id', param)= and received via
+    =self.port.on('message_id', function(param))=.
+
+    In the Addon-Context, a =worker= object is used and the
+    content-script's =self= is replaced by a =worker=. The worker is
+    initialized via the =onAttach= parameter of the page-mod, as seen
+    above.
+**** TODO JSON link
+*** interacting with page-scripts
+    By default, content-scripts are isolated from the modifications
+    done by page-scripts.[[Interacting with page scripts]]
+
+    To access object inside the page-scripts context, you can use
+    =unsafeWindow=. 
+
+    The reverse is only true for primitive values. If page-scripts
+    need to see altered behavior, it is possible to override
+    functionality of the page by using =exportFunction=, as in
+
+    exportFunction(open,
+                   unsafeWindow.XMLHttpRequest.prototype,
+		   {defineAs: "open"});
+
+    This exports the (previously-defined) function =open()= to the
+    XMLHttpRequest.prototype, where it replaces the built-in
+    functionality.
+**** Interacting with page scripts
+developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_page_scripts.html
+*** [#C] DOM
+    domain-object-model
+*** pipelining enable in tor after Pachenko
+** WAIT torbrowser
+*** changes to normal browser to be able to use this
+**** enable request pipelining
+** other defenses
+   There are other methods of defense, which might help mitigate the
+   Torben attack. One is based on browser plugins, the other on rate
+   limiting.
+*** TODO Plugins
+    There exist two plugins, which should both allow mitigation of this
+    attack. Used in parallel, they may hinder browsing somewhat (which
+    is why they are not enabled/installed by default in the Tor Browser
+    Bundle).
+
+    The first is NoScript, which selects which Javascript sources to
+    run and which to block. This is installed in Torbrowser for the
+    additional security benefits it brings (XSS defense etc). It is
+    considered as a one of the most security-enhancing plugins by
+    ... o'reilly:
+
+    QUOTE
+
+    A second Add-On with a different set of protective measures is
+    RequestPolicy: This add-on controls, which third-party content to
+    load on a given page. Every query to the original domain is passed,
+    while requests to other domains must be temporarily or permanently
+    approved. It comes with a restrictive set of pre-defined rules (for
+    example google pages are allowed to access gstatic), and a
+    blacklist and whitelist mode.
+**** TODO quote o'reilly
+*** write new plugins
+    Instead of inserting dummy traffic into the connection, one could
+    throttle the "data rate" of get request and responses (or only
+    requests or the ratio)
+*** Throttling
+    As especially outgoing web requests are often quite small, and this
+    paper has at the moment a 1:1 rate of outgoing vs incoming for the
+    requests, throttling the amount of data leaving the end user might
+    well suffice for reducing the bandwidth of the side-channel enough
+    to make it insignificant.
+*** TODO link tor browser bundle
+**** or writeup something
+*** TODO link Requestpolicy
+** TODO capture
+*** tshark
+    first only the traffic of a certain user
+*** wireshark
+*** tcpdump
+   
+** Sally
+   Sally is a tool to transfer text into points in a vector space.
+
+   It is installed on Ubuntu Vivid Vervet by following the official
+   instructions, then changing =vivid= in the file
+   =/etc/apt/sources.list.d/mlsec-ubuntu-sally-vivid.list= to
+   =devel=.
+*** TODO check 1st sentence
+* WAIT Cover add-on
+  Defends against website fingerprinting by injecting artificial
+  cover traffic into the communication.
+** when stable
+   also cover against website fingerprinting by injecting really
+   artificial cover traffic
+
+   for every request, do one as well,
+** why as an add-on
+   This is one of the few low-latency communication methods, Instead
+   of burdening all of Tor with extra bells and whistles, this solves
+   this deanonymization problem at the application layer, where its
+   origins are. (Separation of Concerns)
+* TODO Test
+* TODO browser scripting [0/5]
+  In order to retrieve sites inside the browser, there are several
+  approaches.
+** Selenium
+  Selenium is the de-facto standard for testing web applications. It
+  has drivers for several browsers, allowing it to control them, and
+  evaluate the retrieved page. Its documentation is currently
+  transferring from Version 1 to Version 2.
+
+  The
+** Mozmill
+   "MozMill is a test tool and framework for writing automated tests for Gecko based applications."[[link mozmill]]
+*** installation
+    Mozmill can be installed via pip:
+
+    =pip install mozmill=
+*** conflict
+    After installing first Marionette and then MozMill (without using
+    a virtual environment), Marionette stopped working, missing a
+    =B2GEmulatorRunner=. This error could be fixed by deinstalling
+    all installed packages via
+
+    for i in $(pip list); do sudo pip uninstall $i; done
+
+    , then reinstalling Marionette.
+
+    As MozMill advises "to use a virtual environment", [[link mozmill]],
+    this will likely fix the problem.
+*** TODO link mozmill
+** TODO Marionette [0/1]
+   Marionette is the next generation mozilla testing framework.
+*** installation
+    Marionette exists as a Python Package. It is thus easily installed via
+
+    pip install marionette_client
+
+    (after installing pip via =sudo apt-get install python-pip=)
+*** start browser with -marionette parameter
+    Each modern firefox browser, and thus tor, has marionette-support
+    built-in. It needs to be enabled on the command-line via the
+    =-marionette= switch, for example
+
+    cd tor-browser_en-US/Browser
+    ./firefox -marionette
+
+    This starts the Tor browser with marionette enabled.
+**** TODO marionette support page link
+*** attach to browser
+    To attach to a running browser, use the following code (this
+    example loads a page)
+
+    from marionette import Marionette
+    client = Marionette('localhost', port=2828);
+    client.start_session()
+    url='http://test.de'
+    client.navigate(url);
+*** not working in 0.19
+    from marionette import By
+*** page load test
+    The =client.navigate()= call returns only after the page has
+    loaded, (and throws an error if the page could not be
+    loaded). This obsoletes the need to test whether a page loaded
+    completely([[Panchenko]]).
+** shell script
+  If this were a simple firefox instance, just calling =firefox website= would load the website in Firefox.
+*** TODO how to check that page has loaded
+** TODO chickenfoot: http://groups.csail.mit.edu/uid/chickenfoot/
+* criteria for tool to retrieve websites
+  - script tor browser: load new page
+  - easy set-up
+  - should
+    - register page load or error
+  - might
+    - set tor's paranoia slider
+    - install extra addon
+* setup to retrieve websites
+  To retrieve websites without further settings, 
+
+  start tor browser bundle with -marionette switch:
+
+  =./firefox -marionette=
+
+  for each site
+  - start packet dump
+    =tshark -w $DIR/$1.$(date +%s) &=
+  - retrieve website
+    =open_site.py $1=
+
+    with =open_site.py= as (simplified)
+
+    import sys
+    from marionette import Marionette
+
+    client = Marionette('localhost', port=2828)
+    client.start_session()
+    client.navigate(sys.argv[1])
+
+  - when finished, stop packet dump (kill =tshark= via process id).
+
+  This is implemented in the script =all.sh=, which internally calls
+  the =open_site.py= file to open a website via marionette.
+
+  You also need to install =tshark= via =sudo apt-get install tshark=
+  and set the current user to be able to capture packets via =sudo
+  dpkg-reconfigure wireshark-common= and adding the user to the
+  =wireshark= group (in =/etc/groups=).
+** TODO scripts source + doc
+* TODO how to get wang/goldberg to work
+  As the =notes= file says:
+
+  "svm-train and svm-predict come from the libSVM package."
+* how to get tor browser bundle to work
+  In order to start the tor browser bundle via the =./firefox=
+  command, you need some libraries. 
+
+  One external repository is required, which can be installed via
+
+  =add-apt-repository ppa:ubuntu-toolchain-r/test=
+  =apt-get update=
+  =apt-get dist-upgrade=
+
+  Furthermore, the binary needs some firefox libraries, which can be
+  retrieved via =apt-get install firefox=.
+
+  Afterwards, the binary can be started by =./firefox=. 
+** TODO where exactly is the torrc: directory
+* headless configuration
+  If you want to capture on a headless server, you can use the
+  =xvfb=-package. which is installed via =sudo apt-get install xvfb=.
+
+  Then, you can run the X Virtual Framebuffer via
+
+  =Xvfb :1=
+
+  tell the browser to use it via
+
+  =export DISPLAY:1=
+
+  and start the retrieval as mentioned above.
+* TODO libsvm
+* WAIT Evaluation
+* WAIT Conclusion
+
+
+

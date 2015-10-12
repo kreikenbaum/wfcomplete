@@ -1,0 +1,361 @@
+** [[./2015-asiaccs.pdf][Torben: A Practical Side-Channel Attack for Deanonymizing Tor Communication]]
+*** quotes
+    - (a) web pages can be easily manipulated to load content from
+      untrusted origins and (b) despite encryption, low-latency
+      anonymization networks cannot effectively hide the size of
+      request-response pairs.
+    - A large body of work has studied passive attacks based on
+      traffic analysis, most notably website fingerprinting and
+      traffic confirmation attacks.
+    - First, web pages can often be manipulated to load content from
+      untrusted origins, for example, using advertisements or
+      user-provided content.
+    - deanonymize Tor users in a short period of time.
+*** summary
+    request packets per JS. they have sizes of 2k, 4k, 6k, 8k = 2bit
+    information. Wait after page load, trigger js xmlhttprequest.
+
+    0) [@0] 
+       deanonymization via traffic injection and identification of
+       request-response pairs
+    1) user's browser does side-channel communication via
+       user-submitted content or advertising, this is detected between
+       entry node and onion proxy.
+    2) background
+       1) low-latency anonymization
+       2) active attacker: remote markers via embed (ads) or local (at server)
+       3) side-channel (see 3)
+    3) 
+       1) preprocessing:
+          1) not ip, but TLS (removes *1 layer* of retransmissions)
+	  2) empty out, merge adjacent, filter control (discard 512b-cells), merge again, sizes as multiples fo 2k
+       2) side channel: messages: 2k, 4k, 6k, 8k bytes, 4 bits,
+       3) transmission:
+	  1) http via xmlhttprequest: with random parameter to avoid caching
+	  2) use for web page markers, single easy, else 20byte sha1 (hammingdist)
+       4) detection: sliding window (faster), svm, see [1]
+    4) Evaluation: fixed set vs 60000 vs live
+       1) Data Collection via Selenium with Firefox, if not loaded, discard
+       2) extracting via Sally, learning via LibSVM, generate, record 50 transmissions, train
+       3) closed-world: 
+          reverse proxy, inject js, delay 30secs, 120secs on slow load
+	  transmission takes 12-20 secs, compare to fingerprinting, 95%
+       4) open-world: 91%, no false positives
+       5) users: 31 of 34, no false positives
+    5) limitations and defenses
+       detect web page markers
+       chaff
+    6) related
+       liberatore: look at traffic
+       both ends: better
+    7) conclusion
+       owie, detect as first countermeasure
+
+** [[./2014-torben.pdf][Torben: Deanonymizing Tor Communication using Web Page Markers]]
+*** quotes
+    - As a result, the few known cases of deanonymization of Tor have
+      been reported to instead make use of advertisement networks or
+      rely on vulnerabilities in browser implementations [29, 30] and
+      are thus unrelated to insecurities of Tor in general.
+    - As a consequence, there is an urgent need for defenses in
+      anonymization services protecting users from active attacks at
+      the application layer.
+    - A web page[sic: r] marker is implanted using embedded or user-provided
+      content, such as an advertisement or an image link. The marker
+      induces a traffic pattern visible at the entry node, for
+      example, using a chain of HTTP redirects or JavaScript code
+      generating HTTP requests.
+    - each circuit is only used for 10 minutes until a new circuit is
+      created
+    - For example, the Walsh-Hadamard code can be used to encode
+      messages of length k ≤ 7 as code words of length 2 k with
+      maximized minimum Hamming distances.
+    - eight different sizes corresponding to the alphabet
+
+      A = {− f(1, 1 ) , . . . , − f(0, 0 ) , f(0, 0 ) , . . . , f(1, 1 )} .
+    - # ( x, p ) returns the number of occurrences of the positional
+      n-gram p = ( s, i ) between the positions i and i + τ in the
+      sequence x.
+    - The vector φ ( x ) encodes information about the symbols, their
+      order and their position in x—thus reflecting the basic
+      properties of a web page marker.
+    - This reliability rests on the design of the side channel that
+      makes use of atypical request-response pairs for transmitting
+      information (Section 3.2).
+    - Whether such chaff traffic can be selectively injected to only
+      destroy indicative traffic patterns is an interesting question
+      for further research.
+    - the attacker can expose the web pages a user visits within a
+      couple of seconds.
+*** summary
+    0) [@0] Abstract: torben presented
+    1) Introduction
+
+       much research into passive attacks: high false positive,
+       changing web content leads to problems, active attacks such as
+       patch selection and watermarking
+
+       instead: mostly browser vulnerabilities
+
+       torben introduced (see also [[Torben: A Practical Side-Channel Attack for Deanonymizing Tor Communication]])
+    2) Background
+       1) The Tor Network: 
+
+          bunch of routers, symmetric keys per hop in the circuit,
+          onion encryption, each router only sees neighbors, each
+          circuit only used for 10 minutes
+
+       2) Attack Scenario:
+
+	  Attacker can insert markers into web page of interest and
+          analyze traffic between OP and guard.
+
+    3) A Side-Channel Attack on Tor
+       0) [@0]
+
+	  - Tor ist low-latency
+	  - request-response paare sichtbar im TLS Traffic (mit filtern)
+	  - sollte der gegner die Website beeinflussen koennen
+	    - via js oder http redirect (andere moeglichkeiten, css?)
+	    - als direkte beeinflussung oder user content
+	  - kann er versuchen, ueber diesen side-channel zu kodieren,
+            welche websites besucht werden.
+	  - Schritte
+	    1) Preprocessing of network traces. (3.1)
+	    2) Side channel design (3.2)
+	    3) Transmission of web page markers (3.3).
+	    4) Detection of web page markers. (3.4?)
+       1) Vorverarbeitung:
+	  merkmal: groesse der kontinuierlich in eine richtung uebermittelten daten
+	  1) TCP statt IP analyse via tshark
+	  2) Filtering and Merging TLS Records
+	     a) filter non-tor-records (\le 100 bytes)
+	     b) merge continuous to obtain amount of flow (packes sizes random)
+	     c) filter control cells (512 bytes) and merge again (HTTP
+                does not fit into 512 bytes)
+	     d) normalize sizes, multitudes of 2000 bytes
+       2) Side Channel Design
+	  map two bits q = q_i, q_j to
+          q_i, q_j \to ( q_i + 2q_j ) · s + c     (with s, c = 2000)
+	  = q \cdot s + c
+	  map four bits to request and response sizes, two bits each.
+       3) Transmission
+
+	  request: get with "random" parameter of fitting lenth
+	  response: any page of acceptable size, *any host*
+
+	  hash URLs to SHA-1 (optimal when fixed: walsh-hadamard code)
+       4) Detection
+	  1) 
+	     - gelesene Sequenz gegeben (experiment: 100 symbols)
+	     - A = {2,4,6,8}^2 (Torben-Alphabet, mit minus fuer request)
+	       |A| = 16
+
+	     - S=A^n alle n-gramme von A
+	       |S| = 16^n
+
+	       \to (eigenes) n = 40
+	       == 2^160
+
+	     - positional n-grams:
+
+               P = S \times N, 
+               mit Element p=(s,i) mit s \in S, i Position von s in Sequenz
+
+	     - \varphi bildet von allen n-grammen A^* nach R^{|P|}.  
+	       \varphi(x) \to (#(x,p))_{p \in P}
+
+               Jedes n-gramm (s,i) hat seine Haeufigkeit zwischen i und
+               i+\tau als wert
+
+	     - \tau is toleranz-parameter
+
+	  2) Probabilistic Classification
+
+	     - SVM trainiert mit Sequenzen der Marker
+
+	     - Riesiger Vektorraum, aber sparse
+
+	     - P "nur" multiplikativ mit Fenstergroesse, nicht anders, puh
+
+    4) Evaluation
+
+       mehrere Experimente: cw, ow, users
+
+       cw: unrealistisch, aber haeufig verwendet in website-fingerprinting, vergleich
+       ow: 60000 webseiten
+
+       1) Data
+
+	  - Selenium WebDriver mit Tor bb
+
+	  - wenn nicht load in 3 min, diese seite verwerfen
+
+	  - remove similar, vergleich mit fingerprint (die failen)
+
+       2) Detection
+	  
+	  - Sally verwandelt von Netzwerktraces in positional n-grams
+
+	  - learning libsvm
+
+	  - auf selbem rechner ausser Cai: cluster
+
+	  - 100 marker, 50 uebertragungen jeweils gemessen
+
+	  - n = 3,
+
+	  - the tolerance to τ = 9 and
+
+	  - the SVM regularization to C = 0.1
+
+       3) Closed-World Evaluation
+	  
+	  - top 100 seiten je 50 mal
+
+	  - jeweils im februar und april 2014
+
+	  - js via reverse proxy
+
+	  - marker nach 30 \to 120 sec delay
+
+	  - transmission time 12-20 secs
+
+	  - complete marker: 300 packets, \sim 390000 bytes
+
+	  - vergleich mit Hermann.., Panchenko.. und Cai.. (mit
+            Fingerprints vom Februar)
+
+	  - torben imm 95%, die anderen schlechter
+
+	  - false classification favors particular markers
+
+       4) Open-World Evaluation
+
+	  - 60000 von Alexa (top million \ top 100)
+
+	  - few (as before, top 100) with markers
+	    \to evaluate false positives
+
+	  - detect 91% with no false positives
+
+	  - reliable,
+            due to atypical request-response-pairs
+
+       5) Live Evaluation
+
+	  - 4 users, 2 hours each
+
+	  - if probability score below threshold of t=0.1, do not select
+
+    5) Limitation and Defenses
+
+       - torben works reliably
+
+       - limitations?
+
+       - detect web page markers: arms race: attackers chage params,
+
+       - chaff traffic: "might lower Tor’s overall performance."
+
+    6) Related Work: first early, then active and passive vs low-latency
+
+       1) Attacks on Encrypted Communication
+
+	  http pattern of access detectible via tls
+
+	  countermeasures fail to address size of data traffic
+
+       2) Passive Attacks against Tor
+
+	  - hermann: ip lengths
+
+	  - panchenko: data sent before direction change,
+
+	  - cai: ordering w/ displacements
+
+	  - wang: tls
+
+	  - high false-positives
+
+	  - counter: morphing,
+
+       3) Active Attacks against Tor
+
+	  - passive: longer period
+
+	  - solve: active attack
+
+	  - 1: reveal communication path
+
+	  - murdoch: similar, but path \to infeasible
+
+	  - watermarking: inject specific patterns, inter-packet delays
+
+	    - needs to control exit node, tcp level (not app)
+
+    7) Conclusion
+** TODO [#A] [[./acmccs-wpes11-fingerprinting.pdf][Website Fingerprinting in Onion Routing Based Anonymization Networks]]
+
+** TODO [[./csbuflo.pdf][CS-BuFLO: A Congestion Sensitive Website Fingerprinting Defense]]
+*** quotes
+    - Our experiments find that Congestion-Sensitive BuFLO has high
+      overhead (around 2.3-2.8x)
+    - it is not currently known whether there exists any efficient and
+      secure defense against website fingerprinting attacks.
+    - all previously-proposed defenses provide little security.
+*** summary
+    0) [@0] Abstract:
+
+       - fingerprint infers, even if tor,
+
+       - previous defenses are ineffective,
+
+       - spec of cs-buflo,
+
+       - implementation
+
+    1) Introduction
+
+       - several website fingerprinting attacks, several defenses
+
+       - 80%, which of 128 pages
+
+       - BuFLO: over 400% bandwidth overhead
+
+       - DLSVM fingerprinting attack greater than 75% success rate
+         against numerous defenses, including application-level
+         defenses, such as HTTPOS and randomized pipelining
+
+       - CS-BuFLO, congestion avoidance, TCP-friendly,
+
+       - here: adapt its transmission rate dynamically, and improve
+         its stream padding: less bandwidth, hiding more
+
+       - adapting too quickly can reveal info, solve: limit adaptation
+
+       - alexa 200: 91% of web use
+
+       - CS-BuFLO: 2.8 times as much bandwidth as SSH, only a 20% success rate
+
+       - CS-BuFLO ratio 2.8. BuFLO ratio of 2.2.
+
+    2) RELATED WORK
+
+
+** TODO [[./authorsversion-ccsw09.pdf][Website Fingerprinting: Attacking Popular Privacy Enhancing Technologies with the Multinomial Naïve-Bayes Classifier]]
+** TODO [[./Liberatore_2006.pdf][Inferring the Source of Encrypted HTTP Connections]]
+** TODO [[./wpes11-panchenko.pdf][Website Fingerprinting in Onion Routing Based Anonymization Networks]]
+** TODO [#A] [[./article-2456.pdf][A Critical Evaluation of Website Fingerprinting Attacks]]
+** TODO [#B] [[./cacr2014-05.pdf][Effective Attacks and Provable Defenses for Website Fingerprinting]]
+   also :  [[./sec14-paper-wang-tao.pdf]]
+** TODO [#B] [[./ccs14.pdf][A Systematic Approach to Developing and Evaluating Website Fingerprinting Defenses]]
+** TODO [#C] [[./fp.pdf][Touching from a Distance: Website Fingerprinting Attacks and Defenses]]
+** TODO [[./ipccc12-tor-performance.pdf][Improving Performance and Anonymity in the Tor Network]]
+** TODO [#C] [[./LZCLCP_NDSS11.pdf][HTTPOS: Sealing Information Leaks with Browser-side Obfuscation of Encrypted Flows]]
+** TODO [#C] [[./morphing09.pdf][Traffic Morphing: An Efficient Defense Against Statistical Traffic Analysis]]
+** TODO [[./Oya.pdf][Do dummies pay off ? Limits of dummy traffic protection in anonymous communications]]
+** TODO [[./oakland2012-peekaboo.pdf][Peek-a-Boo, I Still See You: Why Efficient Traffic Analysis Countermeasures Fail]]
+** TODO [[./pam2014-tor-nfattack.pdf][On the Effectiveness of Traffic Analysis Against Anonymity Networks Using Flow Records]]
+** TODO [[./usersrouted-ccs13.pdf][Users Get Routed: Traffic Correlation on Tor by Realistic Adversaries]]
+webfingerprint-wpes.pdf

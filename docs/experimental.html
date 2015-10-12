@@ -1,0 +1,594 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Experimental Defense for Website Traffic Fingerprinting | The Tor Blog</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="alternate" type="application/rss+xml" title="The Tor Blog - All comments" href="https://blog.torproject.org/crss">
+
+<link rel="alternate" type="application/rss+xml" title="Comments for &quot;Experimental Defense for Website Traffic Fingerprinting&quot;" href="https://blog.torproject.org/crss/node/470">
+
+<link rel="shortcut icon" href="https://blog.torproject.org/images/favicon.ico" type="image/x-icon">
+  <style type="text/css" media="all">@import "/modules/aggregator/aggregator.css";</style>
+<style type="text/css" media="all">@import "/modules/node/node.css";</style>
+<style type="text/css" media="all">@import "/modules/poll/poll.css";</style>
+<style type="text/css" media="all">@import "/modules/system/defaults.css";</style>
+<style type="text/css" media="all">@import "/modules/system/system.css";</style>
+<style type="text/css" media="all">@import "/modules/user/user.css";</style>
+<style type="text/css" media="all">@import "/sites/all/modules/archive/archive.css";</style>
+<style type="text/css" media="all">@import "/sites/all/modules/event-modified/event.css";</style>
+<style type="text/css" media="all">@import "/sites/all/modules/tagadelic/tagadelic.css";</style>
+<style type="text/css" media="all">@import "/modules/comment/comment.css";</style>
+<style type="text/css" media="all">@import "/sites/all/themes/zen/style.css";</style>
+<style type="text/css" media="all">@import "/sites/all/themes/zen/layout.css";</style>
+<style type="text/css" media="all">@import "/sites/all/themes/zen/icons.css";</style>
+<style type="text/css" media="all">@import "/sites/all/themes/zen/zen.css";</style>
+<style type="text/css" media="print">@import "/sites/all/themes/zen/print.css";</style>
+  </head>
+
+<body class="not-front not-logged-in ntype-blog sidebar-right">
+	<div id="page">
+		<img src="Experimental%20Defense%20for%20Website%20Traffic%20Fingerprinting%20%7C%20The%20Tor%20Blog_files/page_bg_onion_white.png" alt="" id="onion_bg">
+		<div id="header">
+			<a href="https://blog.torproject.org/" id="logo_link"><span class="hidden">Tor - Home</span></a>
+			<div id="navigation" class="menu withprimary ">
+											<div id="primary" class="clear-block">
+							<ul class="links-menu">
+<li><a href="https://blog.torproject.org/blog" title="Go back to the Tor Blog Home">Home</a></li>
+<li><a href="https://blog.torproject.org/archive" title="Blog Archives">Archives</a></li>
+<li><a href="https://www.torproject.org/overview" title="About the Tor Project">About Tor</a></li>
+<li><a href="https://www.torproject.org/donate/donate" title="Donate to the Tor Project today!">Donate</a></li>
+</ul>						</div>
+										
+								</div> <!-- /navigation -->
+			
+							<div id="header-region">
+														</div>
+						
+		</div> <!-- /header -->
+
+		<div id="container" class="clear-block">
+									
+			  
+		
+			<div id="main" class="column"><div id="squeeze">
+												<div id="content">
+					<h1 class="title">Experimental Defense for Website Traffic Fingerprinting</h1>																				<div class="node ntype-blog" id="node-470">
+  
+    
+  
+      <span class="submitted">
+      Posted <abbr class="created" title="2011-09-04T22:50:43-0500">September 4th, 2011</abbr> by mikeperry    </span> 
+  
+      <div class="taxonomy"> in <ul class="links inline"><li class="first taxonomy_term_316"><a href="https://blog.torproject.org/category/tags/anonymity" rel="tag" title="" class="taxonomy_term_316">anonymity</a></li>
+<li class="taxonomy_term_493"><a href="https://blog.torproject.org/category/tags/anonymity-features" rel="tag" title="" class="taxonomy_term_493">anonymity features</a></li>
+<li class="taxonomy_term_22"><a href="https://blog.torproject.org/category/tags/attacks" rel="tag" title="" class="taxonomy_term_22">attacks</a></li>
+<li class="taxonomy_term_592"><a href="https://blog.torproject.org/category/tags/protecting-users" rel="tag" title="" class="taxonomy_term_592">protecting users</a></li>
+<li class="taxonomy_term_87"><a href="https://blog.torproject.org/category/tags/research" rel="tag" title="" class="taxonomy_term_87">research</a></li>
+<li class="taxonomy_term_620"><a href="https://blog.torproject.org/category/tags/surveillance" rel="tag" title="" class="taxonomy_term_620">surveillance</a></li>
+<li class="last taxonomy_term_619"><a href="https://blog.torproject.org/category/tags/traffic-analysis" rel="tag" title="" class="taxonomy_term_619">traffic analysis</a></li>
+</ul></div>
+    
+  <div class="content">
+    <p><b>Updated 09/05/2011</b>: Add link to actual <a href="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/0006-Randomize-HTTP-pipeline-order-and-depth.patch">implementation patch</a> on gitweb<br>
+<br></p>
+<p>Website fingerprinting is the act of recognizing web traffic through 
+surveillance despite the use of encryption or anonymizing software. The 
+general idea is to leverage the fact that many web sites have specific 
+fixed request patterns and response byte counts that are known 
+beforehand. This information can be used to recognize your web traffic 
+despite attempts at encryption or tunneling. Websites that have an 
+abundance of static content and a fixed request structure tend to be  
+vulnerable to this type of surveillance. Unfortunately, there is enough 
+static content on most websites for this to be the case.</p>
+<p><a href="http://guh.nu/projects/ta/safeweb/safeweb.pdf">Early work</a>
+ was quick to determine that simple packet-based encryption schemes 
+(such as wireless and/or VPN encryption) were insufficient to prevent 
+recognition of traffic patterns created by popular websites in the 
+encrypted stream. Later, a <a href="http://research.microsoft.com/pubs/119060/WebAppSideChannel-final.pdf">small-scale study</a>
+ determined that a lot of information could be extracted from HTTPS 
+streams using these same approaches against specific websites.</p>
+<p>Despite these early results, whenever researchers tried naively 
+applying these techniques to Tor-like systems, they failed to come up 
+with publishable results (meaning the attack did not work against Tor), 
+due largely to the fixed 512 byte cell size, as well as the multiplexing
+ of Tor client traffic over a single TLS connection.</p>
+<p>However, last month, a group of researchers <a href="http://lorre.uni.lu/%7Eandriy/papers/acmccs-wpes11-fingerprinting.pdf">succeeded in performing this attack</a>
+ where the others had failed. Their success hinged largely on their use 
+of a simplified yet well-chosen feature set for training their 
+classifiers. Where other researchers simply dumped packet sizes and 
+timings into their classifiers and unsurprisingly got poor results 
+against Tor traffic, this group extracted the time, quantity and 
+direction of traffic, and discarded irrelevant control information such 
+as TCP ACKs.</p>
+<p>While the research methodology of the attack side of their work is 
+particularly exemplary (certainly the most thorough study in website 
+fingerprinting to date),  their results are still likely insufficient to
+ deploy against the network and expect to catch people engaging in 
+single visits of forbidden websites. For such a use case, even their 
+relatively low false positive rate is going to cause a lot of issues 
+when deployed against large quantities of traffic. Concurrent use of 
+multiple AJAX-enabled websites and/or other applications will also 
+frustrate an attacker. Even without concurrent activity, their 
+"open-world" experiment (the most realistic scenario for dragnet 
+surveillance of Tor traffic) shows true positive accuracy of around 55%.</p>
+<p>However, repeated observations over long periods of time are likely 
+sufficient to develop certainty. It is also possible that extracting 
+actual application data lengths from Tor TLS headers would add 
+additional accuracy.</p>
+<p>Hence, this is a rather nasty attack. It is basically a one-ended 
+version of the age-old end-to-end correlation attack (where an adversary
+ attempts to observe both the entrance to the network and the exits to 
+correlate traffic flows). With the website fingerprinting attack, the 
+adversary only needs to observe a single entry (a bridge, a guard node, 
+or a regional firewall) of the network to begin gathering information 
+about users who use that entry point.</p>
+<p>However, because the attack is only one-ended, many defenses that 
+would be useless against the full end-to-end attack can be considered. 
+In the countermeasures section of their paper, the researchers point out
+ that a Firefox addon that simply performs background HTTP requests 
+concurrent to normal user activity was enough to foil their classifier.</p>
+<p>We disagree with the background fetch approach because it seems that a
+ slightly more sophisticated attack would train a separate classifier to
+ recognize the background cover traffic and then subtract it before 
+attempting to classify the remainder. In the face of this concern, it 
+seems that the background request defense is not worth the additional 
+network load until it can be further studied in detail.</p>
+<p>Instead, we are deploying an <a href="https://trac.torproject.org/projects/tor/ticket/3914">experimental defense</a> in <a href="https://blog.torproject.org/blog/new-tor-browser-bundles-5">today's Tor Browser Bundle release</a>
+ that is specifically designed to reduce the information available for 
+feature extraction without adding overhead. The defense is to enable <a href="https://secure.wikimedia.org/wikipedia/en/wiki/HTTP_pipelining">HTTP pipelining</a>, and to randomize the pipeline size as well as the order of requests. The <a href="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/0006-Randomize-HTTP-pipeline-order-and-depth.patch">source code to the implementation</a> can be viewed on gitweb.</p>
+<p>Since normal, non-randomized pipelining is still off by default to 
+this day in Firefox, we are assuming that the published attack results 
+are against serialized request/response behavior, which provides 
+significantly more feature information to the attacker. In particular, 
+we believe a randomized pipeline will eliminate or reduce the utility of
+ the 'Size Marker', 'Number Marker', 'Number of Packets', and 'Occurring
+ Packet Sizes' features on sites that support pipelining, due to the 
+batching of requests and responses of arbitrary sizes. More generally, 
+the randomized pipeline should obscure the request vs response size and 
+request ordering information available to the classifier. </p>
+<p>Our hope is that the randomized pipeline defense will therefore 
+increase the duration of observation required to establish certainty 
+that a site is being visited, by lowering the true positive rate and/or 
+raising the false positive rate beyond what the researchers observed.</p>
+<p>We do not expect this defense to be foolproof. We create it as a 
+prototype, and request that future research papers do not treat the 
+defense as if it were the final solution against website fingerprinting 
+of Tor traffic. In particular, not all websites support pipelining (in 
+fact, an unknown number may deliberately disable it to reduce load), and
+ even those that do will still leak the initial response size as well as
+ the total response size to the attacker. Pipelining may also be 
+disabled by malicious or simply misconfigured exits.</p>
+<p>However, the defense could also be improved. We did not attempt to 
+determine the optimal pipeline size or distribution, and are relying on 
+the research community to tweak these parameters as they evaluate the 
+defense.</p>
+<p>We could also take more extreme measures, such as building pipelining
+ support into Tor exit nodes. Perhaps better still, we could deploy an <a href="https://gitweb.torproject.org/torspec.git/blob/HEAD:/proposals/ideas/xxx-using-spdy.txt">HTTP to SPDY translation service at exits</a>. The more efficient request bundling of <a href="http://dev.chromium.org/spdy">SPDY</a>
+ would likely obscure request vs response size information yet further. 
+However, as these translations are potentially fragile as well as 
+labor-intensive to implement and deploy, we are unlikely to take these 
+measures without further feedback from and study by the research 
+community.</p>
+<p>Alternatively, or perhaps additionally, defenses could be deployed at the <a href="https://gitweb.torproject.org/obfsproxy.git/blob/HEAD:/doc/protocol-spec.txt">obfsproxy plugin layer</a>. Defenses there would not help against an adversary at the bridge or guard node, but would help against regional firewalls.</p>
+<p>We would love to hear feedback from the research community about 
+these approaches, and look forward to hearing more results of future 
+attack and defense work along these and other avenues.</p>
+  </div>
+  
+      <div class="links">
+      <ul class="links inline"><li class="first last blog_usernames_blog"><a href="https://blog.torproject.org/blogs/mikeperry" title="Read mikeperry's latest blog entries." class="blog_usernames_blog">mikeperry's blog</a></li>
+</ul>    </div>
+   
+</div>
+<div id="comments"><form action="/blog/experimental-defense-website-traffic-fingerprinting" accept-charset="UTF-8" method="post" id="comment-controls">
+<div>  <div class="box">
+    <h2 class="title">Comment viewing options</h2>    <div class="content"><div class="container-inline"><input name="form_id" id="edit-comment-controls" value="comment_controls" type="hidden">
+<div class="form-item" id="edit-mode-wrapper">
+ <select name="mode" class="form-select" id="edit-mode"><option value="1">Flat list - collapsed</option><option value="2">Flat list - expanded</option><option value="3">Threaded list - collapsed</option><option value="4" selected="selected">Threaded list - expanded</option></select>
+</div>
+<div class="form-item" id="edit-order-wrapper">
+ <select name="order" class="form-select" id="edit-order"><option value="1">Date - newest first</option><option value="2" selected="selected">Date - oldest first</option></select>
+</div>
+<div class="form-item" id="edit-comments-per-page-wrapper">
+ <select name="comments_per_page" class="form-select" id="edit-comments-per-page"><option value="10">10 comments per page</option><option value="30">30 comments per page</option><option value="50">50 comments per page</option><option value="70">70 comments per page</option><option value="90">90 comments per page</option><option value="150">150 comments per page</option><option value="200">200 comments per page</option><option value="250">250 comments per page</option><option value="300" selected="selected">300 comments per page</option></select>
+</div>
+<input name="op" id="edit-submit" value="Save settings" class="form-submit" type="submit">
+</div><div class="description">Select your preferred way to display the comments and click "Save settings" to activate your changes.</div></div>
+ </div>
+
+
+</div></form>
+<a id="comment-11409"></a>
+<div class="comment odd comment-by-anon">
+    <div class="submitted">On September 5th, 2011 Anonymous said:</div>
+    <div class="content"><p>Sounds interesting. Are there any plans for 
+an add-on separate from TorBrowser/TorButton that might be used with 
+custom Tor implementations?</p></div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+<div class="indented"><a id="comment-11416"></a>
+<div class="comment even comment-by-author">
+    <div class="submitted">On September 5th, 2011 mikeperry said:</div>
+    <div class="content"><p>No.</p>
+<p>Wait.</p>
+<p>Maybe:<br>
+<a href="https://trac.torproject.org/projects/tor/ticket/1816" title="https://trac.torproject.org/projects/tor/ticket/1816" rel="nofollow">https://trac.torproject.org/projects/tor/ticket/1816</a></p>
+<p>But the ability to produce a finished product is outside of our control:<br>
+<a href="https://trac.torproject.org/projects/tor/wiki/doc/ImportantGoogleChromeBugs" title="https://trac.torproject.org/projects/tor/wiki/doc/ImportantGoogleChromeBugs" rel="nofollow">https://trac.torproject.org/projects/tor/wiki/doc/ImportantGoogleChromeB...</a></p>
+<p>It is very unlikely that we will be able to achieve the same level of
+ precision in terms of altering browser behavior without significant 
+cooperation from Google (or a fork of Chromium). So for now, might as 
+well keep dancing with the devil you know.</p>
+</div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+<div class="indented"><a id="comment-11443"></a>
+<div class="comment odd comment-by-anon">
+    <div class="submitted">On September 5th, 2011 Anonymous said:</div>
+    <div class="content"><p>Oh, I was thinking about a separate 
+-Firefox- add-on (for users with custom implementations, not using 
+Torbutton but a proxy chain plus Noscript, BetterPrivacy, CookieSafe, 
+Ghostery, RefControl etc.), but I can see why you would neither pursue 
+nor recommend this. Thanks anyway! Keep up the good work!</p></div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+</div></div><a id="comment-11425"></a>
+<div class="comment even comment-by-anon">
+    <div class="submitted">On September 5th, 2011 Anonymous said:</div>
+    <div class="content"><p>If we open multiple pipelines to get one web
+ page and its linked objects (each of the pipelines carry a random 
+number of HTTP requests), could these pipelines go over different entry 
+guards?<br>
+This would somewhat thwart traffic analysis by a roque entry guard 
+because the number of observed objects is not the same as it is on the 
+original web page.</p></div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+<div class="indented"><a id="comment-11449"></a>
+<div class="comment odd comment-by-author">
+    <div class="submitted">On September 5th, 2011 mikeperry said:</div>
+    <div class="content"><p>Right now, Tor basically tries to keep using
+ the same circuit for the same ports for 10 minutes. This should mean 
+that a website should have all of its 3rd party content loaded over the 
+same circuit, but it is not ensured.</p>
+<p>Our plan is to ensure that each top-level urlbar domain has all of 
+the third party content go through a single circuit, but that fresh 
+circuits will be used for new urlbar domains: <a href="https://trac.torproject.org/projects/tor/ticket/3455" title="https://trac.torproject.org/projects/tor/ticket/3455" rel="nofollow">https://trac.torproject.org/projects/tor/ticket/3455</a></p>
+<p>This circuit isolation property is intended to reduce linkability between different site activity by exit nodes.</p>
+<p>This means that if you are using concurrent activity as a defense, 
+you have a 1/3 chance (roughly) of that concurrent activity actually 
+using a different guard node than the one that might be targeting you.</p>
+<p>Sending third party content down a different circuit is possible, I 
+suppose, but I worry if we do it deliberately, things may break. It will
+ also consume a lot of relay CPU resources for excess circuit 
+creation...</p>
+</div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+</div><a id="comment-11430"></a>
+<div class="comment even comment-by-anon">
+    <div class="submitted">On September 5th, 2011 Anonymous said:</div>
+    <div class="content"><p>Doesn't this randomization introduce an individual pattern for otherwise uniform requests?</p>
+<p>Jack and Jill visit https://www.torproject.org/ - 1 page, 1 style-sheet, 15 images = 17 requests.</p>
+<p>Jack's requests: pipeline1=4, pipeline2=5, pipeline3=2, pipeline4=6. </p>
+<p>Jill's requests: pipeline1=7, pipeline2=3, pipeline3=7.</p>
+<p>Both visit the same page but they can be distinquished by their individual pipeline patterns. </p></div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+<div class="indented"><a id="comment-11450"></a>
+<div class="comment odd comment-by-author">
+    <div class="submitted">On September 5th, 2011 mikeperry said:</div>
+    <div class="content"><p>The pipeline size is randomized for each batch of requests.</p>
+<p>For example, let's say <a href="http://www.torproject.org/" title="www.torproject.org">www.torproject.org</a> has 15 images, and supports pipelining. The request processing looks like this:</p>
+<p><code></code></p><code>
+<pre>client: 
+  "GET /"
+server: 
+  "&lt;html&gt;&lt;img&gt;*15&lt;/html&gt;"
+
+client: 
+ while(images remain):
+  Compute random integer P from 4..12
+  Choose a random subset of P of the remaining images    
+  Issue pipelined GET requests for this subset
+</pre></code><p><code></code></p>
+<p><br><br>
+As you can see, a new random number P is chosen <b><i>for each batch of requests</i></b>.
+ It is not a property of either Jack or Jill's computer. It does not 
+persist. The sequence of P's come from the NSS cryptographically secure 
+random number generator via PK11_GenerateRandom().</p>
+<p>The full patch is here:<br>
+<a href="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/0006-Randomize-HTTP-pipeline-order-and-depth.patch" title="https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/0006-Randomize-HTTP-pipeline-order-and-depth.patch">https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current...</a></p>
+</div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+<div class="indented"><a id="comment-11469"></a>
+<div class="comment even comment-by-anon">
+    <div class="submitted">On September 6th, 2011 Anonymous said:</div>
+    <div class="content"><p>&gt;The pipeline size is randomized for each batch of requests.</p>
+<p>Yes, I had this assumption. </p>
+<p>Theoretical case:<br>
+Jill's ISP records her traffic. Jill visits www.truenews.blog, an 
+unconvenient service for some and therefore all its traffic is watched. 
+The site uses common blog software with rotating images making a 
+correlation by image byte size uncertain.</p>
+<p>Jill gets questioned later and claims she had visited some other site
+ instead. Jill's browser used 3 pipelines (3-5-2) for the 10 images on 
+the front page. The other 4 Tor visistors at the time had different 
+pipeline patterns.</p>
+<p>After Jill had read 5 pages at www.truenews.blog both ISPs have 
+recorded a distinct pipeline request pattern (3-5-2) (6-2-2) (8-2) 
+(2-3-2-3) (4-2-4).</p>
+<p>I think it could be rather convincing to show Jill had indeed visited
+ that blog and rather difficult for Jill to deny it because of the 
+uniqueness of the pattern chain. </p></div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+<div class="indented"><a id="comment-11487"></a>
+<div class="comment odd comment-by-author">
+    <div class="submitted">On September 6th, 2011 mikeperry said:</div>
+    <div class="content"><p>You're basically describing an end-to-end 
+correlation attack against a specific, targeted user. This is not a 
+survivable scenario with or without this patch. The traffic timing 
+information from the combination of the surveilling local ISP and the 
+surveilled blog will be more than enough to doom Jill, regardless of her
+ custom request pattern.</p>
+<p>I guess you are arguing that while improving against the one-ended 
+attack, this defense makes the two-ended attack worse as a tradeoff, and
+ that this tradeoff is bad. However, the two-ended attack is really bad 
+already anyway because it gets to use inter-packet timings, connection 
+hiccups, and even active traffic shaping, especially when targeted 
+against specific sites and users. </p>
+<p>If we're not talking about actual packet captures at the blog and 
+instead just subpoenaed logs, normal apache logs don't log pipelining 
+status, so that may also be a slightly different story...</p>
+<p>The rabbit hole goes pretty deep in terms of tradeoffs and actual 
+threat under different levels of observation detail, but once you start 
+talking about surveillance at both ends, the current understanding in 
+the research community is that it is game over. This assumption may in 
+fact be wrong, though. For an amusing breakdown of the difference 
+between a dragnet global vs targeting adversary, see: <a href="http://archives.seul.org/or/dev/Sep-2008/msg00016.html" title="http://archives.seul.org/or/dev/Sep-2008/msg00016.html" rel="nofollow">http://archives.seul.org/or/dev/Sep-2008/msg00016.html</a></p>
+</div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+</div></div></div><a id="comment-11437"></a>
+<div class="comment even comment-by-anon">
+    <div class="submitted">On September 5th, 2011 Anonymous said:</div>
+    <div class="content"><p>Is my privacy depending on "a group of 
+researchers (who) succeeded in performing this attack" or an  
+"experimental defense" nightly build by Tor?  Are you preventing or 
+reacting against OnionCoffee and Prime-Project ? This isn't a kid fight.
+ Please, grown up. </p></div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+<div class="indented"><a id="comment-11451"></a>
+<div class="comment odd comment-by-author">
+    <div class="submitted">On September 5th, 2011 mikeperry said:</div>
+    <div class="content"><p>What does OnionCoffee and/or Prime-Project have to do with this?</p>
+<p>The research community explored this topic because understanding how 
+the attack might work in practice is essential to developing a proper 
+defense for it. This is how scientific security research works.</p>
+<p>Unfortunately, the paper authored by the researchers was 
+significantly more rigorous in its analysis of the attack side as 
+opposed to developing proper defenses. We believe the defense provided 
+by the researchers doesn't seem like it will stand up to a more 
+sophisticated attack, and will just waste network resources. We believe 
+this because there is a history of failures of background cover traffic 
+in the academic literature. The basic stuff definitely doesn't work, and
+ even the complex schemes are regarded as questionable.</p>
+<p>Hence, we are deploying an alternate defense that we feel might perform better at no cost to the network.</p>
+<p>It is possible that our defense won't stand up either. This is 
+unfortunately the nature of science: We must explore attacks and 
+defenses and deploy only those that we expect to stand to further 
+scrutiny. Sometimes we are wrong, and we must rethink the defense or 
+improve it. This blog post was primarily about properly communicating to
+ the research community why we chose the defense we did, and how they 
+might best study it and defenses like it.</p>
+<p>If you disagree with our reasoning, you are of course free to deploy 
+the defense suggested by the researchers in combination. Just keep 
+browser tabs open to few pages that have refresh timers (for example, 
+many news sites that update with new headlines, and also twitter). This 
+will basically be equivalent the defense the researchers suggested.</p>
+<p>However, until more research is done, neither of us can be 100% sure 
+we're doing it right. We suspect you'd be doing it wrong, but it's not 
+like we can stop you.</p>
+<p>I mean, what do you want from us? Magic?</p>
+</div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+<div class="indented"><a id="comment-11496"></a>
+<div class="comment even comment-by-anon">
+    <div class="submitted">On September 7th, 2011 Anonymous said:</div>
+    <div class="content"><p>Sorry for answering late but I'm on the 
+move. 1st) To your first question: Andriy Panchenko, who did/supervise 
+the job, had worked in OnionCoffee and Prime. The same for other signing
+ the paper. U can see it here: http://lorre.uni.lu/~andriy/  2nd) The 
+defense Andriy propose is too simple and inneficcient (preparing a new 
+addons?), but leads you to pipelining. So, he's done.It makes u change. 
+3rd) I'm talking to you coz YOU must try to "prevent" before and not 
+"react" against attacks. Users must believe u when u talk/write, not 
+when u react. Web Fingerprinting is as old as grandma. What were u doing
+ all this years? 4th) I can work with Pipelining just from about:config 
+and a few extra touchs. This is years old.. No ofense. Just thoughts to 
+improve prevention. </p></div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+<div class="indented"><a id="comment-11506"></a>
+<div class="comment odd comment-by-author">
+    <div class="submitted">On September 7th, 2011 mikeperry said:</div>
+    <div class="content"><p>1. Ok.<br>
+2. Ok.<br>
+3. We can't make defenses against imaginary attacks. The exact 
+mechanisms of how the attack might work were not successfully 
+demonstrated until Panchenko published. I guess you didn't manage to 
+make it to paragraph #3, where I said that every other research group 
+that tried this attack against Tor failed to produce results?<br>
+4. The original about:config options for pipelining don't allow the randomization we implemented.<br>
+5. We implemented the randomization specifically because we finally had a
+ proven, published, and peer-reviewed attack mechanism that described 
+and demonstrated exactly what information the attack needed to succeed. 
+We did not have this before. All we had was speculation. It was exactly 
+the attack setup information published by Panchenko that led us to 
+decide on randomized pipelining as a plausible defense (see the 
+paragraph in the blog about the feature-set used and which ones we 
+expect to disable).<br>
+6. No offense, but you appear to be a troll. You might want to have that looked at by a professional.</p>
+</div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+<div class="indented"><a id="comment-11521"></a>
+<div class="comment even comment-by-anon">
+    <div class="submitted">On September 8th, 2011 Anonymous said:</div>
+    <div class="content"><p>In this context, I think "prevention" is the
+ use of all types of imaginary attacks. BTW, what would you do if 
+Panchenko didn't publish a thing ? How would you know what to do ? 
+Remember Web Fingerprinting isn't new. Just try to prevent. I know isn't
+ easy. But let all Tor's users be sure that you are thinking in the 
+future, not changing versions when some new attack come into sight. 
+Users must trust in Tor. Trust is everything in privacy. I believe in 
+it. </p></div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+<div class="indented"><a id="comment-11523"></a>
+<div class="comment odd comment-by-author">
+    <div class="submitted">On September 8th, 2011 mikeperry said:</div>
+    <div class="content"><p>If Panchencho didn't publish, we would 
+probably set our packet size to a fixed amount (say, 512 bytes), and 
+multiplex all of the client data on a single TLS stream. This should 
+provide some obfuscation for most protocols (remember, Tor supports more
+ than just HTTP) without too much overhead, complexity or 
+protocol-specific craziness. Oh wait, we did that. And it did. For a 
+decade.</p>
+<p>We want the trust in Tor to come from the fact that we are open 
+source and transparent, and that we do Real Science. Everything in Tor 
+is built upon decades of public research. We don't want trust in Tor to 
+come from us doing secret defenses and looking into a crystal ball and 
+guessing what the most devastating imaginary attacks might be, and 
+developing broken pretend defenses against imaginary attacks that 
+probably don't work in reality. </p>
+<p>There are plenty of other tools that will sell you magical secret 
+sauce to defend against everything from the future and beyond. We don't 
+do that, because there's another name for that magical secret sauce: 
+Snake Oil.</p>
+</div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+<div class="indented"><a id="comment-11525"></a>
+<div class="comment even comment-by-anon">
+    <div class="submitted">On September 8th, 2011 Anonymous said:</div>
+    <div class="content"><p>Now you're talking, not babbling.  I 
+disagree with you coz I believe in anticipating attacks and not reacting
+ but is your Tor, not mine. I'll trust in Tor if you protect my privacy.
+ If not, I'll contact Andriy Panchenko. :-)</p></div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+</div></div></div></div></div><a id="comment-11458"></a>
+<div class="comment odd comment-by-anon">
+    <div class="submitted">On September 5th, 2011 Anonymous said:</div>
+    <div class="content"><p>The answer to your first question is "yes." A
+ little bird tells me the US military has the same problem protecting 
+communications between its satellites.</p></div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+</div><a id="comment-11457"></a>
+<div class="comment even comment-by-anon">
+    <div class="submitted">On September 5th, 2011 Anonymous said:</div>
+    <div class="content"><p>From the little research I've done, this sounds to me like the right approach.</p>
+<p>The defense suggested in the paper is useless against future (better accuracy) attacks. Sounds cosmetic, really.</p>
+<p>Shorter, self-similar (i.e. either constant, or resembling white 
+noise -- no in-between) bursts of traffic will degrade accuracy of 
+classifiers very quickly. Pipelining will do this. However, the more 
+information passed in any session, the worse off Tor is in terms of 
+defenses against future attacks. For example, I would *not* chose this 
+approach for instant messaging. There, constant cover traffic (say, 
+bursts every second) is more appropriate.</p>
+<p>Good luck.</p></div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+<a id="comment-11538"></a>
+<div class="comment odd comment-by-anon">
+    <div class="submitted">On September 9th, 2011 Anonymous said:</div>
+    <div class="content"><p>Why do the new Tor versions use Aurora instead of the actual Firefox 6?</p>
+<p>Firefox stable release is already in version 6, no need to use the pre-beta Aurora version 6.</p></div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+<div class="indented"><a id="comment-11643"></a>
+<div class="comment even comment-by-anon">
+    <div class="submitted">On September 14th, 2011 Anonymous said:</div>
+    <div class="content"><p>Same source code. It is only the graphics that differ.</p></div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+<div class="indented"><a id="comment-11673"></a>
+<div class="comment odd comment-by-anon">
+    <div class="submitted">On September 15th, 2011 Anonymous said:</div>
+    <div class="content"><p>I think it confuses people that it's aurora and not firefox</p></div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+</div></div><a id="comment-11635"></a>
+<div class="comment even comment-by-anon">
+    <div class="submitted">On September 14th, 2011 Anonymous said:</div>
+    <div class="content"><p>the tor is not work now in iran! i have used Bridge and test it but it is blocked!!! how we can run again TOR?!?!</p></div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+<div class="indented"><a id="comment-11676"></a>
+<div class="comment odd">
+    <div class="submitted">On September 15th, 2011 arma said:</div>
+    <div class="content"><p><a href="https://blog.torproject.org/blog/iran-blocks-tor-tor-releases-same-day-fix" title="https://blog.torproject.org/blog/iran-blocks-tor-tor-releases-same-day-fix" rel="nofollow">https://blog.torproject.org/blog/iran-blocks-tor-tor-releases-same-day-f...</a></p>
+</div>
+    <div class="links"></div>
+</div> <!-- /comment -->
+</div></div>					<a href="https://blog.torproject.org/crss" class="feed-icon"><img src="Experimental%20Defense%20for%20Website%20Traffic%20Fingerprinting%20%7C%20The%20Tor%20Blog_files/feed.png" alt="Syndicate content" title="Syndicate content" height="16" width="16"></a>
+<a href="https://blog.torproject.org/crss/node/470" class="feed-icon"><img src="Experimental%20Defense%20for%20Website%20Traffic%20Fingerprinting%20%7C%20The%20Tor%20Blog_files/feed.png" alt="Syndicate content" title="Syndicate content" height="16" width="16"></a>				</div> <!-- /content -->
+							</div></div> <!-- /squeeze /main -->
+
+							<div id="sidebar-right" class="column sidebar">
+					<div id="block-event-1" class="block block-event">  
+  <div class="blockinner">
+    <h2 class="title"> Upcoming events </h2>
+    <div class="content">
+      <div class="item-list"><ul><li>No upcoming events available</li></ul></div><div class="ical-link"><a href="https://blog.torproject.org/event/ical" title="Add this calendar to your iCalendar"><img src="Experimental%20Defense%20for%20Website%20Traffic%20Fingerprinting%20%7C%20The%20Tor%20Blog_files/ical16x16.gif" alt="Add to iCalendar"></a></div><div class="more-link"><a href="https://blog.torproject.org/event" title="More events.">full calendar</a></div>    </div>    
+  </div>
+</div>
+<div id="block-blog-0" class="block block-blog">  
+  <div class="blockinner">
+    <h2 class="title"> Recent blog posts </h2>
+    <div class="content">
+      <div class="item-list"><ul><li><a href="https://blog.torproject.org/blog/tor-weekly-news-%E2%80%94-september-10th-2015">Tor Weekly News — September 10th, 2015</a></li><li><a href="https://blog.torproject.org/blog/tor-weekly-news-%E2%80%94-september-4th-2015">Tor Weekly News — September 4th, 2015</a></li><li><a href="https://blog.torproject.org/blog/tor-weekly-news-%E2%80%94-august-30th-2015">Tor Weekly News — August 30th, 2015</a></li><li><a href="https://blog.torproject.org/blog/tor-browser-55a2-released">Tor Browser 5.5a2 is released</a></li><li><a href="https://blog.torproject.org/blog/tor-browser-502-released">Tor Browser 5.0.2 is released</a></li><li><a href="https://blog.torproject.org/blog/tor-weekly-news-%E2%80%94-august-20th-2015">Tor Weekly News — August 20th, 2015</a></li><li><a href="https://blog.torproject.org/blog/tor-browser-501-released">Tor Browser 5.0.1 is released</a></li><li><a href="https://blog.torproject.org/blog/tor-weekly-news-%E2%80%94-august-14th-2015">Tor Weekly News — August 14th, 2015</a></li><li><a href="https://blog.torproject.org/blog/tor-browser-55a1-released">Tor Browser 5.5a1 is released</a></li><li><a href="https://blog.torproject.org/blog/tor-browser-50-released">Tor Browser 5.0 is released</a></li></ul></div><div class="more-link"><a href="https://blog.torproject.org/blog" title="Read the latest blog entries.">more</a></div>    </div>    
+  </div>
+</div>
+<div id="block-tagadelic-2" class="block block-tagadelic">  
+  <div class="blockinner">
+    <h2 class="title"> Blog Tag Cloud </h2>
+    <div class="content">
+      <a href="https://blog.torproject.org/category/tags/bug-fixes" class="tagadelic level5" rel="tag">bug fixes</a> 
+<a href="https://blog.torproject.org/category/tags/tor-browser" class="tagadelic level6" rel="tag">tor browser</a> 
+<a href="https://blog.torproject.org/category/tags/alpha-release" class="tagadelic level1" rel="tag">alpha release</a> 
+<a href="https://blog.torproject.org/category/tags/security-fixes" class="tagadelic level1" rel="tag">security fixes</a> 
+<a href="https://blog.torproject.org/category/tags/research" class="tagadelic level2" rel="tag">research</a> 
+<a href="https://blog.torproject.org/category/tags/tor-weekly-news" class="tagadelic level8" rel="tag">tor weekly news</a> 
+<a href="https://blog.torproject.org/category/tags/tor" class="tagadelic level8" rel="tag">tor</a> 
+<a href="https://blog.torproject.org/category/tags/bridges" class="tagadelic level1" rel="tag">bridges</a> 
+<a href="https://blog.torproject.org/category/tags/progress-report" class="tagadelic level4" rel="tag">progress report</a> 
+<a href="https://blog.torproject.org/category/tags/tbb" class="tagadelic level8" rel="tag">tbb</a> 
+<a href="https://blog.torproject.org/category/tags/tor-browser-bundle" class="tagadelic level8" rel="tag">tor browser bundle</a> 
+<a href="https://blog.torproject.org/category/tags/tails" class="tagadelic level1" rel="tag">tails</a> 
+<div class="more-link"><a href="https://blog.torproject.org/tagadelic/chunk/2">more tags</a></div>    </div>    
+  </div>
+</div>
+				</div> <!-- /sidebar-right -->
+			
+		</div> <!-- /container -->
+
+		<div id="footer-wra	pper">
+			<div id="footer">
+        <div id="credit-link">
+          <p>Drupal Design and Maintenance by <a href="http://neweonmedia.com/" title="Drupal Design and Maintenance by New Eon Media">New Eon Media</a></p>
+          <p>Drupal Development by <a href="http://chapterthree.com/" title="Drupal Development by Chapter Three">Chapter Three</a></p>
+        </div><!-- //credit link -->
+				
+			</div> <!-- /footer -->
+		</div> <!-- /footer-wrapper -->
+		
+		  </div> <!-- /page -->
+
+</body></html>

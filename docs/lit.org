@@ -1,0 +1,1593 @@
+** [[./2015-asiaccs.pdf][Torben: A Practical Side-Channel Attack for Deanonymizing Tor Communication]]
+*** quotes
+    - (a) web pages can be easily manipulated to load content from
+      untrusted origins and (b) despite encryption, low-latency
+      anonymization networks cannot effectively hide the size of
+      request-response pairs.
+    - A large body of work has studied passive attacks based on
+      traffic analysis, most notably website fingerprinting and
+      traffic confirmation attacks.
+    - First, web pages can often be manipulated to load content from
+      untrusted origins, for example, using advertisements or
+      user-provided content.
+    - deanonymize Tor users in a short period of time.
+*** summary
+    request packets per JS. they have sizes of 2k, 4k, 6k, 8k = 2bit
+    information. Wait after page load, trigger js xmlhttprequest.
+
+    0) [@0] 
+       deanonymization via traffic injection and identification of
+       request-response pairs
+    1) user's browser does side-channel communication via
+       user-submitted content or advertising, this is detected between
+       entry node and onion proxy.
+    2) background
+       1) low-latency anonymization
+       2) active attacker: remote markers via embed (ads) or local (at server)
+       3) side-channel (see 3)
+    3) 
+       1) preprocessing:
+          1) not ip, but TLS (removes *1 layer* of retransmissions)
+	  2) empty out, merge adjacent, filter control (discard 512b-cells), merge again, sizes as multiples fo 2k
+       2) side channel: messages: 2k, 4k, 6k, 8k bytes, 4 bits,
+       3) transmission:
+	  1) http via xmlhttprequest: with random parameter to avoid caching
+	  2) use for web page markers, single easy, else 20byte sha1 (hammingdist)
+       4) detection: sliding window (faster), svm, see [1]
+    4) Evaluation: fixed set vs 60000 vs live
+       1) Data Collection via Selenium with Firefox, if not loaded, discard
+       2) extracting via Sally, learning via LibSVM, generate, record 50 transmissions, train
+       3) closed-world: 
+          reverse proxy, inject js, delay 30secs, 120secs on slow load
+	  transmission takes 12-20 secs, compare to fingerprinting, 95%
+       4) open-world: 91%, no false positives
+       5) users: 31 of 34, no false positives
+    5) limitations and defenses
+       detect web page markers
+       chaff
+    6) related
+       liberatore: look at traffic
+       both ends: better
+    7) conclusion
+       owie, detect as first countermeasure
+
+** [[./2014-torben.pdf][Torben: Deanonymizing Tor Communication using Web Page Markers]]
+*** quotes
+    - As a result, the few known cases of deanonymization of Tor have
+      been reported to instead make use of advertisement networks or
+      rely on vulnerabilities in browser implementations [29, 30] and
+      are thus unrelated to insecurities of Tor in general.
+    - As a consequence, there is an urgent need for defenses in
+      anonymization services protecting users from active attacks at
+      the application layer.
+    - A web page[sic: r] marker is implanted using embedded or user-provided
+      content, such as an advertisement or an image link. The marker
+      induces a traffic pattern visible at the entry node, for
+      example, using a chain of HTTP redirects or JavaScript code
+      generating HTTP requests.
+    - each circuit is only used for 10 minutes until a new circuit is
+      created
+    - For example, the Walsh-Hadamard code can be used to encode
+      messages of length k ≤ 7 as code words of length 2 k with
+      maximized minimum Hamming distances.
+    - eight different sizes corresponding to the alphabet
+
+      A = {− f(1, 1 ) , . . . , − f(0, 0 ) , f(0, 0 ) , . . . , f(1, 1 )} .
+    - # ( x, p ) returns the number of occurrences of the positional
+      n-gram p = ( s, i ) between the positions i and i + τ in the
+      sequence x.
+    - The vector φ ( x ) encodes information about the symbols, their
+      order and their position in x—thus reflecting the basic
+      properties of a web page marker.
+    - This reliability rests on the design of the side channel that
+      makes use of atypical request-response pairs for transmitting
+      information (Section 3.2).
+    - Whether such chaff traffic can be selectively injected to only
+      destroy indicative traffic patterns is an interesting question
+      for further research.
+    - the attacker can expose the web pages a user visits within a
+      couple of seconds.
+*** summary
+    0) [@0] Abstract: torben presented
+    1) Introduction
+
+       much research into passive attacks: high false positive,
+       changing web content leads to problems, active attacks such as
+       patch selection and watermarking
+
+       instead: mostly browser vulnerabilities
+
+       torben introduced (see also [[Torben: A Practical Side-Channel Attack for Deanonymizing Tor Communication]])
+    2) Background
+       1) The Tor Network: 
+
+          bunch of routers, symmetric keys per hop in the circuit,
+          onion encryption, each router only sees neighbors, each
+          circuit only used for 10 minutes
+
+       2) Attack Scenario:
+
+	  Attacker can insert markers into web page of interest and
+          analyze traffic between OP and guard.
+
+    3) A Side-Channel Attack on Tor
+       0) [@0]
+
+	  - Tor ist low-latency
+	  - request-response paare sichtbar im TLS Traffic (mit filtern)
+	  - sollte der gegner die Website beeinflussen koennen
+	    - via js oder http redirect (andere moeglichkeiten, css?)
+	    - als direkte beeinflussung oder user content
+	  - kann er versuchen, ueber diesen side-channel zu kodieren,
+            welche websites besucht werden.
+	  - Schritte
+	    1) Preprocessing of network traces. (3.1)
+	    2) Side channel design (3.2)
+	    3) Transmission of web page markers (3.3).
+	    4) Detection of web page markers. (3.4?)
+       1) Vorverarbeitung:
+	  merkmal: groesse der kontinuierlich in eine richtung uebermittelten daten
+	  1) TCP statt IP analyse via tshark
+	  2) Filtering and Merging TLS Records
+	     a) filter non-tor-records (\le 100 bytes)
+	     b) merge continuous to obtain amount of flow (packes sizes random)
+	     c) filter control cells (512 bytes) and merge again (HTTP
+                does not fit into 512 bytes)
+	     d) normalize sizes, multitudes of 2000 bytes
+       2) Side Channel Design
+	  map two bits q = q_i, q_j to
+          q_i, q_j \to ( q_i + 2q_j ) · s + c     (with s, c = 2000)
+	  = q \cdot s + c
+	  map four bits to request and response sizes, two bits each.
+       3) Transmission
+
+	  request: get with "random" parameter of fitting lenth
+	  response: any page of acceptable size, *any host*
+
+	  hash URLs to SHA-1 (optimal when fixed: walsh-hadamard code)
+       4) Detection
+	  1) 
+	     - gelesene Sequenz gegeben (experiment: 100 symbols)
+	     - A = {2,4,6,8}^2 (Torben-Alphabet, mit minus fuer request)
+	       |A| = 16
+
+	     - S=A^n alle n-gramme von A
+	       |S| = 16^n
+
+	       \to (eigenes) n = 40
+	       == 2^160
+
+	     - positional n-grams:
+
+               P = S \times N, 
+               mit Element p=(s,i) mit s \in S, i Position von s in Sequenz
+
+	     - \varphi bildet von allen n-grammen A^* nach R^{|P|}.  
+	       \varphi(x) \to (#(x,p))_{p \in P}
+
+               Jedes n-gramm (s,i) hat seine Haeufigkeit zwischen i und
+               i+\tau als wert
+
+	     - \tau is toleranz-parameter
+
+	  2) Probabilistic Classification
+
+	     - SVM trainiert mit Sequenzen der Marker
+
+	     - Riesiger Vektorraum, aber sparse
+
+	     - P "nur" multiplikativ mit Fenstergroesse, nicht anders, puh
+
+    4) Evaluation
+
+       mehrere Experimente: cw, ow, users
+
+       cw: unrealistisch, aber haeufig verwendet in website-fingerprinting, vergleich
+       ow: 60000 webseiten
+
+       1) Data
+
+	  - Selenium WebDriver mit Tor bb
+
+	  - wenn nicht load in 3 min, diese seite verwerfen
+
+	  - remove similar, vergleich mit fingerprint (die failen)
+
+       2) Detection
+	  
+	  - Sally verwandelt von Netzwerktraces in positional n-grams
+
+	  - learning libsvm
+
+	  - auf selbem rechner ausser Cai: cluster
+
+	  - 100 marker, 50 uebertragungen jeweils gemessen
+
+	  - n = 3,
+
+	  - the tolerance to τ = 9 and
+
+	  - the SVM regularization to C = 0.1
+
+       3) Closed-World Evaluation
+	  
+	  - top 100 seiten je 50 mal
+
+	  - jeweils im februar und april 2014
+
+	  - js via reverse proxy
+
+	  - marker nach 30 \to 120 sec delay
+
+	  - transmission time 12-20 secs
+
+	  - complete marker: 300 packets, \sim 390000 bytes
+
+	  - vergleich mit Hermann.., Panchenko.. und Cai.. (mit
+            Fingerprints vom Februar)
+
+	  - torben imm 95%, die anderen schlechter
+
+	  - false classification favors particular markers
+
+       4) Open-World Evaluation
+
+	  - 60000 von Alexa (top million \ top 100)
+
+	  - few (as before, top 100) with markers
+	    \to evaluate false positives
+
+	  - detect 91% with no false positives
+
+	  - reliable,
+            due to atypical request-response-pairs
+
+       5) Live Evaluation
+
+	  - 4 users, 2 hours each
+
+	  - if probability score below threshold of t=0.1, do not select
+
+    5) Limitation and Defenses
+
+       - torben works reliably
+
+       - limitations?
+
+       - detect web page markers: arms race: attackers chage params,
+
+       - chaff traffic: "might lower Tor’s overall performance."
+
+    6) Related Work: first early, then active and passive vs low-latency
+
+       1) Attacks on Encrypted Communication
+
+	  http pattern of access detectible via tls
+
+	  countermeasures fail to address size of data traffic
+
+       2) Passive Attacks against Tor
+
+	  - hermann: ip lengths
+
+	  - panchenko: data sent before direction change,
+
+	  - cai: ordering w/ displacements
+
+	  - wang: tls
+
+	  - high false-positives
+
+	  - counter: morphing,
+
+       3) Active Attacks against Tor
+
+	  - passive: longer period
+
+	  - solve: active attack
+
+	  - 1: reveal communication path
+
+	  - murdoch: similar, but path \to infeasible
+
+	  - watermarking: inject specific patterns, inter-packet delays
+
+	    - needs to control exit node, tcp level (not app)
+
+    7) Conclusion
+** [[./acmccs-wpes11-fingerprinting.pdf][Website Fingerprinting in Onion Routing Based Anonymization Networks]]
+*** words
+    - local eavesdropper
+
+    - closed-world assumption:
+      the victim retrieves only web pages from the predefined set and
+      the attacker knows the set of possible web pages.
+
+    - cross-validation:
+      the data is split into n evenly large parts, the /folds/. Then,
+      the entire process of training and testing is repeated n times,
+      using one of the n folds as test data and the remaining n − 1
+      folds as training data in turn. The results are averaged and
+      therefore more solid and meaningful.
+
+    - detection-rate: correct / all (in %)
+
+    - true-positive: correct censored / all censored (in %)
+
+    - false positive: uncensored as censored / all uncensored (in %)
+*** summary
+
+    0. [@0] Abstract: local website fingerprinting based on volume,
+       time & direction
+
+    1. INTRODUCTION:
+
+       most attacks need some additionaly knowledge, f.ex. seeing both
+       ends,
+
+       - between OP and guard node easily observable
+
+       - and gives 80% (73% open) against JAP and 55% against Tor
+
+       - f.ex. ensure that censored /pages/ are not viewed
+
+       - studies influence of supposed features,
+
+       - propose camouflage
+
+    2. RELATED WORKS
+
+       - Hintz coined "website fingerprinting" in 2002 (paper)
+
+       - 1996 Wagner/Schneier
+
+       - 1998 Berkeley project about SSL traffic analysis
+
+       - Bissias: IP packet sizes and inter-arrival times
+
+       - Liberatore and Levine:
+         - OpenSSH tunnels,
+	 - Jaccard + naive Bayes classifier,
+	 - consider only packet size of transmitted data,
+	 - neglect timing and order information
+
+       - Wright: morphing as countermeasure
+
+       - Herrmann:
+         - multinomial naive Bayes classifier
+	 - OpenSSH, OpenVPN, Stunnel, Cisco IPsec-VPN, JAP, Tor
+	 - 90%, 90%, 90%, 90%, 20%, 2.95%
+
+    3. DATA SETS
+
+       0) [@0]
+
+	  - Firefox modification: No JS, Flash, Java, Cache
+
+	  - Scripting Chickenfoot
+
+	  - Data from Herrmann et al and Open-World-Dataset
+
+       1) Closed-World Dataset
+
+          - incoming size as positive, outgoing as negative
+
+	  - only fully-loaded pages: users reload else \to load time to 600s
+
+       2) Open-World Dataset
+
+	  - Alexa top 1000000,
+
+	  - three censored: sexually explicit, top, random from alexa
+
+       3) Countermeasure Dataset
+
+	  - applied to closed-world (more difficult to camouflage ==
+            easier to detect)
+
+	  - if hampered, then also in open-world
+
+	  - at the same time load a random website
+
+       4)
+
+	  - open: attacker has not seen the user's normal pattern
+
+	  - separate dataset for tuning features and optimizing SVM
+
+    4. A NEW APPROACH
+
+       0) [@0] features, machine learning, compare to bayes, improve via SVM
+
+       1) Features
+
+	  facilitate subsequent classification, describes most relevant
+
+	  - Without Packets Sized 52: no ACKs
+
+	  - Size of uninterrupted flow (except ACK), grouped by 600 bytes
+
+	  - HTML Markers: size of html document (first uninterrupted flow)
+
+	  - Total Transmitted Bytes: grouped by 10000 bytes
+
+	  - Number Markers: number of packets, grouped by 1,2,3-5,6-8,9-13,14
+
+	  - Occurring Packet Sizes: grouped by 2, in/out
+
+	  - Percentage incoming/outgoing (rounds Number markers)
+
+	  - Number of Packets, grouped by 15
+
+	  not working
+
+	  - incoming/outgoing packets,
+
+	  - leaving out frequent/rare sizes,
+
+	  - including TLS/SSL record sizes,
+
+	  - leaving empty TLS recores,
+
+	  - preserving packet order,
+
+	  - rounding packet sizes,
+
+	  - rounding packet frequencies
+
+       2) Support Vector Classification
+
+	  Uses SVM instead of Bayes classifier
+
+	  SVMs try to separate the points via a hyperplane, maximizing
+          the distance between the closes instances (= support
+          vectors) and the plane
+
+	  He uses a radial basis function kernel with parameters C=2^{17}
+          and \gamma = 2^{-19}.
+
+	  Finding these was the longest computation time.
+
+    5. EXPERIMENTS AND RESULTS
+
+       1. Experiments
+
+	  closed-world: ten-fold stratified cross-validation
+
+	  open-world: sufficient amount of data, not necessary
+
+	  how:
+
+	  - five censored, Sex Exp, Alexa Top, Alexa Random:
+	    35 instances as training, 25 as test
+
+	  - uncensored:
+            4000 at random from top 1000000 for training,
+            1000 for test, disjoint from training
+
+	  - 20 times measured, each with new uncensored
+
+       2. Results
+	  0) [@0]
+	     - Closed-World: recognition rates of 54.61% Tor, 80 % JAP
+
+	     - Open-World: true positive rate of up to 73%
+
+	  1) Results on Closed-World Dataset
+
+	     - Final Result via checking if really loaded and removal
+               of redirects
+
+	     - JAP premium cascades worse in WF than free cascades
+
+	  2) Results on Open-World Dataset
+	     1) Experiment 1
+		- 5 censored pages, 35 instances each, 4000 uncensored
+		  pages, 1 each
+
+		- test: 1000 which differ from the 4000
+
+		- top ranked most easy to distinguish
+
+	     2) Experiment 2
+
+		- 5 censored, 20 training and 2 testing
+
+		- uncensored variable: tp and fp both fall with more
+                  examples of uncensored sites (measured up to 4000)
+
+	     3) Experiment 3
+
+		- censored from whole of alexa, varying number, 35
+                  instances each
+
+		- unsensored, 4000, 1 instance each
+
+		- the more censored pages, the less clear the
+                  classifier: fp rises, less impact on tp
+
+	     4) Experiment 4
+
+		- 5 censored, varying instance numbers
+
+		- 4000 uncensored, 1 instance each
+
+		- the more instances, the clearer, converges at about 35
+
+	     5) Summary:
+
+		- Your ISP could find out what you do online
+
+    6. COUNTERMEASURES
+
+       - padding works rather bad
+
+       - camouflage: load randomly chosen web page simultaneously
+
+       - used in both training and testing
+
+       - to 3% where close to random would be optimal
+
+    7. CONCLUSION AND FUTURE WORK
+
+       Website Fingerprinting is possible in Tor and JAP, camouflage hampers.
+
+       Next:
+
+       detect: additional feature selection, active content, embedded
+       links, analyse specific webpages,
+
+       deter: browser plug-in, user feedback per page, parallel camouflage
+
+*** quotes
+
+    - We first define features for website fingerprinting solely based
+      on volume, time, and direction of the traffic.
+
+    - Finally, we show preliminary results of a proof-of-concept
+      implementation that applies camouflage as a countermeasure to
+      hamper the fingerprinting attack. For JAP, the detection rate
+      decreases from 80% to 4% and for Tor it drops from 55% to about
+      3%.
+
+    - Several attacks against anonymization networks have been
+      discovered, e.g., [6, 17, 19, 18], most notable the traffic
+      confirmation attack.
+
+    - Totalitarian regimes such as China or Iran usually do not have
+      control over the communication party located in western
+      countries precluding a traffic confirmation attack.
+
+    - this attack is very realistic and anonymization networks must by
+      all means be secure with respect to local attacks.
+
+    - Instead of transforming websites, we obfuscate the page by
+      loading another page in parallel.
+
+    - In practice an attacker first retrieves a certain amount of
+      relevant web pages by himself as training data for
+      fingerprinting, using the anonymization network that he assumes
+      his victim uses as well.
+
+    - For each fetch of a URL, we store the sizes of packets in the
+      observed order while recording incoming packets as positive,
+      outgoing ones as negative numbers.
+
+    - We once more achieve alarming detection rates motivating the
+      need for additional countermeasures for anonymization networks
+
+    - Successful countermeasures should decline the detection rates of
+      all web pages to a level that is almost similar to random guess
+      and at the same time cause only little performance losses.
+
+    - We expect even better obfuscation for additional background
+      pages as it will be more challenging for the attacker to extract
+      the original statistics from the merged packets. Still, it has
+      to be explored whether more sophisticated statistical measures
+      can achieve this extraction.
+** [[https://blog.torproject.org/blog/experimental-defense-website-traffic-fingerprinting][Experimental Defense for Website Traffic Fingerprinting]]
+   - [[./experimental.html][local copy]]
+*** summary
+    - prior: belief that all was well (failed attempts)
+    - panchenko: showed that not
+    - disagree with background fetch: additional traffic
+    - first attempt at mitigation: enable http pipelining and
+      randomize pipeline size, request further research
+    - other: http to spdy && ofbsp
+*** quotes
+    - Despite these early results, whenever researchers tried naively
+      applying these techniques to Tor-like systems, they failed to
+      come up with publishable results (meaning the attack did not
+      work against Tor), due largely to the fixed 512 byte cell size,
+      as well as the multiplexing of Tor client traffic over a single
+      TLS connection.
+    - We create it as a prototype, and request that future research
+      papers do not treat the defense as if it were the final solution
+      against website fingerprinting of Tor traffic.
+    - However, the defense could also be improved. We did not attempt
+      to determine the optimal pipeline size or distribution, and are
+      relying on the research community to tweak these parameters as
+      they evaluate the defense.
+    - as these translations are potentially fragile as well as
+      labor-intensive to implement and deploy, we are unlikely to take
+      these measures without further feedback from and study by the
+      research community.
+** [[./article-2456.pdf][A Critical Evaluation of Website Fingerprinting Attacks]]
+*** summary
+    0) [@0] ABSTRACT
+
+       many WP papers do not use practical scenarios: browsing habits,
+       location, version tbb,
+
+    1) INTRODUCTION
+
+       old studies did less about localization, tbb version and
+       browsing habits, this addresses
+
+       - evaluates these assumptions
+
+       - what defeats the accuracy
+
+       - how to reduce false positive rates
+
+       - adversary's cost
+
+    2) WEBSITE FINGERPRINTING
+
+       find out which site or page is visited from network traffic only
+
+       - first within single website
+
+       - then within set of websites
+
+       - then hintz's safeweb anonymizing web proxy ++
+
+       - then Hermann: 3% success
+
+       - Shi 50% for 20 pages, Panchenko 54% for Herrmann's dataset
+
+       - cai et al, wang and goldberg: over 90%, *100 pages*
+
+    3) MODEL
+
+       passive local attack, targeted vs non-targeted
+
+       1) Assumptions
+
+	  listed by papers that explicitly mention assumptions
+
+	  client-side, adversary, web assumptions
+
+	  - client:
+
+	    closed world: user may only visit certain pages, or only
+            certain pages from a set are searched for
+
+	    browsing behavior: users only have one tab open at a time,
+            sequential browsing
+
+	  - websites:
+
+	    (?) all websites are built using templates
+
+	    localized versions: but language of webpage is determined
+            by exit node (really?)
+
+	  - adversary:
+
+	    page load parsing: page load start/stop are detectable
+
+	    no background traffic: tor separable from other traffic
+
+	    replicability: adversary can replicate user's setup (tbb
+            version, OS, network connection)
+
+    4) EVALUATION
+
+       some assumptions distort the model
+
+       1) Datasets
+
+	  Alexa top sites and ALAD
+
+       2) Data collection
+
+	  - tbb with selenium
+
+	  - dumpcap
+
+	  - tor configured via stem
+
+	  - circuit renewal to 600000 (? cf. wang/goldberg)
+
+	  - disable UseEntryGuards
+
+	  - batches: page 4 times, 5-10 batches of data per time
+
+	  - 5 seconds before each crawl, 5 second pauses between each visit
+
+	  - round-robin, hours apart
+
+	  - two physical, three cloud-based virtual machines
+
+	  - Linux Container based virtualization
+
+	  - disabled OS updates (how about time, claws updates?)
+
+	  - one crawler per machine at a time
+
+	  - average CPU load low
+
+       3) Methodology
+
+	  - control crawl : default value
+
+	  - test crawl: value of interest
+
+	  - less controllable: time and tor-path-selection
+
+	    - k-fold cross-validation and
+
+	    - minimizing time gap control-to-test
+
+	  - compared other papers
+
+	  - chose the faster of the two by W[32]
+
+	  - also own decision tree with panchenko "merkmale"
+
+       4) Time
+
+	  website fingerprints decay as time goes on: 50% after 9 days
+
+       5) Multitab browsing
+
+	  decays a lot, halved when only one of them counts as success
+
+	  delays (0.5, 3, 5 sec) matter very little
+
+       6) Tor Browser Bundle Versions
+
+	  2.4.7 dissimilar to others
+
+	  3.5 similar to 3.5.2.1
+
+	  accuracy greatest for NumEntryGuards = 1, UseEntryGuards = 1
+
+	  lowest for UseEntryGuards = 0, +2% for NumEntryGuards =3 (default)
+
+       7) Network
+
+	  differences in where the puter is matter greatly: backbone
+          gives different pattern
+
+       8) The importance of false positives
+
+	  - Open-world: 
+
+	    4 top sites vs 32710 other sites.
+
+	  - The base rate fallacy
+
+	    If there is a low chance that the user visits the
+            fingerprinted websites, then the occurrence of false
+            positives relative to true positives rises.
+
+	  - User’s browsing habits
+
+	    three random users from ALAD, 100 URLs each
+
+	    tried to match everything, failed
+
+    5) CLASSIFY-VERIFY
+
+       probabilistic SVM
+
+       with rejection if P_1 or P_1 - P_2 lower than threshold
+
+       1) Evaluation and result
+
+	  this combination greatly decreases the number of false
+          positives
+
+    6) MODELING THE ADVERSARY’S COST
+
+       1) Data collection cost:
+
+	  data D = n (training pages) \cdot m (versions) \cdot i (instances)
+
+	  collection cost col(D) 
+
+       2) Training cost:
+
+	  train(D, F(=features), C(=classifier)) = D \cdot c
+
+       3) Testing cost:
+
+	  Test data T = v (=victims) \cdot p (=pages /victim /day)
+
+	  test = col(T) + test(T, F, C)
+
+       4) Updating cost:
+
+	  update(D, F, C) / d(=days until change)
+
+       5) Total cost:
+
+	  init(D,F,C,T) = col(D) + train(D,F,C) + col(T) + test(T,F,C)
+
+	  cost(D,F,C,T,d) = init(D,F,C,T) + update(D,F,C)/d
+
+    7) CONCLUSION AND FUTURE WORK
+
+       practical scenarios
+*** quotes
+    - The main objective of an adversary in a typical WF scenario is
+      to identify which page the user is visiting.
+    - Wang and Goldberg concluded that sites that change in size are
+      hard to classify correctly
+    - Over 50% sites were pages other than the front page
+    - Classifiers designed for WF attacks are based on features
+      extracted from the length, direction and inter-arrival times of
+      network packets, such as unique number of packet lengths or the
+      total bandwidth consumed.
+    - In most cases, classifier W performed better than the others.
+    - the accuracy drops extremely fast over time.
+    - We observe a dramatic drop in the accuracy for all the
+      classifiers with respect to the accuracy obtained with the
+      control crawl
+    - This might imply that the specific learning model is not as
+      important for a successful attack as the feature selection.
+    - The average page load for the test crawl for the 5 second gap
+      experiment is 15 seconds, leaving on average 30% of the original
+      trace uncovered by the background traffic. Even in this case,
+      the accuracy with respect to the control crawl drops by over
+      68%.
+    - In practice, many TBB versions coexist, largely because of the
+      lack of an auto-update functionality. (*new versions include updater*)
+    - Even though we fix the entry guard for all circuits in a batch,
+      since we remove the Tor data directory after each batch, we
+      force the entry guard to change. On the other hand, allowing Tor
+      to pick a different entry guard for each circuit results in a
+      more balanced distribution because it is more likely that the
+      same entry guards are being used in each single batch, thus
+      there is lower variance across batches. We must clarify that
+      these results are not concluding and there may be a different
+      explanation for such difference in standard deviation.
+    - the accuracy drop between the crawls training on Leuven and
+      testing in one of the other two locations is relatively greater
+      than the accuracy drop observed in the experiments between
+      Singapore and New York. Since the VM in Leuven is located within
+      a university network and the other two VMs in data centers
+      belonging to the same company
+    - One possible reason for low TPR is due to the effect of inner
+      pages.
+    - Bayesian detection rate [...] is defined as the probability that
+      a traffic trace actually corresponds to a monitored webpage
+      given that the classifier recognized it as monitored.[...]
+
+      P (M | C) 
+      = [P (C | M) P (M)] / [P (M) P (C | M) + P (¬M) P (C | ¬M)]
+    - The results show that the BDR doubles when we use the
+      Classify-Verify approach.
+    - 10-fold cross-validation, where a threshold is determined by
+      using 90% of the data and then tested on the remaining 10%.
+    - train with different localized versions
+    - When each of these assumptions are violated, the accuracy of the
+      system drops significantly, and we have not examined in depth
+      how the accuracy is impacted when multiple assumptions are
+      violated.
+    - it seems that the non-targeted attack is not feasible given the
+      sophistication level of current attacks.
+    - We believe that further research on evaluating the common
+      assumptions of the WF literature is important for assessing the
+      practicality and the efficacy of the WF attacks.
+** TODO [#B] [[./cacr2014-05.pdf][Effective Attacks and Provable Defenses for Website Fingerprinting]] [0/1]
+*** TODO summary
+    0) [@0] Abstract
+
+       effective for seldomly visited pages
+
+       85% tpr vs 0.6% fpr
+
+    1) Introduction
+
+       tor, ssh tunnels, vpn, ipsec are vulnerable to website
+       fingerprinting
+
+       contributions:
+
+       - better attack
+
+       - large open-world setting
+
+       - best defense: supersequences over anonymity sets
+
+    2) Basics
+
+       1) Website Fingerprinting on Tor
+
+	  two assumptions:
+
+	  - clear start and end of trace
+
+	  - no other activity
+
+       2) Classification
+
+	  kNN is multi-modal: different settings yield different
+          traces for the same page
+
+    3) Related Work
+
+       HTTP/1.0 (resource lengths)
+       
+       \to HTTP/1.1, VPN, SSH-Tunnel (packet lengths)
+
+       \to TOR (padded packet lengths)
+
+       1) Resource length attacks
+
+	  HTTP/1.0: each resource a request
+
+       2) Unique packet length attacks
+
+	  
+*** quote
+    - Website fingerprinting attacks allow a local, passive
+      eavesdropper to identify a user’s web activity by leveraging
+      packet sequence information.
+    - We found that our new attack is much more accurate than previous
+      attempts, especially for an attacker monitoring a set of sites
+      with low base incidence rate.
+    - Privacy technologies are becoming more popular: Tor, a
+      low-latency anonymity network, currently has 500,000 daily users
+      and the number has been growing [21].
+    - Only with a prov ably effective defense can we be certain that
+      clients are protected against website
+      fingerprinting. (*certainty* necessary?)
+    - a training and testing time that is orders of magnitude lower
+      than the previous best.
+    - These assumptions are used by all previous works on WF as they
+      simplify the problem, though it should be noted that these
+      assumptions are advantageous for the attacker. We discuss how
+      the attacker can carry out a successful attack without these
+      assumptions in Section 8.
+    - Tor developers remain unconvinced that website fingerprinting
+      poses a real threat.
+    - An attacker can deal with multi-modal data sets by gathering
+      enough data to have representative elements from each mode.
+    - Implementation of random defenses must be careful so that noise
+      cannot be easily distinguished from real packets.
+    - We then train the attack to focus on features which the defense
+      fails to cover and which therefore remain useful for
+      classification.
+    - The k-NN classifier needs a distance function d for pairs of
+      packet sequences. The distance is non-trivial for packet
+      sequences.
+    - The total number of features is close to 4,000 (3,000 of which
+      are just for the unique packet lengths).
+    - Our list of 100 monitored pages was compiled from a list of
+      blocked web pages from China, the UK, and Saudi Arabia.
+    - The testing time amounts to around 0.1 CPU seconds to classify
+      one instance for our classifier and around 800 CPU seconds for
+      Wang and Goldberg’s classifier, and 450 CPU seconds for that of
+      Cai et al.
+    - Then, we must determine the SCS of all the packet sequences in
+      the anonymity set. This is in general NP-hard. [13]
+    - In fact, it is known that any polynomial-time approximation
+      algorithm of shortest common supersequences cannot have bounded
+      error [13].
+
+** TODO [#B] [[./ccs14.pdf][A Systematic Approach to Developing and Evaluating Website Fingerprinting Defenses]] [0/1]
+*** TODO summary
+*** quote
+    - the Tor project now includes both network- and browser-level
+      defenses against these attacks
+    - an attacker could infer, with a success rate over 80%, which of
+      128 pages a victim was visiting, even if the victim used
+      network-level countermeasures.
+    - In our ideal attack, two websites are distinguishable unless
+      they generate the exact same sequence of network traffic
+      observations.
+    - This means that the attacker is weak, but is also resource-light
+      and essentially undetectable
+    - Packets are sent at fixed intervals with fixed length, and if no
+      data needs to be sent, dummy packets are sent instead.
+    - Pa-Decoy fails to completely cover interpacket timing because it
+      only covers the total transmission time roughly half the time
+      (i.e., when the decoy page takes longer to load than the desired
+      page)
+    - a set of similar websites can be protected with little overhead,
+      a set of dissimilar websites requires more overhead.
+    - show how to derive open-world performance from closed-world
+      experimental results
+    - DEFINITION 1. A fingerprinting defense D is non-uniformly
+      \epsilon-secure for W iff Pr A(T_W^D) = W ≤ \epsilon. Defense D is uniformly
+      \epsilon-secure for W if max_w Pr A(T_w^D ) = w ≤ \epsilon. 
+
+      These are information-theoretic security definitions – A is the
+      optimal attacker described above. The first definition says that
+      A’s average success rate is less than, but it does not require
+      that every website be difficult to recognize. The second
+      definition requires all websites to be at least \epsilon difficult to
+      recognize. All previous papers on website fingerprinting attacks
+      and defenses have reported average attack success rates in the
+      closed-world model, i.e. they have reported non-uniform security
+      measurements.
+    - if the fingerprinting attacker is a government monitoring
+      citizens Tor usage, then W would be distributed according to the
+      popularity of websites among that nation’s Tor users.
+    - Cai, et al., showed that the Alexa top 100 websites were about
+      as similar as 100 randomly chosen websites [3], i.e. that the
+      most popular websites are not particularly similar to eachother.
+    - true-discovery rates for the open-world attack and defense
+      evaluations in this paper. Given an open-world classifier, C,
+      its true-discovery rate is defined as TDR(C) = Pr[W = w^∗ |
+      C(T_W^D) = 1]. Intuitively, the true-discovery rate is the
+      fraction of alarms that are true alarms.
+    - A practical implementation could achieve a lower size and time
+      overhead as re-ordering is possible for both defenses when
+      subsequence is not consequence;
+    - we eliminate the network variability and make the defense system
+      deterministic, which, as shown in the Appendix, does not reduce
+      the security of the defense.
+    - at a size overhead of 130%, there are 553 partitions
+      (non-uniform security of 69%) in BuFLO (τ = 9) and 18 partitions
+      (non-uniform security of 2.25%) in Tamaraw.
+    - By showing that the TDR becomes extremely low when attacking
+      Tamaraw, even for the first 100 websites, we show that it’s
+      extremely low for all websites.
+** TODO [#C] [[./fp.pdf][Touching from a Distance: Website Fingerprinting Attacks ansd Defenses]]
+*** summary
+*** quotes
+*** vocabulary
+** TODO [#A] [[./authorsversion-ccsw09.pdf][Website Fingerprinting: Attacking Popular Privacy Enhancing Technologies with the Multinomial Naïve-Bayes Classifier]] [0/2]
+*** TODO summary
+    0. [@0] ABSTRACT
+
+       - attack privacy-enhancing technologies via text-mining
+         techniques
+
+       - closed-world: 97% success
+
+    1. INTRODUCTION
+
+       - PET website fingerprint attack
+
+       - by local ISP, local admin, secret services
+
+       - multinomial naive bayes
+
+    2. SCENARIO
+
+       - between user and PET, records traffic, can link IP to victim
+
+       - passive, local, external attacker
+
+*** TODO quotes
+    - influence of the browser cache on accuracy.
+*** vocabulary
+    - website fingerprinting: learn the identity, i. e. the URLs, of
+      websites that are downloaded over an encrypted tunnel by
+      comparing the observed traffic to a library of previously
+      recorded fingerprints.
+** TODO [[./csbuflo.pdf][CS-BuFLO: A Congestion Sensitive Website Fingerprinting Defense]]
+*** quotes
+    - Our experiments find that Congestion-Sensitive BuFLO has high
+      overhead (around 2.3-2.8x)
+    - it is not currently known whether there exists any efficient and
+      secure defense against website fingerprinting attacks.
+    - all previously-proposed defenses provide little security.
+*** summary
+    0) [@0] Abstract:
+
+       - fingerprint infers, even if tor,
+
+       - previous defenses are ineffective,
+
+       - spec of cs-buflo,
+
+       - implementation
+
+    1) Introduction
+
+       - several website fingerprinting attacks, several defenses
+
+       - 80%, which of 128 pages
+
+       - BuFLO: over 400% bandwidth overhead
+
+       - DLSVM fingerprinting attack greater than 75% success rate
+         against numerous defenses, including application-level
+         defenses, such as HTTPOS and randomized pipelining
+
+       - CS-BuFLO, congestion avoidance, TCP-friendly,
+
+       - here: adapt its transmission rate dynamically, and improve
+         its stream padding: less bandwidth, hiding more
+
+       - adapting too quickly can reveal info, solve: limit adaptation
+
+       - alexa 200: 91% of web use
+
+       - CS-BuFLO: 2.8 times as much bandwidth as SSH, only a 20% success rate
+
+       - CS-BuFLO ratio 2.8. BuFLO ratio of 2.2.
+
+    2) RELATED WORK
+** TODO [[./Liberatore_2006.pdf][Inferring the Source of Encrypted HTTP Connections]]
+** TODO [[./ipccc12-tor-performance.pdf][Improving Performance and Anonymity in the Tor Network]]
+** TODO [#C] [[./LZCLCP_NDSS11.pdf][HTTPOS: Sealing Information Leaks with Browser-side Obfuscation of Encrypted Flows]]
+** TODO [#C] [[./morphing09.pdf][Traffic Morphing: An Efficient Defense Against Statistical Traffic Analysis]]
+** TODO [[./Oya.pdf][Do dummies pay off ? Limits of dummy traffic protection in anonymous communications]]
+** TODO [[./oakland2012-peekaboo.pdf][Peek-a-Boo, I Still See You: Why Efficient Traffic Analysis Countermeasures Fail]]
+** TODO [[./pam2014-tor-nfattack.pdf][On the Effectiveness of Traffic Analysis Against Anonymity Networks Using Flow Records]]
+** TODO [[./usersrouted-ccs13.pdf][Users Get Routed: Traffic Correlation on Tor by Realistic Adversaries]]
+** TODO [[./webfingerprint-wpes.pdf][Improved Website Fingerprinting on Tor]]
+** TODO [[./10.1.1.10.5823.pdf][Quantifying Traffic Analysis of Encrypted Web-Browsing]]
+** TODO [[./hintz02.pdf][Fingerprinting Websites Using Traffic Analysis]]
+*** summary
+    0) [@0] Abstract
+
+       Attack to find out whether user is visiting certain websites,
+       even though he uses an encrypted proxy. 
+
+       Plus discussion: better attack and defenses
+
+    1) Introduction
+
+       With normal encryption, metadata is visible. 
+
+       With one-hop proxies, metadata is discoverable.
+
+       Tere are several defenses.
+
+    2) Definition of Traffic Analysis
+
+       sender, receiver, amount of data transferred (ssl does not try
+       to obfuscate)
+*** quotes
+    - The process of monitoring the nature and behavior of traffic,
+      rather than its content, is known as traffic analysis.
+** [[./paper-ssl-revised.pdf][Analysis of the SSL 3.0 protocol]]
+*** summary
+    0) [@0] Abstract
+       
+       some minor flaws, yet easily corrected, good stuff
+
+    1) Introduction
+
+       cryptographic security of SSL 3.0
+
+       background, possible attacks, cryptographic protection, high-level view
+
+    2) Background
+
+       SSL consists of record layer and (connection) layer
+
+       SSLv2 had key weaknesses, end deletion, and protocol
+       degradation
+
+    3) The record layer
+
+       standard crypto problems, ok
+
+       1) Confidentiality: eavesdropping
+
+	  lots of known plaintext, but should be ok
+
+       2) Confidentiality: traffic analysis
+
+	  possible to determine request length, response lengths,
+          determine which URL was visited
+
+	  supports random padding for block ciphers, but not stream
+          ciphers (more common)
+
+       3) Confidentiality: active attacks
+
+	  cut-and-pasted exchanges blocks of ciphertext, trying to
+          leak the plaintext
+
+	  short-block-attacks determine the last plaintext block: see
+          when the ack is returned
+
+       4) Message authentication
+
+	  uses (old) HMAC, but still HMAC
+
+       5) Replay attacks
+
+	  includes sequence number in MACed data
+
+       6) The Horton principle
+
+	  is all the meaning validated?
+
+	  (SSLCiphertext.ProtocolVersion is not), but in general, yes
+
+       7) Summary
+
+	  ok, minor concerns
+
+    4) The key-exchange protocol
+
+       better, but some scars
+
+       1) Overview of the handshake flow
+
+	  exchange data, compute secret, authenticate sent messages
+
+       2) Ciphersuite rollback attacks
+
+	  negotiation, change cipher spec, finished
+
+       3) Dropping the change cipher spec message
+
+	  in authentication-only mode, the change cipher spec-message
+          can be untransmitted by the adversary, which allows her to
+          always strip the authentication part
+
+	  if weak encryption is used, this might allow for a online
+          key search, with 4-12 (stream - block) bytes of known
+          plaintext
+
+       4) Key-exchange algorithm rollback
+
+	  middleman tells each different ciphersuites, as this is not
+          protected by hash
+
+	  (horton principle violated)
+
+       5) Anonymous key-exchange
+
+	  specification unclear in what should be signed in anonymous
+          mode
+
+       6) Version rollback attacks
+
+	  Mallory might exchange version 3 for version 2 session
+          initiation to exploit the weaknesses of SSLv2. There is a
+          proposed defense, which sets some padding bytes to fixed
+          values.
+
+	  There might be the danger of session resumption leading to
+          use of v2. (room for further examination)
+
+       7) Safeguarding the master secret
+
+	  A nonce is hashed with the master secret on every session
+          resume. Mallory can get a bit number of data thus hashed.
+
+	  Replay attacks might work for that, too.
+
+       8) Diffie-Hellman key-exchange
+
+	  good idea, watch out to avoid server trapdooring
+
+       9) The alert protocol
+
+	  signify problems, mostly tear down the connection
+
+       10) MAC usage
+
+	   should consistently use HMACs
+
+       11) Summary
+
+	   some weaknesses in implementations possible
+
+    5) Conclusion
+
+       passive only recommendation: padding to avoid get request
+       length analysis
+
+       active: change cipher spec dropping and
+       KeyExchangeAlgorithm-spoofing
+
+       good step, minor patches recommended
+*** quotes
+    - We conclude that, while there are still a few technical wrinkles
+      to iron out, on the whole SSL 3.0 is a valuable contribution
+      towards practical communications security.
+    - The SSL record layer provides confidentiality, authenticity, and
+      replay protection over a connection-oriented reliable transport
+      protocol such as TCP.
+    - The only change to SSL’s protection against passive attacks
+      worth recommending is support for padding to stop traffic
+      analysis of GET (v5)
+    - Diffie-Hellman is the only public key algorithm known which can
+      efficiently provide perfect forward secrecy
+    - To avoid server-generated trapdoors, theclient should be careful
+      to check that the modulus and generator are from a fixed public
+      list of safe values.
+* reference
+** MAYBE [[./rijsbergen79_infor_retriev.pdf][INFORMATION RETRIEVAL]]
+* continue
+** TODO [[https://www.torproject.org/projects/torbrowser/design/#proxy-obedience][The Design and Implementation of the Tor Browser]]
+   - [[./browser.html][local copy]]
+*** summary
+    1) Introduction
+
+       adversary mode, design requirements and implementation of 4.5
+
+       1) Browser Component Overview
+
+	  based on firefox esr, patches, torbutton, pref changes
+
+	  tor laucher addon: splash screen & progrss bar
+
+	  https-everywhere, noscript, extension prefs changed:  https://gitweb.torproject.org/builders/tor-browser-bundle.git/tree/Bundle-Data/linux/Data/Browser/profile.default/preferences/extension-overrides.js
+
+	  pluggable transports
+
+    2) Design Requirements and Philosophy
+*** quotes
+    - Unfortunately, the bias in favor of compelling attack papers has
+      caused academia to ignore this request thus far, instead
+      publishing only cursory (yet "devastating") evaluations that
+      fail to provide even simple statistics such as the rates of
+      actual pipeline utilization during their evaluations, in
+      addition to the other shortcomings and shortcuts mentioned earlier.
+    - These shortcomings and fallback behaviors are the primary reason
+      that Google developed SPDY as opposed to simply extending HTTP
+      to improve pipelining.
+** TODO [[./ronathan-heyning.pdf][Traffic Analysis of SSL Encrypted Web Browsing]]
+** TODO [[https://trac.torproject.org/projects/tor/ticket/8470#comment:7][#8470 Request randomization a lot less random in FF17]]
+   local: [[file:///home/w00k/da/docs/lessrand.html]]
+*** quotes
+    - [...] the browser is often too slow to be able to keep the
+      pipeline full of requests, and requests aren't packed together
+      in Tor cells. This might be important, because it may also be
+      the case that a browser that is driven around by selenium in a
+      VM might be similarly too slow for pipelining's request
+      combining to happen.
+** TODO [[./tor-design.pdf][Tor: The Second-Generation Onion Router]]
+*** quotes
+  - Clients choose a path through the network and build a circuit, in
+    which each node (or “onion router” or “OR”) in the path knows its
+    predecessor and successor, but no other nodes in the circuit.
+  - Rather than using a single multiply encrypted data structure (an
+    onion) to lay each circuit, Tor now uses an incremental or
+    telescoping path-building design, where the initiator negotiates
+    session keys with each successive hop in the circuit.
+  - Tor multiplexes multiple TCP streams along each circuit to improve
+    efficiency and anonymity.
+  - Tor’s decentralized congestion control uses end-to-end acks to
+    maintain anonymity while allowing nodes at the edges of the
+    network to detect congestion or flooding and send less data until
+    the congestion subsides.
+  - Certain more trusted nodes act as directory servers: they provide
+    signed directories describing known routers and their current
+    state.
+  - Variable exit policies: Tor provides a consistent mechanism for
+    each node to advertise a policy describing the hosts and ports to
+    which it will connect. These exit policies are critical in a
+    volunteer-based distributed infrastructure, because each operator
+    is comfortable with allowing different types of traffic to exit
+    from his node.
+  - End-to-end integrity checking
+  - Modern anonymity systems date to Chaum’s Mix-Net design [10].
+  - Tor as described herein, Tarzan, MorphMix, Cebolla [9], and
+    Rennhard’s Anonymity Network [44] build circuits in stages,
+    extending them one hop at a time. Section 4.2 describes how this
+    approach enables <<perfect forward secrecy>>.
+  - by treating application connections as data streams rather than
+    raw TCP packets, they avoid the inefficiencies of tunneling TCP
+    over TCP.
+  - Distributed-trust anonymizing systems need to prevent attackers
+    from adding too many servers and thus compromising user paths. Tor
+    relies on a small set of well-known directory servers, run by
+    independent parties, to decide which nodes can join.
+  - Each onion router maintains a TLS [17] connection to every other
+    onion router.
+  - Actually, the negotiated key is used to derive two symmetric keys:
+    one for each direction.
+  - Preliminary analysis with the NRL protocol analyzer [35] shows
+    this protocol to be secure (including perfect forward secrecy)
+    under the traditional <<Dolev-Yao>> model.
+  - Once Alice has established the circuit (so she shares keys with 
+    each OR on the circuit), she can send relay cells.
+  - (as an optimization, the first two bytes of the integrity check 
+    are zero, so in most cases we can avoid computing the hash). 
+  - Thus the “<<break a node and see which circuits go down>>” attack [4]
+    is weakened.
+  - (usually the last node, but maybe others due to exit policy
+    conflicts; see Section 6.2.)
+  - Because Tor uses TLS on its links, external adversaries cannot
+    modify data. Addressing the insider malleability attack, however,
+    is more complex.
+  - given that the OP or OR tear down the circuit if they receive a
+    bad hash.
+  - a circuit’s edges can heuristically distinguish interactive
+    streams from bulk streams by comparing the frequency with which
+    they supply cells.
+  - If enough users choose the same OR-to-OR connection for their cir-
+    cuits, that connection can become saturated.
+  - These arbitrarily chosen parameters seem to give tolerable
+    throughput and delay; see Section 8.
+  - This type of anonymity protects against distributed DoS attacks:
+    attackers are forced to attack the onion routing network because
+    they do not know Bob’s IP address.
+  - thus hostnames take the form x.y.onion where x is the
+    authorization cookie and y encodes the hash of the public key.
+  - Rather than searching exit connections for timing and volume
+    correlations, the adversary may build up a database of
+    “fingerprints” contain- ing file sizes and access patterns for
+    targeted websites. He can later confirm a user’s connection to a
+    given site simply by consulting the database. This attack has been
+    shown to be effective against SafeWeb [29].
+  - On the other hand, an attacker who learns a node’s identity key
+    can replace that node indefinitely by sending new forged descrip-
+    tors to the directory servers.<<<permanent identity key>>>
+  - The best defense here is robustness.
+  - Our threat model explicitly assumes directory server operators
+    will be able to ﬁlter out most hostile ORs.
+  - once we have more experience, and assuming we can resolve the
+    anonymity issues, we may partition traffic into two relay cell
+    sizes: one to handle bulk traffic and one for interactive traffic.
+  - Second, our end-to-end congestion control algorithm focuses on
+    protecting volunteer servers from accidental DoS rather than on
+    optimizing performance.
+  - On the other hand, as our users remain satisﬁed with this
+    increased latency, we can address our performance incrementally as
+    we proceed with development.
+  - [...] we still expect the network to support a few hundred nodes
+    and maybe 10,000 users before we’re forced to become more
+    distributed.
+  - Throughout this paper, we have assumed that end-to-end trafﬁc
+    conﬁrmation will immediately and automatically defeat a
+    low-latency anonymity system.
+
+*** summary
+    1) 
+    2) Related work
+       
+       The first design ever was called Mix-Net. From there, two
+       directions diverged. The one was highly anonymized,
+       high-latency. The other tried to minimize latency. Among these,
+       there are IP, TCP and application-level (e.g. HTTP)
+       filters. TOR does a TCP design that is mostly distributed but
+       has some fixed directory structure.
+
+    3) Design goals and assumptions
+
+       TOR's design aims to be easy to use by providing deployability,
+       usability, flexibility and a simple design. It does not try to
+       hide its traffic, normalize protocols, be 100% p2p or prevent
+       end-to-end analysis. It is assumed that an adversary can control
+       some onion routers and thus analyze or disturb the network.
+
+       1) Threat Model
+
+	  adversaries can
+          - observe fraction of traffic
+	  - can generate, modify, delete traffic
+	  - operate own ORs
+	  - compromise fraction of other ORs
+
+	  they are not global.
+
+    4) The TOR design incorporates encapsulation over SSL (link-layer)
+       links.  There are two cells types, for control and
+       content. Checksumming, QOS-type rate limiting and congestion
+       control are implemented.
+       + Every OR has a TLS connection to every other OR. They send
+	 each other fixed-size cells each encrypted via
+	 quickly-changing TLS keys. The connection is signed via
+	 mid-term onion keys. The identity is provided via [[permanent
+	 identity key]].
+       + TORs messages are either command/control/direct (2b circID, 1b
+	 cmd, 509b data) messages to the next OR or relay (2b cirdID,
+	 1b relay, 2b streamID, 6b digest, 2b len, 1b cmd, 498b data)
+	 messages to some other host. The circuit is created
+	 recursively using several hops, each of which creates its own
+	 symmetric key pair via DH. Each circuit OR can be asked to
+	 open a connection out. circuitID changes from hop to hop
+       + 
+       + when an OR receives a relay message, it attemps to decrypt the
+	 relay header and read the digest. If the digest is correct, it
+	 is accepted. Else, it is forwarded (or the stream is killed if
+	 at the end)
+       + for QoS and fairness, a token-bucket mechanism is used and
+	 interactive streams get preferential treatment
+       + congestion control is handled via two window mechanisms: one
+	 for circuit-level, the other for stream-level-throttling
+    5) hidden services in TOR are implemented via introduction pionts:
+       - bob advertises these, alice creates a rendezvous point, leaves
+	 a message at those intro points, bob connects to this
+	 rendezvous point
+       - both the server and the client can be used unmodified: the
+	 server just behind tor, the client just using its onion proxy
+       - there was some previous work, also on anonymizing cellphone
+	 usage
+    6) miscellany
+       - dos might be possible but has not been observed yet
+       - exit policies: 
+	 - thoughts of adding headers
+	 - mixed policies
+       - directory servers
+	 - cached statements at ORs,
+	 - more efficient that just propagating messages
+    7) attack & defense
+       - passive attacks
+	 - traffic confirmation attacks outside of design goal, but
+	 - fingerprinting might be effective
+	 - user content, option distinguishability, timing
+	   correlations, size correlations, fingerprinting, latency
+       - active attacks
+	 - five different keys can be compromised:
+	   tls session, tls cert, circuit session, circuit cert, identity
+	 - compromise of the OR itself has to be done in tight timeframe
+	 - run recipient, eases end-to-end attacks
+	   - approached by privoxy
+	 - run onion proxy
+	   - no solution
+	 - DoS non-observed nodes
+	   - best defense robustness
+	 - Run hostile OR, timing attacks, tagging cells, replace
+	   content, replay attacks, smear tor's name, hostile code
+	   (altered TOR software)
+       - directory attacks
+	 - destroy directory server, subvert directory server, subvert
+	   majority, encourage dissent, insert hostile OR, do as if
+	   working correctly
+       - rendezvous attacks
+	 - make many request, attack intro, compromise intro, compromise rend
+    8) In da wild
+       - works for variety of uses
+	 - download fast, latency varies greatly
+    9) open questions
+       - which path length (static/dynamic), which renewal frequency?
+       - cascade / hydra /own OR
+       - what if some central directory server do not suffice,
+	 non-clique aka restricted-route
+       - w/o central authority, how to avoid bad nodes
+       - anonymity gains from running own OR to lead to recommendation?
+    10) future directions
+	- scalability, 
+	- bandwidth classes [DSL, T1, T3] for ORs
+	- incentives, cover traffic, cachin gat exit nodes, better
+          directory distribution, further spec review, multisystem
+          interoperability, wider-scale deployment
+    11) references
+*** questions
+    - exit policies for .onion
+    - safeweb (? was soll das denn sein??)
+    - privoxy email default message on plaintext connect
+    - "Our threat model explicitly assumes directory server operators
+      will be able to ﬁlter out most hostile ORs."
+    - caching at exit nodes: Flos Gedanken
+* [[./marionette_client.pdf][Marionette Python Client Documentation]]
+* TODO [[./cacr2015-08.pdf][Walkie-Talkie: An Effective and Efficient Defense against Website Fingerprinting]]
+* TODO [[./cacr2015-09.pdf][On Realistically Attacking Tor with Website Fingerprinting]]
+** summary
+** quotes
+   - This is the hardest class to split as there is no noticeable gap
+     nor a clear pattern of cells indicating the gap.
+* td: dl dyer et al
+* [[./python-doc-howto-doanddont.pdf][Idioms and Anti-Idioms in Python]
+** quotes
+   - You should try to use as few except clauses in your code as you
+     can
+* [[./topranked.html][Does Alexa have a list of its top-ranked websites?]]
+** url https://support.alexa.com/hc/en-us/articles/200449834-Does-Alexa-have-a-list-of-its-top-ranked-websites-
+** summary
+   top 1m sites at http://s3.amazonaws.com/alexa-static/top-1m.csv.zip
+
+   updated daily
+* [[./wireshark-debian.html][wireshark/trunk/debian/README.Debian]]
+** summary
+   capture as root, analyze as user
+
+   or add users to the wireshark-group dpkg-reconfigure ... (see below)
+** quotes 
+   - The installation method can be changed any time by running:
+     dpkg-reconfigure wireshark-common
+   - 
+* [[./python-doc-tutorial.pdf][Python Tutorial]]
+** quotes
+   - Now enter the Python interpreter and import this module with the
+     following command:
+     >>> import fibo
