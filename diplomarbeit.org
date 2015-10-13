@@ -37,24 +37,22 @@
    hat es niemand genutzt, da durch die Ueberwachung die Angst vor
    Repressalien zu groß war. (td: quote)
 ** WAIT may \to (ohne) (falls richtig)
-* Problem statement
+* TODO reorder panchenko down, what is upx
+* Panchenko's Attack via Website Fingerprinting
   For a long time, traffic analysis attacks against Tor had not
   yielded results. Prior to [[Panchenko][Panchenko et al]], it was believed that Tor
   introduced multiplexing, enough padding and latency into website
   retrieval that this attack was not feasible.
-
-  After this attack was published, the [[experimental][Tor developers reacted]] by
-  adding a defense prototype into the Tor Browser, yet requested
-  further research.
 ** ref
 *** Panchenko
     Andriy Panchenko, Lukas Niessen, Andreas Zinnen, and Thomas
     Engel. Website fingerprinting in onion routing based anonymization
     networks. In WPES, 2011.
 *** experimental
-    mikeperry
+    Mike Perry
     Experimental Defense for Website Traffic Fingerprinting
     https://blog.torproject.org/blog/experimental-defense-website-traffic-fingerprinting
+**** TODO bibtex reference
 * What is Website Fingerprinting
   Website fingerprinting is a form of traffic analysis, which is used
   to find out which webpages a user is visiting.
@@ -124,15 +122,15 @@ http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp
       link={https://svn.torproject.org/svn/projects/design-paper/tor-design.pdf}
     }
 * Current defenses in Tor
-  After the [[Panchenko]] paper, an additional no-cost defense was
-  implemented in the Tor-Browser-Bundle: Firefox's built-in request
+  After the [[Panchenko]] paper, an additional no-cost defense [[experimental][was
+  implemented in the Tor-Browser-Bundle]]: Firefox's built-in request
   pipelining was enabled with added request order randomization.
 
   Thus, if Firefox would for example ordinarly request images 1 to 10,
   in that order, the images are requested in random order, in batches
   of random sizes.
 ** TODO link to implementation/details
-* LATER Adversary Model [0/1]
+* LATER Tor Adversary Model [0/1]
   Tor does not attempt to protect against a global passive adversary,
   who can observe all connections. A Tor adversary can([[tor design]])
 
@@ -142,12 +140,19 @@ http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp
   - compromise a fraction of the other ORs
 
   This adversary is not purely passive, but lacks global information.
+
+  Tor fails by design if
+  if someone can monitor a big amount of internet traffic (td: quote)
+  if someone can exploit your browser
+  if someone can own your computer
+  if you enter identifying information while using tor
+  if you enter passwords etc while using tor
 ** TODO maybe schneier re adversaries
 * Who could attack via WF
   As website fingerprinting requires very litte resources, a specific
   attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
   state.
-* DONE Related Work [0/0]
+* Related Work
   The idea of using traffic analysis to analyse encrypted traffic was
   mentioned by Schneier and Wagner in 1996([[SSL]]). The term /website
   fingerprinting/ was coined by Hintz in 2002. A successful attack
@@ -187,65 +192,58 @@ http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp
 * TODO Tor [0/6]
   Tor is an anonymization network with a diverse user base. It has
   6000 nodes and more than 3 million daily users.
-** how it works
-   It is using the concept of Onion Routing. Each message is
-   seperately encrypted and transferred by three nodes on a
-   user-determined path.
+* how Tor works
+  Tor is based on Onion Routing. Each message is seperately encrypted
+  and transferred by three nodes on a user-determined path.
 
-   After the third /hop/, the message leaves the Tor network to any
-   TCP port and server in the Internet, or connects to a server hidden
-   via Tor's /hidden service/ concept.
+  After the third /hop/, the message leaves the Tor network to any
+  TCP port and server in the Internet, or connects to a server hidden
+  via Tor's /hidden service/ concept.
 
-   The list of users consist of [[Tor Website]]
+  The list of users consist of [[Tor Website]]
 
-   Tor is an anonymity service.
-   - decentralized
-   - biggest
-   - high throughput
-   - rather low latency, usable for web browsing
-   - also hidden services
+  Tor is an anonymity service.
+  - decentralized
+  - biggest
+  - high throughput
+  - rather low latency, usable for web browsing
+  - also hidden services
 
-   Using a client called /Onion Proxy/ on the local computer, almost all 
+  Using a client called /Onion Proxy/ on the local computer, almost all
 
-   Durch eine auf dem Rechner des Endnutzers installierte Software, den
-   , können fast saemtliche Internetverbindungen durch
-   Tor geleitet werden (es wird nur TCP unterstuetzt, was aber xx %
-   aller Internetverbindungen darstellt).
+  Durch eine auf dem Rechner des Endnutzers installierte Software, den
+  , können fast saemtliche Internetverbindungen durch
+  Tor geleitet werden (es wird nur TCP unterstuetzt, was aber xx %
+  aller Internetverbindungen darstellt).
 
-   Es besteht aus vielen Servern im Internet, den /Onion Routern/, die
-   Nachrichten nach dem Tor-Protokoll weiterleiten. Am Ende eines
-   Pfades durch Tor werden die Verbindungen an einem, /Exit Node/
-   genannten, Onion Router aus dem Netzwerk an beliebige
-   Internetadressen geleitet.
+  Es besteht aus vielen Servern im Internet, den /Onion Routern/, die
+  Nachrichten nach dem Tor-Protokoll weiterleiten. Am Ende eines
+  Pfades durch Tor werden die Verbindungen an einem, /Exit Node/
+  genannten, Onion Router aus dem Netzwerk an beliebige
+  Internetadressen geleitet.
 
-   - messages encrypted and passed between several routers
-   - standard TLS
-   - each router has 3 keys, two of which are rotated, one identity key
-   - fixed minimum messages size of 512 Byte
-     - extensions allow other sizes
-   - directory of all onion routers in directory servers
-   - encrypted from client to "guard node"
-   - passed to two other hosts, chosen by client "at random"
-   - exits at "exit node" as normal tcp connection (except for hidden services)
-** user base
-   From the beginning, Tor envisoned a broad user base.
+  - messages encrypted and passed between several routers
+  - standard TLS
+  - each router has 3 keys, two of which are rotated, one identity key
+  - fixed minimum messages size of 512 Byte
+    - extensions allow other sizes
+  - directory of all onion routers in directory servers
+  - encrypted from client to "guard node"
+  - passed to two other hosts, chosen by client "at random"
+  - exits at "exit node" as normal tcp connection (except for hidden services)
+* user base
+  From the beginning, Tor envisoned a broad user base.
 
-   Ursprünglich wurde das Netzwerk von einer Gruppe finanziert vom
-   Navy Office of Naval Research und der DARPA, also durch das
-   US-Militär, entwickelt. Von Anfang an wurde ein breiter Nutzerkreis
-   avisiert.
+  Ursprünglich wurde das Netzwerk von einer Gruppe finanziert vom
+  Navy Office of Naval Research und der DARPA, also durch das
+  US-Militär, entwickelt. Von Anfang an wurde ein breiter Nutzerkreis
+  avisiert.
 
-   us government is main sponsor (navy originally)
-   privacy activists: ccc
-   chinese and iranian dissidents
-   "arab spring"
-*** TODO erfinder
-** Tor fails if
-   if someone can monitor a big amount of internet traffic (td: quote)
-   if someone can exploit your browser
-   if someone can own your computer
-   if you enter identifying information while using tor
-   if you enter passwords etc while using tor
+  us government is main sponsor (navy originally)
+  privacy activists: ccc
+  chinese and iranian dissidents
+  "arab spring"
+** TODO erfinder
 * TODO Tools [0/15]
 ** TODO Mozilla Add-On Sdk [0/2]
    The Add-on SDK by Mozilla aids in the development of Firefox-Addons.
