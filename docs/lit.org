@@ -1028,15 +1028,38 @@
 
 	      d_{maxgood_i} := max({d_{f_i}(P_{train}, P) | P \in S_{good} }) and compute:
 
-	      n_{bad_i} := | {P' \in S_{bad} | d_{f_i}(P_{train}, P') \le d_{maxgood_i} }|
+	      n_{bad_i} := |{P' \in S_{bad} | d_{f_i}(P_{train}, P') \le d_{maxgood_i} }|
 
 	      number of classes "closer" by feature than worst good candidate
 
-	      the close to k_{reco}, the worse
+	      the closer to k_{reco}, the worse
 
 	  - weight adjustment
 
-	      td
+	    - for features worse than the best,
+              reduce by \Delta w_{i} = w_{i} \cdot 0.01
+
+	    - other features, afterwards, increase equally such that
+              d(P_{train}, S_{bad}) remains the same
+
+	    - both:
+
+	      - \Delta w_i \cdot n_{bad_i}/k_{reco}
+
+	      - multiply by overall badness 0.2 + N_bad/k_{reco} with
+                N_{bad} = |{P' \in S_{bad} | d(P_{train}, P') \le d_{maxgood} }|
+
+	  - best results for k_{reco} = 5
+
+	  - random vector between 0.5 and 1.5
+
+    5) Attack evaluation
+
+       better than all others
+
+       1) Attack on Tor
+
+
 *** quote
     - Website fingerprinting attacks allow a local, passive
       eavesdropper to identify a user’s web activity by leveraging
@@ -1073,6 +1096,8 @@
       sequences.
     - The total number of features is close to 4,000 (3,000 of which
       are just for the unique packet lengths).
+    - Note that we are not claiming these particular choices of
+      parameters and constants yield an optimal attack
     - Our list of 100 monitored pages was compiled from a list of
       blocked web pages from China, the UK, and Saudi Arabia.
     - The testing time amounts to around 0.1 CPU seconds to classify
@@ -1084,7 +1109,12 @@
     - In fact, it is known that any polynomial-time approximation
       algorithm of shortest common supersequences cannot have bounded
       error [13].
+*** questions
+    - features perfectly covered by a defence (such as unique packet
+      lengths in Tor) will always have n_{bad_i} = k_{reco} , its maximum
+      possible value.
 
+      why *always*?
 ** TODO [#B] [[./ccs14.pdf][A Systematic Approach to Developing and Evaluating Website Fingerprinting Defenses]] [0/1]
 *** TODO summary
 *** quote
@@ -1756,3 +1786,29 @@
 
     3) The solution: a distributed, anonymous network
 
+** [[./sally/Example1.html]]
+*** summary
+    - input files example1.cfg reuters.zip
+    - sally -c example1.cfg reuters.zip reuters.libsvm
+** [[./sally/Example3.html]]
+*** summary
+    - sally -c example3.cfg jrc.zip jrc.mat
+    - load jrc.mat
+    - X = [fvec.data]
+    - Y = [fvec.label]
+    - [Y idx] = sort(Y);
+    - K = X(:,idx)' * X(:,idx);
+    - imagesc(K);
+    - colormap(hot);
+    - colorbar;
+** [[./thebook.pdf][INTRODUCTION TO MACHINE LEARNING]]
+*** summary
+    1) Introduction
+
+       often in background
+
+       1) A Taste of Machine Learning
+*** quotes
+    - much of the art of machine learning is to reduce a range of
+      fairly disparate problems to a set of fairly narrow
+      prototypes.
