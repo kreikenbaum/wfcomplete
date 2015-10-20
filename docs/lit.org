@@ -1066,8 +1066,107 @@
 	  - regular circuit resetting, no caches and time gaps between
             multiple loads of the same page
 
-	  - 6000 rounds weight adjustment, 100 pages, 60 instances
+	  - weight adjustment: 6000 rounds, 100 pages, 60 instances
             (each instance once)
+
+	  - only classified if all k neighbors agree, varying 1 \le k \le 15
+
+	  - W&G has 10x higher FPR
+
+	  - accuracy levels off after 800 rounds of weight adjustment
+
+	  - 0.1 CPU seconds to test one instance,
+
+       2) Training confidence
+
+	  - FPR good for k=6, TPR good for k=2 (|C_{0}| = 500)
+
+       3) Attack on Other Defenses
+
+	  - evaluated defenses:
+
+	    - traffic morphing,
+
+	    - HTTPOS split,
+
+	    - Panchenko decoy,
+
+	    - BuFLO
+
+	  - implemented as simulations.
+
+    6) Defense
+
+       Tamaraw++
+
+       supersequences (provably best in sumulatable, deterministic
+       class)
+
+       approximation of optimal strategy
+
+       1) Attacker’s upper bound
+
+	  - Attacker: given observation (packet sequence p), find class C(p)
+
+	  - trains on the same data
+
+	  - optimal strategy: find class that occurs the most often
+
+	  - with possibility set Q(p) := {C_{1}, C_{2}, ...} classes with
+            the same observation p define
+
+            Accuracy Acc(p):= |{C ∈ Q(p)|C = C_{max }}| / |Q(p)|
+
+	  - non-uniform accuracy:= mean of accuracies Acc(p) (p \in S_{test})
+
+	  - uniform accuracy:= maximum of accuracies Acc(p) (p \in S_{test})
+
+	  - defense with optimal uniform accuracy leads to optimal
+            non-uniform accuracy
+
+       2) Optimal defense
+
+	  - bandwidth-optimal, simulatable defense
+
+	  - packet sequence as sequence of +1/-1
+
+	  - anonymity set: set of packet sequences p_{i} with D(p_{i}) the
+            same
+
+       3) Anonymity set selection
+
+	  - client cannot always choose freely:
+
+	    - before page load
+
+	  - levels of information
+
+	    1. no information: all have to map to single set
+
+	       solution: single supersequence
+
+	    2. sequence end information: when is the query ended
+
+	       solution: single supersequence with stopping points
+
+	    3. class-specific: class is clear, but f.ex. multi-modal
+               mode is not
+
+	    4. full: prescience
+
+	  - clustering to find anonymity sets
+
+	    - except in level 1 or 2: one set
+
+	    - level: cluster by distance for prefixes p',q' of length
+              min(|p|,|q|):
+              2 |f_{SCS}(p', q')| - |p'| - |q'|
+
+	      step 2: stopping points by prefix
+
+	    - level 4: only by distance with whole p,q
+
+       4) SCS approximation
 
 
 *** quote
@@ -1104,10 +1203,18 @@
       blocked web pages from China, the UK, and Saudi Arabia.
     - After |C_{0} | > 2500 [non-monitored pages], we could not see a
       significant benefit in adding more elements.
+    - if the base incidence rate of the whole sensitive set is 0.01
+      (99% of the time the client is visiting none of these pages),
+      and our new classifier claims to have found a sensitive site,
+      the decision is correct at least 80% of the time, the rest being
+      false positives.
     - The testing time amounts to around 0.1 CPU seconds to classify
       one instance for our classifier and around 800 CPU seconds for
       Wang and Goldberg’s classifier, and 450 CPU seconds for that of
       Cai et al.
+    - almost all of the graph in Figure 1 can be drawn only by varying
+      k with |C_{0}| = 5000, suggesting that it is advantageous for the
+      attacker to have a large number of non-monitored training pages.
     - Then, we must determine the SCS of all the packet sequences in
       the anonymity set. This is in general NP-hard. [13]
     - In fact, it is known that any polynomial-time approximation
@@ -1122,6 +1229,12 @@
 
     - Then, accuracy is computed over the remaining 30 instances each,
       on which we perform all-but-one cross validation.
+
+    - As we work with Tor cells, in the following a packet sequence
+      can be considered a sequence of -1’s and 1’s (downstream and
+      upstream packets respectively),
+
+      so timing information is omitted?
 ** TODO [#B] [[./ccs14.pdf][A Systematic Approach to Developing and Evaluating Website Fingerprinting Defenses]] [0/1]
 *** TODO summary
 *** quote
@@ -1823,9 +1936,67 @@
 ** [[./ch1.pdf][Data Mining]]
 ** [[./tf-idf.html]]
 ** [[./skl/tutorial.html]]
+*** citing
+    #+BEGIN_SRC bibtex
+      @article{scikit-learn,
+        title={Scikit-learn: Machine Learning in {P}ython},
+        author={Pedregosa, F. and Varoquaux, G. and Gramfort, A. and Michel, V.
+               and Thirion, B. and Grisel, O. and Blondel, M. and Prettenhofer, P.
+               and Weiss, R. and Dubourg, V. and Vanderplas, J. and Passos, A. and
+               Cournapeau, D. and Brucher, M. and Perrot, M. and Duchesnay, E.},
+        journal={Journal of Machine Learning Research},
+        volume={12},
+        pages={2825--2830},
+        year={2011}
+      }
+    #+END_SRC
 ** [[./user_guide_0.16.1.pdf]]
 ** [[./Z5280B.pdf]]
 ** [[./guide_libsvm.pdf]]
 ** [[./Levenshtein.html]]
 ** [[./Cross-validation.leave-one-out_cross-validation.html]]
 ** [[./2012-jmlr.pdf]]
+** [[./www.ted.com/talks/glenn_greenwald_why_privacy_matters/transcript]]
+** td: dl paper onion routing
+** [[/home/chive/import/pakdoc/rfc1928.socks5.txt][SOCKS Protocol Version 5]]
+*** summary
+    1. Introduction
+
+       - firewall traversal with authentication
+
+       - does not forward ICMP
+
+       - both TCP and UDP
+
+    2. Existing practice
+
+       - SOCKS Version 4: unsecured, TCP-based
+
+       - extends to include UDP, strong authentication, domain-name, IPv6
+
+    3. Procedure for TCP-based clients
+
+       1. client opens connection to SOCKS port,
+
+       2. authentication negotiation
+
+    4. Requests
+
+       - connect OR bind OR udp associate
+
+       - address type
+
+       - address
+
+       - port
+
+    5. Addressing
+
+       domain name has as first octet the name octets
+
+    6. Replies
+
+       ...
+*** quotes
+    - Compliant implementations MUST support GSSAPI and SHOULD support
+      USERNAME/PASSWORD authentication methods.
