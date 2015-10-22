@@ -51,97 +51,12 @@
   the original [[tor-design]] paper. Previous to [[Panchenko]]s paper, it was
   considered "less effective"([[tor-design]]) against Tor, due to
   stream/circuit multiplexing and cell padding.
-* TODO move tor here
-* Panchenko's Attack via Website Fingerprinting
-  For a long time, traffic analysis attacks against Tor had not
-  yielded results. Prior to [[Panchenko][Panchenko et al]], it was believed that Tor
-  introduced multiplexing, enough padding and latency into website
-  retrieval that this attack was not feasible.
-* Current defenses in Tor
-  After the [[Panchenko]] paper, an additional no-cost defense [[experimental][was
-  implemented in the Tor-Browser-Bundle]]: Firefox's built-in request
-  pipelining was enabled with added request order randomization.
-
-  Thus, if Firefox would for example ordinarly request images 1 to 10,
-  in that order, the images are requested in random order, in batches
-  of random sizes.
-** TODO link to implementation/details
-* LATER Tor Adversary Model [0/1]
-  Tor does not attempt to protect against a global passive adversary,
-  who can observe all connections. A Tor adversary can([[tor design]])
-
-  - observe a fraction of all traffic
-  - generate, modify, and delete traffic
-  - operate its own Onion Routers
-  - compromise a fraction of the other ORs
-
-  This adversary is not purely passive, but lacks global information.
-
-  Tor fails by design if
-  if someone can monitor a big amount of internet traffic (td: quote)
-  if someone can exploit your browser
-  if someone can own your computer
-  if you enter identifying information while using tor
-  if you enter passwords etc while using tor
-** TODO maybe schneier re adversaries
-* Who could attack via WF
-  As website fingerprinting requires very litte resources, a specific
-  attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
-  state.
-* Related Work
-  The idea of using traffic analysis to analyse encrypted traffic was
-  mentioned by Schneier and Wagner in 1996([[SSL]]). The term /website
-  fingerprinting/ was coined by Hintz in 2002. A successful attack
-  against single-hop proxies was carried out by Herrmann et
-  al. in 2009.
-** SSL
-   @article{SSL,
-     title={Analysis of the SSL 3.0 protocol},
-     author={Wagner, David and Schneier, Bruce},
-     year={1997},
-     month = {April}
-   }
-** WAIT ref Herrmann, quote after read whole (1 of 4)
-** MAYBE torben
-  Torben is a deanonymization attack based on injected website content
-  in combination with Pattern Recognition. The authors show that when
-  the user's browser sends requests of certain sizes for responses of
-  certain sizes, this can be recognized in the encrypted TLS-Traffic
-  from the Guard Node to the Onion Proxy.
-
-  Each request/response pair corresponds to a certain amount of
-  information (the authors show their approach with four request and
-  response sizes, yielding a four-bit side-channel per request). This
-  channel is used to encode a hash of the currently visited page.
-
-  The requests are performed via XMLHttpRequest, but they authors also
-  mention using HTTP redirects for the same effect.
-
-
-
-  inject additional traffic into communication via JS XMLHttpRequest
-  fixed request/response sizes of 2k, 4k, 6k, 8k bytes
-  \to quad bits, concatenate, data transfer rate rate
-  after 30 or 120 ms (tor latency bigger)
-  detect via svm (how)
-  setzt auf tcp an statt auf ip, (weil tor ja tcp ! yeah!)
-* MAYBE why use Tor
-  Tor is an anonymization network with a diverse user base. It has
-  6000 nodes and more than 3 million daily users.
-
-  - privacy
-  - censorship avoidance
-  - covert ops
-  - business intelligence
-* TODO (maybe) why privacy
-  - fundamental human need
-  - concentration camp:
-    "solitude in a Camp is more precious and rare than bread." -- primo levi
 * TODO How to use Tor
   Tor offers a [[SOCKS5]]-(TCP-)proxy for users. (If an application has no
   proxy settings, the =tsocks=-program offers transparent
   proxying). After setting this, all traffic is routed through the Tor
-  network, anonymizing the source IP address.
+  network, anonymizing the IP address, and padding message length to
+  hinder traffic analysis.
 
   (Tor also offers the possibility to "hide" a (TCP-)internet service
   via "hidden services" so that noone can see its location).
@@ -212,6 +127,91 @@
   privacy activists: ccc
   chinese and iranian dissidents
   "arab spring"
+* LATER Tor Adversary Model [0/1]
+  Tor does not attempt to protect against a global passive adversary,
+  who can observe all connections. A Tor adversary can([[tor design]])
+
+  - observe a fraction of all traffic
+  - generate, modify, and delete traffic
+  - operate its own Onion Routers
+  - compromise a fraction of the other ORs
+
+  This adversary is not purely passive, but lacks global information.
+
+  Tor fails by design if
+  if someone can monitor a big amount of internet traffic (td: quote)
+  if someone can exploit your browser
+  if someone can own your computer
+  if you enter identifying information while using tor
+  if you enter passwords etc while using tor
+** TODO maybe schneier re adversaries
+* MAYBE why use Tor
+  Tor is an anonymization network with a diverse user base. It has
+  6000 nodes and more than 3 million daily users.
+
+  - privacy
+  - censorship avoidance
+  - covert ops
+  - business intelligence
+* Panchenko's Attack via Website Fingerprinting
+  For a long time, traffic analysis attacks against Tor had not
+  yielded results. Prior to [[Panchenko][Panchenko et al]], it was believed that Tor
+  introduced multiplexing, enough padding and latency into website
+  retrieval that this attack was not feasible.
+* Current defenses in Tor
+  After the [[Panchenko]] paper, an additional no-cost defense [[experimental][was
+  implemented in the Tor-Browser-Bundle]]: Firefox's built-in request
+  pipelining was enabled with added request order randomization.
+
+  Thus, if Firefox would for example ordinarly request images 1 to 10,
+  in that order, the images are requested in random order, in batches
+  of random sizes.
+** TODO link to implementation/details
+* Who could attack via WF
+  As website fingerprinting requires very litte resources, a specific
+  attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
+  state.
+* Related Work
+  The idea of using traffic analysis to analyse encrypted traffic was
+  mentioned by Schneier and Wagner in 1996([[SSL]]). The term /website
+  fingerprinting/ was coined by Hintz in 2002. A successful attack
+  against single-hop proxies was carried out by Herrmann et
+  al. in 2009.
+** SSL
+   @article{SSL,
+     title={Analysis of the SSL 3.0 protocol},
+     author={Wagner, David and Schneier, Bruce},
+     year={1997},
+     month = {April}
+   }
+** WAIT ref Herrmann, quote after read whole (1 of 4)
+** MAYBE torben
+  Torben is a deanonymization attack based on injected website content
+  in combination with Pattern Recognition. The authors show that when
+  the user's browser sends requests of certain sizes for responses of
+  certain sizes, this can be recognized in the encrypted TLS-Traffic
+  from the Guard Node to the Onion Proxy.
+
+  Each request/response pair corresponds to a certain amount of
+  information (the authors show their approach with four request and
+  response sizes, yielding a four-bit side-channel per request). This
+  channel is used to encode a hash of the currently visited page.
+
+  The requests are performed via XMLHttpRequest, but they authors also
+  mention using HTTP redirects for the same effect.
+
+
+
+  inject additional traffic into communication via JS XMLHttpRequest
+  fixed request/response sizes of 2k, 4k, 6k, 8k bytes
+  \to quad bits, concatenate, data transfer rate rate
+  after 30 or 120 ms (tor latency bigger)
+  detect via svm (how)
+  setzt auf tcp an statt auf ip, (weil tor ja tcp ! yeah!)
+* MAYBE why privacy
+  - fundamental human need
+  - concentration camp:
+    "solitude in a Camp is more precious and rare than bread." -- primo levi
 * TODO Tools [0/15]
 ** TODO Mozilla Add-On Sdk [0/2]
    The Add-on SDK by Mozilla aids in the development of Firefox-Addons.

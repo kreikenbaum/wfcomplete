@@ -2079,3 +2079,97 @@
 ** [[./EdmanS09.pdf][AS-awareness in Tor Path Selection]]
 ** [#B] [[./ieee-icc15.pdf][A First-Hop Traffic Analysis Attack Against Tor]]
 ** [[./supersequence.pdf][ON THE APPROXIMATION OF SHORTEST COMMON SUPERSEQUENCES AND LONGEST COMMON SUBSEQUENCES]]
+** TODO [[/home/chive/own/tor/doc/read/tor-spec.txt][Tor Protocol Specification]]
+*** summary
+    0) [@0] Preliminaries: MUST, etc. keywords like RFC
+       1) Notation: PK, SK, K, a|b, [a b c], H(m)
+	  1) all multibyte values are big-endian
+       2) Security: KEY_LEN, PK_ENC_LEN, PK_PAD_LEN, DH_LEN,
+          DH_SEC_LEN, HASH_LEN, PAYLOAD_LEN, CELL_LEN(v)
+       3) Ciphers
+	  - stream: 128bit counter-mode AES with IV=0x0...0
+	  - pk: 1024 bit AES with exponent of 65537
+	    0aef-mgf1 padding, sha1 digest, label unset
+	  - ntor: curve25519
+	  - dh generator 2, modulus from rfc2409
+	    SHOULD private keys of 320 bits, no reuse
+	  - hybrid encryption
+    1) System overview: TOR low-latency tcp distributed overlay
+       1) Keys and names
+	  - long-term *identity* key, signing only
+	  - medium-term *onion*-key, keep at least one week after
+            advertisement
+	  - (short-term TLS *connection* key, rotate at least once a day)
+    2) Connections
+       - link layer: 3 ways
+         1. "certificates up-front"
+	    both send two-certificate chain
+  	    - init: short-term X.509 cert + self-signed identity X.509
+	    - resp: similar
+	    - MAY ONLY INCLUDE
+	      - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+	      - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
+	      - SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA
+	      jeder zwei x.509 Zertifikate: eines fuer connection, eines
+              fuer identity DARF NUR:
+              - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+              - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
+              - SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA
+	 2. "renegotiation" (tor >= 0.2.0.21)
+   	    responder single certificate, 
+	    initiator renegotiates
+	    - init: no cert
+	    - resp: connection cert
+	    - ... (continue handshake)
+	    - init: renegotiate
+	    - MUST HAVE ONE NOT IN ABOVE
+	 3. "in-protocol" (tor >= 0.2.3.6-alpha)
+	    distinguish vs v2 via one of:
+	    - self-signed cert
+	    - commonName ends other than ".net"
+	    - public key modulus >= 1024 bits
+	    then: send VERSIONS cell, ...
+       - several security /accessibility features:
+         - fixed protocol list
+         - fixed choice of response
+         - no server without valid certificates
+    3) Cell Packet Format
+       ...
+    4) 
+    5) 
+       1) 
+       2) 
+       3) 
+       4) 
+       5) Routing relay cells
+	  checks circID, crypts payload, inspect payload (6.1), work it
+    6) Application connections and stream management
+       1) Relay cells
+       2) 
+	  ...
+    7) FLow control
+       1) Link throttling
+*** quotes
+   - Tor relays are also identified by "nicknames"; these are specified in
+     dir-spec.txt.
+   - <<O1>> All implementations MUST support the SSLv3 ciphersuite
+     "SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA", and SHOULD support the TLS
+     ciphersuite "TLS_DHE_RSA_WITH_AES_128_CBC_SHA" if it is
+     available.
+   - In all of the above handshake variants, certificates sent in the
+     clear SHOULD NOT include any strings to identify the host as a
+     Tor relay. In the "renegotiation" and "backwards-compatible
+     renegotiation" steps, the initiator SHOULD choose a list of
+     ciphersuites and TLS extensions to mimic one used by a popular
+     web browser.
+   - TLS connections are not permanent.
+   - Each client or relay should do appropriate bandwidth throttling to
+     keep its user happy. [...]
+     The mainline Tor implementation uses token buckets (one for
+     reads, one for writes) for the rate limiting.
+
+
+*** up to
+    - 4. Negotiating and initializing connections
+    - read to
+      - 4.4. AUTHENTICATE cells
