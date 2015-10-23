@@ -480,38 +480,31 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - might
     - set tor's paranoia slider
     - install extra addon
-* TODO setup to retrieve websites
-  First start the tor browser bundle-firefox by hand and have it loads its
-  first website via Tor. This downloads enough descriptors and sets
-  the connection type.
+* TODO move tbb installation here
+* TODO by-hand initialization to retrieve websites
+  First start the tor browser bundle-firefox by hand, set the
+  connection type and have it loads its first website via Tor. This
+  also downloads enough descriptors to connect quicker later on.
+* TODO retrieval of a single page
+  Once you assured that the Browser Bundle is working, the webpages
+  can be retrieved automatically. This is done via the
+  [[file:../bin/one_site.py][one_site.py]] script.
 
-  Then, start tor browser bundle with -marionette switch:
+  It
 
-  =./firefox -marionette=
+  - starts ff
+  - waits 60 seconds for its initialization
+  - starts tshark
+  - loads page
+  - waits for the load to finish or a 10-minute-countdown to stop
+  - ends ff
+  - ends tshark capture
 
-  assert that it is really running and connecting to the Tor network
-  (no safe mode, no crashes, ...).
-
-  for each site
-  - start packet dump
-    =tshark -w $DIR/$1.$(date +%s) &=
-  - retrieve website
-    =open_site.py $1=
-
-    with =open_site.py= as (simplified)
-
-    import sys
-    from marionette import Marionette
-
-    client = Marionette('localhost', port=2828)
-    client.start_session()
-    client.navigate(sys.argv[1])
-
-  - when finished, stop packet dump (kill =tshark= via process id).
-
-  This is implemented in the script =all.sh=, which internally calls
-  the =open_site.py= file to open a website via marionette.
-
+  This setup avoids caching issues with website fingerprinting, as the
+  Tor Browser Bundle cleans the cache between restarts. If a more
+  realistic scenario is desired, the script needs to be modified to
+  omit terminating the browser instance.
+* tshark installation
   You also need to install =tshark= via =sudo apt-get install tshark=
   and set the current user to be able to capture packets via =sudo
   dpkg-reconfigure wireshark-common= and adding the user to the
@@ -532,18 +525,19 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   =apt-get dist-upgrade=
 
   Furthermore, the binary needs some firefox libraries, which can be
-  retrieved via =apt-get install firefox=.
+  retrieved most easily via =apt-get install firefox=.
 
-  Afterwards, the binary can be started by =./firefox=. 
+  Afterwards, the binary can be started by typing =./firefox=.
 ** TODO where exactly is the torrc: directory
-* TODO how to avoid the safe mode error on multiple restarts
+* how to avoid the safe mode error on multiple restarts
   If Firefox was killed via a signal (as opposed to closing the
   window), it prompts to start in Safe Mode afterwards.
 
-  This behavior can be avoided in two ways([[disable-safe]]:
+  This behavior can be avoided in two ways([[disable-safe]]):
 
-  - toolkit.startup.max_resumed_crashes to -1.
-  - environment variable MOZ_DISABLE_AUTO_SAFE_MODE
+  You can set the firefox preference
+  =toolkit.startup.max_resumed_crashes= to -1, or you can set the
+  environment variable =MOZ_DISABLE_AUTO_SAFE_MODE=.
 * headless configuration
   If you want to capture on a headless server, you can use the
   =xvfb=-package. which is installed via =sudo apt-get install xvfb=.
@@ -730,3 +724,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
     URL="http://www.ietf.org/rfc/rfc1928.txt",
   }
 #+END_SRC
+* appendices
+** [[file:../bin/one_site.py][one_site.py]]
+   insert file here
