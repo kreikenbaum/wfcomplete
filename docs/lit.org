@@ -50,7 +50,6 @@
        both ends: better
     7) conclusion
        owie, detect as first countermeasure
-
 ** [[./2014-torben.pdf][Torben: Deanonymizing Tor Communication using Web Page Markers]]
 *** quotes
     - As a result, the few known cases of deanonymization of Tor have
@@ -1413,6 +1412,139 @@
       extremely low for all websites.
 *** code
 **** svm.py
+** [[./guide_libsvm.pdf][A Practical Guide to Support Vector Classification]]
+*** summary
+    0) [@0] Abstract
+
+       SVM cookbook
+
+    1) Introduction
+
+       0) [@0]
+
+	  - separate into training and testing sets
+
+	  - training set instance:
+
+	    - "target value" = class label
+
+	    - "attributes" = features or observed variables
+
+	  - goal: produce model which predicts target values of test data
+            given only its attributes
+
+	  - four basic kernels (other developed)
+
+	    - linear
+
+	    - polynomial
+
+	    - radial basis: exp(-γ || x_{i}- x_{j} ||^{2} )
+
+	    - sigmoid
+
+       1) Real-World Examples
+
+	  data by users
+
+       2) Proposed Procedure
+
+	  - transform data for input
+
+	  - scale
+
+	  - with rbf:
+
+	    - find C,\gamma by cross-validation
+
+	    - train whole training set
+
+	  - test
+
+    2) Data Preprocessing
+
+       1) Categorical Feature
+
+	  - use m numbers to represent a m-category attribute
+	    one is one, others are zero
+
+	    +: more stable
+
+       2) Scaling
+
+	  +: avoid attributes in greater numeric ranges dominating
+          those in smaller numeric ranges
+
+	  +: avoid numerical difficulties
+
+	  how: linearly scale to [-1, +1] or [0,1]
+
+	  care: same scale for training and testing (which might then
+          be [-1.1, +0.8])
+
+    3) Model Selection
+
+       1) RBF Kernel
+
+	  - includes linear kernel
+
+	  - sigmoid similar for certain parameters, yet sometimes invalid
+
+	  - polynomial has more hyperparameters
+
+	  - fewer numerical difficulties: goes to 0
+
+	  - large features: linear kernel
+
+       2) Cross-validation and Grid-search
+
+	  - high training accuracy not useful \to cross-validation
+
+	  - avoids overfitting better
+
+	  - grid-search: all pairs of e.g.
+
+            - \gamma \in {2^{-15}, 2^{-13}, ..., 2^{3}}
+            - C \in {2^{3}, ..., 2^{-13}, 2^{-15}}
+
+	  - advantages: parallelizable, better feeling
+
+	  - first coarse grid, then finer grid
+
+    4) Discussion
+
+       - many features \to select which ones to use
+
+    5) Appendix
+
+       A) Examples of the Proposed Procedure
+
+	  there are automated scripts easy.py and grid.py
+
+	  first scale, then grid, then test \to better, automatic with scripts
+
+       B) Common Mistakes in Scaling Training and Testing Data
+
+	  - use the same scaling factors
+
+	    $ ../svm-scale -l 0 -s range4 svmguide4 > svmguide4.scale
+	    $ ../svm-scale -r range4 svmguide4.t > svmguide4.t.scale
+
+       C) When to Use Linear but not RBF Kernel
+
+	  RBF \ge linear only after searching (C, \gamma) space
+
+	  1) Number of instances << number of features
+
+	     linear kernel 98.6111 vs rbf kernel 97.2222
+
+	  2) Both numbers of instances and features are large
+
+	     liblinear faster and more accurate
+
+	  3) Number of instances >> number of features
+
+	     use liblinear -s 2, way faster than default -s 1
 ** TODO [#C] [[./fp.pdf][Touching from a Distance: Website Fingerprinting Attacks and Defenses]]
 *** summary
 *** quotes
@@ -1677,11 +1809,6 @@
     - To avoid server-generated trapdoors, theclient should be careful
       to check that the modulus and generator are from a fixed public
       list of safe values.
-* reference
-** MAYBE [[./rijsbergen79_infor_retriev.pdf][INFORMATION RETRIEVAL]]
-*** quotes
-    |X ∩ Y| / |X ∪ Y| Jaccard's coefficient
-* continue
 ** TODO [[https://www.torproject.org/projects/torbrowser/design/#proxy-obedience][The Design and Implementation of the Tor Browser]]
    - [[./browser.html][local copy]]
 *** summary
@@ -2022,7 +2149,6 @@
        - f.ex. foreign country, s/o could observe where you are connecting
 
     3) The solution: a distributed, anonymous network
-
 ** [[./sally/Example1.html]]
 *** summary
     - input files example1.cfg reuters.zip
@@ -2069,59 +2195,6 @@
     #+END_SRC
 ** [[./user_guide_0.16.1.pdf]]
 ** [[./Z5280B.pdf]]
-** TODO [[./guide_libsvm.pdf][A Practical Guide to Support Vector Classification]]
-*** summary
-    0) [@0] Abstract
-
-       SVM cookbook
-
-    1) Introduction
-
-       0) [@0]
-
-	  - separate into training and testing sets
-
-	  - training set instance:
-
-	    - "target value" = class label
-
-	    - "attributes" = features or observed variables
-
-	  - goal: produce model which predicts target values of test data
-            given only its attributes
-
-	  - four basic kernels (other developed)
-
-	    - linear
-
-	    - polynomial
-
-	    - radial basis
-
-	    - sigmoid
-
-       1) Real-World Examples
-
-	  data by users
-
-       2) Proposed Procedure
-
-	  - transform data for input
-
-	  - scale
-
-	  - with rbf:
-
-	    - find C,\gamma by cross-validation
-
-	    - train whole training set
-
-	  - test
-
-    2) Data Preprocessing
-
-
-*** quotes
 ** [[./Levenshtein.html]]
 *** quotes
     - ist die minimale Anzahl von Einfüge-, Lösch- und
@@ -2187,7 +2260,7 @@
 ** [[./EdmanS09.pdf][AS-awareness in Tor Path Selection]]
 ** [#B] [[./ieee-icc15.pdf][A First-Hop Traffic Analysis Attack Against Tor]]
 ** [[./supersequence.pdf][ON THE APPROXIMATION OF SHORTEST COMMON SUPERSEQUENCES AND LONGEST COMMON SUBSEQUENCES]]
-** TODO [[/home/chive/own/tor/doc/read/tor-spec.txt][Tor Protocol Specification]]
+** [[/home/chive/own/tor/doc/read/tor-spec.txt][Tor Protocol Specification]]
 *** summary
     0) [@0] Preliminaries: MUST, etc. keywords like RFC
        1) Notation: PK, SK, K, a|b, [a b c], H(m)
@@ -2304,3 +2377,6 @@
        note = "[Online; accessed 21-October-2015]"
      }
    #+END_SRC
+** MAYBE [[./rijsbergen79_infor_retriev.pdf][INFORMATION RETRIEVAL]]
+*** quotes
+    |X ∩ Y| / |X ∪ Y| Jaccard's coefficient
