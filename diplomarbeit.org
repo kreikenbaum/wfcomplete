@@ -1,3 +1,6 @@
+* LATER Abstract
+* LATER Introduction
+* Materials and methods
 * Teaser
   "They who can give up essential liberty to obtain a little temporary
   safety, deserve neither liberty nor safety" - [[franklin][Benjamin Franklin]]
@@ -552,19 +555,12 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 
   and start the retrieval as mentioned above.
 * TODO how to process the data
-  - tshark
-
-    tshark -r dumpfilename
-
-    still has ARP and ACKs, which can safely be filtered out
-
-    \| grep -v '\[ACK\]'
-
-    \| grep -v 'ARP'
-
-    thus
-
-    tshark -r filename |grep -v '\[ACK\]' | grep -v ARP
+  - tshark internally
+  - python triggers
+  - collects,
+  - sums in the end
+  - displays
+  - =Counts=-class
 ** TODO why filtering allowed
 * TODO how sally works
   - configuration file
@@ -580,9 +576,62 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - do they load completely when not Tor, repeat necessary
   - is this by design?
 ** MAYBE exclude
-* TODO transform to panchenko
-* WAIT Evaluation
-* WAIT Conclusion
+* TODO transform to panchenko-features
+  in coding the size, this thesis follows panchenko, who recorded
+  ([[Panchenko]]) "incoming packets as positive, outgoing ones as negative
+  numbers."
+* TODO what happens when retrieving google.com
+  the complete data of google.com can be retrieved via
+
+  =mkdir site; cd site; wget -p -H google.com=
+
+  which yields (in germany) the files (=find . -type f -ls=, slightly redacted)
+
+  |  size | url                                                               |
+  |-------+-------------------------------------------------------------------|
+  |       | <65>                                                              |
+  | 18979 | google.com/index.html                                             |
+  | 17284 | www.google.de/images/nav_logo229.png                              |
+  |  1834 | www.google.de/images/icons/product/chrome-48.png                  |
+  |  5482 | www.google.de/images/branding/googlelogo/1x/googlelogo_white_background_color_272x92dp.png |
+  |  5430 | www.google.de/images/branding/product/ico/googleg_lodp.ico        |
+  |  8080 | liwww.google.de/robots.txt                                        |
+
+  thus, there should be 5-6 (depending on robots.txt) requests
+* what did panchenko do for wf?
+* visual inspection of data
+  to exemplify the problems a wf'er has, consider the following
+  pictures which represent complete (considered to contain all
+  relevant information([[a-systematic]])) packet trace data in the form of
+  (delay, packet size), which is
+
+  [[file:pictures/facebook.com@1445350531.png]]
+
+  [[file:pictures/facebook.com@1445422155.png]]
+
+  [[file:pictures/facebook.com@1445425799.png][file:pictures/facebook.com@1445425799.png]]
+
+  [[file:pictures/facebook.com@1445429729.png][file:pictures/facebook.com@1445429729.png]]
+  
+  They were created by the commands
+
+  for fb in $(ls | grep facebook); do 
+    python ~/da/bin/extract_attribute.py ./$fb  | tail -1 | sed 's/),/\n/g' | tr -d "'()][" > /tmp/times; 
+    gnuplot -e "set terminal png size 1024,680; set output \"/tmp/${fb}.png\"; plot '/tmp/times' with boxes;"; 
+  done
+
+  These commands first extract the timing attributes (at the time of writing
+  the last line of the output of extract_attribute.py), format it for
+  gnuplot (inserting appropriate newlines via =sed= and removing
+  erroneous characters via =tr=), and =gnuplot=s it to a file with the
+  name of the trace file as png-name.
+* WAIT Results
+* WAIT Discussion
+* WAIT Acknowledgements
+  - Daniel Arp
+  - Prof. Dr. Konrad Rieck
+  - Elena
+  - ...
 * lit
 ** franklin
    #+BEGIN_SRC bibtex

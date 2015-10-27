@@ -1,0 +1,95 @@
+This is gradware. Very much so. 
+Please write to t55wang@cs.uwaterloo.ca for questions about any of the code or results.
+To atone for this code, answering your questions is the least I can do. 
+
+*** TRAINING SET UPDATE *** (directory trainset/)
+
+
+
+*** SPLITTING *** (directory split/)
+
+To get some example results immediately, take a look at runcontknn.sh. 
+
+** allsplits/:
+Data is in the form X-Y, where X is 0, 1, 2, or 3, and Y is an instance of that.
+X = 0, 1, 2 are two-page segments. 
+X = 0: Loaded with a positive time gap
+X = 1: Loaded with no time gap
+X = 2: Loaded with a negative time gap
+X = 3: Single-page segment
+
+Each file is a series of pairs separated by newlines.
+The first number of each pair is the time.
+The second number is the direction and page number.
+1 and 2 are page numbers.
+positive is outgoing, negative is incoming. 
+
+We have included the data set we used in this folder.
+
+** allsplits-fourtorand.py:
+takes in random files from allsplits/
+outputs files to allsplitsrand/ in the same format
+
+Just a way to randomize input without having to do it in every algorithm.
+Should be run frequently for testing. 
+Currently produces 1500 files per type. (fliecount[c] < 1500)
+Note that it may not produce enough files for some machines, edit that line for more.
+
+** allsplits-fourtotwo.py:
+takes in random files from allsplits/
+outputs files to allsplitstwo/ in the same format
+
+Merges classes 0, 1, and 2 to 0, and 3 goes to 1. Also randomizes.
+Currently produces 1500 files per type.
+
+** contfeatures.py:
+
+extracts features used by kNN from files like those in allsplits/
+Has three operating modes:
+allfile: Outputs training set. Takes in many files, outputs many splits to learnsplit/. 
+onefile: Outputs testing set. Takes in one file, outputs all potential splits to sitesplit/.
+onesplit: We don't actually use this. 
+
+** contknn.cpp, contknn-fe.cpp, contnb.py
+
+Classifiers for split finding. 
+These classifiers can be run with the run* files.
+Outputs rate of correct classification.
+
+Note that these classifiers are currently using pre-splitting.
+
+To disable pre-splitting, perform these changes to the .sh files: 
+python allsplits-fourtorand.py -> python allsplits-fourtotwo.py
+python contfeatures.py allsplitsrand/ -> python contfeatures.py allsplitstwo/
+Note that contknn, contknn-fe, and contnb.py should still be run on allsplitsrand/
+i should just be set to 0, j should still be enumerated over 0 to 2.
+
+** classknn.cpp, classtimeknn.cpp, classsvm.py:
+
+Classifiers for segment classification. Ran with runclassknn.py, etc. as well.
+Uses fextractor.py and fextractor-time.py to extract features.
+There's an intermediary file called flearner.log. Accuracy: 0.0000 should be ignored. 
+The real accuracy is written in the output file. 
+runclasssvm.py depends on svm-predict and svm-train, which are included as binaries.
+svm-predict was built from a modified libsvm that output the true and guessed class of each element.
+
+These currently use pre-splitting as well. To disable pre-splitting, 
+edit the files to point to allsplitstwo/ and run python allsplits-fourtotwo.py
+intsead of pyhton allsplits-fourtorand.py. 
+
+For split finding and segment classification classifiers we did 100 trials, but
+we set them to 1 here so it doesn't hang up for too long.
+
+** DATA COLLECTION **
+
+While we did some editing and customization to Firefox to enable data collection,
+in the newest version of Tor Firefox this is no longer necessary. It is possible
+to run it using just <torbrowserfolder>/firefox <sitename>, and we recommend this.
+So we will not release that code.
+
+Our sensitive site list is knnsitelist.txt.
+Our open world data set is top-5000-to-10000.txt. 
+
+To convert pcap files to our cell format, we used ip2cell_sanitized.py. 
+
+
