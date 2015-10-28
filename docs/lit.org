@@ -1427,7 +1427,68 @@
 	    6. insert incoming packets G_{6}: length MTU, one per 5 packets
 	    7. Adjacent Transpositions: "v packets are transposed with
                the previous packet"
+	    8. Short-Distance Transpositions: v packets are transposed
+               with the packet 4 elements ago.
+	    9. Long-Distance Transpositions: v packets are transposed
+               with the packet 19 elements ago.
+	    10. Delays: Each packet is delayed by a linearly
+                increasing amount of time, multiplied by v.
 
+       3) Classification and Experimental Setup
+
+	  C = 400 samples of bbc.co.uk
+	  C' = generator(C)
+
+	  200 training, 200 testing
+
+	  4 feature classifiers
+
+	  - Unique Packet-Lengths: (like jaccard of Liberatore)
+
+	  - Packet-Length Frequencies: mean, std of (bytes and
+            packets) (incoming and outgoing)
+
+	    scored separately, multiplied (like naive bayes of Liberatore)
+
+	  - Packet Ordering: each position: length compared to mean of
+            all training packet length  (like bissias/liberatore)
+
+	  - Interpacket Timing: total elapsed time
+
+	  defense applied to each element c and c'
+
+	  measured by the differences between C and c' before
+          classifier can distinguish
+
+	  setup: 100mbps ethernet, mtu 1500, imacros 9.00 firefox
+          23.0, tcpdump
+
+       4) COMPARISON OF DEFENSES
+
+	  state-of-the-art defenses, simulated
+
+	  1) Simulated Defenses
+
+	     - Maximum Packet Padding (PadM): pads all to mtu
+
+	     - Exponential Packet Padding (PadE): pad to closest power of 2
+
+	     - Traffic Morphing (Wr-Morph): mimic target page
+
+	     - HTTP Obfuscation (HTTPOS): client-side only, tcp
+               advertised windows, http ranges, control sizes of
+               outgoing and incoming
+
+	       (here: just split packet without extra packets)
+
+	     - Background Noise (Pa-Decoy): load decoy in background
+
+	       (here: alexa top 800)
+
+	     - Buffered Fixed Length Obfuscator (BuFLO): packets at
+               fixed intervals with fixed lengths
+
+	  2) Comparative Results
 *** quote
     - the Tor project now includes both network- and browser-level
       defenses against these attacks
@@ -2326,6 +2387,8 @@
     - Class definitions play some neat tricks with namespaces, and you
       need to know how scopes and namespaces work to fully understand
       what’s going on.
+    - >>> tel = {'jack': 4098, 'sape': 4139}
+      >>> tel['guido'] = 4127
 ** TODO [[./Tor Project: Overview.html][Tor: Overview]]
 ** TODO [[shell:ristretto ./malamud][Malamud:Privacy and Private States]]
 *** summary
@@ -2521,9 +2584,152 @@
 	      - y_train = np.concatenate(y_train)
 	      - scores.append(svc.fit(X_train, y_train).score(X_test, y_test))
        2) Cross-validation generators
+
+	  X-validation (Kfold, Loo, etc) are available via
+
+	  =sklearn.cross_validation=
+
+	  - "To compute the score method of an estimator, the sklearn
+            exposes a helper function:
+
+	    #+BEGIN_SRC python
+              cross_validation.cross_val_score(svc, X_digits, y_digits, cv=kfold, n_jobs=-1)
+	    #+END_SRC
+
+       3) Grid-search and cross-validated estimators
+
+	  1) Grid-search
+
+	     automatic parameter search
+
+	     #+BEGIN_SRC python
+               from sklearn.grid_search import GridSearchCV
+               Cs = np.logspace(-6, -1, 10)
+               clf = GridSearchCV(estimator=svc, param_grid=dict(C=Cs), n_jobs=-1)
+               clf.fit(X_digits[:1000], y_digits[:1000])
+               clf.best_score_
+               clf.best_estimator_.C
+	     #+END_SRC
+
+	  2) Cross-validated estimators
+
+	     with CV added to name: search automatically
+
+	     (but not svm)
 *** quotes
     - import pylab as pl
       pl.imshow
+*** exercises
+**** Exercise digits-knn-linear
+     Try classifying the digits dataset with nearest neighbors and a
+     linear model. Leave out the last 10% and test prediction
+     performance on these observations.
+
+     from sklearn import datasets, neighbors, linear_model
+
+     digits = datasets.load_digits()
+     X_digits = digits.data
+     y_digits = digits.target
+***** Solution
+      from sklearn import datasets, neighbors, linear_model
+      import numpy as np
+
+      digits = datasets.load_digits()
+      X_digits = digits.data
+      y_digits = digits.target
+
+      np.random.seed(0)
+      indices = np.random.permutation(len(y_digits))
+      percent = int(len(y_digits) * 0.9)
+
+      digits_X_train = X_digits[indices[:percent]]
+      digits_X_test = X_digits[indices[percent:]]
+      digits_y_train = y_digits[indices[:percent]]
+      digits_y_test = y_digits[indices[percent:]]
+
+      knn = neighbors.KNeighborsClassifier()
+      knn.fit(digits_X_train, digits_y_train)
+      knn.score(digits_X_test, digits_y_test)
+
+      lin = linear_model.LogisticRegression()
+      lin.fit(digits_X_train, digits_y_train)
+      lin.score(digits_X_test, digits_y_test)
+**** Exercise iris-svm
+     Try classifying classes 1 and 2 from the iris dataset with SVMs,
+     with the 2 first features. Leave out 10% of each class and test
+     prediction performance on these observations.
+***** Solution
+from sklearn import datasets, svm
+import numpy as np
+
+iris = datasets.load_iris()
+X = iris.data
+y = iris.target
+
+# normalize std
+s = np.std(X, 0)
+for i in range(4):
+    X[:,i] /= s[i]
+
+np.random.seed(0)
+indices = np.random.permutation(len(y))
+percent = int(len(y) * 0.9)
+
+X_train = X[indices[:percent]]
+X_test = X[indices[percent:]]
+y_train = y[indices[:percent]]
+y_test = y[indices[percent:]]
+
+svc = svm.SVC(kernel='linear')
+svc.fit(X_train, y_train)
+print svc.score(X_test, y_test)
+
+svcr = svm.SVC()
+svcr.fit(X_train, y_train)
+print svcr.score(X_test, y_test)
+**** Exercise kfold
+     On the digits dataset, plot the cross-validation score of a SVC
+     estimator with an linear kernel as a function of parameter C (use
+     a logarithmic grid of points, from 1 to 10).
+***** Solution
+import numpy as np
+from sklearn import cross_validation, datasets, svm
+
+C_s = np.logspace(-10, 0, 50)
+
+digits = datasets.load_digits()
+X = digits.data
+y = digits.target
+
+for C in C_s:
+    svc.C = C
+    score = cross_validation.cross_val_score(svc, X, y, n_jobs=1)
+    print '%f, %f, %f' % (C, np.mean(score), np.std(score))
+**** Exercise grid-optimal
+     On the diabetes dataset, find the optimal regularization
+     parameter alpha.
+***** Solution
+      #+BEGIN_SRC python
+        from sklearn import cross_validation, datasets, linear_model
+        import numpy as np
+
+        diabetes = datasets.load_diabetes()
+        X = diabetes.data[:150]
+        y = diabetes.target[:150]
+
+        lasso = linear_model.Lasso()
+        alphas = np.logspace(-4, -.5, 30)
+
+        from sklearn.grid_search import GridSearchCV
+        clf = GridSearchCV(estimator=lasso, param_grid=dict(alpha=alphas), n_jobs=-1)
+        clf.fit(X, y)
+        print clf.score(diabetes.data[150:], diabetes.target[150:])
+
+        # for a in alphas:
+        #     lasso.alpha = a
+        #     score = cross_validation.cross_val_score(lasso, X, y, n_jobs=1)
+        #     print '%f, %s' % (a, np.mean(score))
+      #+END_SRC
 ** [[./skl/working_with_text_data.html][Working With Text Data]]
 *** ref
     #+BEGIN_SRC bibtex
@@ -2761,3 +2967,4 @@
     - if __name__ == "__main__":
       - import doctest
       - doctest.testmod()
+** MAYBE [[/home/chive/IT-gg/python/scipy-ref-0.15.1.pdf][SciPy Reference Guide]]
