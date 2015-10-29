@@ -580,6 +580,27 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   in coding the size, this thesis follows panchenko, who recorded
   ([[Panchenko]]) "incoming packets as positive, outgoing ones as negative
   numbers."
+
+  The code to examine a single trace file is in =analyze_file=
+  It
+  - opens the filename in tshark
+  - splits the output by tokens
+  - gives the relevant values (source IP, size, timestamp) (with the
+    timestamp not used by Panchenko) to a =Counts=-object, which aggregates it
+
+  For a single line, a =Counts=-object aggregates =bytes= (incoming,
+  outgoing), packets (incoming/outgoing), distills into a size/packets
+  array and (size+timestamp)/packets array.
+
+  This is used in =postprocess()= to determine
+  - panchenko's size markers, (via the =_sum_stream()=-function),
+  - the html marker as the first of those(even though this is
+    sometimes broken, see f.ex. =google.com@1445350513=, where the
+    value comes before the first retrieval.
+  - the total transmitted bytes incoming and outgoing
+  - occurring packet sizes (in steps of 2)
+  - percentage of outgoing packets
+  - number of packets incoming and outgoing.
 * TODO what happens when retrieving google.com
   the complete data of google.com can be retrieved via
 
