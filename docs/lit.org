@@ -1519,6 +1519,82 @@
 	     - HTTPOS client-only
 
        5) THEORETICAL FOUNDATIONS
+
+	  Model of WF attacks, lower bounds for bandwidth overhead.
+
+	  1) Security vs. Overhead Trade-Off
+
+	     dissimilarity of websites increases overhead
+
+	     offline version
+
+	     1) Definitions
+
+		- w: website
+
+		- t: packet trace
+
+		- W: random variable for w (attacker knows distribution)
+
+		- T_{w}^{D}: random variable for t with defense (attacker knows d.)
+
+		- T_{w}: random variable for t without defense
+
+		- A(t) = argmax_{w} Pr[W = w] Pr[T_{w}^{D} = t]
+
+		  attacker output (determine website w)
+
+		- D *non-uniformly \epsilon-secure* for W iff Pr A(T_{W}^{D}) = W ≤ \epsilon.
+
+		- D *uniformly \epsilon-secure* if max_{w} Pr A(T_{W}^{D}) = w ≤ \epsilon.
+
+		- B(t): total number of bytes transmitted in trace t.
+
+		- BWRatio_{D}(W): E[B(T_{W}^{D})] / E[B(T_{W}^{})]
+
+                  bandwidth ratio of defense D
+
+	     2) Bandwidth Lower Bounds
+
+		- THEOREM 1. Suppose n is an integer. Let W be a
+                  random variable uniformly distributed over w_{1}, ... ,
+                  w_{n}, i.e. W represents a closed-world
+                  experiment. Suppose D is a defense that is
+                  \epsilon-non-uniformly-secure against A_{S} on
+                  distribution W. Then there exists a monotonically
+                  increasing function f from S = {s_{1} , ... , s_{n}} to
+                  itself such that
+
+		  - |f(S)| ≤ \epsilon n
+		  - \sum_{i=1}^{n} f(s_{i}) / \sum_{i=1}^{n} s_{i} \le BWRatio_{D} (W).
+
+		- A_{S}(t) = argmax_{w} Pr[B(T_{w}^{D}) = B(t)]
+
+		  optimal, looks only at total size
+
+		- "Such an f is equivalent to a partition S_{1}, ... , S_{k}
+                  of S satisfying k ≤ \epsilon n and minimizing 
+                  \sum_{i=1}^{k} |S_{i}| max_{s \in S_{i}} s.
+
+		- THEOREM 2. Let W be uniformly distributed over w_{1},
+                  ... , w_{n}, i.e. W represents a closed-world
+                  experiment. Suppose D is a deterministic defense
+                  that is uniformly-\epsilon-secure against A_{S} on
+                  distribution W. Then there exists a monotonically
+                  increasing function f from S = {s_{1} , ... , s_{n}} to
+                  itself such that
+
+		  - min_{i}|f^{-1}(s_{i})| \ge  1/ \epsilon
+		  - \sum_{i=1}^{n} f(s_{i}) / \sum_{i=1}^{n} s_{i} \le BWRatio_{D} (W).
+
+	  2) From Closed to Open World
+
+	     - "researchers need only perform closed-world experiments
+               to predict open-world performance."
+
+	     - single w^{*}, find out if visited or not
+
+
 *** quote
     - the Tor project now includes both network- and browser-level
       defenses against these attacks
@@ -2464,6 +2540,69 @@
 
 	     - "Note that since -0 is the same as 0, negative indices
                start from -1."
+
+	     - Slice indices have useful defaults; an omitted first
+               index defaults to zero, an omitted second index
+               defaults to the size of the string being sliced.
+	       #+BEGIN_SRC python
+                 >>> word[:2] # character from the beginning to position 2 (excluded)
+                 'Py'
+                 >>> word[4:] # characters from position 4 (included) to the end
+                 'on'
+                 >>> word[-2:] # characters from the second-last (included) to the end
+                 'on'
+	       #+END_SRC
+
+	  3) Unicode Strings
+
+	     - The escape sequence \u0020 indicates to insert the
+               Unicode character with the ordinal value 0x0020 (the
+               space character) at the given position.
+               #+BEGIN_SRC python
+                 >>> u'Hello\u0020World !'
+                 u'Hello World !'
+               #+END_SRC
+
+	  4) Lists
+
+	     - All slice operations return a new list containing the
+               requested elements. This means that the following slice
+               returns a new (shallow) copy of the list:
+	       #+BEGIN_SRC python
+                 >>> squares[:]
+                 [1, 4, 9, 16, 25]
+	       #+END_SRC
+
+	     - replace some values
+	       #+BEGIN_SRC python
+                 >>> letters[2:5] = ['C', 'D', 'E']
+	       #+END_SRC
+
+       2) First Steps Towards Programming
+
+    4) MORE CONTROL FLOW TOOLS
+
+       1) if Statements
+
+	  - if, elif, else
+
+       2) for Statements
+
+	  over iterator, =[:]= for a copy
+
+       3) The range() Function
+
+	  does not include the argument,
+
+	  start, stop, step
+
+       4) break and continue Statements, and else Clauses on Loops
+
+	  - "The break statement, like in C, breaks out of the
+            smallest enclosing for or while loop."
+
+
+
 *** quotes
     - Now enter the Python interpreter and import this module with the
       following command:
@@ -2492,6 +2631,14 @@
       what’s going on.
     - >>> tel = {'jack': 4098, 'sape': 4139}
       >>> tel['guido'] = 4127
+    - When *looping through dictionaries*, the key and corresponding
+      value can be retrieved at the same time using the iteritems()
+      method.
+      #+BEGIN_SRC python
+        >>> knights = {'gallahad': 'the pure', 'robin': 'the brave'}
+        >>> for k, v in knights.iteritems():
+        ...     print k, v
+      #+END_SRC
 ** TODO [[./Tor Project: Overview.html][Tor: Overview]]
 ** TODO [[shell:ristretto ./malamud][Malamud:Privacy and Private States]]
 *** summary
@@ -2686,6 +2833,7 @@
 	      - y_test  = y_train.pop(k)
 	      - y_train = np.concatenate(y_train)
 	      - scores.append(svc.fit(X_train, y_train).score(X_test, y_test))
+
        2) Cross-validation generators
 
 	  X-validation (Kfold, Loo, etc) are available via
@@ -2755,80 +2903,86 @@
      X_digits = digits.data
      y_digits = digits.target
 ***** Solution
-      from sklearn import datasets, neighbors, linear_model
-      import numpy as np
+      #+BEGIN_SRC python
+        from sklearn import datasets, neighbors, linear_model
+        import numpy as np
 
-      digits = datasets.load_digits()
-      X_digits = digits.data
-      y_digits = digits.target
+        digits = datasets.load_digits()
+        X_digits = digits.data
+        y_digits = digits.target
 
-      np.random.seed(0)
-      indices = np.random.permutation(len(y_digits))
-      percent = int(len(y_digits) * 0.9)
+        np.random.seed(0)
+        indices = np.random.permutation(len(y_digits))
+        percent = int(len(y_digits) * 0.9)
 
-      digits_X_train = X_digits[indices[:percent]]
-      digits_X_test = X_digits[indices[percent:]]
-      digits_y_train = y_digits[indices[:percent]]
-      digits_y_test = y_digits[indices[percent:]]
+        digits_X_train = X_digits[indices[:percent]]
+        digits_X_test = X_digits[indices[percent:]]
+        digits_y_train = y_digits[indices[:percent]]
+        digits_y_test = y_digits[indices[percent:]]
 
-      knn = neighbors.KNeighborsClassifier()
-      knn.fit(digits_X_train, digits_y_train)
-      knn.score(digits_X_test, digits_y_test)
+        knn = neighbors.KNeighborsClassifier()
+        knn.fit(digits_X_train, digits_y_train)
+        knn.score(digits_X_test, digits_y_test)
 
-      lin = linear_model.LogisticRegression()
-      lin.fit(digits_X_train, digits_y_train)
-      lin.score(digits_X_test, digits_y_test)
+        lin = linear_model.LogisticRegression()
+        lin.fit(digits_X_train, digits_y_train)
+        lin.score(digits_X_test, digits_y_test)
+      #+END_SRC
 **** Exercise iris-svm
      Try classifying classes 1 and 2 from the iris dataset with SVMs,
      with the 2 first features. Leave out 10% of each class and test
      prediction performance on these observations.
 ***** Solution
-from sklearn import datasets, svm
-import numpy as np
+      #+BEGIN_SRC python
+        from sklearn import datasets, svm
+        import numpy as np
 
-iris = datasets.load_iris()
-X = iris.data
-y = iris.target
+        iris = datasets.load_iris()
+        X = iris.data
+        y = iris.target
 
-# normalize std
-s = np.std(X, 0)
-for i in range(4):
-    X[:,i] /= s[i]
+        # normalize std
+        s = np.std(X, 0)
+        for i in range(4):
+            X[:,i] /= s[i]
 
-np.random.seed(0)
-indices = np.random.permutation(len(y))
-percent = int(len(y) * 0.9)
+        np.random.seed(0)
+        indices = np.random.permutation(len(y))
+        percent = int(len(y) * 0.9)
 
-X_train = X[indices[:percent]]
-X_test = X[indices[percent:]]
-y_train = y[indices[:percent]]
-y_test = y[indices[percent:]]
+        X_train = X[indices[:percent]]
+        X_test = X[indices[percent:]]
+        y_train = y[indices[:percent]]
+        y_test = y[indices[percent:]]
 
-svc = svm.SVC(kernel='linear')
-svc.fit(X_train, y_train)
-print svc.score(X_test, y_test)
+        svc = svm.SVC(kernel='linear')
+        svc.fit(X_train, y_train)
+        print svc.score(X_test, y_test)
 
-svcr = svm.SVC()
-svcr.fit(X_train, y_train)
-print svcr.score(X_test, y_test)
+        svcr = svm.SVC()
+        svcr.fit(X_train, y_train)
+        print svcr.score(X_test, y_test)
+      #+END_SRC
 **** Exercise kfold
      On the digits dataset, plot the cross-validation score of a SVC
      estimator with an linear kernel as a function of parameter C (use
      a logarithmic grid of points, from 1 to 10).
 ***** Solution
-import numpy as np
-from sklearn import cross_validation, datasets, svm
+      #+BEGIN_SRC python
+        import numpy as np
+        from sklearn import cross_validation, datasets, svm
 
-C_s = np.logspace(-10, 0, 50)
+        C_s = np.logspace(-10, 0, 50)
 
-digits = datasets.load_digits()
-X = digits.data
-y = digits.target
+        digits = datasets.load_digits()
+        X = digits.data
+        y = digits.target
 
-for C in C_s:
-    svc.C = C
-    score = cross_validation.cross_val_score(svc, X, y, n_jobs=1)
-    print '%f, %f, %f' % (C, np.mean(score), np.std(score))
+        for C in C_s:
+            svc.C = C
+            score = cross_validation.cross_val_score(svc, X, y, n_jobs=1)
+            print '%f, %f, %f' % (C, np.mean(score), np.std(score))
+      #+END_SRC
 **** Exercise grid-optimal
      On the diabetes dataset, find the optimal regularization
      parameter alpha.
@@ -3108,4 +3262,17 @@ for C in C_s:
       Return a copy of the string with leading characters removed. The
       chars argument is a string specifying the set of characters to
       be removed.
+    - os.path.basename(path)
+
+      Return the base name of pathname path.
 ** MAYBE [[/home/chive/IT-gg/python/scipy-ref-0.15.1.pdf][SciPy Reference Guide]]
+** MAYBE [[/home/chive/IT-gg/python/numpy-ref-1.9.1.pdf][NumPy Reference]]
+*** quotes
+    - numpy.zeros(shape, dtype=float, order=’C’)
+
+      Return a new array of given shape and type, filled with zeros.
+
+    - numpy.array(object, dtype=None, copy=True, order=None,
+      subok=False, ndmin=0)
+
+      Create an array.

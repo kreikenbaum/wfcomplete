@@ -577,18 +577,19 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - is this by design?
 ** MAYBE exclude
 * TODO transform to panchenko-features
-  in coding the size, this thesis follows panchenko, who recorded
+  In coding sizes, this thesis follows panchenko, who recorded
   ([[Panchenko]]) "incoming packets as positive, outgoing ones as negative
   numbers."
 
-  The code to examine a single trace file is in =analyze_file=
+  The code to examine a single trace file is in =analyze_file()=
   It
   - opens the filename in tshark
   - splits the output by tokens
   - gives the relevant values (source IP, size, timestamp) (with the
-    timestamp not used by Panchenko) to a =Counts=-object, which aggregates it
+    timestamp not used by Panchenko) to a =Counts=-object, which
+    aggregates it
 
-  For a single line, a =Counts=-object aggregates =bytes= (incoming,
+  For a single line, a =Counts=-object aggregates bytes (incoming,
   outgoing), packets (incoming/outgoing), distills into a size/packets
   array and (size+timestamp)/packets array.
 
@@ -601,12 +602,33 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - occurring packet sizes (in steps of 2)
   - percentage of outgoing packets
   - number of packets incoming and outgoing.
+** MAYBE correct code for html marker
+*** wait for first request (-), then first uninterrupted (+)
+* TODO transform features to vector
+  Once the counters are obtained via =get_counters()=, which
+  aggregates the result of several =analyze_file()= runs, they need to
+  be modified to fit as input for the SVMs.
+
+  Firstly, the =panchenko()= functions builds a tuple, which starts
+  with the single-digit features and ends with the packet trace.
+
+  This is transformed into SVM input in the =to_features()= function,
+  which normalizes all vectors to have the same size (padding with
+  0s), and creates the feature vector and attribute matrix.
+
+  Since [[Panchenko]] et al gave explicit size conversions, the sizes have
+  not been normalized further.
+** TODO ref stackoverflow why 0 padding
+*** TODO better:
+* MAYBE effect of panchenko's weighting schema
+  Currently, fixed attributes are
+  weighted in favor of total incoming bytes (stdand occurring packet sizes
 * TODO what happens when retrieving google.com
   the complete data of google.com can be retrieved via
 
   =mkdir site; cd site; wget -p -H google.com=
 
-  which yields (in germany) the files (=find . -type f -ls=, slightly redacted)
+  which yields (in germany) the files (=find . -type f -ls=, formatted)
 
   |  size | url                                                               |
   |-------+-------------------------------------------------------------------|
@@ -616,7 +638,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   |  1834 | www.google.de/images/icons/product/chrome-48.png                  |
   |  5482 | www.google.de/images/branding/googlelogo/1x/googlelogo_white_background_color_272x92dp.png |
   |  5430 | www.google.de/images/branding/product/ico/googleg_lodp.ico        |
-  |  8080 | liwww.google.de/robots.txt                                        |
+  |  8080 | www.google.de/robots.txt                                          |
 
   thus, there should be 5-6 (depending on robots.txt) requests
 * what did panchenko do for wf?
@@ -796,4 +818,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 #+END_SRC
 * appendices
 ** [[file:../bin/one_site.py][one_site.py]]
+   insert file here
+** [[file:../bin/extract_attribute.py][extract_attribute.py]]
    insert file here

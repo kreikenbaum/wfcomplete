@@ -1,22 +1,32 @@
 import logging
 import math
-from sys import argv
-import subprocess
 import os
-from os.path import join
+import os.path
+import numpy as np
+from sklearn import svm
+import subprocess
+from sys import argv
 
 HOME_IP='134.76.96.47'
-#LOGLEVEL=logging.DEBUG
-LOGLEVEL=logging.INFO
+LOGLEVEL=logging.DEBUG
+#LOGLEVEL=logging.INFO
 #LOGLEVEL=logging.WARN
 TIME_SEPARATOR='@'
 
 def _append_features(keys, fname):
-    '''extracts domain, appends to list and creates key if it does not exist'''
-    domain = fname.split(TIME_SEPARATOR)[0].lstrip('./')
+    '''appends features in trace file "fname" to keys, indexed by domain'''
+    domain = os.path.basename(fname).split(TIME_SEPARATOR)[0]
     if not keys.has_key(domain):
         keys[domain] = []
     keys[domain].append(analyze_file(fname))
+
+def _enlarge(row, upto):
+    '''enlarges row to have upto entries (padded with 0)
+    >>> _enlarge([2], 20)
+    [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    '''
+    row.extend([0 for i in range(upto - len(row))])
+    return row
 
 def _sum_stream(packets):
     '''sums adjacent packets in the same direction
@@ -64,27 +74,22 @@ class Counts:
         self.number_in = None
         self.number_out = None
 
+    def panchenko(self):
+        '''returns panchenko feature vector, (html marker, bytes in, bytes
+        out, total size, percentage incoming, packets in, packets out,
+        size markers)'''
+        self._postprocess()
+        return ([self.html_marker,
+                 self.total_transmitted_bytes_in,
+                 self.total_transmitted_bytes_out,
+                 self.occuring_packet_sizes,
+                 self.percentage,
+                 self.number_in,
+                 self.number_out]
+                + self.size_markers)
+
     def __str__(self):
-        self.postprocess()
-        table = '| {0:>15} | {1:>30} |\n'
-
-        return (table.format('size_markers', self.size_markers)
-                + table.format('html_marker', self.html_marker)
-                + table.format('total_in', self.total_transmitted_bytes_in)
-                + table.format('total_out', self.total_transmitted_bytes_out)
-                + table.format('sizes', self.occuring_packet_sizes)
-                + table.format('percentage', self.percentage)
-                + table.format('number_in', self.number_in)
-                + table.format('number_out', self.number_out))
-
-        # return (table.format('', "outgoing", "incoming")
-        #         + table.format('BYTES', self.bytes_out, self.bytes_in)
-        #         + table.format('PACKETS', self.packets_out, self.packets_in)
-        #         + 'time: {0}\n'.format(self.last_time)
-        #         + str(_sum_stream(self.packets)) + '\n'
-        #         + str(self.packets) +'\n'
-        #         + str(self.timing) + '\n\n')
-
+        return 'p: {}'.format(self.panchenko())
 
     def _extract_values(self, src, size, tstamp):
         '''aggregates stream values'''
@@ -101,7 +106,8 @@ class Counts:
 
         self.last_time = tstamp
 
-    def postprocess(self):
+    def _postprocess(self):
+        '''sums up etc collected features'''
         if self.size_markers != None:
             return
 
@@ -124,6 +130,7 @@ def analyze_file(filename):
     tshark = subprocess.Popen(args=['tshark','-r' + filename],
                               stdout=subprocess.PIPE);
     for line in iter(tshark.stdout.readline, ''):
+        logging.debug(line)
         (num, tstamp, src, x, dst, proto, size, rest) = line.split(None, 7)
         if not '[ACK]' in rest and not proto == 'ARP':
             counter._extract_values(src, size, tstamp)
@@ -131,8 +138,9 @@ def analyze_file(filename):
             logging.debug('from %s to %s: %s bytes', src, dst, size)
     return counter
 
-
-if __name__ == "__main__":
+def get_counters(*argv):
+    '''get called as main, either prints out the arguments, or all files
+    in this directory and below'''
     import doctest
     doctest.testmod()
 
@@ -150,9 +158,41 @@ if __name__ == "__main__":
                     logging.info('processing %s', fullname)
                     _append_features(counters, fullname);
 
-    for domain in counters:
-        for trace in counters[domain]:
-            print domain
-            print trace
-#        for c in per_domain:
-#            print '%s: %s' % (key, c)
+    return counters
+
+def to_features(counters):
+    '''transforms counter data to feature vector pair (X,y)'''
+    X_in = []
+    y = []
+    feature = 0
+    for domain, dom_counters in counters.iteritems():
+        feature += 1
+        for count in dom_counters:
+            X_in.append(count.panchenko())
+            y.append(feature)
+    # all to same length
+    max_len = max([len(x) for x in X_in])
+    for x in X_in:
+        _enlarge(x, max_len)
+    # traces into X, y
+    return (np.array(X_in), np.array(y))
+
+
+if __name__ == "__main__":
+    counters = get_counters(argv)
+    (X, y) = to_features(counters)
+    # shuffle
+    np.random.seed(0)
+    indices = np.random.permutation(len(y))
+    percent = int(len(y) * 0.9)
+
+    X_train = X[indices[:percent]]
+    X_test = X[indices[percent:]]
+    y_train = y[indices[:percent]]
+    y_test = y[indices[percent:]]
+    # svm create
+    svc = svm.SVC(kernel='linear')
+    # svm.fit
+    svc.fit(X_train, y_train)
+    # svm score
+    print 'score: {}'.format(svc.score(X_test, y_test))
