@@ -1,15 +1,19 @@
+#! /usr/bin/env python
+
+# extracts (panchenko's) features from pcap and analyses them
+
 import logging
 import math
 import os
 import os.path
 import numpy as np
-from sklearn import svm
+from sklearn import svm, neighbors
 import subprocess
 from sys import argv
 
 HOME_IP='134.76.96.47'
-LOGLEVEL=logging.DEBUG
-#LOGLEVEL=logging.INFO
+#LOGLEVEL=logging.DEBUG
+LOGLEVEL=logging.INFO
 #LOGLEVEL=logging.WARN
 TIME_SEPARATOR='@'
 
@@ -73,6 +77,7 @@ class Counts:
         self.percentage = None
         self.number_in = None
         self.number_out = None
+        self.warned = False
 
     def panchenko(self):
         '''returns panchenko feature vector, (html marker, bytes in, bytes
@@ -131,11 +136,17 @@ def analyze_file(filename):
                               stdout=subprocess.PIPE);
     for line in iter(tshark.stdout.readline, ''):
         logging.debug(line)
-        (num, tstamp, src, x, dst, proto, size, rest) = line.split(None, 7)
-        if not '[ACK]' in rest and not proto == 'ARP':
-            counter._extract_values(src, size, tstamp)
-
+        try:
+            (num, tstamp, src, x, dst, proto, size, rest) = line.split(None, 7)
+        except ValueError:
+            counter.warned = True
+            logging.warn('file: %s had problems in line \n%s\n', filename, line)
+            break
+        else:
+            if not '[ACK]' in rest and not proto == 'ARP':
+                counter._extract_values(src, size, tstamp)
             logging.debug('from %s to %s: %s bytes', src, dst, size)
+
     return counter
 
 def get_counters(*argv):
@@ -168,8 +179,11 @@ def to_features(counters):
     for domain, dom_counters in counters.iteritems():
         feature += 1
         for count in dom_counters:
-            X_in.append(count.panchenko())
-            y.append(feature)
+            if not count.warned:
+                X_in.append(count.panchenko())
+                y.append(feature)
+            else:
+                logging.warn('%s: one discarded', domain)
     # all to same length
     max_len = max([len(x) for x in X_in])
     for x in X_in:
@@ -190,9 +204,15 @@ if __name__ == "__main__":
     X_test = X[indices[percent:]]
     y_train = y[indices[:percent]]
     y_test = y[indices[percent:]]
-    # svm create
+    # svm
     svc = svm.SVC(kernel='linear')
-    # svm.fit
     svc.fit(X_train, y_train)
-    # svm score
-    print 'score: {}'.format(svc.score(X_test, y_test))
+    print 'svm score: {}'.format(svc.score(X_test, y_test))
+    # knn
+    knn = neighbors.KNeighborsClassifier()
+    knn.fit(X_train, y_train)
+    print 'knn score: {}'.format(knn.score(X_test, y_test))
+    # svm rbf panchenko
+    svcp = svm.SVC(C=2**17, gamma=2**(-19))
+    svcp.fit(X_train, y_train)
+    print 'svm(panchenko) score: {}'.format(svcp.score(X_test, y_test))

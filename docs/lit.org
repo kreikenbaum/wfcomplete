@@ -1573,7 +1573,7 @@
 		  optimal, looks only at total size
 
 		- "Such an f is equivalent to a partition S_{1}, ... , S_{k}
-                  of S satisfying k ≤ \epsilon n and minimizing 
+                  of S satisfying k ≤ \epsilon n and minimizing
                   \sum_{i=1}^{k} |S_{i}| max_{s \in S_{i}} s.
 
 		- THEOREM 2. Let W be uniformly distributed over w_{1},
@@ -1594,7 +1594,47 @@
 
 	     - single w^{*}, find out if visited or not
 
+	     - construct open-world from closed-world by selecting
+               websites w_{2}, ..., w_{n} and determining if A(t) = w^{*
 
+	     - compute false-positive rate by (p_{i} probability of w_{i})
+
+	     - R_{n} = 1/n \cdot Pr[A(T_{w*}^{D}) = w^{* }] + \sum_{i=2}^{n} Pr[A(T_{wi}^{D}) = w_{i}^{}]
+	       "the average success rate of A in the closed world"
+
+	     ... compute FPR, TPR, TDR (true-discovery rate)
+
+	     - algorithm
+
+       6) TAMARAW: A NEW DEFENSE
+
+	  theoretically provable BuFLO
+
+	  1) Design
+
+	     1) Strong Theoretical Foundations:
+
+		optimal partitioning and feature hiding against A_{S}
+                attackers
+
+	     2) Feature coverage:
+
+		not only total size, but all features (except for total
+                downstream transmission size)
+
+	     3) Reducing Overhead Costs:
+
+		reduces BuFLO's overhead (bandwidth and time)
+
+	     differences to BuFLO:
+
+	     - 750 bytes, not MTU (most packets)
+
+	     - distinguish incoming/outgoing
+
+	     - time to next supersequence, not fixed
+
+	  2) Experimental Results
 *** quote
     - the Tor project now includes both network- and browser-level
       defenses against these attacks
@@ -1663,6 +1703,9 @@
 **** svm.py
 *** problemsmaybe
     - append small packets generator lacking
+    - "Essentially, these two assumptions are equivalent to assuming
+      that w^{∗} is not particularly difficult or easy for A to
+      recognize."
 ** [[./guide_libsvm.pdf][A Practical Guide to Support Vector Classification]]
 *** summary
     0) [@0] Abstract
@@ -2601,9 +2644,57 @@
 	  - "The break statement, like in C, breaks out of the
             smallest enclosing for or while loop."
 
+	    if loop not broken, =else:= is executed
+
+       5) pass Statements
+
+	  does nothing
+
+	  use cases:
+
+	  - busy-wait
+
+	  - empty class
+
+	  - implement later
+
+       6) Defining Functions
+
+	  - var lookup order:
+
+	    local \to surrounding locals \to global \to builtin
+
+       7) More on Defining Functions
+
+	  different number of parameters
+
+	  1) Default Argument Values
+
+	     (retries = 4)
+
+	     if set, takes that, otherwise default
+
+	     
+
 
 
 *** quotes
+    - it’s good practice to include docstrings in code that you write,
+      so make a habit of it.
+    - Thus, global variables cannot be directly assigned a value
+      within a function (unless named in a global statement), although
+      they may be referenced.
+    - Actually, call by object reference would be a better
+      description, since if a mutable object is passed, the caller
+      will see any changes the callee makes to it (items inserted into
+      a list).
+    - Falling off the end of a function also returns None.
+    - (example in and raw_input
+      #+BEGIN_SRC python
+        ok = raw_input(prompt)
+        if ok in ('y', 'ye', 'yes'):
+            return True
+      #+END_SRC
     - Now enter the Python interpreter and import this module with the
       following command:
       #+BEGIN_SRC python
@@ -2738,7 +2829,11 @@
       prototypes.
 ** [[./06vect.pdf][Scoring, term weighting and the vector space model]]
 ** [[./ch1.pdf][Data Mining]]
-** TODO [[./tf-idf.html][term frequency–inverse document frequency]]
+** MOVE [[./tf-idf.html][term frequency–inverse document frequency]]
+*** quotes
+    - tf–idf is the product of two statistics, term frequency and
+      inverse document frequency. Various ways for determining the
+      exact values of both statistics exist.
 ** [[shell:firefox ./skl/index.html.4 &][A tutorial on statistical-learning for scientific data processing]]
 *** summary
     1) Statistical learning: the setting and the estimator object in scikit-learn
@@ -3276,3 +3371,77 @@
       subok=False, ndmin=0)
 
       Create an array.
+** TODO [[./tor14design.pdf][Tor: The Second-Generation Onion Router (2014 DRAFT v1)]]
+*** summary
+    0) [@0] Abstract
+
+       - real-world experiences
+
+       - open problems
+
+    1) Overview
+
+       - Better than original onion routing by:
+
+         - perfect forward secrecy:
+
+           "subsequently compromised nodes cannot decrypt old traffic"
+
+	 - Separation of “protocol cleaning” from anonymity
+
+	   just uses SOCKS for applications to connect. (protocol
+           cleaning is done f.ex. by addon or proxy)
+
+	 - No mixing, padding, or traffic shaping (yet):
+
+	   no usable concepts/implementations, high overhead
+
+	 - Many TCP streams can share one circuit:
+
+	   allows for multiple streams to have same circuit (with user
+           control)
+
+	   less crypto, less vulnerability (see section 9)
+
+	 - Leaky-pipe circuit topology:
+
+	   traffic can exit at any place in the circuit (how about
+           exit node policies?)
+
+	 - Congestion control:
+
+	   end-to-end acks, active research
+
+	 - Directory authorities:
+
+	   instead of flooding the network, trusted nodes provide
+           network info
+
+	 - Variable exit policies:
+
+	   exit node operators select which traffic to allow to which
+           hosts
+
+	 - End-to-end integrity checking:
+
+	   in addition to crypto
+
+	 - Rendezvous points and hidden services:
+
+	   negotiation of rendezvous points (instead of "reply onions")
+
+	 - Censorship resistance:
+
+	   bridges (unlisted guard nodes) and HTTPS similarity
+
+	 - Modular architecture:
+
+	   - vidalia (control port)
+
+	   - pluggable transports
+
+	   - no OS patches, but only TCP possible
+
+    2) Related work
+
+*** quotes
