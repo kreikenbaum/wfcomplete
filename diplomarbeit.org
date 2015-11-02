@@ -57,7 +57,7 @@
   Tor offers a [[SOCKS5]]-(TCP-)proxy for users. (If an application has no
   proxy settings, the =tsocks=-program offers transparent
   proxying). After setting this, all traffic is routed through the Tor
-  network, anonymizing the IP address, and padding message length to
+  network, anonymizing the IP address, with a fixed message length to
   hinder traffic analysis.
 
   (Tor also offers the possibility to "hide" a (TCP-)internet service
@@ -71,19 +71,42 @@
 
   Among the additional privacy features the Tor-Browser-Bundle
   provides are added request randomization and enabled pipelining.
-* TODO how does Tor work
-  Tor anonymizes TCP connections. A TCP stream is sent along a path of
-  three intermediaries, such that none of them can link origin and
-  destination. Tor pads most traffic to 512-byte cells.
+* TODO how Tor works
+  Tor anonymizes TCP connections. A TCP stream is triple-encrypted and
+  sent along a path of three intermediaries, such that none of them
+  can link origin and destination. Tor sends data traffic in 512-byte
+  cells.
 
   Tor is based on Onion Routing. Each message is seperately encrypted
   and transferred by three nodes on a user-determined path.
 
-  After the third /hop/, the message leaves the Tor network to any
-  TCP port and server in the Internet, or connects to a server hidden
-  via Tor's /hidden service/ concept.
+  After the third node, the message leaves the Tor network to any TCP
+  port and server in the Internet, or connects to a server hidden via
+  Tor's /hidden service/ concept.
 
-  The list of users consist of [[Tor Website]]
+  To build a TCP channel, called /circuit/ in Tor, the Tor client
+  software (/Onion Proxy/) uses a telescoping approach:
+
+  First, Tor builds a cryptographically secure connection to its first
+  hop. The messages are sent on top of TLS, yet there is additional,
+  same-length, Tor encryption.
+
+  Through this connection, the onion proxy establishes a connection to
+  a second hop, and through the second, to a third hop. Each message
+  is then encrypted three times, sent to the first hop, which decrypts
+  it, and sends it on. The second and third hop do likewise, with the
+  third hop sending the message to the desired recipient.
+
+  - messages encrypted and passed between several routers
+  - each router has 3 keys, two of which are rotated, one identity key
+  - fixed minimum messages size of 512 Byte
+    - extensions allow other sizes
+  - directory of all onion routers in directory servers
+  - encrypted from client to "guard node"
+  - passed to two other hosts, chosen by client "at random"
+  - exits at "exit node" as normal tcp connection (except for hidden services)
+* TODO what sets Tor apart
+  There are other anonymity networks, such as I2P, MixNet and freedom
 
   Tor is an anonymity service.
   - decentralized
@@ -105,15 +128,6 @@
   genannten, Onion Router aus dem Netzwerk an beliebige
   Internetadressen geleitet.
 
-  - messages encrypted and passed between several routers
-  - standard TLS
-  - each router has 3 keys, two of which are rotated, one identity key
-  - fixed minimum messages size of 512 Byte
-    - extensions allow other sizes
-  - directory of all onion routers in directory servers
-  - encrypted from client to "guard node"
-  - passed to two other hosts, chosen by client "at random"
-  - exits at "exit node" as normal tcp connection (except for hidden services)
 ** TODO ref onion routing
 ** TODO onion routing
 * TODO who uses Tor
@@ -128,6 +142,8 @@
   privacy activists: ccc
   chinese and iranian dissidents
   "arab spring"
+
+  The list of users consist of [[Tor Website]]
 * LATER Tor Adversary Model [0/1]
   Tor does not attempt to protect against a global passive adversary,
   who can observe all connections. A Tor adversary can([[tor design]])
