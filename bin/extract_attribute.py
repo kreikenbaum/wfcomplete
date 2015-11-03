@@ -117,10 +117,11 @@ class Counts:
             return
 
         self.size_markers = [size / 600 for size in _sum_stream(self.packets)]
-        if self.size_markers[0] < 0:
-            self.html_marker = - self.size_markers[0]
-        else:
+        # html response marker, thus request must have been sent before
+        if self.size_markers[1] < 0:
             self.html_marker = - self.size_markers[1]
+        else:
+            self.html_marker = - self.size_markers[2]
         self.total_transmitted_bytes_in = self.bytes_in / 10000
         self.total_transmitted_bytes_out = self.bytes_out / 10000
         self.occuring_packet_sizes = (len(set(self.packets)) / 2) * 2
@@ -150,8 +151,8 @@ def analyze_file(filename):
     return counter
 
 def get_counters(*argv):
-    '''get called as main, either prints out the arguments, or all files
-    in this directory and below'''
+    '''get called as main, either creates counters for the arguments, or
+    all files in this directory and below'''
     import doctest
     doctest.testmod()
 
@@ -163,10 +164,11 @@ def get_counters(*argv):
             _append_features(counters, f)
     else:
         for (dirpath, dirnames, filenames) in os.walk(os.getcwd()):
-            for f in filenames:
+            l = len(filenames)
+            for i,f in enumerate(filenames):
                 fullname = os.path.join(dirpath, f)
                 if TIME_SEPARATOR in fullname: # file like google.com@1445350513
-                    logging.info('processing %s', fullname)
+                    logging.info('processing %s (%d/%d)', fullname, i, l)
                     _append_features(counters, fullname);
 
     return counters
