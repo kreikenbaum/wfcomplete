@@ -74,11 +74,7 @@
 * TODO how Tor works
   Tor anonymizes TCP connections. A TCP stream is triple-encrypted and
   sent along a path of three intermediaries, such that none of them
-  can link origin and destination. Tor sends data traffic in 512-byte
-  cells.
-
-  Tor is based on Onion Routing. Each message is seperately encrypted
-  and transferred by three nodes on a user-determined path.
+  can link its origin to its destination.
 
   After the third node, the message leaves the Tor network to any TCP
   port and server in the Internet, or connects to a server hidden via
@@ -88,16 +84,22 @@
   software (/Onion Proxy/) uses a telescoping approach:
 
   First, Tor builds a cryptographically secure connection to its first
-  hop. The messages are sent on top of TLS, yet there is additional,
-  same-length, Tor encryption.
+  hop (each called /Onion Router/). The messages are sent on top of
+  TLS, yet there is additional, same-length, Tor encryption.
 
   Through this connection, the onion proxy establishes a connection to
   a second hop, and through the second, to a third hop. Each message
   is then encrypted three times, sent to the first hop, which decrypts
-  it, and sends it on. The second and third hop do likewise, with the
-  third hop sending the message to the desired recipient.
+  it once, and sends it on. The second and third hop do likewise, with
+  the third hop sending the message to the desired recipient.
 
-  - messages encrypted and passed between several routers
+  Tor sends data traffic in 512-byte cells.
+* Tor's cryptography
+  In Tor, each Onion Router has three distinct keys. One is an
+  /identity key/ of the onion router, a long-term key used for signing
+  only. This signs a medium-term /onion key/, which is kept at least
+  one week after advertising.
+
   - each router has 3 keys, two of which are rotated, one identity key
   - fixed minimum messages size of 512 Byte
     - extensions allow other sizes
@@ -434,63 +436,63 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   has drivers for several browsers, allowing it to control them, and
   evaluate the retrieved page. Its documentation is currently
   transferring from Version 1 to Version 2.
-** Mozmill
-   "MozMill is a test tool and framework for writing automated tests for Gecko based applications."[[link mozmill]]
-*** installation
-    Mozmill can be installed via pip:
+* Mozmill
+  "MozMill is a test tool and framework for writing automated tests for Gecko based applications."[[link mozmill]]
+** installation
+   Mozmill can be installed via pip:
 
-    =pip install mozmill=
-*** conflict
-    After installing first Marionette and then MozMill (without using
-    a virtual environment), Marionette stopped working, missing a
-    =B2GEmulatorRunner=. This error could be fixed by deinstalling
-    all installed packages via
+   =pip install mozmill=
+** conflict
+   After installing first Marionette and then MozMill (without using
+   a virtual environment), Marionette stopped working, missing a
+   =B2GEmulatorRunner=. This error could be fixed by deinstalling
+   all installed packages via
 
-    for i in $(pip list); do sudo pip uninstall $i; done
+   for i in $(pip list); do sudo pip uninstall $i; done
 
-    , then reinstalling Marionette.
+   , then reinstalling Marionette.
 
-    As MozMill advises "to use a virtual environment", [[link mozmill]],
-    this will likely fix the problem.
-*** TODO link mozmill
-** TODO Marionette [0/1]
-   Marionette is the next generation mozilla testing framework.
-*** installation
-    Marionette exists as a Python Package. It is thus easily installed via
+   As MozMill advises "to use a virtual environment", [[link mozmill]],
+   this will likely fix the problem.
+** TODO link mozmill
+* TODO Marionette [0/1]
+  Marionette is the next generation mozilla testing framework.
+** installation
+   Marionette exists as a Python Package. It is thus easily installed via
 
-    pip install marionette_client
+   pip install marionette_client
 
-    (after installing pip via =sudo apt-get install python-pip=)
-*** start browser with -marionette parameter
-    Each modern firefox browser, and thus tor, has marionette-support
-    built-in. It needs to be enabled on the command-line via the
-    =-marionette= switch, for example
+   (after installing pip via =sudo apt-get install python-pip=)
+** start browser with -marionette parameter
+   Each modern firefox browser, and thus tor, has marionette-support
+   built-in. It needs to be enabled on the command-line via the
+   =-marionette= switch, for example
 
-    cd tor-browser_en-US/Browser
-    ./firefox -marionette
+   cd tor-browser_en-US/Browser
+   ./firefox -marionette
 
-    This starts the Tor browser with marionette enabled.
-**** TODO marionette support page link
-*** attach to browser
-    To attach to a running browser, use the following code (this
-    example loads a page)
+   This starts the Tor browser with marionette enabled.
+*** TODO marionette support page link
+** attach to browser
+   To attach to a running browser, use the following code (this
+   example loads a page)
 
-    from marionette import Marionette
-    client = Marionette('localhost', port=2828);
-    client.start_session()
-    url='http://test.de'
-    client.navigate(url);
-*** not working in 0.19
-    from marionette import By
-*** page load test
-    The =client.navigate()= call returns only after the page has
-    loaded, (and throws an error if the page could not be
-    loaded). This obsoletes the need to test whether a page loaded
-    completely([[Panchenko]]).
-** shell script
-  If this were a simple firefox instance, just calling =firefox website= would load the website in Firefox.
-*** TODO how to check that page has loaded
-** TODO chickenfoot: http://groups.csail.mit.edu/uid/chickenfoot/
+   from marionette import Marionette
+   client = Marionette('localhost', port=2828);
+   client.start_session()
+   url='http://test.de'
+   client.navigate(url);
+** not working in 0.19
+   from marionette import By
+** page load test
+   The =client.navigate()= call returns only after the page has
+   loaded, (and throws an error if the page could not be
+   loaded). This obsoletes the need to test whether a page loaded
+   completely([[Panchenko]]).
+* shell script
+ If this were a simple firefox instance, just calling =firefox website= would load the website in Firefox.
+** TODO how to check that page has loaded
+* TODO chickenfoot: http://groups.csail.mit.edu/uid/chickenfoot/
 * criteria for tool to retrieve websites
   - script tor browser: load new page
   - easy set-up
@@ -500,10 +502,14 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
     - set tor's paranoia slider
     - install extra addon
 * TODO move tbb installation here
-* TODO by-hand initialization to retrieve websites
-  First start the tor browser bundle-firefox by hand, set the
-  connection type and have it loads its first website via Tor. This
-  also downloads enough descriptors to connect quicker later on.
+* by-hand initialization to retrieve websites
+  After installation, the tor browser bundle performs some
+  initialization steps. To complete these easily, start the tor
+  browser bundle-firefox by hand once.
+
+  Set the connection type and have it load its first website via
+  Tor. This also downloads enough descriptors to connect quicker later
+  on.
 * TODO retrieval of a single page
   Once you assured that the Browser Bundle is working, the webpages
   can be retrieved automatically. This is done via the

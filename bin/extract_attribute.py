@@ -7,7 +7,7 @@ import math
 import os
 import os.path
 import numpy as np
-from sklearn import svm, neighbors
+from sklearn import svm, neighbors, cross_validation
 import subprocess
 from sys import argv
 
@@ -17,12 +17,12 @@ LOGLEVEL=logging.INFO
 #LOGLEVEL=logging.WARN
 TIME_SEPARATOR='@'
 
-def _append_features(keys, fname):
-    '''appends features in trace file "fname" to keys, indexed by domain'''
-    domain = os.path.basename(fname).split(TIME_SEPARATOR)[0]
+def _append_features(keys, filename):
+    '''appends features in trace file "filename" to keys, indexed by domain'''
+    domain = os.path.basename(filename).split(TIME_SEPARATOR)[0]
     if not keys.has_key(domain):
         keys[domain] = []
-    keys[domain].append(analyze_file(fname))
+    keys[domain].append(Counter(filename))
 
 def _enlarge(row, upto):
     '''enlarges row to have upto entries (padded with 0)
@@ -60,8 +60,8 @@ def _sum_numbers(packets):
     return [dictionary[abs(x)] for x in counts]
 
 
-class Counts:
-    def __init__(self):
+class Counter:
+    def __init__(self, filename):
         self.bytes_in = 0
         self.bytes_out = 0
         self.packets_in = 0
@@ -70,7 +70,7 @@ class Counts:
         self.packets = []
         self.timing = []
         self.size_markers = None
-        self.html_marker = None # wrong, f.ex. for google.com@1445350513
+        self.html_marker = None
         self.total_transmitted_bytes_in = None
         self.total_transmitted_bytes_out = None
         self.occuring_packet_sizes = None
@@ -78,6 +78,22 @@ class Counts:
         self.number_in = None
         self.number_out = None
         self.warned = False
+
+        tshark = subprocess.Popen(args=['tshark','-r' + filename],
+                                  stdout=subprocess.PIPE);
+        for line in iter(tshark.stdout.readline, ''):
+            logging.debug(line)
+            try:
+#               (num, tstamp, src, x, dst, proto, size, rest)
+                (x, tstamp, src, y, dst, proto, size, rest) = line.split(None, 7)
+            except ValueError:
+                self.warned = True
+                logging.warn('file: %s had problems in line \n%s\n', filename, line)
+                break
+            else:
+                if not '[ACK]' in rest and not proto == 'ARP':
+                    self._extract_line(src, size, tstamp)
+                logging.debug('from %s to %s: %s bytes', src, dst, size)
 
     def panchenko(self):
         '''returns panchenko feature vector, (html marker, bytes in, bytes
@@ -93,10 +109,13 @@ class Counts:
                  self.number_out]
                 + self.size_markers)
 
+    def to_json(self):
+        return json.dumps(
+
     def __str__(self):
         return 'p: {}'.format(self.panchenko())
 
-    def _extract_values(self, src, size, tstamp):
+    def _extract_line(self, src, size, tstamp):
         '''aggregates stream values'''
         if src == HOME_IP: # outgoing packet
             self.bytes_out += int(size)
@@ -128,27 +147,6 @@ class Counts:
         self.percentage = (100 * self.packets_in / (self.packets_in + self.packets_out) / 5) * 5
         self.number_in = self.packets_in / 15
         self.number_out = self.packets_out / 15
-
-def analyze_file(filename):
-    '''analyzes dump file, returns counter'''
-    counter = Counts()
-    
-    tshark = subprocess.Popen(args=['tshark','-r' + filename],
-                              stdout=subprocess.PIPE);
-    for line in iter(tshark.stdout.readline, ''):
-        logging.debug(line)
-        try:
-            (num, tstamp, src, x, dst, proto, size, rest) = line.split(None, 7)
-        except ValueError:
-            counter.warned = True
-            logging.warn('file: %s had problems in line \n%s\n', filename, line)
-            break
-        else:
-            if not '[ACK]' in rest and not proto == 'ARP':
-                counter._extract_values(src, size, tstamp)
-            logging.debug('from %s to %s: %s bytes', src, dst, size)
-
-    return counter
 
 def get_counters(*argv):
     '''get called as main, either creates counters for the arguments, or
@@ -197,24 +195,16 @@ def to_features(counters):
 if __name__ == "__main__":
     counters = get_counters(argv)
     (X, y) = to_features(counters)
-    # shuffle
-    np.random.seed(0)
-    indices = np.random.permutation(len(y))
-    percent = int(len(y) * 0.9)
 
-    X_train = X[indices[:percent]]
-    X_test = X[indices[percent:]]
-    y_train = y[indices[:percent]]
-    y_test = y[indices[percent:]]
     # svm
     svc = svm.SVC(kernel='linear')
-    svc.fit(X_train, y_train)
-    print 'svm score: {}'.format(svc.score(X_test, y_test))
+    print 'svm: {}'.format(cross_validation.cross_val_score(svc, X, y, cv=5))
     # knn
     knn = neighbors.KNeighborsClassifier()
-    knn.fit(X_train, y_train)
-    print 'knn score: {}'.format(knn.score(X_test, y_test))
+    print 'knn: {}'.format(cross_validation.cross_val_score(knn, X, y, cv=5))
     # svm rbf panchenko
     svcp = svm.SVC(C=2**17, gamma=2**(-19))
-    svcp.fit(X_train, y_train)
-    print 'svm(panchenko) score: {}'.format(svcp.score(X_test, y_test))
+    print 'svm(p): {}'.format(cross_validation.cross_val_score(svcp, X, y, cv=5))
+    # svm liblinear
+    svl = svm.LinearSVC()
+    print 'svl: {}'.format(cross_validation.cross_val_score(svl, X, y, cv=5))
