@@ -2,6 +2,7 @@
 
 # extracts (panchenko's) features from pcap and analyses them
 
+import json
 import logging
 import math
 import os
@@ -22,7 +23,7 @@ def _append_features(keys, filename):
     domain = os.path.basename(filename).split(TIME_SEPARATOR)[0]
     if not keys.has_key(domain):
         keys[domain] = []
-    keys[domain].append(Counter(filename))
+    keys[domain].append(Counter.from_pcap(filename))
 
 def _enlarge(row, upto):
     '''enlarges row to have upto entries (padded with 0)
@@ -61,39 +62,44 @@ def _sum_numbers(packets):
 
 
 class Counter:
-    def __init__(self, filename):
+    def __init__(self):
         self.bytes_in = 0
         self.bytes_out = 0
         self.packets_in = 0
         self.packets_out = 0
-        self.last_time = ''
         self.packets = []
         self.timing = []
-        self.size_markers = None
-        self.html_marker = None
-        self.total_transmitted_bytes_in = None
-        self.total_transmitted_bytes_out = None
-        self.occuring_packet_sizes = None
-        self.percentage = None
-        self.number_in = None
-        self.number_out = None
         self.warned = False
 
+    @classmethod
+    def from_json(cls, jsonstring):
+        '''creates Counter from self.to_json'''
+        tmp = Counter()
+
+        for key, value in json.loads(jsonstring).iteritems():
+            setattr(tmp, key, value)
+        return tmp
+        
+    @classmethod
+    def from_pcap(cls, filename):
+        '''creates Counter from pcap file'''
+        tmp = Counter()
+    
         tshark = subprocess.Popen(args=['tshark','-r' + filename],
                                   stdout=subprocess.PIPE);
         for line in iter(tshark.stdout.readline, ''):
             logging.debug(line)
             try:
-#               (num, tstamp, src, x, dst, proto, size, rest)
                 (x, tstamp, src, y, dst, proto, size, rest) = line.split(None, 7)
             except ValueError:
-                self.warned = True
+                tmp.warned = True
                 logging.warn('file: %s had problems in line \n%s\n', filename, line)
                 break
             else:
-                if not '[ACK]' in rest and not proto == 'ARP':
-                    self._extract_line(src, size, tstamp)
+                if not 'Len=0' in rest and not proto == 'ARP':
+                    tmp._extract_line(src, size, tstamp)
                 logging.debug('from %s to %s: %s bytes', src, dst, size)
+        return tmp
 
     def panchenko(self):
         '''returns panchenko feature vector, (html marker, bytes in, bytes
@@ -108,9 +114,6 @@ class Counter:
                  self.number_in,
                  self.number_out]
                 + self.size_markers)
-
-    def to_json(self):
-        return json.dumps(
 
     def __str__(self):
         return 'p: {}'.format(self.panchenko())
@@ -132,7 +135,7 @@ class Counter:
 
     def _postprocess(self):
         '''sums up etc collected features'''
-        if self.size_markers != None:
+        if hasattr(self, "size_markers"):
             return
 
         self.size_markers = [size / 600 for size in _sum_stream(self.packets)]
@@ -147,6 +150,10 @@ class Counter:
         self.percentage = (100 * self.packets_in / (self.packets_in + self.packets_out) / 5) * 5
         self.number_in = self.packets_in / 15
         self.number_out = self.packets_out / 15
+
+    def to_json(self):
+        '''prints packet trace to json, for reimport'''
+        return json.dumps(self.__dict__)
 
 def get_counters(*argv):
     '''get called as main, either creates counters for the arguments, or
@@ -204,7 +211,7 @@ if __name__ == "__main__":
     print 'knn: {}'.format(cross_validation.cross_val_score(knn, X, y, cv=5))
     # svm rbf panchenko
     svcp = svm.SVC(C=2**17, gamma=2**(-19))
-    print 'svm(p): {}'.format(cross_validation.cross_val_score(svcp, X, y, cv=5))
+    print 'p-s: {}'.format(cross_validation.cross_val_score(svcp, X, y, cv=5))
     # svm liblinear
     svl = svm.LinearSVC()
-    print 'svl: {}'.format(cross_validation.cross_val_score(svl, X, y, cv=5))
+    print 'l-s: {}'.format(cross_validation.cross_val_score(svl, X, y, cv=5))
