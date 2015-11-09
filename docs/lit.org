@@ -294,7 +294,7 @@
 	    - needs to control exit node, tcp level (not app)
 
     7) Conclusion
-** [[./acmccs-wpes11-fingerprinting.pdf][Website Fingerprinting in Onion Routing Based Anonymization Networks]]
+** [[./acmccs-wpes11-fingerprinting.pdf][Panchenko - Website Fingerprinting in Onion Routing Based Anonymization Networks]]
 *** words
     - local eavesdropper
 
@@ -1298,7 +1298,7 @@
       upstream packets respectively),
 
       so timing information is omitted?
-** TODO [[./ccs14.pdf][A Systematic Approach to Developing and Evaluating Website Fingerprinting Defenses]] [0/2]
+** [[./ccs14.pdf][Cai - A Systematic Approach to Developing and Evaluating Website Fingerprinting Defenses]]
 *** summary
     0) [@0] ABSTRACT
 
@@ -1754,8 +1754,14 @@
     - The lower bounds of bandwidth costs are surprisingly low,
       suggesting that it may be possible to build very efficient
       defenses.
-*** TODO code
-**** TODO [[../sw/attacks/svm.py][svm.py]]
+*** code
+**** [[../sw/attacks/svm.py][svm.py]]
+     #+BEGIN_SRC python
+       #data is in this format:
+       #each data[i] is a class
+       #each data[i][j] is a standard-format sequence
+       #standard format is: each element is a pair (time, direction)
+     #+END_SRC
      - str_to_sinste: helper function, splits string
      - load_one: appends lines to data, returns
      - load_all: appends load_one to data, returns
@@ -1768,13 +1774,21 @@
        - percentage incoming
        - number of packets
      - "main"
-       #data is in this format:
-       #each data[i] is a class
-       #each data[i][j] is a standard-format sequence
-       #standard format is: each element is a pair (time, direction)
-
+       - splits data in test and training
+       - saves test and training files
 ***** problemsmaybe:
       - unique packet no fixed length
+**** [[file:~/da/git/sw/attacks/svm-run.py]]
+     runs
+     - python svm.py i
+     - svm-train -c c -g g svm.train svm.model
+     - svm-predict svm.test svm.model svm.resultst >> temp-acc
+     for i folds from 1 to 10
+**** [[file:~/da/git/sw/attacks/svmdotest.rb]]
+     cleans up, runs
+     - clgen_stratify cltor_matrix 36 40
+     - svm-train -t 4 -c 1024
+     - svm-predict
 *** problemsmaybe
     - append small packets generator lacking
     - "Essentially, these two assumptions are equivalent to assuming
@@ -2209,10 +2223,77 @@
        - we do better
 
     2) RELATED WORK
+
+       0) [@0] attack classes
+
+	  - identify user
+
+	  - identify server
+
+	  - identify path
+
+	  - user most applicable
+
+       1) Fingerprinting attacks on encrypting tunnels
+
+	  beginning: packets sizes
+
+	  later: HMMs
+
+       2) Fingerprinting attacks on Tor
+
+	  - hermann et al: multinomial naive bayes,
+
+	  - shi et al: cosine similarity
+
+	  - panchenko: http-specific with svm
+
+	  - reimplementation: 65% success rate, 100 web pages
+
+       3) Proposed traffic analysis defenses.
+
+	  - "padding packets, splitting packets into multiple packets,
+            and inserting dummy packets"
+
+	  - Fu et al: theoretical: constant-rate, fixed-rate
+
+	    - random intervals better
+
+	  - wright et al: morphing
+
+	  - lu et al: morphing extension to distribution of size-ngrams
+
+	  - luo et al: HTTPOS:
+
+	    - TCP: size and ordering of packets
+
+	    - HTTP: multiple possibly overlapping requests, pipelinig,
+              extra unnecessary requests, get extra data
+
+	    - defeatable by OP
+
+	  - Tor: randomized pipelining
+
+	    - worse not better
+
+       4) Other related work.
+
+	  - Wright et al: HMM protocol classification encrypted TCP
+
+	  - White et al HMM partial plaintext of encrypted VoIP
+
+    3) RECOGNIZING WEB PAGES
 *** quotes
     - Our attack converts traces into strings and uses the
       Damerau-Levenshtein distance to compare them.
     - (ends 1)
+    - they are a good match for the attacker scenario faced by many
+      Tor users today: they use Tor toevade censorship and persecution
+      by a government or ISP that wants to know their browsing habits
+      and has the ability to monitor their internet connection, but
+      cannot easily infiltrate Tor nodes and web servers outside the
+      country.
+    - (ends 2.0)
 *** vocabulary
 ** TODO [#A] [[./authorsversion-ccsw09.pdf][Website Fingerprinting: Attacking Popular Privacy Enhancing Technologies with the Multinomial Naïve-Bayes Classifier]] [0/2]
 *** TODO summary
@@ -2849,6 +2930,122 @@
 	     *var sums all others into a tuple
 
 	  4) Unpacking Argument Lists
+
+	     "when the arguments are already in a list or tuple but
+             need to be unpacked for a function call requiring
+             separate positional arguments. [...] If they are not
+             available separately, write the function call with the *
+             -operator to unpack the arguments out of a list or tuple:
+	     #+BEGIN_SRC python
+               >>> args = [3, 6]
+               >>> range(*args)
+               [3, 4, 5]
+	     #+END_SRC
+
+	  5) Lambda Expressions
+
+	     - "Small anonymous functions"
+
+	     - "syntactically restricted to a single expression"
+
+	     - "pass a small function as an argument:"
+	       #+BEGIN_SRC python
+                 >>> pairs = [(1, 'one'), (2, 'two'), (3, 'three'), (4, 'four')]
+                 >>> pairs.sort(key=lambda pair: pair[1])
+                 >>> pairs
+                 [(4, 'four'), (1, 'one'), (3, 'three'), (2, 'two')]
+	       #+END_SRC
+
+	  6) Documentation Strings
+
+	     - "The first line should always be a short, concise
+               summary of the object’s purpose. [...] This line should
+               begin with a capital letter and end with a period."
+
+       8) Intermezzo: Coding Style
+
+	  - 4 space indentation
+
+	  - 79 character lines
+
+	  - blank lines to separate functions, classes, larger code blocks
+
+	  - comments on line of their own if possible
+
+	  - docstrings
+
+	  - spaces right
+
+	  - CamelClass,  function_underscore,  method(self, ...)
+
+	  - ASCII
+
+    5) DATA STRUCTURES
+
+       1) More on Lists
+
+	  0) [@0] all methods
+
+	     - append,
+
+	     - extend
+
+	     - insert
+
+	     - remove
+
+	     - pop
+
+	     - index
+
+	     - count
+
+	     - sort
+
+	     - reverse
+
+	  1) Using Lists as Stacks
+
+	     via append() 
+             and pop()
+
+	  2) Using Lists as Queues
+
+	     use collections.deque()
+
+	  3) Functional Programming Tools
+
+	     - filter(function, sequence) returns a sequence
+               consisting of those items from the sequence for which
+               function(item) is true.
+
+	       #+BEGIN_SRC python
+                 >>> def f(x): return x % 3 == 0 or x % 5 == 0
+                 ...
+                 >>> filter(f, range(2, 25))
+                 [3, 5, 6, 9, 10, 12, 15, 18, 20, 21, 24]
+	       #+END_SRC
+
+	  4) List Comprehensions
+
+	     - list of squares
+	       #+BEGIN_SRC python
+                 squares = [x**2 for x in range(10)]
+	       #+END_SRC
+               This is also equivalent to
+	       #+BEGIN_SRC python
+                 squares = map(lambda x: x**2, range(10))
+	       #+END_SRC
+               , but it’s more concise and readable.
+
+	     - flatten a list using a listcomp with two 'for'
+	       #+BEGIN_SRC python
+                 >>> vec = [[1,2,3], [4,5,6], [7,8,9]]
+                 >>> [num for elem in vec for num in elem]
+                 [1, 2, 3, 4, 5, 6, 7, 8, 9]
+	       #+END_SRC
+
+       2) The del statement
 *** quotes
     - it’s good practice to include docstrings in code that you write,
       so make a habit of it.
@@ -3094,8 +3291,17 @@
 	     - variance Var[X] = E[(X - E(X))^{2}]
 	       Var[f(x)] =  E[(f(X) - E(f(X)))^{2}]
 
-	  4) Marginalization, Independence, Conditioning, and Bayes
-Rule
+	  4) Marginalization, Independence, Conditioning, and Bayes Rule
+
+	     0) [@0]
+
+		- marginalization, independence, conditioning, iid, bayes
+		  rule: see quotes
+
+		- Bayes Rule holds because p(x,y) = p(x|y)p(y) = p(y|x)p(x)
+
+	     1) An Example
+
 *** TODO quotes
     - much of the art of machine learning is to reduce a range of
       fairly disparate problems to a set of fairly narrow
@@ -3152,6 +3358,17 @@ Rule
 
       E[f(X)] := \int f(x)dp(x).
     - (ends 1.2.3)
+    - /joint density/ p(x, y).
+    - /marginalization/: recover p(x) by integrating out y:
+      p(x) = \int dp(x, y).
+    - /X and Y are independent/: p(x,y) = p(x) p(y)
+    - /iid random variables/: independently and identically distributed
+    - /conditional probabilities/:
+      p(x|y) := p(x, y) / p(y)
+    - /Bayes Rule/: p(y|x) = p(x|y)p(y) / p(x)
+    - (ends 1.2.4.0)
+    - Note that often our tests may not be conditionally independent
+      and we would need to take this into account.
 ** [[./06vect.pdf][Scoring, term weighting and the vector space model]]
 ** [[./ch1.pdf][Data Mining]]
 ** [[shell:firefox ./skl/index.html.4 &][A tutorial on statistical-learning for scientific data processing]]
