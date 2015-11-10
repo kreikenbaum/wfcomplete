@@ -402,21 +402,23 @@
 
 	  facilitate subsequent classification, describes most relevant
 
-	  - Without Packets Sized 52: no ACKs
+	  Without Packets Sized 52: no ACKs
 
-	  - Size of uninterrupted flow (except ACK), grouped by 600 bytes
+	  - *Size Markers* of uninterrupted flow (except ACK), grouped
+            by 600 bytes
 
-	  - HTML Markers: size of html document (first uninterrupted flow)
+	  - *HTML Marker*: size of html document (first uninterrupted flow)
 
-	  - Total Transmitted Bytes: grouped by 10000 bytes
+	  - *Total Transmitted Bytes*: grouped by 10000 bytes
 
-	  - Number Markers: number of packets, grouped by 1,2,3-5,6-8,9-13,14
+	  - *Number Markers*: number of uninterruped packet flow in
+            direction, grouped by 1,2,3-5,6-8,9-13,14
 
-	  - Occurring Packet Sizes: grouped by 2, in/out
+	  - *Occurring Packet Sizes*: grouped by 2, in/out
 
-	  - Percentage incoming/outgoing (rounds Number markers)
+	  - *Percentage Incoming Packets* grouped by 5%
 
-	  - Number of Packets, grouped by 15
+	  - *Number of Packets*, in/out grouped by 15
 
 	  not working
 
@@ -2283,6 +2285,25 @@
 	  - White et al HMM partial plaintext of encrypted VoIP
 
     3) RECOGNIZING WEB PAGES
+
+       - Damerau-Levenshtein edit distance
+
+	 - best costs when "transpositions were 20 times cheaper than
+           insertions, deletions, and substitutions"
+
+	 - size rounding (up)
+
+	 - normalization to d(t, t') / min(|t|, |t'|)
+
+	 - several worse approaches
+
+	   - cells instead of packets
+
+	   - knn
+
+	   - fixed-length via l_{2}-norm
+
+    4) RECOGNIZING WEB SITES
 *** quotes
     - Our attack converts traces into strings and uses the
       Damerau-Levenshtein distance to compare them.
@@ -2294,8 +2315,32 @@
       cannot easily infiltrate Tor nodes and web servers outside the
       country.
     - (ends 2.0)
+    - these edits correspond to packet and request re-ordering,
+      request omissions (e.g. due to caching), and slight variations
+      in the sizes of requests and responses.
+    - a better approach would be to learn optimal costs from the
+      training data using the recently-proposed method of Bellet, et
+      al.
+    - also rounds all packet sizes *up* to a multiple of 600
+    - Other normalization factors, such as |t| + |t_{0}| and
+      max(|t|, |t_{0}|), yielded worse results.
+    - The γ parameter is used to normalize L so that it’s outputs fall
+      into a useful range. In our experiments, we found γ = 1 works
+      well.
+    - We tried representing traces as a sequence of Tor cells instead
+      of as a sequence of packets. Classifier performance degraded
+      slightly, suggesting that the Tor cells are often grouped into
+      packets in the same way each time a page is loaded.
+    - neighbor algorithm: to classify trace t, the attacker computed
+      t^{∗} = argmin_{t'} L(t, t') over every trace in his database, and
+      guessed that t was from the same web page as t^{∗}
+    - Finally, we tried using a metric embedding to convert our
+      variable-length trace vectors into fixed-length vectors in a
+      space using the \ell_{2} - norm, and then used an SVM to classify
+      these vectors. This performed substantially worse than the SVM
+      classifier with distance-based kernel described above.
 *** vocabulary
-** TODO [#A] [[./authorsversion-ccsw09.pdf][Website Fingerprinting: Attacking Popular Privacy Enhancing Technologies with the Multinomial Naïve-Bayes Classifier]] [0/2]
+** TODO [#A] [[./authorsversion-ccsw09.pdf][Herrmann - Website Fingerprinting: Attacking Popular Privacy Enhancing Technologies with the Multinomial Naïve-Bayes Classifier]] [0/2]
 *** TODO summary
     0. [@0] ABSTRACT
 
@@ -2318,14 +2363,27 @@
 
        - passive, local, external attacker
 
+       - training phase: fingerprints for all (or set of observed) websites
+
+       - testing phase: measure user traffic, compare to fingerprints
+
+    3. RELATED WORK
+
 *** TODO quotes
     - influence of the browser cache on accuracy.
+    - The attack consists of two phases: in the training phase the
+      attacker creates traffic fingerprints for a large number of
+      sites (or for a small set of interesting sites) and stores them
+      together with the site URLs in a database. In the testing phase
+      the attacker records the encrypted traffic of the user, creates
+      fingerprints of small traffic chunks and tries to match them
+      with records in the database.
 *** vocabulary
     - website fingerprinting: learn the identity, i. e. the URLs, of
       websites that are downloaded over an encrypted tunnel by
       comparing the observed traffic to a library of previously
       recorded fingerprints.
-** TODO [[./csbuflo.pdf][CS-BuFLO: A Congestion Sensitive Website Fingerprinting Defense]]
+** TODO [[./csbuflo.pdf][Cai - CS-BuFLO: A Congestion Sensitive Website Fingerprinting Defense]]
 *** quotes
     - Our experiments find that Congestion-Sensitive BuFLO has high
       overhead (around 2.3-2.8x)
@@ -2369,6 +2427,38 @@
        - CS-BuFLO ratio 2.8. BuFLO ratio of 2.2.
 
     2) RELATED WORK
+
+       - dyer: lists stuff like padM, padE, ...
+
+       - wright: morphing
+
+       - dyer defeats
+
+       - Lu extends morphing
+
+       - Dyer BuFLO
+
+       - Fu: CPU load changes, recommend randomized intervals
+
+       - HTTPOS
+
+       - Tor randomized
+
+       - Cai defeated
+
+       - many attacks agains https, ipsec, vpn, etc
+
+       - herrmann: tunnels attack, fails on tor
+
+       - panchenko
+
+       - dyer vng++
+
+       - cai string edit distance
+
+       - wang improved
+
+       - danezis, yu, cai hmm to extend to web site fp
 ** TODO [[./Liberatore_2006.pdf][Inferring the Source of Encrypted HTTP Connections]]
 ** TODO [[./ipccc12-tor-performance.pdf][Improving Performance and Anonymity in the Tor Network]]
 ** TODO [#C] [[./LZCLCP_NDSS11.pdf][HTTPOS: Sealing Information Leaks with Browser-side Obfuscation of Encrypted Flows]]
@@ -3188,7 +3278,7 @@
     - imagesc(K);
     - colormap(hot);
     - colorbar;
-** TODO [[./thebook.pdf][INTRODUCTION TO MACHINE LEARNING]] [0/2]
+** TODO [#A] [[./thebook.pdf][INTRODUCTION TO MACHINE LEARNING]] [0/2]
 *** TODO summary
     1) Introduction
 
@@ -3300,8 +3390,36 @@
 
 		- Bayes Rule holds because p(x,y) = p(x|y)p(y) = p(y|x)p(x)
 
+		- "The key consequence of (1.15) is that we may
+                  reverse the conditioning between a pair of random
+                  variables."
+
 	     1) An Example
 
+		HIV testing,
+
+		- p(T = HIV+ | X = HIV+) = 1
+
+		- p(T = HIV+ | X = HIV-) = 0.01
+
+		- p(X = HIV+) = 0.0015
+                  \to  p(X = HIV-) = 0.9985
+
+		- then p(X = HIV+ | T = HIV+) is (shorthand P(x+, t-) etc)
+		  = p(t+ | x+) p(x+) / p(t+)
+
+		- p(t+) = p(x+, t+) + p(x-, t+)
+		  = p(t+ | x+ ) p(x+) + p(t+ | x-) p(x-)
+		  = 1 * 0.0015 + 0.01 * 0.9985
+
+		- back to p(x+ | t+)
+		  = 1 * 0.0015 / (1 * 0.0015 + 0.01 * 0.9985)
+
+		- increase test accuracy by further information (f.ex. age)
+
+		- and further, conditionally independent, tests
+
+       3) Basic Algorithms
 *** TODO quotes
     - much of the art of machine learning is to reduce a range of
       fairly disparate problems to a set of fairly narrow
@@ -3367,8 +3485,33 @@
       p(x|y) := p(x, y) / p(y)
     - /Bayes Rule/: p(y|x) = p(x|y)p(y) / p(x)
     - (ends 1.2.4.0)
+    - The physician recommends a test which is guaranteed to detect
+      HIV-positive whenever a patient is infected.
+    - On the other hand, for healthy patients it has a 1% error
+      rate. That is, with probability 0.01 it diagnoses a patient as
+      HIV-positive even when he is, in fact, HIV-negative.
+    - Moreover, assume that 0.15% of the population is infected.
+    - Denote by X and T the random variables associated with the
+      health status of the patient and the outcome of the test
+      respectively.
+    - We are interested in p(X = HIV+|T = HIV+).
     - Note that often our tests may not be conditionally independent
       and we would need to take this into account.
+    - p(X = HIV+|T = HIV+) = p(T = HIV+|X = HIV+) p(X = HIV+) / p(T = HIV+)
+    - p(T = HIV+) = \sum p(T = HIV+, x) = \sum p(T = HIV+|x)p(x)
+    - The corresponding expression yields:
+
+      p(T = HIV+|X = HIV+, A)p(X = HIV+|A) / p(T = HIV+|A)
+
+      Here we simply conditioned all random variables on A in order to
+      take additional information into account.
+    - What we want is that the diagnosis of T_{2} is independent of that
+      of T_{2} given the health status X of the patient. This is
+      expressed as
+      p(t_{1} , t_{2} |x) = p(t_{1} |x)p(t_{2} |x). (1.16)
+    - Random variables satisfying the condition (1.16) are commonly
+      referred to as /conditionally independent/.
+    - (ends 1.2.4.1)
 ** [[./06vect.pdf][Scoring, term weighting and the vector space model]]
 ** [[./ch1.pdf][Data Mining]]
 ** [[shell:firefox ./skl/index.html.4 &][A tutorial on statistical-learning for scientific data processing]]
@@ -3981,3 +4124,17 @@
     2) Related work
 
 *** quotes
+** [[~/da/git/docs/python-doc-reference.pdf][The Python Language Reference]]
+** [[file:sarle/comp.ai.neural-nets%20FAQ,%20Part%201%20of%207:%20Introduction.html][file:~/da/git/docs/sarle/comp.ai.neural-nets FAQ, Part 1 of 7: Introduction.html]]
+** [[file:Curse%20of%20dimensionality%20-%20Wikipedia,%20the%20free%20encyclopedia.html][file:~/da/git/docs/Curse of dimensionality - Wikipedia, the free encyclopedia.html]]
+** [[file:Regularization%20(mathematics)%20-%20Wikipedia,%20the%20free%20encyclopedia.html][file:~/da/git/docs/Regularization (mathematics) - Wikipedia, the free encyclopedia.html]]
+** ~/da/git/docs/onion-discex00.pdf
+   see also bibtex
+** ~/da/git/docs/onion.pdf
+** ~/da/git/docs/onion-routing_ih96.pdf
+** ~/da/git/docs/onion-routing_pet2000.ps
+** ~/da/git/docs/timing-fc2004.pdf
+** ~/da/git/docs/10.1.1.96.7225.pdf
+** ~/da/git/docs/TR_DCC-1999-005.pdf
+** ~/da/git/docs/mlj12.pdf
+** ~/da/git/docs/0306-SMCSIA-FGBZ.pdf

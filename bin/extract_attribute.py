@@ -51,14 +51,23 @@ if __name__ == "__main__":
     (X, y) = to_features(counter.Counter.from_(sys.argv))
 
     # svm
+    print 'svm'
     svc = svm.SVC(kernel='linear')
     print 'svm: {}'.format(cross_validation.cross_val_score(svc, X, y, cv=5))
+    del svc # free space
     # knn
+    print 'knn'
     knn = neighbors.KNeighborsClassifier()
     print 'knn: {}'.format(cross_validation.cross_val_score(knn, X, y, cv=5))
+    del knn
     # svm rbf panchenko
+    print 'panchenko-rbf-svm'
     svcp = svm.SVC(C=2**17, gamma=2**(-19))
     print 'p-s: {}'.format(cross_validation.cross_val_score(svcp, X, y, cv=5))
+    del svcp
     # svm liblinear
+    print 'liblinear'
     svl = svm.LinearSVC()
     print 'l-s: {}'.format(cross_validation.cross_val_score(svl, X, y, cv=5))
+    del svl
+    

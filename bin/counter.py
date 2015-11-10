@@ -7,25 +7,27 @@ import os
 import subprocess
 
 HOME_IP = '134.76.96.47' #td: get ips
-LOGLEVEL = logging.DEBUG
-# LOGLEVEL = logging.INFO
+# LOGLEVEL = logging.DEBUG
+LOGLEVEL = logging.INFO
 TIME_SEPARATOR = '@'
 
 def _append_features(keys, filename):
-    '''appends features in trace file "filename" to keys, indexed by domain'''
+    '''appends features in trace file "filename" to keys
+
+    keys is a dictionary, indexed by domain, holding arrays of Counter'''
     domain = _get_domain(filename)
     if not keys.has_key(domain):
         keys[domain] = []
     keys[domain].append(Counter.from_pcap(filename))
 
 def discretize(number, by):
-    '''discretizes number by increment
+    '''discretizes number by increment, rounding up
     >>> discretize(15, 3)
     15
-    >>> discretize(15, 2)
-    14
+    >>> discretize(14, 3)
+    15
     '''
-    return (number / by) * by
+    return int(math.ceil(float(number) / by) * by)
 
 def _get_domain(filename):
     '''extracts domain part from filename:
@@ -44,16 +46,16 @@ def pad(row, upto=300):
 
 def sum_bytes(packets):
     '''sum of (incoming, outgoing) bytes
-    >>> sum_bytes([3,4,-1,-4])
+    >>> sum_bytes([-3,1,-4,4])
     (5, 7)
     '''
-    return((sum((x for x in packets if x < 0)),
-            sum((x for x in packets if x > 0))))
+    return((sum((x for x in packets if x > 0)),
+            sum((x for x in packets if x < 0))))
 
 def sum_packets(packets):
-    '''number of (incoming, outgoing) bytes
-    >>> sum_packets([3,4,-1,-4])
-    (2, 2)
+    '''number of (incoming, outgoing) packets
+    >>> sum_packets([3,4,-1,-4, 1])
+    (3, 2)
     '''
     return((sum((1 for x in packets if x < 0)),
             sum((1 for x in packets if x > 0))))
@@ -75,15 +77,18 @@ def _sum_stream(packets):
     return out
 
 def _sum_numbers(packets):
-    '''sums number of adjacent packets in the same direction, grouped by
-    1,2,3-5,6-8,9-13,14
+    '''sums number of adjacent packets in the same direction, discretized
+    by 1,2,3-5,6-8,9-13,14
+
     >>> _sum_numbers([10, -1, -2, 4])
     [1, 2, 1]
     '''
     counts = _sum_stream([math.copysign(1, x) for x in packets])
+    # td: try also with : 6 instead of : 4 etc
+    # extended as had 16
     dictionary = {1: 1, 2: 2, 3: 3, 4: 3, 5: 3, 6: 4, 7: 4, 8:4,
                   9:5, 10:5, 11:5, 12:5, 13:5, 14:6}
-    return [dictionary[abs(x)] for x in counts]
+    return [dictionary[min(14,abs(x))] for x in counts]
 
 class Counter(object):
     '''single trace file, also helper functions to create counters for all
@@ -92,7 +97,7 @@ class Counter(object):
         self.fixed = None
         self.variable = None
         self.packets = []
-        self.timing = []
+        #        self.timing = [] # gets too big, else
         self.warned = False
 
     def __str__(self):
@@ -100,7 +105,7 @@ class Counter(object):
 
     @classmethod
     def from_json(cls, jsonstring):
-        '''creates Counter from self.to_json'''
+        '''creates Counter from self.to_json-output'''
         tmp = Counter()
 
         for key, value in json.loads(jsonstring).iteritems():
@@ -137,7 +142,7 @@ class Counter(object):
         for (dirpath, _, filenames) in os.walk(dirname):
             for jfile in [x for x in filenames if '.json' in x]:
                 domain = jfile.replace('.json', '')
-                logging.debug('processing %s', jfile)
+                logging.info('traces for %s from JSON %s', domain, jfile)
                 out[domain] = Counter.all_from_json(jfile)
                 filenames.remove(jfile)
                 for trace in [x for x in filenames if domain + '@' in x]:
@@ -171,7 +176,7 @@ class Counter(object):
                 break
             else:
                 if not 'Len=0' in rest and not proto == 'ARP':
-                    tmp.extract_line(src, size, time)
+                    tmp._extract_line(src, size, time)
                 logging.debug('from %s to %s: %s bytes', src, dst, size)
         return tmp
 
@@ -180,17 +185,16 @@ class Counter(object):
         out, total size, percentage incoming, packets in, packets out,
         size markers)'''
         self._postprocess()
-        # todo: pad variable
         return self.fixed + pad(self.variable['size_markers'])
 
-    def extract_line(self, src, size, tstamp):
+    def _extract_line(self, src, size, tstamp):
         '''aggregates stream values'''
-        if src == HOME_IP: # outgoing packet
-            self.packets.append(int(size))
-            self.timing.append((tstamp, int(size)))
-        elif src: #incoming
+        if src == HOME_IP: # outgoing negative as of panchenko 3.1
             self.packets.append(- int(size))
-            self.timing.append((tstamp, -int(size)))
+            #            self.timing.append((tstamp, - int(size)))
+        elif src: #incoming positive
+            self.packets.append(int(size))
+            #            self.timing.append((tstamp, int(size)))
 
     def _postprocess(self):
         '''sums up etc collected features'''
@@ -210,9 +214,14 @@ class Counter(object):
         # size_incoming size_outgoing
         self.fixed.extend([discretize(x, 10000) for x in
                            sum_bytes(self.packets)])
-        # number of unique packet sizes
-        self.fixed.append(discretize(len(set(self.packets)), 2))
-
+        # number markers
+        self.variable['number_markers'] = _sum_numbers(self.packets)
+        # occurring packet sizes in + out
+        self.fixed.append(discretize(len(set([x for x in
+                                              self.packets if x > 0])), 2))
+        self.fixed.append(discretize(len(set([x for x in
+                                              self.packets if x < 0])), 2))
+        # helper
         (packets_in, packets_out) = sum_packets(self.packets)
         # percentage incoming packets
         self.fixed.append(discretize(100 * packets_in/(packets_in + packets_out),
