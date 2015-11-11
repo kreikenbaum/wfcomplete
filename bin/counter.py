@@ -18,7 +18,12 @@ def _append_features(keys, filename):
     domain = _get_domain(filename)
     if not keys.has_key(domain):
         keys[domain] = []
-    keys[domain].append(Counter.from_pcap(filename))
+    c = Counter.from_pcap(filename)
+    if not c.warned:
+        keys[domain].append(c)
+    else:
+        logging.warn('%s discarded', c.name)
+
 
 def discretize(number, by):
     '''discretizes number by increment, rounding up
@@ -84,17 +89,16 @@ def _sum_numbers(packets):
     [1, 2, 1]
     '''
     counts = _sum_stream([math.copysign(1, x) for x in packets])
-    # td: try also with : 6 instead of : 4 etc
-    # extended as had 16
+    # extended as counts had 16, 21
     dictionary = {1: 1, 2: 2, 3: 3, 4: 3, 5: 3, 6: 4, 7: 4, 8:4,
                   9:5, 10:5, 11:5, 12:5, 13:5, 14:6}
     return [dictionary[min(14,abs(x))] for x in counts]
 
 class Counter(object):
-    '''single trace file, also helper functions to create counters for all
-    files in directory'''
-    def __init__(self):
+    '''single trace file'''
+    def __init__(self, name = None):
         self.fixed = None
+        self.name = name
         self.variable = None
         self.packets = []
         #        self.timing = [] # gets too big, else
@@ -161,7 +165,7 @@ class Counter(object):
     @classmethod
     def from_pcap(cls, filename):
         '''creates Counter from pcap file'''
-        tmp = Counter()
+        tmp = Counter(filename)
 
         tshark = subprocess.Popen(args=['tshark', '-r' + filename],
                                   stdout=subprocess.PIPE)
@@ -180,12 +184,34 @@ class Counter(object):
                 logging.debug('from %s to %s: %s bytes', src, dst, size)
         return tmp
 
-    def panchenko(self):
-        '''returns panchenko feature vector, (html marker, bytes in, bytes
-        out, total size, percentage incoming, packets in, packets out,
-        size markers)'''
+    def variable_lengths(self):
+        '''lengths of variable-length features'''
         self._postprocess()
-        return self.fixed + pad(self.variable['size_markers'])
+        out = {}
+        for k, v in self.variable.iteritems():
+            out[k] = len(v)
+        return out
+
+    def panchenko(self, pad_by=300):
+        '''returns panchenko feature vector
+
+        (html marker, bytes in/out, packet sizes in/out, total size,
+        percentage incoming, number in/out, size markers, td:nummark)
+
+        pad_by determines how much to pad feature-length vectors
+        if pad_by is an int, all args will be pad()-ed by this amount
+        if it is a dictionary, the corresponding values in
+        self.variable will be padded
+        '''
+        self._postprocess()
+        out = self.fixed
+        if type(pad_by) is int:
+            for key in self.variable.keys():
+                tmp['key'] = pad_by
+            pad_by = tmp
+        for k, v in self.variable.iteritems():
+            out += pad(v, pad_by[k])
+        return out
 
     def _extract_line(self, src, size, tstamp):
         '''aggregates stream values'''
@@ -198,6 +224,8 @@ class Counter(object):
 
     def _postprocess(self):
         '''sums up etc collected features'''
+        logging.debug("_postprocess for %s", self.name)
+
         if self.fixed is not None:
             return
 
@@ -231,7 +259,7 @@ class Counter(object):
         # number outgoing
         self.fixed.append(discretize(packets_out, 15))
         # all packets as of "A Systematic ..." svm.py code
-        self.variable['all_packets'] = self.packets
+        #        self.variable['all_packets'] = self.packets # grew too big 4 mem
 
     def to_json(self):
         '''prints packet trace to json, for reimport'''
