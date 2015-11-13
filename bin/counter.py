@@ -1,5 +1,4 @@
 '''aggregates trace data, extracts features'''
-import collections
 import logging
 import json
 import math
@@ -18,21 +17,21 @@ def _append_features(keys, filename):
     domain = _get_domain(filename)
     if not keys.has_key(domain):
         keys[domain] = []
-    c = Counter.from_pcap(filename)
-    if not c.warned:
-        keys[domain].append(c)
+    counter = Counter.from_pcap(filename)
+    if not counter.warned:
+        keys[domain].append(counter)
     else:
-        logging.warn('%s discarded', c.name)
+        logging.warn('%s discarded', counter.name)
 
 
-def discretize(number, by):
+def discretize(number, step):
     '''discretizes number by increment, rounding up
     >>> discretize(15, 3)
     15
     >>> discretize(14, 3)
     15
     '''
-    return int(math.ceil(float(number) / by) * by)
+    return int(math.ceil(float(number) / step) * step)
 
 def _get_domain(filename):
     '''extracts domain part from filename:
@@ -92,11 +91,11 @@ def _sum_numbers(packets):
     # extended as counts had 16, 21
     dictionary = {1: 1, 2: 2, 3: 3, 4: 3, 5: 3, 6: 4, 7: 4, 8:4,
                   9:5, 10:5, 11:5, 12:5, 13:5, 14:6}
-    return [dictionary[min(14,abs(x))] for x in counts]
+    return [dictionary[min(14, abs(x))] for x in counts]
 
 class Counter(object):
     '''single trace file'''
-    def __init__(self, name = None):
+    def __init__(self, name=None):
         self.fixed = None
         self.name = name
         self.variable = None
@@ -180,7 +179,7 @@ class Counter(object):
                 break
             else:
                 if not 'Len=0' in rest and not proto == 'ARP':
-                    tmp._extract_line(src, size, time)
+                    tmp.extract_line(src, size, time)
                 logging.debug('from %s to %s: %s bytes', src, dst, size)
         return tmp
 
@@ -188,8 +187,8 @@ class Counter(object):
         '''lengths of variable-length features'''
         self._postprocess()
         out = {}
-        for k, v in self.variable.iteritems():
-            out[k] = len(v)
+        for k, feature in self.variable.iteritems():
+            out[k] = len(feature)
         return out
 
     def panchenko(self, pad_by=300):
@@ -206,14 +205,15 @@ class Counter(object):
         self._postprocess()
         out = self.fixed
         if type(pad_by) is int:
+            tmp = {}
             for key in self.variable.keys():
-                tmp['key'] = pad_by
+                tmp[key] = pad_by
             pad_by = tmp
-        for k, v in self.variable.iteritems():
-            out += pad(v, pad_by[k])
+        for k, feature in self.variable.iteritems():
+            out += pad(feature, pad_by[k])
         return out
 
-    def _extract_line(self, src, size, tstamp):
+    def extract_line(self, src, size, tstamp):
         '''aggregates stream values'''
         if src == HOME_IP: # outgoing negative as of panchenko 3.1
             self.packets.append(- int(size))
@@ -252,14 +252,15 @@ class Counter(object):
         # helper
         (packets_in, packets_out) = sum_packets(self.packets)
         # percentage incoming packets
-        self.fixed.append(discretize(100 * packets_in/(packets_in + packets_out),
+        self.fixed.append(discretize(100 * packets_in
+                                     /(packets_in + packets_out),
                                      5))
         # number incoming
         self.fixed.append(discretize(packets_in, 15))
         # number outgoing
         self.fixed.append(discretize(packets_out, 15))
         # all packets as of "A Systematic ..." svm.py code
-        #        self.variable['all_packets'] = self.packets # grew too big 4 mem
+        self.variable['all_packets'] = self.packets # grew too big 4 mem
 
     def to_json(self):
         '''prints packet trace to json, for reimport'''

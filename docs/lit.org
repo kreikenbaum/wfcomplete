@@ -585,6 +585,18 @@
       the original statistics from the merged packets. Still, it has
       to be explored whether more sophisticated statistical measures
       can achieve this extraction.
+
+*** ref
+   #+BEGIN_SRC bibtex
+     @inproceedings{panchenko,
+       Author={Panchenko, Andriy and Niessen, Lukas and Zinnen, Andreas and Engel, Thomas},
+       Booktitle={Proceedings of the 10th ACM Workshop on Privacy in the Electronic
+     Society},
+       Title={Website fingerprinting in onion routing based anonymization networks},
+       Pages={103--114},
+       Year={2011}
+     }
+   #+END_SRC
 ** [[https://blog.torproject.org/blog/experimental-defense-website-traffic-fingerprinting][Experimental Defense for Website Traffic Fingerprinting]]
    - [[./experimental.html][local copy]]
 *** summary
@@ -2371,6 +2383,86 @@
 	 - (upstream too)
 
     6) EVALUATION
+
+       1) Web page classifier
+
+	  0) [@0] questions
+
+	     - defenses: https, randomized pipelining, padding, morphing
+
+	     - other classifiers:herrmann, panchenko
+
+	     - if number of web pages goes up?
+
+	     - if size of training set goes up?
+
+	     - choice of web pages?
+
+	     - state of the browser?
+
+	  1) Experimental Setup
+
+	     - default firefox with Tor
+
+	     - "either 20 or 40 traces from each URL"
+
+	  2) Attacks and Defenses
+
+	     1) data sets
+
+		- none: ssh
+
+		- ssh + httpos
+
+		- tor
+
+		- tor + randomized pipelining
+
+	     2) generate defenses
+
+		- ssh + sample-based traffic morphing to flickr.com
+
+		- ssh packet count remove packet size and direction information
+
+		- tor + randomized pipelining + randomized cover traffic
+
+		  only insert 1500 or -1500 at l random positions
+
+		  *weaker than panchenko*
+
+		- tor packet count: as ssh p-c above
+
+	     3) Results
+
+		- better in many cases than panchenko
+
+       2) Web site classifier
+
+	  1) Experimental Setup
+
+	     - facebook:
+
+	       - login page, user's home page, "friend profile page"
+
+	       - warm and cold of home and profile pages
+
+	     - imdb:
+
+	       - home page, search results, movie, celebrity
+
+	       - warm and cold for each page
+
+	     - artificial transition probabilities
+
+	     - facebook via fixed path
+
+	  2) Results
+
+	     - perfect for facebook,
+
+	     - still very good for imdb
+
+    7) DISCUSSION
 *** quotes
     - Our attack converts traces into strings and uses the
       Damerau-Levenshtein distance to compare them.
@@ -2419,6 +2511,9 @@
       every ρ milliseconds, and continues this process for at least τ
       milliseconds.
     - (ends 5)
+    - if a window had, say, 3 IMDB pages and 3 non-IMDB pages, we
+      discarded it from the histogram.
+    - (ends 6.2.2)
 *** ref
     #+BEGIN_SRC bibtex
       @inproceedings{ccs2012-fingerprinting,
@@ -3558,6 +3653,18 @@
 *** quotes
     - Despite its simplicity, nearest neighbors has been successful in
       a large number of classification and regression problems
+    - SVC and NuSVC implement the “one-against-one” approach (Knerr et
+      al., 1990) for multi- class classification. If n_class is the
+      number of classes, then n_class * (n_class - 1) / 2 classifiers
+      are constructed and each one trains data from two classes
+    - Note that the LinearSVC also implements an alternative
+      multi-class strategy, the so-called multi-class SVM formulated
+      by Crammer and Singer, by using the option
+      multi_class=’crammer_singer’. This method is consistent, which
+      is not true for one-vs-rest classification. In practice,
+      one-vs-rest classification is usually preferred, since the
+      results are mostly similar, but the runtime is significantly
+      less.
 ** [[./sally/Example1.html]]
 *** summary
     - input files example1.cfg reuters.zip
@@ -3737,6 +3844,14 @@
 	     - replace p(x|y) by independent product of parts (spam: words)
 
 	  2) Nearest Neighbor Estimators
+
+	     - distance to (k-) nearest point(s).
+
+	     - whichever class is closest
+
+	     - distance-dependent
+
+	     - works well if work was put into distance
 *** TODO quotes
     - much of the art of machine learning is to reduce a range of
       fairly disparate problems to a set of fairly narrow
@@ -3854,6 +3969,14 @@
       to increment all counts by 1.
     - perform surprisingly well
     - (ends 1.3.1)
+    - Note that nearest neighbor algorithms can yield excellent
+      performance when used with a good distance measure.
+    - lemma by Johnson and Lindenstrauss [DG03] asserts that a set of
+      m points in high dimensional Euclidean space can be projected
+      into a O(log m/\epsilon 2 ) dimensional Euclidean space such that the
+      distance between any two points changes only by a factor of (1 ±
+      \epsilon). [...] The surprising fact is that the projection relies on a
+      simple randomized algorithm.
 ** [[./06vect.pdf][Scoring, term weighting and the vector space model]]
 ** [[./ch1.pdf][Data Mining]]
 ** [[shell:firefox ./skl/index.html.4 &][A tutorial on statistical-learning for scientific data processing]]
@@ -4412,6 +4535,18 @@
       subok=False, ndmin=0)
 
       Create an array.
+
+    - numpy.ma.arange( [ start ] , stop [ , step ] , dtype=None)
+
+      Return evenly spaced values within a given interval.  [...]
+      When using a non-integer step, such as 0.1, the results will
+      often not be consistent. It is better to use linspace for these
+      cases.
+
+    - numpy.linspace(start, stop, num=50, endpoint=True,
+      retstep=False, dtype=None)
+
+      Return evenly spaced numbers over a specified interval.
 ** TODO [#B] [[./tor14design.pdf][Tor: The Second-Generation Onion Router (2014 DRAFT v1)]]
 *** summary
     0) [@0] Abstract
@@ -4540,8 +4675,14 @@
 
 	 parallelistic learning, experiential learning, asynchronous
 
+       - Where can I find a simple introduction to NNs?
+
+	 see chapter 4
+
+       - Are there any online books about NNs?
+
 *** quotes
-    - Some care should be invested into a summary: 
+    - Some care should be invested into a summary:
       - simple concatenation of all the answers is not enough: instead,
        redundancies, irrelevancies, verbosities, and errors should be
        filtered out (as well as possible)
@@ -4610,3 +4751,28 @@
 ** [[~/da/git/docs/10.1.1.96.7225.pdf][A Guided Tour to Approximate String Matching]]
 *** auch ~/da/git/docs/TR_DCC-1999-005.pdf
 ** [[~/da/git/docs/mlj12.pdf][Good edit similarity learning by loss minimization]]
+** [[/home/chive/IT-gg/rfc7159.json-storage-and_xfer.txt][The JavaScript Object Notation (JSON) Data Interchange Format]]
+*** summary
+    0) [@0] Abstract
+
+       "JavaScript Object Notation (JSON) is a lightweight, text-based,
+       language-independent data interchange format"
+
+    1) Introduction
+*** quotes
+*** ref
+    #+BEGIN_SRC bibtex
+      @techreport{rfc7159,
+        author="T. Bray",
+        title="{The JavaScript Object Notation (JSON) Data Interchange Format}",
+        howpublished="Internet Request for Comments",
+        TYPE="{RFC}",
+        number=7159,
+        PAGES = {1-16},
+        year=2014,
+        month=mar,
+        publisher="{RFC Editor}",
+        INSTITUTION = "{RFC Editor}",
+        url="http://www.rfc-editor.org/rfc/rfc7159.txt",
+      }
+    #+END_SRC

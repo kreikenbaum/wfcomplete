@@ -48,8 +48,8 @@ def to_features(counters):
         feature += 1
     # all to same length
     max_len = max([len(x) for x in X_in])
-    for x in X_in:
-        _pad(x, max_len)
+    for row in X_in:
+        _pad(row, max_len)
     # traces into X, y
     return (np.array(X_in), np.array(out_y), domain_names)
 
@@ -58,13 +58,13 @@ if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
 
-    (X, y, domain_names) = to_features(counter.Counter.from_(sys.argv))
+    (X, y, y_domains) = to_features(counter.Counter.from_(sys.argv))
 
     # svm
-    print 'svm'
-    svc = svm.SVC(kernel='linear')
-    print cross_validation.cross_val_score(svc, X, y, cv=5, n_jobs=-1)
-    del svc # free space
+    print 'svc_linear'
+    svc_linear = svm.SVC(kernel='linear')
+    print cross_validation.cross_val_score(svc_linear, X, y, cv=5, n_jobs=-1)
+    del svc_linear # free space
     # knn
     print 'knn'
     knn = neighbors.KNeighborsClassifier()
@@ -72,12 +72,11 @@ if __name__ == "__main__":
     del knn
     # svm rbf panchenko
     print 'panchenko-rbf-svm'
-    svcp = svm.SVC(C=2**17, gamma=2**(-19))
-    print cross_validation.cross_val_score(svcp, X, y, cv=5, n_jobs=-1)
-    del svcp
+    svc_rbf = svm.SVC(C=2**17, gamma=2**(-19))
+    print cross_validation.cross_val_score(svc_rbf, X, y, cv=5, n_jobs=-1)
+    del svc_rbf
     # svm liblinear
     print 'liblinear'
-    svl = svm.LinearSVC()
-    print cross_validation.cross_val_score(svl, X, y, cv=5, n_jobs=-1)
-    del svl
-    
+    svc_liblinear = svm.LinearSVC()
+    print cross_validation.cross_val_score(svc_liblinear, X, y, cv=5, n_jobs=-1)
+    del svc_liblinear

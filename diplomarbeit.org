@@ -232,8 +232,8 @@
   - fundamental human need
   - concentration camp:
     "solitude in a Camp is more precious and rare than bread." -- primo levi
-* TODO Tools [0/15]
-** TODO Mozilla Add-On Sdk [0/2]
+* TODO Tools [1/6]
+** Mozilla Add-On Sdk
    The Add-on SDK by Mozilla aids in the development of Firefox-Addons.
 
    It allows users to create new addons using HTML and JS only,
@@ -311,21 +311,24 @@ pageMod.PageMod({
 **** link page-mod
      http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
 *** separation of scripts
-    As a security measure, there is a separation between (1) the
-    /add-on scripts/, which are run in the browser context, but cannot
-    access the web page, and (2) /content scripts/, which are run in
-    the page context. They can access the DOM, but neither browser nor
-    (3) /page scripts/ (those included via f.ex. =<script>=).
+    As a security measure, there is a separation between
 
-    page-supplied scripts can by default neither access content scripts
-    nor add-on scripts.
-**** TODO index: page scripts, content scripts, add-on scripts
+    1) /add-on scripts/, which are run in the browser context, but cannot
+        access the web page, and
+    2) /content scripts/, which are run in the page context. They can
+       access the DOM, but not add-on scripts. nor
+    3) /page scripts/, which are those included in the website via
+       f.ex. =<script>=.
+
+    accessing page scripts (and vice versa) is possible, but needs
+    some extra work).
+**** LATER index: page scripts, content scripts, add-on scripts
 *** message-passing
     There is a mechanism to pass content from the add-on to the
     content scripts, as shown in the example.
 
     A single string can be passed between both sides. As the string
-    can be any serialized JSON object, this is not much of a
+    can be any serialized [[file:docs/lit.org::*%5B%5B/home/chive/IT-gg/rfc7159.json-storage-and_xfer.txt%5D%5BThe%20JavaScript%20Object%20Notation%20(JSON)%20Data%20Interchange%20Format%5D%5D][JSON]] object, this is not much of a
     limitation. (It disallows the passing of functions and circular
     objects).
 
@@ -337,7 +340,6 @@ pageMod.PageMod({
     content-script's =self= is replaced by a =worker=. The worker is
     initialized via the =onAttach= parameter of the page-mod, as seen
     above.
-**** TODO JSON link
 *** interacting with page-scripts
     By default, content-scripts are isolated from the modifications
     done by page-scripts.[[Interacting with page scripts]]
@@ -648,10 +650,10 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 ** TODO ref stackoverflow why 0 padding
 *** TODO better:
 * MAYBE effect of panchenko's weighting schema
-  Currently, fixed attributes are
-  weighted in favor of total incoming bytes (stdand occurring packet sizes
-* TODO what happens when retrieving google.com
-  the complete data of google.com can be retrieved via
+  Currently, fixed attributes are weighted heavily in favor of total
+  incoming/outgoing bytes.
+* TODO what happens when retrieving a website
+  The complete data of google.com can be retrieved via
 
   =mkdir site; cd site; wget -p -H google.com=
 
@@ -668,7 +670,12 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   |  8080 | www.google.de/robots.txt                                          |
 
   thus, there should be 5-6 (depending on robots.txt) requests
-* TODO what did panchenko do for wf?
+** TODO tshark for normal (non-tor) retrieval
+* TODO what did panchenko do (wf)?
+  [[file:docs/lit.org::*%5B%5B./acmccs-wpes11-fingerprinting.pdf%5D%5BPanchenko%20-%20Website%20Fingerprinting%20in%20Onion%20Routing%20Based%20Anonymization%20Networks%5D%5D][Panchenko]] first published a successful website fingerprinting attack
+  on Tor. He extracted HTTP-specific features from the packet trace
+  and used those in a hand-tuned support vector machine with a radial
+  basis function kernel.
 * visual inspection of data
   to exemplify the problems a wf'er has, consider the following
   pictures which represent complete (considered to contain all
@@ -683,19 +690,24 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 
   [[file:pictures/facebook.com@1445429729.png][file:pictures/facebook.com@1445429729.png]]
 
-  They were created by the commands (issued at some time where the
-  packet timing data was printed to screen)
+  They were created by the commands
 
   for fb in $(ls | grep facebook); do
     python ~/da/bin/extract_attribute.py ./$fb  | tail -1 | sed 's/),/\n/g' | tr -d "'()][" > /tmp/times;
     gnuplot -e "set terminal png size 1024,680; set output \"/tmp/${fb}.png\"; plot '/tmp/times' with boxes;";
   done
 
-  These commands first extract the timing attributes (at the time of writing
-  the last line of the output of extract_attribute.py), format it for
-  gnuplot (inserting appropriate newlines via =sed= and removing
-  erroneous characters via =tr=), and =gnuplot=s it to a file with the
-  name of the trace file as png-name.
+  These commands first extract the timing attributes (at the time of
+  writing the last line of the output of extract_attribute.py), format
+  it for gnuplot (inserting appropriate newlines via =sed= and
+  removing erroneous characters via =tr=), and =gnuplot=s it to a file
+  with the name of the trace file as png-name.
+* scikit-learn
+  The python module scikit-learn is described as a collection of
+  "tools for data mining and data analysis".
+
+  It combines python's ease-of-use with the efficiency of underlying
+  C-implementations of libraries such as LibSVM.
 * WAIT Results
 * WAIT Discussion
 * WAIT Acknowledgements
