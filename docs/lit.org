@@ -373,6 +373,8 @@
 
 	  - only fully-loaded pages: users reload else \to load time to 600s
 
+	  - "20 instances per website from our list of 775 sites"
+
        2) Open-World Dataset
 
 	  - Alexa top 1000000,
@@ -895,7 +897,7 @@
       assumptions of the WF literature is important for assessing the
       practicality and the efficacy of the WF attacks.
 
-** [[./cacr2014-05.pdf][Effective Attacks and Provable Defenses for Website Fingerprinting]]
+** [[./cacr2014-05.pdf][Wang - Effective Attacks and Provable Defenses for Website Fingerprinting]]
 *** summary
     0) [@0] Abstract
 
@@ -1328,7 +1330,7 @@
         www_section = {Traffic analysis},
       }
     #+END_SRC
-** [[./ccs14.pdf][Cai - A Systematic Approach to Developing and Evaluating Website Fingerprinting Defenses]]
+** [[./ccs14.pdf][Cai 2014 - A Systematic Approach to Developing and Evaluating Website Fingerprinting Defenses]]
 *** summary
     0) [@0] ABSTRACT
 
@@ -2241,7 +2243,7 @@
       data collection, in the newest version of Tor Firefox this is no
       longer necessary. It is possible to run it using just
       <torbrowserfolder>/firefox <sitename>, and we recommend this.
-** TODO [#C] [[./fp.pdf][Touching from a Distance: Website Fingerprinting Attacks and Defenses]]
+** [[./fp.pdf][Cai 2012 - Touching from a Distance: Website Fingerprinting Attacks and Defenses]]
 *** summary
     0) [@0] ABSTRACT
 
@@ -2463,6 +2465,40 @@
 	     - still very good for imdb
 
     7) DISCUSSION
+
+       - "Existing defenses are inadequate."
+
+       - "Traffic analysis can infer user actions through several
+         different side channels."
+
+	 Panchenko good results. Theirs good "even if all packet size
+         information is removed from the trace"
+
+       - "The DLSVM classifier generally outperforms other classifiers."
+
+	 - more generic: trace passed "directly into the classifier"
+
+       - "Defenses based on randomized requests and cover traffic are
+         not likely to be effective."
+
+	 with their special randomized request (random form of l
+         \pm 1500)
+
+       - "This attack is practical in real settings."
+
+    8) CONCLUSION
+
+       - HTTPOS, randomized pipelining, traffic morphing were weak
+
+       - new defense
+
+       - this ignores packet sizes
+
+       - web site classifier,
+
+         - sequence of page loads,
+
+	 - HMM
 *** quotes
     - Our attack converts traces into strings and uses the
       Damerau-Levenshtein distance to compare them.
@@ -2514,6 +2550,9 @@
     - if a window had, say, 3 IMDB pages and 3 non-IMDB pages, we
       discarded it from the histogram.
     - (ends 6.2.2)
+    - recently proposed randomized pipelining defense
+    - has no ordering information
+    - (ends 7)
 *** ref
     #+BEGIN_SRC bibtex
       @inproceedings{ccs2012-fingerprinting,
@@ -2714,6 +2753,15 @@
       }
     #+END_SRC
 ** TODO [#C] [[./LZCLCP_NDSS11.pdf][HTTPOS: Sealing Information Leaks with Browser-side Obfuscation of Encrypted Flows]]
+*** summary
+    0) [@0] Abstract
+       - defense against HTTPS information leakage
+    1) Introduction
+*** abstract
+    - Extensive evaluation of HTTPOS on live web traffic shows that it
+      can successfully prevent the state-of-the-art attacks from
+      inferring private information from encrypted HTTP flows.
+    - (ends 0)
 ** TODO [#C] [[./morphing09.pdf][Traffic Morphing: An Efficient Defense Against Statistical Traffic Analysis]]
 *** ref
     #+BEGIN_SRC bibtex
@@ -3525,7 +3573,60 @@
 
        3) Tuples and Sequences
 
+	  - tuples, strings and lists are sequences
 
+	  - tuples for indexing, packing, ...
+
+	  - immutable
+
+	  - a = 'hello',
+	    is a tuple
+
+	  - /tuple packing/:
+	    #+BEGIN_SRC python
+              t = 12345, 54321, ’hello!’
+	    #+END_SRC
+
+	  - /sequence unpacking/:
+	    #+BEGIN_SRC python
+              x, y, z = t
+	    #+END_SRC
+
+       4) Sets
+
+	  - "unordered collection with no duplicate elements"
+
+	  - fast "membership testing and eliminating duplicate entries"
+
+	  - union, intersection, difference, and symmetric difference
+	    #+BEGIN_SRC python
+              >>> a = set('abracadabra')
+              >>> b = set('alacazam')
+              >>> a
+              # unique letters in a
+              set(['a', 'r', 'b', 'c', 'd'])
+              >>> a - b
+              # letters in a but not in b
+              set(['r', 'd', 'b'])
+              >>> a | b
+              # letters in either a or b
+              set(['a', 'c', 'r', 'd', 'b', 'm', 'z', 'l'])
+              >>> a & b
+              # letters in both a and b
+              set(['a', 'c'])
+              >>> a ^ b
+              # letters in a or b but not both
+              set(['r', 'd', 'b', 'm', 'z', 'l'])
+	    #+END_SRC
+
+	  - set comprehension like list comprehension
+	    #+BEGIN_SRC python
+              >>> a = {x for x in 'abracadabra' if x not in 'abc'}
+              >>> a
+              set(['r', 'd'])
+	    #+END_SRC
+
+       5) Dictionaries
 *** quotes
     - it’s good practice to include docstrings in code that you write,
       so make a habit of it.
@@ -3578,6 +3679,9 @@
         >>> for k, v in knights.iteritems():
         ...     print k, v
       #+END_SRC
+    - [tuples] may be input with or without surrounding parentheses,
+      although often parentheses are necessary anyway
+    - (ends 5.4)
 ** TODO [[./Tor Project: Overview.html][Tor: Overview]]
 ** TODO [[shell:ristretto ./malamud][Malamud:Privacy and Private States]]
 *** summary
@@ -3852,6 +3956,26 @@
 	     - distance-dependent
 
 	     - works well if work was put into distance
+
+	  3) A Simple Classifier
+
+	     1. use means of classes
+
+	     2. compute distance of point to means
+
+	     3. extension: line boundary \to geometric boundary
+
+	  4) Perceptron
+
+	     - online learning
+
+	     - "data points x t ∈ R d , and labels y t ∈ {±1}"
+
+	       - if wrong, updates w by x_{t}y_{t}
+
+	       - kernelizeable: x replaceable by \phi(x)
+
+	     - converges if convergeable
 *** TODO quotes
     - much of the art of machine learning is to reduce a range of
       fairly disparate problems to a set of fairly narrow
@@ -3977,6 +4101,41 @@
       distance between any two points changes only by a factor of (1 ±
       \epsilon). [...] The surprising fact is that the projection relies on a
       simple randomized algorithm.
+    - (ends 1.3.2)
+    - In general, we may pick *arbitrary maps* φ : X → H mapping the
+      space of observations into a feature space H, as long as the
+      latter is endowed with a dot product (see Figure 1.21). This
+      means that instead of dealing with <x, x'> we will be dealing
+      with <φ(x), φ(x')>.
+    - (ends 1.3.3)
+    - a user might want to have instant results whenever a new e-mail
+      arrives and he would like the system to learn immediately from
+      any corrections to mistakes the system makes.
+    - the Perceptron is a linear classifier
+    - if ŷ_{t} \neq y_{t} the weight vector is updated as
+      w ← w + y_{t} x_{t} and b ← b + y_{t}
+    - If the dataset (X, Y) is linearly separable, then the Perceptron
+      algorithm eventually converges and correctly classifies all the
+      points in X.
+    - Definition 1.6 (*Margin*) Let w ∈ R d be a weight vector and let
+      b ∈ R be an offset. The margin of an observation x ∈ R d with
+      associated label y is
+
+      \gamma(x, y) := y (<w, x> + b) (1.27)
+
+      Moreover, the margin of an entire set of observations X with
+      labels Y is
+
+      γ(X, Y) := min_{i} γ(x_{i} , y_{i}) (1.28)
+    - Geometrically speaking (see Figure 1.22) the margin measures the
+      distance of x from the hyperplane defined by {x| <w, x> + b = 0}.
+    - Theorem 1.7 (*Novikoff’s theorem*) Let (X, Y) be a dataset with
+      at least one example labeled +1 and one example labeled −1. Let
+      R := max_{t} ||x_{t}||, and assume that there exists (w^{∗}, b^{∗}) such
+      that ||w^{∗}|| = 1 and γ_{t} := y_{t} (<w^{∗}, x_{t}>) + b^{∗} ) ≥ γ for
+      all t. Then, the Perceptron will make at most (1+R^{2})(1+(b^{*})^2)/γ^{2}
+      mistakes.
+    - a similar bound can be shown for Support Vector Machines [Vap95]
 ** [[./06vect.pdf][Scoring, term weighting and the vector space model]]
 ** [[./ch1.pdf][Data Mining]]
 ** [[shell:firefox ./skl/index.html.4 &][A tutorial on statistical-learning for scientific data processing]]
@@ -4127,7 +4286,19 @@
 
 	     hierarchy of clusters
 
-	     - agglomerative (bottom-up) vs divisive (top-down)
+	     - agglomerative (bottom-up)
+
+	       "This approach is particularly interesting when the
+               clusters of interest are made of only a few
+               observations. When the number of clusters is large, it
+               is much more computationally efficient than k-means."
+
+	     - divisive (top-down)
+
+	       "For estimating large numbers of clusters, this
+               approach is both slow (due to all observations starting
+               as one cluster, which it splits recursively) and
+               statistically ill-posed."
 *** quotes
     - import pylab as pl
       pl.imshow
