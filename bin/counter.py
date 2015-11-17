@@ -1,6 +1,7 @@
 '''aggregates trace data, extracts features'''
-import logging
+import doctest
 import json
+import logging
 import math
 import os
 import subprocess
@@ -225,6 +226,8 @@ class Counter(object):
 
     def _postprocess(self):
         '''sums up etc collected features'''
+        if self.name is None:
+            self.name = self.packets
         logging.debug("_postprocess for %s", self.name)
 
         if self.fixed is not None:
@@ -261,7 +264,7 @@ class Counter(object):
         # number outgoing
         self.fixed.append(discretize(packets_out, 15))
         # all packets as of "A Systematic ..." svm.py code
-        self.variable['all_packets'] = self.packets # grew too big 4 mem
+#        self.variable['all_packets'] = self.packets # grew too big 4 mem
 
     def to_json(self):
         '''prints packet trace to json, for reimport'''
@@ -279,6 +282,8 @@ class Counter(object):
         return out
 
 if __name__ == "__main__":
+    doctest.testmod()
     logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
+
     from sys import argv
     counters = Counter.from_(argv)
