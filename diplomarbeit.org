@@ -723,7 +723,18 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - (currently closed world)
 * WAIT Results
 ** classifier (ordered by accuracy)
-*** liblinear-ovo (multiclass one versus one)
+*** scikit-learn-libsvm-rbf (grid)
+**** call
+     #+BEGIN_SRC python
+       >>> tester=svm.SVC()
+       >>> Cs=np.logspace(-2, 20, 11, base=2)
+       >>> Gs=np.logspace(20, -2, 11, base=2)
+       >>> from sklearn import grid_search
+       >>> clf=grid_search.GridSearchCV(estimator=tester, param_grid=dict(gamma=Gs, C=Cs))
+       >>> clf.fit(X, y)
+     #+END_SRC
+**** result
+*** sh-liblinear-ovo (multiclass one versus one) (~37%)
 **** built via (Xubuntu 15.10)
      make
 **** called via
@@ -731,20 +742,22 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      - liblinear-ovo-1.96/predict test train.model output
 **** result
      Accuracy = 36.7188% (282/768)
-*** liblinear-ovo (multiclass one versus rest)
+*** sh-liblinear-ovo (multiclass one versus rest) (~11%)
 **** call
      - liblinear-ovo-1.96/predict test train.model output
      - liblinear-ovo-1.96/train train
 **** result
      Accuracy = 11.1979% (86/768)
-*** alle Paketdaten auf duckstein (2+2 GB)
-**** result
-     MemoryError
-     >>> Killed
-*** liblinear Crammer-Singer
+*** scikit-learn-liblinear-Crammer-Singer (~3%)
 **** call
      >>> svc_liblinear = svm.LinearSVC(multi_class='crammer_singer')
      >>> cross_validation.cross_val_score(svc_liblinear, X, y, cv=5, n_jobs=-1)
+**** results ~0.03
+     array([ 0.03713355,  0.04690554,  0.03127036,  0.02931596,  0.03715776])
+*** alle Paketdaten auf duckstein (2+2 GB) (Crash)
+**** result
+     MemoryError
+     >>> Killed
 * WAIT Discussion
 * WAIT Acknowledgements
   - Daniel Arp
