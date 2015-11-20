@@ -90,9 +90,9 @@ def _sum_numbers(packets):
     '''
     counts = _sum_stream([math.copysign(1, x) for x in packets])
     # extended as counts had 16, 21
-    # dictionary = {1: 1, 2: 2, 3: 3, 4: 3, 5: 3, 6: 4, 7: 4, 8:4,
-    #               9:5, 10:5, 11:5, 12:5, 13:5, 14:6}
-    # return [dictionary[min(14, abs(x))] for x in counts]
+    dictionary = {1: 1, 2: 2, 3: 3, 4: 3, 5: 3, 6: 4, 7: 4, 8:4,
+                  9:5, 10:5, 11:5, 12:5, 13:5, 14:6}
+    #return [dictionary[min(14, abs(x))] for x in counts]
     return counts
 
 class Counter(object):
