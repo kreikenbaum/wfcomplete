@@ -599,7 +599,7 @@
        Year={2011}
      }
    #+END_SRC
-** [[https://blog.torproject.org/blog/experimental-defense-website-traffic-fingerprinting][Experimental Defense for Website Traffic Fingerprinting]]
+** [[https://blog.torproject.org/blog/experimental-defense-website-traffic-fingerprinting][Mike Perry - Experimental Defense for Website Traffic Fingerprinting]]
    - [[./experimental.html][local copy]]
 *** summary
     - prior: belief that all was well (failed attempts)
@@ -2684,6 +2684,19 @@
 	  - Attributes: number of packets of a certain size (multiset)
 
        4. Known Website Fingerprinting Techniques
+
+	  1. Jaccard’s Classifier
+
+	     s_{AB} = |A \cap B| / |A \cup B|
+
+	     60% in Liberatore/Levine
+
+	  2. Naïve Bayes Classifier with Kernel Density Estimation
+
+	     naive bayes, better for padded, worse for unpadded than
+             jaccard
+
+       5. Our Novel Website Fingerprinting Method
 *** TODO quotes
     - influence of the browser cache on accuracy.
     - The attack consists of two phases: in the training phase the
@@ -2701,6 +2714,11 @@
     - (ends 4.3)
     - Jaccard’s coefficient is a similarity metric for sets [31],
       which is often used for unsupervised learning tasks.
+    - (ends 4.4.1)
+    - [The Naive Bayes Classifier] naïvely assumes independence of
+      attributes, which is often not the case for real-world problems.
+    - operates directly on multiset instances,
+    - (ends 4.4.2)
 *** vocabulary
     - website fingerprinting: learn the identity, i. e. the URLs, of
       websites that are downloaded over an encrypted tunnel by
@@ -2973,6 +2991,28 @@
 	     - delta method: see later
 
 	  2) The Characteristic Function
+
+	     - Fourier transform
+
+	     - Characteristic functions
+
+	     - Sum of random variables and convolutions
+
+	       - Proof via Y=z-x, joint distribution p(z, x)
+
+	     - proofs of 1)
+
+	     - moments \to function
+
+	  3) Tail Bounds
+
+	     - Gauss inequality: proof via
+
+	       - 1 \le x/\epsilon (auf [\epsilon, \infty))
+
+	       - 1/\epsilon herausziehen, auf [0, \infty) erweitern
+
+	       - auf dem Intervall ist x durschnittlich kleiner \mu
 *** TODO quotes
     - much of the art of machine learning is to reduce a range of
       fairly disparate problems to a set of fairly narrow
@@ -3203,6 +3243,51 @@
         variable g(X_{n}) converges
 
 	a_{n}^{-2}(g(X_{n}) - g(b)) \to N(0, [∇_{x} g(b)]Σ[∇_{x} g(b)]^{T}) (2.5)
+      - The Fourier transform plays a crucial role [...] in
+        statistics. For historic reasons its applications to
+        distributions is called *the characteristic function*.
+      - Definition 2.6 (*Fourier Transform*) Denote by f : R^{n} → C a
+        function defined on a d-dimensional Euclidean space. Moreover,
+        let x, ω ∈ R^{n} . Then the Fourier transform F and its inverse
+        F^{-1} are given by
+
+        F [f](ω) := (2π)^{−d/2} \int_{R^{n}} f(x) exp(-i<\omega, x>)dx (2.7)
+
+        F^{-1} [g](ω) := (2π)^{−d/2} \int_{R^{n}} g(\omega) exp(i<\omega, x>)d\omega (2.8)
+      - Definition 2.7 (*Characteristic Function*) Denote by p(x) a
+        distribution of a random variable X ∈ R^{d}. Then the
+        characteristic function φ_{X} (ω) with ω ∈ R^{d} is given by
+
+        φ_{X} (ω) := (2π)^{d/2} F^{−1} [p(x)] = \int exp(i <ω, x>)dp(x). (2.9)
+      - Theorem 2.8 (*Sums of random variables and convolutions*)
+        Denote by X, Y ∈ R two independent random variables. Moreover,
+        denote by Z := X + Y the sum of both random variables. Then
+        the distribution over Z satisfies p(z) = p(x) ◦
+        p(y). Moreover, the characteristic function yields:
+
+        φ_{Z} (ω) = φ_{X}(ω)φ_{Y}(ω). (2.10)
+      - ∇^{n}_{ω} φ_{X}(0) = i^{−n} E_{X} [x^{n}]. (2.12)
+
+      - if we know the moments of a distribution we are able to
+        reconstruct it directly since it allows us to reconstruct its
+        characteristic function.
+      - (ends 2.1.2)
+      - Theorem 2.9 (*Gauss-Markov*) Denote by X ≥ 0 a random variable
+        and let μ be its mean. Then for any \epsilon > 0 we have
+
+	Pr(X ≥ \epsilon) ≤ \mu / \epsilon (2.13).
+
+	This means that for random variables with a small mean, the
+        proportion of samples with large value has to be small.
+      - Theorem 2.10 (Chebyshev) Denote by X a random variable with
+        mean μ and variance σ^{2} . Then the following holds for \epsilon > 0:
+
+        Pr(|x − μ| ≥ \epsilon) \le \sigma^{2} / \epsilon^{2} (2.14)
+      - Theorem 2.12 (Hoeffding) Denote by X_{i} iid random variables
+        with bounded range X_{i} ∈ [a, b] and mean μ. Let X̄_{m} := m^{−1}
+        \sum_{i=1}^{m} X_{i} be their average. Then the following bound holds:
+
+        Pr(|X̄_{m} − μ| > \epsilon) ≤ 2 exp(-2m\epsilon^{2} / (b-a)^{2}) (2.15)
 ** TODO [#B] [[./ieee-icc15.pdf][A First-Hop Traffic Analysis Attack Against Tor]]
 *** summary
     0) [@0] Abstract
@@ -3259,7 +3344,41 @@
               distinct locations"
 
        3) COMPARING SEQUENCES OF PACKET TIMESTAMPS
+
+	  how to compare different-length sequences
+
+	  1. Derivative Dynamic Time Warping
+
+	     - warping path (see quotes)
+
+	     - cost function C: sum
+
+	     - with cost per single difference given by derivative
+
+	  2. F -Distance Measure
+
 *** quotes
+    - define a *warping path* p to be a sequence of pairs,
+
+      {(p_{k}^{i}, p_{k}^{j})}, k = 1, 2, ··· ,l with (p_{k}^{i}, p_{k}^{j}) ∈ V
+      := {1, ... , n}× {1, ..., m}
+
+      satisfying boundary conditions
+
+      p^{i}_{1} = 1 = p^{j}_{1} ,
+
+      p^{i}_{l} = n, p^{j}_{l} = m
+
+      and step-wise constraints
+
+      (p^{i}_{k+1} , p^{j}_{k+1} ) ∈ V p^{i}_{k} ,p^{j}_{k} := {(u, v) :
+        u ∈ {p^{i}_{k} , p^{i}_{k + 1}} ∩ {1, . . . , n},
+        v ∈  {p^{j}_{k} , p^{j}_{k + 1}} ∩ {1, . . . , n}},
+      k = 1, · · · , l−1.
+    - where D_{t}(i) = (t_{i} - t_{i^{-}}) + (t_{i^{+}} - t_{i^{-}}) / 2,
+      i^{-} = max{i-1, 1} and
+      i^{+ }= min{i+1, |t|}
+    - (ends 3.1)
 ** TODO [#B] [[./cacr2015-08.pdf][Walkie-Talkie: An Effective and Efficient Defense against Website Fingerprinting]]
 ** TODO [#C] [[./cacr2015-09.pdf][Wang - On Realistically Attacking Tor with Website Fingerprinting]]
 *** summary
@@ -5274,3 +5393,43 @@
       running time. Instead, add each substring to a list and ''.join
       the list after the loop terminates (or, write each substring to
       a =io.BytesIO= buffer).
+** [[./critique.html][A Critique of Website Traffic Fingerprinting Attacks]]
+*** summary
+*** quotes
+*** ref
+    #+BEGIN_SRC bibtex
+      @misc{critique,
+        tag = "The Tor Project",
+        title = "A Critique of Website Traffic Fingerprinting Attacks",
+        url = "\url{https://blog.torproject.org/blog/critique-website-traffic-fingerprinting-attacks}",
+        note = "[Online; accessed 11-November-2015]"
+      }
+    #+END_SRC
+** [[./ethical.html][Ethical Tor Research: Guidelines]]
+*** summary
+*** quotes
+*** ref
+    #+BEGIN_SRC bibtex
+      @misc{ethical,
+        tag = "The Tor Project",
+        title = "Ethical Tor Research: Guidelines",
+        url = "\url{https://blog.torproject.org/blog/ethical-tor-research-guidelines}",
+        note = "[Online; accessed 11-November-2015]"
+      }
+    #+END_SRC
+** [[./irbookonlinereading.pdf][An Introduction to Information Retrieval]]
+*** summary
+    14) [@14] Vector space classification
+
+	R^{|V|}
+
+	1) Document representations and measures of relatedness in
+           vector spaces
+*** quotes
+    - *Contiguity hypothesis*. Documents in the same class form a
+      contiguous region and regions of different classes do not
+      overlap.
+    - Nonlinear models have more parameters to fit on a limited amount
+      of training data and are more likely to make mistakes for small
+      and noisy data sets.
+    - (ends 14.0)
