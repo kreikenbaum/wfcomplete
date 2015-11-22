@@ -3013,6 +3013,8 @@
 	       - 1/\epsilon herausziehen, auf [0, \infty) erweitern
 
 	       - auf dem Intervall ist x durschnittlich kleiner \mu
+
+	  4) An Example
 *** TODO quotes
     - much of the art of machine learning is to reduce a range of
       fairly disparate problems to a set of fairly narrow
@@ -3279,15 +3281,16 @@
 
 	This means that for random variables with a small mean, the
         proportion of samples with large value has to be small.
-      - Theorem 2.10 (Chebyshev) Denote by X a random variable with
+      - Theorem 2.10 (*Chebyshev*) Denote by X a random variable with
         mean μ and variance σ^{2} . Then the following holds for \epsilon > 0:
 
         Pr(|x − μ| ≥ \epsilon) \le \sigma^{2} / \epsilon^{2} (2.14)
-      - Theorem 2.12 (Hoeffding) Denote by X_{i} iid random variables
+      - Theorem 2.12 (*Hoeffding*) Denote by X_{i} iid random variables
         with bounded range X_{i} ∈ [a, b] and mean μ. Let X̄_{m} := m^{−1}
         \sum_{i=1}^{m} X_{i} be their average. Then the following bound holds:
 
         Pr(|X̄_{m} − μ| > \epsilon) ≤ 2 exp(-2m\epsilon^{2} / (b-a)^{2}) (2.15)
+      - (ends 2.1.3)
 ** TODO [#B] [[./ieee-icc15.pdf][A First-Hop Traffic Analysis Attack Against Tor]]
 *** summary
     0) [@0] Abstract
@@ -3357,6 +3360,12 @@
 
 	  2. F -Distance Measure
 
+	     with two paths and a warping path, sum the stretches
+             where only one of them increments (non-parallel), divide
+             by total length of both paths
+
+       4) DE - ANONYMISING WEB FETCHES OVER TOR
+
 *** quotes
     - define a *warping path* p to be a sequence of pairs,
 
@@ -3379,6 +3388,21 @@
       i^{-} = max{i-1, 1} and
       i^{+ }= min{i+1, |t|}
     - (ends 3.1)
+    - This suggests using the fraction of the overall warping path
+      which is parallel to the x- or y-axes as a distance measure,
+      which we refer to as the *F-distance*.
+    - define κ 1 := 0 < κ 2 < · · · < κ r−1 < κ r := l such that for
+      each s = 1, · · · , r − 1
+      a) either p ik 1 = p ik 2 ∀k 1 , k 2 ∈ {κ s + 1, · · · , κ s+1 }
+         or p jk 1 = p jk 2 ∀k 1 , k 2 ∈ {κ s + 1, · · · , κ s+1 } and
+      b) either κ s+1 = l or condition (a) is violated for some k 1 ,
+         k 2 ∈ {κ s , · · · , κ s+1 + 1} i.e. each subsequence is
+         maximal.
+    - define the *F-distance* measure between timestamp sequences t and
+      t′ , namely:
+
+      φ(t, t') := \sum_{s=1}^{r−1} (κ_{s+1} − (κ_{s} + 1)) / n+m (4)
+    - (ends 3)
 ** TODO [#B] [[./cacr2015-08.pdf][Walkie-Talkie: An Effective and Efficient Defense against Website Fingerprinting]]
 ** TODO [#C] [[./cacr2015-09.pdf][Wang - On Realistically Attacking Tor with Website Fingerprinting]]
 *** summary
@@ -4518,6 +4542,18 @@
 	    - in
 
        6) Looping Techniques
+
+	  - enumerate: index, item
+
+	  - zip: combines
+
+	  - reversed: returns reversed
+
+	  - sorted: returns sorted
+
+	  - iteritems: key, value
+
+	  - modify: better create new list
 *** quotes
     - it’s good practice to include docstrings in code that you write,
       so make a habit of it.
@@ -4589,6 +4625,36 @@
       #+BEGIN_SRC python
         >>> {x: x**2 for x in (2, 4, 6)}
         {2: 4, 4: 16, 6: 36}
+      #+END_SRC
+    - (ends 5.5)
+    - To loop over two or more sequences at the same time, the entries
+      can be paired with the zip() function.
+      #+BEGIN_SRC python
+        >>> questions = ['name', 'quest', 'favorite color']
+        >>> answers = ['lancelot', 'the holy grail', 'blue']
+        >>> for q, a in zip(questions, answers):
+        ...
+        print 'What is your {0}? It is {1}.'.format(q, a)
+        ...
+        What is your name? It is lancelot.
+        What is your quest? It is the holy grail.
+        What is your favorite color? It is blue.
+      #+END_SRC
+    - It is sometimes tempting to change a list while you are looping
+      over it; however, it is often simpler and safer to create a new
+      list instead.
+      #+BEGIN_SRC python
+        >>> import math
+        >>> raw_data = [56.2, float('NaN'), 51.7, 55.3, 52.5, float('NaN'), 47.8]
+        >>> filtered_data = []
+        >>> for value in raw_data:
+        ...
+        if not math.isnan(value):
+        ...
+        filtered_data.append(value)
+        ...
+        >>> filtered_data
+        [56.2, 51.7, 55.3, 52.5, 47.8]
       #+END_SRC
 ** TODO [[./Tor Project: Overview.html][Tor: Overview]]
 ** TODO [[shell:ristretto ./malamud][Malamud:Privacy and Private States]]
@@ -4677,6 +4743,95 @@
       one-vs-rest classification is usually preferred, since the
       results are mostly similar, but the runtime is significantly
       less.
+    - (begins 4)
+    - RadiusNeighborsClassifier [...] For high-dimensional parameter
+      spaces, this method becomes less effective due to the so-called
+      “curse of dimensionality”.
+    - (ends 4.6.2)
+    - (begins 12)
+    - Firstly, many estimators take precomputed distance/similarity
+      matrices, so if the dataset is not too large, you can compute
+      distances for all pairs of inputs. If the dataset is large, you
+      can use feature vectors with only one “feature”, which is an
+      index into a separate data structure, and supply a custom metric
+      function that looks up the actual data in this data
+      structure. E.g., to use DBSCAN with Levenshtein distances:
+      #+BEGIN_SRC python
+        >>> from leven import levenshtein
+        >>> import numpy as np
+        >>> from sklearn.cluster import dbscan
+        >>> data = ["ACCTCCTAGAAG", "ACCTACTAGAAGTT", "GAATATTAGGCCGA"]
+        >>> def lev_metric(x, y):
+        ...
+        i, j = int(x[0]), int(y[0])
+        # extract indices
+        ...
+        return levenshtein(data[i], data[j])
+        ...
+        >>> X = np.arange(len(data)).reshape(-1, 1)
+        >>> X
+        array([[0],
+        [1],
+        [2]])
+        >>> dbscan(X, metric=lev_metric, eps=5, min_samples=2)
+        ([0, 1], array([ 0, 0, -1]))
+      #+END_SRC
+      (This uses the third-party edit distance package leven.) Similar
+      tricks can be used, with some care, for tree kernels, graph
+      kernels, etc.
+    - (ends 12.12)
+    - (begins 42)
+    - class sklearn.neighbors.KNeighborsClassifier(n_neighbors=5,
+      weights=’uniform’, algorithm=’auto’, leaf_size=30, p=2,
+      metric=’minkowski’, metric_params=None, **kwargs)
+      [...]
+
+      metric : string or DistanceMetric object (default = ‘minkowski’)
+      the distance metric to use for the tree. The default metric is
+      minkowski, and with p=2 is equivalent to the standard Euclidean
+      metric. See the documentation of the Distance-Metric class for
+      a list of available metrics.
+    - (ends 42.25.2)
+    - class sklearn.pipeline.Pipeline(steps) Pipeline of transforms
+      with a final estimator. Sequentially apply a list of transforms
+      and a final estimator. Intermediate steps of the pipeline must
+      be ‘transforms’, that is, they must implement fit and transform
+      methods. The final estimator only needs to implement fit. The
+      purpose of the pipeline is to assemble several steps that can be
+      cross-validated together while setting different parameters. For
+      this, it enables setting parameters of the various steps using
+      their names and the parameter name separated by a ‘__’, as in
+      the example below.
+
+      Parameterssteps: list :List of (name, transform) tuples
+      (implementing fit/transform) that are chained, in the order in
+      which they are chained, with the last object an estimator.
+
+      Examples
+      #+BEGIN_SRC python
+        >>> from sklearn import svm
+        >>> from sklearn.datasets import samples_generator
+        >>> from sklearn.feature_selection import SelectKBest
+        >>> from sklearn.feature_selection import f_regression
+        >>> from sklearn.pipeline import Pipeline
+        >>> # generate some data to play with
+        >>> X, y = samples_generator.make_classification(
+        ...
+        n_informative=5, n_redundant=0, random_state=42)
+        >>> # ANOVA SVM-C
+        >>> anova_filter = SelectKBest(f_regression, k=5)
+        >>> clf = svm.SVC(kernel='linear')
+        >>> anova_svm = Pipeline([('anova', anova_filter), ('svc', clf)])
+        >>> # You can set the parameters using the names issued
+        >>> # For instance, fit using a k of 10 in the SelectKBest
+        >>> # and a parameter 'C' of the svm
+        >>> anova_svm.set_params(anova__k=10, svc__C=.1).fit(X, y)
+        ...
+        Pipeline(steps=[...])
+        >>> prediction = anova_svm.predict(X)
+        >>> anova_svm.score(X, y)
+        0.77...
+      #+END_SRC
 ** [[./sally/Example1.html]]
 *** summary
     - input files example1.cfg reuters.zip
@@ -5419,12 +5574,6 @@
     #+END_SRC
 ** [[./irbookonlinereading.pdf][An Introduction to Information Retrieval]]
 *** summary
-    14) [@14] Vector space classification
-
-	R^{|V|}
-
-	1) Document representations and measures of relatedness in
-           vector spaces
 *** quotes
     - *Contiguity hypothesis*. Documents in the same class form a
       contiguous region and regions of different classes do not
@@ -5433,3 +5582,31 @@
       of training data and are more likely to make mistakes for small
       and noisy data sets.
     - (ends 14.0)
+** [[./top_ml_algo.pdf][Top 10 algorithms in data mining]]
+** [[./ESLII_print4.pdf][The Elements of Statistical Learning]]
+*** summary
+*** quotes
+    - Chapter 18 explores the “p ≫ N ” problem, which is learning in
+      high-dimensional feature spaces. These problems arise in many
+      areas, including genomic and proteomic studies, and document
+      classification.
+    - (Ends preface to the Second Edition)
+    - We will see that high variance and overfitting are a major
+      concern in this setting.
+    - Thus it is not surprising that the analysis of high-dimensional
+      data requires either modification of procedures designed for the
+      N > p scenario, or entirely new procedures
+    - (ends 18.1)
+** Sklearn kNN usage with a user defined metric
+*** quotes
+    - You pass a metric as metric param, and additional metric
+      arguments as keyword paramethers to NN constructor:
+      #+BEGIN_SRC python
+        >>> def mydist(x, y):
+        ...     return np.sum((x-y)**2)
+        ...
+        >>> X = np.array([[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]])
+
+        >>> nbrs = NearestNeighbors(n_neighbors=4, algorithm='ball_tree',
+        ...            metric='pyfunc', func=mydist)
+      #+END_SRC

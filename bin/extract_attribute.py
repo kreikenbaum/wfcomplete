@@ -97,3 +97,12 @@ if __name__ == "__main__":
     svc_liblinear = svm.LinearSVC()
     print cross_validation.cross_val_score(svc_liblinear, X, y, cv=5, n_jobs=-1)
     del svc_liblinear
+    # grid rbf e-4 to e0
+    Cs = np.logspace(-4, 0, base=10, num=10)
+    Gs = np.logspace(-4, 0, base=10, num=10)
+    for c in Cs:
+        for gamma in Gs:
+              print '{}, {}'.format(c, gamma)
+              svc_rbf = svm.SVC(C=c, gamma=gamma)
+              print cross_validation.cross_val_score(svc_rbf, X, y, cv=5, n_jobs=-1)
+    # end grid rbf
