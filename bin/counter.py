@@ -93,9 +93,8 @@ def _sum_numbers(packets):
     dictionary = {1: 1, 2: 2, 3: 3, 4: 3, 5: 3, 6: 4, 7: 4, 8:4,
                   9:5, 10:5, 11:5, 12:5, 13:5, 14:6}
     #return [dictionary[min(14, abs(x))] for x in counts]
-    #return counts
-    print '2.4'
-    return [math.log(abs(x), 2.4) for x in counts]
+    return counts
+    #return [math.log(abs(x), 2.4) for x in counts]
 
 class Counter(object):
     '''single trace file'''
