@@ -86,7 +86,7 @@ if __name__ == "__main__":
     test(X, y, neighbors.KNeighborsClassifier())
     test(X, y, svm.SVC(C=2**17, gamma=2**(-19)))
     test(X, y, svm.LinearSVC())
-    # grid rbf e-4 to e0
+    # grid rbf e-10 to e0
     Cs = np.logspace(-10, 0, base=10, num=10)
     Gs = np.logspace(-10, 0, base=10, num=10)
     for c in Cs:
