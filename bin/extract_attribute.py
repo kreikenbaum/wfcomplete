@@ -9,6 +9,7 @@ import sys
 
 # if you import by hand, include the path for the counter-module via
 # sys.path.append('/home/w00k/da/git/bin')
+# sys.path.append('/home/mkreik/bin')
 import counter
 
 #LOGLEVEL = logging.DEBUG
@@ -80,6 +81,7 @@ if __name__ == "__main__":
 
     # if by hand: change to the right directory before importing
     # os.chdir('/home/w00k/da/sw/data/json/part')
+    # os.chdir('/mnt/data/2-top100dupremoved_cleaned/')
     (X, y, y_domains) = to_features(counter.Counter.from_(sys.argv))
 
     test(X, y, svm.SVC(kernel='linear'))
