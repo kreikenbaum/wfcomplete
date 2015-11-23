@@ -69,40 +69,27 @@ def to_libsvm(X, y, fname='libsvm_in'):
         f.write('\n')
 
 
+def test(X, y, estimator):
+    '''tests estimator with X, y, prints type and result'''
+    print estimator
+    print cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=-1)
+
 if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
 
     # if by hand: change to the right directory before importing
-    # os.chdir('/home/w00k/da/sw/data/json')
+    # os.chdir('/home/w00k/da/sw/data/json/part')
     (X, y, y_domains) = to_features(counter.Counter.from_(sys.argv))
 
-    # svm
-    print 'svc_linear'
-    svc_linear = svm.SVC(kernel='linear')
-    print cross_validation.cross_val_score(svc_linear, X, y, cv=5, n_jobs=-1)
-    del svc_linear # free space
-    # knn
-    print 'knn'
-    knn = neighbors.KNeighborsClassifier()
-    print cross_validation.cross_val_score(knn, X, y, cv=5, n_jobs=-1)
-    del knn
-    # svm rbf panchenko
-    print 'panchenko-rbf-svm'
-    svc_rbf = svm.SVC(C=2**17, gamma=2**(-19))
-    print cross_validation.cross_val_score(svc_rbf, X, y, cv=5, n_jobs=-1)
-    del svc_rbf
-    # svm liblinear
-    print 'liblinear'
-    svc_liblinear = svm.LinearSVC()
-    print cross_validation.cross_val_score(svc_liblinear, X, y, cv=5, n_jobs=-1)
-    del svc_liblinear
+    test(X, y, svm.SVC(kernel='linear'))
+    test(X, y, neighbors.KNeighborsClassifier())
+    test(X, y, svm.SVC(C=2**17, gamma=2**(-19)))
+    test(X, y, svm.LinearSVC())
     # grid rbf e-4 to e0
-    Cs = np.logspace(-4, 0, base=10, num=10)
-    Gs = np.logspace(-4, 0, base=10, num=10)
+    Cs = np.logspace(-10, 0, base=10, num=10)
+    Gs = np.logspace(-10, 0, base=10, num=10)
     for c in Cs:
         for gamma in Gs:
-              print '{}, {}'.format(c, gamma)
-              svc_rbf = svm.SVC(C=c, gamma=gamma)
-              print cross_validation.cross_val_score(svc_rbf, X, y, cv=5, n_jobs=-1)
+            test(X, y, svm.SVC(C=c, gamma=gamma))
     # end grid rbf

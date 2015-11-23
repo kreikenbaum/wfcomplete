@@ -723,41 +723,62 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - (currently closed world)
 * WAIT Results
 ** classifiers (ordered by accuracy)
-*** sh-liblinear-ovo (multiclass one versus one) (~37%)
-**** built via (Xubuntu 15.10)
-     make
-**** called via
-     - liblinear-ovo-1.96/train -M 1 train
-     - liblinear-ovo-1.96/predict test train.model output
-**** result
-     Accuracy = 36.7188% (282/768)
-*** sh-liblinear-ovo (multiclass one versus rest) (~11%)
-**** call
-     - liblinear-ovo-1.96/predict test train.model output
-     - liblinear-ovo-1.96/train train
-**** result
-     Accuracy = 11.1979% (86/768)
-*** scikit-learn-liblinear-Crammer-Singer (~3%)
-**** call
-     >>> svc_liblinear = svm.LinearSVC(multi_class='crammer_singer')
-     >>> cross_validation.cross_val_score(svc_liblinear, X, y, cv=5, n_jobs=-1)
-**** results ~0.03
-     array([ 0.03713355,  0.04690554,  0.03127036,  0.02931596,  0.03715776])
-*** scikit-learn-libsvm-rbf
-**** grid (~1-2%)
-***** call
-      #+BEGIN_SRC python
-        >>> tester=svm.SVC()
-        >>> Cs=np.logspace(-2, 20, 11, base=2)
-        >>> Gs=np.logspace(20, -2, 11, base=2)
-        >>> from sklearn import grid_search
-        >>> clf=grid_search.GridSearchCV(estimator=tester, param_grid=dict(gamma=Gs, C=Cs))
-        >>> clf.fit(X, y)
-      #+END_SRC
+*** 20 classes (~74%)
+**** scikit-learn knn n_neighbors parameter (git: 516d56) (~74%)
+     5 is best: 0.74445238
+      
+     1) [ 0.71666667  0.7325      0.7         0.73        0.7075    ]
+     2) [ 0.69047619  0.7275      0.6925      0.7225      0.7425    ]
+     3) [ 0.73095238  0.73        0.6975      0.735       0.7325    ]
+     4) [ 0.73809524  0.74        0.7025      0.7475      0.7325    ]
+     5) [ 0.7547619  0.7525     0.7175     0.7425     0.755    ]
+     6) [ 0.74761905  0.755       0.7125      0.7525      0.7475    ]
+     7) [ 0.7547619  0.75       0.71       0.7425     0.75     ]
+     8) [ 0.7547619  0.7425     0.7        0.7425     0.745    ]
+     9) [ 0.7547619  0.7525     0.705      0.735      0.7475   ]
+**** scikit-learn svc linear (git: 516d56) (~66%)
+     [ 0.64285714  0.66        0.6725      0.6675      0.64      ]
+     mean = 0.65657142800000001
+**** scikit-learn rbf C=131072, gamma=1.9e-06 (git: 516d56) (~7%)
+     [ 0.06904762  0.0625      0.065       0.0825      0.07      ]
+     mean = 0.069809523999999998
+**** scikit-learn svc linear (git: 516d56)
+*** 76 classes
+**** sh-liblinear-ovo (multiclass one versus one) (~37%)
+***** built via (Xubuntu 15.10)
+      make
+***** called via
+      - liblinear-ovo-1.96/train -M 1 train
+      - liblinear-ovo-1.96/predict test train.model output
 ***** result
-      gamma = 1
-      C = 1
-      score \approx 1-2%
+      Accuracy = 36.7188% (282/768)
+**** sh-liblinear-ovo (multiclass one versus rest) (~11%)
+***** call
+      - liblinear-ovo-1.96/predict test train.model output
+      - liblinear-ovo-1.96/train train
+***** result
+      Accuracy = 11.1979% (86/768)
+**** scikit-learn-liblinear-Crammer-Singer (~3%)
+***** call
+      >>> svc_liblinear = svm.LinearSVC(multi_class='crammer_singer')
+      >>> cross_validation.cross_val_score(svc_liblinear, X, y, cv=5, n_jobs=-1)
+***** results ~0.03
+      array([ 0.03713355,  0.04690554,  0.03127036,  0.02931596,  0.03715776])
+**** scikit-learn-libsvm-rbf
+***** grid (~1-2%)
+****** call
+       #+BEGIN_SRC python
+         >>> tester=svm.SVC()
+         >>> Cs=np.logspace(-2, 20, 11, base=2)
+         >>> Gs=np.logspace(20, -2, 11, base=2)
+         >>> from sklearn import grid_search
+         >>> clf=grid_search.GridSearchCV(estimator=tester, param_grid=dict(gamma=Gs, C=Cs))
+         >>> clf.fit(X, y)
+       #+END_SRC
+****** result
+       gamma = 1
+       C = 1
+       score \approx 1-2%
 ** features
 *** mapping of panchenko's *Number Marker* s
 **** with panchenko's dictionary mapping (1\to1, 2\to2, 3..5\to3, 6..8\to4, 9..13\to5) (-)
@@ -779,6 +800,18 @@ panchenko-rbf-svm
 [ 0.20952381  0.2         0.22        0.2         0.22      ]
 liblinear
 [ 0.8   0.61  0.73  0.72  0.71]
+*** *Number Marker* log-mapping bases (git 51fd56 +change) (each ~74% with 20c)
+**** call
+     test(X, y, neighbors.KNeighborsClassifier());
+**** 2
+     [ 0.7547619  0.7525     0.7175     0.7425     0.755    ]
+     mean = 0.74445238000000002
+**** 1.4
+     [ 0.7547619  0.7525     0.7175     0.7425     0.755    ]
+**** 2.4
+     [ 0.7547619  0.7525     0.7175     0.7425     0.755    ]
+     
+    
 
 *** alle Paketdaten auf duckstein (2+2 GB) (Crash)
 **** result
