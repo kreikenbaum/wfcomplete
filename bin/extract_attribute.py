@@ -72,7 +72,7 @@ def to_libsvm(X, y, fname='libsvm_in'):
 def test(X, y, estimator):
     '''tests estimator with X, y, prints type and result'''
     print estimator
-    print cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=2)
+    print cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=-1)
 
 if __name__ == "__main__":
     doctest.testmod()
