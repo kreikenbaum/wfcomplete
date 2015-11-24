@@ -88,14 +88,7 @@ if __name__ == "__main__":
     test(X, y, neighbors.KNeighborsClassifier())
     test(X, y, svm.SVC(C=2**17, gamma=2**(-19)))
     test(X, y, svm.LinearSVC())
-    # grid rbf e-10 to e0
-    Cs = np.logspace(-20, -11, base=10, num=10)
-    Gs = np.logspace(-20, -11, base=10, num=10)
-    for c in Cs:
-        for gamma in Gs:
-            test(X, y, svm.SVC(C=c, gamma=gamma))
-    # end grid rbf
-    # grid rbf focuseder
+    # grid rbf
     cstart, cstop = -25, -15
     Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
     gstart, gstop = -14, -7
@@ -103,9 +96,26 @@ if __name__ == "__main__":
     for c in Cs:
         for gamma in Gs:
             test(X, y, svm.SVC(C=c, gamma=gamma))
-    # end focuseder
-    # random forest test
+    # random forest
     from sklearn import ensemble
     test(X, y, ensemble.RandomForestClassifier())
-    # end
-    
+    # feature importance
+    forest = ensemble.ExtraTreesClassifier(n_estimators=250)
+    forest.fit(X, y)
+    forest.feature_importances_
+    # extra trees
+    test(X, y, ensemble.ExtraTreesClassifier())
+    # extratree param
+    for num in range(50, 400, 50):
+        test(X, y, ensemble.ExtraTreesClassifier(n_estimators=num))
+    # decision tree
+    from sklearn import tree
+    test(X, y, tree.DecisionTreeClassifier())
+    # adaboost
+    test(X, y, ensemble.AdaBoostClassifier())
+    # linear params
+    cstart, cstop = -5, 5
+    Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
+    for c in Cs:
+        test(X, y, svm.SVC(C=c, kernel='linear'))
+    # knn + levenshtein

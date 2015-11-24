@@ -7,8 +7,8 @@ import os
 import subprocess
 
 HOME_IP = '134.76.96.47' #td: get ips
-# LOGLEVEL = logging.DEBUG
-LOGLEVEL = logging.INFO
+LOGLEVEL = logging.DEBUG
+#LOGLEVEL = logging.INFO
 TIME_SEPARATOR = '@'
 
 def _append_features(keys, filename):
@@ -43,7 +43,7 @@ def _get_domain(filename):
 
 def pad(row, upto=300):
     '''enlarges row to have upto entries (padded with 0)
-    >>> _pad([2], 20)
+    >>> pad([2], 20)
     [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     '''
     row.extend([0] * (upto - len(row)))
@@ -55,15 +55,15 @@ def sum_bytes(packets):
     (5, 7)
     '''
     return((sum((x for x in packets if x > 0)),
-            sum((x for x in packets if x < 0))))
+            abs(sum((x for x in packets if x < 0)))))
 
 def sum_packets(packets):
     '''number of (incoming, outgoing) packets
     >>> sum_packets([3,4,-1,-4, 1])
     (3, 2)
     '''
-    return((sum((1 for x in packets if x < 0)),
-            sum((1 for x in packets if x > 0))))
+    return((sum((1 for x in packets if x > 0)),
+            sum((1 for x in packets if x < 0))))
 
 def _sum_stream(packets):
     '''sums adjacent packets in the same direction
@@ -92,8 +92,8 @@ def _sum_numbers(packets):
     # extended as counts had 16, 21
     dictionary = {1: 1, 2: 2, 3: 3, 4: 3, 5: 3, 6: 4, 7: 4, 8:4,
                   9:5, 10:5, 11:5, 12:5, 13:5, 14:6}
-    #return [dictionary[min(14, abs(x))] for x in counts]
-    return counts
+    return [dictionary[min(14, abs(x))] for x in counts]
+    #return counts
     #return [math.log(abs(x), 2.4) for x in counts]
 
 class Counter(object):
@@ -206,7 +206,7 @@ class Counter(object):
         self.variable will be padded
         '''
         self._postprocess()
-        out = self.fixed
+        out = self.fixed[:]
         if type(pad_by) is int:
             tmp = {}
             for key in self.variable.keys():
@@ -244,9 +244,11 @@ class Counter(object):
             self.fixed.append(self.variable['size_markers'][1])
         else:
             self.fixed.append(self.variable['size_markers'][2])
+        logging.debug('fixed: %s', self.fixed)
         # size_incoming size_outgoing
         self.fixed.extend([discretize(x, 10000) for x in
                            sum_bytes(self.packets)])
+        logging.debug('fixed: %s', self.fixed)
         # number markers
         self.variable['number_markers'] = _sum_numbers(self.packets)
         # occurring packet sizes in + out
@@ -254,16 +256,20 @@ class Counter(object):
                                               self.packets if x > 0])), 2))
         self.fixed.append(discretize(len(set([x for x in
                                               self.packets if x < 0])), 2))
+        logging.debug('fixed: %s', self.fixed)
         # helper
         (packets_in, packets_out) = sum_packets(self.packets)
         # percentage incoming packets
         self.fixed.append(discretize(100 * packets_in
                                      /(packets_in + packets_out),
                                      5))
+        logging.debug('fixed: %s', self.fixed)
         # number incoming
         self.fixed.append(discretize(packets_in, 15))
+        logging.debug('fixed: %s', self.fixed)
         # number outgoing
         self.fixed.append(discretize(packets_out, 15))
+        logging.debug('fixed: %s', self.fixed)
         # all packets as of "A Systematic ..." svm.py code
 #        self.variable['all_packets'] = self.packets # grew too big 4 mem
 
@@ -274,6 +280,7 @@ class Counter(object):
     @staticmethod
     def from_(*args):
         '''helper method to handle empty argument'''
+        logging.info('args: %s, length: %d', args, len(args))
         if len(args) > 1:
             out = {}
             for filename in args[1:]:
@@ -287,4 +294,4 @@ if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
 
     from sys import argv
-    counters = Counter.from_(argv)
+    counters = Counter.from_(*argv)

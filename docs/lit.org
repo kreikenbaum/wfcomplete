@@ -4813,6 +4813,36 @@
       spaces, this method becomes less effective due to the so-called
       “curse of dimensionality”.
     - (ends 4.6.2)
+    - Currently, algorithm = ’auto’ selects ’kd_tree’ if k < N/2 and
+      the ’effective_metric_’ is in the ’VALID_METRICS’ list of
+      ’kd_tree’. It selects ’ball_tree’ if k < N/2 and the
+      ’effective_metric_’ is not in the ’VALID_METRICS’ list of
+      ’kd_tree’. It selects ’brute’ if k >= N/2. This choice is based
+      on the assumption that the number of query points is at least
+      the same order as the number of training points, and that
+      leaf_size is close to its default value of 30.
+    - (ends 4.6.4)
+    - There are many efficient exact nearest neighbor search
+      algorithms for low dimensions d (approximately 50). However
+      these algorithms perform poorly with respect to space and query
+      time when d increases. These algorithms are not any better than
+      comparing query point to each point from the database in a high
+      dimension (see Brute Force). This is a well-known consequence of
+      the phenomenon called “The Curse of Dimensionality”. There are
+      certain applications where we do not need the exact nearest
+      neighbors but having a “good guess” would suffice. When answers
+      do not have to be exact, the LSHForest class implements an
+      approximate nearest neighbor search.
+    - (ends 4.6.6)
+    - DecisionTreeClassifier [...]
+      #+BEGIN_SRC python
+        from sklearn import tree
+        X = [[0, 0], [1, 1]]
+        Y = [0, 1]
+        clf = tree.DecisionTreeClassifier()
+        clf = clf.fit(X, Y)
+      #+END_SRC
+    - (ends 4.11)
     - As other classifiers, forest classifiers have to be fitted with
       two arrays: a sparse or dense array X of size [n_samples,
       n_features] holding the training samples, and an array Y of size
@@ -4826,6 +4856,16 @@
         clf = clf.fit(X, Y)
       #+END_SRC
     - (ends 4.11.2)
+    - 
+      #+BEGIN_SRC python
+        from sklearn.ensemble import ExtraTreesClassifier
+        [...]
+        # Build a forest and compute the feature importances
+        forest = ExtraTreesClassifier(n_estimators=250,
+        random_state=0)
+        forest.fit(X, y)
+        importances = forest.feature_importances_
+      #+END_SRC
     - (begins 12)
     - Firstly, many estimators take precomputed distance/similarity
       matrices, so if the dataset is not too large, you can compute
