@@ -104,4 +104,8 @@ if __name__ == "__main__":
         for gamma in Gs:
             test(X, y, svm.SVC(C=c, gamma=gamma))
     # end focuseder
+    # random forest test
+    from sklearn import ensemble
+    test(X, y, ensemble.RandomForestClassifier())
+    # end
     
