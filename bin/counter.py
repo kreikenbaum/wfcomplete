@@ -189,6 +189,10 @@ class Counter(object):
     def variable_lengths(self):
         '''lengths of variable-length features'''
         self._postprocess()
+        return self._variable_lengths()
+
+    def _variable_lengths(self):
+        '''does the computation of lengths, assumes variable to be filled'''
         out = {}
         for k, feature in self.variable.iteritems():
             out[k] = len(feature)
@@ -270,6 +274,8 @@ class Counter(object):
         # number outgoing
         self.fixed.append(discretize(packets_out, 15))
         logging.debug('fixed: %s', self.fixed)
+        # variable lengths test
+        self.fixed.extend(self._variable_lengths().values())
         # all packets as of "A Systematic ..." svm.py code
 #        self.variable['all_packets'] = self.packets # grew too big 4 mem
 

@@ -118,4 +118,16 @@ if __name__ == "__main__":
     Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
     for c in Cs:
         test(X, y, svm.SVC(C=c, kernel='linear'))
-    # knn + levenshtein
+    # td: knn + levenshtein
+    def mydist(x, y):
+        # fixed
+        fixedm = euclidean(x[:8], y[:8])
+        variable =
+    # metrics (single)
+    from scipy.spatial import distance
+    for dist in [distance.braycurtis, distance.canberra,
+                 distance.chebyshev, distance.cityblock, distance.correlation,
+                 distance.cosine, distance.euclidean, distance.sqeuclidean]:
+        test(X, y, neighbors.KNeighborsClassifier(metric='pyfunc', func=dist))
+    # metrics (p)
+    
