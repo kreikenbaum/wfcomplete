@@ -72,10 +72,10 @@ def to_libsvm(X, y, fname='libsvm_in'):
 
 def test(X, y, estimator):
     '''tests estimator with X, y, prints type and result'''
-    result = cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=-1)
     print estimator
+    result = cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=-1)
     print '{}, mean = {}'.format(result, result.mean())
-    
+
 
 if __name__ == "__main__":
     doctest.testmod()
@@ -121,12 +121,20 @@ if __name__ == "__main__":
     for c in Cs:
         test(X, y, svm.SVC(C=c, kernel='linear'))
     # td: knn + levenshtein
-    def mydist(x, y):
-        # fixed
-        fixedm = euclidean(x[:8], y[:8])
-        variable =
-    # metrics (single)
     from scipy.spatial import distance
+    import math
+    def mydist(x, y):
+        fixedm = distance.sqeuclidean(x[:8], y[:8])
+        xbounds1 = (10, 10+x[8])
+        ybounds1 = (10, 10+y[8])
+        variable1 = gdl.metric(x[xbounds1[0]:xbounds1[1]],
+                               y[ybounds1[0]:ybounds1[1]])
+        xbounds2 = (10+x[8], 10+x[8]+x[9])
+        ybounds2 = (10+x[8], 10+x[8]+y[9])
+        variable2 = gdl.metric(x[xbounds2[0]:xbounds2[1]],
+                               y[ybounds2[0]:ybounds2[1]])
+        return math.sqrt(fixedm + variable1 + variable2)
+    # metrics (single)
     for dist in [distance.braycurtis, distance.canberra,
                  distance.chebyshev, distance.cityblock, distance.correlation,
                  distance.cosine, distance.euclidean, distance.sqeuclidean]:
