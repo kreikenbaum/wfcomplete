@@ -72,8 +72,10 @@ def to_libsvm(X, y, fname='libsvm_in'):
 
 def test(X, y, estimator):
     '''tests estimator with X, y, prints type and result'''
+    result = cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=-1)
     print estimator
-    print cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=-1)
+    print '{}, mean = {}'.format(result, result.mean())
+    
 
 if __name__ == "__main__":
     doctest.testmod()
@@ -89,7 +91,7 @@ if __name__ == "__main__":
     test(X, y, svm.SVC(C=2**17, gamma=2**(-19)))
     test(X, y, svm.LinearSVC())
     # grid rbf
-    cstart, cstop = -27, -17
+    cstart, cstop = -28, -16
     Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
     gstart, gstop = -10, -8
     Gs = np.logspace(gstart, gstop, base=10, num=10*(abs(gstart - gstop)+1))
