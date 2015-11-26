@@ -89,10 +89,10 @@ if __name__ == "__main__":
     test(X, y, svm.SVC(C=2**17, gamma=2**(-19)))
     test(X, y, svm.LinearSVC())
     # grid rbf
-    cstart, cstop = -25, -15
+    cstart, cstop = -27, -17
     Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
-    gstart, gstop = -14, -7
-    Gs = np.logspace(gstart, gstop, base=10, num=(abs(gstart - gstop)+1))
+    gstart, gstop = -10, -8
+    Gs = np.logspace(gstart, gstop, base=10, num=10*(abs(gstart - gstop)+1))
     for c in Cs:
         for gamma in Gs:
             test(X, y, svm.SVC(C=c, gamma=gamma))
