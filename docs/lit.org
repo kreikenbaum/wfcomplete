@@ -2756,6 +2756,48 @@
 	  - corrected resampled paired t-test
 
        2. Performance of the MNB Classifier
+
+	  0. [@0]
+
+	     - comparison to other OpenSSH-fingerprinting
+               attacks. This relates to other systems as well.
+
+	     - accuracy: found/total
+
+	  1. Influence of Transformations
+
+	     best result for (only) TF with normalization
+
+	  2. Size of Training Set
+
+	     4 training instances ("good compromise between necessary
+             resources and achievable accuracy.")
+
+	  3. Robustness
+
+	     quite robust to changes over time
+
+	     also adjusts to changes in content: concept drift
+
+       3. Comparison of Website Fingerprinting Methods Against OpenSSH
+
+	  - with transformation (tf + normalisation + cosine),
+            significantly better
+
+	  - also faster for training and testing
+
+       4. Attacking Popular PETs Using the MNB Classifier
+
+	  - single-hop all above 94% with tf-normalization
+
+	  - multi-hop JonDonym 19.97, Tor 2.96% (normalization only)
+
+	  - better for top k (3/10) classes
+
+	  - multi-hop worse than theoretic, might be vulnerable
+
+    6. DISCUSSION
+	  
 *** TODO quotes
     - influence of the browser cache on accuracy.
     - The attack consists of two phases: in the training phase the
@@ -2797,6 +2839,18 @@
 
       f^{norm}_{x_{j}}= (f^{* }_{x_{j}} / ||(f^{* }_{x_{1}}, ... f^{*}_{x_{n}})|| )
     - (ends 4.5.2)
+    - From an information-theoretic viewpoint, even the multi-hop
+      systems do not protect perfectly, though: the accuracies found
+      for them are well above the accuracy achievable by randomly
+      guessing the class without any context knowledge (1/775 ≈
+      0.13%).
+    - top k classes from the list of predicted classes (sorted in
+      descending order by class membership probability). If the actual
+      class was among the list of predicted classes, the test instance
+      was counted as correctlyclassified, otherwise as incorrectly
+      classified. For k = 3 and k = 10 the accuracy values for Tor
+      increase to 16.69 % and 22.13 %, respectively, for JonDonym they
+      increase to 31.70 % and 47.53 %.
 
 *** vocabulary
     - website fingerprinting: learn the identity, i. e. the URLs, of
@@ -3174,6 +3228,14 @@
        2) Parzen Windows
 
 	  1) Discrete Density Estimation
+
+	     estimate by actual occurrences in sample data
+
+	     problem: some numbers might not appear
+
+	     solution: laplace smoothing
+
+	  2) Smoothing Kernel
 *** TODO quotes
     - much of the art of machine learning is to reduce a range of
       fairly disparate problems to a set of fairly narrow
@@ -3450,6 +3512,21 @@
 
         Pr(|X̄_{m} − μ| > \epsilon) ≤ 2 exp(-2m\epsilon^{2} / (b-a)^{2}) (2.15)
       - (ends 2.1.3)
+      - The convergence theorems discussed so far mean that we can use
+        empirical observations for the purpose of density estimation.
+      - Example 2.4 (Curse of Dimensionality) Assume that X = {0, 1} d
+        , i.e. x consists of binary bit vectors of
+        dimensionality d. As d increases the size of X increases
+        exponentially, requiring an exponential number of observations
+        to perform density estimation. For instance, if we work with
+        images, a 100 × 100 black and white picture would require in
+        the order of 10^{3010} observations to model such fairly
+        low-resolution images accurately. This is clearly utterly
+        infeasible — the number of particles in the known universe is
+        in the order of 10^{80} . Bellman [Bel61] was one of the first to
+        formalize this dilemma by coining the term ’curse of
+        dimensionality’.
+      - (ends 2.2.1)
 ** TODO [#B] [[./ieee-icc15.pdf][A First-Hop Traffic Analysis Attack Against Tor]]
 *** summary
     0) [@0] Abstract
@@ -3546,6 +3623,19 @@
 	     - top 5 per web page to represent
 
 	  3) Randomised Routing
+
+	     - "Abrupt, substantial changes in the mean RTT are
+               evident"
+
+	  4) Classification Performance
+
+	     - 67.7% on 40 sites a 100 samples
+
+	     - 93% without Tor
+
+	     - K=1 is best here
+
+	  5) Finding a web page within a sequence of web requests
 *** quotes
     - define a *warping path* p to be a sequence of pairs,
 
@@ -3583,6 +3673,8 @@
 
       φ(t, t') := \sum_{s=1}^{r−1} (κ_{s+1} − (κ_{s} + 1)) / n+m (4)
     - (ends 3)
+    - congestion window growth slows with increasing RTT.
+    - (ends 4.D (=4.4))
 ** TODO [#B] [[./cacr2015-08.pdf][Walkie-Talkie: An Effective and Efficient Defense against Website Fingerprinting]]
 *** summary
     0) [@0] ABSTRACT
@@ -3596,7 +3688,27 @@
        9% time (?), 55% bw \to 10%fpr
 
     1) INTRODUCTION
+
+       - tor breakable by wf
+
+       - walkie-talkie: half-duplex defense, against perfect attacker
+
+    2) RELATED WORK
 *** quotes
+    - design goals:
+      1. General: The defense succeeds against all possible
+         classification attacks by causing collisions, where the
+         defense outputs the same packet sequence given input packet
+         sequences from different web pages. Even a perfect attacker
+         would not be able to tell which page it came from.
+      2. Easy to use: The client does not need to configure the
+         defense. The defense is ready to use out of the box, and can
+         be deployed incrementally as it does not depend on other
+         clients using the same defense.
+      3. Decentralized: The defense should not require some central
+         server, with a shared database, to operate. We want to match
+         the decentralized model of anonymity networks.
+    - (ends 1)
 ** TODO [#B] [[./tor14design.pdf][Tor: The Second-Generation Onion Router (2014 DRAFT v1)]]
 *** summary
     0) [@0] Abstract
@@ -3709,13 +3821,53 @@
 
     3) Design goals and assumptions
 
+       0) [@0]
+
+	  - Goals
+
+	    - Deployability: cheap, rather legal, easy to implement
+
+	    - Usability: usable by mose applications
+
+	    - Flexibility: specified, replaceable
+
+	    - Simple design: kiss: well-understood, accepted approaches
+
+	    - Resistant to censorship: both by IP and protocol fingerprinting
+
+	  - Non-goals
+
+	    - Not peer-to-peer: "still has many open problems"
+
+	    - Not secure against end-to-end attacks:
+
+	      "Some approaches, such as having users run their own onion
+              routers, may help;"
+
+	    - No protocol normalization: needs to be added via Privoxy f.ex.
+
+       1) Threat Model
+
+	  adversary like [[*%5B%5B./tor-design.pdf%5D%5BTor:%20The%20Second-Generation%20Onion%20Router%5D%5D][Tor: The Second-Generation Onion Router*]]
+
+    4) The Tor Design
 *** quotes
     - most designs protect primarily against traffic analysis rather
       than traffic confirmation
     - distributed-trust, circuit-based anonymizing systems
+    - (ends 2)
+    - adding unproven techniques to the design threatens
+      deployability, readability, and ease of security analysis.
+    - like all practical low-latency systems, Tor does not protect
+      against such a strong adversary [a global passive adversary]
+    - (ends 3)
 ** TODO [#C] [[./cacr2015-09.pdf][Wang - On Realistically Attacking Tor with Website Fingerprinting]]
 *** summary
 *** quotes
+    - (begins 1)
+    - it is very hard to generate sufficient background noise on Tor
+      to disrupt WF due to the design of the Tor Browser.
+    - (ends 1)
     - This is the hardest class to split as there is no noticeable gap
       nor a clear pattern of cells indicating the gap.
 ** TODO [#C] [[./webfingerprint-wpes.pdf][Improved Website Fingerprinting on Tor]]
@@ -3738,14 +3890,40 @@
 ** TODO [#C] [[./LZCLCP_NDSS11.pdf][HTTPOS: Sealing Information Leaks with Browser-side Obfuscation of Encrypted Flows]]
 *** summary
     0) [@0] Abstract
+
        - defense against HTTPS information leakage
+
     1) Introduction
+
+       HTTPOS (http[s] obfuscation) modifies traffic.
+
+       was very successful in their tries against single-hop attacks
+
+    2) Threat models
 *** abstract
     - Extensive evaluation of HTTPOS on live web traffic shows that it
       can successfully prevent the state-of-the-art attacks from
       inferring private information from encrypted HTTP flows.
     - (ends 0)
+    - the efficacy of these methods has not been validated thoroughly
+      based on actual implementations and live HTTP traffic.
+    - TCP (e.g., Maximal Segment Size (MSS) negotiation and
+      advertising window) and HTTP (e.g., HTTP Range and HTTP
+      Pipelining).
+    - (ends 1)
 ** TODO [#C] [[./morphing09.pdf][Traffic Morphing: An Efficient Defense Against Statistical Traffic Analysis]]
+*** summary
+    0. [@0] Abstract
+
+       morphing changes traffic to look like another site
+
+    1. Introduction
+*** quotes
+    - morphing one class of traffic to look like another class.
+    - show how to optimally modify packets in real-time to reduce the
+      accuracy of a variety of traffic classifiers while incurring
+      much less overhead than padding.
+    - (ends 0)
 *** ref
     #+BEGIN_SRC bibtex
       @inproceedings{morphing09,
@@ -5037,6 +5215,7 @@
       minkowski, and with p=2 is equivalent to the standard Euclidean
       metric. See the documentation of the Distance-Metric class for
       a list of available metrics.
+    - “braycurtis” | BrayCurtisDistance | sum(|x - y|) / (sum(|x|) + sum(|y|))
     - (ends 42.25.2)
     - class sklearn.pipeline.Pipeline(steps) Pipeline of transforms
       with a final estimator. Sequentially apply a list of transforms
@@ -5616,6 +5795,14 @@
       Return a copy of the string with leading characters removed. The
       chars argument is a string specifying the set of characters to
       be removed.
+    - str.partition(sep)
+
+      Split the string at the first occurrence of sep, and return a
+      3-tuple containing the part before the separator, the separator
+      itself, and the part after the separator. If the separator is
+      not found, return a 3-tuple containing the string itself,
+      followed by two empty strings.
+    - (ends 5)
     - os.path.basename(path)
 
       Return the base name of pathname path.
@@ -5630,12 +5817,31 @@
             def f(arg1, arg2, ...):
                 ...
       #+END_SRC
+    - pdb.py can also be invoked as a script to debug other scripts. For example:
+
+      #+BEGIN_SRC python
+        python -m pdb myscript.py
+      #+END_SRC
+    - The typical usage to break into the debugger from a running
+      program is to insert
+
+      #+BEGIN_SRC python
+        import pdb; pdb.set_trace()
+      #+END_SRC
+  
+      at the location you want to break into the debugger.
 ** MAYBE [[/home/chive/IT-gg/python/scipy-ref-0.15.1.pdf][SciPy Reference Guide]]
 *** quotes
     - (begins 5)
     - scipy.spatial.distance.euclidean(u, v)
 
       Computes the Euclidean distance between two 1-D arrays.
+    - Y = pdist(X, ’braycurtis’)
+
+      Computes the Bray-Curtis distance between the points. The
+      Bray-Curtis distance between two points u and v is
+      
+      d(u, v) = ∑_{i} u_{i} − v_{i} / ∑_{i} u_{i} + v_{i}
     - (ends 5.29)
 
 ** MAYBE [[/home/chive/IT-gg/python/numpy-ref-1.9.1.pdf][NumPy Reference]]
