@@ -2,7 +2,10 @@
 var links = []
 
 for ( var i = 0; i < document.links.length; i++ ) {
-    links.push(document.links[i].href);
+    if ( !document.links[i].href.contains('file://')
+         && !document.links[i].href.contains('127.0.0.1') ) {
+	links.push(document.links[i].href);
+    }
 }
 
 self.port.emit('links', JSON.stringify(links));

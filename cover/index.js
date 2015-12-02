@@ -54,6 +54,7 @@ pageWorker = require("sdk/page-worker").Page({
 // td: filter file:// urls
 // add to possible urls to visit
 function addToCandidates(array) {
+    debugLog("addToCandidates("+array+")");
     candidates = candidates.concat(array);
 }
 

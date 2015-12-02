@@ -626,7 +626,7 @@
       labor-intensive to implement and deploy, we are unlikely to take
       these measures without further feedback from and study by the
       research community.
-** [[./article-2456.pdf][A Critical Evaluation of Website Fingerprinting Attacks]]
+** [[./article-2456.pdf][Juarez - A Critical Evaluation of Website Fingerprinting Attacks]]
 *** summary
     0) [@0] ABSTRACT
 
@@ -1033,41 +1033,40 @@
 
 	  focus on one point P_{train} \in S_{train}, do two steps
 
-	  - weight recommendation
+	  1. weight recommendation
 
-	    - compute distances to all other P' \in S_{train}
+	     1. compute distances to all other P' \in S_{train}
 
-	    - take closest k_{reco} points in S_{train} as S_{good}
-	      and closest k_{reco} points in all other classes S' as S_{bad}
+	     2. take closest k_{reco} points in S_{train} as S_{good}
+		and closest k_{reco} points in all other classes S' as S_{bad}
 
-	    - with d(P, S) := { d(P, s) | s \in S } define:
+	     3. with d(P, S) := { d(P, s) | s \in S } define:
 
-	      d_{maxgood_i} := max({d_{f_i}(P_{train}, P) | P \in S_{good} }) and compute:
+		- d_{maxgood_i} := max({d_{f_i}(P_{train}, P) | P \in S_{good} }) and compute:
 
-	      n_{bad_i} := |{P' \in S_{bad} | d_{f_i}(P_{train}, P') \le d_{maxgood_i} }|
+		- n_{bad_i} := |{P' \in S_{bad} | d_{f_i}(P_{train}, P') \le d_{maxgood_i} }|
 
-	      number of classes "closer" by feature than worst good candidate
+	          number of classes "closer" by feature than worst good candidate
+	          the closer to k_{reco}, the worse
 
-	      the closer to k_{reco}, the worse
+	  2. weight adjustment
 
-	  - weight adjustment
+	     1. for features worse than the best,
+                reduce by \Delta w_{i} = w_{i} \cdot 0.01
 
-	    - for features worse than the best,
-              reduce by \Delta w_{i} = w_{i} \cdot 0.01
+	     2. other features, afterwards, increase equally such that
+                d(P_{train}, S_{bad}) remains the same
 
-	    - other features, afterwards, increase equally such that
-              d(P_{train}, S_{bad}) remains the same
+	     3. both:
 
-	    - both:
+	        - \Delta w_i \cdot n_{bad_i}/k_{reco}
 
-	      - \Delta w_i \cdot n_{bad_i}/k_{reco}
+	        - multiply by overall badness 0.2 + N_bad/k_{reco} with
+                  N_{bad} = |{P' \in S_{bad} | d(P_{train}, P') \le d_{maxgood} }|
 
-	      - multiply by overall badness 0.2 + N_bad/k_{reco} with
-                N_{bad} = |{P' \in S_{bad} | d(P_{train}, P') \le d_{maxgood} }|
+	  3. best results for k_{reco} = 5
 
-	  - best results for k_{reco} = 5
-
-	  - random vector between 0.5 and 1.5
+	  4. random vector between 0.5 and 1.5
 
     5) Attack evaluation
 
@@ -2567,8 +2566,8 @@
         www_section = {Traffic analysis},
       }
     #+END_SRC
-** TODO [#A] [[./authorsversion-ccsw09.pdf][Herrmann - Website Fingerprinting: Attacking Popular Privacy Enhancing Technologies with the Multinomial Naïve-Bayes Classifier]] [0/2]
-*** TODO summary
+** [[./authorsversion-ccsw09.pdf][Herrmann - Website Fingerprinting: Attacking Popular Privacy Enhancing Technologies with the Multinomial Naïve-Bayes Classifier]]
+*** summary
     0. [@0] ABSTRACT
 
        - attack privacy-enhancing technologies via text-mining
@@ -2797,8 +2796,24 @@
 	  - multi-hop worse than theoretic, might be vulnerable
 
     6. DISCUSSION
-	  
-*** TODO quotes
+
+       - setup constant, might change for different Operating Systems etc
+
+       - caching decreased success from 96.65 % (with caching
+         disabled) to 91.70 %
+
+       - false alarm avoidance comes at a great cost: with ~1.4% false
+         alarms, tp falls to 40% (78 interesting sites of 775)
+
+    7. CONCLUSION
+
+       - Multinomial Naïve Bayes
+
+       - "operates on the frequency distribution of IP packet sizes"
+
+       - "increased performance is mainly due to the normalisation of
+         the packet size frequency vectors"
+*** quotes
     - influence of the browser cache on accuracy.
     - The attack consists of two phases: in the training phase the
       attacker creates traffic fingerprints for a large number of
@@ -2851,7 +2866,18 @@
       classified. For k = 3 and k = 10 the accuracy values for Tor
       increase to 16.69 % and 22.13 %, respectively, for JonDonym they
       increase to 31.70 % and 47.53 %.
-
+    - (ends 5)
+    - dependent to some degree on the operating system, the type of
+      the Internet connection and the browser and its
+      configuration. We therefore expect that the accuracy of website
+      fingerprinting attacks is degraded in case training and testing
+      instances are not recorded in the same environment.
+    - footnote to /false alarms/: Please note that the term /false
+      positives/ is intentionally not used here, as it is used to
+      convey another meaning in classical data mining.
+    - (ends 6)
+    - the development and implementation of efficient countermeasures
+      becomes an important task for the PET community.
 *** vocabulary
     - website fingerprinting: learn the identity, i. e. the URLs, of
       websites that are downloaded over an encrypted tunnel by
@@ -2880,7 +2906,11 @@
     #+END_SRC
 ** TODO [#A] [[./ESLII_print4.pdf][The Elements of Statistical Learning]]
 *** summary
-    2) [@2] Introduction
+    1) Introduction
+
+       examples
+
+    2) Overview of Supervised Learning
 
        1) inputs
 
@@ -2895,6 +2925,18 @@
 	  == responses (statistics)
 
 	  == dependent variables (statistics)
+
+       2) Variable Types and Terminology
+
+	  - qualitative aka discrete aka categorical variables aka factors
+
+	    example: handwritten digits, fisher's irises
+
+	  - regression for quantitative outputs Y, classification for
+            qualitative outputs G
+
+       3) Two Simple Approaches to Prediction: Least Squares and
+          Nearest Neighbors
 *** quotes
     - Chapter 18 explores the “p ≫ N ” problem, which is learning in
       high-dimensional feature spaces. These problems arise in many
@@ -3236,6 +3278,39 @@
 	     solution: laplace smoothing
 
 	  2) Smoothing Kernel
+
+	     - "proper density estimation."
+
+	     - parzen windows estimate (see quotes)
+
+	     - different kernels
+
+	  3) Parameter Estimation
+
+	     - width of kernel function is important, shape less
+
+	     - to maximize likelihood, sum over log-likelihood to
+               avoid float overflow
+
+	     - maximizing likelihood on all of data leads to
+               overfitting
+
+	     - avoid by using a Validation Set, n-fold
+               Cross-validation or a Leave-one-out Estimator
+
+	  4) Silverman’s Rule
+
+	     - locality-dependent kernel width
+
+	       r_{i} = c/k \sum_{x \in kNN(x_i)} ||x - x_{i}||
+
+	     - locality-dependent parzen rule
+
+	       p\circ(x) = 1/m \sum_{i=1}^{m} r^{-d}h(x - x_{i}/r_{i})
+
+	  5) Watson-Nadaraya Estimator
+
+	     - non-parametric data
 *** TODO quotes
     - much of the art of machine learning is to reduce a range of
       fairly disparate problems to a set of fairly narrow
@@ -3527,6 +3602,39 @@
         formalize this dilemma by coining the term ’curse of
         dimensionality’.
       - (ends 2.2.1)
+      - p\circ(x) = 1/m \sum_{i=1}^{m} r^{-d}h(x - x_{i}/r)
+
+	This expansion is commonly known as the /Parzen windows/ estimate.
+      - h(x) = (2π)^{−1/2} e^{−1/2 x^2} /Gaussian kernel/
+      - h(x) = 3/4 max(0, 1 − x^2) /Epanechnikov kernel/
+      - For practical purposes the Gaussian kernel (2.28) or the
+        Epanechnikov kernel (2.30) are most suitable.
+      - /compact support/ [...] for any given density estimate at
+        location x we will only need to evaluate terms h(x_{i} − x) for
+        which the distance ||x_{i} − x|| is less than r.
+      - (ends 2.2.2)
+      - choose r such that the /log-likelihood of the data/ is
+        maximized. It is given by
+
+	log \Pi_{j=0}^m p(x_{j}) = −m log m + \sum_{j=1}^m log (m \cdot p\circ(x_{j}))
+      - (ends 2.2.3)
+      - Provided that we are able to compute density estimates p(x)
+        given a set of observations X we could appeal to Bayes rule to
+        obtain
+
+	p(y|x) = p(x|y)p(y)/p(x)
+        = ((m_{y} / m) \cdot 1/m_{y} \sum_{i:y_i=y} r^{-d} h(x_{i}-x/r) / 1/m \sum_{i=1}^{m} r^{-d} h(x_{i}-x/r) ) (2.38)
+      - For binary classification (2.38) can be simplified [...] the function
+
+	f (x)
+        = \sum_{i} y_{i} h(x_{i}-x/r) / \sum_{i} h(x_{i}-x/r)
+	= \sum_{i} y_{i} (h(x_{i}-x/r) / \sum_{i} h(x_{i}-x/r))
+	=: \sum_{i} y_{i} w_{i}(x) (2.39)
+
+	can be used to achieve the same goal since
+
+        f (x) > 0 ⇐⇒ p(y = 1|x) > 0.5
+      - (ends 2.2.5)
 ** TODO [#B] [[./ieee-icc15.pdf][A First-Hop Traffic Analysis Attack Against Tor]]
 *** summary
     0) [@0] Abstract
@@ -3636,6 +3744,22 @@
 	     - K=1 is best here
 
 	  5) Finding a web page within a sequence of web requests
+
+	     - 3 out of 5:
+
+	     - find
+
+	       - stream,
+
+	       - cut by 10,
+
+	       - use 3-instance exemplar to match,
+
+	       - analyze using all
+
+	     - 69% success with position \pm 65 packets
+
+       5) SUMMARY AND CONCLUSIONS
 *** quotes
     - define a *warping path* p to be a sequence of pairs,
 
@@ -3675,7 +3799,7 @@
     - (ends 3)
     - congestion window growth slows with increasing RTT.
     - (ends 4.D (=4.4))
-** TODO [#B] [[./cacr2015-08.pdf][Walkie-Talkie: An Effective and Efficient Defense against Website Fingerprinting]]
+** TODO [#B] [[./cacr2015-08.pdf][Wang - Walkie-Talkie: An Effective and Efficient Defense against Website Fingerprinting]]
 *** summary
     0) [@0] ABSTRACT
 
@@ -3694,6 +3818,12 @@
        - walkie-talkie: half-duplex defense, against perfect attacker
 
     2) RELATED WORK
+
+       0) [@0]
+
+	  1998 wf first mentioned
+
+       1) Attacks
 *** quotes
     - design goals:
       1. General: The defense succeeds against all possible
@@ -5828,8 +5958,16 @@
       #+BEGIN_SRC python
         import pdb; pdb.set_trace()
       #+END_SRC
-  
+
       at the location you want to break into the debugger.
+    - (begins 20)
+    - The SimpleHTTPServer module can also be invoked directly using
+      the -m switch of the interpreter with a port number
+      argument. Similar to the previous example, this serves the files
+      relative to the current directory.
+
+      python -m SimpleHTTPServer 8000
+    - (ends 20.19)
 ** MAYBE [[/home/chive/IT-gg/python/scipy-ref-0.15.1.pdf][SciPy Reference Guide]]
 *** quotes
     - (begins 5)
@@ -5840,10 +5978,9 @@
 
       Computes the Bray-Curtis distance between the points. The
       Bray-Curtis distance between two points u and v is
-      
+
       d(u, v) = ∑_{i} u_{i} − v_{i} / ∑_{i} u_{i} + v_{i}
     - (ends 5.29)
-
 ** MAYBE [[/home/chive/IT-gg/python/numpy-ref-1.9.1.pdf][NumPy Reference]]
 *** quotes
     - numpy.zeros(shape, dtype=float, order=’C’)
@@ -6130,3 +6267,90 @@
         >>> nbrs = NearestNeighbors(n_neighbors=4, algorithm='ball_tree',
         ...            metric='pyfunc', func=mydist)
       #+END_SRC
+
+** Mozilla Add-On SDK
+
+*** Guides
+
+**** XUL Migration Guide
+     - Using XPCOM This example uses the action button API, which is
+       only available from Firefox 29 onwards.
+
+       Finally, if none of the above techniques work for you, you can
+       use the require("chrome") statement to get direct access to the
+       Components object, which you can then use to load and access
+       any XPCOM object.
+
+       The following complete add-on uses nsIPromptService to display
+       an alert dialog:
+       #+BEGIN_SRC javascript
+         var {Cc, Ci} = require("chrome");
+
+         var promptSvc = Cc["@mozilla.org/embedcomp/prompt-service;1"].
+                         getService(Ci.nsIPromptService);
+
+         require("sdk/ui/button/action").ActionButton({
+           id: "xpcom-example",
+           label: "Hello from XPCOM",
+           icon: "./icon-16.png",
+           onClick: function() {
+             promptSvc.alert(null, "My Add-on", "Hello from XPCOM");
+           }
+         });
+       #+END_SRC
+
+       It's good practice to encapsulate code which uses XPCOM by
+       packaging it in its own module. For example, we could package
+       the alert feature implemented above using a script like:
+
+       #+BEGIN_SRC javascript
+         var {Cc, Ci} = require("chrome");
+
+         var promptSvc = Cc["@mozilla.org/embedcomp/prompt-service;1"].
+                     getService(Ci.nsIPromptService);
+
+         exports.alert = function(title, text) {
+             promptSvc.alert(null, title, text);
+         };
+       #+END_SRC
+
+       If we save this as "alert.js" in our add-on's lib directory, we
+       can rewrite main.js to use it as follows:
+
+       #+BEGIN_SRC javascript
+         require("sdk/ui/button/action").ActionButton({
+           id: "xpcom-example",
+           label: "Hello from XPCOM",
+           icon: "./icon-16.png",
+           onClick: function() {
+             require("./alert").alert("My Add-on", "Hello from XPCOM");
+           }
+         });
+       #+END_SRC
+*** LL apis/
+**** system/events
+     - Usage The system/events module provides core (low level) API
+       for working with the application observer service, also known
+       as nsIObserverService. You can find a list of events dispatched
+       by firefox codebase here.
+       #+BEGIN_SRC javascript
+         var events = require("sdk/system/events");
+         var { Ci } = require("chrome");
+
+         function listener(event) {
+           var channel = event.subject.QueryInterface(Ci.nsIHttpChannel);
+           channel.setRequestHeader("User-Agent", "MyBrowser/1.0", false);
+         }
+
+         events.on("http-on-modify-request", listener);
+       #+END_SRC
+**** window/utils
+     - getWindowLoadingContext(window)
+       Returns the nsILoadContext.
+       - Parameters
+         window : nsIDOMWindow
+       - Returns
+	 nsILoadContext
+** [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Eloquent Javascript]]
+*** quotes
+*** summary
