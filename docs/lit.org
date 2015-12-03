@@ -1007,25 +1007,37 @@
 
 	  diverse:
 
-	  - general features: total size, total time, number of
-            incoming and outgoing packets
+	  - general features:
 
-	  - unique packet lengths: 1 if a size occurs, 0 if not, for
-            each size incoming and outgoing (useless on Tor)
+            - *total size*
 
-	  - packet ordering: number of packets before this, number of
-            incoming between outgoing packets (burst, see Cai)
+	    - *total time*
 
-	  - Concentration of outgoing packets: number of outgoing in
-            last 30 packets (non-overlapping span)
+	    - *number of incoming and outgoing packets*
+
+	  - *unique packet lengths*: 1 if a size occurs, 0 if not, for
+            each size incoming and outgoing (useless on Tor (?),
+            similar to Liberatore and Herrmann)
+
+	  - *packet ordering*: number of packets before each, number
+            of incoming between this and last outgoing packet (burst,
+            see Cai)
+
+	  - *Concentration of outgoing packets*: number of outgoing in
+            30-packet-chunks (non-overlapping span)
 
 	  - bursts: sequence with no two adjacent incoming packets,
-            maximum length, mean length, number of bursts
 
-	  - initial lengths: length of first 20 packets
+	    - *maximum burst length*
+
+	    - *mean burst length*
+
+	    - *number of bursts*
+
+	  - *initial lengths*: length of first 20 packets
 
 	  pads with special character X for empty values, such that
-          d(X, y) := d(y, X) := 0
+          d(X, y) == d(y, X) := 0
 
        3) Weight initialization and adjustment
 
@@ -1260,8 +1272,13 @@
     - The k-NN classifier needs a distance function d for pairs of
       packet sequences. The distance is non-trivial for packet
       sequences.
+    - (ends 4.1)
+    - the general features are amongst the strongest indicators of
+      whether or not two packet sequences belong to the same mode of a
+      page,
     - The total number of features is close to 4,000 (3,000 of which
       are just for the unique packet lengths).
+    - (ends 4.2)
     - Note that we are not claiming these particular choices of
       parameters and constants yield an optimal attack
     - Our list of 100 monitored pages was compiled from a list of
@@ -2904,7 +2921,7 @@
         www_pdf_url = {http://epub.uni-regensburg.de/11919/1/authorsversion-ccsw09.pdf},
       }
     #+END_SRC
-** TODO [#A] [[./ESLII_print4.pdf][The Elements of Statistical Learning]]
+** TODO [#B] [[./ESLII_print4.pdf][The Elements of Statistical Learning]]
 *** summary
     1) Introduction
 
@@ -2937,6 +2954,18 @@
 
        3) Two Simple Approaches to Prediction: Least Squares and
           Nearest Neighbors
+
+	  0) [@0]
+
+	     - linear model
+
+	       - "stable but possibly inaccurate predictions"
+
+	     - k-nearest neighbors
+
+	       - "often accurate but can be unstable"
+
+	  1) Linear Models and Least Squares
 *** quotes
     - Chapter 18 explores the “p ≫ N ” problem, which is learning in
       high-dimensional feature spaces. These problems arise in many
@@ -3311,6 +3340,17 @@
 	  5) Watson-Nadaraya Estimator
 
 	     - non-parametric data
+
+       3) Exponential Families
+
+	  0) [@0]
+
+	     - "Gaussians, Poisson, Gamma and Wishart distributions all
+               form part of the exponential family"
+
+	     - "lead to convex optimization problems"
+
+	  1) Basics
 *** TODO quotes
     - much of the art of machine learning is to reduce a range of
       fairly disparate problems to a set of fairly narrow
@@ -3635,7 +3675,7 @@
 
         f (x) > 0 ⇐⇒ p(y = 1|x) > 0.5
       - (ends 2.2.5)
-** TODO [#B] [[./ieee-icc15.pdf][A First-Hop Traffic Analysis Attack Against Tor]]
+** MOVE [[./ieee-icc15.pdf][A First-Hop Traffic Analysis Attack Against Tor]]
 *** summary
     0) [@0] Abstract
 
@@ -3760,6 +3800,11 @@
 	     - 69% success with position \pm 65 packets
 
        5) SUMMARY AND CONCLUSIONS
+
+	  - "The attack makes use only of packet timing information on
+            the uplink"
+
+	  - effective (68% accuracy on 40 sites)
 *** quotes
     - define a *warping path* p to be a sequence of pairs,
 
@@ -3824,6 +3869,18 @@
 	  1998 wf first mentioned
 
        1) Attacks
+
+	  evolution
+
+       2) Defenses
+
+	  0) [@0]
+
+	     - limited: against specific WF attack
+
+	     - general: against perfectly accurate attacker
+
+	  1) Limited defenses
 *** quotes
     - design goals:
       1. General: The defense succeeds against all possible
@@ -3981,6 +4038,32 @@
 	  adversary like [[*%5B%5B./tor-design.pdf%5D%5BTor:%20The%20Second-Generation%20Onion%20Router%5D%5D][Tor: The Second-Generation Onion Router*]]
 
     4) The Tor Design
+
+       0) [@0]
+
+	  - atop TLS
+
+	  - onion routers
+
+	    - TLS connection to other ORs
+
+	    - 2 (+1) keys
+
+	      - long-term identity: signs router descriptor and TLS
+                certificates
+
+	      - short-term onion key: decrypt circuit requests,
+                negotiates keys
+
+	  - onion proxy
+
+	    - fetch directories
+
+	    - establish circuits
+
+	    - handle connections from users
+
+       1) Cells
 *** quotes
     - most designs protect primarily against traffic analysis rather
       than traffic confirmation
@@ -3993,6 +4076,25 @@
     - (ends 3)
 ** TODO [#C] [[./cacr2015-09.pdf][Wang - On Realistically Attacking Tor with Website Fingerprinting]]
 *** summary
+    0) [@0] Abstract
+
+       - laboratory vs real
+
+	 - training data similar to testing data
+
+	 - single page each
+
+	 - noise (not studied)
+
+       - to real
+
+	 - maintain fresh training set
+
+	 - split traces
+
+	 - users cannot generate noise (?)
+
+    1) INTRODUCTION
 *** quotes
     - (begins 1)
     - it is very hard to generate sufficient background noise on Tor
@@ -4224,7 +4326,7 @@
         www_section = {Anonymous communication,Tor Performance},
       }
     #+END_SRC
-** TODO [[./Oya.pdf][Do dummies pay off ? Limits of dummy traffic protection in anonymous communications]]
+** TODO [#A] [[./Oya.pdf][Do dummies pay off ? Limits of dummy traffic protection in anonymous communications]]
 *** ref
     #+BEGIN_SRC bibtex
       @inproceedings{pets14-dummy-traffic,
@@ -6068,7 +6170,7 @@
     comp.ai.neural-nets, URL: ftp://ftp.sas.com/pub/neural/FAQ.html
 ** TODO [[file:Curse%20of%20dimensionality%20-%20Wikipedia,%20the%20free%20encyclopedia.html][file:~/da/git/docs/Curse of dimensionality - Wikipedia, the free encyclopedia.html]]
 ** TODO [[file:Regularization%20(mathematics)%20-%20Wikipedia,%20the%20free%20encyclopedia.html][file:~/da/git/docs/Regularization (mathematics) - Wikipedia, the free encyclopedia.html]]
-** onion routing project
+** [#C] onion routing project
 *** [[~/da/git/docs/onion-routing_pet2000.pdf][Towards an Analysis of Onion Routing Security]]
 **** ref
      #+BEGIN_SRC bibtex
@@ -6106,7 +6208,18 @@
          www_ps_gz_url = {http://www.onion-router.net/Publications/IH-1996.ps.gz},
        }
      #+END_SRC
-*** [[~/da/git/docs/onion.pdf][Anonymous Connections and Onio Routing]]
+*** [[~/da/git/docs/onion.pdf][Anonymous Connections and Onion Routing]]
+**** summary
+     0) [@0] Abstract
+
+	- "Onion Routing is an infrastructure for private
+          communication over a public network.
+
+	- Eavesdropping and traffic analysis are hampered by /onion
+          routing/.
+
+     1) Introduction
+**** quotes
 *** [[~/da/git/docs/onion-discex00.pdf][Onion Routing Access Configurations]]
     see also bibtex
 ** [[~/da/git/docs/timing-fc2004.pdf][Timing Attacks in Low-Latency Mix Systems]]
@@ -6224,9 +6337,35 @@
         note = "[Online; accessed 11-November-2015]"
       }
     #+END_SRC
-** [[./irbookonlinereading.pdf][An Introduction to Information Retrieval]]
+** TODO [#C] [[./irbookonlinereading.pdf][An Introduction to Information Retrieval]]
 *** summary
+    0. [@0] Preface
+
+       - from specialized academic study to www
+
+       - Book organization and course development
+
+	 - chapter: 75 to 90 minutes
+
+	 - 1-8 foundation topics
+
+       - Prerequisites
+
+       - Book layout
+
+	 - pencil: worked examples
+
+	 - scissors: advanced, can leave out
+
+	 - ? exercise, with difficulty * to ***
+
+       - Acknowledgments
+
+    1. Boolean retrieval
 *** quotes
+    - Chapter 10 considers information retrieval from documents that
+      are structured with markup languages like XML and HTML.
+    - (ends 0)
     - Most commonly, the edit operations allowed for this purpose are:
       (i) insert a character into a string; (ii) delete a character
       from a string and (iii) replace a character of a string by
@@ -6235,15 +6374,15 @@
     - EDIT DISTANCE ( s_{1} , s_{2} )
       1. int m [ i, j ] = 0
       2. for i ← 1 to | s_{1} |
-      3.   do m [ i, 0 ] = i
+      3. do m [ i, 0 ] = i
       4. for j ← 1 to | s_{2} |
-      5.   do m [ 0, j ] = j
+      5. do m [ 0, j ] = j
       6. for i ← 1 to | s_{1} |
-      7.   do for j ← 1 to | s_{2} |
-      8.     do m [ i, j ] = min { m [i−1, j−1]
-	                             + if ( s1[i] = s2[j]) then 0 else 1 fi,
-      9.                           m [ i − 1, j ] + 1,
-      10.                          m [ i, j − 1 ] + 1 }
+      7. do for j ← 1 to | s_{2} |
+      8. do m [ i, j ] = min { m [i−1, j−1]
+	 + if ( s1[i] = s2[j]) then 0 else 1 fi,
+      9. m [ i − 1, j ] + 1,
+      10. m [ i, j − 1 ] + 1 }
       11. return m [| s_{1} | , | s_{2} |]
     - (ends 3.3)
     - *Contiguity hypothesis*. Documents in the same class form a
@@ -6269,9 +6408,7 @@
       #+END_SRC
 
 ** Mozilla Add-On SDK
-
 *** Guides
-
 **** XUL Migration Guide
      - Using XPCOM This example uses the action button API, which is
        only available from Firefox 29 onwards.
@@ -6354,3 +6491,44 @@
 ** [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Eloquent Javascript]]
 *** quotes
 *** summary
+** [[./js/javascript%20-%20Firefox%20Addon%20observer%20http-on-modify-request%20not%20working%20properly%20-%20Stack%20Overflow.html][Firefox Addon observer http-on-modify-request not working properly]]
+*** quotes
+    - set up
+      #+BEGIN_SRC javascript
+        httpRequestObserver =
+        {
+          observe: function(subject, topic, data)
+          {
+            if (topic == "http-on-modify-request") {
+                // [...] do sth here, from answer:
+                var httpChannel = subject.QueryInterface(Ci.nsIHttpChannel);
+                var uri = httpChannel.URI;
+                var domainloc = uri.host;
+            }
+          },
+
+          register: function()
+          {
+            var observerService = Cc["@mozilla.org/observer-service;1"]
+                    .getService(Ci.nsIObserverService);
+            observerService.addObserver(this, "http-on-modify-request", false);
+          },
+
+          unregister: function()
+          {
+            var observerService = Cc["@mozilla.org/observer-service;1"]
+                    .getService(Ci.nsIObserverService);
+            observerService.removeObserver(this, "http-on-modify-request");
+          }
+        };
+      #+END_SRC
+    - register observer
+      #+BEGIN_SRC javascript
+        httpRequestObserver.register();
+      #+END_SRC
+    - unload register
+      #+BEGIN_SRC javascript
+        exports.onUnload = function(reason) {
+            httpRequestObserver.unregister();
+        };
+      #+END_SRC
