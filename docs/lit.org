@@ -3099,7 +3099,24 @@
        Dummy evaluated
 
     1) Introduction
+
+       - least squares approach
+
+       - model adversary error
+
+       - design guidelines
+
+    2) System and Adversary Model
 *** quotes
+    - In practice, user behavior and latency constrain the composition
+      of anonymity sets
+    - Another shortcoming of previous works [5, 9, 10] is that the
+      proposed evaluation strategies cannot be used to guide the
+      design of effective dummy generation strategies, which is
+      recognized to be a hard problem [11]. This has lead the deployed
+      high latency anonymous communication systems to either implement
+      arbitrary dummy strategies [12] or no dummy traffic at all [11].
+    - (ends 1)
 *** ref
     #+BEGIN_SRC bibtex
       @inproceedings{pets14-dummy-traffic,
@@ -3174,6 +3191,48 @@
                  and "improved wf on tor"
 
 	  2) General defenses
+
+	     - "different web pages should, with sufficient
+               likelihood, produce the exact same packet sequence."
+
+	     - Dyer: BuFLO: fixed, constant rate, dummy packets
+
+	       - padded upt o 10 seconds
+
+	     - Cai: Tamaraw
+
+	     - Wang: Supersequence
+
+       3) Moving Forward
+
+	  - Problems:
+
+	    - Overhead:
+
+	      - time 170% to 240%
+
+	      - bandwdith 90% to 180%
+
+	    - Congestion:
+
+	      - not congestion-aware
+
+	  - Solution: half-duplex communication
+
+    3) IMPLEMENTING HALF-DUPLEX COMMUNICATION
+
+       0) [@0]
+	  - half-duplex:
+
+	    - bursts by each side
+
+	    - small time overhead
+
+	    - no bandwidth overhead
+
+	    - easy to implement
+
+       1) How browsers work
 *** quotes
     - design goals:
       1. General: The defense succeeds against all possible
@@ -3189,6 +3248,9 @@
          server, with a shared database, to operate. We want to match
          the decentralized model of anonymity networks.
     - (ends 1)
+    - Half-duplex communication reduces the attacker’s potential
+      feature set to only a series of burst traffic sizes, which makes
+      WF difficult.
 ** TODO [#B] [[./ESLII_print4.pdf][The Elements of Statistical Learning]]
 *** summary
     1) Introduction
@@ -3239,6 +3301,30 @@
              minimum
 
 	  2) Nearest-Neighbor Methods
+
+	     - majority of the closest (by specific metric) k neigbors
+               are of the class
+
+	     - k=1 - might lead to overfitting
+
+	  3) From Least Squares to Nearest Neighbors
+
+	     - defined later
+
+	       - variance: ca schwankung
+
+	       - bias: ca vorannahmen
+
+	     - ls: high bias, low variance
+
+	     - nn: low bias, high variance
+
+	     - knn - degrees of freedom: N / k
+
+	     - many models today are variations of knn and the linear
+               model
+
+       4) Statistical Decision Theory
 *** quotes
     - Chapter 18 explores the “p ≫ N ” problem, which is learning in
       high-dimensional feature spaces. These problems arise in many
@@ -3294,6 +3380,17 @@
       inevitable, and future data to be predicted will be plagued by
       this overlap as well.
     - (ends 2.3.1)
+    - linear decision boundary [...] has low variance and potentially
+      high bias.
+    - k-nearest-neighbor [...] high variance and low bias.
+    - 1-nearest-neighbor, the simplest of all, captures a large
+      percentage of the market for low-dimensional problems.
+    - Kernel methods use weights that decrease smoothly to zero with
+      distance from the target point, rather than the effective 0/1
+      weights used by k-nearest neighbors.
+    - Projection pursuit and neural network models consist of sums of
+      nonlinearly transformed linear models.
+    - (ends 2.3.3)
     - We will see that high variance and overfitting are a major
       concern in this setting.
     - Thus it is not surprising that the analysis of high-dimensional
@@ -3646,6 +3743,16 @@
 	     - "lead to convex optimization problems"
 
 	  1) Basics
+
+	     - Defined by
+
+               p(x; θ) := p_{0}(x) exp (<φ(x), θ> − g(θ)) . (2.40)
+
+	     - with g(\theta) weighting term to get density function
+
+	     - \varphi map from parameters to statistics
+
+	  2) Examples
 *** TODO quotes
     - much of the art of machine learning is to reduce a range of
       fairly disparate problems to a set of fairly narrow
@@ -4138,6 +4245,23 @@
 	    - handle connections from users
 
        1) Cells
+
+	  - fixed size vs variable size
+
+	    - versions, vpadding, certs, auth_challenge, authenticate,
+              autorize
+
+	  - command vs relay vs relay_early
+
+	    - relay: streamid, digest, length
+
+       2) TLS details
+
+	  - previously, TLS handshake identified Tor
+
+	  - nowadays, in-TLS handshake using /versions/ cell
+
+       3) Circuits and streams
 *** quotes
     - most designs protect primarily against traffic analysis rather
       than traffic confirmation
@@ -4148,6 +4272,18 @@
     - like all practical low-latency systems, Tor does not protect
       against such a strong adversary [a global passive adversary]
     - (ends 3)
+    - some control cells are variable length, where the ability of an
+      attacker to detect their presence doesn’t affect security.
+    - Most traffic passes along these connections in fixed-size
+      cells. (A few cell types, notably those used for connection
+      establishment, are variable-sized.)
+    - To determine that this newer version of the link protocol
+      handshake is to be used, the initiator avoids using the exact
+      set of ciphersuites used by early Tor versions, and the Tor
+      responder uses an X.509 certificate unlike those generated by
+      earlier versions of Tor. This may be too clever for Tor’s own
+      good; we mean to eliminate it once every supported version of
+      Tor supports this version of Tor’s link protocol.
 ** TODO [#C] [[./cacr2015-09.pdf][Wang - On Realistically Attacking Tor with Website Fingerprinting]]
 *** summary
     0) [@0] Abstract
