@@ -192,11 +192,16 @@ class Counter(object):
         return self._variable_lengths()
 
     def _variable_lengths(self):
-        '''does the computation of lengths, assumes variable to be filled'''
+        '''does the computation of lengths, assumes that variable is filled'''
         out = {}
         for k, feature in self.variable.iteritems():
             out[k] = len(feature)
         return out
+
+    def get(self, feature_name):
+        '''returns the (scalar) feature of feature_name'''
+        self._postprocess()
+        return self.fixed[feature_name]
 
     def panchenko(self, pad_by=300):
         '''returns panchenko feature vector
@@ -210,7 +215,7 @@ class Counter(object):
         self.variable will be padded
         '''
         self._postprocess()
-        out = self.fixed[:]
+        out = self.fixed.values()
         if type(pad_by) is int:
             tmp = {}
             for key in self.variable.keys():
@@ -238,44 +243,44 @@ class Counter(object):
         if self.fixed is not None:
             return
 
-        self.fixed = []
+        self.fixed = {}
         self.variable = {}
 
         self.variable['size_markers'] = [discretize(size, 600) for
                                          size in _sum_stream(self.packets)]
         # html response marker, (request must have been sent before)
         if self.variable['size_markers'][1] < 0:
-            self.fixed.append(self.variable['size_markers'][1])
+            self.fixed['html_marker'] = self.variable['size_markers'][1]
         else:
-            self.fixed.append(self.variable['size_markers'][2])
+            self.fixed['html_marker'] = self.variable['size_markers'][2]
         logging.debug('fixed: %s', self.fixed)
         # size_incoming size_outgoing
-        self.fixed.extend([discretize(x, 10000) for x in
-                           sum_bytes(self.packets)])
+        (self.fixed['total_in'], self.fixed['total_out']) = (
+            [discretize(x, 10000) for x in sum_bytes(self.packets)])
         logging.debug('fixed: %s', self.fixed)
         # number markers
         self.variable['number_markers'] = _sum_numbers(self.packets)
         # occurring packet sizes in + out
-        self.fixed.append(discretize(len(set([x for x in
-                                              self.packets if x > 0])), 2))
-        self.fixed.append(discretize(len(set([x for x in
-                                              self.packets if x < 0])), 2))
+        self.fixed['num_sizes_out'] = (discretize(len(set([x for x in
+                                        self.packets if x > 0])), 2))
+        self.fixed['num_sizes_in'] = (discretize(len(set([x for x in
+                                        self.packets if x < 0])), 2))
         logging.debug('fixed: %s', self.fixed)
         # helper
         (packets_in, packets_out) = sum_packets(self.packets)
         # percentage incoming packets
-        self.fixed.append(discretize(100 * packets_in
-                                     /(packets_in + packets_out),
-                                     5))
+        self.fixed['percentage_in'] = (
+            discretize(100 * packets_in /(packets_in + packets_out), 5))
         logging.debug('fixed: %s', self.fixed)
         # number incoming
-        self.fixed.append(discretize(packets_in, 15))
+        self.fixed['count_in'] = discretize(packets_in, 15)
         logging.debug('fixed: %s', self.fixed)
         # number outgoing
-        self.fixed.append(discretize(packets_out, 15))
+        self.fixed['count_out'] = discretize(packets_out, 15)
         logging.debug('fixed: %s', self.fixed)
         # variable lengths test
-        self.fixed.extend(self._variable_lengths().values())
+        for i, val in enumerate(self._variable_lengths().values()):
+            self.fixed['length_variable_'+str(i)] = val
         # all packets as of "A Systematic ..." svm.py code
 #        self.variable['all_packets'] = self.packets # grew too big 4 mem
 
@@ -301,3 +306,15 @@ if __name__ == "__main__":
 
     from sys import argv
     counters = Counter.from_(*argv)
+
+    # show hist
+    import matplotlib.pyplot as plt
+    all_dom = []
+    labels = []
+    for domain in counters.keys():
+#        all_dom.append([x.get('total_in') for x in counters[domain]])
+        all_dom.append([x.get('html_marker') for x in counters[domain]])
+        labels.append(domain)
+    plt.hist(all_dom, label=labels, histtype='barstacked', bins=100)
+#    plt.hist(all_dom, label=labels, histtype='barstacked', bins=np.logspace(0, 6, base=10, num=15))
+    plt.show()
