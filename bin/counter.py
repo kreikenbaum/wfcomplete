@@ -203,7 +203,7 @@ class Counter(object):
         self._postprocess()
         return self.fixed[feature_name]
 
-    def panchenko(self, pad_by=300):
+    def panchenko(self, pad_by=300, extra=True):
         '''returns panchenko feature vector
 
         (html marker, bytes in/out, packet sizes in/out, total size,
@@ -213,9 +213,18 @@ class Counter(object):
         if pad_by is an int, all args will be pad()-ed by this amount
         if it is a dictionary, the corresponding values in
         self.variable will be padded
+
+        extra determines whether to include extra features (duration)
+        or return only Panchenko's features
+
         '''
         self._postprocess()
-        out = self.fixed.values()
+        if extra:
+            out = self.fixed.values()
+        else:
+            out = [self.fixed[key]
+                   for key in self.fixed.keys()
+                   if key != 'duration']
         if type(pad_by) is int:
             tmp = {}
             for key in self.variable.keys():
@@ -281,6 +290,8 @@ class Counter(object):
         # number outgoing
         self.fixed['count_out'] = discretize(packets_out, 15)
         logging.debug('fixed: %s', self.fixed)
+        # duration
+        self.fixed['duration'] = self.timing[-1][1]
         # variable lengths test
         for i, val in enumerate(self._variable_lengths().values()):
             self.fixed['length_variable_'+str(i)] = val
