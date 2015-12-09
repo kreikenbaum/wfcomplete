@@ -253,7 +253,7 @@ class Counter(object):
         # the marker
         if self.variable['size_markers'][0] > 0:
             del self.variable['size_markers'][0]
-        
+
         # html response marker, (request must have been sent before)
         self.fixed['html_marker'] = self.variable['size_markers'][1]
         logging.debug('fixed: %s', self.fixed)

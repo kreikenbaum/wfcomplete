@@ -139,5 +139,10 @@ if __name__ == "__main__":
                  distance.chebyshev, distance.cityblock, distance.correlation,
                  distance.cosine, distance.euclidean, distance.sqeuclidean]:
         test(X, y, neighbors.KNeighborsClassifier(metric='pyfunc', func=dist))
-    # metrics (p)
+    # rbf c test
+    cstart, cstop = -28, -16
+    Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
+    gamma = 4.175318936560409e-10
+    for c in Cs:
+        test(X, y, svm.SVC(C=c, gamma=gamma))
     
