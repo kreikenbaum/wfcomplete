@@ -7,8 +7,8 @@ import os
 import subprocess
 
 HOME_IP = '134.76.96.47' #td: get ips
-LOGLEVEL = logging.DEBUG
-#LOGLEVEL = logging.INFO
+#LOGLEVEL = logging.DEBUG
+LOGLEVEL = logging.INFO
 TIME_SEPARATOR = '@'
 
 def _append_features(keys, filename):
@@ -49,17 +49,17 @@ def pad(row, upto=300):
     row.extend([0] * (upto - len(row)))
     return row
 
-def sum_bytes(packets):
-    '''sum of (incoming, outgoing) bytes
-    >>> sum_bytes([-3,1,-4,4])
+def num_bytes(packets):
+    '''number of (incoming, outgoing) bytes
+    >>> num_bytes([-3,1,-4,4])
     (5, 7)
     '''
     return((sum((x for x in packets if x > 0)),
             abs(sum((x for x in packets if x < 0)))))
 
-def sum_packets(packets):
+def num_packets(packets):
     '''number of (incoming, outgoing) packets
-    >>> sum_packets([3,4,-1,-4, 1])
+    >>> num_packets([3,4,-1,-4, 1])
     (3, 2)
     '''
     return((sum((1 for x in packets if x > 0)),
@@ -103,7 +103,7 @@ class Counter(object):
         self.name = name
         self.variable = None
         self.packets = []
-        #        self.timing = [] # gets too big, else
+        self.timing = [] # gets big
         self.warned = False
 
     def __str__(self):
@@ -229,10 +229,10 @@ class Counter(object):
         '''aggregates stream values'''
         if src == HOME_IP: # outgoing negative as of panchenko 3.1
             self.packets.append(- int(size))
-            #            self.timing.append((tstamp, - int(size)))
+            self.timing.append((tstamp, - int(size)))
         elif src: #incoming positive
             self.packets.append(int(size))
-            #            self.timing.append((tstamp, int(size)))
+            self.timing.append((tstamp, int(size)))
 
     def _postprocess(self):
         '''sums up etc collected features'''
@@ -248,15 +248,18 @@ class Counter(object):
 
         self.variable['size_markers'] = [discretize(size, 600) for
                                          size in _sum_stream(self.packets)]
+        # normalize size markers to remove redundant incoming at start
+        # as the first chunk needs to be the html request, the second
+        # the marker
+        if self.variable['size_markers'][0] > 0:
+            del self.variable['size_markers'][0]
+        
         # html response marker, (request must have been sent before)
-        if self.variable['size_markers'][1] < 0:
-            self.fixed['html_marker'] = self.variable['size_markers'][1]
-        else:
-            self.fixed['html_marker'] = self.variable['size_markers'][2]
+        self.fixed['html_marker'] = self.variable['size_markers'][1]
         logging.debug('fixed: %s', self.fixed)
         # size_incoming size_outgoing
         (self.fixed['total_in'], self.fixed['total_out']) = (
-            [discretize(x, 10000) for x in sum_bytes(self.packets)])
+            [discretize(x, 10000) for x in num_bytes(self.packets)])
         logging.debug('fixed: %s', self.fixed)
         # number markers
         self.variable['number_markers'] = _sum_numbers(self.packets)
@@ -267,7 +270,7 @@ class Counter(object):
                                         self.packets if x < 0])), 2))
         logging.debug('fixed: %s', self.fixed)
         # helper
-        (packets_in, packets_out) = sum_packets(self.packets)
+        (packets_in, packets_out) = num_packets(self.packets)
         # percentage incoming packets
         self.fixed['percentage_in'] = (
             discretize(100 * packets_in /(packets_in + packets_out), 5))
@@ -307,14 +310,14 @@ if __name__ == "__main__":
     from sys import argv
     counters = Counter.from_(*argv)
 
-    # show hist
-    import matplotlib.pyplot as plt
-    all_dom = []
-    labels = []
-    for domain in counters.keys():
-#        all_dom.append([x.get('total_in') for x in counters[domain]])
-        all_dom.append([x.get('html_marker') for x in counters[domain]])
-        labels.append(domain)
-    plt.hist(all_dom, label=labels, histtype='barstacked', bins=100)
-#    plt.hist(all_dom, label=labels, histtype='barstacked', bins=np.logspace(0, 6, base=10, num=15))
-    plt.show()
+#     # show hist
+#     import matplotlib.pyplot as plt
+#     all_dom = []
+#     labels = []
+#     for domain in counters.keys():
+# #        all_dom.append([x.get('total_in') for x in counters[domain]])
+#         all_dom.append([x.get('html_marker') for x in counters[domain]])
+#         labels.append(domain)
+#     plt.hist(all_dom, label=labels, histtype='barstacked', bins=100)
+# #    plt.hist(all_dom, label=labels, histtype='barstacked', bins=np.logspace(0, 6, base=10, num=15))
+#     plt.show()
