@@ -86,63 +86,57 @@ if __name__ == "__main__":
     # os.chdir('/mnt/data/2-top100dupremoved_cleaned/')
     (X, y, y_domains) = to_features(counter.Counter.from_(sys.argv))
 
-#    test(X, y, svm.SVC(kernel='linear'))
+    test(X, y, svm.SVC(kernel='linear'))
     test(X, y, neighbors.KNeighborsClassifier())
-#    test(X, y, svm.SVC(C=2**17, gamma=2**(-19)))
-#    test(X, y, svm.LinearSVC())
-    # grid rbf
-    # cstart, cstop = -28, -16
-    # Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
-    # gstart, gstop = -10, -8
-    # Gs = np.logspace(gstart, gstop, base=10, num=10*(abs(gstart - gstop)+1))
-    # for c in Cs:
-    #     for gamma in Gs:
-    #         test(X, y, svm.SVC(C=c, gamma=gamma))
-    # # random forest
-    # from sklearn import ensemble
-    # test(X, y, ensemble.RandomForestClassifier())
-    # # feature importance
-    # forest = ensemble.ExtraTreesClassifier(n_estimators=250)
-    # forest.fit(X, y)
-    # forest.feature_importances_
-    # # extra trees
-    # test(X, y, ensemble.ExtraTreesClassifier())
-    # # extratree param
-    # for num in range(50, 400, 50):
-    #     test(X, y, ensemble.ExtraTreesClassifier(n_estimators=num))
-    # # decision tree
-    # from sklearn import tree
-    # test(X, y, tree.DecisionTreeClassifier())
-    # # adaboost
-    # test(X, y, ensemble.AdaBoostClassifier())
-    # # linear params
-    # cstart, cstop = -5, 5
-    # Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
-    # for c in Cs:
-    #     test(X, y, svm.SVC(C=c, kernel='linear'))
-    # # td: knn + levenshtein
-    # from scipy.spatial import distance
-    # import math
-    # def mydist(x, y):
-    #     fixedm = distance.sqeuclidean(x[:8], y[:8])
-    #     xbounds1 = (10, 10+x[8])
-    #     ybounds1 = (10, 10+y[8])
-    #     variable1 = gdl.metric(x[xbounds1[0]:xbounds1[1]],
-    #                            y[ybounds1[0]:ybounds1[1]])
-    #     xbounds2 = (10+x[8], 10+x[8]+x[9])
-    #     ybounds2 = (10+x[8], 10+x[8]+y[9])
-    #     variable2 = gdl.metric(x[xbounds2[0]:xbounds2[1]],
-    #                            y[ybounds2[0]:ybounds2[1]])
-    #     return math.sqrt(fixedm + variable1 + variable2)
-    # # metrics (single)
-    # for dist in [distance.braycurtis, distance.canberra,
-    #              distance.chebyshev, distance.cityblock, distance.correlation,
-    #              distance.cosine, distance.euclidean, distance.sqeuclidean]:
-    #     test(X, y, neighbors.KNeighborsClassifier(metric='pyfunc', func=dist))
-    # # rbf c test
-    # cstart, cstop = -35, -15
-    # Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
-    # gamma = 4.175318936560409e-10
-    # for c in Cs:
-    #     test(X, y, svm.SVC(C=c, gamma=gamma))
+    test(X, y, svm.SVC(C=2**17, gamma=2**(-19)))
+    test(X, y, svm.LinearSVC())
+    #grid rbf
+    cstart, cstop = -45, -35
+    Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
+#    Gs = np.logspace(gstart, gstop, base=10, num=10*(abs(gstart - gstop)+1))
+    gamma = 4.175318936560409e-10
+    for c in Cs:
+#        for gamma in Gs:
+        test(X, y, svm.SVC(C=c, gamma=gamma))
+    # random forest
+    from sklearn import ensemble
+    test(X, y, ensemble.RandomForestClassifier())
+    # feature importance
+    forest = ensemble.ExtraTreesClassifier(n_estimators=250)
+    forest.fit(X, y)
+    forest.feature_importances_
+    # extra trees
+    test(X, y, ensemble.ExtraTreesClassifier())
+    # extratree param
+    for num in range(50, 400, 50):
+        test(X, y, ensemble.ExtraTreesClassifier(n_estimators=num))
+    # decision tree
+    from sklearn import tree
+    test(X, y, tree.DecisionTreeClassifier())
+    # adaboost
+    test(X, y, ensemble.AdaBoostClassifier())
+    # linear params
+    cstart, cstop = -5, 5
+    Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
+    for c in Cs:
+        test(X, y, svm.SVC(C=c, kernel='linear'))
+    # metrics (single)
+    for dist in [distance.braycurtis, distance.canberra,
+                 distance.chebyshev, distance.cityblock, distance.correlation,
+                 distance.cosine, distance.euclidean, distance.sqeuclidean]:
+        test(X, y, neighbors.KNeighborsClassifier(metric='pyfunc', func=dist))
+    # td: knn + levenshtein
+    from scipy.spatial import distance
+    import math
+    def mydist(x, y):
+        fixedm = distance.sqeuclidean(x[:8], y[:8])
+        xbounds1 = (10, 10+x[8])
+        ybounds1 = (10, 10+y[8])
+        variable1 = gdl.metric(x[xbounds1[0]:xbounds1[1]],
+                               y[ybounds1[0]:ybounds1[1]])
+        xbounds2 = (10+x[8], 10+x[8]+x[9])
+        ybounds2 = (10+x[8], 10+x[8]+y[9])
+        variable2 = gdl.metric(x[xbounds2[0]:xbounds2[1]],
+                               y[ybounds2[0]:ybounds2[1]])
+        return math.sqrt(fixedm + variable1 + variable2)
     
