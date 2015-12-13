@@ -291,7 +291,7 @@ class Counter(object):
         self.fixed['count_out'] = discretize(packets_out, 15)
         logging.debug('fixed: %s', self.fixed)
         # duration
-        self.fixed['duration'] = self.timing[-1][1]
+        self.fixed['duration'] = self.timing[-1][0]
         # variable lengths test
         for i, val in enumerate(self._variable_lengths().values()):
             self.fixed['length_variable_'+str(i)] = val
