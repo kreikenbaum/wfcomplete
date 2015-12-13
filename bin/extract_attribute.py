@@ -86,9 +86,9 @@ if __name__ == "__main__":
     # os.chdir('/mnt/data/2-top100dupremoved_cleaned/')
     (X, y, y_domains) = to_features(counter.Counter.from_(sys.argv))
 
+    test(X, y, svm.SVC(C=10**-20, gamma=4.175318936560409e-10))
     test(X, y, svm.SVC(kernel='linear'))
     test(X, y, neighbors.KNeighborsClassifier())
-    test(X, y, svm.SVC(C=2**17, gamma=2**(-19)))
     test(X, y, svm.LinearSVC())
     #grid rbf
     cstart, cstop = -45, -35

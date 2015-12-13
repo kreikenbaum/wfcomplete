@@ -3156,6 +3156,15 @@
       }
     #+END_SRC
 ** TODO [#A] [[./ShWa-Timing06.pdf][Timing analysis in low-latency mix networks: attacks and defenses]]
+*** summary
+    0) [@0] Abstract
+
+       Analyze correlation attacks on low-latency mix networks.
+
+       previous defenses ineffective or huge latency or huge overhead
+
+    1) Introduction
+*** quotes
 ** TODO [#A] [[./cacr2015-08.pdf][Wang - Walkie-Talkie: An Effective and Efficient Defense against Website Fingerprinting]]
 *** summary
     0) [@0] ABSTRACT
@@ -3295,6 +3304,19 @@
 	  - speculative connections: disabled
 
     4) PADDING
+
+       0) [@0]
+
+	  - assume padding of data
+
+	  - half-duplex reduces further to number of packets in each
+            burst [+timing?]
+
+	    to burst pair (incoming number, outgoing number)
+
+	  - perfect attacker can detect except for collision
+
+       1) Deterministic Padding
 *** quotes
     - design goals:
       1. General: The defense succeeds against all possible
@@ -3313,6 +3335,27 @@
     - Half-duplex communication reduces the attacker’s potential
       feature set to only a series of burst traffic sizes, which makes
       WF difficult.
+    - (ends 2/3?)
+    - The client adds outgoing dummy packets, while a cooperator adds
+      incoming dummy packets.
+    - Due to the low base rate of visits to each single web page, a
+      client protecting her page accesses against an attacker may only
+      need a false positive rate over 5% [18,21] even if the
+      attacker’s true positive rate was 100%.
+    - (ends 4.0)
+*** questions
+    - Further, we assume this encrypted channel pads all packets to a
+      fixed size so as to remove packet size as a possible
+      feature. (Note that Tor delivers all data in fixed-size cells.)
+
+      How about other cells? Are they irrelevant?
+
+      Probably, as they are only the versions, tls, etc
+    - client reduces the attacker’s possible feature set even further,
+      to simply counts for thenumber of packets in each burst of
+      traffic.
+
+      How about timing data?
 ** TODO [#B] [[./ESLII_print4.pdf][The Elements of Statistical Learning]]
 *** summary
     1) Introduction
@@ -3420,6 +3463,12 @@
 
        6) Statistical Models, Supervised Learning and Function
           Approximation
+
+	  0) [@0]
+
+	     Try to approximate the I/O relationship f(x) via f\circ(x)
+
+	     1) A Statistical Model for the Joint Distribution Pr(X, Y )
 *** quotes
     - Chapter 18 explores the “p ≫ N ” problem, which is learning in
       high-dimensional feature spaces. These problems arise in many
@@ -3510,6 +3559,7 @@
     - Thus it is not surprising that the analysis of high-dimensional
       data requires either modification of procedures designed for the
       N > p scenario, or entirely new procedures
+    - (ends 2.6.0)
     - (ends 18.1)
 ** TODO [#B] [[./thebook.pdf][INTRODUCTION TO MACHINE LEARNING]] [0/2]
 *** TODO summary
@@ -4397,6 +4447,23 @@
 	  except if the user signals that she wants a separation
 
 	  - Constructing a circuit
+
+	    1. Alice to Bob: create e_{bob}(g^x)
+
+	    2. Bob to Alice: created hash(K = g^xy), g^y)
+
+	    3. Alice to Carol via Bob: relay extend g^{x_2}
+
+	    4. Bob to Carol: create e_{carol}(g^{x_2})
+
+	    5. Carol to Bob: created (...)
+
+	    6. Bob to Alice: relay extended
+
+	    also /create fast/ possible instead of create, which
+            relies on TLS security and avoids the RSA overhead
+
+	  - Relay cells
 *** quotes
     - most designs protect primarily against traffic analysis rather
       than traffic confirmation
@@ -4419,6 +4486,15 @@
       earlier versions of Tor. This may be too clever for Tor’s own
       good; we mean to eliminate it once every supported version of
       Tor supports this version of Tor’s link protocol.
+    - (ends ?4.2?)
+    - This circuit-level handshake protocol achieves unilateral entity
+      authentication (Alice knows she’s handshaking with the OR, but
+      the OR doesn’t care who is opening the circuit — Alice uses no
+      public key and remains anonymous)
+    - Preliminary analysis with the NRL protocol analyzer [33] shows
+      this protocol to be secure (including perfect forward secrecy)
+      under the traditional Dolev-Yao model.
+    - (ends 4.3.Constructing a circuit)
 ** TODO [#B] [[./cacr2015-09.pdf][Wang - On Realistically Attacking Tor with Website Fingerprinting]]
 *** summary
     0) [@0] Abstract
@@ -4523,7 +4599,11 @@
 	 - can use TCP features
 
     3) Defending against traffic-analysis attacks
-*** abstract
+
+       analyze classification and propose defenses
+
+       1) The state-of-the-art attacks
+*** quotes
     - Extensive evaluation of HTTPOS on live web traffic shows that it
       can successfully prevent the state-of-the-art attacks from
       inferring private information from encrypted HTTP flows.
@@ -4533,7 +4613,11 @@
     - TCP (e.g., Maximal Segment Size (MSS) negotiation and
       advertising window) and HTTP (e.g., HTTP Range and HTTP
       Pipelining).
-    - (ends 1)
+    - (ends 1+2)
+    - four basic features that can affect the information used by
+      those traffic-analysis attacks: packet size, timing of packets,
+      web object size, and flow size.
+    - (ends 3.0)
 ** TODO [#A] [[./morphing09.pdf][Traffic Morphing: An Efficient Defense Against Statistical Traffic Analysis]]
 *** summary
     0. [@0] Abstract
@@ -4549,6 +4633,30 @@
        here: only packet size features obfuscated
 
     2. Related Work
+       
+       - Song: SSL timing analysis for login password length
+
+       - Sun: SSL - use size of HTML objects to identify web pages
+
+       - Liberatore: with persisten connections and SSH port forwarding
+
+       - Wright: VoIP language spoken
+
+       - Saponas: identify movies within encrypted connections
+
+       - Wright: identify spoken phrases in encrypted VoIP
+
+       - Wagner/Dean: mimicry attack vs IDS
+
+       - Soto: against pH IDS
+
+       - Tan: against stide IDS
+
+       - Fogla: packet payloads, hide malicious payload
+
+       - many: fake training data
+
+    3. Traffic Morphing
 *** quotes
     - morphing one class of traffic to look like another class.
     - show how to optimally modify packets in real-time to reduce the
@@ -4558,7 +4666,7 @@
     - For the remainder of this paper, we focus on the use of our
       morphing techniques in thwarting traffic classifiers that
       utilize features based on packet sizes.
-    - (ends 1)
+    - (ends 1 + 2)
 *** ref
     #+BEGIN_SRC bibtex
       @inproceedings{morphing09,
@@ -4586,10 +4694,33 @@
 	 - wright
 
     1) INTRODUCTION
+
+       - wf is a problem
+
+       - most defenders try to eliminate just one feature
+
+       - 9 defenses, 7 attacks, two datasets
+
+       - tested countermeasures ineffective
+
+       - hiding length is not sufficient
+
+       - Coarse information is unlikely to be hidden efficiently.
+
+       - Relevance to other settings: real-world attacks harder, yet
+         wf defenses should cover this
+
+       - did not try Camouflage and HTTPOS
+
+    2) EXPERIMENTAL METHODOLOGY
 *** quotes
     - in the context of website identification, it is unlikely that
       bandwidth-efficient, general-purpose TA countermeasures can ever
       provide the type of security targeted in prior work.
+    - (ends 0)
+    - This implies that any effective countermeasure must produce
+      outputs that consume indistinguishable amounts of bandwidth.
+    - (ends 1)
 *** ref
     #+BEGIN_SRC bibtex
       @inproceedings{oakland2012-peekaboo,
@@ -5988,7 +6119,14 @@
         >>> prediction = anova_svm.predict(X)
         >>> anova_svm.score(X, y)
         0.77...
-      #+END_SRC
+        #+END_SRC
+      - (ends 42.29.1)
+      - class sklearn.tree.DecisionTreeClassifier[...]
+
+	feature_importances_ : array of shape = [n_features]
+
+	The feature importances.
+      - (ends 42.35.1)
 ** onion routing project
 *** [[~/da/git/docs/onion-routing_pet2000.pdf][Towards an Analysis of Onion Routing Security]]
 **** ref
@@ -6621,6 +6759,14 @@
 
       d(u, v) = ∑_{i} u_{i} − v_{i} / ∑_{i} u_{i} + v_{i}
     - (ends 5.29)
+    - scipy.special.btdtr(a, b, x) = <ufunc ‘btdtr’>
+
+      Cumulative beta distribution. Returns the area from zero to x
+      under the beta density function:
+
+      gamma(a+b)/(gamma(a)*gamma(b)))*integral(t**(a-1) (1-t)**(b-1),
+      t=0..x)
+    - (ends 5.30)
     - Poisson distribution
       #+BEGIN_SRC python
         from scipy.stats import poisson
