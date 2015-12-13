@@ -238,10 +238,10 @@ class Counter(object):
         '''aggregates stream values'''
         if src == HOME_IP: # outgoing negative as of panchenko 3.1
             self.packets.append(- int(size))
-            self.timing.append((tstamp, - int(size)))
+            self.timing.append((float(tstamp), - int(size)))
         elif src: #incoming positive
             self.packets.append(int(size))
-            self.timing.append((tstamp, int(size)))
+            self.timing.append((float(tstamp), int(size)))
 
     def _postprocess(self):
         '''sums up etc collected features'''
