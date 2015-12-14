@@ -3164,7 +3164,34 @@
        previous defenses ineffective or huge latency or huge overhead
 
     1) Introduction
+
+       - low-latency mix networks
+
+       - path establishment not researched
+
+       - realistic traffic model based on HTTP traces
+
+       - adaptive padding
+
+	 - fill statistically unlikely gaps
+
+	 - also against active attackers
+
+       - compare to constant rate dummy traffic
+
+    2) Related work
 *** quotes
+    - Many mix networks are specifically intended to provide anonymity
+      against attackers who control the communication medium.
+    - Traffic analysis is an especially serious threat for low-latency
+      mix networks because it is very difficult to hide statistical
+      characteristics of the packet stream and satisfy the stringent
+      latency requirements imposed by interactive applications.
+    - The standard measure of success is the /crossover error rate/, at
+      which the attacker’s false positive rate is equal to his false
+      negative rate.
+    - (Maximum crossover error rate is 0.5, which corresponds to
+      random guessing.)
 ** TODO [#A] [[./cacr2015-08.pdf][Wang - Walkie-Talkie: An Effective and Efficient Defense against Website Fingerprinting]]
 *** summary
     0) [@0] ABSTRACT
@@ -4633,7 +4660,7 @@
        here: only packet size features obfuscated
 
     2. Related Work
-       
+
        - Song: SSL timing analysis for login password length
 
        - Sun: SSL - use size of HTML objects to identify web pages
@@ -5788,6 +5815,34 @@
 	  - iteritems: key, value
 
 	  - modify: better create new list
+
+       7) More on Conditions
+
+	  - in: containment
+
+	  - is: object equality
+
+	  - comparison chaining
+
+	    #+BEGIN_SRC python
+              a < b == c
+	    #+END_SRC
+
+	  - not > and > or
+
+	  - assign the result of a comparison or other Boolean
+            expression to a variable.
+	    
+	    #+BEGIN_SRC python
+              >>> string1, string2, string3 = '', 'Trondheim', 'Hammer Dance'
+              >>> non_null = string1 or string2 or string3
+              >>> non_null
+              'Trondheim'
+	    #+END_SRC
+
+	  - not inside expressions (avoids comparison typo a = b+c)
+
+       8) Comparing Sequences and Other Types
 *** quotes
     - it’s good practice to include docstrings in code that you write,
       so make a habit of it.
@@ -6748,6 +6803,21 @@
     - (ends 20.19)
 ** MAYBE [[/home/chive/IT-gg/python/scipy-ref-0.15.1.pdf][SciPy Reference Guide]]
 *** quotes
+    - (begins 1.13)
+    - Freezing a Distribution
+
+      Passing the loc and scale keywords time and again can become
+      quite bothersome. The concept of freezing a RV is used to solve
+      such problems.
+      #+BEGIN_SRC python
+        >>> rv = gamma(1, scale=2.)
+      #+END_SRC
+      By using rv we no longer have to include the scale or the shape
+      parameters anymore. Thus, distributions can be used in one of
+      two ways, either by passing all distribution parameters to each
+      method call (such as we did earlier) or by freezing the
+      parameters for the instance of the distribution.
+    - (ends 1.13)
     - (begins 5)
     - scipy.spatial.distance.euclidean(u, v)
 
@@ -6786,6 +6856,47 @@
     - (ends 5.31)
 ** MAYBE [[/home/chive/IT-gg/python/numpy-ref-1.9.1.pdf][NumPy Reference]]
 *** quotes
+    - numpy.random.exponential(scale=1.0, size=None)
+
+      Exponential distribution. Its probability density function is
+
+      f (x; 1/\beta) = 1/\beta exp(- x/\beta)
+
+      for x > 0 and 0 elsewhere. β is the scale parameter, which is
+      the inverse of the rate parameter λ = 1/\beta.
+    - numpy.random.gamma(shape, scale=1.0, size=None)
+
+      Draw samples from a Gamma distribution. Samples are drawn from a
+      Gamma distribution with specified parameters, shape (sometimes
+      designated “k”) and scale (sometimes designated “theta”), where
+      both parameters are > 0.
+
+      Parameters
+
+      shape : scalar > 0 The shape of the gamma distribution.
+
+      scale : scalar > 0, optional The scale of the gamma
+      distribution. Default is equal to 1.
+
+      [...]
+
+      Draw samples from the distribution:
+      #+BEGIN_SRC python
+        shape, scale = 2., 2. # mean and dispersion
+        s = np.random.gamma(shape, scale, 1000)
+      #+END_SRC
+      Display the histogram of the samples, along with the probability
+      density function:
+      #+BEGIN_SRC python
+        import matplotlib.pyplot as plt
+        import scipy.special as sps
+        count, bins, ignored = plt.hist(s, 50, normed=True)
+        y = bins**(shape-1)*(np.exp(-bins/scale) /
+        (sps.gamma(shape)*scale**shape))
+        plt.plot(bins, y, linewidth=2, color=’r’)
+        plt.show()
+      #+END_SRC
+    - (ends 3.25)
     - numpy.zeros(shape, dtype=float, order=’C’)
 
       Return a new array of given shape and type, filled with zeros.
