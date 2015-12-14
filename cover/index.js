@@ -2,14 +2,12 @@ var {Cc, Ci} = require("chrome");
 var pageMod = require("sdk/page-mod");
 
 var random = require("./random")
+var url = require("./url")
 
 var DEBUG = true;
-// td: sensible selection OR site-[(HTML|total)-]size-dependent OR ...?
-var FIXED_URLS = ["http://news.google.de/"];
 
-var candidates = FIXED_URLS.slice();
-//td: use this
-var page_requisites = [];
+var ignoreThese = [];
+
 
 // listen to all requests, courtesy of stackoverflow.com/questions/21222873
 httpRequestObserver = {
@@ -20,8 +18,10 @@ httpRequestObserver = {
             var uri = httpChannel.URI;
             //var domainloc = uri.host;
 
-	    debugLog('observer: http request to ' + uri.spec);
-	    loadNext(uri.spec);
+	    if ( ignoreThese.indexOf(uri.spec) == -1 ) {
+		debugLog('observer: http request to ' + uri.spec);
+		loadNext(uri.spec);
+	    }
         }
     },
 
@@ -54,25 +54,24 @@ function debugLog(toLog) {
     if ( DEBUG ) { console.log(toLog); }
 }
 
-// td: loadNext() gets url, changes request size
 // loads next page in background
 // adds random string to avoid caching and sets length of request
 function loadNext(loadedUrl) {
     // determine size of next request
-// td
+// td (currently Math.random)
     // get fitting object-url
-// td    
-    
-    var url = next_url();
-    url += '?' + random.string(loadedUrl.length - url.length);
+    // td: make nextUrl site-[(HTML|total)-]size-dependent
+    var nextUrl = url.sized(Math.floor(Math.random()*1000*1000));
+    nextUrl += '?' + random.string(loadedUrl.length - nextUrl.length);
+    ignoreThese.push(nextUrl);
 
-    debugLog('loadNext: loading: ' + url);
-    pageWorker.contentURL = url;
+    debugLog('loadNext: loading: ' + nextUrl);
+    pageWorker.contentURL = nextUrl;
 }
 
 // td: scrape / onion plus some randomness
 // yields the next url to visit
-function next_url() {
+function next_url(length) {
     if ( candidates.length == 0 ) {
 	candidates = FIXED_URLS.slice();
     }

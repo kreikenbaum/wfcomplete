@@ -6,7 +6,7 @@ var _ = require("../underscore-min.js");
 // TODO: (after it works) implement real URLs, not mlsec placeholders
 // TODO: (after it works) add urls and sizes from *cover* traffic
 // (only, not from user traffic), save at end, restore
-/* @return a URL of more than size */
+/* @return a URL pointing to object of  more than size */
 var sized = function(size) {
     if ( size > _.last(SIZES) ) {
 	return _.last(URLS);
