@@ -1,13 +1,16 @@
 // provides a url for an object with approximately the given size
 var _ = require("../underscore-min.js");
-// if debugging, use
+// for debugging, use
 //var _ = require("../underscore.js");
 
-// returns a URL of more than size
 // TODO: (after it works) implement real URLs, not mlsec placeholders
-// ... add urls and sizes from *cover* traffic (only), save at end, restore
-// TODO: (december-january) this will fail if size > SIZES[-1], fallback to that
+// TODO: (after it works) add urls and sizes from *cover* traffic
+// (only, not from user traffic), save at end, restore
+/* @return a URL of more than size */
 var sized = function(size) {
+    if ( size > _.last(SIZES) ) {
+	return _.last(URLS);
+    }
     return URLS[_.sortedIndex(SIZES, size)];
 };
 
