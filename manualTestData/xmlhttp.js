@@ -7,8 +7,8 @@ function loadXMLDoc(post) {
     var xmlhttp;
     if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
 	xmlhttp=new XMLHttpRequest();
-    } else {// code for IE6, IE5 xmlhttp=new
-	ActiveXObject("Microsoft.XMLHTTP");
+    } else {// code for IE6, IE5
+	xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
     }
     xmlhttp.onreadystatechange=function() {
 	if (xmlhttp.readyState==4 && xmlhttp.status==200) {
@@ -16,7 +16,7 @@ function loadXMLDoc(post) {
 	} };
     var method = (post === true ? "POST" : "GET");
     
-    xmlhttp.open("GET","tmptest"+(count%2 +2)+".html",true);
+    xmlhttp.open(method,"tmptest"+(count%2 +2)+".html",true);
     if ( post ) {
 	xmlhttp.setRequestHeader('hello', 'world');
     }

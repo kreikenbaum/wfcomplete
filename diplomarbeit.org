@@ -136,6 +136,10 @@
 * TODO who uses Tor
   From the beginning, the Tor Project envisoned a broad user base.
 
+  Tor, the second-generation onion router, is a variation of Onion
+  Routing, which was originally developed by the US Navy's Naval
+  Research Laboratory.
+
   Ursprünglich wurde das Netzwerk von einer Gruppe finanziert vom
   Navy Office of Naval Research und der DARPA, also durch das
   US-Militär, entwickelt. Von Anfang an wurde ein breiter Nutzerkreis
@@ -601,52 +605,75 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - do they load completely when not Tor, repeat necessary
   - is this by design?
 ** MAYBE exclude
-* TODO transform to panchenko-features
-  In coding sizes, this thesis follows panchenko, who recorded
-  ([[Panchenko]]) "incoming packets as positive, outgoing ones as negative
-  numbers."
+* transform to panchenko-features
+  In encoding packet sizes, this thesis follows Panchenko et al.'s
+  approach, who recorded ([[Panchenko]]) "incoming packets as positive,
+  outgoing ones as negative numbers."
 
-  The code to examine a single trace file is in =analyze_file()=
-  It
-  - opens the filename in tshark
-  - splits the output by tokens
-  - gives the relevant values (source IP, size, timestamp) (with the
-    timestamp not used by Panchenko) to a =Counts=-object, which
-    aggregates it
+  Once the website traces are stored in pcap-files, feature vectors
+  need to be extracted. A feature vector is represented by a Python
+  class `Counter`, which can be created from a pcap file, or persisted
+  to a json file containing timing and packet size information (to
+  save time and space).
 
-  For a single line, a =Counts=-object aggregates bytes (incoming,
-  outgoing), packets (incoming/outgoing), distills into a size/packets
-  array and (size+timestamp)/packets array.
+  To create a counter, you can use `counter.Counter.from(filename1,
+  filename2, ...)`. This is also called indirectly when using
+  `counter.py` from the command line, as in
 
-  This is used in =postprocess()= to determine
-  - size markers, (via the =_sum_stream()=-function),
-  - the html marker as the first of those
-  - the total transmitted bytes incoming and outgoing
-  - number marker (via the =_sum_numbers()=-function)
-    - slightly extended, as the number 16 was occuring
-      everything above 14 was mapped to the same as 14
-    - a bit unclear, currently, 3-5 \to 3, 6-8 \to 4, 9-13 \to 5, 14-\infty \to 6
-  - occurring packet sizes incoming and outgoing (binned in steps of 2)
-  - percentage of outgoing packets
-  - number of packets incoming and outgoing.
+  python -i /path/to/counter.py
 
-  removes also 'ARP' (address resolution protocol) messages
-** MAYBE correct code for html marker
-*** wait for first request (-), then first uninterrupted (+)
+  This extracts data from all pcap files in the current directory and
+  subdirectories (excluding Address Resolution Protocol messages and
+  ACKs). The filename of the pcap files needs to be `domain@tstamp`,
+  for example `craigslist.org@1445352269`. The part up to the
+  separator `@` is treated as the URL. If JSON-files of the name
+  `domain.json` (for example `craigslist.com.json`) exist, those are
+  preferred instead of the pcap files.
+
+  In the interactive shell, there is a dictionary called `counters`,
+  with the domain names as keys and an array of `Counter`s as
+  values. To persist these to JSON, you can use `save` in the
+  python interactive shell, for example
+
+  >>> Counter.save(counters)
+
+  To distill the features from a single `Counter`, call its
+  `panchenko()`, to inspect single features, call
+  `get('feature_name')` (for example
+  `counters['cnn.com'][0].get('duration')').
+
+  `panchenko()` yields a feature vector with default padding of
+  Panchenko's variable-length features. Since [[Panchenko]] et al gave
+  explicit size conversions, the sizes have not been normalized
+  further. The default padding (300 per feature) might not be large
+  enough for some traces.
+** TODO maybe rename counter.py to trace.py
 * TODO transform features to vector
-  Once the counters are obtained via =get_counters()=, which
-  aggregates the result of several =analyze_file()= runs, they need to
-  be modified to fit as input for the SVMs.
+  Once the `Counter`s are obtained, they need to be modified to fit as
+  input for scikit-learn's classifiers.
 
-  Firstly, the =panchenko()= functions builds a tuple, which starts
-  with the single-digit features and ends with the packet trace.
+  The code to convert these features to classification input can be
+  found in `extract_attribute.py`. This determines the maximum length
+  of the variable-length features, gets Panchenko's features
+  appropriately padded, and converts them to an array fit for input
+  into scikit-learn's classifiers. When called from the command line, as
 
-  This is transformed into SVM input in the =to_features()= function,
-  which normalizes all vectors to have the same size (padding with
-  0s), and creates the feature vector and attribute matrix.
+  python -i /path/to/extract_attribute.py
 
-  Since [[Panchenko]] et al gave explicit size conversions, the sizes have
-  not been normalized further.
+  , it will extract the feature vectors from JSON or pcap files in the
+  current directory, and run some (5-fold) cross-validated classifiers
+  against the data.
+
+  This is transformed into scikit-learn input in the `to_features()`
+  function, which normalizes all vectors to have the same size
+  (padding with 0s), and creates the feature matrix `X` with numeric
+  class labels `y` (and class names in `y_domain`).
+
+  If you wish to run LibSVM on the command-line, there is also
+  `to_libsvm(X, y, fname='libsvm_in')`, which can be called with the
+  output of `to_features`. It writes lines in X with labels in y to the
+  file 'libsvm_in' (by default).
+** TODO maybe rename extract_attribute.py? To what?
 ** TODO ref stackoverflow why 0 padding
 *** TODO better:
 * MAYBE effect of panchenko's weighting schema
@@ -702,7 +729,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   it for gnuplot (inserting appropriate newlines via =sed= and
   removing erroneous characters via =tr=), and =gnuplot=s it to a file
   with the name of the trace file as png-name.
-* distribution histograms
+* distribution of (main) features
   These distribution histograms show how Panchenko's main features are
   distributed. They are stacked histograms with classes separated by
   colors.
@@ -731,11 +758,11 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   [[file:pictures/all_total_out.png]]
   total bytes upstream/outgoing.
 * TODO scikit-learn
-  The python module scikit-learn is described as a collection of
-  "tools for data mining and data analysis".
+  The python module scikit-learn ([[file:docs/lit.org::*MAYBE%20%5B%5B./user_guide_0.16.1.pdf%5D%5Bscikit-learn%20user%20guide%5D%5D][sklearn)]] is described as a
+  collection of "tools for data mining and data analysis".
 
-  It combines python's ease-of-use with the efficiency of underlying
-  C-implementations of libraries such as LibSVM.
+  It combines python's ease-of-use with the efficiency of
+  libraries written in C, such as LibSVM.
 * TODO thoughts on size of data set
   - computable (n^2 for svm with good results)
   - number of instances negligible for computation
@@ -2942,3 +2969,29 @@ mean = 0.763238095238
    insert file here
 ** [[file:../bin/extract_attribute.py][extract_attribute.py]]
    insert file here
+* unused
+** from [[*transform to panchenko-features]]
+  The code to examine a single trace file is in =analyze_file()=
+  It
+  - opens the filename in tshark
+  - splits the output by tokens
+  - gives the relevant values (source IP, size, timestamp) (with the
+    timestamp not used by Panchenko) to a =Counts=-object, which
+    aggregates it
+
+  [...]
+  For a single line, a =Counter=-object aggregates bytes (incoming,
+  outgoing), packets (incoming/outgoing), distills into a size/packets
+  array and (size+timestamp)/packets array.
+  [...]
+  This is used in =postprocess()= to determine
+  - size markers, (via the =_sum_stream()=-function),
+  - the html marker as the first of those
+  - the total transmitted bytes incoming and outgoing
+  - number marker (via the =_sum_numbers()=-function)
+    - slightly extended, as the number 16 was occuring
+      everything above 14 was mapped to the same as 14
+    - a bit unclear, currently, 3-5 \to 3, 6-8 \to 4, 9-13 \to 5, 14-\infty \to 6
+  - occurring packet sizes incoming and outgoing (binned in steps of 2)
+  - percentage of outgoing packets
+  - number of packets incoming and outgoing.

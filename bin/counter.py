@@ -321,14 +321,13 @@ if __name__ == "__main__":
     from sys import argv
     counters = Counter.from_(*argv)
 
-#     # show hist
-#     import matplotlib.pyplot as plt
-#     all_dom = []
-#     labels = []
-#     for domain in counters.keys():
-# #        all_dom.append([x.get('total_in') for x in counters[domain]])
-#         all_dom.append([x.get('html_marker') for x in counters[domain]])
-#         labels.append(domain)
-#     plt.hist(all_dom, label=labels, histtype='barstacked', bins=100)
-# #    plt.hist(all_dom, label=labels, histtype='barstacked', bins=np.logspace(0, 6, base=10, num=15))
-#     plt.show()
+    # show hist
+    import matplotlib.pyplot as plt
+    all_dom = []
+    labels = []
+    for domain in counters.keys():
+        all_dom.append([x.get('total_out') for x in counters[domain]])
+        labels.append(domain)
+    plt.hist(all_dom, label=labels, histtype='barstacked', bins=100)
+#    plt.hist(all_dom, label=labels, histtype='barstacked', bins=np.logspace(0, 6, base=10, num=15))
+    plt.show()

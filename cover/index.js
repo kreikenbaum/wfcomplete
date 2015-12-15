@@ -1,13 +1,13 @@
 var {Cc, Ci} = require("chrome");
 var pageMod = require("sdk/page-mod");
+var { setTimeout } = require("sdk/timers");
 
 var random = require("./random")
 var url = require("./url")
 
-var DEBUG = true;
+const DEBUG = true;
 
 var ignoreThese = [];
-
 
 // listen to all requests, courtesy of stackoverflow.com/questions/21222873
 httpRequestObserver = {
@@ -58,12 +58,16 @@ function debugLog(toLog) {
 // adds random string to avoid caching and sets length of request
 function loadNext(loadedUrl) {
     // determine size of next request
+    // aka td: make nextUrl site-[(HTML|total)-]size-dependent
 // td (currently Math.random)
     // get fitting object-url
-    // td: make nextUrl site-[(HTML|total)-]size-dependent
     var nextUrl = url.sized(Math.floor(Math.random()*1000*1000));
     nextUrl += '?' + random.string(loadedUrl.length - nextUrl.length);
     ignoreThese.push(nextUrl);
+
+    setTimeout(function() {
+	ignoreThese.pop(nextUrl);
+    }, 5);
 
     debugLog('loadNext: loading: ' + nextUrl);
     pageWorker.contentURL = nextUrl;
