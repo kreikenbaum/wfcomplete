@@ -13,10 +13,8 @@ var ignoreThese = [];
 httpRequestObserver = {
     observe: function(subject, topic, data) {
         if (topic == "http-on-modify-request") {
-            // [...] do sth here, from answer:
             var httpChannel = subject.QueryInterface(Ci.nsIHttpChannel);
             var uri = httpChannel.URI;
-            //var domainloc = uri.host;
 
 	    if ( ignoreThese.indexOf(uri.spec) == -1 ) {
 		debugLog('observer: http request to ' + uri.spec);
@@ -39,13 +37,16 @@ httpRequestObserver = {
 };
 httpRequestObserver.register();
 
-// attaches to an invisible tab, loads cover content there
+
 // needs RequestPolicy to be disabled
+/** attaches to an invisible tab, loads cover content there, extracts
+ * possibly new cover URLs from the loaded text */
 pageWorker = require("sdk/page-worker").Page({
     contentScriptFile: "./getLinks.js",
     onAttach: function(worker) {
 	worker.port.on("links", function(JSONlinks) {
-	    candidates.concat(JSON.parse(JSONlinks));
+	    debugLog("would add to links: " + JSONlinks);
+	    // candidates.concat(JSON.parse(JSONlinks));
 	});
     }
 });

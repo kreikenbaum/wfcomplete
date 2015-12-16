@@ -326,8 +326,26 @@ if __name__ == "__main__":
     all_dom = []
     labels = []
     for domain in counters.keys():
-        all_dom.append([x.get('total_out') for x in counters[domain]])
+        all_dom.append([x.get('html_marker') for x in counters[domain]])
         labels.append(domain)
     plt.hist(all_dom, label=labels, histtype='barstacked', bins=100)
 #    plt.hist(all_dom, label=labels, histtype='barstacked', bins=np.logspace(0, 6, base=10, num=15))
     plt.show()
+    for dom in all_dom:
+        plt.hist(dom, bins=100)
+        plt.show()
+
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+for i in counters['msn.com'][0].fixed.keys():
+    print i
+    all_dom = []
+    labels = []
+    for domain in counters.keys():
+        all_dom.append([x.get(i) for x in counters[domain]])
+        labels.append(domain)
+    plt.hist(all_dom, label=labels, histtype='barstacked', bins=100)
+    fname = '/mnt/data/' + i + '.png'
+    print fname
+    plt.savefig(fname)

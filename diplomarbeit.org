@@ -236,58 +236,57 @@
   - fundamental human need
   - concentration camp:
     "solitude in a Camp is more precious and rare than bread." -- primo levi
-* TODO Tools [1/6]
-** Mozilla Add-On Sdk
-   The Add-on SDK by Mozilla aids in the development of Firefox-Addons.
+* Mozilla Add-On Sdk
+  The Add-on SDK by Mozilla aids in the development of Firefox-Addons.
 
-   It allows users to create new addons using HTML and JS only,
-   omitting the previous way of using XUL.
-*** Installation and Use of Jpm
-    (SDK-)addons can be built via the =jpm=-tool. This is available as
-    a NodeJS-Module via the (NodeJS-) built-in package manager =npm=,
-    the NodeJS Package Manager.
+  It allows users to create new addons using HTML and JS only,
+  omitting the previous way of using XUL.
+** Installation and Use of Jpm
+   (SDK-)addons can be built via the =jpm=-tool. This is available as
+   a NodeJS-Module via the (NodeJS-) built-in package manager =npm=,
+   the NodeJS Package Manager.
 
-    Installing =jpm= is thus a two-step process. Firstly, install
-    NodeJS via built-in tools (for example =apt-get install
-    nodejs-legacy= in Debian and Ubuntu) or via [[link npm][download]], then, do a
+   Installing =jpm= is thus a two-step process. Firstly, install
+   NodeJS via built-in tools (for example =apt-get install
+   nodejs-legacy= in Debian and Ubuntu) or via [[link npm][download]], then, do a
 
-    npm install jpm
+   npm install jpm
 
-    to install jpm for the current user. Global installation is done
-    via =npm install -g jpm=.
+   to install jpm for the current user. Global installation is done
+   via =npm install -g jpm=.
 
-    Once =jpm= is installed, new addons are created via =jpm init=,
-    live-tested via =jpm run= and the addon package built via =jpm xpi=.
-**** link npm
-     nodejs.org
-*** index.js
-    The addon entry point can be configured via the =preferences.json=
-    file. By default, the main addon-script is called =index.js=.
-*** page-worker
-    A =page-worker= creates "a permanent, invisible page and
-    access[es] its DOM."  ([[link page-worker]]).
+   Once =jpm= is installed, new addons are created via =jpm init=,
+   live-tested via =jpm run= and the addon package built via =jpm xpi=.
+*** link npm
+    nodejs.org
+** index.js
+   The addon entry point can be configured via the =preferences.json=
+   file. By default, the main addon-script is called =index.js=.
+** page-worker
+   A =page-worker= creates "a permanent, invisible page and
+   access[es] its DOM."  ([[link page-worker]]).
 
-    New pages can be loaded in the background, which would allow for
-    the retrieval of camouflage traffic ([[link panchenko]]).
+   New pages can be loaded in the background, which would allow for
+   the retrieval of camouflage traffic ([[link panchenko]]).
 
-    A minimal new page-worker is created via
+   A minimal new page-worker is created via
 
-    pageWorker = require("sdk/page-worker").Page({});
+   pageWorker = require("sdk/page-worker").Page({});
 
-    The page-worker's page can be set dynamically via
+   The page-worker's page can be set dynamically via
 
-    pageWorker.contentURL = "http://en.wikipedia.org/wiki/Cheese"
+   pageWorker.contentURL = "http://en.wikipedia.org/wiki/Cheese"
 
-    yet this fetches only the HTML file pointed to. The retrieval of
-    images, stylesheets, etc, is not automatic.
-**** link page-worker
-     developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html
-**** link panchenko
-     A. Panchenko, L. Niessen, A. Zinnen, and T. Engel. Website
-     Fingerprinting in Onion Routing Based Anonymization Networks. In
-     Proceedings of the 10th ACM Workshop on Privacy in the Electronic
-     Society, pages 103–114, 2011.
-*** page-mod
+   yet this fetches only the HTML file pointed to. The retrieval of
+   images, stylesheets, etc, is not automatic.
+*** link page-worker
+    developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html
+*** link panchenko
+    A. Panchenko, L. Niessen, A. Zinnen, and T. Engel. Website
+    Fingerprinting in Onion Routing Based Anonymization Networks. In
+    Proceedings of the 10th ACM Workshop on Privacy in the Electronic
+    Society, pages 103–114, 2011.
+** page-mod
    The page-mod module runs "scripts in the context of web pages whose
    URL matches a given pattern." ([[link page-mod]])
 
@@ -312,110 +311,106 @@ pageMod.PageMod({
 
    page-mod offers other parameters, such as the moment of the script
    execution, stylesheet modification, etc.
-**** link page-mod
-     http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
-*** separation of scripts
-    As a security measure, there is a separation between
+*** link page-mod
+    http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
+** separation of scripts
+   As a security measure, there is a separation between
 
-    1) /add-on scripts/, which are run in the browser context, but cannot
-        access the web page, and
-    2) /content scripts/, which are run in the page context. They can
-       access the DOM, but not add-on scripts. nor
-    3) /page scripts/, which are those included in the website via
-       f.ex. =<script>=.
+   1) /add-on scripts/, which are run in the browser context, but cannot
+       access the web page, and
+   2) /content scripts/, which are run in the page context. They can
+      access the DOM, but not add-on scripts. nor
+   3) /page scripts/, which are those included in the website via
+      f.ex. =<script>=.
 
-    accessing page scripts (and vice versa) is possible, but needs
-    some extra work).
-**** LATER index: page scripts, content scripts, add-on scripts
-*** message-passing
-    There is a mechanism to pass content from the add-on to the
-    content scripts, as shown in the example.
+   accessing page scripts (and vice versa) is possible, but needs
+   some extra work).
+*** LATER index: page scripts, content scripts, add-on scripts
+** message-passing
+   There is a mechanism to pass content from the add-on to the
+   content scripts, as shown in the example.
 
-    A single string can be passed between both sides. As the string
-    can be any serialized [[file:docs/lit.org::*%5B%5B/home/chive/IT-gg/rfc7159.json-storage-and_xfer.txt%5D%5BThe%20JavaScript%20Object%20Notation%20(JSON)%20Data%20Interchange%20Format%5D%5D][JSON]] object, this is not much of a
-    limitation. (It disallows the passing of functions and circular
-    objects).
+   A single string can be passed between both sides. As the string
+   can be any serialized [[file:docs/lit.org::*%5B%5B/home/chive/IT-gg/rfc7159.json-storage-and_xfer.txt%5D%5BThe%20JavaScript%20Object%20Notation%20(JSON)%20Data%20Interchange%20Format%5D%5D][JSON]] object, this is not much of a
+   limitation. (It disallows the passing of functions and circular
+   objects).
 
-    In a content-script, a message can be sent via
-    =self.port.emit('message_id', param)= and received via
-    =self.port.on('message_id', function(param))=.
+   In a content-script, a message can be sent via
+   =self.port.emit('message_id', param)= and received via
+   =self.port.on('message_id', function(param))=.
 
-    In the Addon-Context, a =worker= object is used and the
-    content-script's =self= is replaced by a =worker=. The worker is
-    initialized via the =onAttach= parameter of the page-mod, as seen
-    above.
-*** interacting with page-scripts
-    By default, content-scripts are isolated from the modifications
-    done by page-scripts.[[Interacting with page scripts]]
+   In the Addon-Context, a =worker= object is used and the
+   content-script's =self= is replaced by a =worker=. The worker is
+   initialized via the =onAttach= parameter of the page-mod, as seen
+   above.
+** interacting with page-scripts
+   By default, content-scripts are isolated from the modifications
+   done by page-scripts.[[Interacting with page scripts]]
 
-    To access object inside the page-scripts context, you can use
-    =unsafeWindow=. 
+   To access object inside the page-scripts context, you can use
+   =unsafeWindow=.
 
-    The reverse is only true for primitive values. If page-scripts
-    need to see altered behavior, it is possible to override
-    functionality of the page by using =exportFunction=, as in
+   The reverse is only true for primitive values. If page-scripts
+   need to see altered behavior, it is possible to override
+   functionality of the page by using =exportFunction=, as in
 
-    exportFunction(open,
-                   unsafeWindow.XMLHttpRequest.prototype,
-		   {defineAs: "open"});
+   exportFunction(open,
+		  unsafeWindow.XMLHttpRequest.prototype,
+		  {defineAs: "open"});
 
-    This exports the (previously-defined) function =open()= to the
-    XMLHttpRequest.prototype, where it replaces the built-in
-    functionality.
-**** Interacting with page scripts
+   This exports the (previously-defined) function =open()= to the
+   XMLHttpRequest.prototype, where it replaces the built-in
+   functionality.
+*** Interacting with page scripts
 developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_page_scripts.html
-*** [#C] DOM
-    domain-object-model
-*** pipelining enable in tor after Pachenko
-** WAIT torbrowser
-*** changes to normal browser to be able to use this
-**** enable request pipelining
-** other defenses
-   There are other methods of defense, which might help mitigate the
-   Torben attack. One is based on browser plugins, the other on rate
-   limiting.
-*** TODO Plugins
-    There exist two plugins, which should both allow mitigation of this
-    attack. Used in parallel, they may hinder browsing somewhat (which
-    is why they are not enabled/installed by default in the Tor Browser
-    Bundle).
+** [#C] DOM
+   domain-object-model
+** pipelining enable in tor after Pachenko
+* other defenses
+  There are other methods of defense, which might help mitigate the
+  Torben attack. One is based on browser plugins, the other on rate
+  limiting.
+** TODO Plugins
+   There exist two plugins, which should both allow mitigation of this
+   attack. Used in parallel, they may hinder browsing somewhat (which
+   is why they are not enabled/installed by default in the Tor Browser
+   Bundle).
 
-    The first is NoScript, which selects which Javascript sources to
-    run and which to block. This is installed in Torbrowser for the
-    additional security benefits it brings (XSS defense etc). It is
-    considered as a one of the most security-enhancing plugins by
-    ... o'reilly:
+   The first is NoScript, which selects which Javascript sources to
+   run and which to block. This is installed in Torbrowser for the
+   additional security benefits it brings (XSS defense etc). It is
+   considered as a one of the most security-enhancing plugins by
+   ... o'reilly:
 
-    QUOTE
+   QUOTE
 
-    A second Add-On with a different set of protective measures is
-    RequestPolicy: This add-on controls, which third-party content to
-    load on a given page. Every query to the original domain is passed,
-    while requests to other domains must be temporarily or permanently
-    approved. It comes with a restrictive set of pre-defined rules (for
-    example google pages are allowed to access gstatic), and a
-    blacklist and whitelist mode.
-**** TODO quote o'reilly
-*** write new plugins
-    Instead of inserting dummy traffic into the connection, one could
-    throttle the "data rate" of get request and responses (or only
-    requests or the ratio)
-*** Throttling
-    As especially outgoing web requests are often quite small, and this
-    paper has at the moment a 1:1 rate of outgoing vs incoming for the
-    requests, throttling the amount of data leaving the end user might
-    well suffice for reducing the bandwidth of the side-channel enough
-    to make it insignificant.
-*** TODO link tor browser bundle
-**** or writeup something
-*** TODO link Requestpolicy
-** TODO capture
-*** tshark
-    first only the traffic of a certain user
-*** wireshark
-*** tcpdump
-   
-* Sally installation
+   A second Add-On with a different set of protective measures is
+   RequestPolicy: This add-on controls, which third-party content to
+   load on a given page. Every query to the original domain is passed,
+   while requests to other domains must be temporarily or permanently
+   approved. It comes with a restrictive set of pre-defined rules (for
+   example google pages are allowed to access gstatic), and a
+   blacklist and whitelist mode.
+*** TODO quote o'reilly
+** write new plugins
+   Instead of inserting dummy traffic into the connection, one could
+   throttle the "data rate" of get request and responses (or only
+   requests or the ratio)
+** Throttling
+   As especially outgoing web requests are often quite small, and this
+   paper has at the moment a 1:1 rate of outgoing vs incoming for the
+   requests, throttling the amount of data leaving the end user might
+   well suffice for reducing the bandwidth of the side-channel enough
+   to make it insignificant.
+** TODO link tor browser bundle
+*** or writeup something
+** TODO link Requestpolicy
+* TODO capture
+** tshark
+   first only the traffic of a certain user
+** wireshark
+** tcpdump
+* MAYBE Sally installation
   Sally is a tool to transfer text into points in a vector space.
 
   It is installed on Ubuntu Vivid Vervet by following the official
@@ -435,33 +430,14 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
    of burdening all of Tor with extra bells and whistles, this solves
    this deanonymization problem at the application layer, where its
    origins are. (Separation of Concerns)
-* TODO browser scripting tools comparison [0/5]
+* browser scripting tools overview
   In order to retrieve sites inside the browser, there are several
   approaches.
-** Selenium
+* Selenium
   Selenium is the de-facto standard for testing web applications. It
   has drivers for several browsers, allowing it to control them, and
   evaluate the retrieved page. Its documentation is currently
   transferring from Version 1 to Version 2.
-* Mozmill
-  "MozMill is a test tool and framework for writing automated tests for Gecko based applications."[[link mozmill]]
-** installation
-   Mozmill can be installed via pip:
-
-   =pip install mozmill=
-** conflict
-   After installing first Marionette and then MozMill (without using
-   a virtual environment), Marionette stopped working, missing a
-   =B2GEmulatorRunner=. This error could be fixed by deinstalling
-   all installed packages via
-
-   for i in $(pip list); do sudo pip uninstall $i; done
-
-   , then reinstalling Marionette.
-
-   As MozMill advises "to use a virtual environment", [[link mozmill]],
-   this will likely fix the problem.
-** TODO link mozmill
 * TODO Marionette [0/1]
   Marionette is the next generation mozilla testing framework.
 ** installation
@@ -471,9 +447,9 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 
    (after installing pip via =sudo apt-get install python-pip=)
 ** start browser with -marionette parameter
-   Each modern firefox browser, and thus tor, has marionette-support
-   built-in. It needs to be enabled on the command-line via the
-   =-marionette= switch, for example
+   Each modern Firefox, and thus also the tor-browser-bundle, has
+   marionette-support built-in. It needs to be enabled on the
+   command-line via the =-marionette= switch, for example
 
    cd tor-browser_en-US/Browser
    ./firefox -marionette
@@ -484,11 +460,13 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
    To attach to a running browser, use the following code (this
    example loads a page)
 
-   from marionette import Marionette
-   client = Marionette('localhost', port=2828);
-   client.start_session()
-   url='http://test.de'
-   client.navigate(url);
+   #+BEGIN_SRC python
+     from marionette import Marionette
+     client = Marionette('localhost', port=2828);
+     client.start_session()
+     url='http://test.de'
+     client.navigate(url);
+   #+END_SRC
 ** not working in 0.19
    from marionette import By
 ** page load test
@@ -497,7 +475,9 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
    loaded). This obsoletes the need to test whether a page loaded
    completely([[Panchenko]]).
 * shell script
- If this were a simple firefox instance, just calling =firefox website= would load the website in Firefox.
+  If this were a simple firefox instance, just calling =firefox
+  website= would load the website in Firefox. This seems to be the
+  approach taken by Wang/Goldberg.
 ** TODO how to check that page has loaded
 * TODO chickenfoot: http://groups.csail.mit.edu/uid/chickenfoot/
 * criteria for tool to retrieve websites
