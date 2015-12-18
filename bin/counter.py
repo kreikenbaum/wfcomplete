@@ -320,32 +320,3 @@ if __name__ == "__main__":
 
     from sys import argv
     counters = Counter.from_(*argv)
-
-    # show hist
-    import matplotlib.pyplot as plt
-    all_dom = []
-    labels = []
-    for domain in counters.keys():
-        all_dom.append([x.get('html_marker') for x in counters[domain]])
-        labels.append(domain)
-    plt.hist(all_dom, label=labels, histtype='barstacked', bins=100)
-#    plt.hist(all_dom, label=labels, histtype='barstacked', bins=np.logspace(0, 6, base=10, num=15))
-    plt.show()
-    for dom in all_dom:
-        plt.hist(dom, bins=100)
-        plt.show()
-
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-for i in counters['msn.com'][0].fixed.keys():
-    print i
-    all_dom = []
-    labels = []
-    for domain in counters.keys():
-        all_dom.append([x.get(i) for x in counters[domain]])
-        labels.append(domain)
-    plt.hist(all_dom, label=labels, histtype='barstacked', bins=100)
-    fname = '/mnt/data/' + i + '.png'
-    print fname
-    plt.savefig(fname)
