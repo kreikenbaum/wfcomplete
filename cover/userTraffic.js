@@ -1,21 +1,22 @@
 /** traffic by the user */
 var _ = require('./underscore-min.js')
 
+var debug = require('./debug.js')
+
 // td: index by domain or by URL?
 startTimes = {}
 
 /** user starts loading url */
 function start(URL) {
     startTimes[URL] = new Date();
-    // td: load sth bg? ;-)
-    console.log('do something periodically');
+    debug.log('userTraffic: do something periodically');
 }
 exports.start = URL => start(URL);
 
 /** user ends loading url */
 function stop(URL) {
     delete startTimes[URL];
-    console.log('end do');
+    debug.log('userTraffic: end do');
 }
 exports.stop = URL => stop(URL);
 

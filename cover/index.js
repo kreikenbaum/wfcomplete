@@ -2,10 +2,9 @@ var {Cc, Ci} = require("chrome");
 var pageMod = require("sdk/page-mod");
 var { setTimeout } = require("sdk/timers");
 
+var debug = require("./debug")
 var random = require("./random")
 var url = require("./url")
-
-const DEBUG = true;
 
 var ignoreThese = [];
 
@@ -17,8 +16,10 @@ httpRequestObserver = {
             var uri = httpChannel.URI;
 
 	    if ( ignoreThese.indexOf(uri.spec) == -1 ) {
-		debugLog('observer: http request to ' + uri.spec);
+		debug.log('observer: http request to ' + uri.spec);
 		loadNext(uri.spec);
+	    } else {
+		debug.log('ignoring request to ' + uri.spec);
 	    }
         }
     },
@@ -45,15 +46,11 @@ pageWorker = require("sdk/page-worker").Page({
     contentScriptFile: "./getLinks.js",
     onAttach: function(worker) {
 	worker.port.on("links", function(JSONlinks) {
-	    debugLog("would add to links: " + JSONlinks);
+	    debug.log("would add to links: " + JSONlinks);
 	    // candidates.concat(JSON.parse(JSONlinks));
 	});
     }
 });
-
-function debugLog(toLog) {
-    if ( DEBUG ) { console.log(toLog); }
-}
 
 // loads next page in background
 // adds random string to avoid caching and sets length of request
@@ -64,14 +61,13 @@ function loadNext(loadedUrl) {
     // get fitting object-url
     var nextUrl = url.sized(Math.floor(Math.random()*1000*1000));
     nextUrl += '?' + random.string(loadedUrl.length - nextUrl.length);
+    // load next
+    debug.log('loadNext: loading: ' + nextUrl);
     ignoreThese.push(nextUrl);
-
+    pageWorker.contentURL = nextUrl;
     setTimeout(function() {
 	ignoreThese.pop(nextUrl);
     }, 5);
-
-    debugLog('loadNext: loading: ' + nextUrl);
-    pageWorker.contentURL = nextUrl;
 }
 
 // td: scrape / onion plus some randomness

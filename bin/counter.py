@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''aggregates trace data, extracts features'''
 import doctest
 import json
@@ -320,5 +321,8 @@ if __name__ == "__main__":
 
     from sys import argv
     counters = Counter.from_(*argv)
-    for t in [trace for domain in counters.values() for trace in domain]:
-        print t.packets
+    from ctypes import pythonapi
+    # if non-interactive, print timing data
+    if !os.environ.get('PYTHONINSPECT') && !pythonapi.Py_InspectFlag > 0:
+        for t in [trace for domain in counters.values() for trace in domain]:
+            print t.timing

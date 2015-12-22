@@ -694,27 +694,37 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   relevant information([[file:docs/lit.org::*%5B%5B./ccs14.pdf%5D%5BCai%20-%20A%20Systematic%20Approach%20to%20Developing%20and%20Evaluating%20Website%20Fingerprinting%20Defenses%5D%5D][a-systematic]]) packet trace data in the form of
   (delay, packet size), which is
 
-  | facebook.com                              | craigslist.com |
-  |-------------------------------------------+----------------|
-  | [[file:pictures/facebook.com@1445350531.png]] |                |
-  | [[file:pictures/facebook.com@1445422155.png]] |                |
-  | [[file:pictures/facebook.com@1445425799.png]] |                |
-  | [[file:pictures/facebook.com@1445429729.png]] |                |
+  | facebook.com                              |
+  |-------------------------------------------+
+  | [[file:pictures/facebook.com@1445350531.png]] |
+  | [[file:pictures/facebook.com@1445422155.png]] |
+  | [[file:pictures/facebook.com@1445425799.png]] |
+  | [[file:pictures/facebook.com@1445429729.png]] |
+
+  | craigslist.org                           |
+  |------------------------------------------|
+  | [[./pictures/craigslist.org@1445352269.png]] |
+  | [[./pictures/craigslist.org@1445428146.png]] |
+  | [[./pictures/craigslist.org@1445435476.png]] |
+  | [[./pictures/craigslist.org@1445442917.png]] |
 
   They were created by the commands
 
   #+BEGIN_EXAMPLE
   for fb in $(ls | grep facebook); do
-    python ~/da/bin/extract_attribute.py ./$fb  | tail -1 | sed 's/),/\n/g' | tr -d "'()][" > /tmp/times;
+    python ~/da/bin/counter.py ./$fb  | tail -1 | sed 's/),/\n/g' | tr -d "'()][" > /tmp/times;
     gnuplot -e "set terminal png size 1024,680; set output \"/tmp/${fb}.png\"; plot '/tmp/times' with boxes;";
   done
   #+END_EXAMPLE
 
-  These commands first extract the timing attributes (at the time of
-  writing the last line of the output of extract_attribute.py), format
-  it for gnuplot (inserting appropriate newlines via =sed= and
-  removing erroneous characters via =tr=), and =gnuplot=s it to a file
-  with the name of the trace file as png-name.
+  and respectively for `s/facebook/craigslist/g` in the directories
+  containing the pcap files.
+
+  These commands first extract the timing attributes (at git commit
+  791af76 the last line of the output of counter.py), format it for
+  gnuplot (inserting appropriate newlines via =sed= and removing extra
+  characters via =tr=), and =gnuplot=s it to a png file with the name of
+  the trace file as prefix.
 * distribution of (main) features
   These distribution histograms show how Panchenko's main features are
   distributed. They are stacked histograms with classes separated by
@@ -763,6 +773,11 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
       - 100 \to 800 once a 20 \to 40 twice
   - (currently closed world)
 * TODO in-browser vs tcp-level
+* TODO advantages of add-on
+** no cooperator necessary
+   dummy packets chosen as response to real request (as in web traffic)
+** knowledge of packets
+** delay of some possible (f.ex. images)
 * WAIT Results
 ** classifiers (ordered by accuracy)
 *** 20 classes (~78%)
