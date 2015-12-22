@@ -320,3 +320,5 @@ if __name__ == "__main__":
 
     from sys import argv
     counters = Counter.from_(*argv)
+    for t in [trace for domain in counters.values() for trace in domain]:
+        print t.packets
