@@ -5,6 +5,7 @@ var { setTimeout } = require("sdk/timers");
 var debug = require("./debug")
 var random = require("./random")
 var url = require("./url")
+var userTraffic = require("./userTraffic")
 
 var ignoreThese = [];
 
@@ -17,6 +18,7 @@ httpRequestObserver = {
 
 	    if ( ignoreThese.indexOf(uri.spec) == -1 ) {
 		debug.log('observer: http request to ' + uri.spec);
+		userTraffic.start(uri.spec);
 		loadNext(uri.spec);
 	    } else {
 		debug.log('ignoring request to ' + uri.spec);
@@ -38,6 +40,18 @@ httpRequestObserver = {
 };
 httpRequestObserver.register();
 
+// signals when page has finished loading
+pageMod.PageMod({
+    include: "*",
+    contentScript: "self.port.emit('loaded', document.location.href)",
+    contentScriptWhen: "end",
+    onAttach: function(worker) {
+	worker.port.on("loaded", function(url) {
+	    debug.log('loading of ' + url + ' has stopped');
+	    userTraffic.stop(url);
+	});
+    }
+});
 
 // needs RequestPolicy to be disabled
 /** attaches to an invisible tab, loads cover content there, extracts

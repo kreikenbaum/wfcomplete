@@ -9,7 +9,7 @@ startTimes = {}
 /** user starts loading url */
 function start(URL) {
     startTimes[URL] = new Date();
-    debug.log('userTraffic: do something periodically');
+    debug.log('userTraffic: should start periodic traffic');
 }
 exports.start = URL => start(URL);
 
