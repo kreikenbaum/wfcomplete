@@ -3090,7 +3090,7 @@
     - (ends 3)
     - congestion window growth slows with increasing RTT.
     - (ends 4.D (=4.4))
-** [#B] [[./random.pdf][Computer Generation of Statistical Distributions]]
+** PART [#B] [[./random.pdf][Computer Generation of Statistical Distributions]]
 *** quotes
     5) [@5] PROBABILITY DISTRIBUTION FUNCTIONS
        1) Continuous Distributions
@@ -3120,6 +3120,29 @@
                     return a + exp( normal( mu, sigma ) );
                   }
 		#+END_SRC
+
+	  27) [@27] Weibull
+
+	      - Algorithm:
+
+		1. Generate U ~ U(0, 1)
+		2. Return X = a + b(− ln U) 1/c
+
+	      - Source Code:
+
+		#+BEGIN_SRC c++
+                  double weibull( double a, double b, double c )
+                  {
+                    assert( b > 0. && c > 0. );
+                    return a + b * pow( -log( uniform( 0., 1. ) ), 1. / c );
+                  }
+		#+END_SRC
+
+	      - Notes:
+		1. When c = 1, this becomes the exponential
+                   distribution with scale b.
+		2. When c = 2 for general b, it becomes the Rayleigh
+                   distribution.
 ** TODO [#A] [[./1512.00524v1.pdf][WTF-PAD: Toward an Efficient Website Fingerprinting Defense for Tor]]
 *** summary
     0) [@0] Abstract
@@ -3253,6 +3276,10 @@
 	       - when arrives, remove arrival time bin token
 
 	  2) Burst mode.
+
+	     - if inter-arrival time longer than typical, go to G state
+
+	  3) Gap mode
 *** quotes
     - lightweight defenses that provide a sufficient level of security
       against website fingerprinting
@@ -3297,6 +3324,11 @@
     - until transmission starts and it *receives* a real packet
     - (ends 5.1)
     - a fake burst interrupted by a real burst (right).
+    - While we are in a burst, the delays we sample from H_{U} will not
+      expire until we find an inter-arrival time that is longer than
+      typical within a burst, which will make the delay expire and
+      trigger the G state.
+    - (ends 5.2)
     - In burst mode, the algorithm essentially assumes there is a
       burst of real data and consequently waits for a longer period
       before sending any padding. In gap mode, the algorithm assumes
@@ -3319,12 +3351,17 @@
     - use normal and log-normal distributions for the sake of
       simplicity,
     - (ends 6)
-    - The likely cause of these findings is that the first few packets
-      in a page often hold important features.
+    - In both multi-tab scenarios, we found that k-NN could detect the
+      background page (the first tab) with much greater accuracy than
+      the foreground page (the second tab). Additionally, adding
+      significant delay before loading the foreground page increases
+      the accuracy of classifying it. The likely cause of these
+      findings is that the first few packets in a page often hold
+      important features.
     - (ends 7)
     - only the remaining 60% of traffic needs to be covered by this
       defense.
-    - distribution of inter-arrival times dependson the average
+    - distribution of inter-arrival times depends on the average
       bandwidth of the client. We have built our statistical model
       based on the inter-arrival times observed in our
       dataset. However, AP lacks a systematic method to set the
@@ -3461,6 +3498,16 @@
 	  - exponential distribution
 
        1) Attack model
+
+	  - observes 60 seconds
+
+	  - does cross-correlation for 1-second-steps
+
+	  - sets threshold t to equals FPR and FNR
+
+	  - defender's goal: high t
+
+       2) Evaluation results
 *** quotes
     - Many mix networks are specifically intended to provide anonymity
       against attackers who control the communication medium.
@@ -3496,6 +3543,15 @@
     - We do not model TCP acknowledgements, re-transmissions,
       exponential backoff in response to dropped packets, and other
       TCP features that may be exploited by a sophisticated attacker.
+    - (ends 5.0)
+    - We conjecture that long-term attacks cannot be prevented without
+      assuming that some senders or mixes emit cover traffic in
+      perfect synchrony, which cannot be achieved by any real system.
+    - The attacker chooses t [threshold for correlation r(d)] so that
+      the false positive and false negative rates are equal. This is
+      the attacker’s crossover error rate. High crossover rate means
+      that the defense is effective.
+    - (ends 5.1)
 ** TODO [#A] [[./cacr2015-08.pdf][Wang - Walkie-Talkie: An Effective and Efficient Defense against Website Fingerprinting]]
 *** summary
     0) [@0] ABSTRACT
@@ -3756,7 +3812,7 @@
       those traffic-analysis attacks: packet size, timing of packets,
       web object size, and flow size.
     - (ends 3.0)
-** TODO [#A] [[./tor14design.pdf][Tor: The Second-Generation Onion Router (2014 DRAFT v1)]]
+** TODO MOVE [#A] [[./tor14design.pdf][Tor: The Second-Generation Onion Router (2014 DRAFT v1)]]
 *** summary
     0) [@0] Abstract
 
@@ -3977,6 +4033,25 @@
 	    - /destroy/ and /relay truncate/
 
        4) Choosing nodes for circuits
+
+	  0) [@0]
+
+	     - (bandwidth / capabilities) weighted distribution
+
+	     - bandwidth measured, distributed by consensus
+
+	  1) Guard nodes
+
+	     increased (little) risk of more deanonymization,
+             decreases (bit higher) risk of some deanonymization
+
+	  2) Avoiding duplicate node families in the same circuit
+
+	     - attack: control entry and exit node
+
+	     - defense: avoid both from /16, also from (mutual) families
+
+       5) Opening and closing streams
 *** quotes
     - most designs protect primarily against traffic analysis rather
       than traffic confirmation
@@ -4008,7 +4083,16 @@
       this protocol to be secure (including perfect forward secrecy)
       under the traditional Dolev-Yao model.
     - (ends 4.3.Constructing a circuit)
-** TODO [#B] [[./morphing09.pdf][Traffic Morphing: An Efficient Defense Against Statistical Traffic Analysis]]
+    - As mentioned above, if the first and last node in a circuit are
+      controlled by an adversary, they can use traffic correlation
+      attacks to notice that the traffic entering the network at the
+      first hop matches traffic leaving the circuit at the last hop,
+      and thereby trace a client’s activity with high
+      probability. Research on preventing this attack has not yet come
+      up with any affordable, effective defense suitable for use in a
+      low-latency anonymity network.
+    - (ends 4.4.2)
+** TODO [#A] [[./morphing09.pdf][Traffic Morphing: An Efficient Defense Against Statistical Traffic Analysis]]
 *** summary
     0. [@0] Abstract
 
@@ -4071,7 +4155,7 @@
         www_section = {Traffic analysis},
       }
     #+END_SRC
-** TODO [#A] [[./oakland2012-peekaboo.pdf][Dyer - Peek-a-Boo, I Still See You: Why Efficient Traffic Analysis Countermeasures Fail]]
+** TODO MOVE [#A] [[./oakland2012-peekaboo.pdf][Dyer - Peek-a-Boo, I Still See You: Why Efficient Traffic Analysis Countermeasures Fail]]
 *** summary
     0) [@0] Abstract
 
@@ -4117,6 +4201,34 @@
        - downloadable python code http://www.kpdyer.com/
 
     3) TRAFFIC CLASSIFIERS
+
+       supervised learning, testing and training data
+
+       1) Liberatore and Levine Classifier
+
+	  - naive Bayes
+
+	  - direction and length of packets
+
+       2) Herrmann et al. Classifier
+
+	  - multinomial naive Bayes
+
+	  - normalized counts
+
+	  - tf + cosine
+
+       3) Panchenko et al. Classifier
+
+	  - SVM
+
+	  - panchenko's parameters C=2**17, \gamma=2**-19
+
+	  - remove ACKs
+
+	  - number of features
+
+    4) COUNTERMEASURES
 *** quotes
     - in the context of website identification, it is unlikely that
       bandwidth-efficient, general-purpose TA countermeasures can ever
@@ -7857,3 +7969,30 @@
     #+END_SRC
 ** [[file:Marionette%20Python%20Tests%20-%20Mozilla%20|%20MDN.html][Marionette Python Tests]]
 ** [[file:Marionette%20-%20Mozilla%20|%20MDN.html::<!DOCTYPE%20html][Marionette (main page)]]
+** TODO [[./HTTP Traffic Model_v1 1 white paper.pdf]]
+*** summary
+*** quotes
+    - It is possible that the ON state lasts over multiple Web-Request
+      periods when the downloading of the last embedded object and the
+      next HTML object overlaps.
+*** questions
+    - correlation of features (high object count \to high page size)?
+** [[./1999-35.pdf]]
+** [[./tcpdump.pdf]]
+** [[./webtraffic-imc11.pdf]]
+** [[shell:man npm-faq][man npm-faq]]
+*** quotes
+    - How do I install node with npm?
+       You don't.  Try one of these node version managers:
+
+       Unix:
+       · http://github.com/isaacs/nave
+       · http://github.com/visionmedia/n
+       · http://github.com/creationix/nvm
+
+       Windows:
+
+       · http://github.com/marcelklehr/nodist
+       · https://github.com/coreybutler/nvm-windows
+       · https://github.com/hakobera/nvmw
+       · https://github.com/nanjingboy/nvmw

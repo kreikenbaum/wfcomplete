@@ -236,18 +236,22 @@
   - fundamental human need
   - concentration camp:
     "solitude in a Camp is more precious and rare than bread." -- primo levi
-* Mozilla Add-On Sdk
+* TODO Mozilla Add-On Sdk
   The Add-on SDK by Mozilla aids in the development of Firefox-Addons.
 
   It allows users to create new addons using HTML and JS only,
-  omitting the previous way of using XUL.
-** Installation and Use of Jpm
-   (SDK-)addons can be built via the =jpm=-tool. This is available as
-   a NodeJS-Module via the (NodeJS-) built-in package manager =npm=,
-   the NodeJS Package Manager.
+  omitting the previous use of XUL.
+
+  The addon execution entry point (like `main` in C and Java) can be
+  configured via the =preferences.json= file. By default, the main
+  addon-script is called =index.js=.
+** Installation and Use of jpm (the build tool)
+   (SDK-)addons can be built via the =jpm=-tool. It is available as a
+   NodeJS-Module via the built-in package manager =npm=, the NodeJS
+   Package Manager.
 
    Installing =jpm= is thus a two-step process. Firstly, install
-   NodeJS via built-in tools (for example =apt-get install
+   NodeJS either via built-in tools (for example =apt-get install
    nodejs-legacy= in Debian and Ubuntu) or via [[link npm][download]], then, do a
 
    npm install jpm
@@ -259,9 +263,6 @@
    live-tested via =jpm run= and the addon package built via =jpm xpi=.
 *** link npm
     nodejs.org
-** index.js
-   The addon entry point can be configured via the =preferences.json=
-   file. By default, the main addon-script is called =index.js=.
 ** page-worker
    A =page-worker= creates "a permanent, invisible page and
    access[es] its DOM."  ([[link page-worker]]).
@@ -279,6 +280,7 @@
 
    yet this fetches only the HTML file pointed to. The retrieval of
    images, stylesheets, etc, is not automatic.
+*** TODO test that only HTML
 *** link page-worker
     developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html
 *** link panchenko
@@ -365,7 +367,7 @@ pageMod.PageMod({
 developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_page_scripts.html
 ** [#C] DOM
    domain-object-model
-** pipelining enable in tor after Pachenko
+* pipelining enable in tor after Pachenko
 * other defenses
   There are other methods of defense, which might help mitigate the
   Torben attack. One is based on browser plugins, the other on rate
@@ -446,49 +448,47 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   transferring from Version 1 to Version 2.
 * TODO Marionette [0/1]
   Marionette is the next generation mozilla testing framework. It is
-  modeled to work just like Selenium. It was chosen, as it made the
-  Tor Browser Bundle more accessible.
+  modeled to work just like Selenium. It was chosen for this thesis,
+  as it made the Tor Browser Bundle easily accessible:
+
+  After installation (see below), controlling the browser takes two
+  easy steps:
+
+  1. start the Tor Browser Bundle with the `-marionette` switch
+
+     #+BEGIN_SRC sh
+       cd tor-browser_en-US/Browser
+       ./firefox -marionette
+     #+END_SRC
+
+  2. attach to a running browser in Python
+
+     #+BEGIN_SRC python
+       from marionette import Marionette
+       client = Marionette('localhost', port=2828);
+       client.start_session()
+       client.navigate('http://cnn.com'); # this loads a website
+     #+END_SRC
+
+  Marionette has the benefit that the =client.navigate()= call returns
+  only after the page has loaded, (and throws an error if the page
+  could not be loaded). This obsoletes the need to test whether a page
+  loaded completely([[Panchenko]]).
 * TODO Marionette installation
-  Marionette exists as a Python Package. It is thus easily installed via
+  Marionette exists as a Python Package. It is thus easily installed
+  via
 
   pip install marionette_client
 
-  (after installing pip via =sudo apt-get install python-pip=). Using
-  a virtualenv is highly recommended in the documentation. (
-* TODO start browser with -marionette parameter
-  Each modern Firefox, and thus also the tor-browser-bundle, has
-  marionette-support built-in. It needs to be enabled on the
-  command-line via the =-marionette= switch, for example
-
-  cd tor-browser_en-US/Browser
-  ./firefox -marionette
-
-  This starts the Tor browser with marionette enabled.
-** TODO marionette support page link
-* TODO attach to browser
-  To attach to a running browser, use the following code (this
-  example loads a page)
-
-  #+BEGIN_SRC python
-    from marionette import Marionette
-    client = Marionette('localhost', port=2828);
-    client.start_session()
-    url='http://test.de'
-    client.navigate(url);
-  #+END_SRC
-* TODO not working in 0.19
-  from marionette import By
-* TODO page load test
-  The =client.navigate()= call returns only after the page has
-  loaded, (and throws an error if the page could not be
-  loaded). This obsoletes the need to test whether a page loaded
-  completely([[Panchenko]]).
+  After installation pip via =sudo apt-get install python-pip=). Using
+  a virtualenv is highly recommended in the documentation.
 * shell script
   If this were a simple firefox instance, just calling =firefox
   website= would load the website in Firefox. This seems to be the
   approach taken by Wang/Goldberg.
 ** TODO how to check that page has loaded
 * TODO chickenfoot: http://groups.csail.mit.edu/uid/chickenfoot/
+* TODO http server for testing
 * criteria for tool to retrieve websites
   - script tor browser: load new page
   - easy set-up
@@ -757,6 +757,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 
   [[file:pictures/all_total_out.png]]
   total bytes upstream/outgoing.
+** TODO compare to HTTP model
 * TODO scikit-learn
   The python module scikit-learn ([[file:docs/lit.org::*MAYBE%20%5B%5B./user_guide_0.16.1.pdf%5D%5Bscikit-learn%20user%20guide%5D%5D][sklearn)]] is described as a
   collection of "tools for data mining and data analysis".
@@ -777,6 +778,19 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
       - 100 \to 800 once a 20 \to 40 twice
   - (currently closed world)
 * TODO in-browser vs tcp-level
+* TODO description of add-on
+  The add-on is an experimental defense against website
+  fingerprinting.
+
+* TODO add-on caveats
+  - The choice of cover traffic domains was explicitly taken out of
+    the research focus. Currently, all cover traffic is statically
+    chosen from mlsec.org.
+  - As Juarez implicated that the first tab is harder to conceal, and
+    it would require additional work to distinguish between websites,
+    frames, etc, it only foreground-covers while the first page from a
+    domain is active.
+
 * TODO differences to adaptive padding/wtfpad
 ** no cooperator necessary
    dummy packets chosen as response to real request (as in web traffic)
@@ -3003,3 +3017,11 @@ mean = 0.763238095238
   - occurring packet sizes incoming and outgoing (binned in steps of 2)
   - percentage of outgoing packets
   - number of packets incoming and outgoing.
+** TODO start browser with -marionette parameter
+   Each modern Firefox, and thus also the tor-browser-bundle, has
+   marionette-support built-in. It needs to be enabled on the
+   command-line via the =-marionette= switch, for example
+
+
+   This starts the Tor browser with marionette enabled.
+*** TODO marionette support page link

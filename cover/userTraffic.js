@@ -8,15 +8,20 @@ startTimes = {}
 
 /** user starts loading url */
 function start(URL) {
-    startTimes[URL] = new Date();
-    debug.log('userTraffic: should start periodic traffic');
+    // td: filter: either just use host name or at least png, css, js
+    if ( ! _.contains(startTimes, URL) ) {
+	startTimes[URL] = new Date();
+    }
+    // td: should start periodic traffic
+    debug.log('userTraffic: start load ' + URL);
 }
 exports.start = URL => start(URL);
 
 /** user ends loading url */
 function stop(URL) {
+    debug.log('userTraffic: end user load ' + URL
+	      + ' after ' + (new Date() - startTimes[URL] Date()) + ' ms.');
     delete startTimes[URL];
-    debug.log('userTraffic: end do');
 }
 exports.stop = URL => stop(URL);
 
