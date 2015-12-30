@@ -50,7 +50,7 @@
   pipelining]]).)
 
   The website fingerprinting attack scenario is already described in
-  the original [[tor-design]] paper. Previous to [[Panchenko]]s paper, it was
+  the original [[tor-design]] paper. Previous to [[file:docs/lit.org::*%5B%5B./acmccs-wpes11-fingerprinting.pdf%5D%5BPanchenko%20-%20Website%20Fingerprinting%20in%20Onion%20Routing%20Based%20Anonymization%20Networks%5D%5D][Panchenkos paper]] paper, it was
   considered "less effective"([[tor-design]]) against Tor, due to
   stream/circuit multiplexing and fixed cell sizes.
 * How to use Tor
@@ -179,11 +179,11 @@
   - business intelligence
 * Panchenko's Attack via Website Fingerprinting
   For a long time, traffic analysis attacks against Tor had not
-  yielded results. Prior to [[Panchenko][Panchenko et al]], it was believed that Tor
-  introduced multiplexing, enough padding and latency into website
-  retrieval that this attack was not feasible.
+  yielded results. Prior to to [[file:docs/lit.org::*%5B%5B./acmccs-wpes11-fingerprinting.pdf%5D%5BPanchenko%20-%20Website%20Fingerprinting%20in%20Onion%20Routing%20Based%20Anonymization%20Networks%5D%5D][Panchenkos et al]], it was expected that
+  Tor introduced multiplexing, enough padding and latency into website
+  retrieval that this attack was inapplicable.
 * Current defenses in Tor
-  After the [[Panchenko]] paper, an additional no-cost defense [[experimental][was
+  After the [[file:docs/lit.org::*%5B%5B./acmccs-wpes11-fingerprinting.pdf%5D%5BPanchenko%20-%20Website%20Fingerprinting%20in%20Onion%20Routing%20Based%20Anonymization%20Networks%5D%5D][Panchenko paper]], an additional no-cost defense [[experimental][was
   implemented in the Tor-Browser-Bundle]]: Firefox's built-in request
   pipelining was enabled with added request order randomization.
 
@@ -245,6 +245,34 @@
   The addon execution entry point (like `main` in C and Java) can be
   configured via the =preferences.json= file. By default, the main
   addon-script is called =index.js=.
+
+  The SDK contains many tools to interact with the browser. URLs can
+  be loaded in the background via the page-worker module; the page-mod
+  module injects Javascript code into the page the user is browsing
+  to. If none of the easily accessible high-level modules suffice,
+  much of the browser's functionality is available via the XPCOM
+  module.
+** TODO much vs all?
+* page-worker
+  A =page-worker= creates "a permanent, invisible page and
+  access[es] its DOM."  ([[link page-worker]]).
+
+  New pages can be loaded in the background, which would allow for
+  the retrieval of camouflage traffic ([[file:docs/lit.org::*%5B%5B./acmccs-wpes11-fingerprinting.pdf%5D%5BPanchenko%20-%20Website%20Fingerprinting%20in%20Onion%20Routing%20Based%20Anonymization%20Networks%5D%5D][Panchenko]]).
+
+  A minimal new page-worker is created via
+
+  pageWorker = require("sdk/page-worker").Page({});
+
+  The page-worker's page can be set dynamically via
+
+  pageWorker.contentURL = "http://en.wikipedia.org/wiki/Cheese"
+
+  yet this fetches only the HTML file pointed to. The retrieval of
+  images, stylesheets, etc, is not automatic.
+** TODO test that only HTML
+** link page-worker
+   developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html
 ** Installation and Use of jpm (the build tool)
    (SDK-)addons can be built via the =jpm=-tool. It is available as a
    NodeJS-Module via the built-in package manager =npm=, the NodeJS
@@ -263,31 +291,6 @@
    live-tested via =jpm run= and the addon package built via =jpm xpi=.
 *** link npm
     nodejs.org
-** page-worker
-   A =page-worker= creates "a permanent, invisible page and
-   access[es] its DOM."  ([[link page-worker]]).
-
-   New pages can be loaded in the background, which would allow for
-   the retrieval of camouflage traffic ([[link panchenko]]).
-
-   A minimal new page-worker is created via
-
-   pageWorker = require("sdk/page-worker").Page({});
-
-   The page-worker's page can be set dynamically via
-
-   pageWorker.contentURL = "http://en.wikipedia.org/wiki/Cheese"
-
-   yet this fetches only the HTML file pointed to. The retrieval of
-   images, stylesheets, etc, is not automatic.
-*** TODO test that only HTML
-*** link page-worker
-    developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html
-*** link panchenko
-    A. Panchenko, L. Niessen, A. Zinnen, and T. Engel. Website
-    Fingerprinting in Onion Routing Based Anonymization Networks. In
-    Proceedings of the 10th ACM Workshop on Privacy in the Electronic
-    Society, pages 103–114, 2011.
 ** page-mod
    The page-mod module runs "scripts in the context of web pages whose
    URL matches a given pattern." ([[link page-mod]])
@@ -2937,17 +2940,6 @@ mean = 0.763238095238
        author={Dingledine, Roger and Mathewson, Nick and Syverson, Paul},
        year={2004},
        url = "\url{https://svn.torproject.org/svn/projects/design-paper/tor-design.pdf}"
-     }
-   #+END_SRC
-** Panchenko
-   #+BEGIN_SRC bibtex
-     @inproceedings{panchenko,
-       Author={Panchenko, Andriy and Niessen, Lukas and Zinnen, Andreas and Engel, Thomas},
-       Booktitle={Proceedings of the 10th ACM Workshop on Privacy in the Electronic
-     Society},
-       Title={Website fingerprinting in onion routing based anonymization networks},
-       Pages={103--114},
-       Year={2011}
      }
    #+END_SRC
 ** experimental

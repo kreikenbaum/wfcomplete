@@ -60,7 +60,7 @@ pageWorker = require("sdk/page-worker").Page({
     contentScriptFile: "./getLinks.js",
     onAttach: function(worker) {
 	worker.port.on("links", function(JSONlinks) {
-	    debug.log("would add to links: " + JSONlinks);
+	    debug.log("td: add to cover links: " + JSONlinks);
 	    // candidates.concat(JSON.parse(JSONlinks));
 	});
     }
