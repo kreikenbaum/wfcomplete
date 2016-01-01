@@ -3090,83 +3090,6 @@
     - (ends 3)
     - congestion window growth slows with increasing RTT.
     - (ends 4.D (=4.4))
-** PART MOVE DOWN [#B] [[./random.pdf][Computer Generation of Statistical Distributions]]
-*** quotes
-    5) [@5] PROBABILITY DISTRIBUTION FUNCTIONS
-       1) Continuous Distributions
-	  8) [@8] Exponential
-
-	     - (1) Generate U ~ U(0, 1)
-               (2) Return X = a − b ln U
-
-	     - Source Code:
-	       #+BEGIN_SRC C++
-                 double exponential( double a, double b )
-                 {
-                   assert( b > 0. );
-                   return a - b * log( uniform( 0., 1. ) );
-                 }
-	       #+END_SRC
-
-	  15) [@15] Lognormal
-
-	      - (1) Generate V ~ N ( μ , σ^2 )
-		(2) Return X = a + e^{V}
-
-	      - Source Code:
-		#+BEGIN_SRC C++
-                  double lognormal( double a, double mu, double sigma )
-                  {
-                    return a + exp( normal( mu, sigma ) );
-                  }
-		#+END_SRC
-
-	  27) [@27] Weibull
-
-	      - Algorithm:
-
-		1. Generate U ~ U(0, 1)
-		2. Return X = a + b(− ln U) 1/c
-
-	      - Source Code:
-
-		#+BEGIN_SRC c++
-                  double weibull( double a, double b, double c )
-                  {
-                    assert( b > 0. && c > 0. );
-                    return a + b * pow( -log( uniform( 0., 1. ) ), 1. / c );
-                  }
-		#+END_SRC
-
-	      - Notes:
-		1. When c = 1, this becomes the exponential
-                   distribution with scale b.
-		2. When c = 2 for general b, it becomes the Rayleigh
-                   distribution.
-       2) Discrete Distributions
-
-	  3) [@3] Geometric
-
-	     - "The geometric distribution represents the probability
-               of obtaining k failures before the first success in
-               independent Bernoulli trials, where the probability of
-               success in a single trial is p."
-
-	     - Algorithm:
-
-	       1. Generate U ~ U(0, 1)
-
-	       2. Return X = int ( ln U/ ln (1 − p) )
-
-	     - Source Code:
-
-	       #+BEGIN_SRC c++
-                 int geometric( double p )
-                 {
-                   assert( 0. < p && p < 1. );
-                   return int( log( uniform( 0., 1. ) ) / log( 1. - p ) );
-                 }
-	       #+END_SRC
 ** TODO [#A] [[./1512.00524v1.pdf][WTF-PAD: Toward an Efficient Website Fingerprinting Defense for Tor]]
 *** summary
     0) [@0] Abstract
@@ -3311,6 +3234,16 @@
 	     - (rather see timing...)
 
        2) WTF-PAD
+
+	  - send / receive padding
+
+	  - send histograms via control messages
+
+	  - beginning of transmission
+
+	  - soft stopping as with adaptive padding
+
+       3) Interarrival time distribution
 *** quotes
     - lightweight defenses that provide a sufficient level of security
       against website fingerprinting
@@ -3404,6 +3337,318 @@
       burst, leading to a fake burst in the middle of a real burst
       (see Figure 3).
       - not seen in figure, can this also happen?
+** TODO [#A] [[./tor14design.pdf][Tor: The Second-Generation Onion Router (2014 DRAFT v1)]]
+*** summary
+    0) [@0] Abstract
+
+       - real-world experiences
+
+       - open problems
+
+    1) Overview
+
+       - Better than original onion routing by:
+
+         - perfect forward secrecy:
+
+           "subsequently compromised nodes cannot decrypt old traffic"
+
+	 - Separation of “protocol cleaning” from anonymity
+
+	   just uses SOCKS for applications to connect. (protocol
+           cleaning is done f.ex. by addon or proxy)
+
+	 - No mixing, padding, or traffic shaping (yet):
+
+	   no usable concepts/implementations, high overhead
+
+	 - Many TCP streams can share one circuit:
+
+	   allows for multiple streams to have same circuit (with user
+           control)
+
+	   less crypto, less vulnerability (see section 9)
+
+	 - Leaky-pipe circuit topology:
+
+	   traffic can exit at any place in the circuit (how about
+           exit node policies?)
+
+	 - Congestion control:
+
+	   end-to-end acks, active research
+
+	 - Directory authorities:
+
+	   instead of flooding the network, trusted nodes provide
+           network info
+
+	 - Variable exit policies:
+
+	   exit node operators select which traffic to allow to which
+           hosts
+
+	 - End-to-end integrity checking:
+
+	   in addition to crypto
+
+	 - Rendezvous points and hidden services:
+
+	   negotiation of rendezvous points (instead of "reply onions")
+
+	 - Censorship resistance:
+
+	   bridges (unlisted guard nodes) and HTTPS similarity
+
+	 - Modular architecture:
+
+	   - vidalia (control port)
+
+	   - pluggable transports
+
+	   - no OS patches, but only TCP possible
+
+    2) Related work
+
+       - Chaum: Mix-Net
+
+       - Babel, Mixmaster, Mixminion: maximum anonymity, large latency
+
+       - tor low-latency
+
+       - single-hop: anonymizer, etc
+
+       - JonDo: fixed cascades: routes that aggregate traffic
+
+       - PipeNet: multi-hop, weaknesses
+
+       - p2p:
+
+         - tarzan, morphmix, layered encryption
+
+         - crowds: all nodes can read
+
+	 - hordes: crowds with multicast responses
+
+	 - herbivore and P^{5}: crowds with broadcast responses
+
+       - freedom, i2p: circuits all at once
+
+       - cebolla, anonymity network: build in stages
+
+       - circuit-based: which circuit? IP, TCP, HTTP?
+
+       - TCP middle-approach,
+
+         - can transfer all TCP streams
+
+         - avoid TCP-TCP inefficiencies
+
+       - censorship-resistance like eternity, free havfen, publius,
+         tangler
+
+    3) Design goals and assumptions
+
+       0) [@0]
+
+	  - Goals
+
+	    - Deployability: cheap, rather legal, easy to implement
+
+	    - Usability: usable by mose applications
+
+	    - Flexibility: specified, replaceable
+
+	    - Simple design: kiss: well-understood, accepted approaches
+
+	    - Resistant to censorship: both by IP and protocol fingerprinting
+
+	  - Non-goals
+
+	    - Not peer-to-peer: "still has many open problems"
+
+	    - Not secure against end-to-end attacks:
+
+	      "Some approaches, such as having users run their own onion
+              routers, may help;"
+
+	    - No protocol normalization: needs to be added via Privoxy f.ex.
+
+       1) Threat Model
+
+	  adversary like [[*%5B%5B./tor-design.pdf%5D%5BTor:%20The%20Second-Generation%20Onion%20Router%5D%5D][Tor: The Second-Generation Onion Router*]]
+
+    4) The Tor Design
+
+       0) [@0]
+
+	  - atop TLS
+
+	  - onion routers
+
+	    - TLS connection to other ORs
+
+	    - 2 (+1) keys
+
+	      - long-term identity: signs router descriptor and TLS
+                certificates
+
+	      - short-term onion key: decrypt circuit requests,
+                negotiates keys
+
+	  - onion proxy
+
+	    - fetch directories
+
+	    - establish circuits
+
+	    - handle connections from users
+
+       1) Cells
+
+	  - fixed size vs variable size
+
+	    - versions, vpadding, certs, auth_challenge, authenticate,
+              autorize
+
+	  - command vs relay vs relay_early
+
+	    - relay: streamid, digest, length
+
+       2) TLS details
+
+	  - previously, TLS handshake identified Tor
+
+	  - nowadays, in-TLS handshake using /versions/ cell
+
+       3) Circuits and streams
+
+	  Tor constructs circuits preemptively, routes several
+          application streams via them
+
+	  except if the user signals that she wants a separation
+
+	  - Constructing a circuit
+
+	    1. Alice to Bob: create e_{bob}(g^x)
+
+	    2. Bob to Alice: created hash(K = g^xy), g^y)
+
+	    3. Alice to Carol via Bob: relay extend g^{x_2}
+
+	    4. Bob to Carol: create e_{carol}(g^{x_2})
+
+	    5. Carol to Bob: created (...)
+
+	    6. Bob to Alice: relay extended
+
+	    also /create fast/ possible instead of create, which
+            relies on TLS security and avoids the RSA overhead
+
+	  - Relay cells
+
+	    Cells sent forward from the host
+
+	    - if digest valid, this OR is meant, process instructions
+
+	    - else send on
+
+	    - leaky circuit
+
+	    - /destroy/ and /relay truncate/
+
+       4) Choosing nodes for circuits
+
+	  0) [@0]
+
+	     - (bandwidth / capabilities) weighted distribution
+
+	     - bandwidth measured, distributed by consensus
+
+	  1) Guard nodes
+
+	     increased (little) risk of more deanonymization,
+             decreases (bit higher) risk of some deanonymization
+
+	  2) Avoiding duplicate node families in the same circuit
+
+	     - attack: control entry and exit node
+
+	     - defense: avoid both from /16, also from (mutual) families
+
+       5) Opening and closing streams
+
+	  - create or select circuit
+
+	  - use last hop or intermediate as exit
+
+	  - /relay begin/ with random /streamID/
+
+	  - /relay connected/
+
+	  - client sends TCP with /relay data/
+
+	  - SOCKS problems
+
+	    - DNS data leak
+
+	  - firefox problems
+
+	    - cookies, DOM torage
+
+	    - TLS session IDs
+
+	    - browser characteristics
+
+	    - plugins
+
+	    - privoxy weak against HTTPS
+
+	  - /relay teardown/ \sim TCP RST
+
+	  - /relay end/ ~ TCP FIN (allows TCP half-closed conns)
+
+       6) Integrity checking on streams
+*** quotes
+    - most designs protect primarily against traffic analysis rather
+      than traffic confirmation
+    - distributed-trust, circuit-based anonymizing systems
+    - (ends 2)
+    - adding unproven techniques to the design threatens
+      deployability, readability, and ease of security analysis.
+    - like all practical low-latency systems, Tor does not protect
+      against such a strong adversary [a global passive adversary]
+    - (ends 3)
+    - some control cells are variable length, where the ability of an
+      attacker to detect their presence doesn’t affect security.
+    - Most traffic passes along these connections in fixed-size
+      cells. (A few cell types, notably those used for connection
+      establishment, are variable-sized.)
+    - To determine that this newer version of the link protocol
+      handshake is to be used, the initiator avoids using the exact
+      set of ciphersuites used by early Tor versions, and the Tor
+      responder uses an X.509 certificate unlike those generated by
+      earlier versions of Tor. This may be too clever for Tor’s own
+      good; we mean to eliminate it once every supported version of
+      Tor supports this version of Tor’s link protocol.
+    - (ends ?4.2?)
+    - This circuit-level handshake protocol achieves unilateral entity
+      authentication (Alice knows she’s handshaking with the OR, but
+      the OR doesn’t care who is opening the circuit — Alice uses no
+      public key and remains anonymous)
+    - Preliminary analysis with the NRL protocol analyzer [33] shows
+      this protocol to be secure (including perfect forward secrecy)
+      under the traditional Dolev-Yao model.
+    - (ends 4.3.Constructing a circuit)
+    - As mentioned above, if the first and last node in a circuit are
+      controlled by an adversary, they can use traffic correlation
+      attacks to notice that the traffic entering the network at the
+      first hop matches traffic leaving the circuit at the last hop,
+      and thereby trace a client’s activity with high
+      probability. Research on preventing this attack has not yet come
+      up with any affordable, effective defense suitable for use in a
+      low-latency anonymity network.
+    - (ends 4.4.2)
 ** TODO [#B] [[./ShWa-Timing06.pdf][Timing analysis in low-latency mix networks: attacks and defenses]]
 *** summary
     0) [@0] Abstract
@@ -3790,6 +4035,11 @@
             overall accuracy over c is therefore max_{i} n_{i} /|c|.
 
        2) Evaluation of random defenses
+
+	  - determine maximum probability instead of "highest rate of
+            occurrence"
+
+       3) Overhead
 *** quotes
     - design goals:
       1. General: The defense succeeds against all possible
@@ -3831,6 +4081,133 @@
       traffic.
 
       How about timing data?
+** TODO [#A] [[./morphing09.pdf][Traffic Morphing: An Efficient Defense Against Statistical Traffic Analysis]]
+*** summary
+    0. [@0] Abstract
+
+       morphing changes traffic to look like another site
+
+    1. Introduction
+
+       convex optimization to simulate (morph to) other site
+
+       split etc packets to create the appearance of another site
+
+       here: only packet size features obfuscated
+
+    2. Related Work
+
+       - Song: SSL timing analysis for login password length
+
+       - Sun: SSL - use size of HTML objects to identify web pages
+
+       - Liberatore: with persisten connections and SSH port forwarding
+
+       - Wright: VoIP language spoken
+
+       - Saponas: identify movies within encrypted connections
+
+       - Wright: identify spoken phrases in encrypted VoIP
+
+       - Wagner/Dean: mimicry attack vs IDS
+
+       - Soto: against pH IDS
+
+       - Tan: against stide IDS
+
+       - Fogla: packet payloads, hide malicious payload
+
+       - many: fake training data
+
+    3. Traffic Morphing
+
+       0) [@0]
+    
+	  - alter "distribution of packet sizes"
+
+       1) What is the Matrix?
+
+	  - morphing matrix: given input probability sizes X and
+            output probability sizes Y, find matrix A such that Y=AX
+
+	  - receive packet of size s_j, sample target size s_i from j-th
+            column of A via cumulative probability
+
+	  - pads with zeros if s_i > s_j, split otherwise
+
+	  - convex optimization to get minimal overhead
+
+       2) Morphing via Convex Optimization
+
+	  - n^2 variables, 2n bounds \to infinite possibilities
+
+	  - cost function example: number of additional bytes
+
+       3) Additional Morphing Constraints
+*** quotes
+    - morphing one class of traffic to look like another class.
+    - show how to optimally modify packets in real-time to reduce the
+      accuracy of a variety of traffic classifiers while incurring
+      much less overhead than padding.
+    - (ends 0)
+    - For the remainder of this paper, we focus on the use of our
+      morphing techniques in thwarting traffic classifiers that
+      utilize features based on packet sizes.
+    - (ends 1 + 2)
+*** ref
+    #+BEGIN_SRC bibtex
+      @inproceedings{morphing09,
+        title = {Traffic Morphing: An efficient defense against statistical traffic analysis},
+        author = {Charles Wright and Scott Coull and Fabian Monrose},
+        booktitle = {Proceedings of the Network and Distributed Security Symposium - {NDSS} '09},
+        year = {2009},
+        month = {February},
+        publisher = {IEEE},
+        www_tags = {selected},
+        www_pdf_url = {http://freehaven.net/anonbib/papers/morphing09.pdf},
+        www_section = {Traffic analysis},
+      }
+    #+END_SRC
+** TODO [#A] [[./802163c-01_30r1.pdf][Traffic Model for 802.16 TG3 MAC/PHY Simulations]]
+*** summary
+    1) Introduction
+
+       - model (wireless WAN)
+
+       - one direction only
+
+       - different types available
+
+       - user: different type and different volume
+
+    2) Description of the HTTP/TCP and FTP Model
+*** quotes
+** TODO [#A] [[./HTTP Traffic Model_v1 1 white paper.pdf]]
+*** summary
+    0) [@0] ABSTRACT
+
+       - squid log analyzer
+
+       - well-matching http model and generator
+
+    1) INTRODUCTION
+*** quotes
+    - It is possible that the ON state lasts over multiple Web-Request
+      periods when the downloading of the last embedded object and the
+      next HTML object overlaps.
+    - Table 2: Analysis Result of HTTP Model Parameters
+      | Parameters    | Mean            |   S.D. | Best Fit                     |
+      |---------------+-----------------+--------+------------------------------|
+      | <13>          | <15>            |        | <28>                         |
+      | HTML Object size | 11872 (Max 2MB) |  38306 | Truncated Lognormal (μ=7.90272, σ=1.7643) |
+      | Embedded ObjectSize | 12460 (Max 6MB) | 116050 | Truncated Lognormal (μ=7.51384, σ 2.17454) |
+      | Number of Embedded objects | 5.07 (Max 300)  |        | Gamma (κ=0.141385, θ=40.3257) |
+      | Parsing Time  | 3.12 (median 0.30)(max 300 sec) |  14.21 | Truncated Lognormal (μ=-1.24892, σ=2.08427) |
+      | Embedded Object IAT | 0.83            |    8.4 | Weibull (α=0.2089, β=0.376)  |
+      | Reading Time  | 39.70 (max 10,000 sec) | 324.92 | Lognormal (μ=-0.495204, σ=2.7731) |
+      | Request Size  | 318.59          | 179.46 | Uniform (350 Bytes)          |
+*** questions
+    - correlation of features (high object count \to high page size)?
 ** TODO [#B] [[./LZCLCP_NDSS11.pdf][HTTPOS: Sealing Information Leaks with Browser-side Obfuscation of Encrypted Flows]]
 *** summary
     0) [@0] Abstract
@@ -3873,350 +4250,7 @@
       those traffic-analysis attacks: packet size, timing of packets,
       web object size, and flow size.
     - (ends 3.0)
-** TODO MOVE [#A] [[./tor14design.pdf][Tor: The Second-Generation Onion Router (2014 DRAFT v1)]]
-*** summary
-    0) [@0] Abstract
-
-       - real-world experiences
-
-       - open problems
-
-    1) Overview
-
-       - Better than original onion routing by:
-
-         - perfect forward secrecy:
-
-           "subsequently compromised nodes cannot decrypt old traffic"
-
-	 - Separation of “protocol cleaning” from anonymity
-
-	   just uses SOCKS for applications to connect. (protocol
-           cleaning is done f.ex. by addon or proxy)
-
-	 - No mixing, padding, or traffic shaping (yet):
-
-	   no usable concepts/implementations, high overhead
-
-	 - Many TCP streams can share one circuit:
-
-	   allows for multiple streams to have same circuit (with user
-           control)
-
-	   less crypto, less vulnerability (see section 9)
-
-	 - Leaky-pipe circuit topology:
-
-	   traffic can exit at any place in the circuit (how about
-           exit node policies?)
-
-	 - Congestion control:
-
-	   end-to-end acks, active research
-
-	 - Directory authorities:
-
-	   instead of flooding the network, trusted nodes provide
-           network info
-
-	 - Variable exit policies:
-
-	   exit node operators select which traffic to allow to which
-           hosts
-
-	 - End-to-end integrity checking:
-
-	   in addition to crypto
-
-	 - Rendezvous points and hidden services:
-
-	   negotiation of rendezvous points (instead of "reply onions")
-
-	 - Censorship resistance:
-
-	   bridges (unlisted guard nodes) and HTTPS similarity
-
-	 - Modular architecture:
-
-	   - vidalia (control port)
-
-	   - pluggable transports
-
-	   - no OS patches, but only TCP possible
-
-    2) Related work
-
-       - Chaum: Mix-Net
-
-       - Babel, Mixmaster, Mixminion: maximum anonymity, large latency
-
-       - tor low-latency
-
-       - single-hop: anonymizer, etc
-
-       - JonDo: fixed cascades: routes that aggregate traffic
-
-       - PipeNet: multi-hop, weaknesses
-
-       - p2p:
-
-         - tarzan, morphmix, layered encryption
-
-         - crowds: all nodes can read
-
-	 - hordes: crowds with multicast responses
-
-	 - herbivore and P^{5}: crowds with broadcast responses
-
-       - freedom, i2p: circuits all at once
-
-       - cebolla, anonymity network: build in stages
-
-       - circuit-based: which circuit? IP, TCP, HTTP?
-
-       - TCP middle-approach,
-
-         - can transfer all TCP streams
-
-         - avoid TCP-TCP inefficiencies
-
-       - censorship-resistance like eternity, free havfen, publius,
-         tangler
-
-    3) Design goals and assumptions
-
-       0) [@0]
-
-	  - Goals
-
-	    - Deployability: cheap, rather legal, easy to implement
-
-	    - Usability: usable by mose applications
-
-	    - Flexibility: specified, replaceable
-
-	    - Simple design: kiss: well-understood, accepted approaches
-
-	    - Resistant to censorship: both by IP and protocol fingerprinting
-
-	  - Non-goals
-
-	    - Not peer-to-peer: "still has many open problems"
-
-	    - Not secure against end-to-end attacks:
-
-	      "Some approaches, such as having users run their own onion
-              routers, may help;"
-
-	    - No protocol normalization: needs to be added via Privoxy f.ex.
-
-       1) Threat Model
-
-	  adversary like [[*%5B%5B./tor-design.pdf%5D%5BTor:%20The%20Second-Generation%20Onion%20Router%5D%5D][Tor: The Second-Generation Onion Router*]]
-
-    4) The Tor Design
-
-       0) [@0]
-
-	  - atop TLS
-
-	  - onion routers
-
-	    - TLS connection to other ORs
-
-	    - 2 (+1) keys
-
-	      - long-term identity: signs router descriptor and TLS
-                certificates
-
-	      - short-term onion key: decrypt circuit requests,
-                negotiates keys
-
-	  - onion proxy
-
-	    - fetch directories
-
-	    - establish circuits
-
-	    - handle connections from users
-
-       1) Cells
-
-	  - fixed size vs variable size
-
-	    - versions, vpadding, certs, auth_challenge, authenticate,
-              autorize
-
-	  - command vs relay vs relay_early
-
-	    - relay: streamid, digest, length
-
-       2) TLS details
-
-	  - previously, TLS handshake identified Tor
-
-	  - nowadays, in-TLS handshake using /versions/ cell
-
-       3) Circuits and streams
-
-	  Tor constructs circuits preemptively, routes several
-          application streams via them
-
-	  except if the user signals that she wants a separation
-
-	  - Constructing a circuit
-
-	    1. Alice to Bob: create e_{bob}(g^x)
-
-	    2. Bob to Alice: created hash(K = g^xy), g^y)
-
-	    3. Alice to Carol via Bob: relay extend g^{x_2}
-
-	    4. Bob to Carol: create e_{carol}(g^{x_2})
-
-	    5. Carol to Bob: created (...)
-
-	    6. Bob to Alice: relay extended
-
-	    also /create fast/ possible instead of create, which
-            relies on TLS security and avoids the RSA overhead
-
-	  - Relay cells
-
-	    Cells sent forward from the host
-
-	    - if digest valid, this OR is meant, process instructions
-
-	    - else send on
-
-	    - leaky circuit
-
-	    - /destroy/ and /relay truncate/
-
-       4) Choosing nodes for circuits
-
-	  0) [@0]
-
-	     - (bandwidth / capabilities) weighted distribution
-
-	     - bandwidth measured, distributed by consensus
-
-	  1) Guard nodes
-
-	     increased (little) risk of more deanonymization,
-             decreases (bit higher) risk of some deanonymization
-
-	  2) Avoiding duplicate node families in the same circuit
-
-	     - attack: control entry and exit node
-
-	     - defense: avoid both from /16, also from (mutual) families
-
-       5) Opening and closing streams
-*** quotes
-    - most designs protect primarily against traffic analysis rather
-      than traffic confirmation
-    - distributed-trust, circuit-based anonymizing systems
-    - (ends 2)
-    - adding unproven techniques to the design threatens
-      deployability, readability, and ease of security analysis.
-    - like all practical low-latency systems, Tor does not protect
-      against such a strong adversary [a global passive adversary]
-    - (ends 3)
-    - some control cells are variable length, where the ability of an
-      attacker to detect their presence doesn’t affect security.
-    - Most traffic passes along these connections in fixed-size
-      cells. (A few cell types, notably those used for connection
-      establishment, are variable-sized.)
-    - To determine that this newer version of the link protocol
-      handshake is to be used, the initiator avoids using the exact
-      set of ciphersuites used by early Tor versions, and the Tor
-      responder uses an X.509 certificate unlike those generated by
-      earlier versions of Tor. This may be too clever for Tor’s own
-      good; we mean to eliminate it once every supported version of
-      Tor supports this version of Tor’s link protocol.
-    - (ends ?4.2?)
-    - This circuit-level handshake protocol achieves unilateral entity
-      authentication (Alice knows she’s handshaking with the OR, but
-      the OR doesn’t care who is opening the circuit — Alice uses no
-      public key and remains anonymous)
-    - Preliminary analysis with the NRL protocol analyzer [33] shows
-      this protocol to be secure (including perfect forward secrecy)
-      under the traditional Dolev-Yao model.
-    - (ends 4.3.Constructing a circuit)
-    - As mentioned above, if the first and last node in a circuit are
-      controlled by an adversary, they can use traffic correlation
-      attacks to notice that the traffic entering the network at the
-      first hop matches traffic leaving the circuit at the last hop,
-      and thereby trace a client’s activity with high
-      probability. Research on preventing this attack has not yet come
-      up with any affordable, effective defense suitable for use in a
-      low-latency anonymity network.
-    - (ends 4.4.2)
-** TODO [#A] [[./morphing09.pdf][Traffic Morphing: An Efficient Defense Against Statistical Traffic Analysis]]
-*** summary
-    0. [@0] Abstract
-
-       morphing changes traffic to look like another site
-
-    1. Introduction
-
-       convex optimization to simulate (morph to) other site
-
-       split etc packets to create the appearance of another site
-
-       here: only packet size features obfuscated
-
-    2. Related Work
-
-       - Song: SSL timing analysis for login password length
-
-       - Sun: SSL - use size of HTML objects to identify web pages
-
-       - Liberatore: with persisten connections and SSH port forwarding
-
-       - Wright: VoIP language spoken
-
-       - Saponas: identify movies within encrypted connections
-
-       - Wright: identify spoken phrases in encrypted VoIP
-
-       - Wagner/Dean: mimicry attack vs IDS
-
-       - Soto: against pH IDS
-
-       - Tan: against stide IDS
-
-       - Fogla: packet payloads, hide malicious payload
-
-       - many: fake training data
-
-    3. Traffic Morphing
-*** quotes
-    - morphing one class of traffic to look like another class.
-    - show how to optimally modify packets in real-time to reduce the
-      accuracy of a variety of traffic classifiers while incurring
-      much less overhead than padding.
-    - (ends 0)
-    - For the remainder of this paper, we focus on the use of our
-      morphing techniques in thwarting traffic classifiers that
-      utilize features based on packet sizes.
-    - (ends 1 + 2)
-*** ref
-    #+BEGIN_SRC bibtex
-      @inproceedings{morphing09,
-        title = {Traffic Morphing: An efficient defense against statistical traffic analysis},
-        author = {Charles Wright and Scott Coull and Fabian Monrose},
-        booktitle = {Proceedings of the Network and Distributed Security Symposium - {NDSS} '09},
-        year = {2009},
-        month = {February},
-        publisher = {IEEE},
-        www_tags = {selected},
-        www_pdf_url = {http://freehaven.net/anonbib/papers/morphing09.pdf},
-        www_section = {Traffic analysis},
-      }
-    #+END_SRC
-** TODO MOVE [#B] [[./oakland2012-peekaboo.pdf][Dyer - Peek-a-Boo, I Still See You: Why Efficient Traffic Analysis Countermeasures Fail]]
+** TODO [#B] [[./oakland2012-peekaboo.pdf][Dyer - Peek-a-Boo, I Still See You: Why Efficient Traffic Analysis Countermeasures Fail]]
 *** summary
     0) [@0] Abstract
 
@@ -4312,20 +4346,6 @@
         www_section = {Traffic analysis},
       }
     #+END_SRC
-** TODO [#A] [[./802163c-01_30r1.pdf][Traffic Model for 802.16 TG3 MAC/PHY Simulations]]
-*** summary
-    1) Introduction
-
-       - model (wireless WAN)
-
-       - one direction only
-
-       - different types available
-
-       - user: different type and different volume
-
-    2) Description of the HTTP/TCP and FTP Model
-*** quotes
 ** TODO [#B] [[./ESLII_print4.pdf][The Elements of Statistical Learning]]
 *** summary
     1) Introduction
@@ -5330,6 +5350,7 @@
       }
     #+END_SRC
 ** TODO [#B] [[~/da/git/docs/timing-fc2004.pdf][Timing Attacks in Low-Latency Mix Systems]]
+** TODO [#B] [[./webtraffic-imc11.pdf]]
 ** TODO [#C] [[./Oya.pdf][Do dummies pay off ? Limits of dummy traffic protection in anonymous communications]]
 *** summary
     0) [@0] Abstract
@@ -5491,6 +5512,111 @@
     see also bibtex
 ** TODO [#C] [[./xxx-multihop-padding-primitives.txt][Multihop Padding Primitives]]
 ** TODO [#C] [[./wfpadtools-spec.txt][WFPadTools Protocol Specification]]
+** TODO [#C] [[./ethical.html][Ethical Tor Research: Guidelines]]
+*** summary
+*** quotes
+*** ref
+    #+BEGIN_SRC bibtex
+      @misc{ethical,
+        tag = "The Tor Project",
+        title = "Ethical Tor Research: Guidelines",
+        url = "\url{https://blog.torproject.org/blog/ethical-tor-research-guidelines}",
+        note = "[Online; accessed 11-November-2015]"
+      }
+    #+END_SRC
+** TODO [#C] [[/home/chive/own/tor/doc/read/tor-spec.txt][Tor Protocol Specification]]
+*** summary
+    0) [@0] Preliminaries: MUST, etc. keywords like RFC
+       1) Notation: PK, SK, K, a|b, [a b c], H(m)
+	  1) all multibyte values are big-endian
+       2) Security: KEY_LEN, PK_ENC_LEN, PK_PAD_LEN, DH_LEN,
+          DH_SEC_LEN, HASH_LEN, PAYLOAD_LEN, CELL_LEN(v)
+       3) Ciphers
+	  - stream: 128bit counter-mode AES with IV=0x0...0
+	  - pk: 1024 bit AES with exponent of 65537
+	    0aef-mgf1 padding, sha1 digest, label unset
+	  - ntor: curve25519
+	  - dh generator 2, modulus from rfc2409
+	    SHOULD private keys of 320 bits, no reuse
+	  - hybrid encryption
+    1) System overview: TOR low-latency tcp distributed overlay
+       1) Keys and names
+	  - long-term *identity* key, signing only
+	  - medium-term *onion*-key, keep at least one week after
+            advertisement
+	  - (short-term TLS *connection* key, rotate at least once a day)
+    2) Connections
+       - link layer: 3 ways
+         1. "certificates up-front"
+	    both send two-certificate chain
+  	    - init: short-term X.509 cert + self-signed identity X.509
+	    - resp: similar
+	    - MAY ONLY INCLUDE
+	      - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+	      - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
+	      - SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA
+	      jeder zwei x.509 Zertifikate: eines fuer connection, eines
+              fuer identity DARF NUR:
+              - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+              - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
+              - SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA
+	 2. "renegotiation" (tor >= 0.2.0.21)
+   	    responder single certificate, 
+	    initiator renegotiates
+	    - init: no cert
+	    - resp: connection cert
+	    - ... (continue handshake)
+	    - init: renegotiate
+	    - MUST HAVE ONE NOT IN ABOVE
+	 3. "in-protocol" (tor >= 0.2.3.6-alpha)
+	    distinguish vs v2 via one of:
+	    - self-signed cert
+	    - commonName ends other than ".net"
+	    - public key modulus >= 1024 bits
+	    then: send VERSIONS cell, ...
+       - several security /accessibility features:
+         - fixed protocol list
+         - fixed choice of response
+         - no server without valid certificates
+    3) Cell Packet Format
+       ...
+    4) 
+    5) 
+       1) 
+       2) 
+       3) 
+       4) 
+       5) Routing relay cells
+	  checks circID, crypts payload, inspect payload (6.1), work it
+    6) Application connections and stream management
+       1) Relay cells
+       2) 
+	  ...
+    7) FLow control
+       1) Link throttling
+*** quotes
+   - Tor relays are also identified by "nicknames"; these are specified in
+     dir-spec.txt.
+   - <<O1>> All implementations MUST support the SSLv3 ciphersuite
+     "SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA", and SHOULD support the TLS
+     ciphersuite "TLS_DHE_RSA_WITH_AES_128_CBC_SHA" if it is
+     available.
+   - In all of the above handshake variants, certificates sent in the
+     clear SHOULD NOT include any strings to identify the host as a
+     Tor relay. In the "renegotiation" and "backwards-compatible
+     renegotiation" steps, the initiator SHOULD choose a list of
+     ciphersuites and TLS extensions to mimic one used by a popular
+     web browser.
+   - TLS connections are not permanent.
+   - Each client or relay should do appropriate bandwidth throttling to
+     keep its user happy. [...]
+     The mainline Tor implementation uses token buckets (one for
+     reads, one for writes) for the rate limiting.
+
+*** up to
+    - 4. Negotiating and initializing connections
+    - read to
+      - 4.4. AUTHENTICATE cells
 ** TODO [[./csbuflo.pdf][Cai - CS-BuFLO: A Congestion Sensitive Website Fingerprinting Defense]]
 *** quotes
     - Our experiments find that Congestion-Sensitive BuFLO has high
@@ -5993,14 +6119,6 @@
       and which were global.
     - You should try to use as few except clauses in your code as you
       can
-** [[./wireshark-debian.html][wireshark/trunk/debian/README.Debian]]
-*** summary
-    capture as root, analyze as user
-
-    or add users to the wireshark-group dpkg-reconfigure ... (see below)
-*** quotes
-    - The installation method can be changed any time by running:
-      dpkg-reconfigure wireshark-common
 ** TODO [[./python-doc-tutorial.pdf][Python Tutorial]]
 *** summary
     0) [@0]
@@ -6669,7 +6787,190 @@
        - f.ex. foreign country, s/o could observe where you are connecting
 
     3) The solution: a distributed, anonymous network
-** MAYBE [[./user_guide_0.16.1.pdf][scikit-learn user guide]]
+** TODO [[./Levenshtein.html][Levenshtein-Distanz]]
+*** quotes
+    - ist die minimale Anzahl von Einfüge-, Lösch- und
+      Ersetz-Operationen, um die erste Zeichenkette in die zweite
+      umzuwandeln.
+*** TODO ref in english
+    #+BEGIN_SRC bibtex
+      @misc{ wiki:xxx,
+        author = "Wikipedia",
+        title = "Levenshtein-Distanz --- Wikipedia{,} Die freie Enzyklopädie",
+        year = "2014",
+        url = "\url{https://de.wikipedia.org/w/index.php?title=Levenshtein-Distanz&oldid=133874990}",
+        note = "[Online; accessed 22-Oktober-2015]"
+      }
+   #+END_SRC
+** TODO [[./EdmanS09.pdf][AS-awareness in Tor Path Selection]]
+*** ref
+    #+BEGIN_SRC bibtex
+      @inproceedings{DBLP:conf/ccs/EdmanS09,
+        title = {{AS}-awareness in {T}or path selection},
+        author = {Matthew Edman and Paul F. Syverson},
+        booktitle = {Proceedings of the 2009 ACM Conference on Computer and Communications
+              Security, CCS 2009},
+        year = {2009},
+        month = {November},
+        location = {Chicago, Illinois, USA},
+        pages = {380--389},
+        editor = {Ehab Al-Shaer and Somesh Jha and Angelos D. Keromytis},
+        publisher = {ACM},
+        isbn = {978-1-60558-894-0},
+        www_section = {Anonymous communication},
+        www_pdf_url = {http://www.cs.rpi.edu/~edmanm2/ccs159-edman.pdf},
+        www_tags = {selected},
+        bibsource = {DBLP, http://dblp.uni-trier.de},
+      }
+    #+END_SRC
+** TODO [[./2012-jmlr.pdf][Sally: A Tool for Embedding Strings in Vector Spaces]]
+** TODO [[./supersequence.pdf][On the Approximation of Shortest Common Supersequences and Longest Common Subsequences]]
+** TODO [[./projects.html][Software & Services]]
+*** summary
+    - Tor Browser
+
+      - "everything you need to safely browse the Internet"
+
+      - requires no installation
+
+    - ...
+*** ref
+    #+BEGIN_SRC bibtex
+     @misc{tor-ecosystem,
+       tag = "The Tor Project",
+       title = "Software & Services",
+       url = "\url{https://www.torproject.org/projects/projects.html.en}",
+       note = "[Online; accessed 21-October-2015]"
+     }
+   #+END_SRC
+** TODO [[./python-doc-howto-logging.pdf][Logging HOWTO]]
+*** summary
+    1) Basic Logging Tutorial
+
+       log(level[, data])
+
+       1) When to use logging
+
+	  normal output for the user: use =print=, else use logging.level()
+
+	  WARNING is the default level
+
+       2) A simple example
+
+	  only warning and above are shown:
+
+	  import logging
+          logging.warning('Watch out!') # will print a message to the console
+          logging.info('I told you so') # will not print anything
+
+          WARNING:root:Watch out!
+
+       3) Logging to a file
+
+	  logging.basicConfig(filename='example.log',level=logging.DEBUG)
+
+       4) Logging from multiple modules
+
+	  import in every module
+
+	  call basicConfig in main entry point
+
+       5) Logging variable data
+
+	  %s style, other options work maybe, too
+
+       6) Changing the format of displayed messages
+
+	  #+BEGIN_SRC python
+            logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+	  #+END_SRC
+
+       7) Displaying the date/time in messages
+*** quotes
+** PART [#A] [[./random.pdf][Computer Generation of Statistical Distributions]]
+*** quotes
+    5) [@5] PROBABILITY DISTRIBUTION FUNCTIONS
+       1) Continuous Distributions
+	  8) [@8] Exponential
+
+	     - (1) Generate U ~ U(0, 1)
+               (2) Return X = a − b ln U
+
+	     - Source Code:
+	       #+BEGIN_SRC C++
+                 double exponential( double a, double b )
+                 {
+                   assert( b > 0. );
+                   return a - b * log( uniform( 0., 1. ) );
+                 }
+	       #+END_SRC
+
+	  15) [@15] Lognormal
+
+	      - Mean:
+		a + e^(\mu + \sigma^2/2)
+
+	      - Variance:
+		e^(2*mu+sig^2) * (e^(sig^2)-1)
+
+	      - (1) Generate V ~ N ( μ , σ^2 )
+		(2) Return X = a + e^{V}
+
+	      - Source Code:
+		#+BEGIN_SRC C++
+                  double lognormal( double a, double mu, double sigma )
+                  {
+                    return a + exp( normal( mu, sigma ) );
+                  }
+		#+END_SRC
+
+	  27) [@27] Weibull
+
+	      - Algorithm:
+
+		1. Generate U ~ U(0, 1)
+		2. Return X = a + b(− ln U) 1/c
+
+	      - Source Code:
+
+		#+BEGIN_SRC c++
+                  double weibull( double a, double b, double c )
+                  {
+                    assert( b > 0. && c > 0. );
+                    return a + b * pow( -log( uniform( 0., 1. ) ), 1. / c );
+                  }
+		#+END_SRC
+
+	      - Notes:
+		1. When c = 1, this becomes the exponential
+                   distribution with scale b.
+		2. When c = 2 for general b, it becomes the Rayleigh
+                   distribution.
+       2) Discrete Distributions
+
+	  3) [@3] Geometric
+
+	     - "The geometric distribution represents the probability
+               of obtaining k failures before the first success in
+               independent Bernoulli trials, where the probability of
+               success in a single trial is p."
+
+	     - Algorithm:
+
+	       1. Generate U ~ U(0, 1)
+
+	       2. Return X = int ( ln U/ ln (1 − p) )
+
+	     - Source Code:
+
+	       #+BEGIN_SRC c++
+                 int geometric( double p )
+                 {
+                   assert( 0. < p && p < 1. );
+                   return int( log( uniform( 0., 1. ) ) / log( 1. - p ) );
+                 }
+	       #+END_SRC
+** [#B] PART [[./user_guide_0.16.1.pdf][scikit-learn user guide]]
 *** quotes
     - Despite its simplicity, nearest neighbors has been successful in
       a large number of classification and regression problems
@@ -6859,7 +7160,227 @@
         year={2011}
       }
     #+END_SRC
+** PART [#C] [[./javascript_the_good_parts.pdf][JavaScript: The Good Parts]]
+*** summary
+    1. Good parts
 
+       - some: functionaly programming, prototypal inheritance
+
+       - very different from other languages
+
+    2. Grammar
+*** quotes
+    - We appreciate, but do not require, attribution. An attribution
+      usually includes the title, author, publisher, and ISBN. For
+      example: “JavaScript: The Good Parts by Douglas
+      Crockford. Copyright 2008 Yahoo! Inc., 978-0-596-51774-8.”
+    - (ends 0+1)
+** PART [[./sally/Example1.html]]
+*** summary
+    - input files example1.cfg reuters.zip
+    - sally -c example1.cfg reuters.zip reuters.libsvm
+** PART [[./wireshark-debian.html][wireshark/trunk/debian/README.Debian]]
+*** summary
+    capture as root, analyze as user
+
+    or add users to the wireshark-group dpkg-reconfigure ... (see below)
+*** quotes
+    - The installation method can be changed any time by running:
+      dpkg-reconfigure wireshark-common
+** PART [[./python-doc-library.pdf][The Python Library Reference]]
+*** quotes
+    - doctest
+      #+BEGIN_SRC python
+        if __name__ == "__main__":
+            import doctest
+            doctest.testmod()
+      #+END_SRC
+    - os.walk(top, topdown=True, onerror=None, followlinks=False)
+
+      Generate the file names in a directory tree by walking the tree
+      either top-down or bottom-up. For each directory in the tree
+      rooted at directory top (including top itself), it yields a
+      3-tuple (dirpath, dirnames, filenames).  dirpath is a string,
+      the path to the directory. dirnames is a list of the names of
+      the subdirectories in dirpath (excluding ’.’ and
+      ’..’). filenames is a list of the names of the non-directory
+      files in dirpath. Note that the names in the listscontain no
+      path components. To get a full path (which begins with top) to a
+      file or directory in dirpath, do os.path.join(dirpath, name).
+    - str.lstrip( [ chars ] )
+
+      Return a copy of the string with leading characters removed. The
+      chars argument is a string specifying the set of characters to
+      be removed.
+    - str.partition(sep)
+
+      Split the string at the first occurrence of sep, and return a
+      3-tuple containing the part before the separator, the separator
+      itself, and the part after the separator. If the separator is
+      not found, return a 3-tuple containing the string itself,
+      followed by two empty strings.
+    - (ends 5)
+    - os.path.basename(path)
+
+      Return the base name of pathname path.
+    - staticmethod(function)
+
+      Return a static method for function. A static method does not
+      receive an implicit first argument. To declare a static method,
+      use this idiom:
+      #+BEGIN_SRC python
+        class C(object):
+            @staticmethod
+            def f(arg1, arg2, ...):
+                ...
+      #+END_SRC
+    - pdb.py can also be invoked as a script to debug other scripts. For example:
+
+      #+BEGIN_SRC python
+        python -m pdb myscript.py
+      #+END_SRC
+    - The typical usage to break into the debugger from a running
+      program is to insert
+
+      #+BEGIN_SRC python
+        import pdb; pdb.set_trace()
+      #+END_SRC
+
+      at the location you want to break into the debugger.
+    - (begins 20)
+    - The SimpleHTTPServer module can also be invoked directly using
+      the -m switch of the interpreter with a port number
+      argument. Similar to the previous example, this serves the files
+      relative to the current directory.
+
+      python -m SimpleHTTPServer 8000
+    - (ends 20.19)
+    - virtual environment
+
+      A cooperatively isolated runtime environment that allows Python
+      users and applications to install and upgrade Python
+      distribution packages without interfering with the behaviour of
+      other Python applications running on the same system.
+    - (ends Appendix A)
+** PART [[/home/chive/IT-gg/python/scipy-ref-0.15.1.pdf][SciPy Reference Guide]]
+*** quotes
+    - (begins 1.13)
+    - Freezing a Distribution
+
+      Passing the loc and scale keywords time and again can become
+      quite bothersome. The concept of freezing a RV is used to solve
+      such problems.
+      #+BEGIN_SRC python
+        >>> rv = gamma(1, scale=2.)
+      #+END_SRC
+      By using rv we no longer have to include the scale or the shape
+      parameters anymore. Thus, distributions can be used in one of
+      two ways, either by passing all distribution parameters to each
+      method call (such as we did earlier) or by freezing the
+      parameters for the instance of the distribution.
+    - (ends 1.13)
+    - (begins 5)
+    - scipy.spatial.distance.euclidean(u, v)
+
+      Computes the Euclidean distance between two 1-D arrays.
+    - Y = pdist(X, ’braycurtis’)
+
+      Computes the Bray-Curtis distance between the points. The
+      Bray-Curtis distance between two points u and v is
+
+      d(u, v) = ∑_{i} u_{i} − v_{i} / ∑_{i} u_{i} + v_{i}
+    - (ends 5.29)
+    - scipy.special.btdtr(a, b, x) = <ufunc ‘btdtr’>
+
+      Cumulative beta distribution. Returns the area from zero to x
+      under the beta density function:
+
+      gamma(a+b)/(gamma(a)*gamma(b)))*integral(t**(a-1) (1-t)**(b-1),
+      t=0..x)
+    - (ends 5.30)
+    - Poisson distribution
+      #+BEGIN_SRC python
+        from scipy.stats import poisson
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots(1, 1)
+        # Calculate a few first moments:
+        mu = 0.6
+        mean, var, skew, kurt = poisson.stats(mu, moments=’mvsk’)
+        # Display the probability mass function (pmf):
+        x = np.arange(poisson.ppf(0.01, mu),
+                      poisson.ppf(0.99, mu))
+        ax.plot(x, poisson.pmf(x, mu), ’bo’, ms=8, label=’poisson pmf’)
+        ax.vlines(x, 0, poisson.pmf(x, mu), colors=’b’, lw=5, alpha=0.5)
+
+        plt.show()
+      #+END_SRC
+    - (ends 5.31)
+** PART [[/home/chive/IT-gg/python/numpy-ref-1.9.1.pdf][NumPy Reference]]
+*** quotes
+    - numpy.random.exponential(scale=1.0, size=None)
+
+      Exponential distribution. Its probability density function is
+
+      f (x; 1/\beta) = 1/\beta exp(- x/\beta)
+
+      for x > 0 and 0 elsewhere. β is the scale parameter, which is
+      the inverse of the rate parameter λ = 1/\beta.
+    - numpy.random.gamma(shape, scale=1.0, size=None)
+
+      Draw samples from a Gamma distribution. Samples are drawn from a
+      Gamma distribution with specified parameters, shape (sometimes
+      designated “k”) and scale (sometimes designated “theta”), where
+      both parameters are > 0.
+
+      Parameters
+
+      shape : scalar > 0 The shape of the gamma distribution.
+
+      scale : scalar > 0, optional The scale of the gamma
+      distribution. Default is equal to 1.
+
+      [...]
+
+      Draw samples from the distribution:
+      #+BEGIN_SRC python
+        shape, scale = 2., 2. # mean and dispersion
+        s = np.random.gamma(shape, scale, 1000)
+      #+END_SRC
+      Display the histogram of the samples, along with the probability
+      density function:
+      #+BEGIN_SRC python
+        import matplotlib.pyplot as plt
+        import scipy.special as sps
+        count, bins, ignored = plt.hist(s, 50, normed=True)
+        y = bins**(shape-1)*(np.exp(-bins/scale) /
+        (sps.gamma(shape)*scale**shape))
+        plt.plot(bins, y, linewidth=2, color=’r’)
+        plt.show()
+      #+END_SRC
+    - (ends 3.25)
+    - numpy.zeros(shape, dtype=float, order=’C’)
+
+      Return a new array of given shape and type, filled with zeros.
+
+    - numpy.array(object, dtype=None, copy=True, order=None,
+      subok=False, ndmin=0)
+
+      Create an array.
+
+    - numpy.ma.arange( [ start ] , stop [ , step ] , dtype=None)
+
+      Return evenly spaced values within a given interval.  [...]
+      When using a non-integer step, such as 0.1, the results will
+      often not be consistent. It is better to use linspace for these
+      cases.
+
+    - numpy.linspace(start, stop, num=50, endpoint=True,
+      retstep=False, dtype=None)
+
+      Return evenly spaced numbers over a specified interval.
+** MAYBE [[./rijsbergen79_infor_retriev.pdf][INFORMATION RETRIEVAL]]
+*** quotes
+    |X ∩ Y| / |X ∪ Y| Jaccard's coefficient
 ** onion routing project
 *** [[~/da/git/docs/onion-routing_pet2000.pdf][Towards an Analysis of Onion Routing Security]]
 **** ref
@@ -6898,10 +7419,6 @@
          www_ps_gz_url = {http://www.onion-router.net/Publications/IH-1996.ps.gz},
        }
      #+END_SRC
-** [[./sally/Example1.html]]
-*** summary
-    - input files example1.cfg reuters.zip
-    - sally -c example1.cfg reuters.zip reuters.libsvm
 ** [[./sally/Example3.html]]
 *** summary
     - sally -c example3.cfg jrc.zip jrc.mat
@@ -7198,395 +7715,8 @@
       #+END_SRC
 ** [[./skl/working_with_text_data.html][Working With Text Data]]
 ** [[./Z5280B.pdf][Dirty Rotten Strategies - How We Trick Ourselves and Others into Solving the Wrong Problems Precisely]]
-** TODO [[./Levenshtein.html][Levenshtein-Distanz]]
-*** quotes
-    - ist die minimale Anzahl von Einfüge-, Lösch- und
-      Ersetz-Operationen, um die erste Zeichenkette in die zweite
-      umzuwandeln.
-*** TODO ref in english
-    #+BEGIN_SRC bibtex
-      @misc{ wiki:xxx,
-        author = "Wikipedia",
-        title = "Levenshtein-Distanz --- Wikipedia{,} Die freie Enzyklopädie",
-        year = "2014",
-        url = "\url{https://de.wikipedia.org/w/index.php?title=Levenshtein-Distanz&oldid=133874990}",
-        note = "[Online; accessed 22-Oktober-2015]"
-      }
-   #+END_SRC
 ** [[./Cross-validation.leave-one-out_cross-validation.html]]
-** TODO [[./2012-jmlr.pdf][Sally: A Tool for Embedding Strings in Vector Spaces]]
-** TODO [[./85331-CS.pdf][Improved Inapproximability Results for the Shortest Superstring and Related Problems]]
-** TODO [[./EdmanS09.pdf][AS-awareness in Tor Path Selection]]
-*** ref
-    #+BEGIN_SRC bibtex
-      @inproceedings{DBLP:conf/ccs/EdmanS09,
-        title = {{AS}-awareness in {T}or path selection},
-        author = {Matthew Edman and Paul F. Syverson},
-        booktitle = {Proceedings of the 2009 ACM Conference on Computer and Communications
-              Security, CCS 2009},
-        year = {2009},
-        month = {November},
-        location = {Chicago, Illinois, USA},
-        pages = {380--389},
-        editor = {Ehab Al-Shaer and Somesh Jha and Angelos D. Keromytis},
-        publisher = {ACM},
-        isbn = {978-1-60558-894-0},
-        www_section = {Anonymous communication},
-        www_pdf_url = {http://www.cs.rpi.edu/~edmanm2/ccs159-edman.pdf},
-        www_tags = {selected},
-        bibsource = {DBLP, http://dblp.uni-trier.de},
-      }
-    #+END_SRC
-** TODO [[./supersequence.pdf][On the Approximation of Shortest Common Supersequences and Longest Common Subsequences]]
-** TODO [[/home/chive/own/tor/doc/read/tor-spec.txt][Tor Protocol Specification]]
-*** summary
-    0) [@0] Preliminaries: MUST, etc. keywords like RFC
-       1) Notation: PK, SK, K, a|b, [a b c], H(m)
-	  1) all multibyte values are big-endian
-       2) Security: KEY_LEN, PK_ENC_LEN, PK_PAD_LEN, DH_LEN,
-          DH_SEC_LEN, HASH_LEN, PAYLOAD_LEN, CELL_LEN(v)
-       3) Ciphers
-	  - stream: 128bit counter-mode AES with IV=0x0...0
-	  - pk: 1024 bit AES with exponent of 65537
-	    0aef-mgf1 padding, sha1 digest, label unset
-	  - ntor: curve25519
-	  - dh generator 2, modulus from rfc2409
-	    SHOULD private keys of 320 bits, no reuse
-	  - hybrid encryption
-    1) System overview: TOR low-latency tcp distributed overlay
-       1) Keys and names
-	  - long-term *identity* key, signing only
-	  - medium-term *onion*-key, keep at least one week after
-            advertisement
-	  - (short-term TLS *connection* key, rotate at least once a day)
-    2) Connections
-       - link layer: 3 ways
-         1. "certificates up-front"
-	    both send two-certificate chain
-  	    - init: short-term X.509 cert + self-signed identity X.509
-	    - resp: similar
-	    - MAY ONLY INCLUDE
-	      - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
-	      - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
-	      - SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA
-	      jeder zwei x.509 Zertifikate: eines fuer connection, eines
-              fuer identity DARF NUR:
-              - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
-              - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
-              - SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA
-	 2. "renegotiation" (tor >= 0.2.0.21)
-   	    responder single certificate, 
-	    initiator renegotiates
-	    - init: no cert
-	    - resp: connection cert
-	    - ... (continue handshake)
-	    - init: renegotiate
-	    - MUST HAVE ONE NOT IN ABOVE
-	 3. "in-protocol" (tor >= 0.2.3.6-alpha)
-	    distinguish vs v2 via one of:
-	    - self-signed cert
-	    - commonName ends other than ".net"
-	    - public key modulus >= 1024 bits
-	    then: send VERSIONS cell, ...
-       - several security /accessibility features:
-         - fixed protocol list
-         - fixed choice of response
-         - no server without valid certificates
-    3) Cell Packet Format
-       ...
-    4) 
-    5) 
-       1) 
-       2) 
-       3) 
-       4) 
-       5) Routing relay cells
-	  checks circID, crypts payload, inspect payload (6.1), work it
-    6) Application connections and stream management
-       1) Relay cells
-       2) 
-	  ...
-    7) FLow control
-       1) Link throttling
-*** quotes
-   - Tor relays are also identified by "nicknames"; these are specified in
-     dir-spec.txt.
-   - <<O1>> All implementations MUST support the SSLv3 ciphersuite
-     "SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA", and SHOULD support the TLS
-     ciphersuite "TLS_DHE_RSA_WITH_AES_128_CBC_SHA" if it is
-     available.
-   - In all of the above handshake variants, certificates sent in the
-     clear SHOULD NOT include any strings to identify the host as a
-     Tor relay. In the "renegotiation" and "backwards-compatible
-     renegotiation" steps, the initiator SHOULD choose a list of
-     ciphersuites and TLS extensions to mimic one used by a popular
-     web browser.
-   - TLS connections are not permanent.
-   - Each client or relay should do appropriate bandwidth throttling to
-     keep its user happy. [...]
-     The mainline Tor implementation uses token buckets (one for
-     reads, one for writes) for the rate limiting.
-
-*** up to
-    - 4. Negotiating and initializing connections
-    - read to
-      - 4.4. AUTHENTICATE cells
-** TODO [[./projects.html][Software & Services]]
-*** summary
-    - Tor Browser
-
-      - "everything you need to safely browse the Internet"
-
-      - requires no installation
-
-    - ...
-*** ref
-    #+BEGIN_SRC bibtex
-     @misc{tor-ecosystem,
-       tag = "The Tor Project",
-       title = "Software & Services",
-       url = "\url{https://www.torproject.org/projects/projects.html.en}",
-       note = "[Online; accessed 21-October-2015]"
-     }
-   #+END_SRC
-** MAYBE [[./rijsbergen79_infor_retriev.pdf][INFORMATION RETRIEVAL]]
-*** quotes
-    |X ∩ Y| / |X ∪ Y| Jaccard's coefficient
-** TODO [[./python-doc-howto-logging.pdf][Logging HOWTO]]
-*** summary
-    1) Basic Logging Tutorial
-
-       log(level[, data])
-
-       1) When to use logging
-
-	  normal output for the user: use =print=, else use logging.level()
-
-	  WARNING is the default level
-
-       2) A simple example
-
-	  only warning and above are shown:
-
-	  import logging
-          logging.warning('Watch out!') # will print a message to the console
-          logging.info('I told you so') # will not print anything
-
-          WARNING:root:Watch out!
-
-       3) Logging to a file
-
-	  logging.basicConfig(filename='example.log',level=logging.DEBUG)
-
-       4) Logging from multiple modules
-
-	  import in every module
-
-	  call basicConfig in main entry point
-
-       5) Logging variable data
-
-	  %s style, other options work maybe, too
-
-       6) Changing the format of displayed messages
-
-	  #+BEGIN_SRC python
-            logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-	  #+END_SRC
-
-       7) Displaying the date/time in messages
-*** quotes
-** MAYBE [[./python-doc-library.pdf][The Python Library Reference]]
-*** quotes
-    - doctest
-      #+BEGIN_SRC python
-        if __name__ == "__main__":
-            import doctest
-            doctest.testmod()
-      #+END_SRC
-    - os.walk(top, topdown=True, onerror=None, followlinks=False)
-
-      Generate the file names in a directory tree by walking the tree
-      either top-down or bottom-up. For each directory in the tree
-      rooted at directory top (including top itself), it yields a
-      3-tuple (dirpath, dirnames, filenames).  dirpath is a string,
-      the path to the directory. dirnames is a list of the names of
-      the subdirectories in dirpath (excluding ’.’ and
-      ’..’). filenames is a list of the names of the non-directory
-      files in dirpath. Note that the names in the listscontain no
-      path components. To get a full path (which begins with top) to a
-      file or directory in dirpath, do os.path.join(dirpath, name).
-    - str.lstrip( [ chars ] )
-
-      Return a copy of the string with leading characters removed. The
-      chars argument is a string specifying the set of characters to
-      be removed.
-    - str.partition(sep)
-
-      Split the string at the first occurrence of sep, and return a
-      3-tuple containing the part before the separator, the separator
-      itself, and the part after the separator. If the separator is
-      not found, return a 3-tuple containing the string itself,
-      followed by two empty strings.
-    - (ends 5)
-    - os.path.basename(path)
-
-      Return the base name of pathname path.
-    - staticmethod(function)
-
-      Return a static method for function. A static method does not
-      receive an implicit first argument. To declare a static method,
-      use this idiom:
-      #+BEGIN_SRC python
-        class C(object):
-            @staticmethod
-            def f(arg1, arg2, ...):
-                ...
-      #+END_SRC
-    - pdb.py can also be invoked as a script to debug other scripts. For example:
-
-      #+BEGIN_SRC python
-        python -m pdb myscript.py
-      #+END_SRC
-    - The typical usage to break into the debugger from a running
-      program is to insert
-
-      #+BEGIN_SRC python
-        import pdb; pdb.set_trace()
-      #+END_SRC
-
-      at the location you want to break into the debugger.
-    - (begins 20)
-    - The SimpleHTTPServer module can also be invoked directly using
-      the -m switch of the interpreter with a port number
-      argument. Similar to the previous example, this serves the files
-      relative to the current directory.
-
-      python -m SimpleHTTPServer 8000
-    - (ends 20.19)
-    - virtual environment
-
-      A cooperatively isolated runtime environment that allows Python
-      users and applications to install and upgrade Python
-      distribution packages without interfering with the behaviour of
-      other Python applications running on the same system.
-    - (ends Appendix A)
-** MAYBE [[/home/chive/IT-gg/python/scipy-ref-0.15.1.pdf][SciPy Reference Guide]]
-*** quotes
-    - (begins 1.13)
-    - Freezing a Distribution
-
-      Passing the loc and scale keywords time and again can become
-      quite bothersome. The concept of freezing a RV is used to solve
-      such problems.
-      #+BEGIN_SRC python
-        >>> rv = gamma(1, scale=2.)
-      #+END_SRC
-      By using rv we no longer have to include the scale or the shape
-      parameters anymore. Thus, distributions can be used in one of
-      two ways, either by passing all distribution parameters to each
-      method call (such as we did earlier) or by freezing the
-      parameters for the instance of the distribution.
-    - (ends 1.13)
-    - (begins 5)
-    - scipy.spatial.distance.euclidean(u, v)
-
-      Computes the Euclidean distance between two 1-D arrays.
-    - Y = pdist(X, ’braycurtis’)
-
-      Computes the Bray-Curtis distance between the points. The
-      Bray-Curtis distance between two points u and v is
-
-      d(u, v) = ∑_{i} u_{i} − v_{i} / ∑_{i} u_{i} + v_{i}
-    - (ends 5.29)
-    - scipy.special.btdtr(a, b, x) = <ufunc ‘btdtr’>
-
-      Cumulative beta distribution. Returns the area from zero to x
-      under the beta density function:
-
-      gamma(a+b)/(gamma(a)*gamma(b)))*integral(t**(a-1) (1-t)**(b-1),
-      t=0..x)
-    - (ends 5.30)
-    - Poisson distribution
-      #+BEGIN_SRC python
-        from scipy.stats import poisson
-        import matplotlib.pyplot as plt
-        fig, ax = plt.subplots(1, 1)
-        # Calculate a few first moments:
-        mu = 0.6
-        mean, var, skew, kurt = poisson.stats(mu, moments=’mvsk’)
-        # Display the probability mass function (pmf):
-        x = np.arange(poisson.ppf(0.01, mu),
-                      poisson.ppf(0.99, mu))
-        ax.plot(x, poisson.pmf(x, mu), ’bo’, ms=8, label=’poisson pmf’)
-        ax.vlines(x, 0, poisson.pmf(x, mu), colors=’b’, lw=5, alpha=0.5)
-
-        plt.show()
-      #+END_SRC
-    - (ends 5.31)
-** MAYBE [[/home/chive/IT-gg/python/numpy-ref-1.9.1.pdf][NumPy Reference]]
-*** quotes
-    - numpy.random.exponential(scale=1.0, size=None)
-
-      Exponential distribution. Its probability density function is
-
-      f (x; 1/\beta) = 1/\beta exp(- x/\beta)
-
-      for x > 0 and 0 elsewhere. β is the scale parameter, which is
-      the inverse of the rate parameter λ = 1/\beta.
-    - numpy.random.gamma(shape, scale=1.0, size=None)
-
-      Draw samples from a Gamma distribution. Samples are drawn from a
-      Gamma distribution with specified parameters, shape (sometimes
-      designated “k”) and scale (sometimes designated “theta”), where
-      both parameters are > 0.
-
-      Parameters
-
-      shape : scalar > 0 The shape of the gamma distribution.
-
-      scale : scalar > 0, optional The scale of the gamma
-      distribution. Default is equal to 1.
-
-      [...]
-
-      Draw samples from the distribution:
-      #+BEGIN_SRC python
-        shape, scale = 2., 2. # mean and dispersion
-        s = np.random.gamma(shape, scale, 1000)
-      #+END_SRC
-      Display the histogram of the samples, along with the probability
-      density function:
-      #+BEGIN_SRC python
-        import matplotlib.pyplot as plt
-        import scipy.special as sps
-        count, bins, ignored = plt.hist(s, 50, normed=True)
-        y = bins**(shape-1)*(np.exp(-bins/scale) /
-        (sps.gamma(shape)*scale**shape))
-        plt.plot(bins, y, linewidth=2, color=’r’)
-        plt.show()
-      #+END_SRC
-    - (ends 3.25)
-    - numpy.zeros(shape, dtype=float, order=’C’)
-
-      Return a new array of given shape and type, filled with zeros.
-
-    - numpy.array(object, dtype=None, copy=True, order=None,
-      subok=False, ndmin=0)
-
-      Create an array.
-
-    - numpy.ma.arange( [ start ] , stop [ , step ] , dtype=None)
-
-      Return evenly spaced values within a given interval.  [...]
-      When using a non-integer step, such as 0.1, the results will
-      often not be consistent. It is better to use linspace for these
-      cases.
-
-    - numpy.linspace(start, stop, num=50, endpoint=True,
-      retstep=False, dtype=None)
-
-      Return evenly spaced numbers over a specified interval.
+** [[./85331-CS.pdf][Improved Inapproximability Results for the Shortest Superstring and Related Problems]]
 ** [[~/da/git/docs/python-doc-reference.pdf][The Python Language Reference]]
 *** quotes
     - For constructing a set or a dictionary Python provides special
@@ -7751,18 +7881,6 @@
         tag = "The Tor Project",
         title = "A Critique of Website Traffic Fingerprinting Attacks",
         url = "\url{https://blog.torproject.org/blog/critique-website-traffic-fingerprinting-attacks}",
-        note = "[Online; accessed 11-November-2015]"
-      }
-    #+END_SRC
-** TODO [#C] [[./ethical.html][Ethical Tor Research: Guidelines]]
-*** summary
-*** quotes
-*** ref
-    #+BEGIN_SRC bibtex
-      @misc{ethical,
-        tag = "The Tor Project",
-        title = "Ethical Tor Research: Guidelines",
-        url = "\url{https://blog.torproject.org/blog/ethical-tor-research-guidelines}",
         note = "[Online; accessed 11-November-2015]"
       }
     #+END_SRC
@@ -8000,21 +8118,6 @@
 ** [[./Traffic generation model - Wikipedia, the free encyclopedia.html]]
 ** [[./dana_vol_11_2__pp_65_130.pdf][Predator foraging in patchy environments: the interrupted Poisson process (IPP) model unit]]
 ** [[./ide883.pdf][Superposition of Interrupted Poisson Processes and Its Application to Packetized Voice Multiplexers]]
-** PART [#B] [[./javascript_the_good_parts.pdf][JavaScript: The Good Parts]]
-*** summary
-    1. Good parts
-
-       - some: functionaly programming, prototypal inheritance
-
-       - very different from other languages
-
-    2. Grammar
-*** quotes
-    - We appreciate, but do not require, attribution. An attribution
-      usually includes the title, author, publisher, and ISBN. For
-      example: “JavaScript: The Good Parts by Douglas
-      Crockford. Copyright 2008 Yahoo! Inc., 978-0-596-51774-8.”
-    - (ends 0+1)
 ** [[./all - jStat Documentation.html]]
 ** [[file:./random - How do I generate a Poisson Process? - Stack Overflow.see_title.html]]
 ** [[./tcpdump - Wikipedia, the free encyclopedia.html]]
@@ -8030,24 +8133,8 @@
     #+END_SRC
 ** [[file:Marionette%20Python%20Tests%20-%20Mozilla%20|%20MDN.html][Marionette Python Tests]]
 ** [[file:Marionette%20-%20Mozilla%20|%20MDN.html::<!DOCTYPE%20html][Marionette (main page)]]
-** TODO [#A] MOVE [[./HTTP Traffic Model_v1 1 white paper.pdf]]
-*** summary
-    0) [@0] ABSTRACT
-
-       - squid log analyzer
-
-       - well-matching http model and generator
-
-    1) INTRODUCTION
-*** quotes
-    - It is possible that the ON state lasts over multiple Web-Request
-      periods when the downloading of the last embedded object and the
-      next HTML object overlaps.
-*** questions
-    - correlation of features (high object count \to high page size)?
 ** [[./1999-35.pdf]]
 ** [[./tcpdump.pdf]]
-** TODO [#B] [[./webtraffic-imc11.pdf]]
 ** [[shell:man npm-faq][man npm-faq]]
 *** quotes
     - How do I install node with npm?

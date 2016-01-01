@@ -76,9 +76,9 @@
   sent along a path of three intermediaries, none of whom can link its
   origin to its destination.
 
-  After the third node, the message leaves the Tor network to any TCP
-  port and server on the Internet, or connects to a server hidden via
-  Tor's /hidden service/ concept.
+  After the third node, the message mostly leaves the Tor network to
+  any TCP port and server on the Internet. It could also be forwarded
+  to a location-hidden server via Tor's /hidden service/ concept.
 
   To build a TCP channel, called /circuit/ in Tor, the Tor client
   software (/Onion Proxy/) uses a telescoping approach:
@@ -250,9 +250,9 @@
   be loaded in the background via the page-worker module; the page-mod
   module injects Javascript code into the page the user is browsing
   to. If none of the easily accessible high-level modules suffice,
-  much of the browser's functionality is available via the XPCOM
+  most of the browser's functionality is available via the XPCOM
   module.
-** TODO much vs all?
+** TODO most vs all?
 * page-worker
   A =page-worker= creates "a permanent, invisible page and
   access[es] its DOM."  ([[link page-worker]]).
@@ -268,8 +268,8 @@
 
   pageWorker.contentURL = "http://en.wikipedia.org/wiki/Cheese"
 
-  yet this fetches only the HTML file pointed to. The retrieval of
-  images, stylesheets, etc, is not automatic.
+  This fetches only the HTML file pointed to. The retrieval of images,
+  stylesheets, etc, is not automatic.
 ** TODO test that only HTML
 ** link page-worker
    developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html
@@ -785,6 +785,13 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   The add-on is an experimental defense against website
   fingerprinting.
 
+  - detect start of transmission
+  - send dummy traffic
+    - on each request
+    - better: leave some out
+  - better: delay some requests (f.ex. images)
+  - detect end of page load
+
 * TODO add-on caveats
   - The choice of cover traffic domains was explicitly taken out of
     the research focus. Currently, all cover traffic is statically
@@ -799,9 +806,12 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
    dummy packets chosen as response to real request (as in web traffic)
 ** knowledge of packets
 ** delay of some possible (f.ex. images)
-** can start with first packet
-   the other needs to wait until first has arrived (in ap)
+** end of transmission detectable
 * TODO differences to walkie-talkie
+* TODO HTML traffic model
+  - intel
+    - html object lognormal with params μ = 7.90272, σ = 1.7643
+    - embedded objects
 * WAIT Results
 ** classifiers (ordered by accuracy)
 *** 20 classes (~78%)
@@ -2843,6 +2853,7 @@ mean = 0.763238095238
 **** +2 ca in Deci
 
 * WAIT Discussion
+  intel model: interdependences (html bigger \to more embedded) not mentioned
 * WAIT Acknowledgements
   - Daniel Arp
   - Prof. Dr. Konrad Rieck

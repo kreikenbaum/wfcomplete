@@ -20,7 +20,7 @@ exports.start = URL => start(URL);
 /** user ends loading url */
 function stop(URL) {
     debug.log('userTraffic: end user load ' + URL
-	      + ' after ' + (new Date() - startTimes[URL] Date()) + ' ms.');
+	      + ' after ' + (new Date() - startTimes[URL]) + ' ms.');
     delete startTimes[URL];
 }
 exports.stop = URL => stop(URL);
