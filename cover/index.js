@@ -2,10 +2,11 @@ var {Cc, Ci} = require("chrome");
 var pageMod = require("sdk/page-mod");
 var { setTimeout } = require("sdk/timers");
 
-var debug = require("./debug")
-var random = require("./random")
-var url = require("./url")
-var userTraffic = require("./userTraffic")
+var debug = require("./debug");
+var random = require("./random");
+var stat = require("./stats");
+var url = require("./url");
+var userTraffic = require("./userTraffic");
 
 var ignoreThese = [];
 
@@ -73,7 +74,7 @@ function loadNext(loadedUrl) {
     // aka td: make nextUrl site-[(HTML|total)-]size-dependent
 // td (currently Math.random)
     // get fitting object-url
-    var nextUrl = url.sized(Math.floor(Math.random()*1000*1000));
+    var nextUrl = url.sized(stats.htmlSize());
     nextUrl += '?' + random.string(loadedUrl.length - nextUrl.length);
     // load next
     debug.log('loadNext: loading: ' + nextUrl);
@@ -83,16 +84,6 @@ function loadNext(loadedUrl) {
 	ignoreThese.pop(nextUrl);
     }, 5);
 }
-
-// td: scrape / onion plus some randomness
-// yields the next url to visit
-function next_url(length) {
-    if ( candidates.length == 0 ) {
-	candidates = FIXED_URLS.slice();
-    }
-    return candidates.pop();
-}
-
 
 exports.onUnload = function(reason) {
     httpRequestObserver.unregister();

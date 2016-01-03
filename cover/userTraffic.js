@@ -1,10 +1,10 @@
 /** traffic by the user */
-var _ = require('./underscore-min.js')
+var _ = require('./underscore-min.js');
 
-var debug = require('./debug.js')
+var debug = require('./debug.js');
 
 // td: index by domain or by URL?
-startTimes = {}
+var startTimes = {};
 
 /** user starts loading url */
 function start(URL) {
@@ -14,7 +14,7 @@ function start(URL) {
     }
     // td: should start periodic traffic
     debug.log('userTraffic: start load ' + URL);
-}
+};
 exports.start = URL => start(URL);
 
 /** user ends loading url */
@@ -22,12 +22,12 @@ function stop(URL) {
     debug.log('userTraffic: end user load ' + URL
 	      + ' after ' + (new Date() - startTimes[URL]) + ' ms.');
     delete startTimes[URL];
-}
+};
 exports.stop = URL => stop(URL);
 
 /** currently loading? */
 function isIdle() {
     return _.isEmpty(startTimes);
-}
+};
 exports.isIdle = () => isIdle();
     

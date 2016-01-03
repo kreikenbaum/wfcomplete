@@ -1,5 +1,5 @@
 // provides a url for an object with approximately the given size
-var _ = require("../underscore-min.js");
+var _ = require("./underscore-min.js");
 // for debugging, use
 //var _ = require("../underscore.js");
 
