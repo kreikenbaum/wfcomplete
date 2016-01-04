@@ -1,12 +1,13 @@
-var {Cc, Ci} = require("chrome");
-var pageMod = require("sdk/page-mod");
-var { setTimeout } = require("sdk/timers");
+const {Cc, Ci} = require("chrome");
+const pageMod = require("sdk/page-mod");
+const { setTimeout } = require("sdk/timers");
 
-var debug = require("./debug");
-var random = require("./random");
-var stat = require("./stats");
-var url = require("./url");
-var userTraffic = require("./userTraffic");
+const debug = require("./debug.js");
+const random = require("./random.js");
+const stats = require("./stats.js");
+const coverUrl = require("./coverUrl.js");
+debug.traceLog(coverUrl.hello);
+const userTraffic = require("./userTraffic.js");
 
 var ignoreThese = [];
 
@@ -41,7 +42,7 @@ httpRequestObserver = {
 };
 httpRequestObserver.register();
 
-// signals when page has finished loading
+/** signals when page has finished loading */
 pageMod.PageMod({
     include: "*",
     contentScript: "self.port.emit('loaded', document.location.href)",
@@ -70,11 +71,12 @@ pageWorker = require("sdk/page-worker").Page({
 // loads next page in background
 // adds random string to avoid caching and sets length of request
 function loadNext(loadedUrl) {
+    debug.traceLog('loadNext(' + loadedUrl + ')');
     // determine size of next request
     // aka td: make nextUrl site-[(HTML|total)-]size-dependent
-// td (currently Math.random)
     // get fitting object-url
-    var nextUrl = url.sized(stats.htmlSize());
+    debug.traceLog(coverUrl);
+    var nextUrl = coverUrl.coverFor(loadedUrl);
     nextUrl += '?' + random.string(loadedUrl.length - nextUrl.length);
     // load next
     debug.log('loadNext: loading: ' + nextUrl);
@@ -83,7 +85,7 @@ function loadNext(loadedUrl) {
     setTimeout(function() {
 	ignoreThese.pop(nextUrl);
     }, 5);
-}
+};
 
 exports.onUnload = function(reason) {
     httpRequestObserver.unregister();

@@ -15,5 +15,15 @@ exports["test string repeat"] = function(assert) {
 	      'failed, result ' + random.string(10)
 	      + ' equalled ' + random.string(10));
 }
+exports["test random uniform mean"] = function(assert) {
+    var sum = 0;
+    for ( var i = 0; i < 10000; i++ ) {
+	sum += random.random();
+    }
+    
+    assert.ok(Math.abs(sum - 5000) < 200, 'failed, average: ' + (sum / 10000));
+}
+
+
 
 require("sdk/test").run(exports);

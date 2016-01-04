@@ -1,13 +1,24 @@
 /**
 * statistical models for distributions etc
 */
+const random = require("./random");
+
 const htmlMu = 7.90272;
 const htmlSigma = 1.7643;
+const embeddedObjectMu = 7.51384;
+const embeddedObjectSigma = 7.51384;
 
+/** @return expected size of html response * factor */
 var htmlSize = function(factor = 2) {
     return factor * lognormal(htmlMu, htmlSigma);
 };
 exports.htmlSize = factor => htmlSize(factor);
+
+/** @return expected size of embedded object response * factor */
+var embeddedObjectSize = function(factor = 2) {
+    return factor * lognormal(embeddedObjectMu, embeddedObjectSigma);
+}
+exports.embeddedObjectSize = factor => embeddedObjectSize(factor);
 
 // for testing ;-)
 /** mean of lognormal(htmlMu, htmlSigma) */
@@ -17,7 +28,6 @@ var htmlMean = function() {
 exports.htmlMean = htmlMean;
 
 // PRIVATE
-
 /** sample from lognormal distribution */
 function lognormal(mu, sigma) {
     return Math.exp(normal(mu, sigma));
@@ -35,8 +45,7 @@ function normal(mu, sigma) {
     return mu + sigma * p1 * Math.sqrt(-2. * Math.log(p) / p);
 };
 
-// td: make crypto-secure
 /** sample from uniform distribution*/
 function uniform(min, max) {
-    return Math.random() * (max - min) + min;
+    return random.random() * (max - min) + min;
 };

@@ -238,7 +238,8 @@
   - concentration camp:
     "solitude in a Camp is more precious and rare than bread." -- primo levi
 * TODO Mozilla Add-On Sdk
-  The Add-on SDK by Mozilla aids in the development of Firefox-Addons.
+  The Add-on SDK by Mozilla supports the development of
+  Firefox-Addons.
 
   It allows users to create new addons using HTML and JS only,
   omitting the previous use of XUL.
@@ -250,11 +251,13 @@
   The SDK contains many tools to interact with the browser. URLs can
   be loaded in the background via the page-worker module; the page-mod
   module injects Javascript code into the page the user is browsing
-  to. If none of the easily accessible high-level modules suffice,
-  most of the browser's functionality is available via the XPCOM
-  module.
+  to. User-created modules can be imported and tested via unit
+  tests.
+
+  If none of the easily accessible high-level modules suffice, most of
+  the browser's functionality is available via the XPCOM module.
 ** TODO most vs all?
-* page-worker
+* TODO page-worker
   A =page-worker= creates "a permanent, invisible page and
   access[es] its DOM."  ([[link page-worker]]).
 
@@ -263,7 +266,9 @@
 
   A minimal new page-worker is created via
 
-  pageWorker = require("sdk/page-worker").Page({});
+  #+BEGIN_SRC js
+    pageWorker = require("sdk/page-worker").Page({});
+  #+END_SRC
 
   The page-worker's page can be set dynamically via
 
@@ -274,103 +279,108 @@
 ** TODO test that only HTML
 ** link page-worker
    developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html
-** Installation and Use of jpm (the build tool)
-   (SDK-)addons can be built via the =jpm=-tool. It is available as a
-   NodeJS-Module via the built-in package manager =npm=, the NodeJS
-   Package Manager.
+* TODO MOVE DOWN Installation and Use of jpm (the build tool)
+  (SDK-)addons can be built via the =jpm=-tool. It is available as a
+  NodeJS-Module via the built-in package manager =npm=, the NodeJS
+  Package Manager.
 
-   Installing =jpm= is thus a two-step process. Firstly, install
-   NodeJS either via built-in tools (for example =apt-get install
-   nodejs-legacy= in Debian and Ubuntu) or via [[link npm][download]], then, do a
+  Installing =jpm= is thus a two-step process. Firstly, install
+  NodeJS either via built-in tools (for example =apt-get install
+  nodejs-legacy= in Debian and Ubuntu) or via [[link npm][download]], then, do a
 
-   npm install jpm
+  npm install jpm
 
-   to install jpm for the current user. Global installation is done
-   via =npm install -g jpm=.
+  to install jpm for the current user. Global installation is done
+  via =npm install -g jpm=.
 
-   Once =jpm= is installed, new addons are created via =jpm init=,
-   live-tested via =jpm run= and the addon package built via =jpm xpi=.
-*** link npm
-    nodejs.org
-** page-mod
+  Once =jpm= is installed, new addons are created via =jpm init=,
+  live-tested via =jpm run= and the addon package built via =jpm xpi=.
+** link npm
+   nodejs.org
+* TODO page-mod
    The page-mod module runs "scripts in the context of web pages whose
    URL matches a given pattern." ([[link page-mod]])
 
-   If the pattern is given as ="*"= or (for minor differences) the regular
-   expression =/.*/=, then the scripts are run on every user-visited
-   page.
+   This offers the possibility to check for the end of page load.
+
+   If the pattern is given as ="*"= or the regular expression =/.*/=
+   (which also triggers on `file:///` etc links), then the scripts are
+   run on every user-visited page.
 
    A page-mod example is
 
-pageMod.PageMod({
-    include: /.*/,
-    contentScriptFile: "./getLinks.js",
-    onAttach: function(worker) {
-	worker.port.on("links", function(JSONlinks) {
-	    addToCandidates(JSON.parse(JSONlinks));
-	});
-    }
-});
+   #+BEGIN_SRC js
+     pageMod.PageMod({
+         include: /.*/,
+         contentScriptFile: "./getLinks.js",
+         onAttach: function(worker) {
+             worker.port.on("links", function(JSONlinks) {
+                 addToCandidates(JSON.parse(JSONlinks));
+             });
+         }
+     });
+   #+END_SRC
 
-   , which is run on every user page, applies the =getLinks.js= script
-   and listens for its feedback.
+   , which is run on every page, applies the =getLinks.js= script and
+   listens for its feedback, which is then used via
+   `addToCandidates()`.
 
-   page-mod offers other parameters, such as the moment of the script
-   execution, stylesheet modification, etc.
-*** link page-mod
-    http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
-** separation of scripts
-   As a security measure, there is a separation between
+   A page-mod offers other parameters, such as the moment of the
+   script execution, stylesheet modification, etc.
+** link page-mod
+   http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
+* TODO separation of scripts
+  As a security measure, there is a separation between
 
-   1) /add-on scripts/, which are run in the browser context, but cannot
-       access the web page, and
-   2) /content scripts/, which are run in the page context. They can
-      access the DOM, but not add-on scripts. nor
-   3) /page scripts/, which are those included in the website via
-      f.ex. =<script>=.
+  1) /add-on scripts/, which are run in the browser context, but cannot
+      access the web page, and
+  2) /content scripts/, which are run in the page context. They can
+     access the DOM, but not add-on scripts. nor
+  3) /page scripts/, which are those included in the website via
+     f.ex. =<script>=.
 
-   accessing page scripts (and vice versa) is possible, but needs
-   some extra work).
-*** LATER index: page scripts, content scripts, add-on scripts
-** message-passing
-   There is a mechanism to pass content from the add-on to the
-   content scripts, as shown in the example.
+  accessing page scripts (and vice versa) is possible, but needs
+  some extra work).
+** LATER index: page scripts, content scripts, add-on scripts
+* TODO message-passing
+  There is a mechanism to pass content from the add-on to the
+  content scripts, as shown in the example.
 
-   A single string can be passed between both sides. As the string
-   can be any serialized [[file:docs/lit.org::*%5B%5B/home/chive/IT-gg/rfc7159.json-storage-and_xfer.txt%5D%5BThe%20JavaScript%20Object%20Notation%20(JSON)%20Data%20Interchange%20Format%5D%5D][JSON]] object, this is not much of a
-   limitation. (It disallows the passing of functions and circular
-   objects).
+  A single string can be passed between both sides. As the string
+  can be any serialized [[file:docs/lit.org::*%5B%5B/home/chive/IT-gg/rfc7159.json-storage-and_xfer.txt%5D%5BThe%20JavaScript%20Object%20Notation%20(JSON)%20Data%20Interchange%20Format%5D%5D][JSON]] object, this is not much of a
+  limitation. (It disallows the passing of functions and circular
+  objects).
 
-   In a content-script, a message can be sent via
-   =self.port.emit('message_id', param)= and received via
-   =self.port.on('message_id', function(param))=.
+  In a content-script, a message can be sent via
+  =self.port.emit('message_id', param)= and received via
+  =self.port.on('message_id', function(param))=.
 
-   In the Addon-Context, a =worker= object is used and the
-   content-script's =self= is replaced by a =worker=. The worker is
-   initialized via the =onAttach= parameter of the page-mod, as seen
-   above.
-** interacting with page-scripts
-   By default, content-scripts are isolated from the modifications
-   done by page-scripts.[[Interacting with page scripts]]
+  In the Addon-Context, a =worker= object is used and the
+  content-script's =self= is replaced by a =worker=. The worker is
+  initialized via the =onAttach= parameter of the page-mod, as seen
+  above.
+* TODO interacting with page-scripts
+  By default, content-scripts are isolated from the modifications
+  done by page-scripts.[[Interacting with page scripts]]
 
-   To access object inside the page-scripts context, you can use
-   =unsafeWindow=.
+  To access object inside the page-scripts context, you can use
+  =unsafeWindow=.
 
-   The reverse is only true for primitive values. If page-scripts
-   need to see altered behavior, it is possible to override
-   functionality of the page by using =exportFunction=, as in
+  The reverse is only true for primitive values. If page-scripts
+  need to see altered behavior, it is possible to override
+  functionality of the page by using =exportFunction=, as in
 
-   exportFunction(open,
-		  unsafeWindow.XMLHttpRequest.prototype,
-		  {defineAs: "open"});
+  exportFunction(open,
+		 unsafeWindow.XMLHttpRequest.prototype,
+		 {defineAs: "open"});
 
-   This exports the (previously-defined) function =open()= to the
-   XMLHttpRequest.prototype, where it replaces the built-in
-   functionality.
-*** Interacting with page scripts
+  This exports the (previously-defined) function =open()= to the
+  XMLHttpRequest.prototype, where it replaces the built-in
+  functionality.
+** Interacting with page scripts
 developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_page_scripts.html
-** [#C] DOM
-   domain-object-model
+* TODO [#C] DOM
+  domain-object-model
 * pipelining enable in tor after Pachenko
 * other defenses
   There are other methods of defense, which might help mitigate the
