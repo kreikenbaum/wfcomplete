@@ -1,3 +1,5 @@
+"use strict";
+
 var random = require("../random");
 
 exports["test string"] = function(assert) {
@@ -18,7 +20,7 @@ exports["test string repeat"] = function(assert) {
 exports["test random uniform mean"] = function(assert) {
     var sum = 0;
     for ( var i = 0; i < 10000; i++ ) {
-	sum += random.random();
+	sum += random.uniform01();
     }
     
     assert.ok(Math.abs(sum - 5000) < 200, 'failed, average: ' + (sum / 10000));

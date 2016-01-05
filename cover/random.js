@@ -1,4 +1,6 @@
 // pseudo-random string of length length (at least one)
+"use strict";
+
 const { Cu } = require("chrome");
 Cu.importGlobalProperties(["crypto"]);
 
@@ -11,17 +13,16 @@ function string(length) {
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
     for( var i=0; i < length; i++ )
-        text += possible.charAt(Math.floor(random() * possible.length));
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
 
     return text;
-}
+};
 exports.string = length => string(length);
 
-//see stackoverflow.com/questions/34575635/cryptographically-secure-float
 /**
 * uniform secure random number in [0, 1)
 */
-function random() {
+function uniform01() {
     var buffer = new ArrayBuffer(8);
     var ints = new Int8Array(buffer);
     crypto.getRandomValues(ints);
@@ -34,4 +35,4 @@ function random() {
     var float = new Float64Array(buffer)[0] - 1;
     return float;
 };
-exports.random = random;
+exports.uniform01 = uniform01;

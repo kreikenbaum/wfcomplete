@@ -1,4 +1,8 @@
-/** traffic by the user */
+"use strict";
+
+const NAME = 'userTraffic';
+exports.DOC = 'traffic by the user';
+
 var _ = require('./underscore-min.js');
 
 var debug = require('./debug.js');
@@ -13,13 +17,13 @@ function start(URL) {
 	startTimes[URL] = new Date();
     }
     // td: should start periodic traffic
-    debug.log('userTraffic: start load ' + URL);
+    debug.log(NAME + ': start load ' + URL);
 };
 exports.start = URL => start(URL);
 
 /** user ends loading url */
 function stop(URL) {
-    debug.log('userTraffic: end user load ' + URL
+    debug.log(NAME + ': end user load ' + URL
 	      + ' after ' + (new Date() - startTimes[URL]) + ' ms.');
     delete startTimes[URL];
 };

@@ -1,4 +1,7 @@
+"use strict";
+
 const {Cc, Ci} = require("chrome");
+
 const pageMod = require("sdk/page-mod");
 const { setTimeout } = require("sdk/timers");
 
@@ -6,20 +9,20 @@ const debug = require("./debug.js");
 const random = require("./random.js");
 const stats = require("./stats.js");
 const coverUrl = require("./coverUrl.js");
-debug.traceLog(coverUrl.hello);
 const userTraffic = require("./userTraffic.js");
 
-var ignoreThese = [];
-
 // listen to all requests, courtesy of stackoverflow.com/questions/21222873
-httpRequestObserver = {
+var httpRequestObserver = {
     observe: function(subject, topic, data) {
+	debug.traceLog('topic: ' + topic);
         if (topic == "http-on-modify-request") {
             var httpChannel = subject.QueryInterface(Ci.nsIHttpChannel);
+	    // debug.traceLog('channel: ' + httpChannel);
             var uri = httpChannel.URI;
+	    // debug.traceLog('uri: ' + uri);
 
-	    if ( ignoreThese.indexOf(uri.spec) == -1 ) {
-		debug.log('observer: http request to ' + uri.spec);
+	    if ( !coverUrl.contains(uri.spec) ) {
+		debug.traceLog('observer: http request to ' + uri.spec);
 		userTraffic.start(uri.spec);
 		loadNext(uri.spec);
 	    } else {
@@ -58,7 +61,7 @@ pageMod.PageMod({
 // needs RequestPolicy to be disabled
 /** attaches to an invisible tab, loads cover content there, extracts
  * possibly new cover URLs from the loaded text */
-pageWorker = require("sdk/page-worker").Page({
+var pageWorker = require("sdk/page-worker").Page({
     contentScriptFile: "./getLinks.js",
     onAttach: function(worker) {
 	worker.port.on("links", function(JSONlinks) {
@@ -72,19 +75,16 @@ pageWorker = require("sdk/page-worker").Page({
 // adds random string to avoid caching and sets length of request
 function loadNext(loadedUrl) {
     debug.traceLog('loadNext(' + loadedUrl + ')');
-    // determine size of next request
-    // aka td: make nextUrl site-[(HTML|total)-]size-dependent
+
     // get fitting object-url
-    debug.traceLog(coverUrl);
+    // debug.traceLog(coverUrl);
     var nextUrl = coverUrl.coverFor(loadedUrl);
+    // td: this adds '?' even if the url already contains it
     nextUrl += '?' + random.string(loadedUrl.length - nextUrl.length);
+
     // load next
     debug.log('loadNext: loading: ' + nextUrl);
-    ignoreThese.push(nextUrl);
     pageWorker.contentURL = nextUrl;
-    setTimeout(function() {
-	ignoreThese.pop(nextUrl);
-    }, 5);
 };
 
 exports.onUnload = function(reason) {

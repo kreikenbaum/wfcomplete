@@ -1,3 +1,5 @@
+"use strict";
+
 var userTraffic = require("../userTraffic");
 
 exports["test procedure"] = function(assert) {

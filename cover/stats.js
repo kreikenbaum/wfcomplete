@@ -1,3 +1,5 @@
+"use strict";
+
 /**
 * statistical models for distributions etc
 */
@@ -47,5 +49,5 @@ function normal(mu, sigma) {
 
 /** sample from uniform distribution*/
 function uniform(min, max) {
-    return random.random() * (max - min) + min;
+    return random.uniform01() * (max - min) + min;
 };
