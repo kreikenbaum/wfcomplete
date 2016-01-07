@@ -13,13 +13,6 @@ const stats = require("./stats.js");
 // TD: include bloom filter for real traffic urls (do not store, but bloom)
 // (only, not from user traffic), save at end, restore
 
-/** @return cover traffic url for input url */
-var coverFor = function(url) {
-    debug.traceLog(NAME + ': coverFor(' + url + ')');
-    return sized(sizeFor(url));
-}
-exports.coverFor = url => coverFor(url);
-
 var contains = function(url) {
     var index = URLS.indexOf(url);
     debug.traceLog(NAME + ': url: ' + url
@@ -28,37 +21,7 @@ var contains = function(url) {
 };
 exports.contains = url => contains(url);
 
-// TEST exports
-
-/** known or estimated length of url */
-var estimateLength = function(url) {
-    // td: better test if html (content-type)
-    // td: Bloom - binning
-    if ( isHTML(url) ) { //td: sensible html check (also @usertraffic)
-	return stats.htmlSize(1);
-    } else {
-	return stats.embeddedObjectSize(1);
-    }
-};
-exports.estimateLength = url => estimateLength(url);
-
-// td: test whole request/response, not only url
-// td: also try if only domain without '/'
-// td: strip ?... GET params
-function isHTML(url) {
-    return url.endsWith('html')
-	|| url.endsWith('/')
-	|| url.endsWith('asp')
-	|| url.endsWith('aspx')
-	|| url.endsWith('cgi')
-	|| url.endsWith('htm')
-	|| url.endsWith('sml')
-	|| url.endsWith('stm')
-	|| url.endsWith('php');
-};
-exports.isHTML = url => isHTML(url);
-
-/* @return a URL pointing to object of  more than size */
+/* @return a URL pointing to object of more than size */
 var sized = function(size) {
     if ( size > _.last(SIZES) ) {
 	return _.last(URLS);
@@ -67,17 +30,8 @@ var sized = function(size) {
 };
 exports.sized = size => sized(size);
 
-/** if url was loaded, what size of padding to get */
-var sizeFor = function(url) {
-    // td: codup
-    if ( isHTML(url) ) {
-	return stats.htmlSize() - estimateLength(url);
-    } else {
-	return stats.embeddedObjectSize() - estimateLength(url);
-    }
-};
-exports.sizeFor = url => sizeFor(url);
 
+// PRIVATE
 
 const SIZES = [27, 86, 86, 95, 95, 95, 98, 98, 98, 142, 142, 142, 147, 147, 147, 148, 151, 153, 153, 153, 169, 169, 169, 177, 177, 177, 184, 184, 184, 216, 229, 230, 237, 242, 245, 246, 256, 307, 309, 329, 348, 356, 453, 458, 468, 493, 585, 597, 597, 600, 616, 616, 625, 676, 676, 676, 746, 746, 825, 856, 937, 1038, 1054, 1082, 1110, 1110, 1110, 1163, 1163, 1163, 1301, 1327, 1353, 1353, 1353, 1423, 1423, 1423, 1423, 1423, 1423, 1423, 1423, 1637, 1673, 1754, 1754, 1756, 1910, 1961, 1987, 1987, 2118, 2118, 2118, 2118, 2118, 2118, 2118, 2118, 2344, 2441, 2445, 2449, 2484, 2565, 2567, 2567, 2567, 2567, 2567, 2581, 2983, 3140, 3140, 3154, 3154, 3154, 3154, 3154, 3154, 3154, 3154, 3182, 3229, 3242, 3242, 3284, 3284, 3289, 3310, 3372, 3393, 3443, 3466, 3466, 3485, 3532, 3532, 3634, 3634, 3634, 3730, 3764, 3765, 3779, 3779, 3779, 3812, 3979, 3979, 3979, 3979, 3979, 3979, 3979, 3979, 4175, 4247, 4342, 4369, 4369, 4393, 4393, 4410, 4459, 4482, 4499, 4774, 4775, 4777, 4841, 4871, 4895, 4919, 4955, 4955, 4963, 5025, 5052, 5054, 5069, 5207, 5207, 5270, 5293, 5328, 5344, 5369, 5444, 5504, 5504, 5516, 5516, 5629, 5702, 5827, 5889, 5891, 5936, 5959, 6068, 6072, 6121, 6185, 6192, 6201, 6217, 6222, 6269, 6433, 6452, 6454, 6482, 6537, 6774, 6946, 6950, 6961, 7001, 7018, 7021, 7027, 7031, 7045, 7460, 7767, 7853, 7940, 8147, 8266, 8731, 8769, 8775, 8780, 8790, 8891, 8921, 8979, 9374, 9578, 9861, 10141, 10240, 10278, 10910, 10928, 10981, 11108, 11222, 11576, 11988, 12208, 12315, 15049, 15721, 16115, 16535, 17824, 20929, 21330, 21877, 23093, 23854, 25495, 25495, 25566, 25901, 26141, 27325, 27738, 27971, 28141, 28497, 28997, 30706, 33312, 33673, 33789, 36300, 37296, 37883, 38644, 38884, 39679, 39745, 39790, 40611, 40884, 41286, 41428, 42448, 43634, 45400, 45655, 45681, 47433, 49145, 50000, 55122, 56385, 57728, 64527, 65633, 68381, 72358, 72513, 74387, 75207, 78484, 79421, 84807, 85055, 87005, 88834, 98989, 102315, 102421, 104693, 108505, 125802, 126352, 128304, 135962, 138051, 146073, 146338, 146338, 208549, 216262, 224864, 230677, 249130, 272214, 272254, 282961, 290576, 292379, 343990, 364042, 370756, 372130, 376092, 407348, 413354, 496288, 497825, 501515, 501534, 510092, 510153, 511024, 511191, 511206, 512903, 512916, 521654, 524435, 534262, 536386, 544824, 547312, 551306, 551697, 552164, 552177, 554416, 559399, 570946, 574476, 582201, 591824, 592112, 594805, 618280, 619657, 773133, 800307, 1113652, 1129057, 1139814, 1188090, 1459948, 2587080];
 

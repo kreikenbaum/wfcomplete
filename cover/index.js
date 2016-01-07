@@ -9,7 +9,7 @@ const debug = require("./debug.js");
 const random = require("./random.js");
 const stats = require("./stats.js");
 const coverUrl = require("./coverUrl.js");
-const userTraffic = require("./userTraffic.js");
+const user = require("./user.js");
 
 // listen to all requests, courtesy of stackoverflow.com/questions/21222873
 var httpRequestObserver = {
@@ -17,13 +17,11 @@ var httpRequestObserver = {
 	debug.traceLog('topic: ' + topic);
         if (topic == "http-on-modify-request") {
             var httpChannel = subject.QueryInterface(Ci.nsIHttpChannel);
-	    // debug.traceLog('channel: ' + httpChannel);
             var uri = httpChannel.URI;
-	    // debug.traceLog('uri: ' + uri);
 
 	    if ( !coverUrl.contains(uri.spec) ) {
 		debug.traceLog('observer: http request to ' + uri.spec);
-		userTraffic.start(uri.spec);
+		user.loads(uri);
 		loadNext(uri.spec);
 	    } else {
 		debug.log('ignoring request to ' + uri.spec);
@@ -51,9 +49,12 @@ pageMod.PageMod({
     contentScript: "self.port.emit('loaded', document.location.href)",
     contentScriptWhen: "end",
     onAttach: function(worker) {
-	worker.port.on("loaded", function(url) {
-	    debug.log('loading of ' + url + ' has stopped');
-	    userTraffic.stop(url);
+	worker.port.on("loaded", function(urlspec) {
+	    debug.traceLog('loading of ' + urlspec + ' has stopped');
+	    // td: refactor out
+	    var ioService = Cc["@mozilla.org/network/io-service;1"]
+		.getService(Ci.nsIIOService);
+	    user.endsLoading(ioService.newURI(urlspec, null, null));
 	});
     }
 });
@@ -77,10 +78,15 @@ function loadNext(loadedUrl) {
     debug.traceLog('loadNext(' + loadedUrl + ')');
 
     // get fitting object-url
-    // debug.traceLog(coverUrl);
-    var nextUrl = coverUrl.coverFor(loadedUrl);
-    // td: this adds '?' even if the url already contains it
-    nextUrl += '?' + random.string(loadedUrl.length - nextUrl.length);
+    var nextUrl = coverUrl.sized(stats.htmlSize(1));
+
+    // td: whole request size, not only url length
+    // td: post for a post, get for a get
+    var targetLength = (loadedUrl.length > 300)
+	? stats.uniform(loadedUrl.length/2., loadedUrl.length *1.5)
+	: stats.uniform(0, 300);
+    var separator = nextUrl.indexOf('?') === -1 ) ? '?' : '&';
+    nextUrl += separator + random.string(targetLength - nextUrl.length);
 
     // load next
     debug.log('loadNext: loading: ' + nextUrl);

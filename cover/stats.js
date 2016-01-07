@@ -28,6 +28,11 @@ var htmlMean = function() {
     return Math.exp(htmlMu + htmlSigma * htmlSigma / 2);
 };
 exports.htmlMean = htmlMean;
+/** mean of lognormal(embeddedObjectMu, embeddedObjectSigma) */
+var embeddedObjectMean = function() {
+    return Math.exp(embeddedObjectMu + embeddedObjectSigma * embeddedObjectSigma / 2);
+};
+exports.embeddedObjectMean = embeddedObjectMean;
 
 // PRIVATE
 /** sample from lognormal distribution */
