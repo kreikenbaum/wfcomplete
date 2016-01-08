@@ -47,8 +47,10 @@ def _open_browser(exe='/home/mkreik/bin/tor-browser_en-US/Browser/firefox -mario
     '''returns an initialized browser instance with marionette'''
     env_with_debug = os.environ.copy()
     env_with_debug["MOZ_DISABLE_AUTO_SAFE_MODE"] = 'set';
-    (exedir, exefile) = os.path.split(exe)
-    browser = subprocess.Popen(args=['/home/mkreik/bin/tor-browser_en-US/Browser/firefox','-marionette'], cwd=exedir, stdout=subprocess.PIPE, env=env_with_debug);
+    exewholepath, exeargs = exe.split(' ', 1)
+    (exedir, exefile) = os.path.split(exewholepath)
+#    browser = subprocess.Popen(args=['/home/mkreik/bin/tor-browser_en-US/Browser/firefox','-marionette'], cwd=exedir, stdout=subprocess.PIPE, env=env_with_debug);
+    browser = subprocess.Popen(args=[exewholepath,exeargs], cwd=exedir, stdout=subprocess.PIPE, env=env_with_debug);
 
     thread = threading.Thread(target=_wait_browser_ready,
                               kwargs={'browser': browser});
