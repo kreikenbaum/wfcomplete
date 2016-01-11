@@ -1,5 +1,3 @@
-#+LATEX_HEADER: \bibliographystyle{plain}
-#+LATEX_HEADER: \bibliography{docs/master}
 * LATER Abstract
 * LATER Introduction
 * Materials and methods
@@ -236,7 +234,7 @@
   - fundamental human need
   - concentration camp:
     "solitude in a Camp is more precious and rare than bread." -- primo levi
-* Mozilla Add-On Sdk
+* TODO Mozilla Add-On Sdk
   The Add-on SDK by Mozilla supports the development of
   Firefox-Addons.
 
@@ -254,7 +252,7 @@
   tests.
 
   If none of the easily accessible high-, or low-level modules
-  suffice, most of the browser's functionality is available via the
+  suffice, most of the browser's functionality is accessible via the
   XPCOM module.
 * TODO page-worker
   A =page-worker= creates "a permanent, invisible page and
@@ -512,33 +510,32 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
     - set tor's paranoia slider
     - install extra addon
 * TODO move tbb installation here
+* tool
 * by-hand initialization to retrieve websites
   After installation, the tor browser bundle performs some
   initialization steps. To complete these easily, start the tor
   browser bundle-firefox by hand once.
 
   Set the connection type and have it load its first website via
-  Tor. This also downloads enough descriptors to connect quicker later
-  on.
-* TODO retrieval of a single page
-  Once you assured that the Browser Bundle is working, the webpages
-  can be retrieved automatically. This is done via the
-  [[file:../bin/one_site.py][one_site.py]] script.
+  Tor. This also downloads descriptors to connect quicker later on.
+* TODO one_site.py: retrieval of a single page
+  Once you assured that the Browser Bundle is working by starting it
+  manually once, webpages can be retrieved automatically. This is done
+  via the [[file:../bin/one_site.py][one_site.py]] script.
 
   It
 
-  - starts ff
-  - waits 60 seconds for its initialization
-  - starts tshark
-  - loads page
-  - waits for the load to finish or a 10-minute-countdown to stop
-  - ends ff
-  - ends tshark capture
+  1. starts Firefox, waiting 60 seconds for its initialization
+  2. starts the capture
+  3. loads page
+  4. waits for the load to finish or a 600-second-countdown
+  5. ends Firefox
+  6. ends the capture
 
-  This setup avoids caching issues with website fingerprinting, as the
-  Tor Browser Bundle cleans the cache between restarts. If a more
-  realistic scenario is desired, the script needs to be modified to
-  omit terminating the browser instance.
+  This setup (restart each trace) avoids caching issues with website
+  fingerprinting, as the Tor Browser Bundle cleans the cache between
+  restarts. If a more realistic scenario is desired, the script needs
+  to be modified to omit terminating the browser instance.
 * tshark installation
   You also need to install =tshark= via =sudo apt-get install tshark=
   and set the current user to be able to capture packets via =sudo
@@ -712,27 +709,32 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   relevant information([[file:docs/lit.org::*%5B%5B./ccs14.pdf%5D%5BCai%20-%20A%20Systematic%20Approach%20to%20Developing%20and%20Evaluating%20Website%20Fingerprinting%20Defenses%5D%5D][a-systematic]]) packet trace data in the form of
   (delay, packet size), which is
 
-  | facebook.com                              |
-  |-------------------------------------------+
-  | [[file:pictures/facebook.com@1445350531.png]] |
-  | [[file:pictures/facebook.com@1445422155.png]] |
-  | [[file:pictures/facebook.com@1445425799.png]] |
-  | [[file:pictures/facebook.com@1445429729.png]] |
+  | facebook.com                              |                                          |
+  |-------------------------------------------+------------------------------------------|
+  | <35>                                      | <35>                                     |
+  | [[file:pictures/facebook_com@1445350531.png]] | [[./pictures/craigslist_org@1445352269.png]] |
+  |                                           |                                          |
+  
+  | [[file:pictures/facebook_com@1445422155.png]] |
+  | [[file:pictures/facebook_com@1445425799.png]] |
+  | [[file:pictures/facebook_com@1445429729.png]] |
 
   | craigslist.org                           |
   |------------------------------------------|
-  | [[./pictures/craigslist.org@1445352269.png]] |
-  | [[./pictures/craigslist.org@1445428146.png]] |
-  | [[./pictures/craigslist.org@1445435476.png]] |
-  | [[./pictures/craigslist.org@1445442917.png]] |
+  | [[./pictures/craigslist_org@1445352269.png]] |
+  | [[./pictures/craigslist_org@1445428146.png]] |
+  | [[./pictures/craigslist_org@1445435476.png]] |
+  | [[./pictures/craigslist_org@1445442917.png]] |
 
   They were created by the commands
 
   #+BEGIN_EXAMPLE
-  for fb in $(ls | grep facebook); do
-    python ~/da/bin/counter.py ./$fb  | tail -1 | sed 's/),/\n/g' | tr -d "'()][" > /tmp/times;
-    gnuplot -e "set terminal png size 1024,680; set output \"/tmp/${fb}.png\"; plot '/tmp/times' with boxes;";
-  done
+    for fb in $(ls | grep facebook); do
+      python ~/da/bin/counter.py ./$fb  | tail -1 | sed 's/),/\n/g' | \
+          tr -d "'()][" > /tmp/times;
+      gnuplot -e "set terminal png size 1024,680; \
+              set output \"/tmp/${fb}.png\"; plot '/tmp/times' with boxes;";
+    done
   #+END_EXAMPLE
 
   and respectively for `s/facebook/craigslist/g`, in the directories
@@ -741,8 +743,9 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   These commands first extract the timing attributes (at git commit
   791af76 the last line of the output of counter.py), format it for
   gnuplot (inserting appropriate newlines via =sed= and removing extra
-  characters via =tr=), and =gnuplot=s it to a png file with the name of
+  characters via =tr=), and =gnuplot= s it to a png file with the name of
   the trace file as prefix.
+** TODO 4th is cut off, better without table
 * distribution of (main) features
   These distribution histograms show how Panchenko's main features are
   distributed. They are stacked histograms with classes separated by
@@ -832,11 +835,12 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 * TODO differences to walkie-talkie
 * TODO HTML traffic model
   - intel
-    - html object lognormal with params μ = 7.90272, σ = 1.7643
+    - html object lognormal with params \mu = 7.90272, \sigma = 1.7643
     - embedded objects
   - test
     - download html top 10000
     - analysis
+* UPTO HERE, TEXING WORKS -------------------------------------------
 * WAIT Results
 ** classifiers (ordered by accuracy)
 *** 20 classes (~78%)
@@ -2880,9 +2884,10 @@ mean = 0.763238095238
 * WAIT Discussion
   intel model: interdependences (html bigger \to more embedded) not mentioned
 * WAIT Acknowledgements
+  - Elena
   - Daniel Arp
   - Prof. Dr. Konrad Rieck
-  - Elena
+  - Tao Wang
   - ...
 * lit
 ** franklin
@@ -2993,3 +2998,6 @@ mean = 0.763238095238
 
    This starts the Tor browser with marionette enabled.
 *** TODO marionette support page link
+* misc: tex bibliography
+\bibliography{docs/master}
+\bibliographystyle{plain}
