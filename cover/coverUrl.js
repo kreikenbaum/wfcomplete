@@ -19,14 +19,16 @@ var contains = function(url) {
 		   + ' indexof: ' + index  + ' return: ' + (index !== -1), this);
     return index !== -1;
 };
-exports.contains = url => contains(url);
+exports.contains = url => contains(url); // td: obsolete this, the rename
+exports.includes = url => contains(url);
 
 /* @return a URL pointing to object of more than size */
 var sized = function(size) {
     if ( size > _.last(SIZES) ) {
 	return _.last(URLS);
     }
-    return URLS[_.sortedIndex(SIZES, size)];
+//    return URLS[_.sortedIndex(SIZES, size)];
+    return URLS[_.sortedIndex(SIZES, size)].replace('mlsec.org', '127.0.0.1:2345';
 };
 exports.sized = size => sized(size);
 

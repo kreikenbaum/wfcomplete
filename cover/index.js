@@ -1,5 +1,6 @@
 "use strict";
 
+const _ = require('./underscore-min.js');
 const {Cc, Ci} = require("chrome");
 
 const pageMod = require("sdk/page-mod");
@@ -82,10 +83,9 @@ function loadNext(loadedUrl) {
 
     // td: whole request size, not only url length
     // td: post for a post, get for a get
-    var targetLength = (loadedUrl.length > 300)
-	? stats.uniform(loadedUrl.length/2., loadedUrl.length *1.5)
-	: stats.uniform(0, 300);
-    var separator = nextUrl.indexOf('?') === -1 ) ? '?' : '&';
+    var maxLength = (loadedUrl.length <= 300) ? 300: loadedUrl.length * 2;
+    var targetLength = stats.uniform(0, maxLength);
+    var separator = ( _.contains(nextUrl, '?') ? '&' : '?';
     nextUrl += separator + random.string(targetLength - nextUrl.length);
 
     // load next

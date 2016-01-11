@@ -2,7 +2,7 @@
 "use strict";
 
 const DEBUG = true;
-const TRACE = true;
+const TRACE = false;
 
 /** use as drop-in replacement to console.log (which logs as xpi even though it should not */
 function log(toLog) {
