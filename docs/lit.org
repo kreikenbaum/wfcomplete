@@ -3286,6 +3286,12 @@
 	  - that much is most often also free at entry and middle nodes
 
        2) Open Issues in Realistic Scenarios
+
+	  - multi-tab not a real model
+
+	  - website distribution of Tor users
+
+       3) Limitations of WTF-PAD
 *** quotes
     - lightweight defenses that provide a sufficient level of security
       against website fingerprinting
@@ -3670,6 +3676,29 @@
             exponentially-decaying number of cells)
 
        8) Congestion control
+
+	  0) [@0]
+
+	     - might allow attack
+
+	  1) Circuit-level throttling:
+
+	     - packaging window: back to OP
+
+	     - delivery window: outside
+
+	     - initialized at, say, 1000, decremented on each packet
+
+	     - refilled after /relay sendme/ cell
+
+	  2) Stream-level throttling:
+
+	     - end-to-end
+
+	     - refilled only when number of bytes pending to be
+               flushed <= 10 * cell_size
+
+    5) Rendezvous Points and hidden services
 *** quotes
     - most designs protect primarily against traffic analysis rather
       than traffic confirmation
@@ -4121,6 +4150,24 @@
 	  - no padding
 
        2) Walkie-Talkie results
+
+	  - 3 ways of adding bursts
+
+	    - nofake: none
+
+	    - normal: normal distribution
+
+	    - uniform: uniform distribution
+
+	    - and also deterministic padding
+
+	  - perfect attacker
+
+	  - uniform padding best
+
+	  - overhead 35% \to fpr 5%, 55% \to fpr 10%
+
+       3) Comparison with previous defenses
 *** quotes
     - design goals:
       1. General: The defense succeeds against all possible
@@ -4146,7 +4193,10 @@
       client protecting her page accesses against an attacker may only
       need a false positive rate over 5% [18,21] even if the
       attacker’s true positive rate was 100%.
-    - (ends 4.0)
+    - (ends 4.0-6.1)
+    - If the attacker categorized a monitored page as a different
+      monitored page, we count it as a false positive
+    - (ends 6.2)
 *** questions
     - Further, we assume this encrypted channel pads all packets to a
       fixed size so as to remove packet size as a possible
@@ -4369,6 +4419,25 @@
 	  - algorithm for time, dependent on MTU < L < 10*MTU
 
        3) HTTP Session
+
+	  - browsing session, after about 2:45 hrs
+
+       4) Web-Request
+	  
+	  - session = series of Web-Requests
+
+	  - Web-Request: HTML + [embedded]+
+
+	    - next HTML ends
+
+	    - parallelism consciously ignored
+
+	  - embedded IAT, parsing time bounded by 5 minutes (TCP session)
+
+	  - HTML by Content-type || file-ending: html/htm, cgi, asp,
+            sml, stm, php, '/'
+
+    5) MODEL AND ANALYSIS RESULT
 *** quotes
     - the actual packet inter-arrival time (IAT) is governed by
       specific conditions that existed in the internet when the trace
@@ -5655,7 +5724,7 @@
     - our implementation of anonymous connections, onion routing,
       provides protection against eavesdropping as a side effect
 *** ref
-
+    [[file:master.bib::anonymous-connections][G. et al. 1998: Anonymous]]
 *** [[~/da/git/docs/onion-discex00.pdf][Onion Routing Access Configurations]]
     see also bibtex
 ** TODO [#C] [[./xxx-multihop-padding-primitives.txt][Multihop Padding Primitives]]
@@ -7053,6 +7122,63 @@
                  }
 	       #+END_SRC
 
+	  11) [@11] Gamma
+
+	      - Input: scale parameter b > 0; shape parameter c > 0
+
+		c == \kappa, b == \theta
+
+	      - Algorithm:
+
+		Case 1: c < 1
+                Let β = 1 + c/e.
+		1. Generate U_{1} ~ U(0, 1) and set P = β U_{1} .
+                   If P > 1, go to step 3; otherwise, go to step 2.
+		2. Set Y = P^{1/c} and generate U_{2} ~ U(0, 1).
+                   If U_{2} ≤ e^{−Y} , return X = Y ; otherwise, go back to step 1.
+		3. Set Y = − ln [( β − P)/c] and generate U_{2} ~ U(0, 1).
+		   If U_{2} ≤ Y^{c−1}, return X = Y ; otherwise, go back to step 1.
+
+	      - Source Code:
+		#+BEGIN_SRC C++
+                  #include <math.h>
+                  double gamma( double a, double b, double c )
+                  {
+                    assert( b > 0. && c > 0. );
+                    const double A = 1. / sqrt( 2. * c - 1. );
+                    const double B = c - log( 4. );
+                    const double Q = c + 1. / A;
+                    const double T = 4.5;
+                    const double D = 1. + log( T );
+                    const double C = 1. + c / M_E;
+                    if ( c < 1. ) {
+                      while ( true ) {
+                        double p = C * uniform( 0., 1. );
+                        if ( p > 1. ) {
+                          double y = -log( ( C - p ) / c );
+                          if ( uniform( 0., 1. ) <= pow( y, c - 1. ) ) return a + b * y;
+                        }
+                        else {
+                          double y = pow( p, 1. / c );
+                          if ( uniform( 0., 1. ) <= exp( -y ) ) return a + b * y;
+                        }
+                      }
+                    }
+                    else if ( c == 1.0 ) return exponential( a, b );
+                    else {
+                      while ( true ) {
+                        double p1 = uniform( 0., 1. );
+                        double p2 = uniform( 0., 1. );
+                        double v = A * log( p1 / ( 1. - p1 ) );
+                        double y = c * exp( v );
+                        double z = p1 * p1 * p2;
+                        double w = B + Q * v - y;
+                        if ( w + D - T * z >= 0. || w >= log( z ) ) return a + b * y;
+                      }
+                    }
+                  }
+		#+END_SRC
+
 	  15) [@15] Lognormal
 
 	      - Input:
@@ -7451,6 +7577,20 @@
 	  - pass by reference: same object
 
        5. Prototype
+
+	  - like class in other languages
+
+	  - snippet to copy class: [[(object.create)]]
+
+       6. Reflection
+
+	  - introspection
+
+	  - also gives functions, and stuff up the hierarchy
+
+	    - solution: use =hasOwnProperty=
+
+       7. Enumeration
 *** quotes
     - We appreciate, but do not require, attribution. An attribution
       usually includes the title, author, publisher, and ISBN. For
@@ -7472,6 +7612,18 @@
       first operand is falsy. Otherwise, it produces the value of the
       second operand.
     - (ends 2)
+    - The create method creates a new object that uses an old object
+      as its prototype. [...]
+      #+BEGIN_SRC js
+        if (typeof Object.create !== 'function') {
+            Object.create = function (o) {   (ref:object.create)
+                var F = function () {};
+                F.prototype = o;
+                return new F();
+            };
+        }
+        var another_stooge = Object.create(stooge);
+      #+END_SRC
     - ...
     - (bad parts)
     - I have never seen a piece ofcode that was not improved by
@@ -8312,13 +8464,40 @@
        debug(), log(), info(), trace(), and warn() will not appear in
        the console.
 ** [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Eloquent Javascript]]
+*** summary
+    8. [@8] Object-oriented Programming
+
+       - easy: just attach name to object
+
+       - constructor
+
+	 - Capitalized
+
+	 - use with =new()=
+
+       - .prototype always changes object, object never changes .prototype
+
+       - use =hasOwnProperty= to find out if really the object has the
+         attribute, or it's somewhere else
+
+       - workaround for when hasOwnProperty is an attribute ;-)
 *** quotes
     - (begins 4)
     - The keyword `delete` cuts off properties. Trying to read a
       non-existent property gives the value undefined.
     - var now = new Date();
     - (ends 4)
-*** summary
+    - Object-orientation's longevity can largely be explained by the
+      fact that the ideas at its core are very solid and useful. In
+      this chapter, we will discuss these ideas, along with
+      JavaScript's (rather eccentric) take on them.
+    - typing ={}= is equivalent to typing =new Object()=
+    - Personally, I treat writing documentation as a 'finishing touch'
+      to add to a system. When it feels ready, it is time to write
+      something about it, and to see if it sounds as good in English
+      (or whatever language) as it does in JavaScript (or whatever
+      programming language).
+    - (ends 8)
 ** [[./js/javascript%20-%20Firefox%20Addon%20observer%20http-on-modify-request%20not%20working%20properly%20-%20Stack%20Overflow.html][Firefox Addon observer http-on-modify-request not working properly]]
 *** quotes
     - set up
@@ -8379,7 +8558,7 @@
 
 	 - a, b with a == k and b == 1/\theta
 
-	 - k, \mu = k / \beta
+	 - k, \mu == k / b ==? k \cdot \theta
 
 	 - positive real numbers
 
@@ -8389,7 +8568,16 @@
 
        - Mean \scriptstyle \mathbf{E}[ X] = k \theta
 
-       - Variance \scriptstyle\operatorname{Var}[ X] = k \theta^2 
+       - Variance \scriptstyle\operatorname{Var}[ X] = k \theta^2
+
+    1) Characterization using shape k and scale θ
+
+       - pdf: f(x;k,\theta) =  \frac{x^{k-1}e^{-\frac{x}{\theta}}}{\theta^k\Gamma(k)}
+
+    2) Characterization using shape α and rate β
+
+       - pdf: g(x;\alpha,\beta) = \frac{\beta^{\alpha} x^{\alpha-1} e^{-x\beta}}{\Gamma(\alpha)}
+
 *** quotes
     - The common exponential distribution and chi-squared distribution
       are special cases of the gamma distribution.
@@ -8471,13 +8659,13 @@
        · https://github.com/coreybutler/nvm-windows
        · https://github.com/hakobera/nvmw
        · https://github.com/nanjingboy/nvmw
-** [[~/da/docs/Google JavaScript Style Guide.html]]
+** [[./Google JavaScript Style Guide.html][Google JavaScript Style Guide]]
 *** summary
     1) JavaScript Language Rules
 
        1) var
 
-	  always use, else get global
+	  always use, else gets global
 
        2) Constants
 
@@ -8535,7 +8723,8 @@
 ** TODO MOVE [[./ton96.pdf][Self-Similarity in World Wide Web Traffic: Evidence and Possible Causes]]
 *** summary
 *** quotes
-** [[./btxdoc.pdf]]
+** [[./btxdoc.pdf][BIBTEXing]]
+*** summary
 *** quotes
     - (begins 4)
     - Thus, you should feel free to be creative in how you use these

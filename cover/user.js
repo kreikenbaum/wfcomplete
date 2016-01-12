@@ -15,8 +15,8 @@ function loads(URL) {
     if ( ! _.contains(activeHosts, URL.host) ) {
 	activeHosts.push(URL.host);
 	debug.traceLog(NAME + ': loads ' + URL.host);
+	// td: should start cover traffic
     }
-    // td: should start cover traffic
     debug.traceLog(activeHosts);
 };
 exports.loads = URL => loads(URL);
