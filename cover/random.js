@@ -1,6 +1,8 @@
 // pseudo-random string of length length (at least one)
 "use strict";
 
+exports.DOC = 'random.string and crypto-secure randomness';
+
 const { Cu } = require("chrome");
 Cu.importGlobalProperties(["crypto"]);
 

@@ -23,7 +23,7 @@ var httpRequestObserver = {
 	    if ( !coverUrl.contains(uri.spec) ) {
 		debug.traceLog('observer: http request to ' + uri.spec);
 		user.loads(uri);
-		loadNext(uri.spec);
+//		loadNext(uri.spec);
 	    } else {
 		debug.log('ignoring request to ' + uri.spec);
 	    }
@@ -53,45 +53,13 @@ pageMod.PageMod({
 	worker.port.on("loaded", function(urlspec) {
 	    debug.traceLog('loading of ' + urlspec + ' has stopped');
 	    // td: refactor out
+	    // td: see if replaceable by addon-module
 	    var ioService = Cc["@mozilla.org/network/io-service;1"]
 		.getService(Ci.nsIIOService);
 	    user.endsLoading(ioService.newURI(urlspec, null, null));
 	});
     }
 });
-
-// needs RequestPolicy to be disabled
-/** attaches to an invisible tab, loads cover content there, extracts
- * possibly new cover URLs from the loaded text */
-var pageWorker = require("sdk/page-worker").Page({
-    contentScriptFile: "./getLinks.js",
-    onAttach: function(worker) {
-	worker.port.on("links", function(JSONlinks) {
-	    debug.log("td: add to cover links: " + JSONlinks);
-	    // candidates.concat(JSON.parse(JSONlinks));
-	});
-    }
-});
-
-// loads next page in background
-// adds random string to avoid caching and sets length of request
-function loadNext(loadedUrl) {
-    debug.traceLog('loadNext(' + loadedUrl + ')');
-
-    // get fitting object-url
-    var nextUrl = coverUrl.sized(stats.htmlSize(1));
-
-    // td: whole request size, not only url length
-    // td: post for a post, get for a get
-    var maxLength = (loadedUrl.length <= 300) ? 300: loadedUrl.length * 2;
-    var targetLength = stats.uniform(0, maxLength);
-    var separator = ( _.contains(nextUrl, '?') ? '&' : '?';
-    nextUrl += separator + random.string(targetLength - nextUrl.length);
-
-    // load next
-    debug.log('loadNext: loading: ' + nextUrl);
-    pageWorker.contentURL = nextUrl;
-};
 
 exports.onUnload = function(reason) {
     httpRequestObserver.unregister();

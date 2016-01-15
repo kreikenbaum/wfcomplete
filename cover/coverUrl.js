@@ -1,7 +1,7 @@
 "use strict";
 
 const NAME = 'coverUrl';
-exports.DOC = 'provides a url for an object with approximately the given size';
+exports.DOC = 'database of url and sizes';
 
 const _ = require("./underscore-min.js");
 const debug = require("./debug.js");
@@ -19,16 +19,26 @@ var contains = function(url) {
 		   + ' indexof: ' + index  + ' return: ' + (index !== -1), this);
     return index !== -1;
 };
-exports.contains = url => contains(url); // td: obsolete this, the rename
+exports.contains = url => contains(url); // td: obsolete this, then rename
 exports.includes = url => contains(url);
 
-/* @return a URL pointing to object of more than size */
+/* provides a url for an object with approximately the given size
+ * @return {string} a URL pointing to object of more than size */
 var sized = function(size) {
     if ( size > _.last(SIZES) ) {
+	debug.log("size " + size + " bigger than available urls");
 	return _.last(URLS);
     }
-//    return URLS[_.sortedIndex(SIZES, size)];
-    return URLS[_.sortedIndex(SIZES, size)].replace('mlsec.org', '127.0.0.1:2345';
+    if ( size < SIZES[0] ) {
+	debug.log("size " + size + " smaller than available urls");
+	return URLS[0];
+    }
+
+    // pad with random string
+    var nextUrl = URLS[_.sortedIndex(SIZES, size)];
+    var separator = ( _.contains(nextUrl, '?') ) ? '&' : '?';
+    nextUrl += separator + random.string(stats.uniform(0, 300) - nextUrl.length);
+    return nextUrl;
 };
 exports.sized = size => sized(size);
 

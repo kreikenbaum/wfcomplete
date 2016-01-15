@@ -1,3 +1,7 @@
+"use strict";
+
+const DOC = 'retrieve links from cover traffic';
+
 // gets all links from current page
 var links = []
 
