@@ -3729,6 +3729,18 @@
 	  - avoid finding out even if bob is online
 
        1) Rendezvous points in Tor
+
+	  - bob: generate key, select introduction points IP, advertise, connect
+
+	  - alice: select rendezvous point RP (with ID, dh-part), tell IP
+
+	  - bob: connect to RP, (with ID, other dh-part, has session key)
+
+	  - rp connects both, alice: /relay begin/
+
+	  - introduction points can be DoSed \to select many
+
+       2) Integration with user applications
 *** quotes
     - most designs protect primarily against traffic analysis rather
       than traffic confirmation
@@ -7573,6 +7585,59 @@
 	    - solution: use =hasOwnProperty=
 
        7. Enumeration
+
+	  - avoid functions with =typeof= and prototype's stuff by
+            =hasOwnProperty=
+
+	  - possible: use explicit array of properties
+
+       8. Delete
+
+	  - allows prototype to "shine through"
+
+       9. Global Abatement
+
+	  - single global variable =MYAPP=
+
+	    - becomes container
+
+	  - also closure possible
+
+    4. Functions
+
+       0. [@0]
+
+	  - "fundamental modular unit of JavaScript."
+
+       1. Function Objects
+
+	  - each function has a =Function.prototype=
+
+	    - context and code implementing
+
+       2. Function Literal
+
+	  1. =function= reserved word
+
+	  2. name, or anonymous
+
+	     - used to call recursively, etc
+
+	  3. parameters
+
+	  4. body
+
+	  has access to outer scope (closure)
+
+       3. Invocation
+
+	  - caller suspends execution
+
+	  - function receives parameters + =this= and =arguments=
+
+	    - this determined by how it is called
+
+       4. The Method Invocation Pattern
 *** quotes
     - We appreciate, but do not require, attribution. An attribution
       usually includes the title, author, publisher, and ISBN. For
@@ -8319,6 +8384,7 @@
             imported or if y is an inconveniently long name."
 
        3) Packages
+
 *** quotes
     - Avoid using the + and += operators to accumulate a string within
       a loop. Since strings are immutable, this creates unnecessary
@@ -8811,6 +8877,66 @@
 	   no
 
     2) JavaScript Style Rules
+
+       1) Naming
+
+	  0) [@0] "functionNamesLikeThis, variableNamesLikeThis,
+             ClassNamesLikeThis, EnumNamesLikeThis, methodNamesLikeThis,
+             CONSTANT_VALUES_LIKE_THIS, foo.namespaceNamesLikeThis.bar,
+             and filenameslikethis.js"
+
+	  1) Properties and methods
+
+	     - private: suffix =_=
+
+	  2) Method and function parameter
+
+	     - optional methods: =opt_=-prefix
+
+	     - variable arguments indicated by parameter =var_args= do
+               not use in body
+
+	  3) Getters and Setters
+
+	     discouraged
+
+	  4) Accessor functions
+
+	     - getFoo, setFoo, isFoo
+
+	  5) Namespaces
+
+	     can lead to problems solution:
+
+	     1) Use namespaces for global code
+
+		one global object
+
+	     2) Respect namespace ownership
+
+		do not change someone else's, or tell them
+
+	     3) Use different namespaces for external code and internal code
+
+		export explicitly into other project if you do that
+
+		#+BEGIN_SRC js
+                  foo.provide('googleyhats.BowlerHat');
+
+                  foo.require('foo.hats');
+
+                  /**
+                   ,* @constructor
+                   ,* @extends {foo.hats.RoundHat}
+                   ,*/
+                  googleyhats.BowlerHat = function() {
+                    ...
+                  };
+
+                  goog.exportSymbol('foo.hats.BowlerHat', googleyhats.BowlerHat);
+		#+END_SRC
+
+	     4) Alias long type names to improve readability
 
        8) [@8] Visibility (private and protected fields)
 
