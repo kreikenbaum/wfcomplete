@@ -12,6 +12,7 @@ const EMBEDDED_NUM_KAPPA = 0.141385;
 const EMBEDDED_NUM_THETA = 40.3257;
 const PARSINGTIME_MU = -1.24892;
 const PARSINGTIME_SIGMA = 2.08427;
+const REQUEST_LENGTH_MAX = 700;
 
 // td: refactor, remove "factor"
 /** @return expected size of html response * factor */
@@ -35,6 +36,11 @@ var parsingTime = function() {
     return lognormal_(PARSINGTIME_MU, PARSINGTIME_SIGMA);
 }
 exports.parsingTime = parsingTime;
+
+var requestLength = function() {
+    return uniform_(0, REQUEST_LENGTH_MAX);
+}
+exports.requestLength = requestLength;
 
 // TESTING
 /** mean of lognormal_(HTML_MU, HTML_SIGMA) */

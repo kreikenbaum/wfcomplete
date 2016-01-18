@@ -33,8 +33,17 @@
 ** WAIT may \to (ohne) (falls richtig)
 * TODO What is Website Fingerprinting
   Website fingerprinting\cite{hintz02} is a form of traffic
-  analysis\cite{applied96}. It is used to find out which webpages or
-  websites a user is visiting via an anonymizing proxy.
+  analysis\cite{applied96}. It is used to discover which webpages (or
+  websites) a user is visiting via an anonymizing proxy.
+
+  As a typical scenario, consider the government of some state. A
+  whistleblower posts something very critical of the regime on a
+  well-known critical website. The whistleblower uses Tor or some
+  other anonymity service to protect his identity. The government
+  monitors and records all Tor connections. Even though Tor obfuscates
+  the user's traffic, the specific data-pattern of the website gives
+  the whistleblower away.[fn:This is, as of now, a theoretical
+  threat. It has not yet been observed.] How can this happen?
 
   When a user visits a webpage, the browser first sends a request for
   the HTML page. The Webserver answers with that page. Then, the
@@ -60,6 +69,7 @@
   against Tor, due to stream/circuit multiplexing and fixed cell
   sizes.
 ** TODO "the pipelining" breaks the flow, reformulate
+** TODO picture website request
 * How to use Tor
   Tor offers a SOCKS5\cite{rfc1928}-(TCP-)proxy for users. (If an
   application has no proxy settings, the =tsocks=-program provides
@@ -79,28 +89,28 @@
   Among the additional privacy features the Tor-Browser-Bundle
   provides are added request randomization and enabled pipelining.
 * TODO how Tor works
-  Tor anonymizes TCP connections. A TCP stream is triply-encrypted and
-  sent along a path of three intermediaries, none of whom can link its
-  origin to its destination.
+  Tor anonymizes TCP\cite{rfc793} connections. A TCP stream is
+  triply-encrypted and sent along a path of three intermediaries, none
+  of whom can link its origin to its destination.
 
-  After the third node, the message most often leaves the Tor network
-  to any TCP port and server on the Internet. It could also be
-  forwarded to a location-hidden server via Tor's /hidden services/.
+  After the third hop, the message most often leaves the Tor network
+  to any server on the Internet. It could also be forwarded to a
+  location-hidden server via Tor's /hidden services/.
 
   To build a TCP channel, called /circuit/ in Tor, the Tor client
   software (/Onion Proxy/) uses a telescoping approach:
 
   First, Tor builds a cryptographically secure connection to its first
-  hop (each called /Onion Router/). This connection is on top of TLS,
+  hop (each called /Onion Router (OR)/). This connection is on top of TLS,
   using additional, same-length, Tor encryption.
 
   Through this connection, the onion proxy establishes a connection to
-  a second hop, and through the second, to a third hop. (The actual IP
-  connection is thus from the first hop to the second, f.ex.). Each
-  message is then encrypted three times, sent to the first hop, which
-  decrypts it once, and sends it on. The second and third hop do
-  likewise, with the third hop sending the message to the desired
-  recipient.
+  a second hop, and through the second, to a third hop. (The actual
+  TCP connection is from the first hop to the second, and from the
+  second to the third). Each message is then encrypted three times,
+  sent to the first hop, which decrypts it once, and sends it on. The
+  second and third hop do likewise, with the third hop sending the
+  message to the desired recipient.
 
   Tor sends data traffic in 512-byte cells.
 
@@ -841,6 +851,9 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 ** delay of some possible (f.ex. images)
 ** end of transmission detectable
 * TODO differences to walkie-talkie
+* TODO why several covers
+** competition
+** harder to break
 * TODO HTML traffic model
   - intel
     - html object lognormal with params \mu = 7.90272, \sigma = 1.7643

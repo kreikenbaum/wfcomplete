@@ -7,8 +7,6 @@ const pageMod = require("sdk/page-mod");
 const { setTimeout } = require("sdk/timers");
 
 const debug = require("./debug.js");
-const random = require("./random.js");
-const stats = require("./stats.js");
 const coverUrl = require("./coverUrl.js");
 const user = require("./user.js");
 

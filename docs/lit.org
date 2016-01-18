@@ -3398,6 +3398,58 @@
       optimal configuration for each client. We propose to have
       WTF-PAD bootstrap these values during installation.
     - (ends 8)
+** TODO [#A] Entwurfsmuster
+*** summary
+    0) [@0] Preface
+       1) Vorwort
+
+       	  - muster die entstanden sind, gut funktionieren
+
+       2) Geleitwort
+
+       	  Je mehr design vorweg, desto besser.
+
+       3) Leitfaden
+
+       	  1) Typen
+
+	     - erzeugungs-
+
+	     - struktur-
+
+	     - verhaltensmuster
+
+       	  2) wie lesen
+
+	     - problemorientiert (abschnitt 1.6)
+
+	     - einfach: 107, 131, 171, 239, 287, 366, 199, 373
+
+       	  3) nicht wahllos anwenden
+
+	     - effizient vorher abwaegen
+
+    1) [@1] Einfuehrung
+
+       0) [@0] wie die Experten:  Muster, um Problem zu loesen
+
+       1) Was ist ein Entwurfsmuster?
+
+	  vier Teile
+
+	  1) Name
+
+	  2) Problemabschnitt: wann, welches Problem wird adressiert, Kontext
+
+	  3) Lösungsabschnitt: eigentliches Muster, Elemente, Beziehungen
+
+	  4) Konsequenzenabschnitt: z.B. Laufzeit, Vor- und Nachteile
+
+       2) Entwurfsmuster in Smalltalk MVC
+*** quotes
+    - [Muster:] Beschreibungen zusammenarbeitender Objekte und
+      Klassen, die maßgeschneidert sind, um ein allgemeines
+      Entwurfsproblem in einem bestimmten Kontext zu lösen
 ** TODO [#A] [[./tor14design.pdf][Tor: The Second-Generation Onion Router (2014 DRAFT v1)]]
 *** summary
     0) [@0] Abstract
@@ -3741,6 +3793,11 @@
 	  - introduction points can be DoSed \to select many
 
        2) Integration with user applications
+
+	  - seamlessly via OP: virtual =.onion= domain, resolved to
+            hidden service
+
+       3) Previous rendezvous work
 *** quotes
     - most designs protect primarily against traffic analysis rather
       than traffic confirmation
@@ -3781,203 +3838,6 @@
       up with any affordable, effective defense suitable for use in a
       low-latency anonymity network.
     - (ends 4.4.2)
-** TODO [#B] [[./ShWa-Timing06.pdf][Timing analysis in low-latency mix networks: attacks and defenses]]
-*** summary
-    0) [@0] Abstract
-
-       Analyze correlation attacks on low-latency mix networks.
-
-       previous defenses ineffective or huge latency or huge overhead
-
-    1) Introduction
-
-       - low-latency mix networks
-
-       - path establishment not researched
-
-       - realistic traffic model based on HTTP traces
-
-       - adaptive padding
-
-	 - fill statistically unlikely gaps
-
-	 - also against active attackers
-
-       - compare to constant rate dummy traffic
-
-    2) Related work
-
-       - Venkatraman: mathematical model, defense requiring complete knowledge
-
-       - Timmerman: traffic masking: assure certain profile via cover
-         traffic and artificial delays
-
-       - Berthold: high-latency, intermediate dummy, global,
-
-         - CONTRA: not fine-grained
-
-       - Rennhard: artificially delay traffic
-
-         - CONTRA: latency
-
-       - Fu: constant rate is vulnerable to analysis of inter-packet
-         arrivals,
-
-         - SOLUTION: variable inter-packet intervals
-
-       - defensive-dropping: drop at intermediate, same constant rate,
-
-         - CONTRA: latency
-
-       - Overlier: trusted entry node,
-
-	 - PRO: combines with this
-
-    3) Model and metrics
-
-       1) Network
-
-	  sender, path of N (small: {2,3}, large: {5..8}) mixes, destination
-
-	  like tarzan
-
-	  (end-to-end TCP?)
-
-       2) Timing analysis
-
-	  - attacker measures inter-packet intervals
-
-	  - active: also impose unique timing signature
-
-	  - simple model: ignores TCP effect of drops and bursts
-
-       3) Defense metric.
-
-	  - adversary: correlate packet counts
-
-	  - crossover rate: see "timing...systems"
-
-       4) Negative impact on network performance.
-
-	  - metric: padding ratio
-
-	  - metric: extra delay
-
-    4) Adaptive padding
-
-       create statistic traffic, send if no packet in next drawn
-       sample time
-
-       1) Data structures: bins, indexed exponentially
-
-       2) Adaptive padding algorithm
-
-	  1. take token
-
-	     - if packet arrives before time, remove token for packet
-               arrival time, replace token into bin
-
-	     - else, send dummary after token's time
-
-	  2. until token buckets empty
-
-       3) Destroying natural fingerprints
-
-	  - 2 modes
-
-	    - burst: packet received, take expected high-duration
-
-	    - gap: dummy sent, take expected low-duration
-
-    5) Experimental evaluation
-
-       0) [@0] 
-
-	  - 4 schemes
-
-	    - undefended
-
-	    - defensive dropping
-
-	    - defensive dropping variant with constant rate cover traffic
-
-	    - adaptive padding
-
-	  - exponential distribution
-
-       1) Attack model
-
-	  - observes 60 seconds
-
-	  - does cross-correlation for 1-second-steps
-
-	  - sets threshold t to equals FPR and FNR
-
-	  - defender's goal: high t
-
-       2) Evaluation results
-
-	  - constant rate dummies and no cover fails
-
-	  - defensive dropping works by upping other streams' correlation
-
-	  - adaptive padding works by lowering this stream's correlation
-
-       3) Short paths
-
-	  2-3 mixes
-
-	  - defensive dropping works worse
-
-	  - adaptive padding works better
-
-    6) Active attacks
-*** quotes
-    - Many mix networks are specifically intended to provide anonymity
-      against attackers who control the communication medium.
-    - Traffic analysis is an especially serious threat for low-latency
-      mix networks because it is very difficult to hide statistical
-      characteristics of the packet stream and satisfy the stringent
-      latency requirements imposed by interactive applications.
-    - The standard measure of success is the /crossover error rate/, at
-      which the attacker’s false positive rate is equal to his false
-      negative rate.
-    - (Maximum crossover error rate is 0.5, which corresponds to
-      random guessing.)
-    - recognized as a serious threat to low-latency mix networks, but
-      few defenses have been proposed to date.
-    - (ends 2?)
-    - An active attacker can also impose his own unique timing
-      signature (by dropping packets or introducing artificial bursts)
-      onto the flow he is interested in, and then attempt to identify
-      this signature on other network links.
-    - (ends 3)
-    - samples from the statistical distribution of inter-packet
-      intervals. If the next packet arrives before the chosen interval
-      expires, it is forwarded and a new value is sampled. To avoid
-      skewing resulting intervals towards short values, the
-      distribution is modified slightly to increase the probability of
-      drawing a longer interval next time.
-    - rough statistical distribution of inter packet intervals for a
-      “normal” flow [...] can be pre-computed from traffic
-      repositories such as NLANR [21]
-    - increasing the range represented by each bin exponentially with
-      the bin index works well.
-    - (ends 4.Data structures)
-    - We do not model TCP acknowledgements, re-transmissions,
-      exponential backoff in response to dropped packets, and other
-      TCP features that may be exploited by a sophisticated attacker.
-    - (ends 5.0)
-    - We conjecture that long-term attacks cannot be prevented without
-      assuming that some senders or mixes emit cover traffic in
-      perfect synchrony, which cannot be achieved by any real system.
-    - The attacker chooses t [threshold for correlation r(d)] so that
-      the false positive and false negative rates are equal. This is
-      the attacker’s crossover error rate. High crossover rate means
-      that the defense is effective.
-    - (ends 5.1)
-*** questions
-    - 
 ** TODO [#A] [[./cacr2015-08.pdf][Wang - Walkie-Talkie: An Effective and Efficient Defense against Website Fingerprinting]]
 *** summary
     0) [@0] ABSTRACT
@@ -4210,6 +4070,10 @@
 	  - overhead 35% \to fpr 5%, 55% \to fpr 10%
 
        3) Comparison with previous defenses
+
+	  morphing (other form) and padding (more traffic)
+
+	  1) Morphing
 *** quotes
     - design goals:
       1. General: The defense succeeds against all possible
@@ -4327,6 +4191,25 @@
 	  - divide and conquer: divide matrix into submatrices, optimize these
 
        5) Practical Considerations
+
+	  1. Short Network Sessions
+
+	     f.ex. http: continue until some equality is reached
+
+	  2. Variations in Source Distribution
+
+	     website might give different distributions (hot/ cold)
+
+	     solution: meta-matrix (with clustering) which determines
+             which matrix to use
+
+	  3. Reducing Packet Sizes
+
+	     better to also split packets. Easy with voip, HTTP: split
+             packet, use rest verbatim (sample directly from target
+             distributino)
+
+    4. Evaluation
 *** quotes
     - morphing one class of traffic to look like another class.
     - show how to optimally modify packets in real-time to reduce the
@@ -4479,6 +4362,8 @@
 	  - HTML by Content-type || file-ending: html/htm, cgi, asp,
             sml, stm, php, '/'
 
+	  - see quotes-table
+
     5) MODEL AND ANALYSIS RESULT
 *** quotes
     - the actual packet inter-arrival time (IAT) is governed by
@@ -4505,6 +4390,203 @@
       | Request Size  | 318.59          | 179.46 | Uniform (350 Bytes)          |
 *** questions
     - correlation of features (high object count \to high page size)?
+** TODO [#B] [[./ShWa-Timing06.pdf][Timing analysis in low-latency mix networks: attacks and defenses]]
+*** summary
+    0) [@0] Abstract
+
+       Analyze correlation attacks on low-latency mix networks.
+
+       previous defenses ineffective or huge latency or huge overhead
+
+    1) Introduction
+
+       - low-latency mix networks
+
+       - path establishment not researched
+
+       - realistic traffic model based on HTTP traces
+
+       - adaptive padding
+
+	 - fill statistically unlikely gaps
+
+	 - also against active attackers
+
+       - compare to constant rate dummy traffic
+
+    2) Related work
+
+       - Venkatraman: mathematical model, defense requiring complete knowledge
+
+       - Timmerman: traffic masking: assure certain profile via cover
+         traffic and artificial delays
+
+       - Berthold: high-latency, intermediate dummy, global,
+
+         - CONTRA: not fine-grained
+
+       - Rennhard: artificially delay traffic
+
+         - CONTRA: latency
+
+       - Fu: constant rate is vulnerable to analysis of inter-packet
+         arrivals,
+
+         - SOLUTION: variable inter-packet intervals
+
+       - defensive-dropping: drop at intermediate, same constant rate,
+
+         - CONTRA: latency
+
+       - Overlier: trusted entry node,
+
+	 - PRO: combines with this
+
+    3) Model and metrics
+
+       1) Network
+
+	  sender, path of N (small: {2,3}, large: {5..8}) mixes, destination
+
+	  like tarzan
+
+	  (end-to-end TCP?)
+
+       2) Timing analysis
+
+	  - attacker measures inter-packet intervals
+
+	  - active: also impose unique timing signature
+
+	  - simple model: ignores TCP effect of drops and bursts
+
+       3) Defense metric.
+
+	  - adversary: correlate packet counts
+
+	  - crossover rate: see "timing...systems"
+
+       4) Negative impact on network performance.
+
+	  - metric: padding ratio
+
+	  - metric: extra delay
+
+    4) Adaptive padding
+
+       create statistic traffic, send if no packet in next drawn
+       sample time
+
+       1) Data structures: bins, indexed exponentially
+
+       2) Adaptive padding algorithm
+
+	  1. take token
+
+	     - if packet arrives before time, remove token for packet
+               arrival time, replace token into bin
+
+	     - else, send dummary after token's time
+
+	  2. until token buckets empty
+
+       3) Destroying natural fingerprints
+
+	  - 2 modes
+
+	    - burst: packet received, take expected high-duration
+
+	    - gap: dummy sent, take expected low-duration
+
+    5) Experimental evaluation
+
+       0) [@0] 
+
+	  - 4 schemes
+
+	    - undefended
+
+	    - defensive dropping
+
+	    - defensive dropping variant with constant rate cover traffic
+
+	    - adaptive padding
+
+	  - exponential distribution
+
+       1) Attack model
+
+	  - observes 60 seconds
+
+	  - does cross-correlation for 1-second-steps
+
+	  - sets threshold t to equals FPR and FNR
+
+	  - defender's goal: high t
+
+       2) Evaluation results
+
+	  - constant rate dummies and no cover fails
+
+	  - defensive dropping works by upping other streams' correlation
+
+	  - adaptive padding works by lowering this stream's correlation
+
+       3) Short paths
+
+	  2-3 mixes
+
+	  - defensive dropping works worse
+
+	  - adaptive padding works better
+
+    6) Active attacks
+*** quotes
+    - Many mix networks are specifically intended to provide anonymity
+      against attackers who control the communication medium.
+    - Traffic analysis is an especially serious threat for low-latency
+      mix networks because it is very difficult to hide statistical
+      characteristics of the packet stream and satisfy the stringent
+      latency requirements imposed by interactive applications.
+    - The standard measure of success is the /crossover error rate/, at
+      which the attacker’s false positive rate is equal to his false
+      negative rate.
+    - (Maximum crossover error rate is 0.5, which corresponds to
+      random guessing.)
+    - recognized as a serious threat to low-latency mix networks, but
+      few defenses have been proposed to date.
+    - (ends 2?)
+    - An active attacker can also impose his own unique timing
+      signature (by dropping packets or introducing artificial bursts)
+      onto the flow he is interested in, and then attempt to identify
+      this signature on other network links.
+    - (ends 3)
+    - samples from the statistical distribution of inter-packet
+      intervals. If the next packet arrives before the chosen interval
+      expires, it is forwarded and a new value is sampled. To avoid
+      skewing resulting intervals towards short values, the
+      distribution is modified slightly to increase the probability of
+      drawing a longer interval next time.
+    - rough statistical distribution of inter packet intervals for a
+      “normal” flow [...] can be pre-computed from traffic
+      repositories such as NLANR [21]
+    - increasing the range represented by each bin exponentially with
+      the bin index works well.
+    - (ends 4.Data structures)
+    - We do not model TCP acknowledgements, re-transmissions,
+      exponential backoff in response to dropped packets, and other
+      TCP features that may be exploited by a sophisticated attacker.
+    - (ends 5.0)
+    - We conjecture that long-term attacks cannot be prevented without
+      assuming that some senders or mixes emit cover traffic in
+      perfect synchrony, which cannot be achieved by any real system.
+    - The attacker chooses t [threshold for correlation r(d)] so that
+      the false positive and false negative rates are equal. This is
+      the attacker’s crossover error rate. High crossover rate means
+      that the defense is effective.
+    - (ends 5.1)
+*** questions
+    - 
 ** TODO [#B] [[./LZCLCP_NDSS11.pdf][HTTPOS: Sealing Information Leaks with Browser-side Obfuscation of Encrypted Flows]]
 *** summary
     0) [@0] Abstract
@@ -5855,6 +5937,48 @@
     - 4. Negotiating and initializing connections
     - read to
       - 4.4. AUTHENTICATE cells
+** TODO [#C] [[./Liberatore_2006.pdf][Inferring the Source of Encrypted HTTP Connections]]
+*** ref
+    #+BEGIN_SRC bibtex
+      @inproceedings{Liberatore:2006,
+        title = {{Inferring the Source of Encrypted HTTP Connections}},
+        author = {Marc Liberatore and Brian Neil Levine},
+        booktitle = {Proceedings of the 13th ACM conference on Computer and Communications
+              Security (CCS 2006)},
+        year = {2006},
+        month = {November},
+        pages = {255--263},
+        www_tags = {selected},
+        www_section = {Traffic analysis},
+        www_pdf_url = {http://prisms.cs.umass.edu/brian/pubs/liberatore.ccs2006.pdf},
+      }
+    #+END_SRC
+** TODO [#C] [[./hintz02.pdf][Fingerprinting Websites Using Traffic Analysis]]
+*** summary
+    0) [@0] Abstract
+
+       Attack to find out whether user is visiting certain websites,
+       even though he uses an encrypted proxy. 
+
+       Plus discussion: better attack and defenses
+
+    1) Introduction
+
+       With normal encryption, metadata is visible. 
+
+       With one-hop proxies, metadata is discoverable.
+
+       Tere are several defenses.
+
+    2) Definition of Traffic Analysis
+
+       sender, receiver, amount of data transferred (ssl does not try
+       to obfuscate)
+*** quotes
+    - The process of monitoring the nature and behavior of traffic,
+      rather than its content, is known as traffic analysis.
+*** ref
+    [[file:master.bib::hintz02][Hintz 2002: Fingerprinting Websites Using Traffic Analysis]]
 ** TODO [[./csbuflo.pdf][Cai - CS-BuFLO: A Congestion Sensitive Website Fingerprinting Defense]]
 *** quotes
     - Our experiments find that Congestion-Sensitive BuFLO has high
@@ -5935,22 +6059,6 @@
     3) WEBSITE FINGERPRINTING ATTACKS
 *** ref
     [[file:master.bib::wpes14-csbuflo][Cai et al. 2014: CS BuFLO]]
-** TODO [#C] [[./Liberatore_2006.pdf][Inferring the Source of Encrypted HTTP Connections]]
-*** ref
-    #+BEGIN_SRC bibtex
-      @inproceedings{Liberatore:2006,
-        title = {{Inferring the Source of Encrypted HTTP Connections}},
-        author = {Marc Liberatore and Brian Neil Levine},
-        booktitle = {Proceedings of the 13th ACM conference on Computer and Communications
-              Security (CCS 2006)},
-        year = {2006},
-        month = {November},
-        pages = {255--263},
-        www_tags = {selected},
-        www_section = {Traffic analysis},
-        www_pdf_url = {http://prisms.cs.umass.edu/brian/pubs/liberatore.ccs2006.pdf},
-      }
-    #+END_SRC
 ** TODO [[./ipccc12-tor-performance.pdf][Improving Performance and Anonymity in the Tor Network]]
 *** ref
     #+BEGIN_SRC bibtex
@@ -5984,32 +6092,6 @@
       }
     #+END_SRC
 ** TODO [[./10.1.1.10.5823.pdf][Quantifying Traffic Analysis of Encrypted Web-Browsing]]
-** TODO [#C] [[./hintz02.pdf][Fingerprinting Websites Using Traffic Analysis]]
-*** summary
-    0) [@0] Abstract
-
-       Attack to find out whether user is visiting certain websites,
-       even though he uses an encrypted proxy. 
-
-       Plus discussion: better attack and defenses
-
-    1) Introduction
-
-       With normal encryption, metadata is visible. 
-
-       With one-hop proxies, metadata is discoverable.
-
-       Tere are several defenses.
-
-    2) Definition of Traffic Analysis
-
-       sender, receiver, amount of data transferred (ssl does not try
-       to obfuscate)
-*** quotes
-    - The process of monitoring the nature and behavior of traffic,
-      rather than its content, is known as traffic analysis.
-*** ref
-    [[file:master.bib::hintz02][Hintz 2002: Fingerprinting Websites Using Traffic Analysis]]
 ** TODO [[https://www.torproject.org/projects/torbrowser/design/#proxy-obedience][The Design and Implementation of the Tor Browser]]
    - [[./browser.html][local copy]]
 *** summary
@@ -7098,6 +7180,86 @@
 
        7) Displaying the date/time in messages
 *** quotes
+** TODO [[./ton96.pdf][Self-Similarity in World Wide Web Traffic: Evidence and Possible Causes]]
+*** summary
+*** quotes
+** TODO [[file:sarle/comp.ai.neural-nets%20FAQ,%20Part%201%20of%207:%20Introduction.html][Sarle Neural Network FAQ Part 1]]
+*** summary
+    1) Introduction
+
+       - What is a neural network (NN)?
+
+	 *Artificial* Neural Network:
+
+	 parallelistic learning, experiential learning, asynchronous
+
+       - Where can I find a simple introduction to NNs?
+
+	 see chapter 4
+
+       - Are there any online books about NNs?
+
+*** quotes
+    - Some care should be invested into a summary:
+      - simple concatenation of all the answers is not enough: instead,
+       redundancies, irrelevancies, verbosities, and errors should be
+       filtered out (as well as possible)
+      - the answers should be separated clearly
+      - the contributors of the individual answers should be
+        identifiable (unless they requested to remain anonymous [yes,
+        that happens])
+      - the summary should start with the "quintessence" of the
+        answers, as seen by the original poster
+      - A summary should, when posted, clearly be indicated to be one
+        by giving it a Subject line starting with "SUMMARY:"
+      Note that a good summary is pure gold for the rest of the newsgroup
+      community
+    - If trained carefully, NNs may exhibit some capability for
+      generalization beyond the training data, that is, to produce
+      approximately correct results for new cases that were not used
+      for training.
+*** ref
+    Sarle, W.S., ed. (1997), Neural Network FAQ, part 1 of 7:
+    Introduction, periodic posting to the Usenet newsgroup
+    comp.ai.neural-nets, URL: ftp://ftp.sas.com/pub/neural/FAQ.html
+** TODO [[file:Curse%20of%20dimensionality%20-%20Wikipedia,%20the%20free%20encyclopedia.html][file:~/da/git/docs/Curse of dimensionality - Wikipedia, the free encyclopedia.html]]
+** TODO [[file:Regularization%20(mathematics)%20-%20Wikipedia,%20the%20free%20encyclopedia.html][file:~/da/git/docs/Regularization (mathematics) - Wikipedia, the free encyclopedia.html]]
+** TODO [[~/da/git/docs/10.1.1.96.7225.pdf][A Guided Tour to Approximate String Matching]]
+*** quotes
+    - Despite the fact that most existing algorithms concentrate on
+      the simple edit distance, many of them can be easily adapted to
+      the generalized edit distance, and we pay attention to this
+      issue throughout this work.
+    - by allowing only insertions and deletions at cost 1, we can
+      compute the *longest common subsequence* (LCS) between two
+      strings.
+    - simplification that has received a lot of attention is the
+      variant that allows only substitutions (*Hamming distance*).
+    - error correction. The physical transmission of signals is
+      error-prone. To ensure correct transmission over a physical
+      channel, it is necessary to be able to recover the correct
+      message after a possible modification (error) introduced during
+      the transmission. The probability of such errors is obtained
+      from the signal processing theory and used to assign a cost to
+      them.
+    - Although this area has not developed much with respect to
+      approximate searching, it has generated the most important
+      measure of similarity, known as the Levenshtein distance
+      [Levenshtein 1965; 1966] (also called “edit distance”).
+    - (ends 2.2)
+    - This paper is most concerned with the simple edit distance,
+      which we denote ed(·). Although transpositions are of interest
+      (especially in case of typing errors), there are few algorithms
+      to deal with them. However, we will consider them at some point
+      in this work (note that a transposition can be simulated with an
+      insertion plus a deletion, but the cost is different). We also
+      point out when the algorithms can be extended to have different
+      costs of the operations (which is of special interest in
+      computational biology), including the extreme case of not
+      allowing some operations. This includes the other distances
+      mentioned.
+    - (ends 3.1)
+** TODO [[~/da/git/docs/mlj12.pdf][Good edit similarity learning by loss minimization]]
 ** PART [#A] [[./random.pdf][Computer Generation of Statistical Distributions]]
 *** quotes
     5) [@5] PROBABILITY DISTRIBUTION FUNCTIONS
@@ -8260,83 +8422,6 @@
       Note that the comprehension is executed in a separate scope, so
       names assigned to in the target list don’t “leak” in the
       enclosing scope.
-** TODO [[file:sarle/comp.ai.neural-nets%20FAQ,%20Part%201%20of%207:%20Introduction.html][Sarle Neural Network FAQ Part 1]]
-*** summary
-    1) Introduction
-
-       - What is a neural network (NN)?
-
-	 *Artificial* Neural Network:
-
-	 parallelistic learning, experiential learning, asynchronous
-
-       - Where can I find a simple introduction to NNs?
-
-	 see chapter 4
-
-       - Are there any online books about NNs?
-
-*** quotes
-    - Some care should be invested into a summary:
-      - simple concatenation of all the answers is not enough: instead,
-       redundancies, irrelevancies, verbosities, and errors should be
-       filtered out (as well as possible)
-      - the answers should be separated clearly
-      - the contributors of the individual answers should be
-        identifiable (unless they requested to remain anonymous [yes,
-        that happens])
-      - the summary should start with the "quintessence" of the
-        answers, as seen by the original poster
-      - A summary should, when posted, clearly be indicated to be one
-        by giving it a Subject line starting with "SUMMARY:"
-      Note that a good summary is pure gold for the rest of the newsgroup
-      community
-    - If trained carefully, NNs may exhibit some capability for
-      generalization beyond the training data, that is, to produce
-      approximately correct results for new cases that were not used
-      for training.
-*** ref
-    Sarle, W.S., ed. (1997), Neural Network FAQ, part 1 of 7:
-    Introduction, periodic posting to the Usenet newsgroup
-    comp.ai.neural-nets, URL: ftp://ftp.sas.com/pub/neural/FAQ.html
-** TODO [[file:Curse%20of%20dimensionality%20-%20Wikipedia,%20the%20free%20encyclopedia.html][file:~/da/git/docs/Curse of dimensionality - Wikipedia, the free encyclopedia.html]]
-** TODO [[file:Regularization%20(mathematics)%20-%20Wikipedia,%20the%20free%20encyclopedia.html][file:~/da/git/docs/Regularization (mathematics) - Wikipedia, the free encyclopedia.html]]
-** TODO [[~/da/git/docs/10.1.1.96.7225.pdf][A Guided Tour to Approximate String Matching]]
-*** quotes
-    - Despite the fact that most existing algorithms concentrate on
-      the simple edit distance, many of them can be easily adapted to
-      the generalized edit distance, and we pay attention to this
-      issue throughout this work.
-    - by allowing only insertions and deletions at cost 1, we can
-      compute the *longest common subsequence* (LCS) between two
-      strings.
-    - simplification that has received a lot of attention is the
-      variant that allows only substitutions (*Hamming distance*).
-    - error correction. The physical transmission of signals is
-      error-prone. To ensure correct transmission over a physical
-      channel, it is necessary to be able to recover the correct
-      message after a possible modification (error) introduced during
-      the transmission. The probability of such errors is obtained
-      from the signal processing theory and used to assign a cost to
-      them.
-    - Although this area has not developed much with respect to
-      approximate searching, it has generated the most important
-      measure of similarity, known as the Levenshtein distance
-      [Levenshtein 1965; 1966] (also called “edit distance”).
-    - (ends 2.2)
-    - This paper is most concerned with the simple edit distance,
-      which we denote ed(·). Although transpositions are of interest
-      (especially in case of typing errors), there are few algorithms
-      to deal with them. However, we will consider them at some point
-      in this work (note that a transposition can be simulated with an
-      insertion plus a deletion, but the cost is different). We also
-      point out when the algorithms can be extended to have different
-      costs of the operations (which is of special interest in
-      computational biology), including the extreme case of not
-      allowing some operations. This includes the other distances
-      mentioned.
-    - (ends 3.1)
-** TODO [[~/da/git/docs/mlj12.pdf][Good edit similarity learning by loss minimization]]
 ** [[/home/chive/IT-gg/rfc7159.json-storage-and_xfer.txt][The JavaScript Object Notation (JSON) Data Interchange Format]]
 *** summary
     0) [@0] Abstract
@@ -8418,7 +8503,6 @@
         >>> nbrs = NearestNeighbors(n_neighbors=4, algorithm='ball_tree',
         ...            metric='pyfunc', func=mydist)
       #+END_SRC
-
 ** Mozilla Add-On SDK
 *** Guides
 **** XUL Migration Guide
@@ -8938,14 +9022,33 @@
 
 	     4) Alias long type names to improve readability
 
+		aliases for long names, f.ex.
+
+		#+BEGIN_SRC js
+                  myapp.main = function() {
+                    var MyClass = some.long.namespace.MyClass;
+                    var staticHelper = some.long.namespace.MyClass.staticHelper;
+                    staticHelper(new MyClass());
+                  };
+		#+END_SRC
+
+		but not =MyClass.someProperty= unless Enum
+
+	     5) Filenames
+
+		all lowercase (for some platforms ...), only =-= and =_=
+
+       2) Custom toString() methods
+
+          yes, but must always succeed without side effects
+
+       3) Deferred initialization
+
        8) [@8] Visibility (private and protected fields)
 
 	  use @private in jsdoc
 ** [[../sw/jasondavies_bloomfilter.js%20%C2%B7%20GitHub.html]]
 ** [[./reftex.pdf][RefTeX Manual]]
-** TODO MOVE [[./ton96.pdf][Self-Similarity in World Wide Web Traffic: Evidence and Possible Causes]]
-*** summary
-*** quotes
 ** [[./btxdoc.pdf][BIBTEXing]]
 *** summary
 *** quotes

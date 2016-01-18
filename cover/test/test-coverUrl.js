@@ -20,7 +20,8 @@ exports["test sized tiny"] = function(assert) {
     assert.ok(coverUrl.sized(3) == ROBOTS, 'failed');
 };
 exports["test sized fix"] = function(assert) {
-    assert.ok(coverUrl.sized(94) == 'http://mlsec.org/harry/api/nav_g.png',
+    var result = coverUrl.sized(94);
+    assert.ok(result.split('?')[0] == 'http://mlsec.org/harry/api/nav_g.png',
 	      'failed, result ' + coverUrl.sized(94));
 };
 exports["test sized too big"] = function(assert) {
