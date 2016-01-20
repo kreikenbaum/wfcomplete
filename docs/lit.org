@@ -3478,6 +3478,70 @@
 	    - dekorierer (199) scrollbar hinzufuegen
 
        3) Beschreibung von Entwurfsmustern
+
+	  - Mustername und Klasse, Zweck, Auch bekannt als,
+            Motivation, Anwendbarkeit, Struktur, Teilnehmer,
+            Interaktionen, Implementierung, Beispielcode, Bekannte
+            Verwendungen, Verwandte Muster
+
+	  - Konsequenzen: was auch varriert werden kann
+
+       4) Der Katalog von Entwurfsmustern
+
+	  1) Abstrakte Fabrik (Abstract Factory): ?
+
+	  2) Adapter: merge two apis
+
+	  3) Befehl (Command), command as object
+
+	  4) Beobachter (Observer): 1-n Objekte, notify on change
+
+	  5) Besucher (Visitor): Operation on elements of f.ex. array
+
+	  6) Brücke (Bridge): function and implementation de-coupling
+
+	  7) Dekorierer (Decorator): dynamic alternative to subclassing
+
+	  8) Erbauer (Builder): create object not in object itself,
+             create many
+
+	  9) Fabrikmethode (Factory Method): subclasses of creation
+
+	  10) Fassade (Facade): einheitliche Schnittstelle fuer mehrere
+
+	  11) Fliegengewicht (Flyweight): ?
+
+	  12) Interpreter (Interpreter): DSL
+
+	  13) Itertor: sequentieller zugriff ohne details zu kennen
+
+	  14) Kompositum (Composite): baumstrukturen als teil-ganzes (XML?)
+
+	  15) Memento: z.B. serialisierung
+
+	  16) Protoyp: neue Objekte durch Kopieren des Protoypen
+
+	  17) Proxy: zugriffskontrolle
+
+	  18) Schablonenmethode (Template Method): delegierender Algorithmus
+
+	  19) Singleton: genau ein Exemplar
+
+	  20) Strategie (Strategy): austauschbare Familie von Algorithmen
+
+	  21) Vermittler (Mediator): koppelt und kapselt unabhaengige Objekte
+
+	  22) Zustand (State): Objekte wechselt verhalten bei wechselndem zustand
+
+	  23) Zustaendigkeitskette (Chain of Responsibility): aka pipes
+
+       5) Organisation des Katalogs
+
+	  - klassen- vs objekt-basiert
+
+	  - erzeugungs-, vs struktur-, vs verhaltensmuster
+
+       6) Wie Entwurfsmuster Entwurfsprobleme lösen
 *** quotes
     - [Muster:] Beschreibungen zusammenarbeitender Objekte und
       Klassen, die maßgeschneidert sind, um ein allgemeines
@@ -7875,6 +7939,68 @@
 	    #+END_SRC
 
        6. The Constructor Invocation Pattern
+
+	  - js is prototypal
+
+	  - extend prototypes like
+	    #+BEGIN_SRC js
+              var Quo = function (string) {
+                  this.status = string;
+              };
+              Quo.prototype.get_status = function ( ) {
+                  return this.status;
+              };
+              var myQuo = new Quo("confused");
+	    #+END_SRC
+
+	    not recommended
+
+       7. The Apply Invocation Pattern
+
+	  - apply(new_this, [args])
+
+	    - can also be called from other class member
+
+	      #+BEGIN_SRC js
+                var status = Quo.prototype.get_status.apply(statusObject);
+	      #+END_SRC
+
+       8. Arguments
+
+	  - extra function parameter, array-like (=length=)
+
+       9. Return
+
+	  - if not specified, =undefined= is returned (except for constructor)
+
+       10. Exceptions
+
+	   - raise
+	     #+BEGIN_SRC js
+               throw {
+               name: 'TypeError',
+               message: 'add needs numbers'
+               };
+	     #+END_SRC
+
+	   - except
+	     #+BEGIN_SRC js
+               try {
+                   add("seven");
+               } catch (e) {
+                   document.writeln(e.name + ': ' + e.message);
+               }
+	     #+END_SRC
+
+	   - one =catch= block
+
+       11. Augmenting Types
+
+	   - add f.ex. =trim= to string
+
+	   - add only if not yet existing ;-)
+
+       12. Recursion
 *** quotes
     - We appreciate, but do not require, attribution. An attribution
       usually includes the title, author, publisher, and ISBN. For
@@ -8670,7 +8796,7 @@
        two preferences). This means that messages written using
        debug(), log(), info(), trace(), and warn() will not appear in
        the console.
-** [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Eloquent Javascript]]
+** PART MOVE [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Eloquent Javascript]]
 *** summary
     8. [@8] Object-oriented Programming
 
@@ -8722,6 +8848,57 @@
 	 - 2d, discrete time and place, # wall, ' ' free, o bug
 
        - functions: =toString=, =step=, =start=, =stop=
+
+    12. [@12] The Document-Object Model
+
+	- =<HTML>= via =document.documentElement=
+
+	  - =<BODY>= via =document.body=
+
+	- f.ex. =document.body.parentNode= to get the parent
+
+	  - =.childNodes=, =.firstChild= and =.lastChild=
+
+	  - =.previousSibling= and =.nextSibling=
+
+	- if text node, then =node.nodeType= = 3, (most often) else 1
+
+	- =.nodeName= for tag name (CAPITALIZED)
+
+	  - =.firstChild.nodeValue= for text value
+
+	- exercise: get text of html tags
+
+	  #+BEGIN_SRC js
+            function getText(node) {
+              if ( isTextNode(node) ) {
+                return node.nodeValue;
+              } else {
+                var out = "";
+                for ( var i = 0; i < node.childNodes.length; i++ ) {
+                  out += getText(node.childNodes[i]);
+                }
+                return out;
+              }
+            };
+            print(getText(document.body));
+	  #+END_SRC
+
+	- =node.innerHTML= gives HTML, also changeable which effects website
+
+	- =document.getElementById("picture")= gives element
+
+	  - also =document.getElementsByTagName[0]=
+
+	- =var h = document.createElement("H1");= creates new header
+
+	  - =var text = document.createTextNode("hi there");= creates text node
+
+	  - =h.appendChild(text)= and =document.appendChild(h)= appends both
+
+	  - also =newImage.setAttribute("src", "img/Hiva Oa.png");=
+
+	- continue at "But, when we want"
 *** quotes
     - (begins 4)
     - The keyword `delete` cuts off properties. Trying to read a
