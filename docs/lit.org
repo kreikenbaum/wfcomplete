@@ -3517,7 +3517,7 @@
 
 	  14) Kompositum (Composite): baumstrukturen als teil-ganzes (XML?)
 
-	  15) Memento: z.B. serialisierung
+          15) Memento: z.B. serialisierung
 
 	  16) Protoyp: neue Objekte durch Kopieren des Protoypen
 
@@ -3542,10 +3542,149 @@
 	  - erzeugungs-, vs struktur-, vs verhaltensmuster
 
        6) Wie Entwurfsmuster Entwurfsprobleme lösen
+
+	  1) Finden passender Objekte
+
+	     - reale welt,
+
+	     - beschreibung \to verben+nomen
+
+	     - etc, am ende weiterentwickelt
+
+	     - entwurfsmuster geben wiederverwendbarkeit
+
+	  2) Bestimmen von Objektgranularität
+
+	     - fassade: subsystem als objekt
+
+	     - fliegengewicht: viele objekte kleinster granularitaet
+
+	     - unterteilen hilfe: abstrakte fabrik, erbauer, besucher, befehl
+
+	  3) Spezifizieren von Objektschnittstellen
+
+	     - *Signatur*: rueckgabewert functionsname(parameter, ...)
+
+	     - *Schnittstelle*: alle signaturen
+
+	     - *typ* name einer schnittstelle, *sub-* und *supertyp*,
+               mehrere moeglich pro objekt
+
+	     - *polymorphie*: ersetzbarkeit objekte gleichen typs
+
+	  4) Spezifizieren von Objektimplementierungen
+
+	     0) [@0]
+
+		- *Klasse* erzeugt *Exemplar*
+
+		- */Abstrakte Klasse/* hat *KonkreteUnterklasse*
+
+		- *Mixin-Klasse* bei Mehrfachvererbung
+
+	     1) Klassen- versus Schnittstellenvererbung
+
+		- Klasse vererbt Implementation, Schnittstelle nicht
+
+		- wichtig fuer Entwurfsmuster
+
+		  - Typ: Zustaendigkeitskette, Kompositionsmuster,
+                    Befehl, Beobachter, Zustand, Strategie
+
+		  - Klasse: Kompositum
+
+	     2) Programmieren auf eine Schnittstelle hin, nicht auf
+                eine Implementierung
+
+		- erlaubt unwissenheit ueber klassen der objekte
+
+		- und ueber klassen, die die objekte implementieren
+
+	  5) Wiederverwendungsmechanismen anwenden
+
+	     1) Vererbung versus Komposition
+
+		- vererbung
+
+		  - +: einfach, von programmiersprache unterstuetzt,
+                    modifizieren
+
+		  - -: nicht zur laufzeit aendern, aenderung der
+                    oberklasse aendert auch die unterklasse
+
+		    - loesung: nur von abstrakten klassen erben
+
+		- komposition
+
+		  - +: kapselung beibehalten, kann ersetzt werden,
+                    klassen bleiben klein
+
+		  - -: mehr objekte
+
+	     2) Delegation
+
+		- hat-ein statt ist-ein, rueckreferenz
+
+		- aufrufe an interne objekte weitergeben
+
+		- z.b. zustand (an zustandsobjekt delegieren),
+                  strategie (spezifische strategie), besucher (jedes
+                  objekt der hierarchie wird von besuchsobjekt bearbeitet)
+
+		- manchmal: vermittler, zustaendigkeitskette (falls
+                  referenz auf erstes bearbeitendes objekt),
+
+	     3) Vererbung versus parametrisierbare Typen
+
+		- C++/Java Templates
+
+		- z.b. sortieren liste objekte
+
+		  1. unterklassen sortieren je nach typ (vererbung)
+
+		     standard vorsehen/ ueberschreiben, statisch
+
+		  2. sortierobjekt mitgeben (komposition)
+
+		     kann weniger effizient sein
+
+		  3. templates: fest benannte funktion wird aufgerufen
+
+		     typen aendern, statisch
+
+		- hier nicht explizit verwendet, fuer c++ beispiele,
+                  unnoetig in smalltalk
+
+	  6) Strukturen der Laufzeit- und Übersetungszeit aufeinander
+             beziehen
+
+	     - aggregation: teil
+
+	     - bekanntschaft: aufrufbar, aber auch unterschiedliche laufzeiten
+
+	     - gleiche programmierpraktiken
+
+	  7) Veränderungen in Entwürfen
 *** quotes
     - [Muster:] Beschreibungen zusammenarbeitender Objekte und
       Klassen, die maßgeschneidert sind, um ein allgemeines
       Entwurfsproblem in einem bestimmten Kontext zu lösen
+    - (ends 1.2?-1.5)
+    - Beispielsweise erscheinen Objekte, die einen Prozeß oder einen
+      Algorithmus repräsentieren, nicht in der Natur, sind aber
+      trozdem ein essentieller Teil flexibler Entwürfe.
+    - (ends ?-1.6.3)
+    - Die im Deutschen haeufig anzutreffende Uebersetzung on
+      "instance" mit Instanz trifft den Originalbegriff
+      nicht. Instanzen sind im Deutschen zu Beispiel Behoerden oder
+      gerichtliche Instanzen, nicht aber konkrete Auspraegungen einer
+      Klasse. Hier wird deswegen der Begriff Exemplar verwendet. Die
+      Verbform "instantiieren" ist zwar verwendbar, wird aber, um
+      Verwirrung zu vermeiden, in dieser Uebersetzung durch "erzeugen"
+      ersetzt.
+    - *Programmiere auf eine Schnittstelle hin, nicht auf eine
+      Implementierung*.
+    - *Ziehe Objektkomposition der KLassenvererbung vor*
 ** TODO [#A] [[./tor14design.pdf][Tor: The Second-Generation Onion Router (2014 DRAFT v1)]]
 *** summary
     0) [@0] Abstract
@@ -3902,6 +4041,26 @@
 	  - Goldberg: manual hunt down location, no dh, volunteers spared work
 
     6) Other design decisions
+
+       1) Denial of service
+
+	  - several possibilities, none yet seen in the wild
+
+	  - start: TLS, harder for server, for DOS
+
+	    - defense: puzzle or limit number of create cells
+
+	  - as DoS amplifier, create long path, one cell per hop
+
+	    - defense: limit to 8 via relay_early cells (only 8 sendable)
+
+	  - attack ORs network links or hosts
+
+       2) Exit policies, node history, and abuse
+
+	  - choose between  open / restricted / private exit and middleman
+
+       3) Directory Servers
 *** quotes
     - most designs protect primarily against traffic analysis rather
       than traffic confirmation
@@ -8001,6 +8160,93 @@
 	   - add only if not yet existing ;-)
 
        12. Recursion
+
+	   - not tail-recursive
+
+	   - great for dom-walking f.ex.
+
+       13. Scope
+
+	   - function scope:
+	     #+BEGIN_SRC js
+               var foo = function ( ) {
+                   var a = 3, b = 5;
+                   var bar = function ( ) {
+                       var b = 7, c = 11;
+                       // At this point, a is 3, b is 7, and c is 11
+                       a += b + c;
+                       // At this point, a is 21, b is 7, and c is 11
+                   };
+                   // At this point, a is 3, b is 5, and c is not defined
+                   bar( );
+                   // At this point, a is 21, b is 5
+               };
+	     #+END_SRC
+
+	   - recommendation: declare variables at top of function body
+
+       14. Closure
+
+	   - allow for private variables
+	     #+BEGIN_SRC js
+               var myObject = function ( ) {
+                   var value = 0;
+                   return {
+                       increment: function (inc) {
+                           value += typeof inc === 'number' ? inc : 1;
+                       },
+                       getValue: function ( ) {
+                           return value;
+                       }
+                   };
+               }( );
+	     #+END_SRC
+
+	     - not capitalized as =this=-functionality not used
+
+	   - has access to actual values, not copies
+
+       15. Callbacks
+
+	   - non-blocking paused execution, f.ex
+	     #+BEGIN_SRC js
+               request = prepare_the_request( );
+               send_request_asynchronously(request, function (response) {
+                   display(response);
+               });
+	     #+END_SRC
+
+       16. Module
+
+	   - use closure to make functions with private parts
+
+       17. Cascade
+
+	   - if would return nothing: return this to allow multiple calls
+	     #+BEGIN_SRC js
+               getElement('myBoxDiv').
+                   move(350, 150).
+                   width(100).
+                   height(100).
+                   color('red').
+                   border('10px outset').
+                   padding('4px').
+                   appendText("Please stand by").
+                   on('mousedown', function (m) {
+                       this.startDrag(m, this.getNinth(m));
+                   }).
+                   on('mousemove', 'drag').
+                   on('mouseup', 'stopDrag').
+                   later(2000, function ( ) {
+                       this.
+                           color('yellow').
+                           setHTML("What hath God wraught?").
+                           slide(400, 40, 200, 200);
+                   }).
+                   tip('This box is resizeable');
+	     #+END_SRC
+
+       18. Curry
 *** quotes
     - We appreciate, but do not require, attribution. An attribution
       usually includes the title, author, publisher, and ISBN. For
