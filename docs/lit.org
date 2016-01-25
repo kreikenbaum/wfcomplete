@@ -3664,7 +3664,7 @@
 
 	     - gleiche programmierpraktiken
 
-	  7) Veränderungen in Entwürfen
+	  7) Veränderungen in Entwürfen vorhersehen
 
 	     - Ursachen von Entwurfsrevisionen
 
@@ -3685,7 +3685,67 @@
 
 		  besser: abstrakte fabrik, bruecke, memento, proxy
 
-	       5. ...
+	       5. aogorithmische abhaengigkeiten: objekte bieten
+                  spezielle funktionen hierfuer an
+
+		  besser: erbauer, iterator, strategie,
+                  schablonenmethode, besucher
+
+	       6. Enge Kopplung: besser lose Kopplung (parameter bei erzeugung)
+
+		  besser: abstrakte fabrik, bruecke,
+                  zustaendigkeitskette, befehl, fassade, vermittler,
+                  beobachter
+
+	       7. mehr funktionalitaet durch unterklassen
+
+		  besser: komposition und delegation
+
+		  muster: bruecke, zustaendigkeitskette, kompositum,
+                  dekorierer, beobachter, strategie
+
+	       8. umoeglichkeit, klassen bequem zu aendern (z.b. closed source)
+
+		  muster: adapter, dekorierer, besucher
+
+	     - Anwendungsprogramme
+
+	       interne wiederverwendung, wartbarkeit und
+               erweiterbarkeit durch lose kopplung
+
+	     - Klassenbibliotheken
+
+	       - bieten funktionalitaet ohne design vorzugeben
+
+	       - schwieriger als programme: in mehreren kontexten
+
+	     - Frameworks
+
+	       - design vorgegeben
+
+	       - man erweitert um spezielle teile
+
+	       - schwieriger als klassenbibliotheken
+
+	       - dokumentation noch besser mit entwurfsmustern (struktur)
+
+       7) Wie man ein Entwurfsmuster auswaehlt
+
+	  - bedenken welche wie loesen
+
+	  - zweckabschnitte (1.4) querlesen
+
+	  - beziehungen bedenken
+
+	  - muster mit gleicher aufgabe untersuchen
+
+	  - gruende fuer entwurfsrevisionen (1.6) pruefen, ob dabei
+
+	  - was sollte variabel sein
+
+       8) Wie man ein Entwurfsmuster verwendet
+
+	  todo s.41
 
     3) [@3] Erzeugungsmuster
 
@@ -3711,9 +3771,59 @@
 
 	     - KonkreteFabrik1(etc) erzeugt ProduktA(etc)1
 
-	  5) td: Anwendbarkeit
+	  5) Anwendbarkeit
 
+	     - familien von jeweils verwandten objekten
 
+	  6) Teilnehmer
+
+	     - AbstrakteFabrik deklariert abstrakte schnittstelle fuer
+               konkrete konstruktoren
+
+	     - konkretefabrik erzeugt bestimmten typ von objekten
+
+	     - abstraktesprodukt deklariert schnittstelle
+
+	     - konkretesprodukt implementiert schnittstelle, von
+               konkretefabrik gebaut
+
+	  7) Interaktionen
+
+	     - eine konkretefabrik zur laufzeit, von abstraktefabrik aufgerufen
+
+	  8) Konsequenzen
+
+	     - isolation konkreter klassen
+
+	     - einfacher austausch von produktfamilien
+
+	     - konsistenzsicherung unter objekten
+
+	     - (-) schwierige unterstuetzung neuer Produkte
+
+	  9) Implementierung
+
+	     1. Fabriken als Singletons
+
+	     2. Erzeugen von Produkten: eine fabrikmethode pro
+                produkt, oder bei vielen produkten per prototyp, oder
+                klassenbasiert (bei klassen als objekten erster
+                ordnung)
+
+	     3. definieren von erweiterbaren fabriken durch
+                parametrisierte =erzeuge=-funktion. (-): ein rueckgabetyp
+
+	  10) Beispielcode
+	      
+	      erweiterbares labyrinth um bomben und zauber
+
+	  11) Bekannte Verwendungen
+
+	      ET++, Interview ;-)
+
+	  12) Verwandte Muster
+
+	      fabrikmethoden oder prototyp, fabrik ist oft singleton
 
     5) [@5] Verhaltensmuster
 
@@ -3818,6 +3928,462 @@
     - *Programmiere auf eine Schnittstelle hin, nicht auf eine
       Implementierung*.
     - *Ziehe Objektkomposition der KLassenvererbung vor*
+** TODO [#A] [[./javascript_the_good_parts.pdf][JavaScript: The Good Parts]]
+*** summary
+    1. Good parts
+
+       - some: functionaly programming, prototypal inheritance
+
+       - very different from other languages
+
+    2. Grammar
+
+       1. Railroad diagrams
+
+	  - left, to right
+
+	  - literal: oval, rules: rect
+
+	  - legal iff following tracks
+
+	  - one bar: whitespace allowed, two: not
+
+       2. Whitespace
+
+	  - comments as usual
+
+	  - better use // instead of /* */ (regex f.ex. /a*/.match(s);)
+
+       3. Names
+
+	  - letter, then also digit, underscore
+
+	  - reserved words
+
+	  - not undefined, NaN, infinity
+
+       4. Numbers
+
+	  - only float (double)
+
+	  - (- is operator)
+
+       5. Strings
+
+	  - sequence
+
+	  - ' or "
+
+	  - escape characters: '"\/bfnrt or u1212 (f.ex.)
+
+	  - .length
+
+	  - exactly same characters \to equal
+
+       6. Statements
+
+	  - var: function's private variables
+
+	  - loads of parts, mostly like other languages
+
+       7. Literals
+
+	  - number, string, object, array, function, regexp
+
+	  - object { name | "string": values, ...}
+
+       8. Functions
+
+	  - function [name] parameters function_body
+
+	  - body: { var_statements, statements }
+
+    3. Objects
+
+       0. [@0] preface
+
+	  - prototype linkage
+
+       1. Object Literals
+
+	  - can nest
+
+	  - name: unquoted possible if could be identifier
+
+       2. Retrieval
+
+	  - use =.= instead of =[ ]=: easier to read
+
+	  - undefined in not existing
+
+	  - fill in default values if undefined:
+
+	    #+BEGIN_SRC js
+              var middle = stooge["middle-name"] || "(none)";
+	    #+END_SRC
+
+	  - guard agains typeerror (value from undefined) via &&
+
+	    #+BEGIN_SRC js
+              flight.equipment && flight.equipment.model
+	    #+END_SRC
+
+       3. Update
+
+	  - create if not exist, else change
+
+       4. Reference
+
+	  - pass by reference: same object
+
+       5. Prototype
+
+	  - like class in other languages
+
+	  - snippet to copy class: [[(object.create)]]
+
+       6. Reflection
+
+	  - introspection
+
+	  - also gives functions, and stuff up the hierarchy
+
+	    - solution: use =hasOwnProperty=
+
+       7. Enumeration
+
+	  - avoid functions with =typeof= and prototype's stuff by
+            =hasOwnProperty=
+
+	  - possible: use explicit array of properties
+
+       8. Delete
+
+	  - allows prototype to "shine through"
+
+       9. Global Abatement
+
+	  - single global variable =MYAPP=
+
+	    - becomes container
+
+	  - also closure possible
+
+    4. Functions
+
+       0. [@0]
+
+	  - "fundamental modular unit of JavaScript."
+
+       1. Function Objects
+
+	  - each function has a =Function.prototype=
+
+	    - context and code implementing
+
+       2. Function Literal
+
+	  1. =function= reserved word
+
+	  2. name, or anonymous
+
+	     - used to call recursively, etc
+
+	  3. parameters
+
+	  4. body
+
+	  has access to outer scope (closure)
+
+       3. Invocation
+
+	  - caller suspends execution
+
+	  - function receives parameters + =this= and =arguments=
+
+	    - this determined by how it is called
+
+       4. The Method Invocation Pattern
+
+	  - method: refinement, aka =.= or =[subscript]=
+
+	  - this bound at invocation time to object
+
+       5. The Function Invocation Pattern
+
+	  - function: bound to global scope
+
+	  - *also inner functions*
+
+	  - workaround: use =that=:
+	    #+BEGIN_SRC js
+              myObject.double = function ( ) {
+                  var that = this;
+                  // Workaround.
+                  var helper = function ( ) {
+                      that.value = add(that.value, that.value);
+                  };
+                  helper();
+              };
+
+              myObject.double();
+              document.writeln(myObject.getValue( )); // 6
+	    #+END_SRC
+
+       6. The Constructor Invocation Pattern
+
+	  - js is prototypal
+
+	  - extend prototypes like
+	    #+BEGIN_SRC js
+              var Quo = function (string) {
+                  this.status = string;
+              };
+              Quo.prototype.get_status = function ( ) {
+                  return this.status;
+              };
+              var myQuo = new Quo("confused");
+	    #+END_SRC
+
+	    not recommended
+
+       7. The Apply Invocation Pattern
+
+	  - apply(new_this, [args])
+
+	    - can also be called from other class member
+
+	      #+BEGIN_SRC js
+                var status = Quo.prototype.get_status.apply(statusObject);
+	      #+END_SRC
+
+       8. Arguments
+
+	  - extra function parameter, array-like (=length=)
+
+       9. Return
+
+	  - if not specified, =undefined= is returned (except for constructor)
+
+       10. Exceptions
+
+	   - raise
+	     #+BEGIN_SRC js
+               throw {
+               name: 'TypeError',
+               message: 'add needs numbers'
+               };
+	     #+END_SRC
+
+	   - except
+	     #+BEGIN_SRC js
+               try {
+                   add("seven");
+               } catch (e) {
+                   document.writeln(e.name + ': ' + e.message);
+               }
+	     #+END_SRC
+
+	   - one =catch= block
+
+       11. Augmenting Types
+
+	   - add f.ex. =trim= to string
+
+	   - add only if not yet existing ;-)
+
+       12. Recursion
+
+	   - not tail-recursive
+
+	   - great for dom-walking f.ex.
+
+       13. Scope
+
+	   - function scope:
+	     #+BEGIN_SRC js
+               var foo = function ( ) {
+                   var a = 3, b = 5;
+                   var bar = function ( ) {
+                       var b = 7, c = 11;
+                       // At this point, a is 3, b is 7, and c is 11
+                       a += b + c;
+                       // At this point, a is 21, b is 7, and c is 11
+                   };
+                   // At this point, a is 3, b is 5, and c is not defined
+                   bar( );
+                   // At this point, a is 21, b is 5
+               };
+	     #+END_SRC
+
+	   - recommendation: declare variables at top of function body
+
+       14. Closure
+
+	   - allow for private variables
+	     #+BEGIN_SRC js
+               var myObject = function ( ) {
+                   var value = 0;
+                   return {
+                       increment: function (inc) {
+                           value += typeof inc === 'number' ? inc : 1;
+                       },
+                       getValue: function ( ) {
+                           return value;
+                       }
+                   };
+               }( );
+	     #+END_SRC
+
+	     - not capitalized as =this=-functionality not used
+
+	   - has access to actual values, not copies
+
+       15. Callbacks
+
+	   - non-blocking paused execution, f.ex
+	     #+BEGIN_SRC js
+               request = prepare_the_request( );
+               send_request_asynchronously(request, function (response) {
+                   display(response);
+               });
+	     #+END_SRC
+
+       16. Module
+
+	   - use closure to make functions with private parts
+
+       17. Cascade
+
+	   - if would return nothing: return this to allow multiple calls
+	     #+BEGIN_SRC js
+               getElement('myBoxDiv').
+                   move(350, 150).
+                   width(100).
+                   height(100).
+                   color('red').
+                   border('10px outset').
+                   padding('4px').
+                   appendText("Please stand by").
+                   on('mousedown', function (m) {
+                       this.startDrag(m, this.getNinth(m));
+                   }).
+                   on('mousemove', 'drag').
+                   on('mouseup', 'stopDrag').
+                   later(2000, function ( ) {
+                       this.
+                           color('yellow').
+                           setHTML("What hath God wraught?").
+                           slide(400, 40, 200, 200);
+                   }).
+                   tip('This box is resizeable');
+	     #+END_SRC
+
+       18. Curry
+	   
+	   set fixed parameters to functions
+
+	   #+BEGIN_SRC js
+             Function.method('curry', function ( ) {
+                 var slice = Array.prototype.slice,
+                     args = slice.apply(arguments),
+                     that = this;
+                 return function ( ) {
+                     return that.apply(null, args.concat(slice.apply(arguments)));
+                 };
+             });
+	   #+END_SRC
+
+       19. Memoization
+
+	   store already computed values in function via
+
+	   #+BEGIN_SRC js
+             var memoizer = function (memo, fundamental) {
+                 var shell = function (n) {
+                     var result = memo[n];
+                     if (typeof result !== 'number') {
+                         result = fundamental(shell, n);
+                         memo[n] = result;
+                     }
+                     return result;
+                 };
+                 return shell;
+             };
+	   #+END_SRC
+	   use as
+	   #+BEGIN_SRC js
+             var fibonacci = memoizer([0, 1], function (shell, n) {
+                 return shell(n - 1) + shell(n - 2);
+             });
+	   #+END_SRC
+
+    5. Inheritance
+
+       code reuse, save development time. js facilitates many types of
+       inheritance
+
+       1. Pseudoclassical
+
+	  complicated, not really necessary
+
+       2. Object Specifiers
+
+	  - use one object with members instead of parameters
+
+	  - params can be any order, easier to read, bonus: JSON creation
+
+       3. Prototypal
+
+	  differential inheritance: specify what is new
+
+	  - create object
+
+	  - [[(object.create)]]
+
+	  - specify changes
+
+	  - (-) no private variables
+
+       4. Functional
+*** quotes
+    - We appreciate, but do not require, attribution. An attribution
+      usually includes the title, author, publisher, and ISBN. For
+      example: “JavaScript: The Good Parts by Douglas
+      Crockford. Copyright 2008 Yahoo! Inc., 978-0-596-51774-8.”
+    - (ends 0+1)
+    - It is usually necessary to test object.hasOwnProperty(variable)
+      to determine whetherthe property name is truly a member of the
+      object or was found instead on the prototype chain.
+      #+BEGIN_SRC js
+        for (myvar in obj) {
+            if (obj.hasOwnProperty(myvar)) {
+                    ...
+            }
+        }
+      #+END_SRC
+    - prefix operator [...] + to number
+    - The && operator produces the value of its first operand if the
+      first operand is falsy. Otherwise, it produces the value of the
+      second operand.
+    - (ends 2)
+    - The create method creates a new object that uses an old object
+      as its prototype. [...]
+      #+BEGIN_SRC js
+        if (typeof Object.create !== 'function') {
+            Object.create = function (o) {   (ref:object.create)
+                var F = function () {};
+                F.prototype = o;
+                return new F();
+            };
+        }
+        var another_stooge = Object.create(stooge);
+      #+END_SRC
+    - ...
+    - (bad parts)
+    - I have never seen a piece ofcode that was not improved by
+      refactoring it to remove the continue statement.
+    - (ends bp)
 ** TODO [#A] [[./tor14design.pdf][Tor: The Second-Generation Onion Router (2014 DRAFT v1)]]
 *** summary
     0) [@0] Abstract
@@ -4202,6 +4768,14 @@
 	  - create consensus by voting
 
        4) The Tor controller protocol
+
+	  - alternative to config file and log output
+
+	  - ASCII-based messages
+
+	  - control also path selection etc
+
+    7) Attacks and Defenses
 *** quotes
     - most designs protect primarily against traffic analysis rather
       than traffic confirmation
@@ -4491,6 +5065,17 @@
                overhead than tamaraw/supersequence
 
        4) Performance against known attacks
+
+	  - none comes close to theoretical maximum
+
+	  - different amounts of padding (\to bandwidth) (none, low, high)
+
+    7) ALTERNATIVE DEFENSES
+
+       without generality (only against kNN), without ease-of-use
+       (only select sites), without decentralization (with database)
+
+       1) Without generality
 *** quotes
     - design goals:
       1. General: The defense succeeds against all possible
@@ -4535,118 +5120,6 @@
       traffic.
 
       How about timing data?
-** TODO MOVE [#C] [[./morphing09.pdf][Traffic Morphing: An Efficient Defense Against Statistical Traffic Analysis]]
-*** summary
-    0. [@0] Abstract
-
-       morphing changes traffic to look like another site
-
-    1. Introduction
-
-       convex optimization to simulate (morph to) other site
-
-       split etc packets to create the appearance of another site
-
-       here: only packet size features obfuscated
-
-    2. Related Work
-
-       - Song: SSL timing analysis for login password length
-
-       - Sun: SSL - use size of HTML objects to identify web pages
-
-       - Liberatore: with persisten connections and SSH port forwarding
-
-       - Wright: VoIP language spoken
-
-       - Saponas: identify movies within encrypted connections
-
-       - Wright: identify spoken phrases in encrypted VoIP
-
-       - Wagner/Dean: mimicry attack vs IDS
-
-       - Soto: against pH IDS
-
-       - Tan: against stide IDS
-
-       - Fogla: packet payloads, hide malicious payload
-
-       - many: fake training data
-
-    3. Traffic Morphing
-
-       0) [@0]
-    
-	  - alter "distribution of packet sizes"
-
-       1) What is the Matrix?
-
-	  - morphing matrix: given input probability sizes X and
-            output probability sizes Y, find matrix A such that Y=AX
-
-	  - receive packet of size s_j, sample target size s_i from j-th
-            column of A via cumulative probability
-
-	  - pads with zeros if s_i > s_j, split otherwise
-
-	  - convex optimization to get minimal overhead
-
-       2) Morphing via Convex Optimization
-
-	  - n^2 variables, 2n bounds \to infinite possibilities
-
-	  - cost function example: number of additional bytes
-
-       3) Additional Morphing Constraints
-
-	  - if overspecified, use multilevel programming
-
-	  - step-by-step to solution
-
-       4) Dealing with Large Sample Spaces
-
-	  - divide and conquer: divide matrix into submatrices, optimize these
-
-       5) Practical Considerations
-
-	  1. Short Network Sessions
-
-	     f.ex. http: continue until some equality is reached
-
-	  2. Variations in Source Distribution
-
-	     website might give different distributions (hot/ cold)
-
-	     solution: meta-matrix (with clustering) which determines
-             which matrix to use
-
-	  3. Reducing Packet Sizes
-
-	     better to also split packets. Easy with voip, HTTP: split
-             packet, use rest verbatim (sample directly from target
-             distributino)
-
-    4. Evaluation
-
-       0) [@0]
-
-	  - against wright and liberatore attacks
-
-	  - also against binary with/without morphing classifier
-
-       1) Encrypted Voice over IP
-*** quotes
-    - morphing one class of traffic to look like another class.
-    - show how to optimally modify packets in real-time to reduce the
-      accuracy of a variety of traffic classifiers while incurring
-      much less overhead than padding.
-    - (ends 0)
-    - For the remainder of this paper, we focus on the use of our
-      morphing techniques in thwarting traffic classifiers that
-      utilize features based on packet sizes.
-    - (ends 1 + 2)
-*** ref
-    [[file:~/da/docs/master.bib::morphing09][Wright et al. 2009: Traffic Morphing]]
 ** TODO [#A] [[./802163c-01_30r1.pdf][Traffic Model for 802.16 TG3 MAC/PHY Simulations]]
 *** summary
     1) Introduction
@@ -5171,905 +5644,6 @@
     - (ends 1)
 *** ref
     [[file:~/da/docs/master.bib::oakland2012-peekaboo][Dyer et al. 2012: Peek Boo I]]
-** PART MOVE [#B] [[./ESLII_print4.pdf][The Elements of Statistical Learning]]
-*** summary
-    1) Introduction
-
-       examples
-
-    2) Overview of Supervised Learning
-
-       1) inputs
-
-          == predictors (statistics)
-
-          == independent variables (statistics)
-
-	  == features (pattern recognition)
-
-	  outputs
-
-	  == responses (statistics)
-
-	  == dependent variables (statistics)
-
-       2) Variable Types and Terminology
-
-	  - qualitative aka discrete aka categorical variables aka factors
-
-	    example: handwritten digits, fisher's irises
-
-	  - regression for quantitative outputs Y, classification for
-            qualitative outputs G
-
-       3) Two Simple Approaches to Prediction: Least Squares and
-          Nearest Neighbors
-
-	  0) [@0]
-
-	     - linear model
-
-	       - "stable but possibly inaccurate predictions"
-
-	     - k-nearest neighbors
-
-	       - "often accurate but can be unstable"
-
-	  1) Linear Models and Least Squares
-
-	     "solve" the quadratic equation in quotes by finding a
-             minimum
-
-	  2) Nearest-Neighbor Methods
-
-	     - majority of the closest (by specific metric) k neigbors
-               are of the class
-
-	     - k=1 - might lead to overfitting
-
-	  3) From Least Squares to Nearest Neighbors
-
-	     - defined later
-
-	       - variance: ca schwankung
-
-	       - bias: ca vorannahmen
-
-	     - ls: high bias, low variance
-
-	     - nn: low bias, high variance
-
-	     - knn - degrees of freedom: N / k
-
-	     - many models today are variations of knn and the linear
-               model
-
-       4) Statistical Decision Theory
-
-	  - minimize expected loss
-
-	    - knn: localized minimization
-
-	    - linear model: assume linearity
-
-	    - expected loss (for regression):
-
-	      - squared (L2) most often,
-
-	      - L1 has discontinuties in derivative (=nicht stetig diffbar)
-
-	    - expected loss for classification:
-
-	      - often zero-one loss function
-
-	      - results in Bayes classifiers
-
-	    - classification similar to regression
-
-	      - knn: localized conditional probability, estimated by
-                training sample proportions
-
-	      - linear: map to dummy variable
-
-       5) Local Methods in High Dimensions
-
-	  - unbiased methods like problematic supposedly more
-            problematic, as dimension rises
-
-       6) Statistical Models, Supervised Learning and Function
-          Approximation
-
-	  0) [@0]
-
-	     Try to approximate the I/O relationship f(x) via f\circ(x)
-
-	     1) A Statistical Model for the Joint Distribution Pr(X, Y )
-*** quotes
-    - Chapter 18 explores the “p ≫ N ” problem, which is learning in
-      high-dimensional feature spaces. These problems arise in many
-      areas, including genomic and proteomic studies, and document
-      classification.
-    - (Ends preface to the Second Edition)
-    - 7 Model Assessment and Selection
-    - 7.10.2 The Wrong and Right Way to Do Cross-validation
-    - 15 Random Forests
-    - 18 High-Dimensional Problems: p ≫ N
-    - 18.3.3 The Support Vector Classifier
-    - (ends Contents)
-    - Average percentage of words or characters in an email message
-      equal to the indicated word or character. We have chosen the
-      words and characters showing the largest difference between spam
-      and email.
-      |       | george |  you | your |   hp | free |  hpl |    ! |  our |   re |  edu | remove |
-      |-------+--------+------+------+------+------+------+------+------+------+------+--------|
-      | spam  |   0.00 | 2.26 | 1.38 | 0.02 | 0.52 | 0.01 | 0.51 | 0.51 | 0.13 | 0.01 |   0.28 |
-      | email |   1.27 | 1.27 | 0.44 | 0.90 | 0.07 | 0.43 | 0.11 | 0.18 | 0.42 | 0.29 |   0.01 |
-    - This is a classification problem for which the error rate needs
-      to be kept very low [...] In order to achieve this low error
-      rate, some objects can be assignedto a “don’t know” category,
-      and sorted instead by hand.
-    - splines, wavelets and regularization/penalization methods for a
-      single predictor, [...] kernel methods and local
-      regression. Both of these sets of methods are important building
-      blocks for high-dimensional learning techniques.
-    - At the end of each chapter we discuss computational considerations
-    - Chapters 1–4 be first read in sequence. Chapter 7 should also be
-      considered mandatory, as it covers central concepts that pertain
-      to all learning methods.
-    - (ends 1)
-    - predict the output Y via the model
-
-      Ŷ = β̂_{0} + \sum_{j=1}^{p} X_{j} β̂_{j} . (2.1)
-    - in vector form as an inner product
-
-      Ŷ = X^{T} β̂, (2.2)
-    - least squares. In this approach, we pick the coefficients β to
-      minimize the residual sum of squares
-
-      RSS(β) = \sum_{i=1}^{N} (y_{i} − x^{T}_{i} β)^{2}. (2.3)
-    - in matrix notation. We can write
-
-      RSS(β) = (y − Xβ)^{T} (y − Xβ), (2.4)
-    - the unique solution is given by
-
-      β̂ = (X^{T} X)^{−1} X^{T} y, (2.6)
-    - In the case of one Gaussian per class, we will see in Chapter 4
-      that a linear decision boundary is the best one can do, and that
-      our estimate is almost optimal. The region of overlap is
-      inevitable, and future data to be predicted will be plagued by
-      this overlap as well.
-    - (ends 2.3.1)
-    - linear decision boundary [...] has low variance and potentially
-      high bias.
-    - k-nearest-neighbor [...] high variance and low bias.
-    - 1-nearest-neighbor, the simplest of all, captures a large
-      percentage of the market for low-dimensional problems.
-    - Kernel methods use weights that decrease smoothly to zero with
-      distance from the target point, rather than the effective 0/1
-      weights used by k-nearest neighbors.
-    - Projection pursuit and neural network models consist of sums of
-      nonlinearly transformed linear models.
-    - (ends 2.3.3)
-    - X ∈ R^{p} input
-    - Y ∈ R output
-    - function f(X) for predicting Y
-    - /squared error loss/: L(Y, f(X)) = (Y − f (X))^{2} .
-    - EPE(f) = E(Y − f (X))^{2} (2.9)
-
-      = \int [y − f (x)]^{2} Pr(dx, dy) (2.10)
-
-      the /expected (squared) prediction error/
-    - The solution is
-
-      f (x) = E(Y |X = x), (2.13)
-
-      the conditional expectation, also known as the regression
-      function. Thus the best prediction of Y at any point X = x is
-      the conditional mean, when best is measured by average squared
-      error.
-    - (ends 2.4)
-    - In ten dimensions we need to cover 80% of the range of each
-      coordinate to capture 10% of the data.
-    - (ends 2.5)
-    - Thus it is not surprising that the analysis of high-dimensional
-      data requires either modification of procedures designed for the
-      N > p scenario, or entirely new procedures
-    - (ends 2.6.0)
-    - (ends 18.1)
-** PART MOVE [#B] [[./thebook.pdf][INTRODUCTION TO MACHINE LEARNING]] [0/2]
-*** TODO summary
-    1) Introduction
-
-       often in background
-
-       1) A Taste of Machine Learning
-
-	  applications, formalize
-
-	  1) Applications
-
-	     - page rank
-
-	     - collaborative filtering: amazon recommendations
-
-	     - automatic translation
-
-	     - face recognition vs face verification
-
-	     - named entity recognition: from documents etc some named thing
-
-	     - speech recognition: annotate voice sample
-
-	       - and similarly: handwriting, etc
-
-	     classification: yes/no answer
-
-	  2) Data
-
-	     types of data
-
-	     - Lists
-
-	     - Sets
-
-	     - Matrices
-
-	     - Images
-
-	     - Videos
-
-	     - Trees and Graphs
-
-	     - Strings
-
-	     - Compound structures: combine these
-
-	  3) Problems
-
-	     1) Binary Classification:
-
-		- online learning: instantaneous determination of y for x
-
-		- batch learning: group of stuff
-
-		- transduction: know X' (testing data)
-
-		- active learning: choose X
-
-		- estimation with missing variables
-
-		- covariate shift correction: X and X' from different
-                  data sources
-
-		- co-training: related but different problems
-
-		- loss functions
-
-	     2) Multiclass Classification
-
-	     3) Structured Estimation
-
-	     4) Regression
-
-	     5) Novelty Detection: new and unusual observations
-
-       2) Probability Theory
-
-	  1) Random Variables
-
-	     X takes on values in f.ex. \cal X = {1,..., 6} \ni x
-
-	  2) Distributions
-
-	     - discrete values: probability mass function, PMF
-
-	     - continuous values: probability density function, PDF
-	       integral: CDF
-
-	     - Pr(a \le X \le b) = \int_{a}^{b} dp(x) = F(b) - F(a)
-
-	     - Quantile: value x' for which Pr(X < x') \le q, Pr(X > x') \le 1-q
-	       is /q-quantile/. q=0.5: /median/
-
-	  3) Mean and Variance
-
-	     - mean: E[x] = \sum_{x} xp(x) and \int x dp(x)
-	       E[f(x)] =  \int f(x) dp(x)
-
-	     - variance Var[X] = E[(X - E(X))^{2}]
-	       Var[f(x)] =  E[(f(X) - E(f(X)))^{2}]
-
-	  4) Marginalization, Independence, Conditioning, and Bayes Rule
-
-	     0) [@0]
-
-		- marginalization, independence, conditioning, iid, bayes
-		  rule: see quotes
-
-		- Bayes Rule holds because p(x,y) = p(x|y)p(y) = p(y|x)p(x)
-
-		- "The key consequence of (1.15) is that we may
-                  reverse the conditioning between a pair of random
-                  variables."
-
-	     1) An Example
-
-		HIV testing,
-
-		- p(T = HIV+ | X = HIV+) = 1
-
-		- p(T = HIV+ | X = HIV-) = 0.01
-
-		- p(X = HIV+) = 0.0015
-                  \to  p(X = HIV-) = 0.9985
-
-		- then p(X = HIV+ | T = HIV+) is (shorthand P(x+, t-) etc)
-		  = p(t+ | x+) p(x+) / p(t+)
-
-		- p(t+) = p(x+, t+) + p(x-, t+)
-		  = p(t+ | x+ ) p(x+) + p(t+ | x-) p(x-)
-		  = 1 * 0.0015 + 0.01 * 0.9985
-
-		- back to p(x+ | t+)
-		  = 1 * 0.0015 / (1 * 0.0015 + 0.01 * 0.9985)
-
-		- increase test accuracy by further information (f.ex. age)
-
-		- and further, conditionally independent, tests
-
-       3) Basic Algorithms
-
-	  0) [@0]
-
-	     - features X, labels y
-
-	     - /bag of words/: "Assume we have a list of all possible
-               words occurring in X, that is a dictionary, then we are
-               able to assign a unique number with each of those words
-               (e.g. the position in the dictionary). Now we may
-               simply count for each document x_{i} the number of times
-               a given word j is occurring. This is then used as the
-               value of the j-th coordinate of x_{i}."
-
-	  1) Naive Bayes
-
-	     use bayes formula with approximations
-
-	     - replace p(x) by likelihood ratio (adjusted)
-
-	     - replace p(x|y) by independent product of parts (spam: words)
-
-	  2) Nearest Neighbor Estimators
-
-	     - distance to (k-) nearest point(s).
-
-	     - whichever class is closest
-
-	     - distance-dependent
-
-	     - works well if work was put into distance
-
-	  3) A Simple Classifier
-
-	     1. use means of classes
-
-	     2. compute distance of point to means
-
-	     3. extension: line boundary \to geometric boundary
-
-	  4) Perceptron
-
-	     - online learning
-
-	     - "data points x t ∈ R d , and labels y t ∈ {±1}"
-
-	       - if wrong, updates w by x_{t}y_{t}
-
-	       - kernelizeable: x replaceable by \phi(x)
-
-	     - converges if convergeable
-
-	     - margin describes how thin the border is
-
-	     - novikoff's theorem gives perceptron's accuracy bounded
-               by margin (+ data set diameter)
-
-	     - proof by two limits per step, induction, cauchy-schwartz
-
-	     - perceptron was used in (a)nn
-
-	     - here, more complex feature maps and "associated kernel"s
-
-	  5) K-Means
-
-	     - cluster
-
-	     - start with k /prototype vector/s,
-
-	     - approximate classes
-
-	     - approximate vectors
-
-	     - repeat
-
-    2) Density Estimation
-
-       1) Limit Theorems
-
-	  0) [@0] Casino
-
-	     - example: 100 die (1w6) tosses at casino yields only 11 6es
-               (instead of 17, as expected)
-
-	     - (^{m}_{n}) = m! / n!(m-n)! different sequences with
-               proportions n="6" and m="not 6" respectively
-
-	     - only 11 '6'es for 100 die tosses: \sim 7.0%
-
-	       probability[X \le 11] = \sum_{i=0}^{11} (^{100}_{i}) (1/6)^{i}  (5/6)^{100-i}
-
-	  1) Fundamental Laws
-
-	     - weak law: irgendwann ist summe durch \epsilon beschraenkt
-
-	     - strong law: wkt der konvergenz ist 1
-
-	     - central limit theorem: id vars converge to (var-sth)
-               normal distribution (all - \mu)
-
-	     - slutsky: continuous functions can be pulled into E
-
-	     - delta method: see later
-
-	  2) The Characteristic Function
-
-	     - Fourier transform
-
-	     - Characteristic functions
-
-	     - Sum of random variables and convolutions
-
-	       - Proof via Y=z-x, joint distribution p(z, x)
-
-	     - proofs of 1)
-
-	     - moments \to function
-
-	  3) Tail Bounds
-
-	     - Gauss inequality: proof via
-
-	       - 1 \le x/\epsilon (auf [\epsilon, \infty))
-
-	       - 1/\epsilon herausziehen, auf [0, \infty) erweitern
-
-	       - auf dem Intervall ist x durschnittlich kleiner \mu
-
-	  4) An Example
-
-	     - assume that all production steps are iid, have the same \mu_{B}
-
-	     - X_{i} for wafer i
-
-	     - X̄_{m} the average of the yields of m wafers using process
-               ’B’
-
-	     - interested in is the accuracy \epsilon for which the
-               probability
-
-	       δ = Pr(| X̄_{m} − μ_{B} | > \epsilon) satisfies δ ≤ 0.05.
-
-	     - solve
-
-	       - chebyshev: 40000
-
-	       - hoeffding: 738
-
-	       - central limit theorem: 55
-
-       2) Parzen Windows
-
-	  1) Discrete Density Estimation
-
-	     estimate by actual occurrences in sample data
-
-	     problem: some numbers might not appear
-
-	     solution: laplace smoothing
-
-	  2) Smoothing Kernel
-
-	     - "proper density estimation."
-
-	     - parzen windows estimate (see quotes)
-
-	     - different kernels
-
-	  3) Parameter Estimation
-
-	     - width of kernel function is important, shape less
-
-	     - to maximize likelihood, sum over log-likelihood to
-               avoid float overflow
-
-	     - maximizing likelihood on all of data leads to
-               overfitting
-
-	     - avoid by using a Validation Set, n-fold
-               Cross-validation or a Leave-one-out Estimator
-
-	  4) Silverman’s Rule
-
-	     - locality-dependent kernel width
-
-	       r_{i} = c/k \sum_{x \in kNN(x_i)} ||x - x_{i}||
-
-	     - locality-dependent parzen rule
-
-	       p\circ(x) = 1/m \sum_{i=1}^{m} r^{-d}h(x - x_{i}/r_{i})
-
-	  5) Watson-Nadaraya Estimator
-
-	     - non-parametric data
-
-       3) Exponential Families
-
-	  0) [@0]
-
-	     - "Gaussians, Poisson, Gamma and Wishart distributions all
-               form part of the exponential family"
-
-	     - "lead to convex optimization problems"
-
-	  1) Basics
-
-	     - Defined by
-
-               p(x; θ) := p_{0}(x) exp (<φ(x), θ> − g(θ)) . (2.40)
-
-	     - with g(\theta) weighting term to get density function
-
-	     - \varphi map from parameters to statistics
-
-	  2) Examples
-
-	     Many distributions can be seen as member of the exponential family
-
-	     - Gaussian
-
-	     - Multinomial
-
-	     - Poisson
-
-	     - Beta
-*** TODO quotes
-    - much of the art of machine learning is to reduce a range of
-      fairly disparate problems to a set of fairly narrow
-      prototypes.
-    - A rather related application is collaborative
-      filtering. Internet book stores such as Amazon, or video rental
-      sites such as Netflix use this information extensively to entice
-      users to purchase additional goods (or rent more movies).
-    - Many security applications, e.g. for access control, use face
-      recognition as one of its components.
-    - The overarching theme of learning problems is that there exists
-      a nontrivial dependence between some observations, which we will
-      commonly refer to as x and a desired response, which we refer to
-      as y, for which a simple set of deterministic rules is not
-      known. By using learning we can infer such a dependency between
-      x and y in a systematic fashion.
-    - (ends 1.1.1)
-    - One of the challenges in dealing with vectors is that the scales
-      and units of different coordinates may vary widely.
-    - One way of dealing with those issues in an automatic fashion is
-      to normalize the data. We will discuss means of doing so in an
-      automatic fashion.
-    - In some cases the vectors we obtain may contain a variable
-      number of features.
-    - (ends 1.1.2)
-    - 3-class classification. Note that in the latter case we have
-      much more degree for ambiguity.
-    - a sequence of (x_{i} , y_{i} ) pairs for which y i needs to be
-      estimated in an instantaneous online fashion. This is commonly
-      referred to as online learning.
-    - know X 0 already at the time of constructing the model. This is
-      commonly referred to as transduction.
-    - (ends 1.1.3)
-    - For more details and a very gentle and detailed discussion see
-      the excellent book of [BT03].
-    - (ends 1.2.0)
-    - Formally, [...] 1 occurs with probability 1/6
-    - notational convention [...] use uppercase letters, e.g., X, Y
-      etc to denote random variables and lower case letters, e.g., x,
-      y etc to denote the values they take.
-    - (ends 1.2.1)
-    - If the random variable is discrete, i.e., it takes on a finite
-      number of values, then this assignment of probabilities is
-      called a /probability mass function/ or PMF for short.
-    - slightly informal notation p(x) := Pr(X = x)
-    - continuous random variable the assignment of probabilities
-      results in a probability density function or PDF for short.
-    - Closely associated with a PDF is the indefinite integral
-      over p. It is commonly referred to as the cumulative
-      distribution function (CDF).
-    - (ends 1.2.2)
-    - if f: R → R is a function, then f(X) is also a random
-      variable. Its mean is mean given by
-
-      E[f(X)] := \int f(x)dp(x).
-    - (ends 1.2.3)
-    - /joint density/ p(x, y).
-    - /marginalization/: recover p(x) by integrating out y:
-      p(x) = \int dp(x, y).
-    - /X and Y are independent/: p(x,y) = p(x) p(y)
-    - /iid random variables/: independently and identically distributed
-    - /conditional probabilities/:
-      p(x|y) := p(x, y) / p(y)
-    - /Bayes Rule/: p(y|x) = p(x|y)p(y) / p(x)
-    - (ends 1.2.4.0)
-    - The physician recommends a test which is guaranteed to detect
-      HIV-positive whenever a patient is infected.
-    - On the other hand, for healthy patients it has a 1% error
-      rate. That is, with probability 0.01 it diagnoses a patient as
-      HIV-positive even when he is, in fact, HIV-negative.
-    - Moreover, assume that 0.15% of the population is infected.
-    - Denote by X and T the random variables associated with the
-      health status of the patient and the outcome of the test
-      respectively.
-    - We are interested in p(X = HIV+|T = HIV+).
-    - Note that often our tests may not be conditionally independent
-      and we would need to take this into account.
-    - p(X = HIV+|T = HIV+) = p(T = HIV+|X = HIV+) p(X = HIV+) / p(T = HIV+)
-    - p(T = HIV+) = \sum p(T = HIV+, x) = \sum p(T = HIV+|x)p(x)
-    - The corresponding expression yields:
-
-      p(T = HIV+|X = HIV+, A)p(X = HIV+|A) / p(T = HIV+|A)
-
-      Here we simply conditioned all random variables on A in order to
-      take additional information into account.
-    - What we want is that the diagnosis of T_{2} is independent of that
-      of T_{2} given the health status X of the patient. This is
-      expressed as
-      p(t_{1} , t_{2} |x) = p(t_{1} |x)p(t_{2} |x). (1.16)
-    - Random variables satisfying the condition (1.16) are commonly
-      referred to as /conditionally independent/.
-    - (ends 1.2.4.1)
-    - assume that there is sufficiently strong dependence between x
-      and y that we will be able to estimate y given x and a set of
-      labeled instances X, Y.
-    - (ends 1.3.0)
-    - estimate of p(y), that is, the probability of receiving a spam
-      or ham mail.
-    - dispose of the requirement of knowing p(x) by settling for a
-      likelihood ratio
-      L(x) := p(spam|x) / p(ham|x) = p(x|spam)p(spam) / p(x|ham)p(ham)
-    - treat the occurrence of each word in a document as a separate
-      test and combine the outcomes in a naive fashion by assuming
-      that
-      p(x|y) = \Pi_{j=1}^{# of words in x} p(w^{j} |y)
-    - p(w|y) can be obtained, for instance, by simply counting the
-      frequency occurrence of the word within documents of a given
-      class.
-    - since we are computing a product over a large number of factors
-      the numbers might lead to numerical overflow or underflow. This
-      can be addressed by summing over the logarithm of terms rather
-      than computing products.
-    - need to address the issue of estimating p(w|y) for words w which
-      we might not have seen before. One way of dealing with this is
-      to increment all counts by 1.
-    - perform surprisingly well
-    - (ends 1.3.1)
-    - Note that nearest neighbor algorithms can yield excellent
-      performance when used with a good distance measure.
-    - lemma by Johnson and Lindenstrauss [DG03] asserts that a set of
-      m points in high dimensional Euclidean space can be projected
-      into a O(log m/\epsilon 2 ) dimensional Euclidean space such that the
-      distance between any two points changes only by a factor of (1 ±
-      \epsilon). [...] The surprising fact is that the projection relies on a
-      simple randomized algorithm.
-    - (ends 1.3.2)
-    - In general, we may pick *arbitrary maps* φ : X → H mapping the
-      space of observations into a feature space H, as long as the
-      latter is endowed with a dot product (see Figure 1.21). This
-      means that instead of dealing with <x, x'> we will be dealing
-      with <φ(x), φ(x')>.
-    - (ends 1.3.3)
-    - a user might want to have instant results whenever a new e-mail
-      arrives and he would like the system to learn immediately from
-      any corrections to mistakes the system makes.
-    - the Perceptron is a linear classifier
-    - if ŷ_{t} \neq y_{t} the weight vector is updated as
-      w ← w + y_{t} x_{t} and b ← b + y_{t}
-    - If the dataset (X, Y) is linearly separable, then the Perceptron
-      algorithm eventually converges and correctly classifies all the
-      points in X.
-    - Definition 1.6 (*Margin*) Let w ∈ R d be a weight vector and let
-      b ∈ R be an offset. The margin of an observation x ∈ R d with
-      associated label y is
-
-      \gamma(x, y) := y (<w, x> + b) (1.27)
-
-      Moreover, the margin of an entire set of observations X with
-      labels Y is
-
-      γ(X, Y) := min_{i} γ(x_{i} , y_{i}) (1.28)
-    - Geometrically speaking (see Figure 1.22) the margin measures the
-      distance of x from the hyperplane defined by {x| <w, x> + b = 0}.
-    - Theorem 1.7 (*Novikoff’s theorem*) Let (X, Y) be a dataset with
-      at least one example labeled +1 and one example labeled −1. Let
-      R := max_{t} ||x_{t}||, and assume that there exists (w^{∗}, b^{∗}) such
-      that ||w^{∗}|| = 1 and γ_{t} := y_{t} (<w^{∗}, x_{t}>) + b^{∗} ) ≥ γ for
-      all t. Then, the Perceptron will make at most (1+R^{2})(1+(b^{*})^2)/γ^{2}
-      mistakes.
-    - a similar bound can be shown for Support Vector Machines [Vap95]
-    - (ends 1.3.4)
-    - define prototype vectors μ_{1} , ... , μ_{k} and an indicator vector
-      r_{ij} which is 1 if, and only if, x_{i} is assigned to cluster j. To
-      cluster our dataset we will minimize the following *distortion
-      measure*, which minimizes the distance of each point from the
-      prototype vector:
-
-      J(r, μ) := 1/2 \sum_{i=1}^{m} \sum_{j=1}^{k} r_{ij} ||x_{i} - \mu_{j}||^{2}
-
-      where r = {r_{ij}}, μ = {μ_{j}}
-    - adapt a two stage strategy
-      - Stage 1 Keep the μ [prototype vectors] fixed and determine r.[...]
-	The solution for the i-th data point x_{i} can be found by setting:
-
-	r_{ij} = 1 if j = argmin_{j'} ||x_{i} − μ_{j'}||^{2} (1.30)
-
-        and 0 otherwise.
-      - Stage 2 Keep the r fixed and determine μ. [...]  [J] can be
-        minimized by setting the derivative with respect to μ_{j} to be
-        0:
-
-	\sum_{j=1}^{m} r_{ij} (x_{i} - \mu_{j}) = 0 for all j. (1.31)
-
-        Rearranging obtains \mu_{j} = \sum_{i} r_{ij}x_{i} / \sum_{i} r_{ij} (1.32)
-
-	Since \sum_{i} r_{ij} counts the number of points assigned to cluster
-        j, we are essentially setting μ_{j} to be the sample mean of the
-        points assigned to cluster j.
-      - Two issues [...]
-	1. sensitive to the choice of the initial cluster centers μ.
-	2. hard assignment of every point to a cluster center.
-      - (ends 1.5)
-      - Before crying foul you decide that some mathematical analysis
-        is in order.
-      - limit theorems [...] tell us by how much averages over a set
-        of observations may deviate from the corresponding
-        expectations and how many observations we need to draw to
-        estimate a number of probabilities reliably.
-      - (ends 2.0)
-      - Theorem 2.1 (Weak Law of Large Numbers) Denote by X_{1} , ... ,
-        X_{m} random variables drawn from p(x) with mean μ = E_{X_{i}} [x_{i}]
-        for all i. Moreover let
-
-        X̄_{m} := 1/m \sum_{i=1}^{m} X_{i} (2.2)
-
-        be the empirical average over the random variables X_{i} . Then
-        for any \epsilon > 0 the following holds
-
-        lim_{m \to \infty} Pr (|X̄_{m} − μ| ≤ \epsilon = 1). (2.3)
-      - Theorem 2.2 (Strong Law of Large Numbers) Under the conditions
-        of Theorem 2.1 we have Pr(lim_{m→∞} X̄_{m} = μ) = 1.
-      - Theorem 2.3 (Central Limit Theorem) Denote by X_{i} independent
-        random variables with means μ_{i} and standard deviation σ_{i}. Then
-
-	Z_{m} := m [ \sum_{i=1}^{m} \sigma_{i}^{2} ]^{- 1/2} [ \sum_{i=1}^{m} X_{}_{i} - \mu_{i}^{} ] (2.4)
-
-	converges to a Normal Distribution with zero mean and unit
-        variance.
-      - Theorem 2.4 (Slutsky’s Theorem) Denote by X_{i} , Y_{i} sequences of
-        random variables with X_{i} → X and Y_{i} → c for c ∈ R in
-        probability. Moreover, denote by g(x, y) a function which is
-        continuous for all (x, c). In this case the random variable
-        g(X_{i}, Y_{i}) converges in probability to g(X, c).
-      - Theorem 2.5 (Delta Method) Assume that X_{n} ∈ R^{d} is
-        asymptotically normal with a_{n}^{-2}(X_{n} - b) \to N(0, \Sigma) for a_{n}
-        → 0. Moreover, assume that g : R^{d} → R^{l} is a mapping which is
-        continuously differentiable at b. In this case the random
-        variable g(X_{n}) converges
-
-	a_{n}^{-2}(g(X_{n}) - g(b)) \to N(0, [∇_{x} g(b)]Σ[∇_{x} g(b)]^{T}) (2.5)
-      - The Fourier transform plays a crucial role [...] in
-        statistics. For historic reasons its applications to
-        distributions is called *the characteristic function*.
-      - Definition 2.6 (*Fourier Transform*) Denote by f : R^{n} → C a
-        function defined on a d-dimensional Euclidean space. Moreover,
-        let x, ω ∈ R^{n} . Then the Fourier transform F and its inverse
-        F^{-1} are given by
-
-        F [f](ω) := (2π)^{−d/2} \int_{R^{n}} f(x) exp(-i<\omega, x>)dx (2.7)
-
-        F^{-1} [g](ω) := (2π)^{−d/2} \int_{R^{n}} g(\omega) exp(i<\omega, x>)d\omega (2.8)
-      - Definition 2.7 (*Characteristic Function*) Denote by p(x) a
-        distribution of a random variable X ∈ R^{d}. Then the
-        characteristic function φ_{X} (ω) with ω ∈ R^{d} is given by
-
-        φ_{X} (ω) := (2π)^{d/2} F^{−1} [p(x)] = \int exp(i <ω, x>)dp(x). (2.9)
-      - Theorem 2.8 (*Sums of random variables and convolutions*)
-        Denote by X, Y ∈ R two independent random variables. Moreover,
-        denote by Z := X + Y the sum of both random variables. Then
-        the distribution over Z satisfies p(z) = p(x) ◦
-        p(y). Moreover, the characteristic function yields:
-
-        φ_{Z} (ω) = φ_{X}(ω)φ_{Y}(ω). (2.10)
-      - ∇^{n}_{ω} φ_{X}(0) = i^{−n} E_{X} [x^{n}]. (2.12)
-
-      - if we know the moments of a distribution we are able to
-        reconstruct it directly since it allows us to reconstruct its
-        characteristic function.
-      - (ends 2.1.2)
-      - Theorem 2.9 (*Gauss-Markov*) Denote by X ≥ 0 a random variable
-        and let μ be its mean. Then for any \epsilon > 0 we have
-
-	Pr(X ≥ \epsilon) ≤ \mu / \epsilon (2.13).
-
-	This means that for random variables with a small mean, the
-        proportion of samples with large value has to be small.
-      - Theorem 2.10 (*Chebyshev*) Denote by X a random variable with
-        mean μ and variance σ^{2} . Then the following holds for \epsilon > 0:
-
-        Pr(|x − μ| ≥ \epsilon) \le \sigma^{2} / \epsilon^{2} (2.14)
-      - Theorem 2.12 (*Hoeffding*) Denote by X_{i} iid random variables
-        with bounded range X_{i} ∈ [a, b] and mean μ. Let X̄_{m} := m^{−1}
-        \sum_{i=1}^{m} X_{i} be their average. Then the following bound holds:
-
-        Pr(|X̄_{m} − μ| > \epsilon) ≤ 2 exp(-2m\epsilon^{2} / (b-a)^{2}) (2.15)
-      - (ends 2.1.3)
-      - The convergence theorems discussed so far mean that we can use
-        empirical observations for the purpose of density estimation.
-      - Example 2.4 (Curse of Dimensionality) Assume that X = {0, 1} d
-        , i.e. x consists of binary bit vectors of
-        dimensionality d. As d increases the size of X increases
-        exponentially, requiring an exponential number of observations
-        to perform density estimation. For instance, if we work with
-        images, a 100 × 100 black and white picture would require in
-        the order of 10^{3010} observations to model such fairly
-        low-resolution images accurately. This is clearly utterly
-        infeasible — the number of particles in the known universe is
-        in the order of 10^{80} . Bellman [Bel61] was one of the first to
-        formalize this dilemma by coining the term ’curse of
-        dimensionality’.
-      - (ends 2.2.1)
-      - p\circ(x) = 1/m \sum_{i=1}^{m} r^{-d}h(x - x_{i}/r)
-
-	This expansion is commonly known as the /Parzen windows/ estimate.
-      - h(x) = (2π)^{−1/2} e^{−1/2 x^2} /Gaussian kernel/
-      - h(x) = 3/4 max(0, 1 − x^2) /Epanechnikov kernel/
-      - For practical purposes the Gaussian kernel (2.28) or the
-        Epanechnikov kernel (2.30) are most suitable.
-      - /compact support/ [...] for any given density estimate at
-        location x we will only need to evaluate terms h(x_{i} − x) for
-        which the distance ||x_{i} − x|| is less than r.
-      - (ends 2.2.2)
-      - choose r such that the /log-likelihood of the data/ is
-        maximized. It is given by
-
-	log \Pi_{j=0}^m p(x_{j}) = −m log m + \sum_{j=1}^m log (m \cdot p\circ(x_{j}))
-      - (ends 2.2.3)
-      - Provided that we are able to compute density estimates p(x)
-        given a set of observations X we could appeal to Bayes rule to
-        obtain
-
-	p(y|x) = p(x|y)p(y)/p(x)
-        = ((m_{y} / m) \cdot 1/m_{y} \sum_{i:y_i=y} r^{-d} h(x_{i}-x/r) / 1/m \sum_{i=1}^{m} r^{-d} h(x_{i}-x/r) ) (2.38)
-      - For binary classification (2.38) can be simplified [...] the function
-
-	f (x)
-        = \sum_{i} y_{i} h(x_{i}-x/r) / \sum_{i} h(x_{i}-x/r)
-	= \sum_{i} y_{i} (h(x_{i}-x/r) / \sum_{i} h(x_{i}-x/r))
-	=: \sum_{i} y_{i} w_{i}(x) (2.39)
-
-	can be used to achieve the same goal since
-
-        f (x) > 0 ⇐⇒ p(y = 1|x) > 0.5
-      - (ends 2.2.5)
-      - 
-      - The reason why many discrete processes follow the Poisson
-        distribution is that it can be seen as the limit over the
-        average of a large number of Bernoulli draws
 ** TODO [#B] [[./cacr2015-09.pdf][Wang - On Realistically Attacking Tor with Website Fingerprinting]]
 *** summary
     0) [@0] Abstract
@@ -6136,6 +5710,118 @@
       nor a clear pattern of cells indicating the gap.
 ** TODO [#B] [[./webtraffic-imc11.pdf][Towards Understanding Modern Web Traffic]]
 ** TODO [#B] [[~/da/git/docs/timing-fc2004.pdf][Timing Attacks in Low-Latency Mix Systems]]
+** TODO [#C] [[./morphing09.pdf][Traffic Morphing: An Efficient Defense Against Statistical Traffic Analysis]]
+*** summary
+    0. [@0] Abstract
+
+       morphing changes traffic to look like another site
+
+    1. Introduction
+
+       convex optimization to simulate (morph to) other site
+
+       split etc packets to create the appearance of another site
+
+       here: only packet size features obfuscated
+
+    2. Related Work
+
+       - Song: SSL timing analysis for login password length
+
+       - Sun: SSL - use size of HTML objects to identify web pages
+
+       - Liberatore: with persisten connections and SSH port forwarding
+
+       - Wright: VoIP language spoken
+
+       - Saponas: identify movies within encrypted connections
+
+       - Wright: identify spoken phrases in encrypted VoIP
+
+       - Wagner/Dean: mimicry attack vs IDS
+
+       - Soto: against pH IDS
+
+       - Tan: against stide IDS
+
+       - Fogla: packet payloads, hide malicious payload
+
+       - many: fake training data
+
+    3. Traffic Morphing
+
+       0) [@0]
+    
+	  - alter "distribution of packet sizes"
+
+       1) What is the Matrix?
+
+	  - morphing matrix: given input probability sizes X and
+            output probability sizes Y, find matrix A such that Y=AX
+
+	  - receive packet of size s_j, sample target size s_i from j-th
+            column of A via cumulative probability
+
+	  - pads with zeros if s_i > s_j, split otherwise
+
+	  - convex optimization to get minimal overhead
+
+       2) Morphing via Convex Optimization
+
+	  - n^2 variables, 2n bounds \to infinite possibilities
+
+	  - cost function example: number of additional bytes
+
+       3) Additional Morphing Constraints
+
+	  - if overspecified, use multilevel programming
+
+	  - step-by-step to solution
+
+       4) Dealing with Large Sample Spaces
+
+	  - divide and conquer: divide matrix into submatrices, optimize these
+
+       5) Practical Considerations
+
+	  1. Short Network Sessions
+
+	     f.ex. http: continue until some equality is reached
+
+	  2. Variations in Source Distribution
+
+	     website might give different distributions (hot/ cold)
+
+	     solution: meta-matrix (with clustering) which determines
+             which matrix to use
+
+	  3. Reducing Packet Sizes
+
+	     better to also split packets. Easy with voip, HTTP: split
+             packet, use rest verbatim (sample directly from target
+             distributino)
+
+    4. Evaluation
+
+       0) [@0]
+
+	  - against wright and liberatore attacks
+
+	  - also against binary with/without morphing classifier
+
+       1) Encrypted Voice over IP
+*** quotes
+    - morphing one class of traffic to look like another class.
+    - show how to optimally modify packets in real-time to reduce the
+      accuracy of a variety of traffic classifiers while incurring
+      much less overhead than padding.
+    - (ends 0)
+    - For the remainder of this paper, we focus on the use of our
+      morphing techniques in thwarting traffic classifiers that
+      utilize features based on packet sizes.
+    - (ends 1 + 2)
+*** ref
+    [[file:~/da/docs/master.bib::morphing09][Wright et al. 2009: Traffic Morphing]]
 ** TODO [#C] [[./usersrouted-ccs13.pdf][Users Get Routed: Traffic Correlation on Tor by Realistic Adversaries]]
 *** summary
     0) [@0] ABSTRACT
@@ -6218,61 +5904,6 @@
 ** TODO [#C] [[./webfingerprint-wpes.pdf][Improved Website Fingerprinting on Tor]]
 *** ref
     [[file:master.bib::wpes13-fingerprinting][Wang & Goldberg 2013: Improved Website Fingerprinting Tor]]
-** PART MOVE [#C] [[./irbookonlinereading.pdf][An Introduction to Information Retrieval]]
-*** summary
-    0. [@0] Preface
-
-       - from specialized academic study to www
-
-       - Book organization and course development
-
-	 - chapter: 75 to 90 minutes
-
-	 - 1-8 foundation topics
-
-       - Prerequisites
-
-       - Book layout
-
-	 - pencil: worked examples
-
-	 - scissors: advanced, can leave out
-
-	 - ? exercise, with difficulty * to ***
-
-       - Acknowledgments
-
-    1. Boolean retrieval
-*** quotes
-    - Chapter 10 considers information retrieval from documents that
-      are structured with markup languages like XML and HTML.
-    - (ends 0)
-    - Most commonly, the edit operations allowed for this purpose are:
-      (i) insert a character into a string; (ii) delete a character
-      from a string and (iii) replace a character of a string by
-      another character; for these operations, edit distance
-      is sometimes known as *Levenshtein distance*.
-    - EDIT DISTANCE ( s_{1} , s_{2} )
-      1. int m [ i, j ] = 0
-      2. for i ← 1 to | s_{1} |
-      3. do m [ i, 0 ] = i
-      4. for j ← 1 to | s_{2} |
-      5. do m [ 0, j ] = j
-      6. for i ← 1 to | s_{1} |
-      7. do for j ← 1 to | s_{2} |
-      8. do m [ i, j ] = min { m [i−1, j−1]
-	 + if ( s1[i] = s2[j]) then 0 else 1 fi,
-      9. m [ i − 1, j ] + 1,
-      10. m [ i, j − 1 ] + 1 }
-      11. return m [| s_{1} | , | s_{2} |]
-    - (ends 3.3)
-    - *Contiguity hypothesis*. Documents in the same class form a
-      contiguous region and regions of different classes do not
-      overlap.
-    - Nonlinear models have more parameters to fit on a limited amount
-      of training data and are more likely to make mistakes for small
-      and noisy data sets.
-    - (ends 14.0)
 ** TODO [#C] [[~/da/git/docs/onion.pdf][Anonymous Connections and Onion Routing]]
 *** summary
     0) [@0] Abstract
@@ -7932,6 +7563,156 @@
                    return int( log( uniform( 0., 1. ) ) / log( 1. - p ) );
                  }
 	       #+END_SRC
+** [#A] PART [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Eloquent Javascript]]
+*** summary
+    8. [@8] Object-oriented Programming
+
+       - 90s trend, persistent, "solid and useful"
+
+       - create objects, attach methods and properties
+
+       - easy: just attach function values to object
+
+       - =apply(object, params)=: first parameter (mapped to =this=) is object
+
+	 - also =call(object, params*)= separate arguments instead of array
+
+       - constructor
+
+	 - Capitalized
+
+	 - use with =new=
+
+	 - always sets =this= to object, returns it
+
+	 - also sets =constructor= property and some other stuff
+
+       - .prototype
+
+	 - like =class=, but dynamically augmentable
+
+       - always changes object, object never changes .prototype
+
+	 - access goes up the prototype hierarchy until name is found
+
+       - use =hasOwnProperty= to find out if really the object has the
+         attribute, or it's somewhere else
+
+         - workaround for when hasOwnProperty is an attribute
+
+       - above fails in Firefox, which assigns a __proto__ to all objects
+
+	 - objects are "values with methods" and "sets of properties"
+
+       - =Dictionary= class for "sets of properties"
+
+       - external api vs internal implementation
+
+       - could add methods to f.ex. =Object=: be careful, but possible
+
+       - Exercise project: Terrarium
+
+	 - 2d, discrete time and place, # wall, ' ' free, o bug
+
+       - functions: =toString=, =step=, =start=, =stop=
+
+    12. [@12] The Document-Object Model
+
+	- =<HTML>= via =document.documentElement=
+
+	  - =<BODY>= via =document.body=
+
+	- f.ex. =document.body.parentNode= to get the parent
+
+	  - =.childNodes=, =.firstChild= and =.lastChild=
+
+	  - =.previousSibling= and =.nextSibling=
+
+	- if text node, then =node.nodeType= = 3, (most often) else 1
+
+	- =.nodeName= for tag name (CAPITALIZED)
+
+	  - =.firstChild.nodeValue= for text value
+
+	- exercise: get text of html tags
+
+	  #+BEGIN_SRC js
+            function getText(node) {
+              if ( isTextNode(node) ) {
+                return node.nodeValue;
+              } else {
+                var out = "";
+                for ( var i = 0; i < node.childNodes.length; i++ ) {
+                  out += getText(node.childNodes[i]);
+                }
+                return out;
+              }
+            };
+            print(getText(document.body));
+	  #+END_SRC
+
+	- =node.innerHTML= gives HTML, also changeable which effects website
+
+	- =document.getElementById("picture")= gives element
+
+	  - also =document.getElementsByTagName[0]=
+
+	- =var h = document.createElement("H1");= creates new header
+
+	  - =var text = document.createTextNode("hi there");= creates text node
+
+	  - =h.appendChild(text)= and =document.appendChild(h)= appends both
+
+	  - also =newImage.setAttribute("src", "img/Hiva Oa.png");=
+
+	- function with workarounds for IE
+
+	- =.insertBefore(someNode, beforeThis)=
+
+	  - =.replaceChild(newNode, toBeReplaced)=
+
+	  - =.removeChild(childNode)=
+
+	- "Write the convenient function removeElement which removes
+          the DOM node it is given as an argument from its parent
+          node."
+
+	  #+BEGIN_SRC js
+            function easyRemove(node) {
+                node.parentNode && node.parentNode.removeChild(node);
+            }
+	  #+END_SRC
+
+	- "When creating new nodes" weiter
+*** quotes
+    - (begins 4)
+    - The keyword `delete` cuts off properties. Trying to read a
+      non-existent property gives the value undefined.
+    - var now = new Date();
+    - (ends 4)
+    - Object-orientation's longevity can largely be explained by the
+      fact that the ideas at its core are very solid and useful. In
+      this chapter, we will discuss these ideas, along with
+      JavaScript's (rather eccentric) take on them.
+    - typing ={}= is equivalent to typing =new Object()=
+    - example object creation
+      #+BEGIN_SRC js
+        function Rabbit(adjective) {
+          this.adjective = adjective;
+        }
+        Rabbit.prototype.speak = function(line) {
+          print("The ", this.adjective, " rabbit says '", line, "'");
+        };
+
+        var hazelRabbit = new Rabbit("hazel");
+        hazelRabbit.speak("Good Frith!");
+      #+END_SRC
+    - Personally, I treat writing documentation as a 'finishing touch'
+      to add to a system. When it feels ready, it is time to write
+      something about it, and to see if it sounds as good in English
+      (or whatever language) as it does in JavaScript (or whatever
+      programming language).
+    - (ends 8)
 ** [#B] PART [[./user_guide_0.16.1.pdf][scikit-learn user guide]]
 *** quotes
     - Despite its simplicity, nearest neighbors has been successful in
@@ -8122,396 +7903,960 @@
         year={2011}
       }
     #+END_SRC
-** PART [#C] [[./javascript_the_good_parts.pdf][JavaScript: The Good Parts]]
+** PART [#B] [[./ESLII_print4.pdf][The Elements of Statistical Learning]]
 *** summary
-    1. Good parts
+    1) Introduction
 
-       - some: functionaly programming, prototypal inheritance
+       examples
 
-       - very different from other languages
+    2) Overview of Supervised Learning
 
-    2. Grammar
+       1) inputs
 
-       1. Railroad diagrams
+          == predictors (statistics)
 
-	  - left, to right
+          == independent variables (statistics)
 
-	  - literal: oval, rules: rect
+	  == features (pattern recognition)
 
-	  - legal iff following tracks
+	  outputs
 
-	  - one bar: whitespace allowed, two: not
+	  == responses (statistics)
 
-       2. Whitespace
+	  == dependent variables (statistics)
 
-	  - comments as usual
+       2) Variable Types and Terminology
 
-	  - better use // instead of /* */ (regex f.ex. /a*/.match(s);)
+	  - qualitative aka discrete aka categorical variables aka factors
 
-       3. Names
+	    example: handwritten digits, fisher's irises
 
-	  - letter, then also digit, underscore
+	  - regression for quantitative outputs Y, classification for
+            qualitative outputs G
 
-	  - reserved words
+       3) Two Simple Approaches to Prediction: Least Squares and
+          Nearest Neighbors
 
-	  - not undefined, NaN, infinity
+	  0) [@0]
 
-       4. Numbers
+	     - linear model
 
-	  - only float (double)
+	       - "stable but possibly inaccurate predictions"
 
-	  - (- is operator)
+	     - k-nearest neighbors
 
-       5. Strings
+	       - "often accurate but can be unstable"
 
-	  - sequence
+	  1) Linear Models and Least Squares
 
-	  - ' or "
+	     "solve" the quadratic equation in quotes by finding a
+             minimum
 
-	  - escape characters: '"\/bfnrt or u1212 (f.ex.)
+	  2) Nearest-Neighbor Methods
 
-	  - .length
+	     - majority of the closest (by specific metric) k neigbors
+               are of the class
 
-	  - exactly same characters \to equal
+	     - k=1 - might lead to overfitting
 
-       6. Statements
+	  3) From Least Squares to Nearest Neighbors
 
-	  - var: function's private variables
+	     - defined later
 
-	  - loads of parts, mostly like other languages
+	       - variance: ca schwankung
 
-       7. Literals
+	       - bias: ca vorannahmen
 
-	  - number, string, object, array, function, regexp
+	     - ls: high bias, low variance
 
-	  - object { name | "string": values, ...}
+	     - nn: low bias, high variance
 
-       8. Functions
+	     - knn - degrees of freedom: N / k
 
-	  - function [name] parameters function_body
+	     - many models today are variations of knn and the linear
+               model
 
-	  - body: { var_statements, statements }
+       4) Statistical Decision Theory
 
-    3. Objects
+	  - minimize expected loss
 
-       0. [@0] preface
+	    - knn: localized minimization
 
-	  - prototype linkage
+	    - linear model: assume linearity
 
-       1. Object Literals
+	    - expected loss (for regression):
 
-	  - can nest
+	      - squared (L2) most often,
 
-	  - name: unquoted possible if could be identifier
+	      - L1 has discontinuties in derivative (=nicht stetig diffbar)
 
-       2. Retrieval
+	    - expected loss for classification:
 
-	  - use =.= instead of =[ ]=: easier to read
+	      - often zero-one loss function
 
-	  - undefined in not existing
+	      - results in Bayes classifiers
 
-	  - fill in default values if undefined:
+	    - classification similar to regression
 
-	    #+BEGIN_SRC js
-              var middle = stooge["middle-name"] || "(none)";
-	    #+END_SRC
+	      - knn: localized conditional probability, estimated by
+                training sample proportions
 
-	  - guard agains typeerror (value from undefined) via &&
+	      - linear: map to dummy variable
 
-	    #+BEGIN_SRC js
-              flight.equipment && flight.equipment.model
-	    #+END_SRC
+       5) Local Methods in High Dimensions
 
-       3. Update
+	  - unbiased methods like problematic supposedly more
+            problematic, as dimension rises
 
-	  - create if not exist, else change
+       6) Statistical Models, Supervised Learning and Function
+          Approximation
 
-       4. Reference
+	  0) [@0]
 
-	  - pass by reference: same object
+	     Try to approximate the I/O relationship f(x) via f\circ(x)
 
-       5. Prototype
-
-	  - like class in other languages
-
-	  - snippet to copy class: [[(object.create)]]
-
-       6. Reflection
-
-	  - introspection
-
-	  - also gives functions, and stuff up the hierarchy
-
-	    - solution: use =hasOwnProperty=
-
-       7. Enumeration
-
-	  - avoid functions with =typeof= and prototype's stuff by
-            =hasOwnProperty=
-
-	  - possible: use explicit array of properties
-
-       8. Delete
-
-	  - allows prototype to "shine through"
-
-       9. Global Abatement
-
-	  - single global variable =MYAPP=
-
-	    - becomes container
-
-	  - also closure possible
-
-    4. Functions
-
-       0. [@0]
-
-	  - "fundamental modular unit of JavaScript."
-
-       1. Function Objects
-
-	  - each function has a =Function.prototype=
-
-	    - context and code implementing
-
-       2. Function Literal
-
-	  1. =function= reserved word
-
-	  2. name, or anonymous
-
-	     - used to call recursively, etc
-
-	  3. parameters
-
-	  4. body
-
-	  has access to outer scope (closure)
-
-       3. Invocation
-
-	  - caller suspends execution
-
-	  - function receives parameters + =this= and =arguments=
-
-	    - this determined by how it is called
-
-       4. The Method Invocation Pattern
-
-	  - method: refinement, aka =.= or =[subscript]=
-
-	  - this bound at invocation time to object
-
-       5. The Function Invocation Pattern
-
-	  - function: bound to global scope
-
-	  - *also inner functions*
-
-	  - workaround: use =that=:
-	    #+BEGIN_SRC js
-              myObject.double = function ( ) {
-                  var that = this;
-                  // Workaround.
-                  var helper = function ( ) {
-                      that.value = add(that.value, that.value);
-                  };
-                  helper();
-              };
-
-              myObject.double();
-              document.writeln(myObject.getValue( )); // 6
-	    #+END_SRC
-
-       6. The Constructor Invocation Pattern
-
-	  - js is prototypal
-
-	  - extend prototypes like
-	    #+BEGIN_SRC js
-              var Quo = function (string) {
-                  this.status = string;
-              };
-              Quo.prototype.get_status = function ( ) {
-                  return this.status;
-              };
-              var myQuo = new Quo("confused");
-	    #+END_SRC
-
-	    not recommended
-
-       7. The Apply Invocation Pattern
-
-	  - apply(new_this, [args])
-
-	    - can also be called from other class member
-
-	      #+BEGIN_SRC js
-                var status = Quo.prototype.get_status.apply(statusObject);
-	      #+END_SRC
-
-       8. Arguments
-
-	  - extra function parameter, array-like (=length=)
-
-       9. Return
-
-	  - if not specified, =undefined= is returned (except for constructor)
-
-       10. Exceptions
-
-	   - raise
-	     #+BEGIN_SRC js
-               throw {
-               name: 'TypeError',
-               message: 'add needs numbers'
-               };
-	     #+END_SRC
-
-	   - except
-	     #+BEGIN_SRC js
-               try {
-                   add("seven");
-               } catch (e) {
-                   document.writeln(e.name + ': ' + e.message);
-               }
-	     #+END_SRC
-
-	   - one =catch= block
-
-       11. Augmenting Types
-
-	   - add f.ex. =trim= to string
-
-	   - add only if not yet existing ;-)
-
-       12. Recursion
-
-	   - not tail-recursive
-
-	   - great for dom-walking f.ex.
-
-       13. Scope
-
-	   - function scope:
-	     #+BEGIN_SRC js
-               var foo = function ( ) {
-                   var a = 3, b = 5;
-                   var bar = function ( ) {
-                       var b = 7, c = 11;
-                       // At this point, a is 3, b is 7, and c is 11
-                       a += b + c;
-                       // At this point, a is 21, b is 7, and c is 11
-                   };
-                   // At this point, a is 3, b is 5, and c is not defined
-                   bar( );
-                   // At this point, a is 21, b is 5
-               };
-	     #+END_SRC
-
-	   - recommendation: declare variables at top of function body
-
-       14. Closure
-
-	   - allow for private variables
-	     #+BEGIN_SRC js
-               var myObject = function ( ) {
-                   var value = 0;
-                   return {
-                       increment: function (inc) {
-                           value += typeof inc === 'number' ? inc : 1;
-                       },
-                       getValue: function ( ) {
-                           return value;
-                       }
-                   };
-               }( );
-	     #+END_SRC
-
-	     - not capitalized as =this=-functionality not used
-
-	   - has access to actual values, not copies
-
-       15. Callbacks
-
-	   - non-blocking paused execution, f.ex
-	     #+BEGIN_SRC js
-               request = prepare_the_request( );
-               send_request_asynchronously(request, function (response) {
-                   display(response);
-               });
-	     #+END_SRC
-
-       16. Module
-
-	   - use closure to make functions with private parts
-
-       17. Cascade
-
-	   - if would return nothing: return this to allow multiple calls
-	     #+BEGIN_SRC js
-               getElement('myBoxDiv').
-                   move(350, 150).
-                   width(100).
-                   height(100).
-                   color('red').
-                   border('10px outset').
-                   padding('4px').
-                   appendText("Please stand by").
-                   on('mousedown', function (m) {
-                       this.startDrag(m, this.getNinth(m));
-                   }).
-                   on('mousemove', 'drag').
-                   on('mouseup', 'stopDrag').
-                   later(2000, function ( ) {
-                       this.
-                           color('yellow').
-                           setHTML("What hath God wraught?").
-                           slide(400, 40, 200, 200);
-                   }).
-                   tip('This box is resizeable');
-	     #+END_SRC
-
-       18. Curry
+	     1) A Statistical Model for the Joint Distribution Pr(X, Y )
 *** quotes
-    - We appreciate, but do not require, attribution. An attribution
-      usually includes the title, author, publisher, and ISBN. For
-      example: “JavaScript: The Good Parts by Douglas
-      Crockford. Copyright 2008 Yahoo! Inc., 978-0-596-51774-8.”
-    - (ends 0+1)
-    - It is usually necessary to test object.hasOwnProperty(variable)
-      to determine whetherthe property name is truly a member of the
-      object or was found instead on the prototype chain.
-      #+BEGIN_SRC js
-        for (myvar in obj) {
-            if (obj.hasOwnProperty(myvar)) {
-                    ...
-            }
-        }
-      #+END_SRC
-    - prefix operator [...] + to number
-    - The && operator produces the value of its first operand if the
-      first operand is falsy. Otherwise, it produces the value of the
-      second operand.
-    - (ends 2)
-    - The create method creates a new object that uses an old object
-      as its prototype. [...]
-      #+BEGIN_SRC js
-        if (typeof Object.create !== 'function') {
-            Object.create = function (o) {   (ref:object.create)
-                var F = function () {};
-                F.prototype = o;
-                return new F();
-            };
-        }
-        var another_stooge = Object.create(stooge);
-      #+END_SRC
-    - ...
-    - (bad parts)
-    - I have never seen a piece ofcode that was not improved by
-      refactoring it to remove the continue statement.
-    - (ends bp)
+    - Chapter 18 explores the “p ≫ N ” problem, which is learning in
+      high-dimensional feature spaces. These problems arise in many
+      areas, including genomic and proteomic studies, and document
+      classification.
+    - (Ends preface to the Second Edition)
+    - 7 Model Assessment and Selection
+    - 7.10.2 The Wrong and Right Way to Do Cross-validation
+    - 15 Random Forests
+    - 18 High-Dimensional Problems: p ≫ N
+    - 18.3.3 The Support Vector Classifier
+    - (ends Contents)
+    - Average percentage of words or characters in an email message
+      equal to the indicated word or character. We have chosen the
+      words and characters showing the largest difference between spam
+      and email.
+      |       | george |  you | your |   hp | free |  hpl |    ! |  our |   re |  edu | remove |
+      |-------+--------+------+------+------+------+------+------+------+------+------+--------|
+      | spam  |   0.00 | 2.26 | 1.38 | 0.02 | 0.52 | 0.01 | 0.51 | 0.51 | 0.13 | 0.01 |   0.28 |
+      | email |   1.27 | 1.27 | 0.44 | 0.90 | 0.07 | 0.43 | 0.11 | 0.18 | 0.42 | 0.29 |   0.01 |
+    - This is a classification problem for which the error rate needs
+      to be kept very low [...] In order to achieve this low error
+      rate, some objects can be assignedto a “don’t know” category,
+      and sorted instead by hand.
+    - splines, wavelets and regularization/penalization methods for a
+      single predictor, [...] kernel methods and local
+      regression. Both of these sets of methods are important building
+      blocks for high-dimensional learning techniques.
+    - At the end of each chapter we discuss computational considerations
+    - Chapters 1–4 be first read in sequence. Chapter 7 should also be
+      considered mandatory, as it covers central concepts that pertain
+      to all learning methods.
+    - (ends 1)
+    - predict the output Y via the model
+
+      Ŷ = β̂_{0} + \sum_{j=1}^{p} X_{j} β̂_{j} . (2.1)
+    - in vector form as an inner product
+
+      Ŷ = X^{T} β̂, (2.2)
+    - least squares. In this approach, we pick the coefficients β to
+      minimize the residual sum of squares
+
+      RSS(β) = \sum_{i=1}^{N} (y_{i} − x^{T}_{i} β)^{2}. (2.3)
+    - in matrix notation. We can write
+
+      RSS(β) = (y − Xβ)^{T} (y − Xβ), (2.4)
+    - the unique solution is given by
+
+      β̂ = (X^{T} X)^{−1} X^{T} y, (2.6)
+    - In the case of one Gaussian per class, we will see in Chapter 4
+      that a linear decision boundary is the best one can do, and that
+      our estimate is almost optimal. The region of overlap is
+      inevitable, and future data to be predicted will be plagued by
+      this overlap as well.
+    - (ends 2.3.1)
+    - linear decision boundary [...] has low variance and potentially
+      high bias.
+    - k-nearest-neighbor [...] high variance and low bias.
+    - 1-nearest-neighbor, the simplest of all, captures a large
+      percentage of the market for low-dimensional problems.
+    - Kernel methods use weights that decrease smoothly to zero with
+      distance from the target point, rather than the effective 0/1
+      weights used by k-nearest neighbors.
+    - Projection pursuit and neural network models consist of sums of
+      nonlinearly transformed linear models.
+    - (ends 2.3.3)
+    - X ∈ R^{p} input
+    - Y ∈ R output
+    - function f(X) for predicting Y
+    - /squared error loss/: L(Y, f(X)) = (Y − f (X))^{2} .
+    - EPE(f) = E(Y − f (X))^{2} (2.9)
+
+      = \int [y − f (x)]^{2} Pr(dx, dy) (2.10)
+
+      the /expected (squared) prediction error/
+    - The solution is
+
+      f (x) = E(Y |X = x), (2.13)
+
+      the conditional expectation, also known as the regression
+      function. Thus the best prediction of Y at any point X = x is
+      the conditional mean, when best is measured by average squared
+      error.
+    - (ends 2.4)
+    - In ten dimensions we need to cover 80% of the range of each
+      coordinate to capture 10% of the data.
+    - (ends 2.5)
+    - Thus it is not surprising that the analysis of high-dimensional
+      data requires either modification of procedures designed for the
+      N > p scenario, or entirely new procedures
+    - (ends 2.6.0)
+    - (ends 18.1)
+** PART [#B] [[./thebook.pdf][INTRODUCTION TO MACHINE LEARNING]] [0/2]
+*** TODO summary
+    1) Introduction
+
+       often in background
+
+       1) A Taste of Machine Learning
+
+	  applications, formalize
+
+	  1) Applications
+
+	     - page rank
+
+	     - collaborative filtering: amazon recommendations
+
+	     - automatic translation
+
+	     - face recognition vs face verification
+
+	     - named entity recognition: from documents etc some named thing
+
+	     - speech recognition: annotate voice sample
+
+	       - and similarly: handwriting, etc
+
+	     classification: yes/no answer
+
+	  2) Data
+
+	     types of data
+
+	     - Lists
+
+	     - Sets
+
+	     - Matrices
+
+	     - Images
+
+	     - Videos
+
+	     - Trees and Graphs
+
+	     - Strings
+
+	     - Compound structures: combine these
+
+	  3) Problems
+
+	     1) Binary Classification:
+
+		- online learning: instantaneous determination of y for x
+
+		- batch learning: group of stuff
+
+		- transduction: know X' (testing data)
+
+		- active learning: choose X
+
+		- estimation with missing variables
+
+		- covariate shift correction: X and X' from different
+                  data sources
+
+		- co-training: related but different problems
+
+		- loss functions
+
+	     2) Multiclass Classification
+
+	     3) Structured Estimation
+
+	     4) Regression
+
+	     5) Novelty Detection: new and unusual observations
+
+       2) Probability Theory
+
+	  1) Random Variables
+
+	     X takes on values in f.ex. \cal X = {1,..., 6} \ni x
+
+	  2) Distributions
+
+	     - discrete values: probability mass function, PMF
+
+	     - continuous values: probability density function, PDF
+	       integral: CDF
+
+	     - Pr(a \le X \le b) = \int_{a}^{b} dp(x) = F(b) - F(a)
+
+	     - Quantile: value x' for which Pr(X < x') \le q, Pr(X > x') \le 1-q
+	       is /q-quantile/. q=0.5: /median/
+
+	  3) Mean and Variance
+
+	     - mean: E[x] = \sum_{x} xp(x) and \int x dp(x)
+	       E[f(x)] =  \int f(x) dp(x)
+
+	     - variance Var[X] = E[(X - E(X))^{2}]
+	       Var[f(x)] =  E[(f(X) - E(f(X)))^{2}]
+
+	  4) Marginalization, Independence, Conditioning, and Bayes Rule
+
+	     0) [@0]
+
+		- marginalization, independence, conditioning, iid, bayes
+		  rule: see quotes
+
+		- Bayes Rule holds because p(x,y) = p(x|y)p(y) = p(y|x)p(x)
+
+		- "The key consequence of (1.15) is that we may
+                  reverse the conditioning between a pair of random
+                  variables."
+
+	     1) An Example
+
+		HIV testing,
+
+		- p(T = HIV+ | X = HIV+) = 1
+
+		- p(T = HIV+ | X = HIV-) = 0.01
+
+		- p(X = HIV+) = 0.0015
+                  \to  p(X = HIV-) = 0.9985
+
+		- then p(X = HIV+ | T = HIV+) is (shorthand P(x+, t-) etc)
+		  = p(t+ | x+) p(x+) / p(t+)
+
+		- p(t+) = p(x+, t+) + p(x-, t+)
+		  = p(t+ | x+ ) p(x+) + p(t+ | x-) p(x-)
+		  = 1 * 0.0015 + 0.01 * 0.9985
+
+		- back to p(x+ | t+)
+		  = 1 * 0.0015 / (1 * 0.0015 + 0.01 * 0.9985)
+
+		- increase test accuracy by further information (f.ex. age)
+
+		- and further, conditionally independent, tests
+
+       3) Basic Algorithms
+
+	  0) [@0]
+
+	     - features X, labels y
+
+	     - /bag of words/: "Assume we have a list of all possible
+               words occurring in X, that is a dictionary, then we are
+               able to assign a unique number with each of those words
+               (e.g. the position in the dictionary). Now we may
+               simply count for each document x_{i} the number of times
+               a given word j is occurring. This is then used as the
+               value of the j-th coordinate of x_{i}."
+
+	  1) Naive Bayes
+
+	     use bayes formula with approximations
+
+	     - replace p(x) by likelihood ratio (adjusted)
+
+	     - replace p(x|y) by independent product of parts (spam: words)
+
+	  2) Nearest Neighbor Estimators
+
+	     - distance to (k-) nearest point(s).
+
+	     - whichever class is closest
+
+	     - distance-dependent
+
+	     - works well if work was put into distance
+
+	  3) A Simple Classifier
+
+	     1. use means of classes
+
+	     2. compute distance of point to means
+
+	     3. extension: line boundary \to geometric boundary
+
+	  4) Perceptron
+
+	     - online learning
+
+	     - "data points x t ∈ R d , and labels y t ∈ {±1}"
+
+	       - if wrong, updates w by x_{t}y_{t}
+
+	       - kernelizeable: x replaceable by \phi(x)
+
+	     - converges if convergeable
+
+	     - margin describes how thin the border is
+
+	     - novikoff's theorem gives perceptron's accuracy bounded
+               by margin (+ data set diameter)
+
+	     - proof by two limits per step, induction, cauchy-schwartz
+
+	     - perceptron was used in (a)nn
+
+	     - here, more complex feature maps and "associated kernel"s
+
+	  5) K-Means
+
+	     - cluster
+
+	     - start with k /prototype vector/s,
+
+	     - approximate classes
+
+	     - approximate vectors
+
+	     - repeat
+
+    2) Density Estimation
+
+       1) Limit Theorems
+
+	  0) [@0] Casino
+
+	     - example: 100 die (1w6) tosses at casino yields only 11 6es
+               (instead of 17, as expected)
+
+	     - (^{m}_{n}) = m! / n!(m-n)! different sequences with
+               proportions n="6" and m="not 6" respectively
+
+	     - only 11 '6'es for 100 die tosses: \sim 7.0%
+
+	       probability[X \le 11] = \sum_{i=0}^{11} (^{100}_{i}) (1/6)^{i}  (5/6)^{100-i}
+
+	  1) Fundamental Laws
+
+	     - weak law: irgendwann ist summe durch \epsilon beschraenkt
+
+	     - strong law: wkt der konvergenz ist 1
+
+	     - central limit theorem: id vars converge to (var-sth)
+               normal distribution (all - \mu)
+
+	     - slutsky: continuous functions can be pulled into E
+
+	     - delta method: see later
+
+	  2) The Characteristic Function
+
+	     - Fourier transform
+
+	     - Characteristic functions
+
+	     - Sum of random variables and convolutions
+
+	       - Proof via Y=z-x, joint distribution p(z, x)
+
+	     - proofs of 1)
+
+	     - moments \to function
+
+	  3) Tail Bounds
+
+	     - Gauss inequality: proof via
+
+	       - 1 \le x/\epsilon (auf [\epsilon, \infty))
+
+	       - 1/\epsilon herausziehen, auf [0, \infty) erweitern
+
+	       - auf dem Intervall ist x durschnittlich kleiner \mu
+
+	  4) An Example
+
+	     - assume that all production steps are iid, have the same \mu_{B}
+
+	     - X_{i} for wafer i
+
+	     - X̄_{m} the average of the yields of m wafers using process
+               ’B’
+
+	     - interested in is the accuracy \epsilon for which the
+               probability
+
+	       δ = Pr(| X̄_{m} − μ_{B} | > \epsilon) satisfies δ ≤ 0.05.
+
+	     - solve
+
+	       - chebyshev: 40000
+
+	       - hoeffding: 738
+
+	       - central limit theorem: 55
+
+       2) Parzen Windows
+
+	  1) Discrete Density Estimation
+
+	     estimate by actual occurrences in sample data
+
+	     problem: some numbers might not appear
+
+	     solution: laplace smoothing
+
+	  2) Smoothing Kernel
+
+	     - "proper density estimation."
+
+	     - parzen windows estimate (see quotes)
+
+	     - different kernels
+
+	  3) Parameter Estimation
+
+	     - width of kernel function is important, shape less
+
+	     - to maximize likelihood, sum over log-likelihood to
+               avoid float overflow
+
+	     - maximizing likelihood on all of data leads to
+               overfitting
+
+	     - avoid by using a Validation Set, n-fold
+               Cross-validation or a Leave-one-out Estimator
+
+	  4) Silverman’s Rule
+
+	     - locality-dependent kernel width
+
+	       r_{i} = c/k \sum_{x \in kNN(x_i)} ||x - x_{i}||
+
+	     - locality-dependent parzen rule
+
+	       p\circ(x) = 1/m \sum_{i=1}^{m} r^{-d}h(x - x_{i}/r_{i})
+
+	  5) Watson-Nadaraya Estimator
+
+	     - non-parametric data
+
+       3) Exponential Families
+
+	  0) [@0]
+
+	     - "Gaussians, Poisson, Gamma and Wishart distributions all
+               form part of the exponential family"
+
+	     - "lead to convex optimization problems"
+
+	  1) Basics
+
+	     - Defined by
+
+               p(x; θ) := p_{0}(x) exp (<φ(x), θ> − g(θ)) . (2.40)
+
+	     - with g(\theta) weighting term to get density function
+
+	     - \varphi map from parameters to statistics
+
+	  2) Examples
+
+	     Many distributions can be seen as member of the exponential family
+
+	     - Gaussian
+
+	     - Multinomial
+
+	     - Poisson
+
+	     - Beta
+*** TODO quotes
+    - much of the art of machine learning is to reduce a range of
+      fairly disparate problems to a set of fairly narrow
+      prototypes.
+    - A rather related application is collaborative
+      filtering. Internet book stores such as Amazon, or video rental
+      sites such as Netflix use this information extensively to entice
+      users to purchase additional goods (or rent more movies).
+    - Many security applications, e.g. for access control, use face
+      recognition as one of its components.
+    - The overarching theme of learning problems is that there exists
+      a nontrivial dependence between some observations, which we will
+      commonly refer to as x and a desired response, which we refer to
+      as y, for which a simple set of deterministic rules is not
+      known. By using learning we can infer such a dependency between
+      x and y in a systematic fashion.
+    - (ends 1.1.1)
+    - One of the challenges in dealing with vectors is that the scales
+      and units of different coordinates may vary widely.
+    - One way of dealing with those issues in an automatic fashion is
+      to normalize the data. We will discuss means of doing so in an
+      automatic fashion.
+    - In some cases the vectors we obtain may contain a variable
+      number of features.
+    - (ends 1.1.2)
+    - 3-class classification. Note that in the latter case we have
+      much more degree for ambiguity.
+    - a sequence of (x_{i} , y_{i} ) pairs for which y i needs to be
+      estimated in an instantaneous online fashion. This is commonly
+      referred to as online learning.
+    - know X 0 already at the time of constructing the model. This is
+      commonly referred to as transduction.
+    - (ends 1.1.3)
+    - For more details and a very gentle and detailed discussion see
+      the excellent book of [BT03].
+    - (ends 1.2.0)
+    - Formally, [...] 1 occurs with probability 1/6
+    - notational convention [...] use uppercase letters, e.g., X, Y
+      etc to denote random variables and lower case letters, e.g., x,
+      y etc to denote the values they take.
+    - (ends 1.2.1)
+    - If the random variable is discrete, i.e., it takes on a finite
+      number of values, then this assignment of probabilities is
+      called a /probability mass function/ or PMF for short.
+    - slightly informal notation p(x) := Pr(X = x)
+    - continuous random variable the assignment of probabilities
+      results in a probability density function or PDF for short.
+    - Closely associated with a PDF is the indefinite integral
+      over p. It is commonly referred to as the cumulative
+      distribution function (CDF).
+    - (ends 1.2.2)
+    - if f: R → R is a function, then f(X) is also a random
+      variable. Its mean is mean given by
+
+      E[f(X)] := \int f(x)dp(x).
+    - (ends 1.2.3)
+    - /joint density/ p(x, y).
+    - /marginalization/: recover p(x) by integrating out y:
+      p(x) = \int dp(x, y).
+    - /X and Y are independent/: p(x,y) = p(x) p(y)
+    - /iid random variables/: independently and identically distributed
+    - /conditional probabilities/:
+      p(x|y) := p(x, y) / p(y)
+    - /Bayes Rule/: p(y|x) = p(x|y)p(y) / p(x)
+    - (ends 1.2.4.0)
+    - The physician recommends a test which is guaranteed to detect
+      HIV-positive whenever a patient is infected.
+    - On the other hand, for healthy patients it has a 1% error
+      rate. That is, with probability 0.01 it diagnoses a patient as
+      HIV-positive even when he is, in fact, HIV-negative.
+    - Moreover, assume that 0.15% of the population is infected.
+    - Denote by X and T the random variables associated with the
+      health status of the patient and the outcome of the test
+      respectively.
+    - We are interested in p(X = HIV+|T = HIV+).
+    - Note that often our tests may not be conditionally independent
+      and we would need to take this into account.
+    - p(X = HIV+|T = HIV+) = p(T = HIV+|X = HIV+) p(X = HIV+) / p(T = HIV+)
+    - p(T = HIV+) = \sum p(T = HIV+, x) = \sum p(T = HIV+|x)p(x)
+    - The corresponding expression yields:
+
+      p(T = HIV+|X = HIV+, A)p(X = HIV+|A) / p(T = HIV+|A)
+
+      Here we simply conditioned all random variables on A in order to
+      take additional information into account.
+    - What we want is that the diagnosis of T_{2} is independent of that
+      of T_{2} given the health status X of the patient. This is
+      expressed as
+      p(t_{1} , t_{2} |x) = p(t_{1} |x)p(t_{2} |x). (1.16)
+    - Random variables satisfying the condition (1.16) are commonly
+      referred to as /conditionally independent/.
+    - (ends 1.2.4.1)
+    - assume that there is sufficiently strong dependence between x
+      and y that we will be able to estimate y given x and a set of
+      labeled instances X, Y.
+    - (ends 1.3.0)
+    - estimate of p(y), that is, the probability of receiving a spam
+      or ham mail.
+    - dispose of the requirement of knowing p(x) by settling for a
+      likelihood ratio
+      L(x) := p(spam|x) / p(ham|x) = p(x|spam)p(spam) / p(x|ham)p(ham)
+    - treat the occurrence of each word in a document as a separate
+      test and combine the outcomes in a naive fashion by assuming
+      that
+      p(x|y) = \Pi_{j=1}^{# of words in x} p(w^{j} |y)
+    - p(w|y) can be obtained, for instance, by simply counting the
+      frequency occurrence of the word within documents of a given
+      class.
+    - since we are computing a product over a large number of factors
+      the numbers might lead to numerical overflow or underflow. This
+      can be addressed by summing over the logarithm of terms rather
+      than computing products.
+    - need to address the issue of estimating p(w|y) for words w which
+      we might not have seen before. One way of dealing with this is
+      to increment all counts by 1.
+    - perform surprisingly well
+    - (ends 1.3.1)
+    - Note that nearest neighbor algorithms can yield excellent
+      performance when used with a good distance measure.
+    - lemma by Johnson and Lindenstrauss [DG03] asserts that a set of
+      m points in high dimensional Euclidean space can be projected
+      into a O(log m/\epsilon 2 ) dimensional Euclidean space such that the
+      distance between any two points changes only by a factor of (1 ±
+      \epsilon). [...] The surprising fact is that the projection relies on a
+      simple randomized algorithm.
+    - (ends 1.3.2)
+    - In general, we may pick *arbitrary maps* φ : X → H mapping the
+      space of observations into a feature space H, as long as the
+      latter is endowed with a dot product (see Figure 1.21). This
+      means that instead of dealing with <x, x'> we will be dealing
+      with <φ(x), φ(x')>.
+    - (ends 1.3.3)
+    - a user might want to have instant results whenever a new e-mail
+      arrives and he would like the system to learn immediately from
+      any corrections to mistakes the system makes.
+    - the Perceptron is a linear classifier
+    - if ŷ_{t} \neq y_{t} the weight vector is updated as
+      w ← w + y_{t} x_{t} and b ← b + y_{t}
+    - If the dataset (X, Y) is linearly separable, then the Perceptron
+      algorithm eventually converges and correctly classifies all the
+      points in X.
+    - Definition 1.6 (*Margin*) Let w ∈ R d be a weight vector and let
+      b ∈ R be an offset. The margin of an observation x ∈ R d with
+      associated label y is
+
+      \gamma(x, y) := y (<w, x> + b) (1.27)
+
+      Moreover, the margin of an entire set of observations X with
+      labels Y is
+
+      γ(X, Y) := min_{i} γ(x_{i} , y_{i}) (1.28)
+    - Geometrically speaking (see Figure 1.22) the margin measures the
+      distance of x from the hyperplane defined by {x| <w, x> + b = 0}.
+    - Theorem 1.7 (*Novikoff’s theorem*) Let (X, Y) be a dataset with
+      at least one example labeled +1 and one example labeled −1. Let
+      R := max_{t} ||x_{t}||, and assume that there exists (w^{∗}, b^{∗}) such
+      that ||w^{∗}|| = 1 and γ_{t} := y_{t} (<w^{∗}, x_{t}>) + b^{∗} ) ≥ γ for
+      all t. Then, the Perceptron will make at most (1+R^{2})(1+(b^{*})^2)/γ^{2}
+      mistakes.
+    - a similar bound can be shown for Support Vector Machines [Vap95]
+    - (ends 1.3.4)
+    - define prototype vectors μ_{1} , ... , μ_{k} and an indicator vector
+      r_{ij} which is 1 if, and only if, x_{i} is assigned to cluster j. To
+      cluster our dataset we will minimize the following *distortion
+      measure*, which minimizes the distance of each point from the
+      prototype vector:
+
+      J(r, μ) := 1/2 \sum_{i=1}^{m} \sum_{j=1}^{k} r_{ij} ||x_{i} - \mu_{j}||^{2}
+
+      where r = {r_{ij}}, μ = {μ_{j}}
+    - adapt a two stage strategy
+      - Stage 1 Keep the μ [prototype vectors] fixed and determine r.[...]
+	The solution for the i-th data point x_{i} can be found by setting:
+
+	r_{ij} = 1 if j = argmin_{j'} ||x_{i} − μ_{j'}||^{2} (1.30)
+
+        and 0 otherwise.
+      - Stage 2 Keep the r fixed and determine μ. [...]  [J] can be
+        minimized by setting the derivative with respect to μ_{j} to be
+        0:
+
+	\sum_{j=1}^{m} r_{ij} (x_{i} - \mu_{j}) = 0 for all j. (1.31)
+
+        Rearranging obtains \mu_{j} = \sum_{i} r_{ij}x_{i} / \sum_{i} r_{ij} (1.32)
+
+	Since \sum_{i} r_{ij} counts the number of points assigned to cluster
+        j, we are essentially setting μ_{j} to be the sample mean of the
+        points assigned to cluster j.
+      - Two issues [...]
+	1. sensitive to the choice of the initial cluster centers μ.
+	2. hard assignment of every point to a cluster center.
+      - (ends 1.5)
+      - Before crying foul you decide that some mathematical analysis
+        is in order.
+      - limit theorems [...] tell us by how much averages over a set
+        of observations may deviate from the corresponding
+        expectations and how many observations we need to draw to
+        estimate a number of probabilities reliably.
+      - (ends 2.0)
+      - Theorem 2.1 (Weak Law of Large Numbers) Denote by X_{1} , ... ,
+        X_{m} random variables drawn from p(x) with mean μ = E_{X_{i}} [x_{i}]
+        for all i. Moreover let
+
+        X̄_{m} := 1/m \sum_{i=1}^{m} X_{i} (2.2)
+
+        be the empirical average over the random variables X_{i} . Then
+        for any \epsilon > 0 the following holds
+
+        lim_{m \to \infty} Pr (|X̄_{m} − μ| ≤ \epsilon = 1). (2.3)
+      - Theorem 2.2 (Strong Law of Large Numbers) Under the conditions
+        of Theorem 2.1 we have Pr(lim_{m→∞} X̄_{m} = μ) = 1.
+      - Theorem 2.3 (Central Limit Theorem) Denote by X_{i} independent
+        random variables with means μ_{i} and standard deviation σ_{i}. Then
+
+	Z_{m} := m [ \sum_{i=1}^{m} \sigma_{i}^{2} ]^{- 1/2} [ \sum_{i=1}^{m} X_{}_{i} - \mu_{i}^{} ] (2.4)
+
+	converges to a Normal Distribution with zero mean and unit
+        variance.
+      - Theorem 2.4 (Slutsky’s Theorem) Denote by X_{i} , Y_{i} sequences of
+        random variables with X_{i} → X and Y_{i} → c for c ∈ R in
+        probability. Moreover, denote by g(x, y) a function which is
+        continuous for all (x, c). In this case the random variable
+        g(X_{i}, Y_{i}) converges in probability to g(X, c).
+      - Theorem 2.5 (Delta Method) Assume that X_{n} ∈ R^{d} is
+        asymptotically normal with a_{n}^{-2}(X_{n} - b) \to N(0, \Sigma) for a_{n}
+        → 0. Moreover, assume that g : R^{d} → R^{l} is a mapping which is
+        continuously differentiable at b. In this case the random
+        variable g(X_{n}) converges
+
+	a_{n}^{-2}(g(X_{n}) - g(b)) \to N(0, [∇_{x} g(b)]Σ[∇_{x} g(b)]^{T}) (2.5)
+      - The Fourier transform plays a crucial role [...] in
+        statistics. For historic reasons its applications to
+        distributions is called *the characteristic function*.
+      - Definition 2.6 (*Fourier Transform*) Denote by f : R^{n} → C a
+        function defined on a d-dimensional Euclidean space. Moreover,
+        let x, ω ∈ R^{n} . Then the Fourier transform F and its inverse
+        F^{-1} are given by
+
+        F [f](ω) := (2π)^{−d/2} \int_{R^{n}} f(x) exp(-i<\omega, x>)dx (2.7)
+
+        F^{-1} [g](ω) := (2π)^{−d/2} \int_{R^{n}} g(\omega) exp(i<\omega, x>)d\omega (2.8)
+      - Definition 2.7 (*Characteristic Function*) Denote by p(x) a
+        distribution of a random variable X ∈ R^{d}. Then the
+        characteristic function φ_{X} (ω) with ω ∈ R^{d} is given by
+
+        φ_{X} (ω) := (2π)^{d/2} F^{−1} [p(x)] = \int exp(i <ω, x>)dp(x). (2.9)
+      - Theorem 2.8 (*Sums of random variables and convolutions*)
+        Denote by X, Y ∈ R two independent random variables. Moreover,
+        denote by Z := X + Y the sum of both random variables. Then
+        the distribution over Z satisfies p(z) = p(x) ◦
+        p(y). Moreover, the characteristic function yields:
+
+        φ_{Z} (ω) = φ_{X}(ω)φ_{Y}(ω). (2.10)
+      - ∇^{n}_{ω} φ_{X}(0) = i^{−n} E_{X} [x^{n}]. (2.12)
+
+      - if we know the moments of a distribution we are able to
+        reconstruct it directly since it allows us to reconstruct its
+        characteristic function.
+      - (ends 2.1.2)
+      - Theorem 2.9 (*Gauss-Markov*) Denote by X ≥ 0 a random variable
+        and let μ be its mean. Then for any \epsilon > 0 we have
+
+	Pr(X ≥ \epsilon) ≤ \mu / \epsilon (2.13).
+
+	This means that for random variables with a small mean, the
+        proportion of samples with large value has to be small.
+      - Theorem 2.10 (*Chebyshev*) Denote by X a random variable with
+        mean μ and variance σ^{2} . Then the following holds for \epsilon > 0:
+
+        Pr(|x − μ| ≥ \epsilon) \le \sigma^{2} / \epsilon^{2} (2.14)
+      - Theorem 2.12 (*Hoeffding*) Denote by X_{i} iid random variables
+        with bounded range X_{i} ∈ [a, b] and mean μ. Let X̄_{m} := m^{−1}
+        \sum_{i=1}^{m} X_{i} be their average. Then the following bound holds:
+
+        Pr(|X̄_{m} − μ| > \epsilon) ≤ 2 exp(-2m\epsilon^{2} / (b-a)^{2}) (2.15)
+      - (ends 2.1.3)
+      - The convergence theorems discussed so far mean that we can use
+        empirical observations for the purpose of density estimation.
+      - Example 2.4 (Curse of Dimensionality) Assume that X = {0, 1} d
+        , i.e. x consists of binary bit vectors of
+        dimensionality d. As d increases the size of X increases
+        exponentially, requiring an exponential number of observations
+        to perform density estimation. For instance, if we work with
+        images, a 100 × 100 black and white picture would require in
+        the order of 10^{3010} observations to model such fairly
+        low-resolution images accurately. This is clearly utterly
+        infeasible — the number of particles in the known universe is
+        in the order of 10^{80} . Bellman [Bel61] was one of the first to
+        formalize this dilemma by coining the term ’curse of
+        dimensionality’.
+      - (ends 2.2.1)
+      - p\circ(x) = 1/m \sum_{i=1}^{m} r^{-d}h(x - x_{i}/r)
+
+	This expansion is commonly known as the /Parzen windows/ estimate.
+      - h(x) = (2π)^{−1/2} e^{−1/2 x^2} /Gaussian kernel/
+      - h(x) = 3/4 max(0, 1 − x^2) /Epanechnikov kernel/
+      - For practical purposes the Gaussian kernel (2.28) or the
+        Epanechnikov kernel (2.30) are most suitable.
+      - /compact support/ [...] for any given density estimate at
+        location x we will only need to evaluate terms h(x_{i} − x) for
+        which the distance ||x_{i} − x|| is less than r.
+      - (ends 2.2.2)
+      - choose r such that the /log-likelihood of the data/ is
+        maximized. It is given by
+
+	log \Pi_{j=0}^m p(x_{j}) = −m log m + \sum_{j=1}^m log (m \cdot p\circ(x_{j}))
+      - (ends 2.2.3)
+      - Provided that we are able to compute density estimates p(x)
+        given a set of observations X we could appeal to Bayes rule to
+        obtain
+
+	p(y|x) = p(x|y)p(y)/p(x)
+        = ((m_{y} / m) \cdot 1/m_{y} \sum_{i:y_i=y} r^{-d} h(x_{i}-x/r) / 1/m \sum_{i=1}^{m} r^{-d} h(x_{i}-x/r) ) (2.38)
+      - For binary classification (2.38) can be simplified [...] the function
+
+	f (x)
+        = \sum_{i} y_{i} h(x_{i}-x/r) / \sum_{i} h(x_{i}-x/r)
+	= \sum_{i} y_{i} (h(x_{i}-x/r) / \sum_{i} h(x_{i}-x/r))
+	=: \sum_{i} y_{i} w_{i}(x) (2.39)
+
+	can be used to achieve the same goal since
+
+        f (x) > 0 ⇐⇒ p(y = 1|x) > 0.5
+      - (ends 2.2.5)
+      - 
+      - The reason why many discrete processes follow the Poisson
+        distribution is that it can be seen as the limit over the
+        average of a large number of Bernoulli draws
+** PART [#C] [[./irbookonlinereading.pdf][An Introduction to Information Retrieval]]
+*** summary
+    0. [@0] Preface
+
+       - from specialized academic study to www
+
+       - Book organization and course development
+
+	 - chapter: 75 to 90 minutes
+
+	 - 1-8 foundation topics
+
+       - Prerequisites
+
+       - Book layout
+
+	 - pencil: worked examples
+
+	 - scissors: advanced, can leave out
+
+	 - ? exercise, with difficulty * to ***
+
+       - Acknowledgments
+
+    1. Boolean retrieval
+*** quotes
+    - Chapter 10 considers information retrieval from documents that
+      are structured with markup languages like XML and HTML.
+    - (ends 0)
+    - Most commonly, the edit operations allowed for this purpose are:
+      (i) insert a character into a string; (ii) delete a character
+      from a string and (iii) replace a character of a string by
+      another character; for these operations, edit distance
+      is sometimes known as *Levenshtein distance*.
+    - EDIT DISTANCE ( s_{1} , s_{2} )
+      1. int m [ i, j ] = 0
+      2. for i ← 1 to | s_{1} |
+      3. do m [ i, 0 ] = i
+      4. for j ← 1 to | s_{2} |
+      5. do m [ 0, j ] = j
+      6. for i ← 1 to | s_{1} |
+      7. do for j ← 1 to | s_{2} |
+      8. do m [ i, j ] = min { m [i−1, j−1]
+	 + if ( s1[i] = s2[j]) then 0 else 1 fi,
+      9. m [ i − 1, j ] + 1,
+      10. m [ i, j − 1 ] + 1 }
+      11. return m [| s_{1} | , | s_{2} |]
+    - (ends 3.3)
+    - *Contiguity hypothesis*. Documents in the same class form a
+      contiguous region and regions of different classes do not
+      overlap.
+    - Nonlinear models have more parameters to fit on a limited amount
+      of training data and are more likely to make mistakes for small
+      and noisy data sets.
+    - (ends 14.0)
 ** PART [[./sally/Example1.html]]
 *** summary
     - input files example1.cfg reuters.zip
@@ -9269,156 +9614,6 @@
        two preferences). This means that messages written using
        debug(), log(), info(), trace(), and warn() will not appear in
        the console.
-** PART MOVE [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Eloquent Javascript]]
-*** summary
-    8. [@8] Object-oriented Programming
-
-       - 90s trend, persistent, "solid and useful"
-
-       - create objects, attach methods and properties
-
-       - easy: just attach function values to object
-
-       - =apply(object, params)=: first parameter (mapped to =this=) is object
-
-	 - also =call(object, params*)= separate arguments instead of array
-
-       - constructor
-
-	 - Capitalized
-
-	 - use with =new=
-
-	 - always sets =this= to object, returns it
-
-	 - also sets =constructor= property and some other stuff
-
-       - .prototype
-
-	 - like =class=, but dynamically augmentable
-
-       - always changes object, object never changes .prototype
-
-	 - access goes up the prototype hierarchy until name is found
-
-       - use =hasOwnProperty= to find out if really the object has the
-         attribute, or it's somewhere else
-
-         - workaround for when hasOwnProperty is an attribute
-
-       - above fails in Firefox, which assigns a __proto__ to all objects
-
-	 - objects are "values with methods" and "sets of properties"
-
-       - =Dictionary= class for "sets of properties"
-
-       - external api vs internal implementation
-
-       - could add methods to f.ex. =Object=: be careful, but possible
-
-       - Exercise project: Terrarium
-
-	 - 2d, discrete time and place, # wall, ' ' free, o bug
-
-       - functions: =toString=, =step=, =start=, =stop=
-
-    12. [@12] The Document-Object Model
-
-	- =<HTML>= via =document.documentElement=
-
-	  - =<BODY>= via =document.body=
-
-	- f.ex. =document.body.parentNode= to get the parent
-
-	  - =.childNodes=, =.firstChild= and =.lastChild=
-
-	  - =.previousSibling= and =.nextSibling=
-
-	- if text node, then =node.nodeType= = 3, (most often) else 1
-
-	- =.nodeName= for tag name (CAPITALIZED)
-
-	  - =.firstChild.nodeValue= for text value
-
-	- exercise: get text of html tags
-
-	  #+BEGIN_SRC js
-            function getText(node) {
-              if ( isTextNode(node) ) {
-                return node.nodeValue;
-              } else {
-                var out = "";
-                for ( var i = 0; i < node.childNodes.length; i++ ) {
-                  out += getText(node.childNodes[i]);
-                }
-                return out;
-              }
-            };
-            print(getText(document.body));
-	  #+END_SRC
-
-	- =node.innerHTML= gives HTML, also changeable which effects website
-
-	- =document.getElementById("picture")= gives element
-
-	  - also =document.getElementsByTagName[0]=
-
-	- =var h = document.createElement("H1");= creates new header
-
-	  - =var text = document.createTextNode("hi there");= creates text node
-
-	  - =h.appendChild(text)= and =document.appendChild(h)= appends both
-
-	  - also =newImage.setAttribute("src", "img/Hiva Oa.png");=
-
-	- function with workarounds for IE
-
-	- =.insertBefore(someNode, beforeThis)=
-
-	  - =.replaceChild(newNode, toBeReplaced)=
-
-	  - =.removeChild(childNode)=
-
-	- "Write the convenient function removeElement which removes
-          the DOM node it is given as an argument from its parent
-          node."
-
-	  #+BEGIN_SRC js
-            function easyRemove(node) {
-                node.parentNode && node.parentNode.removeChild(node);
-            }
-	  #+END_SRC
-
-	- "When creating new nodes" weiter
-*** quotes
-    - (begins 4)
-    - The keyword `delete` cuts off properties. Trying to read a
-      non-existent property gives the value undefined.
-    - var now = new Date();
-    - (ends 4)
-    - Object-orientation's longevity can largely be explained by the
-      fact that the ideas at its core are very solid and useful. In
-      this chapter, we will discuss these ideas, along with
-      JavaScript's (rather eccentric) take on them.
-    - typing ={}= is equivalent to typing =new Object()=
-    - example object creation
-      #+BEGIN_SRC js
-        function Rabbit(adjective) {
-          this.adjective = adjective;
-        }
-        Rabbit.prototype.speak = function(line) {
-          print("The ", this.adjective, " rabbit says '", line, "'");
-        };
-
-        var hazelRabbit = new Rabbit("hazel");
-        hazelRabbit.speak("Good Frith!");
-      #+END_SRC
-    - Personally, I treat writing documentation as a 'finishing touch'
-      to add to a system. When it feels ready, it is time to write
-      something about it, and to see if it sounds as good in English
-      (or whatever language) as it does in JavaScript (or whatever
-      programming language).
-    - (ends 8)
 ** [[./js/javascript%20-%20Firefox%20Addon%20observer%20http-on-modify-request%20not%20working%20properly%20-%20Stack%20Overflow.html][Firefox Addon observer http-on-modify-request not working properly]]
 *** quotes
     - set up
