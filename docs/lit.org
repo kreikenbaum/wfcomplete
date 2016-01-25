@@ -3513,7 +3513,7 @@
 
 	  12) Interpreter (Interpreter): DSL
 
-	  13) Itertor: sequentieller zugriff ohne details zu kennen
+	  13) Iterator: sequentieller zugriff ohne details zu kennen
 
 	  14) Kompositum (Composite): baumstrukturen als teil-ganzes (XML?)
 
@@ -3745,9 +3745,44 @@
 
        8) Wie man ein Entwurfsmuster verwendet
 
-	  todo s.41
+	  1. einmal lesen
+
+	  2. struktur- teilnehmer und interaktionsabschnitt verstehen
+
+	  3. beispielcode
+
+	  4. klassenname waehlen (lokal + muster)
+
+	  5. klassen definieren (schnittstellen, vererbung, exemplar
+
+	  6. funktionsnamen waehlen, konsistent (z.b. "erzeuge" fuer
+             fabrikmethode)
+
+	  7. implementieren operationen
 
     3) [@3] Erzeugungsmuster
+
+       0) [@0] Einleitung
+
+	  - von vererbung zu objektkomposition immer wichtiger
+
+	  - kapseln wissen um klassen in typen
+
+	    - und wie diese typen kombiniert werden
+
+	  - beispiel
+
+	    - raum mit angrenzenden raum, tuer, wand
+
+	  - macht flexibler, nicht notwendigerweise kleiner
+
+	  - erweiterbarer durch
+
+	    - virtuelle funktionen helfen bei aenderung
+
+	    - erzeuge erhaelt objekt um varianten zu erzeugen
+
+	    - prototypische raum, tuer und wandobjekte
 
        1) Abstrakte Fabrik
 
@@ -3814,7 +3849,7 @@
                 parametrisierte =erzeuge=-funktion. (-): ein rueckgabetyp
 
 	  10) Beispielcode
-	      
+
 	      erweiterbares labyrinth um bomben und zauber
 
 	  11) Bekannte Verwendungen
@@ -3824,6 +3859,10 @@
 	  12) Verwandte Muster
 
 	      fabrikmethoden oder prototyp, fabrik ist oft singleton
+
+       2) Erbauer
+
+	  1) weiter S. 119
 
     5) [@5] Verhaltensmuster
 
@@ -4346,6 +4385,87 @@
 	  - (-) no private variables
 
        4. Functional
+
+	  hide members by using closure and only giving out an object
+          which accesses these
+
+       5. Parts
+
+	  extend by taking the =that= object, defining a new variable
+          and a new function which accesses the variable internally,
+          returning =that=
+
+    6. Arrays
+
+       not a real array of ocnsecutive memory locations
+
+       1. Array Literals
+
+	  - ['zero', 'one'] just like {'0': 'zero', '1': 'one'}
+
+	    except for
+
+	    - length property
+
+	    - array methods
+
+       2. Length
+
+	  biggest index +1
+
+	  setting to smaller causes larger objects to be deleted
+
+       3. Delete
+
+	  leaves a hole (=undefined=)
+
+	  better use =myarray.splice(2, 1);=
+
+       4. Enumeration
+
+          for in can enumerate parent properties,
+	  better use for ( i = 0; i < myarray.length; i += 1 )
+
+       5. Confusion
+
+	  detect whether array:
+	  #+BEGIN_SRC js
+            var is_array = function (value) {
+                return value &&
+                    typeof value === 'object' &&
+                    typeof value.length === 'number' &&
+                    typeof value.splice === 'function' &&
+                    !(value.propertyIsEnumerable('length'));
+            };
+	  #+END_SRC
+
+       6. Methods
+
+	  extend arrays, f.ex. via
+	  #+BEGIN_SRC js
+            Array.method('reduce', function (f, value) {
+                var i;
+                for (i = 0; i < this.length; i += 1) {
+                    value = f(this[i], value);
+                }
+                return value;
+            });
+	  #+END_SRC
+
+       7. Dimensions
+
+	  can add method to initialize array to known length, not built-in
+
+    7. Regular Expressions
+
+       best keep simple
+
+       more efficient than other methods
+
+       "regexp.exec, regexp.test, string.match, string.replace,
+       string.search, and string.split"
+
+       1. An Example
 *** quotes
     - We appreciate, but do not require, attribution. An attribution
       usually includes the title, author, publisher, and ISBN. For
@@ -4379,6 +4499,9 @@
         }
         var another_stooge = Object.create(stooge);
       #+END_SRC
+    - (ends 3?)
+    - Regular expressions usually have a significant performance
+      advantage over equivalent string operations in JavaScript.
     - ...
     - (bad parts)
     - I have never seen a piece ofcode that was not improved by
@@ -4776,6 +4899,22 @@
 	  - control also path selection etc
 
     7) Attacks and Defenses
+
+       1. Passive Attacks
+
+	  1. Observing user traffic patterns: ?on/off when?
+
+	  2. Observing user content: ?
+
+	  3. Option distinguishability: torrc options
+
+	  4. End-to-end timing correlation: hard to defend, maybe via private OR
+
+	  5. End-to-end size correlation: simple counting, but: leaky pipe
+
+	  6. Website fingerprinting: in design goal, database (see quote)
+
+       2. Active attacks
 *** quotes
     - most designs protect primarily against traffic analysis rather
       than traffic confirmation
@@ -5076,6 +5215,10 @@
        (only select sites), without decentralization (with database)
 
        1) Without generality
+
+	  half-duplex with inserted dummy packets works well against knn
+
+       2) Without ease of use
 *** quotes
     - design goals:
       1. General: The defense succeeds against all possible
@@ -5105,6 +5248,9 @@
     - If the attacker categorized a monitored page as a different
       monitored page, we count it as a false positive
     - (ends 6.2)
+    - designing a defense that specifically defeats the
+      state-of-the-art attack is a flawed approach.
+    - (ends 7.1)
 *** questions
     - Further, we assume this encrypted channel pads all packets to a
       fixed size so as to remove packet size as a possible
@@ -7600,6 +7746,16 @@
 
          - workaround for when hasOwnProperty is an attribute
 
+	 - code to apply function to each property of object
+	   #+BEGIN_SRC js
+             function forEachIn(object, action) {
+                 for (var property in object) {
+                     if (object.hasOwnProperty(property))
+                         action(property, object[property]);
+                 }
+             };
+	   #+END_SRC
+
        - above fails in Firefox, which assigns a __proto__ to all objects
 
 	 - objects are "values with methods" and "sets of properties"
@@ -7665,7 +7821,26 @@
 
 	  - also =newImage.setAttribute("src", "img/Hiva Oa.png");=
 
-	- function with workarounds for IE
+	- =setAttribute= workaround for IE, then
+
+	  - build dom elements
+	    #+BEGIN_SRC js
+              function dom(name, attributes) {
+                  var node = document.createElement(name);
+                  if (attributes) {
+                      forEachIn(attributes, function(name, value) {
+                          node.setAttribute(name, value);
+                      });
+                  }
+                  for (var i = 2; i < arguments.length; i++) {
+                      var child = arguments[i];
+                      if (typeof child == "string")
+                          child = document.createTextNode(child);
+                      node.appendChild(child);
+                  }
+                  return node;
+              };
+	    #+END_SRC
 
 	- =.insertBefore(someNode, beforeThis)=
 
@@ -7683,7 +7858,11 @@
             }
 	  #+END_SRC
 
-	- "When creating new nodes" weiter
+	- only moveable within single document, not from tab to tab, f.ex.
+
+	- html tables: ie needs tbody tag
+
+	- continue at "The function makeTable"
 *** quotes
     - (begins 4)
     - The keyword `delete` cuts off properties. Trying to read a
