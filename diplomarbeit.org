@@ -312,35 +312,37 @@
 ** TODO link online signing.
 ** jpm xpi date/time problem
 * TODO page-mod
-   The page-mod module runs "scripts in the context of web pages whose
-   URL matches a given pattern." ([[link page-mod]])
+  The
+  page-mod[fn::\url{http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html}]
+  module injects "scripts in the context of web pages whose URL
+  matches a given pattern."
 
-   This offers the possibility to check for the end of page load.
+  The pattern can be given as ="*"= or =/.*/= to run on every
+  user-visited page.
 
-   If the pattern is given as ="*"= or the regular expression =/.*/=
-   (which also triggers on `file:///` etc links), then the scripts are
-   run on every user-visited page.
+  It thus offers the possibility to check for the end of a web page
+  load by the user.
 
-   A page-mod example is
+  A page-mod example is
 
-   #+BEGIN_SRC js
-     pageMod.PageMod({
-         include: /.*/,
-         contentScriptFile: "./getLinks.js",
-         onAttach: function(worker) {
-             worker.port.on("links", function(JSONlinks) {
-                 addToCandidates(JSON.parse(JSONlinks));
-             });
-         }
-     });
-   #+END_SRC
+  #+BEGIN_SRC js
+    pageMod.PageMod({
+        include: /.*/,
+        contentScriptFile: "./getLinks.js",
+        onAttach: function(worker) {
+            worker.port.on("links", function(JSONlinks) {
+                addToCandidates(JSON.parse(JSONlinks));
+            });
+        }
+    });
+  #+END_SRC
 
-   , which is run on every page, applies the =getLinks.js= script and
-   listens for its feedback, which is then used via
-   `addToCandidates()`.
+  , which is run on every page, applies the =getLinks.js= script and
+  listens for its feedback, which is then used via
+  `addToCandidates()`.
 
-   A page-mod offers other parameters, such as the moment of the
-   script execution, stylesheet modification, etc.
+  A page-mod offers other parameters, such as the moment of the script
+  execution, stylesheet modification, etc.
 ** link page-mod
    http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
 * TODO separation of scripts

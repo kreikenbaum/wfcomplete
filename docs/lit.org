@@ -4466,6 +4466,81 @@
        string.search, and string.split"
 
        1. An Example
+	  #+BEGIN_SRC js
+            var parse_url = /^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/;
+	  #+END_SRC
+
+       2. Construction
+
+	  - =g= flag: global
+
+	  - =i= case insensitive
+
+	  - =m= multiline
+
+          construct via regex
+	  #+BEGIN_SRC js
+          var my_regexp = /"(?:\\.|[^\\\"])*"/g;
+	  #+END_SRC
+	  or constructor (double slashes, escape quotes)
+	  #+BEGIN_SRC js
+          var my_regexp = new RegExp("\"(?:\\.|[^\\\\\\\"])*\"", 'g');
+	  #+END_SRC
+
+       3. Elements
+
+	  1. Regexp Choice
+
+	     sequence =|= sequence ...
+
+	  2. Regexp Sequence
+
+	     factor (quantifier factor)*
+
+	  3. Regexp Factor
+
+	     escape | class | group | any unicode except /,\,[,],{,},?,+,*,|,C^..
+
+	  4. Regexp Escape
+
+	     \ starts
+
+	     - \f formfeed, \n newline, \r carriage return, \t tab, \u unicode,
+
+	     - \d 0-9 \D negates
+
+	     - \s [\f\n\r\t\u000B\u0020\u00A0\u2028\u2029] \ S negates
+
+	     - \w supposed to be words, but only ascii, so useless, \W negates
+
+	       - \b similarly useless
+
+	     - \1 refers to group one:
+	       #+BEGIN_SRC js
+                 var doubled_words = /[A-Za-z\u00C0-\u1FFF\u2800-\uFFFD'\-]+\s+\1/gi;
+	       #+END_SRC
+
+	  5. Regexp Group
+
+	     - capturing =(=
+
+	     - non-capturing =(?:=, slighly faster
+
+	     - positive lookahead =(?=, bad part
+
+	     - negative lookahead =(!=, bad part
+
+	  6. Regexp Class
+
+	     - enclosed by =[]=, negatable,
+
+	       - escape /,\,[,],^,-
+
+	  7. Regexp Class Escape
+
+	     - [\b] for backspace
+
+	  8. Regexp Quantifier
 *** quotes
     - We appreciate, but do not require, attribution. An attribution
       usually includes the title, author, publisher, and ISBN. For
@@ -4915,6 +4990,45 @@
 	  6. Website fingerprinting: in design goal, database (see quote)
 
        2. Active attacks
+
+	  1. Compromise keys
+
+	     - tls session key: see encrypted traffic
+
+	     - circuit session key: unwrap one layer encryption
+
+	     - tls private key: impersonate
+
+	     - identity key: replace
+
+	  2. iterated compromise
+
+	     march down circuit, compromise, but short lifetime
+
+	  3. run a recipient: create traffic patterns, other compromising
+
+	  4. run op: compromise all
+
+	  5. DoS non-controlled nodes: defense robustness
+
+	  6. run hostile OR: correlate end-to-end, guard nodes
+             concentrate vulnerabilities
+
+	  7. introduce timing into messages
+
+	  8. tagging attacks
+
+	  9. replace contents of unauthenticated protocols AND ATTACK
+
+	  10. replay attacks: impossible
+
+	  11. smear attacks
+
+	  12. distribute hostile code: signed releases
+
+	  13. block access: bridges
+
+       3. Directory attacks
 *** quotes
     - most designs protect primarily against traffic analysis rather
       than traffic confirmation
@@ -5219,6 +5333,15 @@
 	  half-duplex with inserted dummy packets works well against knn
 
        2) Without ease of use
+
+	  select some pages to shield
+
+	  for each page: supersequence of most traces, then popular
+          page which is supersequence of this supersequence
+
+	  failure rate 4% \pm 3%
+
+       3) Without decentralization
 *** quotes
     - design goals:
       1. General: The defense succeeds against all possible
@@ -5266,7 +5389,7 @@
       traffic.
 
       How about timing data?
-** TODO [#A] [[./802163c-01_30r1.pdf][Traffic Model for 802.16 TG3 MAC/PHY Simulations]]
+** TODO MOVE [[./802163c-01_30r1.pdf][Traffic Model for 802.16 TG3 MAC/PHY Simulations]]
 *** summary
     1) Introduction
 
@@ -5330,7 +5453,23 @@
 
     5) Description of Individual Subscriber Internet traffic
        simulation model
+
+       1) Basic IPP model (IPP#2)
+
+          |    _i |       c1i |       c2i | packets/unit of time |
+          | 1.698 | 1.445E-02 | 1.084E-02 |                .7278 |
+
+       2) Scaling of the model
+
+	  to 15kbps
+
+          |    _i |   c1i |   c2i | packets/unit of time |
+          | 22.79 | .1940 | .1455 |                 9.77 |
+
+    6) Description of voice model
 *** quotes
+*** ref
+    [[file:master.bib::80216model][Baugh et al.: Traffic Model]]
 ** TODO [#A] [[./HTTP Traffic Model_v1 1 white paper.pdf]]
 *** summary
     0) [@0] ABSTRACT
@@ -6174,20 +6313,7 @@
       - 4.4. AUTHENTICATE cells
 ** TODO [#C] [[./Liberatore_2006.pdf][Inferring the Source of Encrypted HTTP Connections]]
 *** ref
-    #+BEGIN_SRC bibtex
-      @inproceedings{Liberatore:2006,
-        title = {{Inferring the Source of Encrypted HTTP Connections}},
-        author = {Marc Liberatore and Brian Neil Levine},
-        booktitle = {Proceedings of the 13th ACM conference on Computer and Communications
-              Security (CCS 2006)},
-        year = {2006},
-        month = {November},
-        pages = {255--263},
-        www_tags = {selected},
-        www_section = {Traffic analysis},
-        www_pdf_url = {http://prisms.cs.umass.edu/brian/pubs/liberatore.ccs2006.pdf},
-      }
-    #+END_SRC
+    [[file:master.bib::Liberatore:2006][Liberatore & Levine 2006: Inferring Source Encrypted HTTP Connections]]
 ** TODO [#C] [[./hintz02.pdf][Fingerprinting Websites Using Traffic Analysis]]
 *** summary
     0) [@0] Abstract
@@ -6336,36 +6462,10 @@
     [[file:master.bib::wpes14-csbuflo][Cai et al. 2014: CS BuFLO]]
 ** TODO [[./ipccc12-tor-performance.pdf][Improving Performance and Anonymity in the Tor Network]]
 *** ref
-    #+BEGIN_SRC bibtex
-      @inproceedings{ipccc12-performance,
-        title = {Improving Performance and Anonymity in the Tor Network},
-        author = {Andriy Panchenko and Fabian Lanze and Thomas Engel},
-        booktitle = {Proceedings of the 31st IEEE International Performance Computing and
-              Communications Conference (IPCCC 2012)},
-        year = {2012},
-        month = {December},
-        www_tags = {selected},
-        www_pdf_url = {http://lorre.uni.lu/~andriy/papers/ipccc12-tor-performance.pdf},
-        www_section = {Anonymous communication,Tor Performance},
-      }
-    #+END_SRC
+    [[file:master.bib::ipccc12-performance][Panchenko et al. 2012: Improving Performance Anonymity Tor Network]]
 ** TODO [[./pam2014-tor-nfattack.pdf][On the Effectiveness of Traffic Analysis Against Anonymity Networks Using Flow Records]]
 *** ref
-    #+BEGIN_SRC bibtex
-      @inproceedings{nfattackpam14,
-        title = {On the Effectiveness of Traffic Analysis Against Anonymity Networks Using Flow
-              Records},
-        author = {S. Chakravarty and M. V. Barbera and G. Portokalidis and M. Polychronakis and
-              A. D. Keromytis},
-        booktitle = {Proceedings of the 15th Passive and Active Measurements Conference (PAM
-              '14)},
-        year = {2014},
-        month = {March},
-        www_pdf_url = {http://www.cs.columbia.edu/~sc2516/papers/pam2014-tor-nfattack.pdf},
-        www_tags = {selected},
-        www_section = {Traffic analysis},
-      }
-    #+END_SRC
+    [[file:master.bib::nfattackpam14][Chakravarty et al. 2014: Effectiveness Traffic Analysis]]
 ** TODO [[./10.1.1.10.5823.pdf][Quantifying Traffic Analysis of Encrypted Web-Browsing]]
 ** TODO [[https://www.torproject.org/projects/torbrowser/design/#proxy-obedience][The Design and Implementation of the Tor Browser]]
    - [[./browser.html][local copy]]
@@ -9917,12 +10017,12 @@
       before using this command.
 
       `jpm sign --api-key ${AMO_API_KEY} --api-secret ${AMO_API_SECRET}`
-** [[./crov1297.pdf][Long-Lasting Transient Conditions in Simulations with Heavy-Tailed Workloads]]
+** TODO [[./crov1297.pdf][Long-Lasting Transient Conditions in Simulations with Heavy-Tailed Workloads]]
 ** [[./Traffic generation model - Wikipedia, the free encyclopedia.html]]
 ** [[./dana_vol_11_2__pp_65_130.pdf][Predator foraging in patchy environments: the interrupted Poisson process (IPP) model unit]]
 ** [[./ide883.pdf][Superposition of Interrupted Poisson Processes and Its Application to Packetized Voice Multiplexers]]
 ** [[./all - jStat Documentation.html]]
-** [[file:./random - How do I generate a Poisson Process? - Stack Overflow.see_title.html]]
+** [[./generate_poisson.html]]
 ** [[./tcpdump - Wikipedia, the free encyclopedia.html]]
 *** ref
     #+BEGIN_SRC bibtex
@@ -10166,22 +10266,28 @@
 	  use @private in jsdoc
 ** [[../sw/jasondavies_bloomfilter.js%20%C2%B7%20GitHub.html]]
 ** [[./reftex.pdf][RefTeX Manual]]
-** [[./btxdoc.pdf][BIBTEXing]]
+** PART MOVE [[./btxdoc.pdf][BIBTEXing]]
 *** summary
 *** quotes
     - (begins 3)
-    - book
+    - *book*
 
       A book with an explicit publisher. Required fields: author or
       editor, title, publisher, year. Optional fields: volume or
       number, series, address, edition, month, note.
-    - inbook
+    - *inbook*
 
       A part of a book, which may be a chapter (or section or
       whatever) and/or a range of pages. Required fields: author or
       editor, title, chapter and/or pages, publisher, year. Optional
       fields: volume or number, series, type, address, edition, month,
       note.
+    - *techreport*
+
+      A report published by a school or other institution, usually
+      numbered within a series. Required fields: author, title,
+      institution, year. Optional fields: type, number, address,
+      month, note.
     - (ends 3.1)
     - address
 
