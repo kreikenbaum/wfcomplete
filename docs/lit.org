@@ -3862,7 +3862,97 @@
 
        2) Erbauer
 
-	  1) weiter S. 119
+	  1) Zweck:
+
+	     trenne Konstruktion von Repraesentation, erzeuge
+             verschiedene Repraesentationen
+
+	  2) Motivation
+
+	     RTF-Dokumentkonvertierer mit unterschiedlichen
+             Anzeigeklassen: ASCII, \TeX, TextWidget
+
+	  3) Anwendbarkeit
+
+	     - erzeugen unabhaengig von teilen, aus denen es besteht,
+               speicherarts
+
+	     - erlauben verschiedener repraesentationen
+
+	  4) Struktur
+
+	     - Direktor { Konstruiere() { for all objekts in structur
+               {erbauer.baueTeil()} }, erzeugt erbauer
+
+	     - Erbauer { abstract BaueTeil() }:
+
+	     - KonkreterErbauer { BaueTeil(); GibErgebnis } implementiert Erbauer
+
+	  5) Teilnehmer
+
+	     1) Erbauer: abstrakte Schnittstelle
+
+	     2) KonkreterErbauer: konstruiert, fuegt zusammen, gibt produkt
+
+	     3) Direktor: konstuiert objekt unter verwendung Erbauer
+
+	     4) Produkt: komplexes Objekt, beinhaltet Klassen fuer Teile
+
+	  6) Interaktionen
+
+	     - Klient erzeugt Direktor, konfiguriert mit Erbauer, triggert
+
+	     - Erbauer bearbeitet Anfragen des Direktors
+
+	     - Klient erhaelt Produkt vom Erbauer
+
+	  7) Konsequenzen
+
+	     - Interne Definition aenderbar, lediglich neuen erbauer definieren
+
+	     - Isolierter Code fuer Konstruktion und repraesentation
+
+	     - genauere Steuerung der Konstruktion:
+               schritt-fuer-schritt unter Kontrolle des Direktors
+               statt in einem durchgang
+
+	  8) Implementierung
+
+	     1) Konstruktionsschnitstelle
+
+		granularitaet klein genug, um verschiedene Objekte zuzulassen
+
+	     2) Keine abstrakte Produktklasse: macht wenig sinn
+                (z.b. ascii vs widget vs tex vs rtf)
+
+	     3) leere methoden statt abstrakt (also vererbung statt
+                schnittstelle): manchmal muss nichts getan werden,
+                z.b. formatierung zu ASCII
+
+	  9) Beispielcode
+
+	     - Erbauer ohne baueWand, da dies in =BaueRaum=
+               geschieht. Bei Tueren wird die jeweilige Seite auf Tuer
+               gesetzt
+
+	     - z.b. zaehlenderlabyrintherbauer: zaehlt nur zahlen der
+               tueren/waende
+
+	  10) Bekannte Verwendungen
+
+	      z.b. compiler
+
+	      - classbuilder auch direktor und produkt in einer klasse
+
+	      - bytecodestream erbauer, erzeugt programmcode, nicht klasse
+
+	  11) Verwandte Muster
+
+	      - abbstrakte fabrik: hier schrittweise, abstrakt: familie
+
+	      - erbauer bauen oftmals komposita
+
+       3) Fabrikmethode (cont p. 131)
 
     5) [@5] Verhaltensmuster
 
@@ -4541,6 +4631,48 @@
 	     - [\b] for backspace
 
 	  8. Regexp Quantifier
+
+	     - ?,*,+,{a,b}
+
+	     - ? at end: lazy matching, "as few repetitions as possible"
+
+    8. Methods
+
+       1. Array
+
+	  1. concat(items):
+
+             appends each item in items, elements of array individually
+
+	  2. array.join(separator): makes a string, with separator
+             between elements, faster than =+= for individual elements
+
+	  3. array.pop( ): stack-like
+
+	  4. array.push(item...): unlike =concat=, appends arrays wholesale
+
+	  5. array.reverse() reverse array in-place
+
+	  6. array.shift(): like =pop=, first element, much slower than =pop=
+
+	  7. array.slice(start, end=array.length): shallow copy
+
+	  8. array.sort(comparefn): sort in place, default comparator
+             is string-based
+
+	     for numbers:
+	     #+BEGIN_SRC js
+               n.sort(function (a, b) {
+                   return a - b;
+               });
+	     #+END_SRC
+
+	  9. array.splice(start, deleteCount, item...): remove
+             elements in-place (see book for implementation)
+
+	  10. array.unshift(item...): like push, but at the front
+
+       2. Function
 *** quotes
     - We appreciate, but do not require, attribution. An attribution
       usually includes the title, author, publisher, and ISBN. For
@@ -7962,7 +8094,54 @@
 
 	- html tables: ie needs tbody tag
 
-	- continue at "The function makeTable"
+	- create table function
+
+	  her solution
+	  #+BEGIN_SRC js
+            function makeTable(data, columns) {
+              var headRow = dom("TR");
+              forEach(columns, function(name) {
+                headRow.appendChild(dom("TH", null, name));
+              });
+
+              var body = dom("TBODY", null, headRow);
+              forEach(data, function(object) {
+                var row = dom("TR");
+                forEach(columns, function(name) {
+                  row.appendChild(dom("TD", null, String(object[name])));
+                });
+                body.appendChild(row);
+              });
+
+              return dom("TABLE", null, body);
+            };
+	  #+END_SRC
+	  my part
+	  #+BEGIN_SRC js
+            function makeTable(objects, columnNames) {
+              var tableEls = [],
+                  i;
+
+              tableEls.push(dom("tr", null, dom("th", null, columnNames[0]), dom("th", null, columnNames[1])));
+              for (i = 0; i < objects.length; i++ ) {
+                tableEls.push(dom(tr, null, dom(td, null, objects[columnNames[0]]), dom(td, null, objects[columnNames[1]])));
+              };
+              // somehow append
+            };
+	  #+END_SRC
+
+	- CSS
+
+	  style attribute to node
+
+	- other style
+
+	  display = ""; makes it reappear, code
+	  #+BEGIN_SRC js
+            $("picture").style.display = "";
+	  #+END_SRC
+
+	- continue at "Another set of style types"
 *** quotes
     - (begins 4)
     - The keyword `delete` cuts off properties. Trying to read a
