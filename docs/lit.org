@@ -3960,7 +3960,50 @@
 
 	  - weitergabe der implementierung an konkrete unterklassen
 
-       4) Prototyp (S.144)
+       4) Prototyp
+
+	  - kopiere Prototyp. um neues Objekt zu erzeugen
+
+	  - Anwendbarkeit: weniger Generatorklassen, wenige
+            festgelegte Parametersaetze
+
+	  - Konsequenzen: 
+
+	    - versteckt Produktklassen wie 3.1 und 3.2
+
+	    - variation definiert, default gegeben
+
+	  - implementierung: 
+
+	    - dict-prototype,
+
+	    - deep vs shallow copy
+
+       5) Singleton
+
+	  - exactly one instance
+
+	  - examples: fs, window manager, print spooler, a/d coverter, ...
+
+	  - advantages: variable but fixed number of instances, point to get
+
+	  - implement: private instance, public accessor, protected constructor
+
+	    - inheritance: constructor complicated
+              (f.ex. environmental variable sets flavor)
+
+       6) Diskussion der Erzeugungsmuster
+
+	  - Objektkomposition more versatile than inheritance
+
+	  - prototypes for many small classes (which would otherwise
+            each need a factory class), =clone= also useful f.ex. to
+            duplicate drawing parts
+
+	  - often starts with factory pattern, move to other patterns
+            when more flexibility is needed
+
+    4) Strukturmuster (hier weiter S. 167)
 
     5) [@5] Verhaltensmuster
 
@@ -4047,8 +4090,6 @@
 	      - iterator: s.o. (11)
 
 	      - tmp: hier nicht weiter, sondern oben (entwurfsmuster)
-
-
 *** quotes
     - [Muster:] Beschreibungen zusammenarbeitender Objekte und
       Klassen, die maßgeschneidert sind, um ein allgemeines
@@ -4069,6 +4110,10 @@
     - *Programmiere auf eine Schnittstelle hin, nicht auf eine
       Implementierung*.
     - *Ziehe Objektkomposition der KLassenvererbung vor*
+    - (ends ...3.3)
+    - *In C++* sind statische Member-Funktionen zudem niemals
+      virtuell, so dass Unterklassen sie nicht polymorph
+      ueberschreiben koennen.
 ** PART MOVE [[./javascript_the_good_parts.pdf][JavaScript: The Good Parts]]
 *** summary
     1. Good parts
@@ -6967,20 +7012,7 @@
       will be able to ﬁlter out most hostile ORs."
     - caching at exit nodes: Flos Gedanken
 *** ref
-    #+BEGIN_SRC bibtex
-      @inproceedings{tor-design,
-        title = {{Tor}: The Second-Generation Onion Router},
-        author = {Roger Dingledine and Nick Mathewson and Paul Syverson},
-        booktitle = {Proceedings of the 13th USENIX Security Symposium},
-        year = {2004},
-        month = {August},
-        www_important = {1},
-        www_tags = {selected},
-        www_html_url = {https://svn.torproject.org/svn/projects/design-paper/tor-design.html},
-        www_pdf_url = {https://svn.torproject.org/svn/projects/design-paper/tor-design.pdf},
-        www_section = {Anonymous communication},
-      }
-    #+END_SRC
+    [[file:master.bib::tor-design][Dingledine et al. 2004: Tor]]
 ** TODO [[./marionette_client.pdf][Marionette Python Client Documentation]]
 *** summary
     0. [@0]
@@ -8113,9 +8145,37 @@
 
        - Exercise project: Terrarium
 
-	 - 2d, discrete time and place, # wall, ' ' free, o bug
+	 - 2d, discrete time and place, # wall, ' ' free, o
 
-       - functions: =toString=, =step=, =start=, =stop=
+         - functions: =toString=, =step=, =start=, =stop= for terrarium
+
+       - first point, addpoints, samepoint
+	 #+BEGIN_SRC js
+           function Point(x, y) {
+               this.x = x;
+               this.y = y;
+           };
+
+           Point.prototype.add(other) {
+               return new Point(this.x + other.x, this.y += other.y);
+           };
+
+           Point.prototype.isEqualTo(other) {
+               return this.x === other.x && this.y === other.y;
+           };
+	 #+END_SRC
+
+       - need to decide what are methods, what are functions, what are
+         new objects
+
+	 - keep object as small as possible
+
+       - 2-dim array as 1-dim, accessed via
+	 #+BEGIN_SRC js
+           var grid = ["0,0", "1,0", "2,0",
+                       "0,1", "1,1", "2,1"];
+           show(grid[2 + 1 * 3]);
+	 #+END_SRC
 
     12. [@12] The Document-Object Model
 
@@ -8254,7 +8314,20 @@
             $("picture").style.display = "";
 	  #+END_SRC
 
-	- continue at "Another set of style types"
+	- change position via js
+
+	  #+BEGIN_SRC js
+            node.style.position = "absolute";
+            node.style.left = 100px;
+            node.style.top = 10%; //?
+	  #+END_SRC
+
+	- also =.width=, =.height= to set
+
+	  - and =.offsetWidth= etc and =.clientWidth= to differentiate
+            outer/inner
+
+    13. Browser Events
 *** quotes
     - (begins 4)
     - The keyword `delete` cuts off properties. Trying to read a
@@ -8461,19 +8534,7 @@
 	#+END_SRC
       - (ends 47.3)
 *** ref
-    #+BEGIN_SRC bibtex
-      @article{scikit-learn,
-        title={Scikit-learn: Machine Learning in {P}ython},
-        author={Pedregosa, F. and Varoquaux, G. and Gramfort, A. and Michel, V.
-               and Thirion, B. and Grisel, O. and Blondel, M. and Prettenhofer, P.
-               and Weiss, R. and Dubourg, V. and Vanderplas, J. and Passos, A. and
-               Cournapeau, D. and Brucher, M. and Perrot, M. and Duchesnay, E.},
-        journal={Journal of Machine Learning Research},
-        volume={12},
-        pages={2825--2830},
-        year={2011}
-      }
-    #+END_SRC
+    [[file:master.bib::scikit-learn][Pedregosa et al. 2011: Scikit]]
 ** PART [#B] [[./ESLII_print4.pdf][The Elements of Statistical Learning]]
 *** summary
     1) Introduction
@@ -10056,22 +10117,7 @@
 
     1) Introduction
 *** quotes
-*** ref
-    #+BEGIN_SRC bibtex
-      @techreport{rfc7159,
-        author="T. Bray",
-        title="{The JavaScript Object Notation (JSON) Data Interchange Format}",
-        howpublished="Internet Request for Comments",
-        TYPE="{RFC}",
-        number=7159,
-        PAGES = {1-16},
-        year=2014,
-        month=mar,
-        publisher="{RFC Editor}",
-        INSTITUTION = "{RFC Editor}",
-        url="http://www.rfc-editor.org/rfc/rfc7159.txt",
-      }
-    #+END_SRC
+*** ref: [[file:master.bib::rfc7159][Bray 2014: JavaScript Object Notation]]
 ** [[./Google%20Python%20Style%20Guide.html][Google Python Style Guide]]
 *** summary
     1) Python Language Rules
@@ -10105,15 +10151,7 @@
 ** [[./critique.html][A Critique of Website Traffic Fingerprinting Attacks]]
 *** summary
 *** quotes
-*** ref
-    #+BEGIN_SRC bibtex
-      @misc{critique,
-        tag = "The Tor Project",
-        title = "A Critique of Website Traffic Fingerprinting Attacks",
-        url = "\url{https://blog.torproject.org/blog/critique-website-traffic-fingerprinting-attacks}",
-        note = "[Online; accessed 11-November-2015]"
-      }
-    #+END_SRC
+*** ref [[file:master.bib::critique][Critique Website Traffic Fingerprinting Attacks]]
 ** [[./top_ml_algo.pdf][Top 10 algorithms in data mining]]
 ** SO: Sklearn kNN usage with a user defined metric
 *** quotes
@@ -10381,7 +10419,7 @@
        · https://github.com/coreybutler/nvm-windows
        · https://github.com/hakobera/nvmw
        · https://github.com/nanjingboy/nvmw
-** [[./Google JavaScript Style Guide.html][Google JavaScript Style Guide]]
+** PART MOVE [[./Google JavaScript Style Guide.html][Google JavaScript Style Guide]]
 *** summary
     1) JavaScript Language Rules
 
@@ -10667,3 +10705,4 @@
 ** [[./oakland2013-parrot.pdf][The Parrot is Dead: Observing Unobservable Network Communications]]
 ** [[./Wang_Tao.pdf][Wang - Website Fingerprinting: Attacks and Defenses]]
 ** [[./Huhta14-UCL-Msc.pdf][LINKING TOR CIRCUITS]]
+** td: ways to access loading of pages

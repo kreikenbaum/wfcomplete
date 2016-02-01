@@ -1,7 +1,7 @@
 "use strict";
 
 const NAME = 'user';
-exports.DOC = 'traffic by the user';
+exports.DOC = 'what to do on traffic by the user';
 
 const _ = require('./underscore-min.js');
 
