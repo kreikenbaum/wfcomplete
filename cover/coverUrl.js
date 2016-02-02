@@ -12,7 +12,7 @@ const stats = require("./stats.js");
 // TODO: (after it works) implement real URLs, not mlsec placeholders
 // TODO: (after it works) add urls and sizes from *cover* traffic
 // TD: include bloom filter for real traffic urls (do not store, but bloom)
-// (only, not from user traffic), save at end, restore
+// (only cover, not from user traffic), save at end, restore
 
 var contains = function(url) {
     var index = URLS.indexOf(url);
@@ -23,7 +23,7 @@ var contains = function(url) {
 exports.contains = url => contains(url); // td: obsolete this, then rename
 exports.includes = url => contains(url);
 
-/* provides a url for an object with approximately the given size
+/** provides a url for an object with approximately the given size
  * @return {string} a URL pointing to object of more than size */
 var sized = function(size) {
     if ( size > _.last(SIZES) ) {

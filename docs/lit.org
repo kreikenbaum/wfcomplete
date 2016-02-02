@@ -3398,6 +3398,41 @@
       optimal configuration for each client. We propose to have
       WTF-PAD bootstrap these values during installation.
     - (ends 8)
+** [[./Intercepting Page Loads - Mozilla | MDN.html][Intercepting Page Loads]]
+*** summary
+    1) The Easy Way: Load Events
+
+       - listen to load event
+
+	 - +: "easy"
+
+	 - -: cannot intercept, abort, etc
+
+    2) HTTP Observers
+
+       - better keep in non-chrome objects
+
+       - one instance sees each request and each response
+
+       - stay effective
+
+    3) WebProgressListeners
+
+       - in chrome
+
+       - attach to each tab
+
+       - tons of listeners, with filters
+
+    4) XPCOM Solutions
+
+       - Document Loader Service
+
+	 - nsIDocumentLoader: "global web progress listener"
+
+	 - Content Policy: cleaner-looking code, allows =shoudLoad=
+
+	   - does not show redirects
 ** TODO [#A] Entwurfsmuster
 *** summary
     0) [@0] Preface
@@ -4017,6 +4052,36 @@
 
        1) Adapter
 
+	  - anpassung von schnittstellen aneinander
+
+	  - klassenadapter: mehrfachvererbung
+
+	    - objektadapter: komposition
+
+	  - konsequenzen
+
+	    - klassenadapter:
+
+	      - +: anpassung, ueberschreiben da unterklasse, einzelnes objekt
+
+	    - objektadapter
+
+	      - +: mehrere anzupassende klassen
+
+	      - -: ueberschreiben schwieriger
+
+	    - aufwand abhaengig vom grade der verschiedenheit
+
+	    - weniger annahmen machen implementierung einfacher
+
+	    - zweiweg-adapter um beide richtungen abzudecken
+
+	  - implementierung: eines oeffentlich erben, anderes intern/privat
+
+	    - kleinste gemeinsame Menge von Operationen fuer Adaptierung
+
+       2) Bruecke (Bridge)
+
     5) [@5] Verhaltensmuster
 
        6) [@6] Memento
@@ -4126,666 +4191,6 @@
     - *In C++* sind statische Member-Funktionen zudem niemals
       virtuell, so dass Unterklassen sie nicht polymorph
       ueberschreiben koennen.
-** PART MOVE [[./javascript_the_good_parts.pdf][JavaScript: The Good Parts]]
-*** summary
-    1. Good parts
-
-       - some: functionaly programming, prototypal inheritance
-
-       - very different from other languages
-
-    2. Grammar
-
-       1. Railroad diagrams
-
-	  - left, to right
-
-	  - literal: oval, rules: rect
-
-	  - legal iff following tracks
-
-	  - one bar: whitespace allowed, two: not
-
-       2. Whitespace
-
-	  - comments as usual
-
-	  - better use // instead of /* */ (regex f.ex. /a*/.match(s);)
-
-       3. Names
-
-	  - letter, then also digit, underscore
-
-	  - reserved words
-
-	  - not undefined, NaN, infinity
-
-       4. Numbers
-
-	  - only float (double)
-
-	  - (- is operator)
-
-       5. Strings
-
-	  - sequence
-
-	  - ' or "
-
-	  - escape characters: '"\/bfnrt or u1212 (f.ex.)
-
-	  - .length
-
-	  - exactly same characters \to equal
-
-       6. Statements
-
-	  - var: function's private variables
-
-	  - loads of parts, mostly like other languages
-
-       7. Literals
-
-	  - number, string, object, array, function, regexp
-
-	  - object { name | "string": values, ...}
-
-       8. Functions
-
-	  - function [name] parameters function_body
-
-	  - body: { var_statements, statements }
-
-    3. Objects
-
-       0. [@0] preface
-
-	  - prototype linkage
-
-       1. Object Literals
-
-	  - can nest
-
-	  - name: unquoted possible if could be identifier
-
-       2. Retrieval
-
-	  - use =.= instead of =[ ]=: easier to read
-
-	  - undefined in not existing
-
-	  - fill in default values if undefined:
-
-	    #+BEGIN_SRC js
-              var middle = stooge["middle-name"] || "(none)";
-	    #+END_SRC
-
-	  - guard agains typeerror (value from undefined) via &&
-
-	    #+BEGIN_SRC js
-              flight.equipment && flight.equipment.model
-	    #+END_SRC
-
-       3. Update
-
-	  - create if not exist, else change
-
-       4. Reference
-
-	  - pass by reference: same object
-
-       5. Prototype
-
-	  - like class in other languages
-
-	  - snippet to copy class: [[(object.create)]]
-
-       6. Reflection
-
-	  - introspection
-
-	  - also gives functions, and stuff up the hierarchy
-
-	    - solution: use =hasOwnProperty=
-
-       7. Enumeration
-
-	  - avoid functions with =typeof= and prototype's stuff by
-            =hasOwnProperty=
-
-	  - possible: use explicit array of properties
-
-       8. Delete
-
-	  - allows prototype to "shine through"
-
-       9. Global Abatement
-
-	  - single global variable =MYAPP=
-
-	    - becomes container
-
-	  - also closure possible
-
-    4. Functions
-
-       0. [@0]
-
-	  - "fundamental modular unit of JavaScript."
-
-       1. Function Objects
-
-	  - each function has a =Function.prototype=
-
-	    - context and code implementing
-
-       2. Function Literal
-
-	  1. =function= reserved word
-
-	  2. name, or anonymous
-
-	     - used to call recursively, etc
-
-	  3. parameters
-
-	  4. body
-
-	  has access to outer scope (closure)
-
-       3. Invocation
-
-	  - caller suspends execution
-
-	  - function receives parameters + =this= and =arguments=
-
-	    - this determined by how it is called
-
-       4. The Method Invocation Pattern
-
-	  - method: refinement, aka =.= or =[subscript]=
-
-	  - this bound at invocation time to object
-
-       5. The Function Invocation Pattern
-
-	  - function: bound to global scope
-
-	  - *also inner functions*
-
-	  - workaround: use =that=:
-	    #+BEGIN_SRC js
-              myObject.double = function ( ) {
-                  var that = this;
-                  // Workaround.
-                  var helper = function ( ) {
-                      that.value = add(that.value, that.value);
-                  };
-                  helper();
-              };
-
-              myObject.double();
-              document.writeln(myObject.getValue( )); // 6
-	    #+END_SRC
-
-       6. The Constructor Invocation Pattern
-
-	  - js is prototypal
-
-	  - extend prototypes like
-	    #+BEGIN_SRC js
-              var Quo = function (string) {
-                  this.status = string;
-              };
-              Quo.prototype.get_status = function ( ) {
-                  return this.status;
-              };
-              var myQuo = new Quo("confused");
-	    #+END_SRC
-
-	    not recommended
-
-       7. The Apply Invocation Pattern
-
-	  - apply(new_this, [args])
-
-	    - can also be called from other class member
-
-	      #+BEGIN_SRC js
-                var status = Quo.prototype.get_status.apply(statusObject);
-	      #+END_SRC
-
-       8. Arguments
-
-	  - extra function parameter, array-like (=length=)
-
-       9. Return
-
-	  - if not specified, =undefined= is returned (except for constructor)
-
-       10. Exceptions
-
-	   - raise
-	     #+BEGIN_SRC js
-               throw {
-               name: 'TypeError',
-               message: 'add needs numbers'
-               };
-	     #+END_SRC
-
-	   - except
-	     #+BEGIN_SRC js
-               try {
-                   add("seven");
-               } catch (e) {
-                   document.writeln(e.name + ': ' + e.message);
-               }
-	     #+END_SRC
-
-	   - one =catch= block
-
-       11. Augmenting Types
-
-	   - add f.ex. =trim= to string
-
-	   - add only if not yet existing ;-)
-
-       12. Recursion
-
-	   - not tail-recursive
-
-	   - great for dom-walking f.ex.
-
-       13. Scope
-
-	   - function scope:
-	     #+BEGIN_SRC js
-               var foo = function ( ) {
-                   var a = 3, b = 5;
-                   var bar = function ( ) {
-                       var b = 7, c = 11;
-                       // At this point, a is 3, b is 7, and c is 11
-                       a += b + c;
-                       // At this point, a is 21, b is 7, and c is 11
-                   };
-                   // At this point, a is 3, b is 5, and c is not defined
-                   bar( );
-                   // At this point, a is 21, b is 5
-               };
-	     #+END_SRC
-
-	   - recommendation: declare variables at top of function body
-
-       14. Closure
-
-	   - allow for private variables
-	     #+BEGIN_SRC js
-               var myObject = function ( ) {
-                   var value = 0;
-                   return {
-                       increment: function (inc) {
-                           value += typeof inc === 'number' ? inc : 1;
-                       },
-                       getValue: function ( ) {
-                           return value;
-                       }
-                   };
-               }( );
-	     #+END_SRC
-
-	     - not capitalized as =this=-functionality not used
-
-	   - has access to actual values, not copies
-
-       15. Callbacks
-
-	   - non-blocking paused execution, f.ex
-	     #+BEGIN_SRC js
-               request = prepare_the_request( );
-               send_request_asynchronously(request, function (response) {
-                   display(response);
-               });
-	     #+END_SRC
-
-       16. Module
-
-	   - use closure to make functions with private parts
-
-       17. Cascade
-
-	   - if would return nothing: return this to allow multiple calls
-	     #+BEGIN_SRC js
-               getElement('myBoxDiv').
-                   move(350, 150).
-                   width(100).
-                   height(100).
-                   color('red').
-                   border('10px outset').
-                   padding('4px').
-                   appendText("Please stand by").
-                   on('mousedown', function (m) {
-                       this.startDrag(m, this.getNinth(m));
-                   }).
-                   on('mousemove', 'drag').
-                   on('mouseup', 'stopDrag').
-                   later(2000, function ( ) {
-                       this.
-                           color('yellow').
-                           setHTML("What hath God wraught?").
-                           slide(400, 40, 200, 200);
-                   }).
-                   tip('This box is resizeable');
-	     #+END_SRC
-
-       18. Curry
-	   
-	   set fixed parameters to functions
-
-	   #+BEGIN_SRC js
-             Function.method('curry', function ( ) {
-                 var slice = Array.prototype.slice,
-                     args = slice.apply(arguments),
-                     that = this;
-                 return function ( ) {
-                     return that.apply(null, args.concat(slice.apply(arguments)));
-                 };
-             });
-	   #+END_SRC
-
-       19. Memoization
-
-	   store already computed values in function via
-
-	   #+BEGIN_SRC js
-             var memoizer = function (memo, fundamental) {
-                 var shell = function (n) {
-                     var result = memo[n];
-                     if (typeof result !== 'number') {
-                         result = fundamental(shell, n);
-                         memo[n] = result;
-                     }
-                     return result;
-                 };
-                 return shell;
-             };
-	   #+END_SRC
-	   use as
-	   #+BEGIN_SRC js
-             var fibonacci = memoizer([0, 1], function (shell, n) {
-                 return shell(n - 1) + shell(n - 2);
-             });
-	   #+END_SRC
-
-    5. Inheritance
-
-       code reuse, save development time. js facilitates many types of
-       inheritance
-
-       1. Pseudoclassical
-
-	  complicated, not really necessary
-
-       2. Object Specifiers
-
-	  - use one object with members instead of parameters
-
-	  - params can be any order, easier to read, bonus: JSON creation
-
-       3. Prototypal
-
-	  differential inheritance: specify what is new
-
-	  - create object
-
-	  - [[(object.create)]]
-
-	  - specify changes
-
-	  - (-) no private variables
-
-       4. Functional
-
-	  hide members by using closure and only giving out an object
-          which accesses these
-
-       5. Parts
-
-	  extend by taking the =that= object, defining a new variable
-          and a new function which accesses the variable internally,
-          returning =that=
-
-    6. Arrays
-
-       not a real array of ocnsecutive memory locations
-
-       1. Array Literals
-
-	  - ['zero', 'one'] just like {'0': 'zero', '1': 'one'}
-
-	    except for
-
-	    - length property
-
-	    - array methods
-
-       2. Length
-
-	  biggest index +1
-
-	  setting to smaller causes larger objects to be deleted
-
-       3. Delete
-
-	  leaves a hole (=undefined=)
-
-	  better use =myarray.splice(2, 1);=
-
-       4. Enumeration
-
-          for in can enumerate parent properties,
-	  better use for ( i = 0; i < myarray.length; i += 1 )
-
-       5. Confusion
-
-	  detect whether array:
-	  #+BEGIN_SRC js
-            var is_array = function (value) {
-                return value &&
-                    typeof value === 'object' &&
-                    typeof value.length === 'number' &&
-                    typeof value.splice === 'function' &&
-                    !(value.propertyIsEnumerable('length'));
-            };
-	  #+END_SRC
-
-       6. Methods
-
-	  extend arrays, f.ex. via
-	  #+BEGIN_SRC js
-            Array.method('reduce', function (f, value) {
-                var i;
-                for (i = 0; i < this.length; i += 1) {
-                    value = f(this[i], value);
-                }
-                return value;
-            });
-	  #+END_SRC
-
-       7. Dimensions
-
-	  can add method to initialize array to known length, not built-in
-
-    7. Regular Expressions
-
-       best keep simple
-
-       more efficient than other methods
-
-       "regexp.exec, regexp.test, string.match, string.replace,
-       string.search, and string.split"
-
-       1. An Example
-	  #+BEGIN_SRC js
-            var parse_url = /^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/;
-	  #+END_SRC
-
-       2. Construction
-
-	  - =g= flag: global
-
-	  - =i= case insensitive
-
-	  - =m= multiline
-
-          construct via regex
-	  #+BEGIN_SRC js
-          var my_regexp = /"(?:\\.|[^\\\"])*"/g;
-	  #+END_SRC
-	  or constructor (double slashes, escape quotes)
-	  #+BEGIN_SRC js
-          var my_regexp = new RegExp("\"(?:\\.|[^\\\\\\\"])*\"", 'g');
-	  #+END_SRC
-
-       3. Elements
-
-	  1. Regexp Choice
-
-	     sequence =|= sequence ...
-
-	  2. Regexp Sequence
-
-	     factor (quantifier factor)*
-
-	  3. Regexp Factor
-
-	     escape | class | group | any unicode except /,\,[,],{,},?,+,*,|,C^..
-
-	  4. Regexp Escape
-
-	     \ starts
-
-	     - \f formfeed, \n newline, \r carriage return, \t tab, \u unicode,
-
-	     - \d 0-9 \D negates
-
-	     - \s [\f\n\r\t\u000B\u0020\u00A0\u2028\u2029] \ S negates
-
-	     - \w supposed to be words, but only ascii, so useless, \W negates
-
-	       - \b similarly useless
-
-	     - \1 refers to group one:
-	       #+BEGIN_SRC js
-                 var doubled_words = /[A-Za-z\u00C0-\u1FFF\u2800-\uFFFD'\-]+\s+\1/gi;
-	       #+END_SRC
-
-	  5. Regexp Group
-
-	     - capturing =(=
-
-	     - non-capturing =(?:=, slighly faster
-
-	     - positive lookahead =(?=, bad part
-
-	     - negative lookahead =(!=, bad part
-
-	  6. Regexp Class
-
-	     - enclosed by =[]=, negatable,
-
-	       - escape /,\,[,],^,-
-
-	  7. Regexp Class Escape
-
-	     - [\b] for backspace
-
-	  8. Regexp Quantifier
-
-	     - ?,*,+,{a,b}
-
-	     - ? at end: lazy matching, "as few repetitions as possible"
-
-    8. Methods
-
-       1. Array
-
-	  1. concat(items):
-
-             appends each item in items, elements of array individually
-
-	  2. array.join(separator): makes a string, with separator
-             between elements, faster than =+= for individual elements
-
-	  3. array.pop( ): stack-like
-
-	  4. array.push(item...): unlike =concat=, appends arrays wholesale
-
-	  5. array.reverse() reverse array in-place
-
-	  6. array.shift(): like =pop=, first element, much slower than =pop=
-
-	  7. array.slice(start, end=array.length): shallow copy
-
-	  8. array.sort(comparefn): sort in place, default comparator
-             is string-based
-
-	     for numbers:
-	     #+BEGIN_SRC js
-               n.sort(function (a, b) {
-                   return a - b;
-               });
-	     #+END_SRC
-
-	  9. array.splice(start, deleteCount, item...): remove
-             elements in-place (see book for implementation)
-
-	  10. array.unshift(item...): like push, but at the front
-
-       2. Function
-
-	  1. function.apply(thisArg, argArray): calls function with
-             argArray and this = thisArg
-*** quotes
-    - We appreciate, but do not require, attribution. An attribution
-      usually includes the title, author, publisher, and ISBN. For
-      example: “JavaScript: The Good Parts by Douglas
-      Crockford. Copyright 2008 Yahoo! Inc., 978-0-596-51774-8.”
-    - (ends 0+1)
-    - It is usually necessary to test object.hasOwnProperty(variable)
-      to determine whetherthe property name is truly a member of the
-      object or was found instead on the prototype chain.
-      #+BEGIN_SRC js
-        for (myvar in obj) {
-            if (obj.hasOwnProperty(myvar)) {
-                    ...
-            }
-        }
-      #+END_SRC
-    - prefix operator [...] + to number
-    - The && operator produces the value of its first operand if the
-      first operand is falsy. Otherwise, it produces the value of the
-      second operand.
-    - (ends 2)
-    - The create method creates a new object that uses an old object
-      as its prototype. [...]
-      #+BEGIN_SRC js
-        if (typeof Object.create !== 'function') {
-            Object.create = function (o) {   (ref:object.create)
-                var F = function () {};
-                F.prototype = o;
-                return new F();
-            };
-        }
-        var another_stooge = Object.create(stooge);
-      #+END_SRC
-    - (ends 3?)
-    - Regular expressions usually have a significant performance
-      advantage over equivalent string operations in JavaScript.
-    - ...
-    - (bad parts)
-    - I have never seen a piece ofcode that was not improved by
-      refactoring it to remove the continue statement.
-    - (ends bp)
 ** TODO [#A] [[./tor14design.pdf][Tor: The Second-Generation Onion Router (2014 DRAFT v1)]]
 *** summary
     0) [@0] Abstract
@@ -5992,8 +5397,6 @@
       the attacker’s crossover error rate. High crossover rate means
       that the defense is effective.
     - (ends 5.1)
-*** questions
-    - 
 ** TODO [#B] [[./LZCLCP_NDSS11.pdf][HTTPOS: Sealing Information Leaks with Browser-side Obfuscation of Encrypted Flows]]
 *** summary
     0) [@0] Abstract
@@ -6227,7 +5630,7 @@
     3. Traffic Morphing
 
        0) [@0]
-    
+
 	  - alter "distribution of packet sizes"
 
        1) What is the Matrix?
@@ -6434,7 +5837,7 @@
        - link layer: 3 ways
          1. "certificates up-front"
 	    both send two-certificate chain
-  	    - init: short-term X.509 cert + self-signed identity X.509
+	    - init: short-term X.509 cert + self-signed identity X.509
 	    - resp: similar
 	    - MAY ONLY INCLUDE
 	      - TLS_DHE_RSA_WITH_AES_256_CBC_SHA
@@ -6446,7 +5849,7 @@
               - TLS_DHE_RSA_WITH_AES_128_CBC_SHA
               - SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA
 	 2. "renegotiation" (tor >= 0.2.0.21)
-   	    responder single certificate, 
+	    responder single certificate,
 	    initiator renegotiates
 	    - init: no cert
 	    - resp: connection cert
@@ -6465,18 +5868,11 @@
          - no server without valid certificates
     3) Cell Packet Format
        ...
-    4) 
-    5) 
-       1) 
-       2) 
-       3) 
-       4) 
-       5) Routing relay cells
+    5) [@5]
+       5) [@5] Routing relay cells
 	  checks circID, crypts payload, inspect payload (6.1), work it
-    6) Application connections and stream management
+    6) [@6] Application connections and stream management
        1) Relay cells
-       2) 
-	  ...
     7) FLow control
        1) Link throttling
 *** quotes
@@ -6510,13 +5906,13 @@
     0) [@0] Abstract
 
        Attack to find out whether user is visiting certain websites,
-       even though he uses an encrypted proxy. 
+       even though he uses an encrypted proxy.
 
        Plus discussion: better attack and defenses
 
     1) Introduction
 
-       With normal encryption, metadata is visible. 
+       With normal encryption, metadata is visible.
 
        With one-hop proxies, metadata is discoverable.
 
@@ -6952,9 +6348,8 @@
     low-latency anonymity system.
 
 *** summary
-    1) 
-    2) Related work
-       
+    2) [@2] Related work
+
        The first design ever was called Mix-Net. From there, two
        directions diverged. The one was highly anonymized,
        high-latency. The other tried to minimize latency. Among these,
@@ -6996,7 +6391,6 @@
 	 recursively using several hops, each of which creates its own
 	 symmetric key pair via DH. Each circuit OR can be asked to
 	 open a connection out. circuitID changes from hop to hop
-       + 
        + when an OR receives a relay message, it attemps to decrypt the
 	 relay header and read the digest. If the digest is correct, it
 	 is accepted. Else, it is forwarded (or the stream is killed if
@@ -7015,7 +6409,7 @@
 	 usage
     6) miscellany
        - dos might be possible but has not been observed yet
-       - exit policies: 
+       - exit policies:
 	 - thoughts of adding headers
 	 - mixed policies
        - directory servers
@@ -7057,7 +6451,7 @@
        - w/o central authority, how to avoid bad nodes
        - anonymity gains from running own OR to lead to recommendation?
     10) future directions
-	- scalability, 
+	- scalability,
 	- bandwidth classes [DSL, T1, T3] for ORs
 	- incentives, cover traffic, cachin gat exit nodes, better
           directory distribution, further spec review, multisystem
@@ -7971,6 +7365,13 @@
       mentioned.
     - (ends 3.1)
 ** TODO [[~/da/git/docs/mlj12.pdf][Good edit similarity learning by loss minimization]]
+** TODO [[./crov1297.pdf][Long-Lasting Transient Conditions in Simulations with Heavy-Tailed Workloads]]
+** TODO [[/home/chive/import/pakdoc/][Hypertext Transfer Protocol -- HTTP/1.0]]
+*** summary
+*** quotes
+*** ref: [[file:master.bib::rfc1945][Berners-Lee et al. 1996: Hypertext Transfer Protocol]]
+** TODO [[./Getting Started - Ajax | MDN.html]]
+** TODO [[./XMLHttpRequest - Web API Referenz | MDN.6limit.html]]
 ** PART [#A] [[./random.pdf][Computer Generation of Statistical Distributions]]
 *** quotes
     5) [@5] PROBABILITY DISTRIBUTION FUNCTIONS
@@ -9572,6 +8973,666 @@
       of training data and are more likely to make mistakes for small
       and noisy data sets.
     - (ends 14.0)
+** PART [[./javascript_the_good_parts.pdf][JavaScript: The Good Parts]]
+*** summary
+    1. Good parts
+
+       - some: functionaly programming, prototypal inheritance
+
+       - very different from other languages
+
+    2. Grammar
+
+       1. Railroad diagrams
+
+	  - left, to right
+
+	  - literal: oval, rules: rect
+
+	  - legal iff following tracks
+
+	  - one bar: whitespace allowed, two: not
+
+       2. Whitespace
+
+	  - comments as usual
+
+	  - better use // instead of /* */ (regex f.ex. /a*/.match(s);)
+
+       3. Names
+
+	  - letter, then also digit, underscore
+
+	  - reserved words
+
+	  - not undefined, NaN, infinity
+
+       4. Numbers
+
+	  - only float (double)
+
+	  - (- is operator)
+
+       5. Strings
+
+	  - sequence
+
+	  - ' or "
+
+	  - escape characters: '"\/bfnrt or u1212 (f.ex.)
+
+	  - .length
+
+	  - exactly same characters \to equal
+
+       6. Statements
+
+	  - var: function's private variables
+
+	  - loads of parts, mostly like other languages
+
+       7. Literals
+
+	  - number, string, object, array, function, regexp
+
+	  - object { name | "string": values, ...}
+
+       8. Functions
+
+	  - function [name] parameters function_body
+
+	  - body: { var_statements, statements }
+
+    3. Objects
+
+       0. [@0] preface
+
+	  - prototype linkage
+
+       1. Object Literals
+
+	  - can nest
+
+	  - name: unquoted possible if could be identifier
+
+       2. Retrieval
+
+	  - use =.= instead of =[ ]=: easier to read
+
+	  - undefined in not existing
+
+	  - fill in default values if undefined:
+
+	    #+BEGIN_SRC js
+              var middle = stooge["middle-name"] || "(none)";
+	    #+END_SRC
+
+	  - guard agains typeerror (value from undefined) via &&
+
+	    #+BEGIN_SRC js
+              flight.equipment && flight.equipment.model
+	    #+END_SRC
+
+       3. Update
+
+	  - create if not exist, else change
+
+       4. Reference
+
+	  - pass by reference: same object
+
+       5. Prototype
+
+	  - like class in other languages
+
+	  - snippet to copy class: [[(object.create)]]
+
+       6. Reflection
+
+	  - introspection
+
+	  - also gives functions, and stuff up the hierarchy
+
+	    - solution: use =hasOwnProperty=
+
+       7. Enumeration
+
+	  - avoid functions with =typeof= and prototype's stuff by
+            =hasOwnProperty=
+
+	  - possible: use explicit array of properties
+
+       8. Delete
+
+	  - allows prototype to "shine through"
+
+       9. Global Abatement
+
+	  - single global variable =MYAPP=
+
+	    - becomes container
+
+	  - also closure possible
+
+    4. Functions
+
+       0. [@0]
+
+	  - "fundamental modular unit of JavaScript."
+
+       1. Function Objects
+
+	  - each function has a =Function.prototype=
+
+	    - context and code implementing
+
+       2. Function Literal
+
+	  1. =function= reserved word
+
+	  2. name, or anonymous
+
+	     - used to call recursively, etc
+
+	  3. parameters
+
+	  4. body
+
+	  has access to outer scope (closure)
+
+       3. Invocation
+
+	  - caller suspends execution
+
+	  - function receives parameters + =this= and =arguments=
+
+	    - this determined by how it is called
+
+       4. The Method Invocation Pattern
+
+	  - method: refinement, aka =.= or =[subscript]=
+
+	  - this bound at invocation time to object
+
+       5. The Function Invocation Pattern
+
+	  - function: bound to global scope
+
+	  - *also inner functions*
+
+	  - workaround: use =that=:
+	    #+BEGIN_SRC js
+              myObject.double = function ( ) {
+                  var that = this;
+                  // Workaround.
+                  var helper = function ( ) {
+                      that.value = add(that.value, that.value);
+                  };
+                  helper();
+              };
+
+              myObject.double();
+              document.writeln(myObject.getValue( )); // 6
+	    #+END_SRC
+
+       6. The Constructor Invocation Pattern
+
+	  - js is prototypal
+
+	  - extend prototypes like
+	    #+BEGIN_SRC js
+              var Quo = function (string) {
+                  this.status = string;
+              };
+              Quo.prototype.get_status = function ( ) {
+                  return this.status;
+              };
+              var myQuo = new Quo("confused");
+	    #+END_SRC
+
+	    not recommended
+
+       7. The Apply Invocation Pattern
+
+	  - apply(new_this, [args])
+
+	    - can also be called from other class member
+
+	      #+BEGIN_SRC js
+                var status = Quo.prototype.get_status.apply(statusObject);
+	      #+END_SRC
+
+       8. Arguments
+
+	  - extra function parameter, array-like (=length=)
+
+       9. Return
+
+	  - if not specified, =undefined= is returned (except for constructor)
+
+       10. Exceptions
+
+	   - raise
+	     #+BEGIN_SRC js
+               throw {
+               name: 'TypeError',
+               message: 'add needs numbers'
+               };
+	     #+END_SRC
+
+	   - except
+	     #+BEGIN_SRC js
+               try {
+                   add("seven");
+               } catch (e) {
+                   document.writeln(e.name + ': ' + e.message);
+               }
+	     #+END_SRC
+
+	   - one =catch= block
+
+       11. Augmenting Types
+
+	   - add f.ex. =trim= to string
+
+	   - add only if not yet existing ;-)
+
+       12. Recursion
+
+	   - not tail-recursive
+
+	   - great for dom-walking f.ex.
+
+       13. Scope
+
+	   - function scope:
+	     #+BEGIN_SRC js
+               var foo = function ( ) {
+                   var a = 3, b = 5;
+                   var bar = function ( ) {
+                       var b = 7, c = 11;
+                       // At this point, a is 3, b is 7, and c is 11
+                       a += b + c;
+                       // At this point, a is 21, b is 7, and c is 11
+                   };
+                   // At this point, a is 3, b is 5, and c is not defined
+                   bar( );
+                   // At this point, a is 21, b is 5
+               };
+	     #+END_SRC
+
+	   - recommendation: declare variables at top of function body
+
+       14. Closure
+
+	   - allow for private variables
+	     #+BEGIN_SRC js
+               var myObject = function ( ) {
+                   var value = 0;
+                   return {
+                       increment: function (inc) {
+                           value += typeof inc === 'number' ? inc : 1;
+                       },
+                       getValue: function ( ) {
+                           return value;
+                       }
+                   };
+               }( );
+	     #+END_SRC
+
+	     - not capitalized as =this=-functionality not used
+
+	   - has access to actual values, not copies
+
+       15. Callbacks
+
+	   - non-blocking paused execution, f.ex
+	     #+BEGIN_SRC js
+               request = prepare_the_request( );
+               send_request_asynchronously(request, function (response) {
+                   display(response);
+               });
+	     #+END_SRC
+
+       16. Module
+
+	   - use closure to make functions with private parts
+
+       17. Cascade
+
+	   - if would return nothing: return this to allow multiple calls
+	     #+BEGIN_SRC js
+               getElement('myBoxDiv').
+                   move(350, 150).
+                   width(100).
+                   height(100).
+                   color('red').
+                   border('10px outset').
+                   padding('4px').
+                   appendText("Please stand by").
+                   on('mousedown', function (m) {
+                       this.startDrag(m, this.getNinth(m));
+                   }).
+                   on('mousemove', 'drag').
+                   on('mouseup', 'stopDrag').
+                   later(2000, function ( ) {
+                       this.
+                           color('yellow').
+                           setHTML("What hath God wraught?").
+                           slide(400, 40, 200, 200);
+                   }).
+                   tip('This box is resizeable');
+	     #+END_SRC
+
+       18. Curry
+	   
+	   set fixed parameters to functions
+
+	   #+BEGIN_SRC js
+             Function.method('curry', function ( ) {
+                 var slice = Array.prototype.slice,
+                     args = slice.apply(arguments),
+                     that = this;
+                 return function ( ) {
+                     return that.apply(null, args.concat(slice.apply(arguments)));
+                 };
+             });
+	   #+END_SRC
+
+       19. Memoization
+
+	   store already computed values in function via
+
+	   #+BEGIN_SRC js
+             var memoizer = function (memo, fundamental) {
+                 var shell = function (n) {
+                     var result = memo[n];
+                     if (typeof result !== 'number') {
+                         result = fundamental(shell, n);
+                         memo[n] = result;
+                     }
+                     return result;
+                 };
+                 return shell;
+             };
+	   #+END_SRC
+	   use as
+	   #+BEGIN_SRC js
+             var fibonacci = memoizer([0, 1], function (shell, n) {
+                 return shell(n - 1) + shell(n - 2);
+             });
+	   #+END_SRC
+
+    5. Inheritance
+
+       code reuse, save development time. js facilitates many types of
+       inheritance
+
+       1. Pseudoclassical
+
+	  complicated, not really necessary
+
+       2. Object Specifiers
+
+	  - use one object with members instead of parameters
+
+	  - params can be any order, easier to read, bonus: JSON creation
+
+       3. Prototypal
+
+	  differential inheritance: specify what is new
+
+	  - create object
+
+	  - [[(object.create)]]
+
+	  - specify changes
+
+	  - (-) no private variables
+
+       4. Functional
+
+	  hide members by using closure and only giving out an object
+          which accesses these
+
+       5. Parts
+
+	  extend by taking the =that= object, defining a new variable
+          and a new function which accesses the variable internally,
+          returning =that=
+
+    6. Arrays
+
+       not a real array of ocnsecutive memory locations
+
+       1. Array Literals
+
+	  - ['zero', 'one'] just like {'0': 'zero', '1': 'one'}
+
+	    except for
+
+	    - length property
+
+	    - array methods
+
+       2. Length
+
+	  biggest index +1
+
+	  setting to smaller causes larger objects to be deleted
+
+       3. Delete
+
+	  leaves a hole (=undefined=)
+
+	  better use =myarray.splice(2, 1);=
+
+       4. Enumeration
+
+          for in can enumerate parent properties,
+	  better use for ( i = 0; i < myarray.length; i += 1 )
+
+       5. Confusion
+
+	  detect whether array:
+	  #+BEGIN_SRC js
+            var is_array = function (value) {
+                return value &&
+                    typeof value === 'object' &&
+                    typeof value.length === 'number' &&
+                    typeof value.splice === 'function' &&
+                    !(value.propertyIsEnumerable('length'));
+            };
+	  #+END_SRC
+
+       6. Methods
+
+	  extend arrays, f.ex. via
+	  #+BEGIN_SRC js
+            Array.method('reduce', function (f, value) {
+                var i;
+                for (i = 0; i < this.length; i += 1) {
+                    value = f(this[i], value);
+                }
+                return value;
+            });
+	  #+END_SRC
+
+       7. Dimensions
+
+	  can add method to initialize array to known length, not built-in
+
+    7. Regular Expressions
+
+       best keep simple
+
+       more efficient than other methods
+
+       "regexp.exec, regexp.test, string.match, string.replace,
+       string.search, and string.split"
+
+       1. An Example
+	  #+BEGIN_SRC js
+            var parse_url = /^(?:([A-Za-z]+):)?(\/{0,3})([0-9.\-A-Za-z]+)(?::(\d+))?(?:\/([^?#]*))?(?:\?([^#]*))?(?:#(.*))?$/;
+	  #+END_SRC
+
+       2. Construction
+
+	  - =g= flag: global
+
+	  - =i= case insensitive
+
+	  - =m= multiline
+
+          construct via regex
+	  #+BEGIN_SRC js
+          var my_regexp = /"(?:\\.|[^\\\"])*"/g;
+	  #+END_SRC
+	  or constructor (double slashes, escape quotes)
+	  #+BEGIN_SRC js
+          var my_regexp = new RegExp("\"(?:\\.|[^\\\\\\\"])*\"", 'g');
+	  #+END_SRC
+
+       3. Elements
+
+	  1. Regexp Choice
+
+	     sequence =|= sequence ...
+
+	  2. Regexp Sequence
+
+	     factor (quantifier factor)*
+
+	  3. Regexp Factor
+
+	     escape | class | group | any unicode except /,\,[,],{,},?,+,*,|,C^..
+
+	  4. Regexp Escape
+
+	     \ starts
+
+	     - \f formfeed, \n newline, \r carriage return, \t tab, \u unicode,
+
+	     - \d 0-9 \D negates
+
+	     - \s [\f\n\r\t\u000B\u0020\u00A0\u2028\u2029] \ S negates
+
+	     - \w supposed to be words, but only ascii, so useless, \W negates
+
+	       - \b similarly useless
+
+	     - \1 refers to group one:
+	       #+BEGIN_SRC js
+                 var doubled_words = /[A-Za-z\u00C0-\u1FFF\u2800-\uFFFD'\-]+\s+\1/gi;
+	       #+END_SRC
+
+	  5. Regexp Group
+
+	     - capturing =(=
+
+	     - non-capturing =(?:=, slighly faster
+
+	     - positive lookahead =(?=, bad part
+
+	     - negative lookahead =(!=, bad part
+
+	  6. Regexp Class
+
+	     - enclosed by =[]=, negatable,
+
+	       - escape /,\,[,],^,-
+
+	  7. Regexp Class Escape
+
+	     - [\b] for backspace
+
+	  8. Regexp Quantifier
+
+	     - ?,*,+,{a,b}
+
+	     - ? at end: lazy matching, "as few repetitions as possible"
+
+    8. Methods
+
+       1. Array
+
+	  1. concat(items):
+
+             appends each item in items, elements of array individually
+
+	  2. array.join(separator): makes a string, with separator
+             between elements, faster than =+= for individual elements
+
+	  3. array.pop( ): stack-like
+
+	  4. array.push(item...): unlike =concat=, appends arrays wholesale
+
+	  5. array.reverse() reverse array in-place
+
+	  6. array.shift(): like =pop=, first element, much slower than =pop=
+
+	  7. array.slice(start, end=array.length): shallow copy
+
+	  8. array.sort(comparefn): sort in place, default comparator
+             is string-based
+
+	     for numbers:
+	     #+BEGIN_SRC js
+               n.sort(function (a, b) {
+                   return a - b;
+               });
+	     #+END_SRC
+
+	  9. array.splice(start, deleteCount, item...): remove
+             elements in-place (see book for implementation)
+
+	  10. array.unshift(item...): like push, but at the front
+
+       2. Function
+
+	  1. function.apply(thisArg, argArray): calls function with
+             argArray and this = thisArg
+*** quotes
+    - We appreciate, but do not require, attribution. An attribution
+      usually includes the title, author, publisher, and ISBN. For
+      example: “JavaScript: The Good Parts by Douglas
+      Crockford. Copyright 2008 Yahoo! Inc., 978-0-596-51774-8.”
+    - (ends 0+1)
+    - It is usually necessary to test object.hasOwnProperty(variable)
+      to determine whetherthe property name is truly a member of the
+      object or was found instead on the prototype chain.
+      #+BEGIN_SRC js
+        for (myvar in obj) {
+            if (obj.hasOwnProperty(myvar)) {
+                    ...
+            }
+        }
+      #+END_SRC
+    - prefix operator [...] + to number
+    - The && operator produces the value of its first operand if the
+      first operand is falsy. Otherwise, it produces the value of the
+      second operand.
+    - (ends 2)
+    - The create method creates a new object that uses an old object
+      as its prototype. [...]
+      #+BEGIN_SRC js
+        if (typeof Object.create !== 'function') {
+            Object.create = function (o) {   (ref:object.create)
+                var F = function () {};
+                F.prototype = o;
+                return new F();
+            };
+        }
+        var another_stooge = Object.create(stooge);
+      #+END_SRC
+    - (ends 3?)
+    - Regular expressions usually have a significant performance
+      advantage over equivalent string operations in JavaScript.
+    - ...
+    - (bad parts)
+    - I have never seen a piece ofcode that was not improved by
+      refactoring it to remove the continue statement.
+    - (ends bp)
 ** PART [[./sally/Example1.html]]
 *** summary
     - input files example1.cfg reuters.zip
@@ -9828,6 +9889,287 @@
       entry types (but if you have to be too creative, there’s a good
       chance you’re using the wrong entry type).
     - (ends 4)
+** PART [[./Google JavaScript Style Guide.html][Google JavaScript Style Guide]]
+*** summary
+    1) JavaScript Language Rules
+
+       1) var
+
+	  always use, else gets global
+
+       2) Constants
+
+	  - NAMES_LIKE_THIS
+
+	  - const not supported in IE
+
+       3) Semicolons
+
+	  Always use
+
+       4) Nested functions
+
+	  feel free
+
+       5) Function Declarations Within Blocks
+
+	  don't, instead use a variable initialized with a Function Expression
+
+	  #+BEGIN_SRC js
+            if (x) {
+              var foo = function() {};
+            }
+	  #+END_SRC
+
+       6) Exceptions
+
+	  Yes
+
+       7) Custom exceptions
+
+	  Yes, f.ex. for exceptional return values
+
+       8) Standards features
+
+	  Always prefer
+
+       9) Wrapper objects for primitive types
+
+	  Do not do
+
+	  #+BEGIN_SRC js
+            var x = new Boolean(false);
+	  #+END_SRC
+
+	  but for type casting it is fine
+
+	  #+BEGIN_SRC js
+            var x = new Boolean(0);
+	  #+END_SRC
+
+       10) Multi-level prototype hierarchies
+
+	   Avoid, instead use sth like =goog.inherits()=
+
+       11) Method and property definitions
+
+	   #+BEGIN_SRC js
+             /** @constructor */
+             function Foo() {
+               this.bar = value;
+             }
+             Foo.prototype.bar = function() {
+               /* ... */
+             };
+	   #+END_SRC
+
+	   optimized access
+
+       12) delete
+
+	   use instead
+	   #+BEGIN_SRC js
+             this.property_ = null;
+	   #+END_SRC
+
+       13) Closures
+
+	   yes, but be aware of memory leaks
+
+       14) eval
+
+	   No, use JSON.parse() instead
+
+       15) with() {}
+
+	   no: unclear code
+
+       16) this
+
+	   in object constructors, methods (and closures)
+
+       17) for-in loop
+
+	   only for objects, not for arrays
+
+       18) Associative Arrays
+
+	   never use Array ([]) for that. It is a property of Object
+
+       19) Multiline string literals
+
+	   no, not in standard, use ' asdf ' + 'asdffe instead
+
+       20) Array and Object literals
+
+	   yes, [] clearer than Array()
+
+       21) Modifying prototypes of builtin objects
+
+	   forbidden
+
+       22) Internet Explorer's Conditional Comments
+
+	   no
+
+    2) JavaScript Style Rules
+
+       1) Naming
+
+	  0) [@0] "functionNamesLikeThis, variableNamesLikeThis,
+             ClassNamesLikeThis, EnumNamesLikeThis, methodNamesLikeThis,
+             CONSTANT_VALUES_LIKE_THIS, foo.namespaceNamesLikeThis.bar,
+             and filenameslikethis.js"
+
+	  1) Properties and methods
+
+	     - private: suffix =_=
+
+	  2) Method and function parameter
+
+	     - optional methods: =opt_=-prefix
+
+	     - variable arguments indicated by parameter =var_args= do
+               not use in body
+
+	  3) Getters and Setters
+
+	     discouraged
+
+	  4) Accessor functions
+
+	     - getFoo, setFoo, isFoo
+
+	  5) Namespaces
+
+	     can lead to problems. solution:
+
+	     1) Use namespaces for global code
+
+		one global object
+
+	     2) Respect namespace ownership
+
+		do not change someone else's, or tell them
+
+	     3) Use different namespaces for external code and internal code
+
+		export explicitly into other project if you do that
+
+		#+BEGIN_SRC js
+                  foo.provide('googleyhats.BowlerHat');
+
+                  foo.require('foo.hats');
+
+                  /**
+                   ,* @constructor
+                   ,* @extends {foo.hats.RoundHat}
+                   ,*/
+                  googleyhats.BowlerHat = function() {
+                    ...
+                  };
+
+                  goog.exportSymbol('foo.hats.BowlerHat', googleyhats.BowlerHat);
+		#+END_SRC
+
+	     4) Alias long type names to improve readability
+
+		aliases for long names, f.ex.
+
+		#+BEGIN_SRC js
+                  myapp.main = function() {
+                    var MyClass = some.long.namespace.MyClass;
+                    var staticHelper = some.long.namespace.MyClass.staticHelper;
+                    staticHelper(new MyClass());
+                  };
+		#+END_SRC
+
+		but not =MyClass.someProperty= unless Enum
+
+	     5) Filenames
+
+		all lowercase (for some platforms ...), only =-= and =_=
+
+       2) Custom toString() methods
+
+          yes, but must always succeed without side effects
+
+       3) Deferred initialization
+
+       8) [@8] Visibility (private and protected fields)
+
+	  use @private in jsdoc
+** PART [[/home/chive/IT-gg/org.pdf][The Org Manual]]
+*** quotes
+   2) [@2] Document structure
+      - M-S-LEFT: Kill the current column.
+      - To set the width of a column, one field anywhere in the column
+	may contain just the string ‘<N>’ where ‘N’ is an integer
+	specifying the width of the column in characters. [...]  Note
+	that the full text is still in the buffer but is hidden. To see
+	the full text, hold the mouse over the field—a tool-tip window
+	will show the full content. To edit such a field, use the command
+	C-c ‘ (that is C-c followed by the backquote). This will open a
+	new window with the full field. Edit it and finish with C-c C-c.
+      - C-c C-x C-v: org-toggle-inline-images
+
+	Toggle the inline display of linked images. Normally this will
+	only inline images that have no description part in the link,
+	i.e., images that will also be inlined during export. When called
+	with a prefix argument, also display images that do have a link
+	description. You can ask for inline images to be displayed at
+	startup by configuring the variable `org-startup-with-inline-images`.
+      - (???)
+      - The footnote reference is simply the marker in square brackets,
+	inside text. For example:
+	#+BEGIN_EXAMPLE
+          The Org homepage[fn:1] now looks a lot better than it used to.
+          ...
+          [fn:1] The link is: http://orgmode.org
+	#+END_EXAMPLE
+      - (ends 2.10)
+   11) [@11] Markup for rich export
+       1) Structural markup elements
+	  - The title of the exported document is taken from the special line
+	    #+BEGIN_EXAMPLE
+              #+TITLE: This is the title of the document
+	    #+END_EXAMPLE
+	    If this line does not exist, the title will be the name of the
+	    file associated to buffer, without extension, or the buffer
+	    name.
+	  - When quoting a passage from another document, it is customary to
+	    format this as a paragraph that is indented on both the left and
+	    the right margin. You can include quotations in Org mode
+	    documents like this:
+	    #+BEGIN_EXAMPLE
+              ,#+BEGIN_QUOTE
+              Everything should be made as simple as possible,
+              but not any simpler -- Albert Einstein
+              ,#+END_QUOTE
+	    #+END_EXAMPLE
+       3) [@3] Literal examples
+	  - You can include literal examples that should not be subjected to
+	    markup. Such examples will be typeset in monospace, so this is
+	    well suited for source code and similar examples.
+	    #+BEGIN_EXAMPLE
+	    Some example from a text file.
+	    #+END_EXAMPLE
+	  - For simplicity when using small examples, you can also start the
+	    example lines with a colon followed by a space. There may also be
+	    additional whitespace before the colon:
+
+	    Here is an example
+	      : Some example from a text file.
+	  - In literal examples, Org will interpret strings like ‘(ref:name)’
+	    as labels, and use them as targets for special hyperlinks like [[(name)]]
+   12) Exporting
+       7) [@7] LATEX and PDF export
+	  1) [@3] Quoting \LATEX code
+	     - special code that should only be present in LATEX
+               export with the following constructs: [...]
+	       #+BEGIN_LATEX
+	       All lines between these markers are exported literally
+	       #+END_LATEX
 ** MAYBE [[./rijsbergen79_infor_retriev.pdf][INFORMATION RETRIEVAL]]
 *** quotes
     |X ∩ Y| / |X ∪ Y| Jaccard's coefficient
@@ -10465,7 +10807,6 @@
       before using this command.
 
       `jpm sign --api-key ${AMO_API_KEY} --api-secret ${AMO_API_SECRET}`
-** TODO MOVE [[./crov1297.pdf][Long-Lasting Transient Conditions in Simulations with Heavy-Tailed Workloads]]
 ** [[./Traffic generation model - Wikipedia, the free encyclopedia.html]]
 ** [[./dana_vol_11_2__pp_65_130.pdf][Predator foraging in patchy environments: the interrupted Poisson process (IPP) model unit]]
 ** [[./ide883.pdf][Superposition of Interrupted Poisson Processes and Its Application to Packetized Voice Multiplexers]]
@@ -10502,331 +10843,9 @@
        · https://github.com/coreybutler/nvm-windows
        · https://github.com/hakobera/nvmw
        · https://github.com/nanjingboy/nvmw
-** PART MOVE [[./Google JavaScript Style Guide.html][Google JavaScript Style Guide]]
-*** summary
-    1) JavaScript Language Rules
-
-       1) var
-
-	  always use, else gets global
-
-       2) Constants
-
-	  - NAMES_LIKE_THIS
-
-	  - const not supported in IE
-
-       3) Semicolons
-
-	  Always use
-
-       4) Nested functions
-
-	  feel free
-
-       5) Function Declarations Within Blocks
-
-	  don't, instead use a variable initialized with a Function Expression
-
-	  #+BEGIN_SRC js
-            if (x) {
-              var foo = function() {};
-            }
-	  #+END_SRC
-
-       6) Exceptions
-
-	  Yes
-
-       7) Custom exceptions
-
-	  Yes, f.ex. for exceptional return values
-
-       8) Standards features
-
-	  Always prefer
-
-       9) Wrapper objects for primitive types
-
-	  Do not do
-
-	  #+BEGIN_SRC js
-            var x = new Boolean(false);
-	  #+END_SRC
-
-	  but for type casting it is fine
-
-	  #+BEGIN_SRC js
-            var x = new Boolean(0);
-	  #+END_SRC
-
-       10) Multi-level prototype hierarchies
-
-	   Avoid, instead use sth like =goog.inherits()=
-
-       11) Method and property definitions
-
-	   #+BEGIN_SRC js
-             /** @constructor */
-             function Foo() {
-               this.bar = value;
-             }
-             Foo.prototype.bar = function() {
-               /* ... */
-             };
-	   #+END_SRC
-
-	   optimized access
-
-       12) delete
-
-	   use instead
-	   #+BEGIN_SRC js
-             this.property_ = null;
-	   #+END_SRC
-
-       13) Closures
-
-	   yes, but be aware of memory leaks
-
-       14) eval
-
-	   No, use JSON.parse() instead
-
-       15) with() {}
-
-	   no: unclear code
-
-       16) this
-
-	   in object constructors, methods (and closures)
-
-       17) for-in loop
-
-	   only for objects, not for arrays
-
-       18) Associative Arrays
-
-	   never use Array ([]) for that. It is a property of Object
-
-       19) Multiline string literals
-
-	   no, not in standard, use ' asdf ' + 'asdffe instead
-
-       20) Array and Object literals
-
-	   yes, [] clearer than Array()
-
-       21) Modifying prototypes of builtin objects
-
-	   forbidden
-
-       22) Internet Explorer's Conditional Comments
-
-	   no
-
-    2) JavaScript Style Rules
-
-       1) Naming
-
-	  0) [@0] "functionNamesLikeThis, variableNamesLikeThis,
-             ClassNamesLikeThis, EnumNamesLikeThis, methodNamesLikeThis,
-             CONSTANT_VALUES_LIKE_THIS, foo.namespaceNamesLikeThis.bar,
-             and filenameslikethis.js"
-
-	  1) Properties and methods
-
-	     - private: suffix =_=
-
-	  2) Method and function parameter
-
-	     - optional methods: =opt_=-prefix
-
-	     - variable arguments indicated by parameter =var_args= do
-               not use in body
-
-	  3) Getters and Setters
-
-	     discouraged
-
-	  4) Accessor functions
-
-	     - getFoo, setFoo, isFoo
-
-	  5) Namespaces
-
-	     can lead to problems. solution:
-
-	     1) Use namespaces for global code
-
-		one global object
-
-	     2) Respect namespace ownership
-
-		do not change someone else's, or tell them
-
-	     3) Use different namespaces for external code and internal code
-
-		export explicitly into other project if you do that
-
-		#+BEGIN_SRC js
-                  foo.provide('googleyhats.BowlerHat');
-
-                  foo.require('foo.hats');
-
-                  /**
-                   ,* @constructor
-                   ,* @extends {foo.hats.RoundHat}
-                   ,*/
-                  googleyhats.BowlerHat = function() {
-                    ...
-                  };
-
-                  goog.exportSymbol('foo.hats.BowlerHat', googleyhats.BowlerHat);
-		#+END_SRC
-
-	     4) Alias long type names to improve readability
-
-		aliases for long names, f.ex.
-
-		#+BEGIN_SRC js
-                  myapp.main = function() {
-                    var MyClass = some.long.namespace.MyClass;
-                    var staticHelper = some.long.namespace.MyClass.staticHelper;
-                    staticHelper(new MyClass());
-                  };
-		#+END_SRC
-
-		but not =MyClass.someProperty= unless Enum
-
-	     5) Filenames
-
-		all lowercase (for some platforms ...), only =-= and =_=
-
-       2) Custom toString() methods
-
-          yes, but must always succeed without side effects
-
-       3) Deferred initialization
-
-       8) [@8] Visibility (private and protected fields)
-
-	  use @private in jsdoc
 ** [[../sw/jasondavies_bloomfilter.js%20%C2%B7%20GitHub.html]]
 ** [[./reftex.pdf][RefTeX Manual]]
-** PART MOVE [[/home/chive/IT-gg/org.pdf][The Org Manual]]
-*** quotes
-   2) [@2] Document structure
-      - M-S-LEFT: Kill the current column.
-      - To set the width of a column, one field anywhere in the column
-	may contain just the string ‘<N>’ where ‘N’ is an integer
-	specifying the width of the column in characters. [...]  Note
-	that the full text is still in the buffer but is hidden. To see
-	the full text, hold the mouse over the field—a tool-tip window
-	will show the full content. To edit such a field, use the command
-	C-c ‘ (that is C-c followed by the backquote). This will open a
-	new window with the full field. Edit it and finish with C-c C-c.
-      - C-c C-x C-v: org-toggle-inline-images
-
-	Toggle the inline display of linked images. Normally this will
-	only inline images that have no description part in the link,
-	i.e., images that will also be inlined during export. When called
-	with a prefix argument, also display images that do have a link
-	description. You can ask for inline images to be displayed at
-	startup by configuring the variable `org-startup-with-inline-images`.
-      - (???)
-      - The footnote reference is simply the marker in square brackets,
-	inside text. For example:
-	#+BEGIN_EXAMPLE
-          The Org homepage[fn:1] now looks a lot better than it used to.
-          ...
-          [fn:1] The link is: http://orgmode.org
-	#+END_EXAMPLE
-      - (ends 2.10)
-   11) [@11] Markup for rich export
-       1) Structural markup elements
-	  - The title of the exported document is taken from the special line
-	    #+BEGIN_EXAMPLE
-              #+TITLE: This is the title of the document
-	    #+END_EXAMPLE
-	    If this line does not exist, the title will be the name of the
-	    file associated to buffer, without extension, or the buffer
-	    name.
-	  - When quoting a passage from another document, it is customary to
-	    format this as a paragraph that is indented on both the left and
-	    the right margin. You can include quotations in Org mode
-	    documents like this:
-	    #+BEGIN_EXAMPLE
-              ,#+BEGIN_QUOTE
-              Everything should be made as simple as possible,
-              but not any simpler -- Albert Einstein
-              ,#+END_QUOTE
-	    #+END_EXAMPLE
-       3) [@3] Literal examples
-	  - You can include literal examples that should not be subjected to
-	    markup. Such examples will be typeset in monospace, so this is
-	    well suited for source code and similar examples.
-	    #+BEGIN_EXAMPLE
-	    Some example from a text file.
-	    #+END_EXAMPLE
-	  - For simplicity when using small examples, you can also start the
-	    example lines with a colon followed by a space. There may also be
-	    additional whitespace before the colon:
-
-	    Here is an example
-	      : Some example from a text file.
-	  - In literal examples, Org will interpret strings like ‘(ref:name)’
-	    as labels, and use them as targets for special hyperlinks like [[(name)]]
-   12) Exporting
-       7) [@7] LATEX and PDF export
-	  1) [@3] Quoting \LATEX code
-	     - special code that should only be present in LATEX
-               export with the following constructs: [...]
-	       #+BEGIN_LATEX
-	       All lines between these markers are exported literally
-	       #+END_LATEX
 ** [[./oakland2013-parrot.pdf][The Parrot is Dead: Observing Unobservable Network Communications]]
 ** [[./Wang_Tao.pdf][Wang - Website Fingerprinting: Attacks and Defenses]]
 ** [[./Huhta14-UCL-Msc.pdf][LINKING TOR CIRCUITS]]
 ** td: ways to access loading of pages
-** TODO MOVE [[/home/chive/import/pakdoc/][Hypertext Transfer Protocol -- HTTP/1.0]]
-*** summary
-*** quotes
-*** ref: [[file:master.bib::rfc1945][Berners-Lee et al. 1996: Hypertext Transfer Protocol]]
-** MOVE [[./Intercepting Page Loads - Mozilla | MDN.html][Intercepting Page Loads]]
-*** summary
-    1) The Easy Way: Load Events
-
-       - listen to load event
-
-	 - +: "easy"
-
-	 - -: cannot intercept, abort, etc
-
-    2) HTTP Observers
-
-       - better keep in non-chrome objects
-
-       - one instance sees each request and each response
-
-       - stay effective
-
-    3) WebProgressListeners
-
-       - in chrome
-
-       - attach to each tab
-
-       - tons of listeners, with filters
-
-    4) XPCOM Solutions
-
-       - Document Loader Service
-
-	 - nsIDocumentLoader: "global web progress listener"
-
-	 - Content Policy: cleaner-looking code, allows =shoudLoad=
-
-	   - does not show redirects
-** TODO MOVE [[./Getting Started - Ajax | MDN.html]]
-** TODO MOVE [[./XMLHttpRequest - Web API Referenz | MDN.6limit.html]]

@@ -14,18 +14,22 @@ exports["test contains uncontained"] = function(assert) {
 
 
 exports["test sized negative"] = function(assert) {
-    assert.ok(coverUrl.sized(-30) == ROBOTS, 'failed');
+    var result = coverUrl.sized(-30).split('?')[0];
+    assert.ok(result === ROBOTS, 'failed: ' + result);
 };
 exports["test sized tiny"] = function(assert) {
-    assert.ok(coverUrl.sized(3) == ROBOTS, 'failed');
+    var result = coverUrl.sized(3).split('?')[0];
+    assert.ok(result === ROBOTS, 'failed: ' + result);
 };
 exports["test sized fix"] = function(assert) {
-    var result = coverUrl.sized(94);
-    assert.ok(result.split('?')[0] == 'http://mlsec.org/harry/api/nav_g.png',
+    var result = coverUrl.sized(94).split('?')[0];
+    assert.ok(result === 'http://mlsec.org/harry/api/nav_g.png',
 	      'failed, result ' + coverUrl.sized(94));
 };
 exports["test sized too big"] = function(assert) {
-    assert.ok(coverUrl.sized(123456789) == 'http://mlsec.org/sally/examples/jrc.zip', 'failed');
+    var result = coverUrl.sized(123456789).split('?')[0];
+    assert.ok(result === 'http://mlsec.org/sally/examples/jrc.zip',
+	      'failed: ' + result);
 };
 
 
