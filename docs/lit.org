@@ -4005,6 +4005,18 @@
 
     4) Strukturmuster (hier weiter S. 167)
 
+       0) [@0]
+
+	  - objektbasiert vs klassenbasiert
+
+	    - klassenbasiert z.b. adapter
+
+	    - objektbasiert z.b. Kompositionsmuster
+
+	  - teils verwandt
+
+       1) Adapter
+
     5) [@5] Verhaltensmuster
 
        6) [@6] Memento
@@ -6728,35 +6740,82 @@
     [[file:master.bib::nfattackpam14][Chakravarty et al. 2014: Effectiveness Traffic Analysis]]
 ** TODO [[./10.1.1.10.5823.pdf][Quantifying Traffic Analysis of Encrypted Web-Browsing]]
 *** summary
-    0. abstract
+    0. [@0] Abstract
 
-    - for example banking
+       - for example banking
 
-    - see which websites  a user visits just by packet size
+       - see which websites  a user visits just by packet size
 
-    1. intro
+    1. Introduction
 
-    - ssl encrypts but does not obscure
+       - ssl encrypts but does not obscure
 
-    -scenarios
+       - scenarios
 
-      - what is done at oneline banking * which type of transaction
+         - what is done at oneline banking, which type of transaction
 
-      - buying or selling shares
+         - buying or selling shares
 
-      - which books at oneline bookstore
+         - which books at oneline bookstore
 
-    - tools
+       - tools
 
-      - taffic sizes on path
+         - taffic sizes on path
 
-      - can browse site beforehand
+         - can browse site beforehand
 
-    - only one account at those sites caveat
+       - only one account at those sites caveat
 
-    - ssl: v2 and v3
+       - ssl: v2 and v3
 
-   2. methodology
+    2. Methodology
+
+       0. [@0] (procedure)
+
+	  1. gather information
+
+	     1. record sizes of traffic (with tcp header stripped)
+
+	     2. locality information: which page reachable from which other page
+
+	  2. record and filter client requests
+
+	     - separate requests by port number
+
+	     - recognize ssl handshake
+
+	       - within handshake: client sends requests with
+
+	       - response sizes of each request
+
+	  3. match in \pm 40 bytes increments
+
+       1. Choice of web sites
+
+	  - https://www.isaac.cs.berkeley.edu: static, few images, v2
+
+	  - https://www.index.berkeley.edu: also generated, many images, login,v3
+
+	  - https://banking.wellsfargo.com: mostly generated, login, v2
+
+	  - https://orders.datek.com: user login, many generated, v3
+
+       2. Test cases
+
+	  - no images, no cache
+
+	  - images, no cache
+
+	  - images, cache
+
+	  - images, warm cache
+
+    3. Results
+** quotes
+   3. [@3] Results
+      - traffic analysis identified all pages fairly accurately. We
+        did not have to use any locality information for recognizing
+        any of the pages on this site.
 ** TODO [[https://www.torproject.org/projects/torbrowser/design/#proxy-obedience][The Design and Implementation of the Tor Browser]]
    - [[./browser.html][local copy]]
 *** summary
@@ -8176,6 +8235,30 @@
                        "0,1", "1,1", "2,1"];
            show(grid[2 + 1 * 3]);
 	 #+END_SRC
+
+       - ex. 8.2 =each=
+	 #+BEGIN_SRC js
+           Grid.prototype.each(func(point, stuff)) {
+               for ( var j = 0; j < width; j += 1; ) {
+                   for ( var i = 0; i < height; i+= 1; ) {
+                       var p = new Point(i, j);
+                       func(p, valueAt(p));
+                   }
+               }
+           };
+	 #+END_SRC
+
+       - direction object (dictionary, {"n", 'ne', 'nw', ...})
+
+	 - action object ({"move", direction})
+
+	 - Bug.act function() = .. return action
+
+       - Terrarium: initialized with ascii plan
+
+	 - #=wall, o=bug, ' ' = nothing
+
+	 - elementFromCharacter maps above
 
     12. [@12] The Document-Object Model
 
@@ -10166,7 +10249,7 @@
         >>> nbrs = NearestNeighbors(n_neighbors=4, algorithm='ball_tree',
         ...            metric='pyfunc', func=mydist)
       #+END_SRC
-** Mozilla Add-On SDK
+** PART Mozilla Add-On SDK
 *** Guides
 **** XUL Migration Guide
      - Using XPCOM This example uses the action button API, which is
@@ -10382,7 +10465,7 @@
       before using this command.
 
       `jpm sign --api-key ${AMO_API_KEY} --api-secret ${AMO_API_SECRET}`
-** TODO [[./crov1297.pdf][Long-Lasting Transient Conditions in Simulations with Heavy-Tailed Workloads]]
+** TODO MOVE [[./crov1297.pdf][Long-Lasting Transient Conditions in Simulations with Heavy-Tailed Workloads]]
 ** [[./Traffic generation model - Wikipedia, the free encyclopedia.html]]
 ** [[./dana_vol_11_2__pp_65_130.pdf][Predator foraging in patchy environments: the interrupted Poisson process (IPP) model unit]]
 ** [[./ide883.pdf][Superposition of Interrupted Poisson Processes and Its Application to Packetized Voice Multiplexers]]
@@ -10401,7 +10484,7 @@
     #+END_SRC
 ** [[file:Marionette%20Python%20Tests%20-%20Mozilla%20|%20MDN.html][Marionette Python Tests]]
 ** [[file:Marionette%20-%20Mozilla%20|%20MDN.html::<!DOCTYPE%20html][Marionette (main page)]]
-** [[./1999-35.pdf]]
+** [[./1999-35.pdf][A Behavioral Model of Web Traffic]]
 ** [[./tcpdump.pdf]]
 ** [[shell:man npm-faq][man npm-faq]]
 *** quotes
@@ -10706,3 +10789,44 @@
 ** [[./Wang_Tao.pdf][Wang - Website Fingerprinting: Attacks and Defenses]]
 ** [[./Huhta14-UCL-Msc.pdf][LINKING TOR CIRCUITS]]
 ** td: ways to access loading of pages
+** TODO MOVE [[/home/chive/import/pakdoc/][Hypertext Transfer Protocol -- HTTP/1.0]]
+*** summary
+*** quotes
+*** ref: [[file:master.bib::rfc1945][Berners-Lee et al. 1996: Hypertext Transfer Protocol]]
+** MOVE [[./Intercepting Page Loads - Mozilla | MDN.html][Intercepting Page Loads]]
+*** summary
+    1) The Easy Way: Load Events
+
+       - listen to load event
+
+	 - +: "easy"
+
+	 - -: cannot intercept, abort, etc
+
+    2) HTTP Observers
+
+       - better keep in non-chrome objects
+
+       - one instance sees each request and each response
+
+       - stay effective
+
+    3) WebProgressListeners
+
+       - in chrome
+
+       - attach to each tab
+
+       - tons of listeners, with filters
+
+    4) XPCOM Solutions
+
+       - Document Loader Service
+
+	 - nsIDocumentLoader: "global web progress listener"
+
+	 - Content Policy: cleaner-looking code, allows =shoudLoad=
+
+	   - does not show redirects
+** TODO MOVE [[./Getting Started - Ajax | MDN.html]]
+** TODO MOVE [[./XMLHttpRequest - Web API Referenz | MDN.6limit.html]]
