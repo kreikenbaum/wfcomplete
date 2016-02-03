@@ -1,6 +1,52 @@
 #+TITLE: Selective Cover Traffic
+#+TODO: TODO CHECK | DONE
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{tikz}
+* topics
+** TODO Tor [0/6]
+*** How to use Tor
+    Tor offers a SOCKS5\cite{rfc1928}-(TCP\cite{rfc793}-)proxy for
+    users. (If an application has no proxy settings, the
+    =tsocks=-program provides transparent proxying). After setting this,
+    all traffic is routed through the Tor network, anonymizing the IP
+    address, with a fixed message length to hinder traffic analysis.
+
+    (Tor also offers the possibility to "hide" a (TCP-)internet service
+    via "hidden services" so that noone can see its location).
+*** TODO [[*how%20Tor%20works%20internally][how Tor works internally]]
+*** TODO [[Tor's Cryptography]]
+*** TODO [[Who uses Tor]]
+*** TODO [[Tor Threat Model]]
+*** Tor Browser
+    There are many technologies based on the Tor protocol. Top of the
+    list ([[file:docs/lit.org::*%5B%5B./projects.html%5D%5BSoftware%20&%20Services%5D%5D][Software & Services*]]) is the Tor Browser Bundle. This is a
+    modified version of Firefox which uses Tor and comes with built-in
+    privacy and security enhancements and Add-ons.
+
+    Among the additional privacy features the Tor-Browser-Bundle
+    provides are added request randomization and enabled pipelining.
+*** TODO [[tbb anti-wf modification]]
+**** TODO ordering: better first wf?
+** TODO Website Fingerprinting
+*** TODO [[What is Website Fingerprinting]]
+*** Panchenko's Attack via Website Fingerprinting
+    For a long time, traffic analysis attacks against Tor had not
+    yielded results. Prior to to [[file:docs/lit.org::*%5B%5B./acmccs-wpes11-fingerprinting.pdf%5D%5BPanchenko%20-%20Website%20Fingerprinting%20in%20Onion%20Routing%20Based%20Anonymization%20Networks%5D%5D][Panchenkos et al]], it was expected that
+    Tor introduced multiplexing, enough padding and latency into website
+    retrieval that this attack was inapplicable.
+*** TODO [[Hurdles to website fingerprinting]]
+*** TODO MOVE [[*Who%20could%20attack%20via%20WF][Who could attack via WF]]
+*** TODO MOVE [[Current defenses in Tor]]
+** Developing Firefox Addons
+*** [[Mozilla Add-On Sdk]]
+*** Debugger
+*** TODO [[Available Data]]
+*** MOVE [[separation of scripts]]
+**** [[message-passing]]
+** Addon Design and Implementation
+*** TODO [[Design]]
+*** Implementation
+**** Unit Testing
 * final sections
 ** LATER Abstract
 *** Teaser
@@ -33,50 +79,7 @@
      Repressalien zu groß war. (td: quote)
 **** WAIT may \to (ohne) (falls richtig)
 ** TODO LATER Introduction [0/12]
-*** TODO Tor [0/6]
-**** How to use Tor
-     Tor offers a SOCKS5\cite{rfc1928}-(TCP\cite{rfc793}-)proxy for
-     users. (If an application has no proxy settings, the
-     =tsocks=-program provides transparent proxying). After setting this,
-     all traffic is routed through the Tor network, anonymizing the IP
-     address, with a fixed message length to hinder traffic analysis.
-
-     (Tor also offers the possibility to "hide" a (TCP-)internet service
-     via "hidden services" so that noone can see its location).
-**** TODO [[*how%20Tor%20works%20internally][how Tor works internally]]
-**** TODO [[Tor's Cryptography]]
-**** TODO [[Who uses Tor]]
-**** TODO [[Tor Threat Model]]
-**** Tor Browser
-     There are many technologies based on the Tor protocol. Top of the
-     list ([[file:docs/lit.org::*%5B%5B./projects.html%5D%5BSoftware%20&%20Services%5D%5D][Software & Services*]]) is the Tor Browser Bundle. This is a
-     modified version of Firefox which uses Tor and comes with built-in
-     privacy and security enhancements and Add-ons.
-
-     Among the additional privacy features the Tor-Browser-Bundle
-     provides are added request randomization and enabled pipelining.
-**** TODO [[tbb anti-wf modification]]
-***** TODO ordering: better first wf?
-*** TODO Website Fingerprinting
-**** TODO [[What is Website Fingerprinting]]
-**** Panchenko's Attack via Website Fingerprinting
-     For a long time, traffic analysis attacks against Tor had not
-     yielded results. Prior to to [[file:docs/lit.org::*%5B%5B./acmccs-wpes11-fingerprinting.pdf%5D%5BPanchenko%20-%20Website%20Fingerprinting%20in%20Onion%20Routing%20Based%20Anonymization%20Networks%5D%5D][Panchenkos et al]], it was expected that
-     Tor introduced multiplexing, enough padding and latency into website
-     retrieval that this attack was inapplicable.
-**** TODO [[Hurdles to website fingerprinting]]
-**** TODO [[*Who%20could%20attack%20via%20WF][Who could attack via WF]]
-**** TODO [[Current defenses in Tor]]
 ** LATER Materials and Methods [0/3]
-*** Capturing Website Traces
-*** TODO Addon [0/2]
-**** Developing Firefox Addons
-***** Debugger
-***** TODO [[Available Data]]
-**** Addon Design and Implementation
-***** TODO [[Design]]
-***** Implementation
-****** Unit Testing
 * TODO What is Website Fingerprinting
   Website fingerprinting\cite{hintz02} is a type of traffic
   analysis\cite{applied96}. It can be used to discover which webpages
@@ -245,7 +248,7 @@
   As website fingerprinting requires very litte resources, a specific
   attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
   state.
-* Related Work
+* TODO Related Work
   The idea of using traffic analysis to analyse encrypted traffic was
   mentioned by Schneier and Wagner in 1996([[SSL]]). The term /website
   fingerprinting/ was coined by Hintz in 2002. A successful attack
@@ -387,28 +390,27 @@
   2) /content scripts/, which are run in the page context. They can
      access the DOM, but not add-on scripts. nor
   3) /page scripts/, which are those included in the website via
-     f.ex. =<script>=.
+     f.ex. =<script>= tags
 
   Bridging this separation, f.ex. accessing page scripts (and vice
   versa) is possible, but needs some extra work.
 ** LATER index: page scripts, content scripts, add-on scripts
-* TODO message-passing
+* CHECK message-passing
   There is a mechanism to pass content from the add-on to the
   content scripts, as shown in the example.
 
-  A single string can be passed between both sides. As the string can
-  be any serialized JSON\cite{rfc7159} object, this is not much of a
-  limitation. (It effectively disallows the passing of functions and
-  circular objects).
+  A single string can be passed. As this string can be any serialized
+  JSON\cite{rfc7159} object, this is not much of a limitation. (It
+  effectively disallows the passing of functions and circular
+  objects).
 
   In a content-script, a message can be sent via
-  =self.port.emit('message_id', param)= and received via
-  =self.port.on('message_id', function(param))=.
+  =self.port.emit('message_type', param)= and received via
+  =self.port.on('message_type', function(param))=.
 
   In the Addon-Context, a =worker= object is used and the
   content-script's =self= is replaced by a =worker=. The worker is
-  initialized via the =onAttach= parameter of the page-mod, as seen
-  above.
+  initialized via the =onAttach= parameter of f.ex. the page-mod.
 * TODO interacting with page-scripts
   By default, content-scripts are isolated from the modifications
   done by page-scripts.[[Interacting with page scripts]]
@@ -472,6 +474,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 ** TODO link tor browser bundle
 *** or writeup something
 ** TODO link Requestpolicy
+** running an OR
 * TODO SECTION HOW TO CAPTURE TRACE FILES [0/1]
 ** TODO subsect parts onto here
 * TODO capture alternatives [0/1]
