@@ -3,9 +3,9 @@
 const NAME = 'coverUrl';
 exports.DOC = 'database of url and sizes';
 
-const _ = require("./underscore-min.js");
+const _ = require("lib/underscore-min.js");
 const debug = require("./debug.js");
-const random = require("./random.js");
+const random = require("js/random.js");
 const stats = require("./stats.js");
 // for debugging, use //var _ = require("../underscore.js");
 

@@ -2,7 +2,7 @@
 
 exports.DOC = 'distributions, also application of distributions (html etc)';
 
-const random = require("./random.js");
+const random = require("js/random.js");
 
 const HTML_MU = 7.90272;
 const HTML_SIGMA = 1.7643;

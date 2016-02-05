@@ -3,7 +3,7 @@
 const NAME = 'user';
 exports.DOC = 'what to do on traffic by the user';
 
-const _ = require('./underscore-min.js');
+const _ = require('lib/underscore-min.js');
 
 const coverTraffic = require('./coverTraffic.js');
 const debug = require('./debug.js');

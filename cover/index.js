@@ -6,10 +6,10 @@ const pageMod = require("sdk/page-mod");
 
 const debug = require("./debug.js");
 const user = require("./user.js");
-const userWatcher = require("./user-watcher.js");
+const watcher = require("js/watcher.js");
 
 // 
-userWatcher.register(user);
+watcher.register(user);
 
 /** signals when page has finished loading */
 pageMod.PageMod({
@@ -29,5 +29,5 @@ pageMod.PageMod({
 });
 
 exports.onUnload = function(reason) {
-    userWatcher.unregister();
+    watcher.unregister();
 };
