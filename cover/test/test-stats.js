@@ -1,6 +1,6 @@
 "use strict";
 
-var stats = require("../stats.js");
+var stats = require("../js/stats.js");
 
 exports["test htmlMean"] = function(assert) {
     var sum = 0;

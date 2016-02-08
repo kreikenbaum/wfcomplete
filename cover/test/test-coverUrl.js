@@ -1,7 +1,7 @@
 "use strict";
 
-const coverUrl = require("../coverUrl.js");
-const stats = require("../stats.js");
+const coverUrl = require("../js/coverUrl.js");
+const stats = require("../js/stats.js");
 
 const ROBOTS = 'http://mlsec.org/robots.txt';
 

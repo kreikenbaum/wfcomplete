@@ -1,6 +1,6 @@
 "use strict";
 
-var random = require("../random");
+const random = require("../js/random.js");
 
 exports["test string"] = function(assert) {
     assert.equal(random.string(94).length, 94,

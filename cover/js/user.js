@@ -3,23 +3,19 @@
 const NAME = 'user';
 exports.DOC = 'what to do on traffic by the user';
 
-const _ = require('lib/underscore-min.js');
+const _ = require('../lib/underscore-min.js');
 
 const coverTraffic = require('./coverTraffic.js');
 const debug = require('./debug.js');
 
-// td: index by domain or by URL?
-var activeHosts = [];
-
 /** user starts loading url */
 function loads(URL) {
-    if ( ! _.contains(activeHosts, URL.host) ) {
+    if ( _.contains(activeHosts, URL.host) ) { // has already started
+	coverTraffic.loadNext();
+    } else {
 	activeHosts.push(URL.host);
 	coverTraffic.start();
-	debug.traceLog(NAME + ': loads ' + URL.host);
-	// td: should start cover traffic
     }
-    debug.traceLog(activeHosts);
 };
 exports.loads = URL => loads(URL);
 
@@ -41,5 +37,4 @@ exports.endsLoading = URL => endsLoading(URL);
 function isIdle() {
     return _.isEmpty(activeHosts);
 };
-exports.isIdle = () => isIdle();
-    
+//exports.isIdle = () => isIdle();

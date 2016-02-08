@@ -2,7 +2,7 @@
 
 const {Cc, Ci} = require("chrome");
 
-const user = require("../user");
+const user = require("../js/user.js");
 const ioService = Cc["@mozilla.org/network/io-service;1"]
       .getService(Ci.nsIIOService);
 
