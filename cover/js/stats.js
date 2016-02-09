@@ -42,6 +42,14 @@ var requestLength = function() {
 }
 exports.requestLength = requestLength;
 
+// td: rename
+/** returns true with a probability of <code>chance</code> (for chance
+ * >1: always)*/
+var withProbability = function(chance) {
+    return random.uniform01() < chance;
+}
+exports.withProbability = withProbability;
+
 // TESTING
 /** mean of lognormal_(HTML_MU, HTML_SIGMA) */
 var htmlMean = function() {

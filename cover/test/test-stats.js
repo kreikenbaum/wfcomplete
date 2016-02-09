@@ -17,4 +17,18 @@ exports["test request length"] = function(assert) {
     assert.ok(result <= 700, 'requestLength: ' + result + ' too big');
 }
 
+exports["test withProbability(>1)"] = function(assert) {
+    assert.ok(stats.withProbability(1.1), 'off for prob > 1');
+}
+exports["test withProbability(<0)"] = function(assert) {
+    assert.ok(!stats.withProbability(-0.1), 'off for prob < 0');
+}
+exports["test withProbability(0.5)"] = function(assert) {
+    var sum = 0;
+    for ( var i = 0; i < 20; i += 1 ) {
+	sum += (stats.withProbability(0.5) ? 1 : 0 );
+    }
+    assert.ok(Math.abs(sum - 10) <= 4, '(maybe) off for prob = 0.5');
+}
+
 require("sdk/test").run(exports);

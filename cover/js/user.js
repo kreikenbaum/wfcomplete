@@ -6,7 +6,10 @@ exports.DOC = 'what to do on traffic by the user';
 const _ = require('../lib/underscore-min.js');
 
 const coverTraffic = require('./coverTraffic.js');
+coverTraffic.setLoader(require('./load.js'));
 const debug = require('./debug.js');
+
+var activeHosts = [];
 
 /** user starts loading url */
 function loads(URL) {
@@ -19,22 +22,24 @@ function loads(URL) {
 };
 exports.loads = URL => loads(URL);
 
-/** user ends loading url */
-function endsLoading(URL) {
-    debug.traceLog(NAME + ': end user load ' + URL.host);
-    if ( _.contains(activeHosts, URL.host) ) {
-	activeHosts = _.without(activeHosts, URL.host);
-    }
-    if ( isIdle() ) {
-	coverTraffic.stop();
-    }
-    debug.traceLog(activeHosts);
-    // td: if no sites are loading, switch mode
-};
-exports.endsLoading = URL => endsLoading(URL);
+// // unused
+// /** user ends loading url */
+// function endsLoading(URL) {
+//     debug.traceLog(NAME + ': end user load ' + URL.host);
+//     if ( _.contains(activeHosts, URL.host) ) {
+// 	activeHosts = _.without(activeHosts, URL.host);
+//     }
+//     if ( isIdle() ) {
+// 	coverTraffic.stop();
+//     }
+//     debug.traceLog(activeHosts);
+//     // td: if no sites are loading, switch mode
+// };
+// exports.endsLoading = URL => endsLoading(URL);
 
-/** currently loading? */
-function isIdle() {
-    return _.isEmpty(activeHosts);
-};
-//exports.isIdle = () => isIdle();
+// // unused
+// /** currently loading? */
+// function isIdle() {
+//     return _.isEmpty(activeHosts);
+// };
+// exports.isIdle = () => isIdle();
