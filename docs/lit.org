@@ -4086,6 +4086,8 @@
 
 	  - entkopple interface und implementierung
 
+	    - z.b. implementierung zur Laufzeit auswaehlen
+
     5) [@5] Verhaltensmuster
 
        6) [@6] Memento
@@ -10938,3 +10940,60 @@
        - more powerful than classic model
 
     1) Vererbung mit der Prototyp-Kette
+** MOVE [[./Security best practices in extensions - Mozilla | MDN.html]]
+*** summary
+    0) [@0]
+
+       some strict guidelines, some recommendations
+
+    1) Web content handling
+
+       - best: little privileges: https://developer.mozilla.org/En/Displaying_web_content_in_an_extension_without_security_issues
+
+       - privileges depend on origin
+
+	 - website: only that site
+
+	 - chrome: all
+
+	 - file: all files
+
+       - restrict via 
+
+	 #+BEGIN_SRC js
+           frame.docShell.allowImages = false;
+           frame.docShell.allowJavascript = false;
+           frame.docShell.allowPlugins = false;
+	 #+END_SRC
+
+       - Components.utils.evalInSandbox()
+
+    2) The sidebar: a use case
+
+       - iframe with _type="content"_ attribute sandboxes, blocks callbacks
+
+    3) Using eval() in an extension: don't
+
+    4) Sandboxed HTTP connections: prevents cookies, etc, see:
+
+    5) Handling of logins and passwords: Login Manager
+
+    6) APIs and other data handling
+
+       - https
+
+       - JSON: see https://developer.mozilla.org/En/Using_native_JSON
+
+       - certificates MUST NOT be self-signed
+
+    7) Remote JavaScript and Content: not in chrome context, use sandbox
+
+    8) evalInSandbox: look at doc, see also http://arantius.com/misc/greasemonkey/script-compiler
+
+    9) Third-party JavaScript:
+
+       - namespace
+
+       - trusted source
+
+    10) Conclusion: also http://blog.mozilla.com/security/

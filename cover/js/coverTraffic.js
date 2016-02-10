@@ -6,10 +6,9 @@ const { setTimeout } = require("sdk/timers");
 
 const coverUrl = require("./coverUrl.js");
 const stats = require("./stats.js");
-//const load = require("./load.js"); //td: old, remove
 
 // td: changeable by pref (slider?)
-/** overhead of dummy traffic -1, 1.5 has overhead of 50% */
+/** overhead of dummy traffic -1; 1.5 has overhead of 50% */
 const FACTOR = 1.5;
 
 var load;
