@@ -19,7 +19,7 @@ function loads(URL) {
 	activeHosts.push(URL.host);
 	coverTraffic.start();
     }
-};
+}
 exports.loads = URL => loads(URL);
 
 // // unused

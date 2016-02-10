@@ -42,14 +42,14 @@ function register(user) {
     callback = user;
     endObserver = createPageMod();
     httpRequestObserver.register();
-};
+}
 exports.register = user => register(user);
 
 /** shuts down watcher */
 function unregister() {
     httpRequestObserver.unregister();
     // how to delete endObserver?
-};    
+}
 exports.unregister = unregister;
 
 
@@ -68,4 +68,4 @@ function createPageMod(user) {
 	    });
 	}
     });
-};
+}

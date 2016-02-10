@@ -16,50 +16,52 @@ const REQUEST_LENGTH_MAX = 700;
 
 // td: refactor, remove "factor"
 /** @return expected size of html response * factor */
-var htmlSize = function(factor = 1) {
+function htmlSize(factor = 1) {
     return factor * lognormal_(HTML_MU, HTML_SIGMA);
 };
-exports.htmlSize = factor => htmlSize(factor);
+exports.htmlSize = (factor) => htmlSize(factor);
 
 /** @return expected size of embedded object response * factor */
-var embeddedObjectSize = function(factor = 1) {
+function embeddedObjectSize(factor = 1) {
     return factor * lognormal_(EMBEDDED_SIZE_MU, EMBEDDED_SIZE_SIGMA);
 }
-exports.embeddedObjectSize = factor => embeddedObjectSize(factor);
+exports.embeddedObjectSize = (factor) => embeddedObjectSize(factor);
 
-var numberEmbeddedObjects = function(factor = 2) {
-    return factor * gamma_(EMBEDDED_NUM_KAPPA, EMBEDDED_NUM_THETA);
+/** returns at least 1, at most ceil(factor * numEmbedded) */
+function numberEmbeddedObjects(factor=1) {
+    return Math.max(1, Math.ceil(factor * gamma_(EMBEDDED_NUM_KAPPA,
+						 EMBEDDED_NUM_THETA)));
 }
-exports.numberEmbeddedObjects = factor => numberEmbeddedObjects(factor);
+exports.numberEmbeddedObjects = (factor) => numberEmbeddedObjects(factor);
 
-var parsingTime = function() {
-    return lognormal_(PARSINGTIME_MU, PARSINGTIME_SIGMA);
-}
-exports.parsingTime = parsingTime;
+// // td: test if used
+// function parsingTime() {
+//     return lognormal_(PARSINGTIME_MU, PARSINGTIME_SIGMA);
+// }
+// exports.parsingTime = parsingTime;
 
-var requestLength = function() {
+function requestLength() {
     return uniform_(0, REQUEST_LENGTH_MAX);
 }
 exports.requestLength = requestLength;
 
-// td: rename
 /** returns true with a probability of <code>chance</code> (for chance
  * >1: always)*/
-var withProbability = function(chance) {
+function withProbability(chance) {
     return random.uniform01() < chance;
 }
 exports.withProbability = withProbability;
 
 // TESTING
 /** mean of lognormal_(HTML_MU, HTML_SIGMA) */
-var htmlMean = function() {
+function htmlMean() {
     return Math.exp(HTML_MU + HTML_SIGMA * HTML_SIGMA / 2);
-};
+}
 exports.htmlMean = htmlMean;
 /** mean of lognormal_(EMBEDDED_SIZE_MU, EMBEDDED_SIZE_SIGMA) */
-var embeddedObjectMean = function() {
+function embeddedObjectMean() {
     return Math.exp(EMBEDDED_SIZE_MU + EMBEDDED_SIZE_SIGMA * EMBEDDED_SIZE_SIGMA / 2);
-};
+}
 exports.embeddedObjectMean = embeddedObjectMean;
 
 
@@ -67,7 +69,7 @@ exports.embeddedObjectMean = embeddedObjectMean;
 /** sample from lognormal_ distribution */
 function lognormal_(mu, sigma) {
     return Math.exp(normal_(mu, sigma));
-};
+}
 
 /** sample from normal distribution */
 function normal_(mu, sigma) {
@@ -78,13 +80,13 @@ function normal_(mu, sigma) {
 	p2 = uniform_(-1, 1);
         p = p1 * p1 + p2 * p2;
     }
-    return mu + sigma * p1 * Math.sqrt(-2. * Math.log(p) / p);
-};
+    return mu + sigma * p1 * Math.sqrt(-2 * Math.log(p) / p);
+}
 
 /** sample from uniform distribution*/
 function uniform_(min, max) {
     return random.uniform01() * (max - min) + min;
-};
+}
 
 // code courtesy of "Computer Generation of Statistical Distributions"
 // sec 5.1.11 (with a = 0, b = theta, c = kappa)
@@ -105,4 +107,4 @@ function gamma_(kappa, theta) {
 	    }
 	}
     }
-};
+}

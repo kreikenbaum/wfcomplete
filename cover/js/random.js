@@ -1,4 +1,3 @@
-// pseudo-random string of length length (at least one)
 "use strict";
 
 exports.DOC = 'random.string and crypto-secure randomness';
@@ -18,8 +17,8 @@ function string(length) {
         text += possible.charAt(Math.floor(Math.random() * possible.length));
 
     return text;
-};
-exports.string = length => string(length);
+}
+exports.string = (length) => string(length);
 
 /**
 * uniform secure random number in [0, 1)
@@ -36,5 +35,5 @@ function uniform01() {
 
     var float = new Float64Array(buffer)[0] - 1;
     return float;
-};
+}
 exports.uniform01 = uniform01;

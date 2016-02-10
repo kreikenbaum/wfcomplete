@@ -6,27 +6,27 @@ exports.DOC = 'database of url and sizes';
 const _ = require("../lib/underscore-min.js");
 
 const debug = require("./debug.js");
-const random = require("js/random.js");
+const random = require("./random.js");
 const stats = require("./stats.js");
 // for debugging, use //var _ = require("../underscore.js");
 
-// TODO: (after it works) implement real URLs, not mlsec placeholders
-// TODO: (after it works) add urls and sizes from *cover* traffic
+// TD: (after it works) implement real URLs, not mlsec placeholders
+// TD: (after it works) add urls and sizes from *cover* traffic
 // TD: include bloom filter for real traffic urls (do not store, but bloom)
 // (only cover, not from user traffic), save at end, restore
 
-var contains = function(url) {
+function contains(url) {
     var index = URLS.indexOf(url);
     debug.traceLog(NAME + ': url: ' + url
 		   + ' indexof: ' + index  + ' return: ' + (index !== -1), this);
     return index !== -1;
-};
-exports.contains = url => contains(url); // td: obsolete this, then rename
-exports.includes = url => contains(url);
+}
+exports.contains = (url) => contains(url); // td: obsolete this, then rename
+exports.includes = (url) => contains(url);
 
 /** provides a url for an object with approximately the given size
  * @return {string} a URL pointing to object of more than size */
-var sized = function(size) {
+function sized(size) {
     if ( size > _.last(SIZES) ) {
 	debug.log("size " + size + " bigger than available urls");
 	return pad(_.last(URLS));
@@ -38,13 +38,13 @@ var sized = function(size) {
 
     // pad with random string
     return pad(URLS[_.sortedIndex(SIZES, size)])
-};
-exports.sized = size => sized(size);
+}
+exports.sized = (size) => sized(size);
 
 
 // PRIVATE
 /** @return {string} GET request url padded with random characters */
-var pad = function(url) {
+function pad(url) {
     var separator = ( _.contains(url, '?') ) ? '&' : '?';
     return url + separator + random.string(stats.requestLength() - url.length);
 }

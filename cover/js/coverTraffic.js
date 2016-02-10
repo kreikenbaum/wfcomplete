@@ -5,6 +5,7 @@ exports.DOC = 'creates cover traffic, up to predetermined parameters';
 const { setTimeout } = require("sdk/timers");
 
 const coverUrl = require("./coverUrl.js");
+const debug = require("./debug.js");
 const stats = require("./stats.js");
 
 // td: changeable by pref (slider?)
@@ -20,7 +21,7 @@ var prob_;
 function setLoader(load_param) {
     load = load_param;
 }
-exports.setLoader = load_param => setLoader(load_param);
+exports.setLoader = (load_param) => setLoader(load_param);
 
 /** a website is loaded by the user. covertraffic determines a target
  * feature vector and adds to the load to approximate the target.
@@ -33,11 +34,13 @@ function start() {
     pad_.html = stats.htmlSize(FACTOR) - site_.html;
     site_.num_embedded = stats.numberEmbeddedObjects(1); // td: see above
     pad_.num_embedded = stats.numberEmbeddedObjects(FACTOR) - site_.num_embedded;
-    prob_ = pad_.num_embedded / site_.num_embedded;
+    prob_ = Math.max(pad_.num_embedded / site_.num_embedded, 0);
 
     //    setTimeout(loadNext, stats.parsingTime());
     load.http(coverUrl.sized(pad_.html));
-};
+    debug.log("site_: " + JSON.stringify(site_));
+    debug.log("pad_: " + JSON.stringify(pad_));
+}
 exports.start = start;
 
 // td: timeout
@@ -53,5 +56,5 @@ function loadNext() {
     } else {
 	console.log("cover traffic empty, num: " + pad_.num_embedded);
     }
-};
+}
 exports.loadNext = loadNext;

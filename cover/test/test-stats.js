@@ -1,20 +1,46 @@
 "use strict";
 
-var stats = require("../js/stats.js");
+const stats = require("../js/stats.js");
+const sumAvg = require("./sum-avg.js");
 
 exports["test htmlMean"] = function(assert) {
-    var sum = 0;
-    for ( var i = 0; i < 10000; i++ ) {
-	sum += stats.htmlSize(1);
-    }
-    var mean = stats.htmlMean();
-    assert.ok(Math.abs((sum / 10000) - mean) < 1000,
-	      'mean: ' + mean + ' off:' + (sum/10000));
+    sumAvg.test(stats.htmlSize, 10000, stats.htmlMean(), 1000, assert);
+}
+
+exports["test htmlSize > 0"] = function(assert) {
+    var result = stats.htmlSize();
+    assert.ok(result > 0, 'htmlSize: ' + result + ' negative');
+}
+
+exports["test embeddedMean"] = function(assert) {
+    sumAvg.test(stats.embeddedObjectSize, 10000, stats.embeddedObjectMean(), 1000, 
+		assert);
+}
+
+exports["test embeddedObjectSize > 0"] = function(assert) {
+    var result = stats.embeddedObjectSize();
+    assert.ok(result > 0, 'embeddedObjectSize: ' + result + ' negative');
+}
+
+exports["test embeddedObjectNumber > 0"] = function(assert) {
+    var result = stats.numberEmbeddedObjects();
+    assert.ok(result >= 0, 'numberEmbeddedObjects: ' + result + ' negative');
+}
+
+exports["test embeddedObjectNumber is whole number"] = function(assert) {
+    var result = stats.numberEmbeddedObjects();
+    assert.ok(result % 1 === 0,
+	      'numberEmbeddedObjects: ' + result + ' not a whole number');
 }
 
 exports["test request length"] = function(assert) {
     var result = stats.requestLength();
     assert.ok(result <= 700, 'requestLength: ' + result + ' too big');
+}
+
+exports["test request length >0"] = function(assert) {
+    var result = stats.requestLength();
+    assert.ok(result >0, 'requestLength: ' + result + ' <= 0');
 }
 
 exports["test withProbability(>1)"] = function(assert) {

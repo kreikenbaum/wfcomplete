@@ -1,31 +1,35 @@
 "use strict";
 
 const random = require("../js/random.js");
+const sumAvg = require("./sum-avg.js");
 
-exports["test string"] = function(assert) {
-    assert.equal(random.string(94).length, 94,
-	      'failed, result ' + random.string(94)
-	      + ' has length ' + random.string(94).length);
-}
-exports["test string sized 0"] = function(assert) {
-    assert.equal(random.string(0).length, 1,
-	      'failed, result ' + random.string(0)
-	      + ' has length ' + random.string(0).length);
-}
+exports["test string len 94"] = function(assert) {
+    var result = random.string(94);
+    assert.equal(result.length, 94,
+		 'failed, result ' + result
+		 + ' has length ' + result.length);
+};
+exports["test string len 0"] = function(assert) {
+    var result = random.string(0);
+    assert.equal(result.length, 1,
+		 'failed, result ' + result
+		 + ' has length ' + result.length);
+};
 exports["test string repeat"] = function(assert) {
-    assert.notEqual(random.string(10), random.string(10).length,
-	      'failed, result ' + random.string(10)
-	      + ' equalled ' + random.string(10));
-}
+    var result = random.string(10);
+    var resultb = random.string(10);
+    assert.notEqual(result, resultb,
+		    'failed, result ' + result
+		    + ' equalled ' + resultb);
+};
+exports["test string len -5"] = function(assert) {
+    var result = random.string(-5);
+    assert.equal(result.length, 1,
+		 'failed, result ' + result
+		 + ' has length ' + result.length);
+};
 exports["test random uniform mean"] = function(assert) {
-    var sum = 0;
-    for ( var i = 0; i < 10000; i++ ) {
-	sum += random.uniform01();
-    }
-    
-    assert.ok(Math.abs(sum - 5000) < 200, 'failed, average: ' + (sum / 10000));
-}
-
-
+    sumAvg.test(random.uniform01, 100, 0.5, 0.2, assert);
+};
 
 require("sdk/test").run(exports);

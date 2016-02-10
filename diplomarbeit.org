@@ -37,8 +37,19 @@
     Tor introduced multiplexing, enough padding and latency into website
     retrieval that this attack was inapplicable.
 *** [[Hurdles to website fingerprinting]]
-*** TODO MOVE [[*Who%20could%20attack%20via%20WF][Who could attack via WF]]
-*** TODO MOVE [[Current defenses in Tor]]
+*** Who could attack via WF
+    As website fingerprinting requires very litte resources, a specific
+    attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
+    state.
+*** Current defenses in Tor
+    After the [[file:docs/lit.org::*%5B%5B./acmccs-wpes11-fingerprinting.pdf%5D%5BPanchenko%20-%20Website%20Fingerprinting%20in%20Onion%20Routing%20Based%20Anonymization%20Networks%5D%5D][Panchenko paper]], an additional no-cost defense [[experimental][was
+    implemented in the Tor-Browser-Bundle]]: Firefox's built-in request
+    pipelining was enabled with added request order randomization.
+
+    Thus, if Firefox would for example ordinarly request images 1 to 10,
+    in that order, the images are requested in random order, in batches
+    of random sizes.
+**** TODO link to implementation/details
 *** Capturing traces
 **** [[capture alternatives]]
 **** [[shell script]]
@@ -53,8 +64,20 @@
 ** TODO Developing Firefox Addons
 *** [[Mozilla Add-On Sdk]]
 *** Debugger
-*** TODO [[Available Data]]
-*** MOVE [[separation of scripts]]
+*** [[Available Data]]
+*** separation of scripts
+    As a security measure, there is a separation between
+
+    1) /add-on scripts/, which are run in the browser context, but
+       cannot access the web page, and
+    2) /content scripts/, which are run in the page context. They can
+       access the DOM, but not add-on scripts. nor
+    3) /page scripts/, which are those included in the website via
+       f.ex. =<script>= tags
+
+    Bridging this separation, f.ex. accessing page scripts (and vice
+    versa) is possible, but needs some extra work.
+**** LATER index: page scripts, content scripts, add-on scripts
 **** [[message-passing]]
 ** Addon Design and Implementation
 *** TODO [[Design]]
@@ -254,19 +277,6 @@
 * TODO tbb anti-wf modification
   - pipelining enabled
   - request order randomization
-* Current defenses in Tor
-  After the [[file:docs/lit.org::*%5B%5B./acmccs-wpes11-fingerprinting.pdf%5D%5BPanchenko%20-%20Website%20Fingerprinting%20in%20Onion%20Routing%20Based%20Anonymization%20Networks%5D%5D][Panchenko paper]], an additional no-cost defense [[experimental][was
-  implemented in the Tor-Browser-Bundle]]: Firefox's built-in request
-  pipelining was enabled with added request order randomization.
-
-  Thus, if Firefox would for example ordinarly request images 1 to 10,
-  in that order, the images are requested in random order, in batches
-  of random sizes.
-** TODO link to implementation/details
-* Who could attack via WF
-  As website fingerprinting requires very litte resources, a specific
-  attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
-  state.
 * TODO History of Website Fingerprinting
   The idea of using traffic analysis to analyse encrypted traffic was
   mentioned by Schneier and Wagner in 1997\cite{SSL}. The term /website
@@ -346,7 +356,7 @@
 ** TODO test that only HTML
 ** link page-worker
    developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html
-* TODO MOVE DOWN Installation and Use of jpm (the build tool)
+* TODO Installation and Use of Jpm (the build tool)
   (SDK-)addons can be built via the =jpm=-tool. It is available as a
   NodeJS-Module via the built-in NodeJS Package Manager =npm=.
 
@@ -400,19 +410,6 @@
   execution, stylesheet modification, etc.
 ** link page-mod
    http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
-* separation of scripts
-  As a security measure, there is a separation between
-
-  1) /add-on scripts/, which are run in the browser context, but
-     cannot access the web page, and
-  2) /content scripts/, which are run in the page context. They can
-     access the DOM, but not add-on scripts. nor
-  3) /page scripts/, which are those included in the website via
-     f.ex. =<script>= tags
-
-  Bridging this separation, f.ex. accessing page scripts (and vice
-  versa) is possible, but needs some extra work.
-** LATER index: page scripts, content scripts, add-on scripts
 * CHECK message-passing
   There is a mechanism to pass content from the add-on to the
   content scripts, as shown in the example.
@@ -513,13 +510,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   Both programs rely on the libpcap library for access to network
   packets.
 ** TODO subsubsect parts onto here, then subsect to [[*SECTION%20HOW%20TO%20CAPTURE%20TRACE%20FILES][SECTION HOW TO CAPTURE TRACE FILES]]
-* TODO MOVE TO UNUSED Sally installation
-  Sally is a tool to transfer text into points in a vector space.
-
-  It is installed on Ubuntu Vivid Vervet by following the official
-  instructions, then changing =vivid= in the file
-  =/etc/apt/sources.list.d/mlsec-ubuntu-sally-vivid.list= to
-  =devel=.
 * WAIT Cover add-on
   Defends against website fingerprinting by injecting artificial
   cover traffic into the communication.
@@ -979,6 +969,23 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - modified browser
   - selenium: daniel
   - plain tor bundle
+* TODO Available Data
+  Firefox offers several ways for an add-on to listen for web activity.
+
+  - contents of main page
+    \to links to each domain
+  - page-mod
+    - problems: only when page is loaded, problem for cover traffic
+    - but +: ends of all the loading (and processing)
+  [[file:git/docs/lit.org::*%5B%5B./Intercepting%20Page%20Loads%20-%20Mozilla%20|%20MDN.html%5D%5BIntercepting%20Page%20Loads%5D%5D][Intercepting Page Loads*]] lists several
+  - load events
+  - http observer
+  - webprogersslistener
+  - xpcom
+    - policymanager
+    - documentloader
+** each load of page
+** end of page load
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
@@ -3124,20 +3131,10 @@ mean = 0.763238095238
 
    This starts the Tor browser with marionette enabled.
 *** TODO marionette support page link
-* TODO Available Data
-  Firefox offers several ways for an add-on to listen for web activity.
+** Sally installation
+   Sally is a tool to transfer text into points in a vector space.
 
-  - contents of main page
-    \to links to each domain
-  - page-mod
-    - problems: only when page is loaded, problem for cover traffic
-    - but +: ends of all the loading (and processing)
-  [[file:git/docs/lit.org::*%5B%5B./Intercepting%20Page%20Loads%20-%20Mozilla%20|%20MDN.html%5D%5BIntercepting%20Page%20Loads%5D%5D][Intercepting Page Loads*]] lists several
-  - load events
-  - http observer
-  - webprogersslistener
-  - xpcom
-    - policymanager
-    - documentloader
-** each load of page
-** end of page load
+   It is installed on Ubuntu Vivid Vervet by following the official
+   instructions, then changing =vivid= in the file
+   =/etc/apt/sources.list.d/mlsec-ubuntu-sally-vivid.list= to
+   =devel=.

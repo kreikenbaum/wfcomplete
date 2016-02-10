@@ -10,7 +10,11 @@ function http(toLoad) {
     require("sdk/page-worker").Page({
 	contentURL: toLoad
     });
-};
-exports.http = toLoad => http(toLoad);
+}
+exports.http = (toLoad) => http(toLoad);
 
-
+// td: use this
+function sized(size) {
+    http(require("./coverUrl.js").sized(size));
+}
+exports.sized = (size) => sized(size);
