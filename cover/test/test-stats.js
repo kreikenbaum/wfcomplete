@@ -4,7 +4,8 @@ const stats = require("../js/stats.js");
 const sumAvg = require("./sum-avg.js");
 
 exports["test htmlMean"] = function(assert) {
-    sumAvg.test(stats.htmlSize, 10000, stats.htmlMean(), 1000, assert);
+    sumAvg.test(stats.htmlSize, 10000,
+		stats.htmlMean(), 0.2 * stats.htmlMean(), assert);
 }
 
 exports["test htmlSize > 0"] = function(assert) {
@@ -13,7 +14,8 @@ exports["test htmlSize > 0"] = function(assert) {
 }
 
 exports["test embeddedMean"] = function(assert) {
-    sumAvg.test(stats.embeddedObjectSize, 10000, stats.embeddedObjectMean(), 1000, 
+    sumAvg.test(stats.embeddedObjectSize, 20000,
+		stats.embeddedObjectMean(), 0.3 * stats.embeddedObjectMean(),
 		assert);
 }
 

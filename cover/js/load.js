@@ -2,6 +2,8 @@
 
 exports.DOC = 'loads pages over HTTP(S)';
 
+const debug = require("./debug.js");
+
 // td: extract links for further cover traffic
 // td: report size for cover traffic
 // needs RequestPolicy to be disabled
@@ -10,6 +12,7 @@ function http(toLoad) {
     require("sdk/page-worker").Page({
 	contentURL: toLoad
     });
+    debug.log("load: http(" + toLoad + ")");
 }
 exports.http = (toLoad) => http(toLoad);
 
