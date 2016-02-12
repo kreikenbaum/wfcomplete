@@ -4043,6 +4043,360 @@
        - trusted source
 
     10) Conclusion: also http://blog.mozilla.com/security/
+** [[./cacr2015-08.pdf][Wang - Walkie-Talkie: An Effective and Efficient Defense against Website Fingerprinting]]
+*** summary
+    0) [@0] ABSTRACT
+
+       other defenses: too much time: 1/2 minute wait
+
+       here: half-duplex
+
+       9% time, 32% bw \to 5 % fpr
+
+       9% time (?), 55% bw \to 10%fpr
+
+    1) INTRODUCTION
+
+       - tor breakable by wf
+
+       - walkie-talkie: half-duplex defense, against perfect attacker
+
+    2) RELATED WORK
+
+       0) [@0]
+
+	  1998 wf first mentioned
+
+       1) Attacks
+
+	  evolution
+
+       2) Defenses
+
+	  0) [@0]
+
+	     - limited: against specific WF attack
+
+	     - general: against perfectly accurate attacker
+
+	  1) Limited defenses
+
+	     - Wright's morphing
+
+	       - addressed Liberatore and Levine's attack (relies on
+                 unique packet lengths)
+
+	       - randomly padded packets
+
+	       - broken by effective's packet ordering attack
+
+	     - Luo's HTTPOS
+
+	       - broken by touching and effective
+
+	     - Tor's randomised pipelining
+
+	       - updated in critique
+
+	       - both versions ineffective as of touching, effective
+                 and "improved wf on tor"
+
+	  2) General defenses
+
+	     - "different web pages should, with sufficient
+               likelihood, produce the exact same packet sequence."
+
+	     - Dyer: BuFLO: fixed, constant rate, dummy packets
+
+	       - padded upt o 10 seconds
+
+	     - Cai: Tamaraw
+
+	     - Wang: Supersequence
+
+       3) Moving Forward
+
+	  - Problems:
+
+	    - Overhead:
+
+	      - time 170% to 240%
+
+	      - bandwdith 90% to 180%
+
+	    - Congestion:
+
+	      - not congestion-aware
+
+	  - Solution: half-duplex communication
+
+    3) IMPLEMENTING HALF-DUPLEX COMMUNICATION
+
+       0) [@0]
+	  - half-duplex:
+
+	    - bursts by each side
+
+	    - small time overhead
+
+	    - no bandwidth overhead
+
+	    - easy to implement
+
+       1) How browsers work
+
+	  - HTTP: client connects, retrieves or sends data
+
+	  - Firefox (other browsers similar): connectionmanager uses
+            up to fixed maximum of connections, sends requests via
+            these
+
+	  - for half-duplex: modify connection manager
+
+       2) Implementing half-duplex communication
+
+	  - walkie: idle
+
+	  - talkie: sent data, receiving replies
+
+	  - proof:
+
+	    - client sends only when no active connections, \to server not talking
+
+	    - server talking: client sends no data \to client not talking
+
+       3) Optimistic data
+
+	  - sending TCP connection request and GET at the same time
+
+	    - one less RTT
+
+	    - reduces number of bursts, thus padding
+
+       4) Other Implementation Details
+
+	  - pipelining disabled
+
+	  - tls: delay, but not a weakness
+
+	  - speculative connections: disabled
+
+    4) PADDING
+
+       0) [@0]
+
+	  - assume padding of data
+
+	  - half-duplex reduces further to number of packets in each
+            burst [+timing?]
+
+	    to burst pair (incoming number, outgoing number)
+
+	  - perfect attacker can detect except for collision
+
+       1) Deterministic Padding
+
+	  - round_Y(a) up to rounding set Y
+
+	  - pad number of bursts to round_Y(bursts)
+
+	  - overhead-optimal rounding set by algorithm
+
+	  - randomized test 2 \le |Y| \le 9
+
+       2) Random padding
+
+	  - client and cooperator send dummy packets when request has
+            started
+
+	  - adding from uniform distribution to real burst
+
+	  - adding from (test uniform and normal)
+
+    5) EVALUATION
+
+       0) [@0]
+
+	  test against known attacks
+
+	  expect perfect attacker, which can do perfect table lookup
+
+       1) Evaluation of deterministic defenses
+
+	  - "The objective of the defense is to maximize collisions."
+
+	  - "To classify any sequence belonging to c, the attacker’s
+            optimal strategy (optimizing accuracy) is to guess that
+            all elements in the collision set belong to the class with
+            the highest rate of occurrence in that set. The attacker’s
+            overall accuracy over c is therefore max_{i} n_{i} /|c|.
+
+       2) Evaluation of random defenses
+
+	  - determine maximum probability instead of "highest rate of
+            occurrence"
+
+       3) Overhead
+
+	  - bandwidth in %: dummy / real packets
+
+	  - time
+
+    6) RESULTS
+
+       1) Data Collection
+
+	  - modified tor browser
+
+	  - top 100 a 90 as monitored
+
+	  - next 10000 as non-monitored
+
+	  - drop \le 50 cells
+
+	  - no padding
+
+       2) Walkie-Talkie results
+
+	  - 3 ways of adding bursts
+
+	    - nofake: none
+
+	    - normal: normal distribution
+
+	    - uniform: uniform distribution
+
+	    - and also deterministic padding
+
+	  - perfect attacker
+
+	  - uniform padding best
+
+	  - overhead 35% \to fpr 5%, 55% \to fpr 10%
+
+       3) Comparison with previous defenses
+
+	  morphing (other form) and padding (more traffic)
+
+	  1) Morphing
+
+	     - time overhead 8.5%
+
+	       - rtt dominates
+
+	     - more realistic than supersequence/tamaraw
+
+	  2) Padding
+
+	     - wt has way less time overhead and much less bandwidth
+               overhead than tamaraw/supersequence
+
+       4) Performance against known attacks
+
+	  - none comes close to theoretical maximum
+
+	  - different amounts of padding (\to bandwidth) (none, low, high)
+
+    7) ALTERNATIVE DEFENSES
+
+       without generality (only against kNN), without ease-of-use
+       (only select sites), without decentralization (with database)
+
+       1) Without generality
+
+	  half-duplex with inserted dummy packets works well against knn
+
+       2) Without ease of use
+
+	  select some pages to shield
+
+	  for each page: supersequence of most traces, then popular
+          page which is supersequence of this supersequence
+
+	  failure rate 4% \pm 3%
+
+       3) Without decentralization
+
+	  - save packet sequences for each page
+
+	  - computer supersequences in advance
+
+	  - 5% \to only 90% accuracy
+
+	    - yet some pages undefended
+
+    8) DISCUSSION
+
+       1. reproducibility
+
+          code downloadable
+
+       2. timing\
+
+          left out
+
+          1. no research has shown benefits
+
+          2. different network conditions
+
+          3. changes in circuit changes avery x minutes
+
+          4. many users with different access speeds pose a problem
+
+    9) Conclusion
+
+       - easy-to use efficient,
+
+       - tamaraw, supersequence too much
+
+       - better when conditions relaxed
+*** quotes
+    - design goals:
+      1. General: The defense succeeds against all possible
+         classification attacks by causing collisions, where the
+         defense outputs the same packet sequence given input packet
+         sequences from different web pages. Even a perfect attacker
+         would not be able to tell which page it came from.
+      2. Easy to use: The client does not need to configure the
+         defense. The defense is ready to use out of the box, and can
+         be deployed incrementally as it does not depend on other
+         clients using the same defense.
+      3. Decentralized: The defense should not require some central
+         server, with a shared database, to operate. We want to match
+         the decentralized model of anonymity networks.
+    - (ends 1)
+    - Half-duplex communication reduces the attacker’s potential
+      feature set to only a series of burst traffic sizes, which makes
+      WF difficult.
+    - (ends 2/3?)
+    - The client adds outgoing dummy packets, while a cooperator adds
+      incoming dummy packets.
+    - Due to the low base rate of visits to each single web page, a
+      client protecting her page accesses against an attacker may only
+      need a false positive rate over 5% [18,21] even if the
+      attacker’s true positive rate was 100%.
+    - (ends 4.0-6.1)
+    - If the attacker categorized a monitored page as a different
+      monitored page, we count it as a false positive
+    - (ends 6.2)
+    - designing a defense that specifically defeats the
+      state-of-the-art attack is a flawed approach.
+    - (ends 7.1)
+*** questions
+    - Further, we assume this encrypted channel pads all packets to a
+      fixed size so as to remove packet size as a possible
+      feature. (Note that Tor delivers all data in fixed-size cells.)
+
+      How about other cells? Are they irrelevant?
+
+      Probably, as they are only the versions, tls, etc
+
+      Maybe not, handshake etc...
+    - client reduces the attacker’s possible feature set even further,
+      to simply counts for thenumber of packets in each burst of
+      traffic.
+
+      How about timing data?
 ** TODO [#A] Entwurfsmuster
 *** summary
     0) [@0] Preface
@@ -4807,352 +5161,6 @@
     - *In C++* sind statische Member-Funktionen zudem niemals
       virtuell, so dass Unterklassen sie nicht polymorph
       ueberschreiben koennen.
-** TODO [#A] [[./cacr2015-08.pdf][Wang - Walkie-Talkie: An Effective and Efficient Defense against Website Fingerprinting]]
-*** summary
-    0) [@0] ABSTRACT
-
-       other defenses: too much time: 1/2 minute wait
-
-       here: half-duplex
-
-       9% time, 32% bw \to 5 % fpr
-
-       9% time (?), 55% bw \to 10%fpr
-
-    1) INTRODUCTION
-
-       - tor breakable by wf
-
-       - walkie-talkie: half-duplex defense, against perfect attacker
-
-    2) RELATED WORK
-
-       0) [@0]
-
-	  1998 wf first mentioned
-
-       1) Attacks
-
-	  evolution
-
-       2) Defenses
-
-	  0) [@0]
-
-	     - limited: against specific WF attack
-
-	     - general: against perfectly accurate attacker
-
-	  1) Limited defenses
-
-	     - Wright's morphing
-
-	       - addressed Liberatore and Levine's attack (relies on
-                 unique packet lengths)
-
-	       - randomly padded packets
-
-	       - broken by effective's packet ordering attack
-
-	     - Luo's HTTPOS
-
-	       - broken by touching and effective
-
-	     - Tor's randomised pipelining
-
-	       - updated in critique
-
-	       - both versions ineffective as of touching, effective
-                 and "improved wf on tor"
-
-	  2) General defenses
-
-	     - "different web pages should, with sufficient
-               likelihood, produce the exact same packet sequence."
-
-	     - Dyer: BuFLO: fixed, constant rate, dummy packets
-
-	       - padded upt o 10 seconds
-
-	     - Cai: Tamaraw
-
-	     - Wang: Supersequence
-
-       3) Moving Forward
-
-	  - Problems:
-
-	    - Overhead:
-
-	      - time 170% to 240%
-
-	      - bandwdith 90% to 180%
-
-	    - Congestion:
-
-	      - not congestion-aware
-
-	  - Solution: half-duplex communication
-
-    3) IMPLEMENTING HALF-DUPLEX COMMUNICATION
-
-       0) [@0]
-	  - half-duplex:
-
-	    - bursts by each side
-
-	    - small time overhead
-
-	    - no bandwidth overhead
-
-	    - easy to implement
-
-       1) How browsers work
-
-	  - HTTP: client connects, retrieves or sends data
-
-	  - Firefox (other browsers similar): connectionmanager uses
-            up to fixed maximum of connections, sends requests via
-            these
-
-	  - for half-duplex: modify connection manager
-
-       2) Implementing half-duplex communication
-
-	  - walkie: idle
-
-	  - talkie: sent data, receiving replies
-
-	  - proof:
-
-	    - client sends only when no active connections, \to server not talking
-
-	    - server talking: client sends no data \to client not talking
-
-       3) Optimistic data
-
-	  - sending TCP connection request and GET at the same time
-
-	    - one less RTT
-
-	    - reduces number of bursts, thus padding
-
-       4) Other Implementation Details
-
-	  - pipelining disabled
-
-	  - tls: delay, but not a weakness
-
-	  - speculative connections: disabled
-
-    4) PADDING
-
-       0) [@0]
-
-	  - assume padding of data
-
-	  - half-duplex reduces further to number of packets in each
-            burst [+timing?]
-
-	    to burst pair (incoming number, outgoing number)
-
-	  - perfect attacker can detect except for collision
-
-       1) Deterministic Padding
-
-	  - round_Y(a) up to rounding set Y
-
-	  - pad number of bursts to round_Y(bursts)
-
-	  - overhead-optimal rounding set by algorithm
-
-	  - randomized test 2 \le |Y| \le 9
-
-       2) Random padding
-
-	  - client and cooperator send dummy packets when request has
-            started
-
-	  - adding from uniform distribution to real burst
-
-	  - adding from (test uniform and normal)
-
-    5) EVALUATION
-
-       0) [@0]
-
-	  test against known attacks
-
-	  expect perfect attacker, which can do perfect table lookup
-
-       1) Evaluation of deterministic defenses
-
-	  - "The objective of the defense is to maximize collisions."
-
-	  - "To classify any sequence belonging to c, the attacker’s
-            optimal strategy (optimizing accuracy) is to guess that
-            all elements in the collision set belong to the class with
-            the highest rate of occurrence in that set. The attacker’s
-            overall accuracy over c is therefore max_{i} n_{i} /|c|.
-
-       2) Evaluation of random defenses
-
-	  - determine maximum probability instead of "highest rate of
-            occurrence"
-
-       3) Overhead
-
-	  - bandwidth in %: dummy / real packets
-
-	  - time
-
-    6) RESULTS
-
-       1) Data Collection
-
-	  - modified tor browser
-
-	  - top 100 a 90 as monitored
-
-	  - next 10000 as non-monitored
-
-	  - drop \le 50 cells
-
-	  - no padding
-
-       2) Walkie-Talkie results
-
-	  - 3 ways of adding bursts
-
-	    - nofake: none
-
-	    - normal: normal distribution
-
-	    - uniform: uniform distribution
-
-	    - and also deterministic padding
-
-	  - perfect attacker
-
-	  - uniform padding best
-
-	  - overhead 35% \to fpr 5%, 55% \to fpr 10%
-
-       3) Comparison with previous defenses
-
-	  morphing (other form) and padding (more traffic)
-
-	  1) Morphing
-
-	     - time overhead 8.5%
-
-	       - rtt dominates
-
-	     - more realistic than supersequence/tamaraw
-
-	  2) Padding
-
-	     - wt has way less time overhead and much less bandwidth
-               overhead than tamaraw/supersequence
-
-       4) Performance against known attacks
-
-	  - none comes close to theoretical maximum
-
-	  - different amounts of padding (\to bandwidth) (none, low, high)
-
-    7) ALTERNATIVE DEFENSES
-
-       without generality (only against kNN), without ease-of-use
-       (only select sites), without decentralization (with database)
-
-       1) Without generality
-
-	  half-duplex with inserted dummy packets works well against knn
-
-       2) Without ease of use
-
-	  select some pages to shield
-
-	  for each page: supersequence of most traces, then popular
-          page which is supersequence of this supersequence
-
-	  failure rate 4% \pm 3%
-
-       3) Without decentralization
-
-	  - save packet sequences for each page
-
-	  - computer supersequences in advance
-
-	  - 5% \to only 90% accuracy
-
-	    - yet some pages undefended
-
-    8) DISCUSSION
-
-       1. reproducibility
-
-          code downloadable
-
-       2. timing\
-
-          left out
-
-          1. no research has shown benefits
-
-          2. different network conditions
-
-          3. changes in circuit changes avery x minutes
-
-          4. many users with different access speeds pose a problem
-*** quotes
-    - design goals:
-      1. General: The defense succeeds against all possible
-         classification attacks by causing collisions, where the
-         defense outputs the same packet sequence given input packet
-         sequences from different web pages. Even a perfect attacker
-         would not be able to tell which page it came from.
-      2. Easy to use: The client does not need to configure the
-         defense. The defense is ready to use out of the box, and can
-         be deployed incrementally as it does not depend on other
-         clients using the same defense.
-      3. Decentralized: The defense should not require some central
-         server, with a shared database, to operate. We want to match
-         the decentralized model of anonymity networks.
-    - (ends 1)
-    - Half-duplex communication reduces the attacker’s potential
-      feature set to only a series of burst traffic sizes, which makes
-      WF difficult.
-    - (ends 2/3?)
-    - The client adds outgoing dummy packets, while a cooperator adds
-      incoming dummy packets.
-    - Due to the low base rate of visits to each single web page, a
-      client protecting her page accesses against an attacker may only
-      need a false positive rate over 5% [18,21] even if the
-      attacker’s true positive rate was 100%.
-    - (ends 4.0-6.1)
-    - If the attacker categorized a monitored page as a different
-      monitored page, we count it as a false positive
-    - (ends 6.2)
-    - designing a defense that specifically defeats the
-      state-of-the-art attack is a flawed approach.
-    - (ends 7.1)
-*** questions
-    - Further, we assume this encrypted channel pads all packets to a
-      fixed size so as to remove packet size as a possible
-      feature. (Note that Tor delivers all data in fixed-size cells.)
-
-      How about other cells? Are they irrelevant?
-
-      Probably, as they are only the versions, tls, etc
-
-      Maybe not, handshake etc...
-    - client reduces the attacker’s possible feature set even further,
-      to simply counts for thenumber of packets in each burst of
-      traffic.
-
-      How about timing data?
 ** TODO [#A] [[./HTTP Traffic Model_v1 1 white paper.pdf]]
 *** summary
     0) [@0] ABSTRACT
@@ -5274,6 +5282,12 @@
           - 1.5%of html average size
 
           - model number of consecutive hits
+
+    6) VALIDATION
+
+       - test via HTML IAT (only)
+
+    7) CONCLUSIONS
 *** quotes
     - the actual packet inter-arrival time (IAT) is governed by
       specific conditions that existed in the internet when the trace
@@ -5307,10 +5321,74 @@
 
        - more accurate
 
-       - still problematic
+       - still inherently (?) problematic
 
     1) INTRODUCTION
+
+       - anonymity services for censorship circumvention and freedom
+         of expression
+
+       - local attacker one of the weakest adversaries
+
+       - traffic analysis, infer information about the content by
+         observing data flow
+
+       - novel attack: "cumulative behvioral representation"
+
+       - 300,000 webpages, not only index pages
+
+       - alexa plus others, twitter links, exit node
+
+       - webpage very hard, website may be possible
+
+       - contributions
+
+	 1) novel attack
+
+	 2) dataset
+
+	 3) page vs site
+
+    2) BACKGROUND
+
+	
+
+
 *** quotes
+** TODO [#A] [[./JavaScript Garden.html]]
+*** summary
+    1) Objects
+
+       1) Object Usage and Properties
+
+    2) Functions
+
+       5) [@5] Constructors
+
+	  1) Basics
+
+	     - any function with =new=
+
+	     - sets =this= and Object.prototype to prototype
+
+	     - returns =this= if no obect given
+
+	  2) Factories
+
+	     - return object, =new= unimportant, allows for information hiding
+
+	     - does not affect prototype
+
+	  3) Creating New Objects via Factories
+
+	     - uses more memory (no prototypes)
+
+	     - inheritance harder
+
+	     - "contrary to spirity of the language"
+
+       6) Scopes and Namespaces
+** TODO [#A] [[./Javascript Closures.prototype_chain.html][Javascript Closures]]
 ** TODO [#B] [[./ShWa-Timing06.pdf][Timing analysis in low-latency mix networks: attacks and defenses]]
 *** summary
     0) [@0] Abstract
