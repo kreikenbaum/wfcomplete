@@ -1,11 +1,10 @@
 "use strict";
-
-exports.DOC = 'loads pages over HTTP(S)';
+/**
+* @fileoverview loads pages over HTTP(S)
+*/
 
 const debug = require("./debug.js");
 
-// td: extract links for further cover traffic
-// td: report size for cover traffic
 // needs RequestPolicy to be disabled
 /** @param toLoad load this url as cover (discarded afterwards) */
 function http(toLoad) {
