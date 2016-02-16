@@ -18,6 +18,7 @@ var activeHosts = {};
 // td: timeout or endsLoading
 /** user starts loading url */
 function loads(URL) {
+    debug.log("user: loads(" + URL + ")");
     if ( _.contains(activeHosts, URL.host) ) { // has already started
 	activeHosts[URL.host].loadNext();
     } else {
@@ -30,6 +31,10 @@ function loads(URL) {
 }
 exports.loads = URL => loads(URL);
 
+function endsLoading(URL) {
+    debug.log('user: endsLoading('+URL.host+') NOT IMPLEMENTED');
+};
+exports.endsLoading = URL => endsLoading(URL);
 // // unused
 // /** user ends loading url */
 // function endsLoading(URL) {

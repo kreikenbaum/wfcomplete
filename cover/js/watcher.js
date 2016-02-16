@@ -3,6 +3,8 @@
 exports.DOC = 'signals on user action';
 
 const {Cc, Ci} = require("chrome");
+const pageMod = require("sdk/page-mod");
+
 const coverUrl = require("./coverUrl.js");
 const debug = require("./debug.js");
 

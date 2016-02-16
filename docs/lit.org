@@ -4397,6 +4397,168 @@
       traffic.
 
       How about timing data?
+** [[./HTTP Traffic Model_v1 1 white paper.pdf][A NEW TRAFFIC MODEL FOR CURRENT USER WEB BROWSING BEHAVIOR]]
+*** summary
+    0) [@0] ABSTRACT
+
+       - squid log analyzer
+
+       - well-matching http model and generator
+
+    1) INTRODUCTION
+
+       - previous data limited
+
+       - need for privacy-aware data gathering
+
+	 - +: constant updates of data
+
+       - new model
+
+    2) RELATED WORKS
+
+       - empirical: web page
+
+       - web request
+
+       - based on TCP/IP headers (problem: top level vs embedded)
+
+       - distinguish user clicks
+
+    3) HTTP TRAFFIC MODELING OVERVIEW
+
+       - on and off
+
+       - boundary: web request
+
+	 - 1 second: user can blick before that
+
+	 - user action: not possible to distinguish
+
+	 - referer: can be used for both cases, is optional
+
+    4) MODELING METHODOLOGY
+
+       squid logs
+
+       1) Traffic Parsing
+
+	  - browser cache not modeled, unclear (but also irrelevant)
+
+	  - cache files: time logged to end of sending (not receipt) \to algo
+
+	  - privacy filtered (url out, except for file extension)
+
+	  - separated by client-IP
+
+	  - each "http session" has parameters computed
+
+	  - fitted with lognormal, weibull, exponential, gamma,
+            generalized pareto,
+
+	    - selected by log-likelihood and finite parameters
+
+       2) Response Arrival Time
+
+	  - algorithm for time, dependent on MTU < L < 10*MTU
+
+       3) HTTP Session
+
+	  - browsing session, after about 2:45 hrs
+
+       4) Web-Request
+
+	  - session = series of Web-Requests
+
+	  - Web-Request: HTML + [embedded]+
+
+	    - next HTML ends
+
+	    - parallelism consciously ignored
+
+	  - embedded IAT, parsing time bounded by 5 minutes (TCP session)
+
+	  - HTML by Content-type || file-ending: html/htm, cgi, asp,
+            sml, stm, php, '/'
+
+	  - see quotes-table
+
+    5) MODEL AND ANALYSIS RESULT
+
+       1) Model Parameters
+
+	  0) [@0] details about specific parameters in detail
+
+	  1) /HTML object size/ and /Embedded object size/
+
+	     - embedded bigger than html
+
+	  2) Number of embedded objects
+
+	     - same as before, maybe due to cacheing
+
+	  3) Parsing time: between HTML *arrival* and first object *arrival*
+
+	  4) Embedded Object Interarrival time: between object *arrivals*
+
+	  5) Reading time: arrival last object to arrival new HTML object
+
+	  6) HTML object IAT: between two html objects (validation param)
+
+	  7) request size: size of http requests
+
+       2) Caching Model
+
+          - identified by http 304
+
+          - only 190 bytes on average
+
+          - 16% cached of all requests
+
+          - 1.5%of html average size
+
+          - model number of consecutive hits
+
+    6) VALIDATION
+
+       - test via HTML IAT (only)
+
+    7) CONCLUSIONS
+
+       - changes in user behavior
+
+	 - video streaming increases embedded object size
+
+	 - less IAT reading times: high speed networks, caching, proxies, ...
+
+       - no packet data, thus no timing,
+
+	 - believe to be fair
+*** quotes
+    - the actual packet inter-arrival time (IAT) is governed by
+      specific conditions that existed in the internet when the trace
+      was collected and are unique in that context.
+    - (ends 1+2)
+    - Typically, HTTP traffic is modeled as an ON/OFF source with the
+      ON state corresponding to the request and download of the
+      objects and the OFF state corresponding to the inactive time.
+    - It is possible that the ON state lasts over multiple Web-Request
+      periods when the downloading of the last embedded object and the
+      next HTML object overlaps.
+    - (ends 3)
+    - Table 2: Analysis Result of HTTP Model Parameters
+      | Parameters    | Mean            |   S.D. | Best Fit                     |
+      |---------------+-----------------+--------+------------------------------|
+      | <13>          | <15>            |        | <28>                         |
+      | HTML Object size | 11872 (Max 2MB) |  38306 | Truncated Lognormal (μ=7.90272, σ=1.7643) |
+      | Embedded ObjectSize | 12460 (Max 6MB) | 116050 | Truncated Lognormal (μ=7.51384, σ 2.17454) |
+      | Number of Embedded objects | 5.07 (Max 300)  |        | Gamma (κ=0.141385, θ=40.3257) |
+      | Parsing Time  | 3.12 (median 0.30)(max 300 sec) |  14.21 | Truncated Lognormal (μ=-1.24892, σ=2.08427) |
+      | Embedded Object IAT | 0.83            |    8.4 | Weibull (α=0.2089, β=0.376)  |
+      | Reading Time  | 39.70 (max 10,000 sec) | 324.92 | Lognormal (μ=-0.495204, σ=2.7731) |
+      | Request Size  | 318.59          | 179.46 | Uniform (350 Bytes)          |
+*** questions
+    - correlation of features (high object count \to high page size)
 ** TODO [#A] Entwurfsmuster
 *** summary
     0) [@0] Preface
@@ -5161,168 +5323,6 @@
     - *In C++* sind statische Member-Funktionen zudem niemals
       virtuell, so dass Unterklassen sie nicht polymorph
       ueberschreiben koennen.
-** MOVE [[./HTTP Traffic Model_v1 1 white paper.pdf]]
-*** summary
-    0) [@0] ABSTRACT
-
-       - squid log analyzer
-
-       - well-matching http model and generator
-
-    1) INTRODUCTION
-
-       - previous data limited
-
-       - need for privacy-aware data gathering
-
-	 - +: constant updates of data
-
-       - new model
-
-    2) RELATED WORKS
-
-       - empirical: web page
-
-       - web request
-
-       - based on TCP/IP headers (problem: top level vs embedded)
-
-       - distinguish user clicks
-
-    3) HTTP TRAFFIC MODELING OVERVIEW
-
-       - on and off
-
-       - boundary: web request
-
-	 - 1 second: user can blick before that
-
-	 - user action: not possible to distinguish
-
-	 - referer: can be used for both cases, is optional
-
-    4) MODELING METHODOLOGY
-
-       squid logs
-
-       1) Traffic Parsing
-
-	  - browser cache not modeled, unclear (but also irrelevant)
-
-	  - cache files: time logged to end of sending (not receipt) \to algo
-
-	  - privacy filtered (url out, except for file extension)
-
-	  - separated by client-IP
-
-	  - each "http session" has parameters computed
-
-	  - fitted with lognormal, weibull, exponential, gamma,
-            generalized pareto,
-
-	    - selected by log-likelihood and finite parameters
-
-       2) Response Arrival Time
-
-	  - algorithm for time, dependent on MTU < L < 10*MTU
-
-       3) HTTP Session
-
-	  - browsing session, after about 2:45 hrs
-
-       4) Web-Request
-
-	  - session = series of Web-Requests
-
-	  - Web-Request: HTML + [embedded]+
-
-	    - next HTML ends
-
-	    - parallelism consciously ignored
-
-	  - embedded IAT, parsing time bounded by 5 minutes (TCP session)
-
-	  - HTML by Content-type || file-ending: html/htm, cgi, asp,
-            sml, stm, php, '/'
-
-	  - see quotes-table
-
-    5) MODEL AND ANALYSIS RESULT
-
-       1) Model Parameters
-
-	  0) [@0] details about specific parameters in detail
-
-	  1) /HTML object size/ and /Embedded object size/
-
-	     - embedded bigger than html
-
-	  2) Number of embedded objects
-
-	     - same as before, maybe due to cacheing
-
-	  3) Parsing time: between HTML *arrival* and first object *arrival*
-
-	  4) Embedded Object Interarrival time: between object *arrivals*
-
-	  5) Reading time: arrival last object to arrival new HTML object
-
-	  6) HTML object IAT: between two html objects (validation param)
-
-	  7) request size: size of http requests
-
-       2) Caching Model
-
-          - identified by http 304
-
-          - only 190 bytes on average
-
-          - 16% cached of all requests
-
-          - 1.5%of html average size
-
-          - model number of consecutive hits
-
-    6) VALIDATION
-
-       - test via HTML IAT (only)
-
-    7) CONCLUSIONS
-
-       - changes in user behavior
-
-	 - video streaming increases embedded object size
-
-	 - less IAT reading times: high speed networks, caching, proxies, ...
-
-       - no packet data, thus no timing,
-
-	 - believe to be fair
-*** quotes
-    - the actual packet inter-arrival time (IAT) is governed by
-      specific conditions that existed in the internet when the trace
-      was collected and are unique in that context.
-    - (ends 1+2)
-    - Typically, HTTP traffic is modeled as an ON/OFF source with the
-      ON state corresponding to the request and download of the
-      objects and the OFF state corresponding to the inactive time.
-    - It is possible that the ON state lasts over multiple Web-Request
-      periods when the downloading of the last embedded object and the
-      next HTML object overlaps.
-    - (ends 3)
-    - Table 2: Analysis Result of HTTP Model Parameters
-      | Parameters    | Mean            |   S.D. | Best Fit                     |
-      |---------------+-----------------+--------+------------------------------|
-      | <13>          | <15>            |        | <28>                         |
-      | HTML Object size | 11872 (Max 2MB) |  38306 | Truncated Lognormal (μ=7.90272, σ=1.7643) |
-      | Embedded ObjectSize | 12460 (Max 6MB) | 116050 | Truncated Lognormal (μ=7.51384, σ 2.17454) |
-      | Number of Embedded objects | 5.07 (Max 300)  |        | Gamma (κ=0.141385, θ=40.3257) |
-      | Parsing Time  | 3.12 (median 0.30)(max 300 sec) |  14.21 | Truncated Lognormal (μ=-1.24892, σ=2.08427) |
-      | Embedded Object IAT | 0.83            |    8.4 | Weibull (α=0.2089, β=0.376)  |
-      | Reading Time  | 39.70 (max 10,000 sec) | 324.92 | Lognormal (μ=-0.495204, σ=2.7731) |
-      | Request Size  | 318.59          | 179.46 | Uniform (350 Bytes)          |
-*** questions
-    - correlation of features (high object count \to high page size)?
 ** TODO [#A] [[./ndss16-wfp-internet-scale.pdf][Website Fingerprinting at Internet Scale]]
 *** summary
     0) [@0] Abstract
@@ -5421,6 +5421,113 @@
 
        6) Scopes and Namespaces
 ** TODO [#A] [[./Javascript Closures.prototype_chain.html][Javascript Closures]]
+** TODO [#A] [[./10.1.1.10.5823.pdf][Quantifying Traffic Analysis of Encrypted Web-Browsing]]
+*** summary
+    0. [@0] Abstract
+
+       - for example banking
+
+       - see which websites  a user visits just by packet size
+
+    1. Introduction
+
+       - ssl encrypts but does not obscure
+
+       - scenarios
+
+         - what is done at oneline banking, which type of transaction
+
+         - buying or selling shares
+
+         - which books at oneline bookstore
+
+       - tools
+
+         - taffic sizes on path
+
+         - can browse site beforehand
+
+       - only one account at those sites caveat
+
+       - ssl: v2 and v3
+
+    2. Methodology
+
+       0. [@0] (procedure)
+
+	  1. gather information
+
+	     1. record sizes of traffic (with tcp header stripped)
+
+	     2. locality information: which page reachable from which other page
+
+	  2. record and filter client requests
+
+	     - separate requests by port number
+
+	     - recognize ssl handshake
+
+	       - within handshake: client sends requests with
+
+	       - response sizes of each request
+
+	  3. match in \pm 40 bytes increments
+
+       1. Choice of web sites
+
+	  - https://www.isaac.cs.berkeley.edu: static, few images, v2
+
+	  - https://www.index.berkeley.edu: also generated, many images, login,v3
+
+	  - https://banking.wellsfargo.com: mostly generated, login, v2
+
+	  - https://orders.datek.com: user login, many generated, v3
+
+       2. Test cases
+
+	  - no images, no cache
+
+	  - images, no cache
+
+	  - images, cache
+
+	  - images, warm cache
+
+    3. Results
+** TODO [#A] [[./hintz02.pdf][Hintz - Fingerprinting Websites Using Traffic Analysis]]
+*** summary
+    0) [@0] Abstract
+
+       Attack to find out whether user is visiting certain websites,
+       even though he uses an encrypted proxy.
+
+       Plus discussion: better attack and defenses
+
+    1) Introduction
+
+       With normal encryption, metadata is visible.
+
+       With one-hop proxies, metadata is discoverable.
+
+       There are several defenses.
+
+    2) Definition of Traffic Analysis
+
+       sender, receiver, amount of data transferred (ssl does not try
+       to obfuscate)
+
+    3) SafeWeb
+
+       - anonymizing one-hop proxy with some content-rewriting
+
+       - JS and SSL-based
+
+    4) Fingerprinting Websites
+*** quotes
+    - The process of monitoring the nature and behavior of traffic,
+      rather than its content, is known as traffic analysis.
+*** ref
+    [[file:master.bib::hintz02][Hintz 2002: Fingerprinting Websites Using Traffic Analysis]]
 ** TODO [#B] [[./ShWa-Timing06.pdf][Timing analysis in low-latency mix networks: attacks and defenses]]
 *** summary
     0) [@0] Abstract
@@ -6120,40 +6227,6 @@
 ** TODO [#C] [[./Liberatore_2006.pdf][Inferring the Source of Encrypted HTTP Connections]]
 *** ref
     [[file:master.bib::Liberatore:2006][Liberatore & Levine 2006: Inferring Source Encrypted HTTP Connections]]
-** TODO MOVE [#B] [[./hintz02.pdf][Hintz - Fingerprinting Websites Using Traffic Analysis]]
-*** summary
-    0) [@0] Abstract
-
-       Attack to find out whether user is visiting certain websites,
-       even though he uses an encrypted proxy.
-
-       Plus discussion: better attack and defenses
-
-    1) Introduction
-
-       With normal encryption, metadata is visible.
-
-       With one-hop proxies, metadata is discoverable.
-
-       There are several defenses.
-
-    2) Definition of Traffic Analysis
-
-       sender, receiver, amount of data transferred (ssl does not try
-       to obfuscate)
-
-    3) SafeWeb
-
-       - anonymizing one-hop proxy with some content-rewriting
-
-       - JS and SSL-based
-
-    4) Fingerprinting Websites
-*** quotes
-    - The process of monitoring the nature and behavior of traffic,
-      rather than its content, is known as traffic analysis.
-*** ref
-    [[file:master.bib::hintz02][Hintz 2002: Fingerprinting Websites Using Traffic Analysis]]
 ** TODO [#C] [[./torproject.orgSLASHaboutSLASHtorusers.html][Who uses Tor?]] [0/3]
 *** TODO summary
     1) Inception
@@ -6361,79 +6434,6 @@
 ** TODO [[./pam2014-tor-nfattack.pdf][On the Effectiveness of Traffic Analysis Against Anonymity Networks Using Flow Records]]
 *** ref
     [[file:master.bib::nfattackpam14][Chakravarty et al. 2014: Effectiveness Traffic Analysis]]
-** TODO [[./10.1.1.10.5823.pdf][Quantifying Traffic Analysis of Encrypted Web-Browsing]]
-*** summary
-    0. [@0] Abstract
-
-       - for example banking
-
-       - see which websites  a user visits just by packet size
-
-    1. Introduction
-
-       - ssl encrypts but does not obscure
-
-       - scenarios
-
-         - what is done at oneline banking, which type of transaction
-
-         - buying or selling shares
-
-         - which books at oneline bookstore
-
-       - tools
-
-         - taffic sizes on path
-
-         - can browse site beforehand
-
-       - only one account at those sites caveat
-
-       - ssl: v2 and v3
-
-    2. Methodology
-
-       0. [@0] (procedure)
-
-	  1. gather information
-
-	     1. record sizes of traffic (with tcp header stripped)
-
-	     2. locality information: which page reachable from which other page
-
-	  2. record and filter client requests
-
-	     - separate requests by port number
-
-	     - recognize ssl handshake
-
-	       - within handshake: client sends requests with
-
-	       - response sizes of each request
-
-	  3. match in \pm 40 bytes increments
-
-       1. Choice of web sites
-
-	  - https://www.isaac.cs.berkeley.edu: static, few images, v2
-
-	  - https://www.index.berkeley.edu: also generated, many images, login,v3
-
-	  - https://banking.wellsfargo.com: mostly generated, login, v2
-
-	  - https://orders.datek.com: user login, many generated, v3
-
-       2. Test cases
-
-	  - no images, no cache
-
-	  - images, no cache
-
-	  - images, cache
-
-	  - images, warm cache
-
-    3. Results
 ** quotes
    3. [@3] Results
       - traffic analysis identified all pages fairly accurately. We

@@ -3,7 +3,12 @@
 import BaseHTTPServer
 import cgi
 import random
+import SocketServer
 import string
+
+class ThreadingSimpleServer(SocketServer.ThreadingMixIn, 
+                            BaseHTTPServer.HTTPServer):
+    pass
 
 class TrafficHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """Server which only generates traffic."""
@@ -61,7 +66,7 @@ class TrafficHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                                  for _ in range(size)))
         
 def test(HandlerClass = TrafficHTTPRequestHandler,
-         ServerClass = BaseHTTPServer.HTTPServer):
+         ServerClass = ThreadingSimpleServer):
     BaseHTTPServer.test(HandlerClass, ServerClass, protocol="HTTP/1.1")
 
 if __name__ == '__main__':

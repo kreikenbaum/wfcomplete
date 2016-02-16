@@ -33,13 +33,13 @@ function CoverTraffic(load) {
 }
 
 CoverTraffic.prototype.loadNext = function() {
-    var i = (stats.withProbability( this.prob % 1 )
-	     ? Math.ceil(this.prob)
-	     : Math.floor(this.prob));
-    for ( ; i >= 0; i -= 1 ) {
-	if ( i > 1 || stats.withProbability(i) ) {
-	    this.load.http(coverUrl.sized(stats.embeddedObjectSize()));
-	}
+    var i;
+    for ( i = (stats.withProbability( this.prob % 1 )
+	       ? Math.ceil(this.prob)
+	       : Math.floor(this.prob))
+	  ; i >= 0
+	  ; i -= 1 ) {
+	this.load.http(coverUrl.sized(stats.embeddedObjectSize()));
     }
 };
 exports.CoverTraffic = CoverTraffic;
