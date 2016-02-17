@@ -16,10 +16,6 @@ function http(toLoad) {
 	    debug.log("load: response: " + JSON.stringify(response));
 	}
     }).get();
-//    require("sdk/page-worker").Page({
-//	contentURL: toLoad
-//    });
-    debug.log("load: http(" + toLoad + ")");
 }
 exports.http = (toLoad) => http(toLoad);
 

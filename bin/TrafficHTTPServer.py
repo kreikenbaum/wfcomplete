@@ -6,8 +6,9 @@ import random
 import SocketServer
 import string
 
-class ThreadingSimpleServer(SocketServer.ThreadingMixIn, 
+class ThreadingSimpleServer(SocketServer.ThreadingMixIn,
                             BaseHTTPServer.HTTPServer):
+    '''Combines Threading with BaseHTTPServer.HTTPServer'''
     pass
 
 class TrafficHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -47,7 +48,8 @@ class TrafficHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             postvars = cgi.parse_multipart(self.rfile, pdict)
         elif ctype == 'application/x-www-form-urlencoded':
             length = int(self.headers.getheader('content-length'))
-            postvars = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
+            postvars = cgi.parse_qs(self.rfile.read(length),
+                                    keep_blank_values=1)
         else:
             raise KeyError('wrong input format: ' + ctype)
         return int(postvars['size'])
@@ -62,12 +64,30 @@ class TrafficHTTPRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-Length", size)
         self.end_headers()
-        self.wfile.write(''.join(random.choice(string.printable) 
+        self.wfile.write(''.join(random.choice(string.printable)
                                  for _ in range(size)))
-        
-def test(HandlerClass = TrafficHTTPRequestHandler,
-         ServerClass = ThreadingSimpleServer):
-    BaseHTTPServer.test(HandlerClass, ServerClass, protocol="HTTP/1.1")
+
+def test(HandlerClass=TrafficHTTPRequestHandler,
+         ServerClass=ThreadingSimpleServer,
+         protocol="HTTP/1.1"):
+    '''starts server with default parameters'''
+    import sys
+
+    if sys.argv[1:]:
+        port = int(sys.argv[1])
+    else:
+        port = 8000
+    server_address = ('', port)
+
+    HandlerClass.protocol_version = protocol
+    httpd = ServerClass(server_address, HandlerClass)
+
+    try:
+        while 1:
+            sys.stdout.flush()
+            httpd.handle_request()
+    except KeyboardInterrupt:
+        print "Finished"
 
 if __name__ == '__main__':
     test()
