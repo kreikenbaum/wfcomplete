@@ -18,7 +18,7 @@ const REQUEST_LENGTH_MAX = 700;
 /** @return expected size of html response * factor */
 function htmlSize(factor = 1) {
     return factor * lognormal_(HTML_MU, HTML_SIGMA);
-};
+}
 exports.htmlSize = (factor) => htmlSize(factor);
 
 /** @return expected size of embedded object response * factor */
@@ -95,13 +95,14 @@ function gamma_(kappa, theta) {
     const C = 1 + kappa / Math.E;
     while ( true ) {
 	var p = C * random.uniform01();
+	var y;
 	if ( p > 1 ) {
-	    var y = - Math.log( (C - p ) / kappa );
+	    y = - Math.log( (C - p ) / kappa );
 	    if ( random.uniform01() <= Math.pow(y, kappa-1) ) {
 		return 0;
 	    }
 	} else {
-	    var y = Math.pow(p, 1/kappa);
+	    y = Math.pow(p, 1/kappa);
 	    if ( random.uniform01() <= Math.exp(-y) ) {
 		return theta * y;
 	    }

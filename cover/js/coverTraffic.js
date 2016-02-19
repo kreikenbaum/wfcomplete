@@ -24,8 +24,8 @@ function CoverTraffic(load) {
     this.site.html = stats.htmlSize(1); // td: buffer known sites in bloomfilter
     this.pad.html = stats.htmlSize(FACTOR) - this.site.html;
     this.site.numEmbedded = stats.numberEmbeddedObjects(1); // td: see above
-    this.pad.numEmbedded
-	= stats.numberEmbeddedObjects(FACTOR) - this.site.numEmbedded;
+    this.pad.numEmbedded =
+	stats.numberEmbeddedObjects(FACTOR) - this.site.numEmbedded;
 
     this.prob = Math.max(this.pad.numEmbedded / this.site.numEmbedded, MIN_PROB);
 
@@ -34,11 +34,10 @@ function CoverTraffic(load) {
 
 CoverTraffic.prototype.loadNext = function() {
     var i;
-    for ( i = (stats.withProbability( this.prob % 1 )
-	       ? Math.ceil(this.prob)
-	       : Math.floor(this.prob))
-	  ; i >= 0
-	  ; i -= 1 ) {
+    for ( i = (stats.withProbability( this.prob % 1 ) ? Math.ceil(this.prob)
+	       : Math.floor(this.prob)) ; 
+	  i >= 0 ; 
+	  i -= 1 ) {
 	this.load.http(coverUrl.sized(stats.embeddedObjectSize()));
     }
 };
