@@ -26,5 +26,6 @@ function sized(size) {
 exports.sized = (size) => sized(size);
 
 function reqListener() {
-    debug.log("load: response text[:4]: " + this.responseText.substr(0, 4));
+    debug.log("load: response length: " + this.responseText.length);
 }
+// [:4]: " + this.responseText.substr(0, 4) +

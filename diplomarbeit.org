@@ -2,7 +2,7 @@
 #+TODO: TODO CHECK | DONE
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{tikz}
-* TODO topics [0/4]
+* TODO topics [0/9]
 ** TODO Website Fingerprinting [0/3]
 *** [[What is Website Fingerprinting]]
 *** [[What happens during a website request]]
@@ -30,7 +30,7 @@
 **** TODO check maximum again
      - https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/0006-Randomize-HTTP-pipeline-order-and-depth.patch
      - or https://trac.torproject.org/projects/tor/ticket/3914
-*** Capturing traces
+*** practical wf: Capturing traces
 **** [[capture alternatives]]
 **** [[shell script]]
 **** [[Selenium]]
@@ -38,11 +38,12 @@
 **** [[Marionette]]
 **** [[Marionette installation]]
 **** [[criteria for tool to retrieve websites]]
+*** practical wf: analyzing traces
 *** Related Work
 **** [[History of Website Fingerprinting]]
 **** [[MERGE history of website fingerprinting in Tor]]
-** Tor
-*** How to use Tor
+** TODO Tor
+*** MOVE How to use Tor
     Tor offers a SOCKS5\cite{rfc1928}-(TCP\cite{rfc793}-)proxy for
     users. (If an application has no proxy settings, the
     =tsocks=-program provides transparent proxying). After setting this,
@@ -64,7 +65,8 @@
     Among the additional privacy features the Tor-Browser-Bundle
     provides are added request randomization and enabled pipelining.
 *** [[tbb anti-wf modification]]
-** Developing Firefox Addons
+*** TODO collect/list all Tor sections
+** TODO Developing Firefox Addons
 *** [[Mozilla Add-On Sdk]]
 *** Debugger
 *** [[Available Data]]
@@ -81,7 +83,9 @@
     Bridging this separation, f.ex. accessing page scripts (and vice
     versa) is possible, but needs some extra work.
 **** LATER index: page scripts, content scripts, add-on scripts
-**** [[message-passing]]
+*** [[message-passing]]
+*** TODO collect/list all addon sections
+*** TODO organize all addon sections
 ** Addon Design and Implementation
 *** [[Design]]
 *** Implementation
@@ -185,36 +189,31 @@
   \cite{rfc7230} increased this limit to 6.
 ** TODO cite which paper shows that pipelining does not help
 * MAYBE_AND_MOVE How to not use Tor
-* TODO how Tor works internally
+* CHECK how Tor works internally
   A TCP stream is triply-encrypted and sent along a path of three
   intermediaries, none of whom can link its origin to its destination.
 
-  After the third hop, the message most often leaves the Tor network
-  to any server on the Internet. It could also be forwarded to a
-  location-hidden server via Tor's /hidden services/.
+  After the third hop (the /exit node/), the message most often leaves
+  the Tor network to any server on the Internet. It could also be
+  forwarded to a location-hidden server via Tor's /hidden services/.
 
   To build a TCP channel, called /circuit/ in Tor, the Tor client
   software (/Onion Proxy/) uses a telescoping approach:
 
   First, Tor builds a cryptographically secure connection to its first
-  hop (each called /Onion Router (OR)/). This connection is on top of TLS,
-  using additional, same-length, Tor encryption.
+  hop (each hop is called /Onion Router (OR)/). This connection is on
+  top of TLS, using additional, same-length, Tor encryption.
 
   Through this connection, the onion proxy establishes a connection to
   a second hop, and through the second, to a third hop. (The actual
   TCP connection is from the first hop to the second, and from the
-  second to the third). Each message is then encrypted three times,
-  sent to the first hop, which decrypts it once, and sends it on. The
-  second and third hop do likewise, with the third hop sending the
-  message to the desired recipient.
+  second to the third). Each message to be sent is encrypted three
+  times, sent to the first hop, which decrypts it once, and sends it
+  on. The second and third hop do likewise, with the third hop sending
+  the plain-text-message in to the desired recipient.
 
   Tor sends data traffic in 512-byte cells.
-
-  Es besteht aus vielen Servern im Internet, den /Onion Routern/, die
-  Nachrichten nach dem Tor-Protokoll weiterleiten. Am Ende eines
-  Pfades durch Tor werden die Verbindungen an einem, /Exit Node/
-  genannten, Onion Router aus dem Netzwerk an beliebige
-  Internetadressen geleitet.
+** TODO pictures with attribution
 * TODO Tor's Cryptography
   In Tor, each Onion Router has three distinct keys. One is an
   /identity key/ of the onion router, a long-term key used for signing
@@ -265,21 +264,20 @@
 ** todo: integrate [[why use Tor]]
 * TODO Tor Threat Model [0/1]
   Tor does not attempt to protect against a global passive adversary,
-  who can observe all connections. A Tor adversary can([[tor design]])
+  who can observe all connections. A Tor adversary can\cite{tor-design}
 
-  - observe a fraction of all traffic
-  - generate, modify, and delete traffic
-  - operate its own Onion Routers
+  - observe a fraction of all traffic,
+  - generate, modify, and delete traffic,
+  - operate its own Onion Routers, and
   - compromise a fraction of the other ORs
 
   This adversary is not purely passive, but lacks global information.
 
-  Tor fails by design if
-  if someone can monitor a big amount of internet traffic (td: quote)
-  if someone can exploit your browser
-  if someone can own your computer
-  if you enter identifying information while using tor
-  if you enter passwords etc while using tor
+  Tor is not intended to protect you
+  - if someone can monitor a big amount of internet traffic (td: quote)
+  - if someone can exploit your browser
+  - if someone can exploit your computer
+  - if you enter identifying information while using tor
 ** TODO maybe schneier re adversaries
 * TODO why use Tor
   Tor is an anonymization network with a diverse user base. It has
@@ -1016,7 +1014,10 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
     - documentloader
 ** each load of page
 ** end of page load
-* Python web server for cover traffic
+* MOVE appendix Python web server for cover traffic
+  This did not scale too well, so it was not used. It is included as a
+  reference of what seems to work, but did not.
+
   The python module =TrafficHTTPServer= can be started on the command-line via 
 
   python TrafficHTTPServer.py portname
@@ -1028,6 +1029,19 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 
   retrieves a document with 10 bytes content from a TrafficHTTPServer
   running at localhost port 8000.
+
+* TODO mod_wsgi
+  installation
+
+  - apt-get install apache2-bin apache2-dev
+  - pip install mod_wsgi
+
+  start via
+
+  - ~/.local/bin/mod_wsgi-express start-server wsgi.py
+
+  (here, also --port 7777), as for the script wsgi.py see appendix
+  
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
@@ -3092,10 +3106,6 @@ mean = 0.763238095238
   - provable protection
   - compressible cover traffic
 * lit
-** franklin
-   [[file:~/da/docs/master.bib::franklin][Franklin 1818: Remarks Propositions Plan]]
-** katz
-   [[file:~/da/docs/master.bib::katz][1967: Katz]]
 ** firefox pipelining
    [[file:~/da/docs/master.bib::firefox-pipelining][2015: Enable HTTP]]
 ** TODO ie pipelining [0/1]
@@ -3113,11 +3123,12 @@ mean = 0.763238095238
    [[file:~/da/docs/master.bib::rfc2616][R. & Berners-Lee 1999: Hypertext Transfer Protocol]]
 ** RFC7230
    [[file:docs/master.bib::rfc7230][R. & J. 2014: Hypertext Transfer Protocol HTTP]]
-* appendices
-** [[file:../bin/one_site.py][one_site.py]]
+* TODO appendices [0/3]
+** TODO [[file:../bin/one_site.py][one_site.py]]
    insert file here
-** [[file:../bin/extract_attribute.py][extract_attribute.py]]
+** TODO [[file:../bin/extract_attribute.py][extract_attribute.py]]
    insert file here
+** TODO [[file:../bin/wsgi.py]]
 * unused
 ** from [[*transform to panchenko-features]]
   The code to examine a single trace file is in =analyze_file()=

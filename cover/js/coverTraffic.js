@@ -35,8 +35,8 @@ function CoverTraffic(load) {
 CoverTraffic.prototype.loadNext = function() {
     var i;
     for ( i = (stats.withProbability( this.prob % 1 ) ? Math.ceil(this.prob)
-	       : Math.floor(this.prob)) ; 
-	  i >= 0 ; 
+	       : Math.floor(this.prob)) ;
+	  i >= 0 ;
 	  i -= 1 ) {
 	this.load.http(coverUrl.sized(stats.embeddedObjectSize()));
     }
