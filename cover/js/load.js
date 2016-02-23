@@ -10,15 +10,14 @@ const debug = require("./debug.js");
 /** @param toLoad load this url as cover (discarded afterwards) */
 function http(toLoad) {
     debug.log("load: http(" + toLoad + ")");
-    var x = new xhr.XMLHttpRequest();
+    let x = new xhr.XMLHttpRequest();
     x.addEventListener("load", reqListener);
     x.open("GET", toLoad);
     x.send();
-//    debug.log("load: " + x.getRequestCount() + " active");
 }
 exports.http = (toLoad) => http(toLoad);
 
-// td: use this
+/** @param {size int} loads resource of size {@code size} */
 function sized(size) {
     debug.log("load: sized(" + size + ")");
     http(require("./coverUrl.js").sized(size));

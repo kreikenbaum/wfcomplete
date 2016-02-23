@@ -4,9 +4,7 @@
  * load to approximate the target. The HTML call is done on creation,
  * embedded object calls on {@code loadNext}.
  */
-exports.DOC = 'creates cover traffic, up to predetermined parameters';
 
-const coverUrl = require("./coverUrl.js");
 const debug = require("./debug.js");
 const stats = require("./stats.js");
 
@@ -15,6 +13,11 @@ const stats = require("./stats.js");
 const FACTOR = 1.5;
 const MIN_PROB = 0.1; // td: test and think through
 
+/**
+ * Creates cover traffic. Once on creation, then on {@code loadNext()}.
+ * @constructor
+ * @param {module load.js} module which provides loading capabilities
+ */
 function CoverTraffic(load) {
     this.load = load;
 
@@ -27,9 +30,9 @@ function CoverTraffic(load) {
     this.pad.numEmbedded =
 	stats.numberEmbeddedObjects(FACTOR) - this.site.numEmbedded;
 
-    this.prob = Math.max(this.pad.numEmbedded / this.site.numEmbedded, MIN_PROB);
+    this.prob = Math.max(this.pad.numEmbedded / this.site.numEmbedded,MIN_PROB);
 
-    this.load.http(coverUrl.sized(this.pad.html));
+    this.load.sized(this.pad.html);
 }
 
 CoverTraffic.prototype.loadNext = function() {
@@ -38,7 +41,7 @@ CoverTraffic.prototype.loadNext = function() {
 	       : Math.floor(this.prob)) ;
 	  i >= 0 ;
 	  i -= 1 ) {
-	this.load.http(coverUrl.sized(stats.embeddedObjectSize()));
+	this.load.sized(stats.embeddedObjectSize());
     }
 };
 exports.CoverTraffic = CoverTraffic;

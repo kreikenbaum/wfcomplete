@@ -2,94 +2,6 @@
 #+TODO: TODO CHECK | DONE
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{tikz}
-* TODO topics [0/9]
-** TODO Website Fingerprinting [0/3]
-*** [[What is Website Fingerprinting]]
-*** [[What happens during a website request]]
-*** [[Why could website fingerprinting be a problem]]
-*** Panchenko's Attack via Website Fingerprinting
-    For a long time, traffic analysis attacks against Tor had not
-    yielded results. Prior to to [[file:docs/lit.org::*%5B%5B./acmccs-wpes11-fingerprinting.pdf%5D%5BPanchenko%20-%20Website%20Fingerprinting%20in%20Onion%20Routing%20Based%20Anonymization%20Networks%5D%5D][Panchenkos et al]], it was expected that
-    Tor introduced multiplexing, enough padding and latency into website
-    retrieval that this attack was inapplicable.
-*** [[Hurdles to website fingerprinting]]
-*** Who could attack via WF
-    As website fingerprinting requires very litte resources, a specific
-    attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
-    state.
-*** TODO Current defenses in Tor [0/2]
-    After the Panchenko paper\cite{panchenko} an additional no-cost
-    defense was implemented in the
-    Tor-Browser-Bundle\cite{experimental}: Firefox's built-in request
-    pipelining was enabled with added request order randomization.
-
-    Concerning randomization, if Firefox would ordinarly request
-    images 1 to 10, in that order, the images are requested in random
-    order, f.ex. 5,2,8,9,4,6,7,3,1,10 in batches of random sizes.
-**** TODO link to implementation/details
-     - https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/0006-Randomize-HTTP-pipeline-order-and-depth.patch
-     - or https://trac.torproject.org/projects/tor/ticket/3914
-**** TODO check maximum again
-*** practical wf: Capturing traces
-**** [[capture alternatives]]
-**** [[shell script]]
-**** [[Selenium]]
-**** [[Chickenfoot]]
-**** [[Marionette]]
-**** [[Marionette installation]]
-**** [[criteria for tool to retrieve websites]]
-*** practical wf: analyzing traces
-*** Related Work
-**** [[History of Website Fingerprinting]]
-**** [[MERGE history of website fingerprinting in Tor]]
-** TODO Tor
-*** MOVE How to use Tor
-    Tor offers a SOCKS5\cite{rfc1928}-(TCP\cite{rfc793}-)proxy for
-    users. (If an application has no proxy settings, the
-    =tsocks=-program provides transparent proxying). After setting this,
-    all traffic is routed through the Tor network, anonymizing the IP
-    address, with a fixed message length to hinder traffic analysis.
-
-    (Tor also offers the possibility to "hide" a (TCP-)internet service
-    via "hidden services" so that noone can see its location).
-*** [[*how%20Tor%20works%20internally][how Tor works internally]]
-*** [[Tor's Cryptography]]
-*** [[Who uses Tor]]
-*** [[Tor Threat Model]]
-*** Tor Browser
-    There are many technologies based on the Tor protocol. Top of the
-    list ([[file:docs/lit.org::*%5B%5B./projects.html%5D%5BSoftware%20&%20Services%5D%5D][Software & Services*]]) is the Tor Browser Bundle. This is a
-    modified version of Firefox which uses Tor and comes with built-in
-    privacy and security enhancements and Add-ons.
-
-    Among the additional privacy features the Tor-Browser-Bundle
-    provides are added request randomization and enabled pipelining.
-*** [[tbb anti-wf modification]]
-*** TODO collect/list all Tor sections
-** TODO MOVE SUB TO [[Addon Design and Implementation]] Developing Firefox Addons
-*** [[Mozilla Add-On Sdk]]
-*** Debugger
-*** [[Available Data]]
-*** separation of scripts
-    As a security measure, there is a separation between
-
-    1) /add-on scripts/, which are run in the browser context, but
-       cannot access the web page, and
-    2) /content scripts/, which are run in the page context. They can
-       access the DOM, but not add-on scripts. nor
-    3) /page scripts/, which are those included in the website via
-       f.ex. =<script>= tags
-
-    Bridging this separation, f.ex. accessing page scripts (and vice
-    versa) is possible, but needs some extra work.
-**** LATER index: page scripts, content scripts, add-on scripts
-*** [[message-passing]]
-*** TODO collect/list all addon sections
-*** TODO organize all addon sections
-** Addon Design and Implementation
-*** [[Design]]
-*** Implementation
-**** Unit Testing
 * final sections
 ** LATER Abstract
 *** Teaser
@@ -123,110 +35,232 @@
 **** WAIT may \to (ohne) (falls richtig)
 ** Introduction
 ** Materials and Methods
-* What is Website Fingerprinting
-  Website fingerprinting\cite{hintz02} can be used to discover which
-  webpages or websites a user visits via an anonymizing proxy. It is a
-  type of traffic analysis\cite{applied96}, where characteristics of
-  traffic are used to infer conjectures about content and metadata.
-* What happens during a website request
-  When a user visits a webpage, the browser first sends a request for
-  the HTML page. The Webserver answers with that HTML page. Then, the
-  browser requests the objects embedded into that page, such as
-  stylesheets (\verb|<link rel="stylesheet">|), fonts, images
-  (=<img>=), scripts(=<script>=), etc.  Each of these files has a
-  specific size, which might be detected in the TCP-flow. Thus, the
-  objects embedded within a page could allow a local passive observer
-  to infer whether the user requests a specific web page from a set of
-  pages.
-* Why could website fingerprinting be a problem
-  As a typical scenario, consider the government of some state. A
-  whistleblower posts something very critical of the regime on a
-  well-known critical website. The whistleblower uses Tor or some
-  other anonymity service to protect his identity. The government
-  monitors and records all Tor connections. Even though Tor obfuscates
-  the user's traffic, the specific data-pattern of the website gives
-  the whistleblower away.[fn::This is, as of now, a theoretical
-  threat. It has not yet been observed.]
-* TODO MERGE history of website fingerprinting in Tor
-** with  [[History of Website Fingerprinting]]
-  The website fingerprinting attack scenario is already described in
-  the original Tor design\cite{tor-design} paper. Previous to
-  Panchenko et al.\cite{panchenko}, it was considered "less
-  effective"\cite{tor-design} against Tor, due to stream/circuit
-  multiplexing and fixed cell sizes.
-* TODO Hurdles to website fingerprinting
-  The progress of web protocols made website fingerprinting harder. In
-  the original HTTP/1.0\cite{rfc1945} protocol, each request used a
-  separate TCP-connection. This facilitated the original attack
-  against SafeWeb\cite{hintz02}, which thus extracted the exact file
-  size of each embedded object.
+* TODO topics [0/18]
+** TODO Website Fingerprinting [0/3]
+*** What is Website Fingerprinting
+    Website fingerprinting\cite{hintz02} can be used to discover which
+    webpages or websites a user visits via an anonymizing proxy. It is a
+    type of traffic analysis\cite{applied96}, where characteristics of
+    traffic are used to infer conjectures about content and metadata.
+*** What happens during a website request
+    When a user visits a webpage, the browser first sends a request for
+    the HTML page. The Webserver answers with that HTML page. Then, the
+    browser requests the objects embedded into that page, such as
+    stylesheets (\verb|<link rel="stylesheet">|), fonts, images
+    (=<img>=), scripts(=<script>=), etc.  Each of these files has a
+    specific size, which might be detected in the TCP-flow. Thus, the
+    objects embedded within a page could allow a local passive observer
+    to infer whether the user requests a specific web page from a set of
+    pages.
+*** Why could website fingerprinting be a problem
+    As a typical scenario, consider the government of some state. A
+    whistleblower posts something very critical of the regime on a
+    well-known critical website. The whistleblower uses Tor or some
+    other anonymity service to protect his identity. The government
+    monitors and records all Tor connections. Even though Tor obfuscates
+    the user's traffic, the specific data-pattern of the website gives
+    the whistleblower away.[fn::This is, as of now, a theoretical
+    threat. It has not yet been observed.]
+*** Panchenko's Attack via Website Fingerprinting
+    For a long time, traffic analysis attacks against Tor had not
+    yielded results. Prior to to [[file:docs/lit.org::*%5B%5B./acmccs-wpes11-fingerprinting.pdf%5D%5BPanchenko%20-%20Website%20Fingerprinting%20in%20Onion%20Routing%20Based%20Anonymization%20Networks%5D%5D][Panchenkos et al]], it was expected that
+    Tor introduced multiplexing, enough padding and latency into website
+    retrieval that this attack was inapplicable.
+*** TODO Hurdles to website fingerprinting
+    The progress of web protocols made website fingerprinting harder. In
+    the original HTTP/1.0\cite{rfc1945} protocol, each request used a
+    separate TCP-connection. This facilitated the original attack
+    against SafeWeb\cite{hintz02}, which thus extracted the exact file
+    size of each embedded object.
 
-  As building a new connection for each transferred object turned out
-  to be inefficient, persistent connections were added in some
-  implementations \cite{rfc2068} and later specified in HTTP/1.1
-  \cite{rfc2616}. This meant that it was no longer trivial to extract
-  the files' sizes. You had to determine the start and end of each
-  request. (which was still possible by seeing when the client sent a
-  new request).
+    As building a new connection for each transferred object turned out
+    to be inefficient, persistent connections were added in some
+    implementations \cite{rfc2068} and later specified in HTTP/1.1
+    \cite{rfc2616}. This meant that it was no longer trivial to extract
+    the files' sizes. You had to determine the start and end of each
+    request. (which was still possible by seeing when the client sent a
+    new request).
 
-  [[./pictures/HTTP_persistent_connection.svg.png]]
+    [[./pictures/HTTP_persistent_connection.svg.png]]
 
-  In addition to persistent connections, HTTP/1.1 allowed pipelining
-  several HTTP requests in a single connection without waiting for the
-  files to arrive in between. This further cloaked the file
-  boundaries. (Yet, when pipelining was enabled by the Tor Browser
-  developers, enabling this feature did not lead to harder detection).
+    In addition to persistent connections, HTTP/1.1 allowed pipelining
+    several HTTP requests in a single connection without waiting for the
+    files to arrive in between. This further cloaked the file
+    boundaries. (Yet, when pipelining was enabled by the Tor Browser
+    developers, enabling this feature did not lead to harder detection).
 
-  [[./pictures/HTTP_pipelining2.svg.png]]
+    [[./pictures/HTTP_pipelining2.svg.png]]
 
-  Pipelining creates problems with some servers, so it is disabled by
-  default in Firefox \cite{firefox-pipelining} and Chrome
-  \cite{chromium-pipelining}, and not implemented in Internet Explorer
-  ([[ie pipelining]]).)
+    Pipelining creates problems with some servers, so it is disabled by
+    default in Firefox \cite{firefox-pipelining} and Chrome
+    \cite{chromium-pipelining}, and not implemented in Internet Explorer
+    ([[ie pipelining]]).)
 
-  Originally, a browser should open at most two connections per host
-  \cite{rfc2616} to retrieve the files one-by-one. An update
-  \cite{rfc7230} increased this limit to 6.
-** TODO cite which paper shows that pipelining does not help
+    Originally, a browser should open at most two connections per host
+    \cite{rfc2616} to retrieve the files one-by-one. An update
+    \cite{rfc7230} increased this limit to 6.
+**** TODO cite which paper shows that pipelining does not help
+*** Who could attack via WF
+    As website fingerprinting requires very litte resources, a specific
+    attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
+    state.
+*** TODO Current defenses in Tor [0/2]
+    After the Panchenko paper\cite{panchenko} an additional no-cost
+    defense was implemented in the
+    Tor-Browser-Bundle\cite{experimental}: Firefox's built-in request
+    pipelining was enabled with added request order randomization.
+
+    Concerning randomization, if Firefox would ordinarly request
+    images 1 to 10, in that order, the images are requested in random
+    order, f.ex. 5,2,8,9,4,6,7,3,1,10 in batches of random sizes.
+**** TODO link to implementation/details
+     - https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/0006-Randomize-HTTP-pipeline-order-and-depth.patch
+     - or https://trac.torproject.org/projects/tor/ticket/3914
+**** TODO check maximum again
+*** practical wf: Capturing traces
+**** [[capture alternatives]]
+**** [[shell script]]
+**** [[Selenium]]
+**** [[Chickenfoot]]
+**** [[Marionette]]
+**** [[Marionette installation]]
+**** [[criteria for tool to retrieve websites]]
+*** practical wf: analyzing traces
+*** Related Work
+**** [[History of Website Fingerprinting]]
+**** [[MERGE history of website fingerprinting in Tor]]
+** TODO Tor [0/8]
+*** How to use Tor
+    Tor offers a SOCKS5\cite{rfc1928}-(TCP\cite{rfc793}-)proxy for
+    users. (If an application has no proxy settings, the
+    =tsocks=-program provides transparent proxying). After setting this,
+    all traffic is routed through the Tor network, anonymizing the IP
+    address, with a fixed message length to hinder traffic analysis.
+
+    (Tor also offers the possibility to "hide" a (TCP-)internet service
+    via "hidden services" so that noone can see its location).
+*** CHECK how Tor works internally
+    A TCP stream is triply-encrypted and sent along a path of three
+    intermediaries, none of whom can link its origin to its destination.
+
+    After the third hop (the /exit node/), the message most often leaves
+    the Tor network to any server on the Internet. It could also be
+    forwarded to a location-hidden server via Tor's /hidden services/.
+
+    To build a TCP channel, called /circuit/ in Tor, the Tor client
+    software (/Onion Proxy/) uses a telescoping approach:
+
+    First, Tor builds a cryptographically secure connection to its first
+    hop (each hop is called /Onion Router (OR)/). This connection is on
+    top of TLS, using additional, same-length, Tor encryption.
+
+    Through this connection, the onion proxy establishes a connection to
+    a second hop, and through the second, to a third hop. (The actual
+    TCP connection is from the first hop to the second, and from the
+    second to the third). Each message to be sent is encrypted three
+    times, sent to the first hop, which decrypts it once, and sends it
+    on. The second and third hop do likewise, with the third hop sending
+    the plain-text-message in to the desired recipient.
+
+    Tor sends data traffic in 512-byte cells.
+**** TODO pictures with attribution
+*** TODO Tor's Cryptography
+    In Tor, each Onion Router has three distinct keys. One is an
+    /identity key/ of the onion router, a long-term key used for signing
+    only. This signs a medium-term /onion key/, which is kept at least
+    one week after advertising.
+
+    - each router has 3 keys, two of which are rotated, one identity key
+    - fixed minimum messages size of 512 Byte
+      - extensions allow other sizes
+    - directory of all onion routers in directory servers
+    - encrypted from client to "guard node"
+    - passed to two other hosts, chosen by client "at random"
+    - exits at "exit node" as normal tcp connection (except for hidden services)
+*** TODO Who uses Tor
+    From the beginning, the Tor Project envisoned a broad user base.
+
+    Tor is a development of the Onion Routing Project
+    \cite{anonymous-connections}. It was originally developed by the
+    Naval Research Laboratory of the US Navy with the primary purpose
+    to protect government communication.\cite{who-uses-tor}
+
+    Nowadays, it is an anonymization network with a diverse user
+    base. It has 6'000 nodes and is accessed by more than 3 million
+    daily clients.
+
+    The main user groups as listed by the Tor Project
+    \cite{who-uses-tor}, in order, are:
+
+    - normal people,
+    - military,
+    - journalists and their audience,
+    - law enforcement officers,
+    - activists & whistleblwers,
+    - high & low profile people,
+    - business executives,
+    - bloggers, and
+    - IT professionals.
+
+    They use it for diverse purposes, such as
+
+    - privacy,
+    - censorship avoidance,
+    - covert ops,
+    - publishing,
+    - safety,
+    - online surveillance,
+    - anonymous tip lines,
+    - whistleblowing,
+    - blogging private opinions,
+    - evaluating competition, and
+    - troubleshooting IT systems.
+**** TODO "nowadays" used like this and here?
+**** TODO client numbers with link (footnote?)
+*** [[Tor Threat Model]]
+*** Tor Browser
+    There are many technologies based on the Tor protocol. Top of the
+    list ([[file:docs/lit.org::*%5B%5B./projects.html%5D%5BSoftware%20&%20Services%5D%5D][Software & Services*]]) is the Tor Browser Bundle. This is a
+    modified version of Firefox which uses Tor and comes with built-in
+    privacy and security enhancements and Add-ons.
+
+    Among the additional privacy features the Tor-Browser-Bundle
+    provides are added request randomization and enabled pipelining.
+*** [[tbb anti-wf modification]]
+*** TODO history of website fingerprinting in Tor
+**** with  [[History of Website Fingerprinting]]
+    The website fingerprinting attack scenario is already described in
+    the original Tor design\cite{tor-design} paper. Previous to
+    Panchenko et al.\cite{panchenko}, it was considered "less
+    effective"\cite{tor-design} against Tor, due to stream/circuit
+    multiplexing and fixed cell sizes.
+*** [[tbb anti-wf modification]]
+*** TODO sort subtopics
+** TODO MOVE TO [[Addon Design and Implementation]] Developing Firefox Addons [0/2]
+*** [[Mozilla Add-On Sdk]]
+*** Debugger
+*** [[Available Data]]
+*** separation of scripts
+    As a security measure, there is a separation between
+
+    1) /add-on scripts/, which are run in the browser context, but
+       cannot access the web page, and
+    2) /content scripts/, which are run in the page context. They can
+       access the DOM, but not add-on scripts. nor
+    3) /page scripts/, which are those included in the website via
+       f.ex. =<script>= tags
+
+    Bridging this separation, f.ex. accessing page scripts (and vice
+    versa) is possible, but needs some extra work.
+**** LATER index: page scripts, content scripts, add-on scripts
+*** [[message-passing]]
+*** TODO collect/list all addon sections
+*** TODO organize all addon sections
+** Addon Design and Implementation
+*** [[Design]]
+*** Implementation
+**** Unit Testing
 * MAYBE_AND_MOVE How to not use Tor
-* CHECK how Tor works internally
-  A TCP stream is triply-encrypted and sent along a path of three
-  intermediaries, none of whom can link its origin to its destination.
-
-  After the third hop (the /exit node/), the message most often leaves
-  the Tor network to any server on the Internet. It could also be
-  forwarded to a location-hidden server via Tor's /hidden services/.
-
-  To build a TCP channel, called /circuit/ in Tor, the Tor client
-  software (/Onion Proxy/) uses a telescoping approach:
-
-  First, Tor builds a cryptographically secure connection to its first
-  hop (each hop is called /Onion Router (OR)/). This connection is on
-  top of TLS, using additional, same-length, Tor encryption.
-
-  Through this connection, the onion proxy establishes a connection to
-  a second hop, and through the second, to a third hop. (The actual
-  TCP connection is from the first hop to the second, and from the
-  second to the third). Each message to be sent is encrypted three
-  times, sent to the first hop, which decrypts it once, and sends it
-  on. The second and third hop do likewise, with the third hop sending
-  the plain-text-message in to the desired recipient.
-
-  Tor sends data traffic in 512-byte cells.
-** TODO pictures with attribution
-* TODO Tor's Cryptography
-  In Tor, each Onion Router has three distinct keys. One is an
-  /identity key/ of the onion router, a long-term key used for signing
-  only. This signs a medium-term /onion key/, which is kept at least
-  one week after advertising.
-
-  - each router has 3 keys, two of which are rotated, one identity key
-  - fixed minimum messages size of 512 Byte
-    - extensions allow other sizes
-  - directory of all onion routers in directory servers
-  - encrypted from client to "guard node"
-  - passed to two other hosts, chosen by client "at random"
-  - exits at "exit node" as normal tcp connection (except for hidden services)
 * MAYBE_AND_MOVE what sets Tor apart / other anonymity networks
   There are other anonymity networks, such as JonDonym, I2P, MixNet
   and freedom.
@@ -241,28 +275,7 @@
   Using a client called /Onion Proxy/ on the local computer, almost all
 ** TODO ref onion routing
 ** TODO onion routing
-* TODO Who uses Tor
-  From the beginning, the Tor Project envisoned a broad user base.
-
-  Tor is a development of the Onion Routing Project
-  \cite{anonymous-connections}. It was originally developed by the
-  Naval Research Laboratory of the US Navy to protect government
-  communication.\cite{who-uses-tor}
-
-  The main user groups listed by the Tor Project \cite{who-uses-tor},
-  in order, are:
-
-  - normal people,
-  - military,
-  - journalists and their audience,
-  - law enforcement officers,
-  - activists & whistleblwers,
-  - high & low profile people,
-  - business executives,
-  - bloggers, and
-  - IT professionals.
-** todo: integrate [[why use Tor]]
-* TODO Tor Threat Model [0/1]
+* TODO Tor Threat Model [0/2]
   Tor does not attempt to protect against a global passive adversary,
   who can observe all connections. A Tor adversary can\cite{tor-design}
 
@@ -279,15 +292,7 @@
   - if someone can exploit your computer
   - if you enter identifying information while using tor
 ** TODO maybe schneier re adversaries
-* TODO why use Tor
-  Tor is an anonymization network with a diverse user base. It has
-  6000 nodes and more than 3 million daily users.
-
-  - privacy
-  - censorship avoidance
-  - covert ops
-  - business intelligence
-  - at least official standpoint, better: merge with users
+** TODO quote big amount internet traffic, read paper
 * TODO tbb anti-wf modification
   - pipelining enabled
   - request order randomization
@@ -473,7 +478,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - "use strict";
   - unit tests
   - mention subset of ...
-* pipelining enable in tor after Pachenko
 * TODO other defenses
   There are other methods of defense, which might help mitigate
   website fingerprinting. One is based on reducing the fingerprint by
@@ -1042,6 +1046,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 
   (here, also --port 7777), as for the script wsgi.py see appendix
   
+* TODO Tor overview
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
@@ -3105,6 +3110,16 @@ mean = 0.763238095238
     (with variable-length packets)?
   - provable protection
   - compressible cover traffic
+** onion host for cover traffic
+   As indicated f.ex. by Wang and Goldberg,
+   \cite{wpes13-fingerprinting}, network load already is a bottleneck
+   on Tor, with the key bottleneck being exit nodes\cite{wtfpad}. The
+   exit nodes might be spared the extra traffic by using =.onion=
+   traffic generators (or, alternatively, hosts). A traffic generator
+   could be further optimized by using tor proposals ... (see todo) to
+   reduce latency, if this does not reduce privacy.
+*** TODO tor proposals as of tor.sx
+*** TODO read/skim and cite "on performance..."
 * lit
 ** firefox pipelining
    [[file:~/da/docs/master.bib::firefox-pipelining][2015: Enable HTTP]]
