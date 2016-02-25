@@ -234,7 +234,6 @@
     Panchenko et al.\cite{panchenko}, it was considered "less
     effective"\cite{tor-design} against Tor, due to stream/circuit
     multiplexing and fixed cell sizes.
-*** [[tbb anti-wf modification]]
 *** TODO sort subtopics
 ** TODO MOVE TO [[Addon Design and Implementation]] Developing Firefox Addons [0/2]
 *** [[Mozilla Add-On Sdk]]
@@ -358,12 +357,13 @@
   suffice, much of the browser's functionality is accessible via the
   XPCOM module.
 ** TODO link XUL
-* TODO page-worker
-  A =page-worker= creates "a permanent, invisible page and
-  access[es] its DOM."  ([[link page-worker]]).
+* CHECK page-worker
+  A =page-worker= creates "a permanent, invisible page and access[es]
+  its
+  DOM."[fn::\url{developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html}]
 
-  New pages can be loaded in the background, which would allow for
-  the retrieval of camouflage traffic ([[file:docs/lit.org::*%5B%5B./acmccs-wpes11-fingerprinting.pdf%5D%5BPanchenko%20-%20Website%20Fingerprinting%20in%20Onion%20Routing%20Based%20Anonymization%20Networks%5D%5D][Panchenko]]).
+  New pages can be loaded in the background, which would allow for the
+  retrieval of camouflage traffic, as described by \cite{panchenko}.
 
   A minimal new page-worker is created via
 
@@ -377,9 +377,10 @@
 
   This fetches only the file pointed to. The retrieval of included
   images, stylesheets, etc, is not automatic.
-** TODO test that only HTML
-** link page-worker
-   developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html
+
+  A page-worker was used in the initial prototype. The RequestPolicy
+  addon blocked this method of retrieval.
+
 * TODO Installation and Use of Jpm (the build tool)
   (SDK-)addons can be built via the =jpm=-tool. It is available as a
   NodeJS-Module via the built-in NodeJS Package Manager =npm=.
@@ -489,10 +490,10 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
    Browser Bundle).
 
    The first is NoScript, which selects which Javascript sources to
-   run and which to block. This is installed in Torbrowser for the
-   additional security benefits it brings (XSS defense etc). It is
-   considered as a one of the most security-enhancing plugins by
-   ... o'reilly:
+   run and which to block. This is installed by default in the Tor
+   Browser Bundle for the additional security benefits it brings (XSS
+   defense etc). It is considered as a one of the most
+   security-enhancing plugins by ... o'reilly:
 
    QUOTE
 
@@ -506,14 +507,11 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 *** TODO quote o'reilly
 ** write new plugins
    Instead of inserting dummy traffic into the connection, one could
-   throttle the "data rate" of get request and responses (or only
-   requests or the ratio)
-** Throttling
-   As especially outgoing web requests are often quite small, and this
-   paper has at the moment a 1:1 rate of outgoing vs incoming for the
-   requests, throttling the amount of data leaving the end user might
-   well suffice for reducing the bandwidth of the side-channel enough
-   to make it insignificant.
+   throttle the "data rate" of request and responses (or only requests
+   or the ratio). As this approach has been used by
+   f.ex. \cite{effective}, and has been proven to work, albeit
+   requiring higher latency, it has not been explored further.
+
 ** TODO link tor browser bundle
 *** or writeup something
 ** TODO link Requestpolicy
@@ -649,18 +647,15 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   "svm-train and svm-predict come from the libSVM package."
 * how to get tor browser bundle to work
   In order to start the tor browser bundle via the =./firefox=
-  command, you need some libraries. 
+  command, you need libraries, which are bundled with the binary.
+  They can be found inside the =/TorBrowser/Tor= directory.
 
-  One external repository is required, which can be installed via
+  The library path environment variable can be set on the command-line via
 
-  =add-apt-repository ppa:ubuntu-toolchain-r/test=
-  =apt-get update=
-  =apt-get dist-upgrade=
+  export LD_LIBRARY_PATH=/lib:/usr/lib:/path/to/bundle/Browser/TorBrowser/Tor
 
-  Furthermore, the binary needs some firefox libraries, which can be
-  retrieved most easily via =apt-get install firefox=.
+  The script [[*%5B%5Bfile:./bin/one_site.py%5D%5D][one_site.py]] uses this internally.
 
-  Afterwards, the binary can be started by typing =./firefox=.
 ** TODO where exactly is the torrc: directory
 * how to avoid the safe mode error on multiple restarts
   If Firefox was killed via a signal (as opposed to closing the
@@ -3139,7 +3134,7 @@ mean = 0.763238095238
 ** RFC7230
    [[file:docs/master.bib::rfc7230][R. & J. 2014: Hypertext Transfer Protocol HTTP]]
 * TODO appendices [0/3]
-** TODO [[file:../bin/one_site.py][one_site.py]]
+** TODO [[file:./bin/one_site.py]]
    insert file here
 ** TODO [[file:../bin/extract_attribute.py][extract_attribute.py]]
    insert file here
@@ -3170,14 +3165,14 @@ mean = 0.763238095238
   - occurring packet sizes incoming and outgoing (binned in steps of 2)
   - percentage of outgoing packets
   - number of packets incoming and outgoing.
-** TODO start browser with -marionette parameter
+** start browser with -marionette parameter
    Each modern Firefox, and thus also the tor-browser-bundle, has
    marionette-support built-in. It needs to be enabled on the
    command-line via the =-marionette= switch, for example
 
 
    This starts the Tor browser with marionette enabled.
-*** TODO marionette support page link
+*** marionette support page link
 ** Sally installation
    Sally is a tool to transfer text into points in a vector space.
 
@@ -3185,3 +3180,20 @@ mean = 0.763238095238
    instructions, then changing =vivid= in the file
    =/etc/apt/sources.list.d/mlsec-ubuntu-sally-vivid.list= to
    =devel=.
+** from getting tbb to work
+  One external repository is required, which can be installed via
+
+  =add-apt-repository ppa:ubuntu-toolchain-r/test=
+  =apt-get update=
+  =apt-get dist-upgrade=
+
+  Furthermore, the binary needs some firefox libraries, which can be
+  retrieved most easily via =apt-get install firefox=.
+
+  Afterwards, the binary can be started by typing =./firefox=.
+** throttling
+   As especially outgoing web requests are often quite small, and this
+   paper has at the moment a 1:1 rate of outgoing vs incoming for the
+   requests, throttling the amount of data leaving the end user might
+   well suffice for reducing the bandwidth of the side-channel enough
+   to make it insignificant.
