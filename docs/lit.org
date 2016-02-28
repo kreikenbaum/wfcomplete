@@ -4562,6 +4562,523 @@
       | Request Size  | 318.59          | 179.46 | Uniform (350 Bytes)          |
 *** questions
     - correlation of features (high object count \to high page size)
+** [[./ndss16-wfp-internet-scale.pdf][Website Fingerprinting at Internet Scale]]
+*** summary
+    0) [@0] Abstract
+
+       - faster
+
+       - more accurate
+
+       - still inherently (?) problematic
+
+    1) INTRODUCTION
+
+       - anonymity services for censorship circumvention and freedom
+         of expression
+
+       - local attacker one of the weakest adversaries
+
+       - traffic analysis, infer information about the content by
+         observing data flow
+
+       - novel attack: "cumulative behvioral representation"
+
+       - 300,000 webpages, not only index pages
+
+       - alexa plus others, twitter links, exit node
+
+       - webpage very hard, website may be possible
+
+       - contributions
+
+	 1) novel attack
+
+	 2) dataset
+
+	 3) page vs site
+
+    2) BACKGROUND
+
+       - /instance/ trace of a single website
+
+       - closed vs open world
+
+       - background set vs foreground set
+
+       - website vs web page
+
+       - attacker: passive observer, monitor link or compromised entry node
+
+    3) RELATED WORK
+
+       96 schneier
+
+       1) Traffic Analysis on Encrypted Connections
+
+	  - 98 quantifying first, 2001 hintz
+
+	  - sun jaccard, all http object sizes
+
+	  - bissias: IP packet sizes + IAT
+
+	  - lu: also packet ordering
+
+       2) WFP in Anonymization Networks
+
+	  - hermann first, panchenko worked, dyer,
+
+	  - cai website, juarez,
+
+	  - kwon: hidden service differentiable, yet not among them
+
+       3) Countermeasures against WFP
+
+	  - liberatore: padding
+
+	  - morphing
+
+	  - panchenko: padding
+
+	  - fixed rate
+
+	  - walkie-talkie
+
+	  - application-level: randomized pipelining + HTTPOS
+
+    4) DATA SETS
+
+       0) [@0]
+
+	  - only index pages
+
+	  - did not see link-based web structure
+
+       1) Data sets provided by Wang et al.
+
+	  - wang13: 100@40
+
+	  - wang14: 100@90 + 9000@1 from top 10000
+
+	  - both removed some cells (SENDME) (see Improved...)
+
+	  - rerecord with SENDME etc as ALEXA100
+
+       2) RND-WWW: An Unbiased Random Sample of the World Wide Web
+
+	  several sources, combined as RND-WWW: >120000 unique web pages
+
+	  1%@40, 99%@1
+
+	  1) Twitter: live access to randomly-chosen tweets
+
+	  2) Alexa-one-click: alexa top 20000 plus one link on main page
+
+	  3) Google: most frequently used keywords from Australia,
+             ...; random selection of link from first to fifth page
+
+	  4) Googling at random: 20000 english terms from dictionary,
+             select as 3
+
+	  5) Censored in China: as of greatfire.org
+
+       3) Monitoring Real Tor Traffic
+
+	  - TOR-Exit
+
+	  - referer of links (otherwise also images etc)
+
+	  - ~210000 pages, ~65000 unique, of which ~45000 only once
+
+       4) Website-Collections
+
+	  - WEBSITES
+
+	  - 20 popular websites from sevral categories
+
+	  - 50 links per site
+
+	  - 90 instances of index, 15 of each subpage
+
+    5) EXPERIMENTAL SETUP
+
+       0) [@0]
+
+	  - wlog, attack collects traces using same anonymity service as target
+
+	  - matches to victim, using statistical methodds
+
+       1) Data Collection
+
+	  - tbb 3.6.1
+
+	  - tcpdump, chickenfoot, iMacros, Scriptish, stem (tor control)
+
+       2) Data Extraction and Processing
+
+	  - different layers: TCP or TLS or cell (see sec 7.2)
+
+	  - remove faulty by http error
+
+	  - remove outliers by quantiles (5%)
+
+    6) A NOVEL WEBSITE FINGERPRINTING ATTACK
+
+       - contrary to wang: abstract representation
+
+       - layer used for data extraction? (seems like tor cell)
+
+       - cumulative sum of packet sizes, sampled at equidistant points
+
+       - 100 points yields good accuracy/efficiency tradeoff =: CUMUL
+
+       - libsvm with rbf kernel, 10-fold cross-validation
+
+    7) EVALUATION AND DISCUSSION
+
+       0) [@0]
+
+	  - optimal layer of extraction
+
+	  - optimize parametrization
+
+	  - compare to knn
+
+	  - attack scenarios
+
+	  - realistic attack for web site fingerprinting
+
+       1) Layers of Data Extraction
+
+	  - idea: tls allows for start/end recognition
+
+	  - TCP or TLS or CELL (w/o SENDME)
+
+	    - cell layer is best
+
+	  - removing SENDME effect varies around plus-minus 0
+
+	  - better to add cell size than 1 per cell
+
+       2) Optimizing Feature Sampling
+
+	  - number of features increses granularity and time
+
+	  - optimal trade-off for around n=100
+
+	    - cell better than TCP better than TLS
+
+       3) Comparison with State of the Art
+
+	  compare knn with this (CUMUL)
+
+	  1) closed-world
+
+	     - bit better
+
+	     - marginal gains
+
+	     - differences in cross-validation:
+
+	       - knn: 60 train, 30 test
+
+	       - cumul: 10-fold cross-validation
+
+	  2) Open World
+
+	     - more knn computation
+
+	       - no difference in accuracy
+
+	     - two-class vs multi-class
+
+	       - two-class: monitored or not
+
+	       - multi: which monitored one
+
+	       - knn: different yahoos as different sites
+
+	     - knn (modified) took much longer than CUMUL (with
+               increasing background set size)
+
+	       - CUMUL grows better
+
+       4) Webpage Fingerprinting at Internet Scale
+
+	  - single webpage classifiers
+
+	  - filtering background
+
+	    - either filtered background (only those not on same site)
+
+	    - or unfiltered (all)
+
+	  - precision and recall
+
+	    - instead of TPR/FPR
+
+	    - see base rate fallacy
+
+	    - eve wants to find group which may have visited: recall
+
+	      - wants to find one user who has visited: precision
+
+	  - both fall drastically as the number of pages grows
+
+	    - "this attack does not scale"
+
+       5) Detection of Websites
+
+	  - closed-world worse
+
+	  - open-world stabilizes better
+
+    8) CONCLUSION AND FUTURE WORK
+
+       - better and faster than previous
+
+       - website fp might work, web page did not really scale
+
+       - not staying on same page evaluated, further work
+*** quotes
+** [[./10.1.1.10.5823.pdf][Quantifying Traffic Analysis of Encrypted Web-Browsing]]
+*** summary
+    0. [@0] Abstract
+
+       - for example banking
+
+       - see which websites  a user visits just by packet size
+
+    1. Introduction
+
+       - ssl encrypts but does not obscure
+
+       - scenarios
+
+         - what is done at oneline banking, which type of transaction
+
+         - buying or selling shares
+
+         - which books at oneline bookstore
+
+       - tools
+
+         - taffic sizes on path
+
+         - can browse site beforehand
+
+       - only one account at those sites caveat
+
+       - ssl: v2 and v3
+
+    2. Methodology
+
+       0. [@0] (procedure)
+
+	  1. gather information
+
+	     1. record sizes of traffic (with tcp header stripped)
+
+	     2. locality information: which page reachable from which other page
+
+	  2. record and filter client requests
+
+	     - separate requests by port number
+
+	     - recognize ssl handshake
+
+	       - within handshake: client sends requests with
+
+	       - response sizes of each request
+
+	  3. match in \pm 40 bytes increments
+
+       1. Choice of web sites
+
+	  - https://www.isaac.cs.berkeley.edu: static, few images, v2
+
+	  - https://www.index.berkeley.edu: also generated, many images, login,v3
+
+	  - https://banking.wellsfargo.com: mostly generated, login, v2
+
+	  - https://orders.datek.com: user login, many generated, v3
+
+       2. Test cases
+
+	  - no images, no cache
+
+	  - images, no cache
+
+	  - images, cache
+
+	  - images, warm cache
+
+    3. Results
+
+       1. ISAAC
+
+	  - a, b exact or approximate for all pages
+
+	  - c only when download, d not recognized
+
+       2. INDEX
+
+	  - some (entry) consistently mismatched, rest good
+
+       3. Wells Fargo Banking Site
+
+	  - some not reconized: varying greatly,
+
+	  - some with locality recognized
+
+	  - some consistently
+
+       4. Datek Stock Brokerage Site
+
+	  - greatly size-varying mismatches, rest good
+
+       5. Some Interesting Observations
+
+	  - SSLv2 and v3 recognizable by packet sizes
+
+	  - dynamic pages (Wells Fargo) invalidated caching defense, B=C=D
+
+	  - D - warm cache: most pages not transferred
+
+    4. Conclusions
+
+       - works on most cases
+
+       - does not work when size varies greatly
+
+    5. Further Work
+
+       - more functionality
+
+	 - automatic creation of size-database (\to website fingerprints)
+
+	 - real-time traffic analysis by integrating sniffer and analysis
+
+       - further traffic analysis
+
+	 - more client variability
+
+	 - locality necessary?
+
+	 - weaken by adding large random padding
+
+	 - ipsec:
+
+	   - encrypt port
+
+	   - simultaneous multiple connections
+*** quotes
+   3. [@3] Results
+      - traffic analysis identified all pages fairly accurately. We
+        did not have to use any locality information for recognizing
+        any of the pages on this site.
+
+*** TODO ref [[file:master.bib::quantifying][Mistry & Raman 1998: Quantifying Traffic Analysis]]
+** [#C] [[./torproject.orgSLASHaboutSLASHtorusers.html][Who uses Tor?]]
+*** summary
+    1) Inception
+
+       - U.S. Navy
+
+       - primary purpose: "protecting government communications"
+
+    2) Normal people use Tor
+
+       - protect privacy, communication, children (IP-address),
+
+       - do research f.ex. tibet,
+
+       - skirt surveillance, circumvent censorship
+
+    3) Militaries use Tor
+
+       - field agents
+
+       - hidden services
+
+       - intelligence gathering
+
+    4) Journalists and their audience use Tor
+
+       - readers and publishing and research
+
+    5) Law enforcement officers use Tor
+
+       - online surveillance
+
+       - sting operations
+
+       - anonymous tips
+
+    6) Activists & Whistleblowers use Tor
+
+       - report injustices without repercussions
+
+       - regain privacy
+
+    7) High & low profile people use Tor
+
+       - banker with diverse clientele
+
+       - living in poverty
+
+    8) Business executives use Tor
+
+       - report security risks and internal malfeasance
+
+       - evaluate competition and investments
+
+    9) Bloggers use Tor
+
+       - avoid problems for legal things
+
+    10) IT Professionals use Tor
+
+	- audit firewalls, disallowed content, services
+
+	- access resources
+
+	- mitigate outage
+
+    11) end
+
+	- send stories
+*** ref
+    [[file:master.bib::who-uses-tor][Project td: Who Tor]]
+** [[../sw/jasondavies_bloomfilter.js%20%C2%B7%20GitHub.html]]
+*** summary
+    - bloom filter using Fowler–Noll–Vo hash function
+    - creation
+      #+BEGIN_SRC js
+        var bloom = new BloomFilter(
+          32 * 256, // number of bits to allocate.
+          16        // number of hash functions.
+        );
+      #+END_SRC
+    - adding querying
+      #+BEGIN_SRC js
+        // Add element to the filter.
+        bloom.add("foo");
+
+        // Test if an item is in our filter.
+        bloom.test("foo"); // Returns true if an item is probably in the set,
+        bloom.test("blah"); // false if an item is definitely not in the set.
+      #+END_SRC
+    - serialisierung
+      #+BEGIN_SRC js
+        // Serialisation.
+        var array = [].slice.call(bloom.buckets),
+            json = JSON.stringify(array);
+
+        // Deserialisation.
+        var bloom = new BloomFilter(array, 3);
+      #+END_SRC
+      - better: typed array for performance (=array= is used directly)
 ** TODO [#A] Entwurfsmuster
 *** summary
     0) [@0] Preface
@@ -5348,285 +5865,6 @@
     - *In C++* sind statische Member-Funktionen zudem niemals
       virtuell, so dass Unterklassen sie nicht polymorph
       ueberschreiben koennen.
-** MOVE [#A] [[./ndss16-wfp-internet-scale.pdf][Website Fingerprinting at Internet Scale]]
-*** summary
-    0) [@0] Abstract
-
-       - faster
-
-       - more accurate
-
-       - still inherently (?) problematic
-
-    1) INTRODUCTION
-
-       - anonymity services for censorship circumvention and freedom
-         of expression
-
-       - local attacker one of the weakest adversaries
-
-       - traffic analysis, infer information about the content by
-         observing data flow
-
-       - novel attack: "cumulative behvioral representation"
-
-       - 300,000 webpages, not only index pages
-
-       - alexa plus others, twitter links, exit node
-
-       - webpage very hard, website may be possible
-
-       - contributions
-
-	 1) novel attack
-
-	 2) dataset
-
-	 3) page vs site
-
-    2) BACKGROUND
-
-       - /instance/ trace of a single website
-
-       - closed vs open world
-
-       - background set vs foreground set
-
-       - website vs web page
-
-       - attacker: passive observer, monitor link or compromised entry node
-
-    3) RELATED WORK
-
-       96 schneier
-
-       1) Traffic Analysis on Encrypted Connections
-
-	  - 98 quantifying first, 2001 hintz
-
-	  - sun jaccard, all http object sizes
-
-	  - bissias: IP packet sizes + IAT
-
-	  - lu: also packet ordering
-
-       2) WFP in Anonymization Networks
-
-	  - hermann first, panchenko worked, dyer,
-
-	  - cai website, juarez,
-
-	  - kwon: hidden service differentiable, yet not among them
-
-       3) Countermeasures against WFP
-
-	  - liberatore: padding
-
-	  - morphing
-
-	  - panchenko: padding
-
-	  - fixed rate
-
-	  - walkie-talkie
-
-	  - application-level: randomized pipelining + HTTPOS
-
-    4) DATA SETS
-
-       0) [@0]
-
-	  - only index pages
-
-	  - did not see link-based web structure
-
-       1) Data sets provided by Wang et al.
-
-	  - wang13: 100@40
-
-	  - wang14: 100@90 + 9000@1 from top 10000
-
-	  - both removed some cells (SENDME) (see Improved...)
-
-	  - rerecord with SENDME etc as ALEXA100
-
-       2) RND-WWW: An Unbiased Random Sample of the World Wide Web
-
-	  several sources, combined as RND-WWW: >120000 unique web pages
-
-	  1%@40, 99%@1
-
-	  1) Twitter: live access to randomly-chosen tweets
-
-	  2) Alexa-one-click: alexa top 20000 plus one link on main page
-
-	  3) Google: most frequently used keywords from Australia,
-             ...; random selection of link from first to fifth page
-
-	  4) Googling at random: 20000 english terms from dictionary,
-             select as 3
-
-	  5) Censored in China: as of greatfire.org
-
-       3) Monitoring Real Tor Traffic
-
-	  - TOR-Exit
-
-	  - referer of links (otherwise also images etc)
-
-	  - ~210000 pages, ~65000 unique, of which ~45000 only once
-
-       4) Website-Collections
-
-	  - WEBSITES
-
-	  - 20 popular websites from sevral categories
-
-	  - 50 links per site
-
-	  - 90 instances of index, 15 of each subpage
-
-    5) EXPERIMENTAL SETUP
-
-       0) [@0]
-
-	  - wlog, attack collects traces using same anonymity service as target
-
-	  - matches to victim, using statistical methodds
-
-       1) Data Collection
-
-	  - tbb 3.6.1
-
-	  - tcpdump, chickenfoot, iMacros, Scriptish, stem (tor control)
-
-       2) Data Extraction and Processing
-
-	  - different layers: TCP or TLS or cell (see sec 7.2)
-
-	  - remove faulty by http error
-
-	  - remove outliers by quantiles (5%)
-
-    6) A NOVEL WEBSITE FINGERPRINTING ATTACK
-
-       - contrary to wang: abstract representation
-
-       - layer used for data extraction? (seems like tor cell)
-
-       - cumulative sum of packet sizes, sampled at equidistant points
-
-       - 100 points yields good accuracy/efficiency tradeoff =: CUMUL
-
-       - libsvm with rbf kernel, 10-fold cross-validation
-
-    7) EVALUATION AND DISCUSSION
-
-       0) [@0]
-
-	  - optimal layer of extraction
-
-	  - optimize parametrization
-
-	  - compare to knn
-
-	  - attack scenarios
-
-	  - realistic attack for web site fingerprinting
-
-       1) Layers of Data Extraction
-
-	  - idea: tls allows for start/end recognition
-
-	  - TCP or TLS or CELL (w/o SENDME)
-
-	    - cell layer is best
-
-	  - removing SENDME effect varies around plus-minus 0
-
-	  - better to add cell size than 1 per cell
-
-       2) Optimizing Feature Sampling
-
-	  - number of features increses granularity and time
-
-	  - optimal trade-off for around n=100
-
-	    - cell better than TCP better than TLS
-
-       3) Comparison with State of the Art
-
-	  compare knn with this (CUMUL)
-
-	  1) closed-world
-
-	     - bit better
-
-	     - marginal gains
-
-	     - differences in cross-validation:
-
-	       - knn: 60 train, 30 test
-
-	       - cumul: 10-fold cross-validation
-
-	  2) Open World
-
-	     - more knn computation
-
-	       - no difference in accuracy
-
-	     - two-class vs multi-class
-
-	       - two-class: monitored or not
-
-	       - multi: which monitored one
-
-	       - knn: different yahoos as different sites
-
-	     - knn (modified) took much longer than CUMUL (with
-               increasing background set size)
-
-	       - CUMUL grows better
-
-       4) Webpage Fingerprinting at Internet Scale
-
-	  - single webpage classifiers
-
-	  - filtering background
-
-	    - either filtered background (only those not on same site)
-
-	    - or unfiltered (all)
-
-	  - precision and recall
-
-	    - instead of TPR/FPR
-
-	    - see base rate fallacy
-
-	    - eve wants to find group which may have visited: recall
-
-	      - wants to find one user who has visited: precision
-
-	  - both fall drastically as the number of pages grows
-
-	    - "this attack does not scale"
-
-       5) Detection of Websites
-
-	  - closed-world worse
-
-	  - open-world stabilizes better
-
-    8) CONCLUSION AND FUTURE WORK
-
-       - better and faster than previous
-
-       - website fp might work, web page did not really scale
-
-       - not staying on same page evaluated, further work
-*** quotes
 ** TODO [#A] [[./JavaScript Garden.html]]
 *** summary
     1) Objects
@@ -5705,7 +5943,23 @@
 
        4) The for in Loop
 
+	  - in operator: object has property, array has *key* (not value)
+
+	    - [3,4] has =1 in [3,4]=, but not =3 in [3,4]=
+
+	  - =for in= goes up the prototype chain
+
+	    - except if =Object.defineProperty= is used with
+              =enumerable= set to =false=
+
+	  - library code needs to make sure via =hasOwnProperty=
+
+	  - In Conclusion: always for ECMA <= 3. In ECMA 5, you can
+            defineProperty and omit the hasOwnProperty in for-in
+
     2) Functions
+
+       1) Function Declarations and Expressions
 
        5) [@5] Constructors
 
@@ -5763,124 +6017,38 @@
 	  - overridden if defined in object
 
     3) Identifier Resolution, Execution Contexts and scope chains
+
+       1) The Execution Context
+
+	  - "All javascript code is executed in an execution context."
+
+	  - Global context for sourced scripts in HTML
+
+	  - function context for each function call
+
+	  - =eval= has its own context, too
+
+	  - Activation object
+
+	    - not real object
+
+	    - hold =arguments= array-like in arguments property
+
+	  - scope is =\[\[scope\]\]= of function with Activation added in front
+
+	  - variables with Activation object for function's formal parameters
+
+	    - if not enough arguments, =undefined=
+
+	    - inner function definition
+
+	  - set value of =this=
+
+	    - if not set \to global object
+
+       2) scope chains and \[\[scope\]\]
 *** quotes
-** TODO [#A] [[./10.1.1.10.5823.pdf][Quantifying Traffic Analysis of Encrypted Web-Browsing]]
-*** summary
-    0. [@0] Abstract
-
-       - for example banking
-
-       - see which websites  a user visits just by packet size
-
-    1. Introduction
-
-       - ssl encrypts but does not obscure
-
-       - scenarios
-
-         - what is done at oneline banking, which type of transaction
-
-         - buying or selling shares
-
-         - which books at oneline bookstore
-
-       - tools
-
-         - taffic sizes on path
-
-         - can browse site beforehand
-
-       - only one account at those sites caveat
-
-       - ssl: v2 and v3
-
-    2. Methodology
-
-       0. [@0] (procedure)
-
-	  1. gather information
-
-	     1. record sizes of traffic (with tcp header stripped)
-
-	     2. locality information: which page reachable from which other page
-
-	  2. record and filter client requests
-
-	     - separate requests by port number
-
-	     - recognize ssl handshake
-
-	       - within handshake: client sends requests with
-
-	       - response sizes of each request
-
-	  3. match in \pm 40 bytes increments
-
-       1. Choice of web sites
-
-	  - https://www.isaac.cs.berkeley.edu: static, few images, v2
-
-	  - https://www.index.berkeley.edu: also generated, many images, login,v3
-
-	  - https://banking.wellsfargo.com: mostly generated, login, v2
-
-	  - https://orders.datek.com: user login, many generated, v3
-
-       2. Test cases
-
-	  - no images, no cache
-
-	  - images, no cache
-
-	  - images, cache
-
-	  - images, warm cache
-
-    3. Results
-
-       1. ISAAC
-
-	  - a, b exact or approximate for all pages
-
-	  - c only when download, d not recognized
-
-       2. INDEX
-
-	  - some (entry) consistently mismatched, rest good
-
-       3. Wells Fargo Banking Site
-
-	  - some not reconized: varying greatly,
-
-	  - some with locality recognized
-
-	  - some consistently
-
-       4. Datek Stock Brokerage Site
-
-	  - greatly size-varying mismatches, rest good
-
-       5. Some Interesting Observations
-
-	  - SSLv2 and v3 recognizable by packet sizes
-
-	  - dynamic pages (Wells Fargo) invalidated caching defense, B=C=D
-
-	  - D - warm cache: most pages not transferred
-
-    4. Conclusions
-
-       - works on most cases
-
-       - does not work when size varies greatly
-
-    5. Further Work
-*** quotes
-   3. [@3] Results
-      - traffic analysis identified all pages fairly accurately. We
-        did not have to use any locality information for recognizing
-        any of the pages on this site.
-
+    - running javascript code forms a stack of execution contexts.
 ** TODO [#A] [[./hintz02.pdf][Hintz - Fingerprinting Websites Using Traffic Analysis]]
 *** summary
     0) [@0] Abstract
@@ -5924,6 +6092,18 @@
        - little https vs other traffic, thus easier
 
     6) Implementing a Fingerprinting Attack
+
+       - analyse log files for occurring sizes (data received per port)
+
+       - compare these sizes*counts with other sizes*counts
+
+       - same site: smallest number of exact matches = 21, typically 75%
+
+       - different sites: biggest number = 2, most often 1, 0, at most 6%
+
+       - service shut down before large scale tests were possible
+
+    7) Improving the Attack
 *** quotes
     - The process of monitoring the nature and behavior of traffic,
       rather than its content, is known as traffic analysis.
@@ -5935,6 +6115,66 @@
       all Internet traffic. (5)
 *** ref
     [[file:master.bib::hintz02][Hintz 2002: Fingerprinting Websites Using Traffic Analysis]]
+** TODO [#A] [[./webfingerprint-wpes.pdf][Improved Website Fingerprinting on Tor]]
+*** summary
+    0) [@0] Abstract
+
+       - new attack
+
+       - new data gathering methodology
+
+       - removal of useless cells, views Tor layer, not TCP/IP
+
+    1) INTRODUCTION
+
+       - evaluate metrics
+
+       - contributions:
+
+         - data gathering: modify tor browser
+
+	 - new data processing
+
+	   - not at TCP/IP level, but above
+
+	   - remove SENDME cells
+
+	 - New website fingerprinting metrics:
+
+	   - dynamic content is loaded last and varies only incoming
+
+	   - new metric
+
+    2) RELATED WORK
+
+       Defenses not implemented because of network load and ineffective
+
+       1) Non-distance-based methods
+
+	  - only sizes and occurrence counts as features
+
+	  - liberatore: naive bayes (normal frequency)
+
+	  - herrmann: multinomial naive bayes, more successful, only
+            3$ accuracy on Tor
+
+       2) Distance-based methods
+
+	  - liberatore: jaccard-based, without occurence, less
+            effective than naive bayes
+
+	  - panchenko: svm, several features
+
+	  - cai: "optimal string alignment distance", also for
+            websites instead of web pages via Hidden Markov Models
+
+       3) TOR
+*** quotes
+    - dynamic content such as advertisements may cause a variation in
+      incoming packets but not outgoing packets, and dynamic content
+      is often loaded last in a website.
+*** ref
+    [[file:master.bib::wpes13-fingerprinting][Wang & Goldberg 2013: Improved Website Fingerprinting Tor]]
 ** TODO [#B] [[./ShWa-Timing06.pdf][Timing analysis in low-latency mix networks: attacks and defenses]]
 *** summary
     0) [@0] Abstract
@@ -6086,6 +6326,10 @@
 	  - adaptive padding works better
 
     6) Active attacks
+
+       - impose timing signature via active dropping
+
+       - ...
 *** quotes
     - Many mix networks are specifically intended to provide anonymity
       against attackers who control the communication medium.
@@ -6338,6 +6582,36 @@
       nor a clear pattern of cells indicating the gap.
 ** TODO [#B] [[./webtraffic-imc11.pdf][Towards Understanding Modern Web Traffic]]
 ** TODO [#B] [[~/da/git/docs/timing-fc2004.pdf][Timing Attacks in Low-Latency Mix Systems]]
+** TODO [#B] [[./usersrouted-ccs13.pdf][Users Get Routed: Traffic Correlation on Tor by Realistic Adversaries]]
+*** summary
+    0) [@0] ABSTRACT
+
+       Tor is more vulnerable than previously thought.
+
+       - security evaluation based on
+
+         - different user models
+
+	 - ASes etc
+
+	 - paths
+
+    1) INTRODUCTION
+*** quotes
+    - Specific contributions of the paper include (1) a model of
+      various typical kinds of users, (2) an adversary model that
+      includes Tor network relays, autonomous systems (ASes), Internet
+      exchange points (IXPs), and groups of IXPs drawn from empirical
+      study, (3) metrics that indicate how secure users are over a
+      period of time, (4) the most accurate topological model to date
+      of ASes and IXPs as they relate to Tor usage and network
+      configuration, (5) a novel realistic Tor path simulator (TorPS),
+      and (6) analyses of security making use of all the above.
+*** ref
+    [[file:~/da/docs/master.bib::ccs2013-usersrouted][Johnson et al. 2013: Users Get Routed]]
+** TODO [#B] [[./Analysis_of_Web_Data_Compression_and_its_Impact_on_Traffic_and_Energy_Consumption.pdf]]
+*** summary
+*** quotes
 ** TODO [#C] [[./morphing09.pdf][Traffic Morphing: An Efficient Defense Against Statistical Traffic Analysis]]
 *** summary
     0. [@0] Abstract
@@ -6450,33 +6724,6 @@
     - (ends 1 + 2)
 *** ref
     [[file:~/da/docs/master.bib::morphing09][Wright et al. 2009: Traffic Morphing]]
-** TODO MOVE [#B] [[./usersrouted-ccs13.pdf][Users Get Routed: Traffic Correlation on Tor by Realistic Adversaries]]
-*** summary
-    0) [@0] ABSTRACT
-
-       Tor is more vulnerable than previously thought.
-
-       - security evaluation based on
-
-         - different user models
-
-	 - ASes etc
-
-	 - paths
-
-    1) INTRODUCTION
-*** quotes
-    - Specific contributions of the paper include (1) a model of
-      various typical kinds of users, (2) an adversary model that
-      includes Tor network relays, autonomous systems (ASes), Internet
-      exchange points (IXPs), and groups of IXPs drawn from empirical
-      study, (3) metrics that indicate how secure users are over a
-      period of time, (4) the most accurate topological model to date
-      of ASes and IXPs as they relate to Tor usage and network
-      configuration, (5) a novel realistic Tor path simulator (TorPS),
-      and (6) analyses of security making use of all the above.
-*** ref
-    [[file:~/da/docs/master.bib::ccs2013-usersrouted][Johnson et al. 2013: Users Get Routed]]
 ** TODO [#C] [[./Oya.pdf][Do dummies pay off ? Limits of dummy traffic protection in anonymous communications]]
 *** summary
     0) [@0] Abstract
@@ -6529,45 +6776,6 @@
     - (ends 2)
 *** ref
     [[file:~/da/docs/master.bib::pets14-dummy-traffic][Simon & Perez-Gonzalez 2014: Do]]
-** TODO MOVE [#A] [[./webfingerprint-wpes.pdf][Improved Website Fingerprinting on Tor]]
-*** summary
-    0) [@0] Abstract
-
-       - new attack
-
-       - new data gathering methodology
-
-       - removal of useless cells, views Tor layer, not TCP/IP
-
-    1) INTRODUCTION
-
-       - evaluate metrics
-
-       - contributions:
-
-         - data gathering: modify tor browser
-
-	 - new data processing
-
-	   - not at TCP/IP level, but above
-
-	   - remove SENDME cells
-
-	 - New website fingerprinting metrics:
-
-	   - dynamic content is loaded last and varies only incoming
-
-	   - new metric
-
-    2) RELATED WORK
-
-       1) Defenses
-*** quotes
-    - dynamic content such as advertisements may cause a variation in
-      incoming packets but not outgoing packets, and dynamic content
-      is often loaded last in a website.
-*** ref
-    [[file:master.bib::wpes13-fingerprinting][Wang & Goldberg 2013: Improved Website Fingerprinting Tor]]
 ** TODO [#C] [[~/da/git/docs/onion.pdf][Anonymous Connections and Onion Routing]]
 *** summary
     0) [@0] Abstract
@@ -6686,77 +6894,9 @@
 ** TODO [#C] [[./Liberatore_2006.pdf][Inferring the Source of Encrypted HTTP Connections]]
 *** ref
     [[file:master.bib::Liberatore:2006][Liberatore & Levine 2006: Inferring Source Encrypted HTTP Connections]]
-** MOVE [#C] [[./torproject.orgSLASHaboutSLASHtorusers.html][Who uses Tor?]]
-*** summary
-    1) Inception
-
-       - U.S. Navy
-
-       - primary purpose: "protecting government communications"
-
-    2) Normal people use Tor
-
-       - protect privacy, communication, children (IP-address),
-
-       - do research f.ex. tibet,
-
-       - skirt surveillance, circumvent censorship
-
-    3) Militaries use Tor
-
-       - field agents
-
-       - hidden services
-
-       - intelligence gathering
-
-    4) Journalists and their audience use Tor
-
-       - readers and publishing and research
-
-    5) Law enforcement officers use Tor
-
-       - online surveillance
-
-       - sting operations
-
-       - anonymous tips
-
-    6) Activists & Whistleblowers use Tor
-
-       - report injustices without repercussions
-
-       - regain privacy
-
-    7) High & low profile people use Tor
-
-       - banker with diverse clientele
-
-       - living in poverty
-
-    8) Business executives use Tor
-
-       - report security risks and internal malfeasance
-
-       - evaluate competition and investments
-
-    9) Bloggers use Tor
-
-       - avoid problems for legal things
-
-    10) IT Professionals use Tor
-
-	- audit firewalls, disallowed content, services
-
-	- access resources
-
-	- mitigate outage
-
-    11) end
-
-	- send stories
+** TODO [#C] [[./pam2014-tor-nfattack.pdf][On the Effectiveness of Traffic Analysis Against Anonymity Networks Using Flow Records]]
 *** ref
-    [[file:master.bib::who-uses-tor][Project td: Who Tor]]
+    [[file:master.bib::nfattackpam14][Chakravarty et al. 2014: Effectiveness Traffic Analysis]]
 ** TODO [[./802163c-01_30r1.pdf][Traffic Model for 802.16 TG3 MAC/PHY Simulations]]
 *** summary
     1) Introduction
@@ -6921,9 +7061,6 @@
 ** TODO [[./ipccc12-tor-performance.pdf][Improving Performance and Anonymity in the Tor Network]]
 *** ref
     [[file:master.bib::ipccc12-performance][Panchenko et al. 2012: Improving Performance Anonymity Tor Network]]
-** TODO MOVE [#C] [[./pam2014-tor-nfattack.pdf][On the Effectiveness of Traffic Analysis Against Anonymity Networks Using Flow Records]]
-*** ref
-    [[file:master.bib::nfattackpam14][Chakravarty et al. 2014: Effectiveness Traffic Analysis]]
 ** TODO [[https://www.torproject.org/projects/torbrowser/design/#proxy-obedience][The Design and Implementation of the Tor Browser]]
    - [[./browser.html][local copy]]
 *** summary
@@ -8103,6 +8240,7 @@
 *** ref: [[file:master.bib::rfc1945][Berners-Lee et al. 1996: Hypertext Transfer Protocol]]
 ** TODO [[./Getting Started - Ajax | MDN.html]]
 ** TODO [[./XMLHttpRequest - Web API Referenz | MDN.6limit.html]]
+** TODO [[./1999-35.pdf][A Behavioral Model of Web Traffic]]
 ** PART [#A] [[./random.pdf][Computer Generation of Statistical Distributions]]
 *** quotes
     5) [@5] PROBABILITY DISTRIBUTION FUNCTIONS
@@ -8277,301 +8415,6 @@
                    return int( log( uniform( 0., 1. ) ) / log( 1. - p ) );
                  }
 	       #+END_SRC
-** [#A] PART [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Eloquent Javascript]]
-*** summary
-    8. [@8] Object-oriented Programming
-
-       - 90s trend, persistent, "solid and useful"
-
-       - create objects, attach methods and properties
-
-       - easy: just attach function values to object
-
-       - =apply(object, params)=: first parameter (mapped to =this=) is object
-
-	 - also =call(object, params*)= separate arguments instead of array
-
-       - constructor
-
-	 - Capitalized
-
-	 - use with =new=
-
-	 - always sets =this= to object, returns it
-
-	 - also sets =constructor= property and some other stuff
-
-       - .prototype
-
-	 - like =class=, but dynamically augmentable
-
-       - always changes object, object never changes .prototype
-
-	 - access goes up the prototype hierarchy until name is found
-
-       - use =hasOwnProperty= to find out if really the object has the
-         attribute, or it's somewhere else
-
-         - workaround for when hasOwnProperty is an attribute
-
-	 - code to apply function to each property of object
-	   #+BEGIN_SRC js
-             function forEachIn(object, action) {
-                 for (var property in object) {
-                     if (object.hasOwnProperty(property))
-                         action(property, object[property]);
-                 }
-             };
-	   #+END_SRC
-
-       - above fails in Firefox, which assigns a __proto__ to all objects
-
-	 - objects are "values with methods" and "sets of properties"
-
-       - =Dictionary= class for "sets of properties"
-
-       - external api vs internal implementation
-
-       - could add methods to f.ex. =Object=: be careful, but possible
-
-       - Exercise project: Terrarium
-
-	 - 2d, discrete time and place, # wall, ' ' free, o
-
-         - functions: =toString=, =step=, =start=, =stop= for terrarium
-
-       - first point, addpoints, samepoint
-	 #+BEGIN_SRC js
-           function Point(x, y) {
-               this.x = x;
-               this.y = y;
-           };
-
-           Point.prototype.add(other) {
-               return new Point(this.x + other.x, this.y += other.y);
-           };
-
-           Point.prototype.isEqualTo(other) {
-               return this.x === other.x && this.y === other.y;
-           };
-	 #+END_SRC
-
-       - need to decide what are methods, what are functions, what are
-         new objects
-
-	 - keep object as small as possible
-
-       - 2-dim array as 1-dim, accessed via
-	 #+BEGIN_SRC js
-           var grid = ["0,0", "1,0", "2,0",
-                       "0,1", "1,1", "2,1"];
-           show(grid[2 + 1 * 3]);
-	 #+END_SRC
-
-       - ex. 8.2 =each=
-	 #+BEGIN_SRC js
-           Grid.prototype.each(func(point, stuff)) {
-               for ( var j = 0; j < width; j += 1; ) {
-                   for ( var i = 0; i < height; i+= 1; ) {
-                       var p = new Point(i, j);
-                       func(p, valueAt(p));
-                   }
-               }
-           };
-	 #+END_SRC
-
-       - direction object (dictionary, {"n", 'ne', 'nw', ...})
-
-	 - action object ({"move", direction})
-
-	 - Bug.act function() = .. return action
-
-       - Terrarium: initialized with ascii plan
-
-	 - #=wall, o=bug, ' ' = nothing
-
-	 - elementFromCharacter maps above
-
-    12. [@12] The Document-Object Model
-
-	- =<HTML>= via =document.documentElement=
-
-	  - =<BODY>= via =document.body=
-
-	- f.ex. =document.body.parentNode= to get the parent
-
-	  - =.childNodes=, =.firstChild= and =.lastChild=
-
-	  - =.previousSibling= and =.nextSibling=
-
-	- if text node, then =node.nodeType= = 3, (most often) else 1
-
-	- =.nodeName= for tag name (CAPITALIZED)
-
-	  - =.firstChild.nodeValue= for text value
-
-	- exercise: get text of html tags
-
-	  #+BEGIN_SRC js
-            function getText(node) {
-              if ( isTextNode(node) ) {
-                return node.nodeValue;
-              } else {
-                var out = "";
-                for ( var i = 0; i < node.childNodes.length; i++ ) {
-                  out += getText(node.childNodes[i]);
-                }
-                return out;
-              }
-            };
-            print(getText(document.body));
-	  #+END_SRC
-
-	- =node.innerHTML= gives HTML, also changeable which effects website
-
-	- =document.getElementById("picture")= gives element
-
-	  - also =document.getElementsByTagName[0]=
-
-	- =var h = document.createElement("H1");= creates new header
-
-	  - =var text = document.createTextNode("hi there");= creates text node
-
-	  - =h.appendChild(text)= and =document.appendChild(h)= appends both
-
-	  - also =newImage.setAttribute("src", "img/Hiva Oa.png");=
-
-	- =setAttribute= workaround for IE, then
-
-	  - build dom elements
-	    #+BEGIN_SRC js
-              function dom(name, attributes) {
-                  var node = document.createElement(name);
-                  if (attributes) {
-                      forEachIn(attributes, function(name, value) {
-                          node.setAttribute(name, value);
-                      });
-                  }
-                  for (var i = 2; i < arguments.length; i++) {
-                      var child = arguments[i];
-                      if (typeof child == "string")
-                          child = document.createTextNode(child);
-                      node.appendChild(child);
-                  }
-                  return node;
-              };
-	    #+END_SRC
-
-	- =.insertBefore(someNode, beforeThis)=
-
-	  - =.replaceChild(newNode, toBeReplaced)=
-
-	  - =.removeChild(childNode)=
-
-	- "Write the convenient function removeElement which removes
-          the DOM node it is given as an argument from its parent
-          node."
-
-	  #+BEGIN_SRC js
-            function easyRemove(node) {
-                node.parentNode && node.parentNode.removeChild(node);
-            }
-	  #+END_SRC
-
-	- only moveable within single document, not from tab to tab, f.ex.
-
-	- html tables: ie needs tbody tag
-
-	- create table function
-
-	  her solution
-	  #+BEGIN_SRC js
-            function makeTable(data, columns) {
-              var headRow = dom("TR");
-              forEach(columns, function(name) {
-                headRow.appendChild(dom("TH", null, name));
-              });
-
-              var body = dom("TBODY", null, headRow);
-              forEach(data, function(object) {
-                var row = dom("TR");
-                forEach(columns, function(name) {
-                  row.appendChild(dom("TD", null, String(object[name])));
-                });
-                body.appendChild(row);
-              });
-
-              return dom("TABLE", null, body);
-            };
-	  #+END_SRC
-	  my part
-	  #+BEGIN_SRC js
-            function makeTable(objects, columnNames) {
-              var tableEls = [],
-                  i;
-
-              tableEls.push(dom("tr", null, dom("th", null, columnNames[0]), dom("th", null, columnNames[1])));
-              for (i = 0; i < objects.length; i++ ) {
-                tableEls.push(dom(tr, null, dom(td, null, objects[columnNames[0]]), dom(td, null, objects[columnNames[1]])));
-              };
-              // somehow append
-            };
-	  #+END_SRC
-
-	- CSS
-
-	  style attribute to node
-
-	- other style
-
-	  display = ""; makes it reappear, code
-	  #+BEGIN_SRC js
-            $("picture").style.display = "";
-	  #+END_SRC
-
-	- change position via js
-
-	  #+BEGIN_SRC js
-            node.style.position = "absolute";
-            node.style.left = 100px;
-            node.style.top = 10%; //?
-	  #+END_SRC
-
-	- also =.width=, =.height= to set
-
-	  - and =.offsetWidth= etc and =.clientWidth= to differentiate
-            outer/inner
-
-    13. Browser Events
-*** quotes
-    - (begins 4)
-    - The keyword `delete` cuts off properties. Trying to read a
-      non-existent property gives the value undefined.
-    - var now = new Date();
-    - (ends 4)
-    - Object-orientation's longevity can largely be explained by the
-      fact that the ideas at its core are very solid and useful. In
-      this chapter, we will discuss these ideas, along with
-      JavaScript's (rather eccentric) take on them.
-    - typing ={}= is equivalent to typing =new Object()=
-    - example object creation
-      #+BEGIN_SRC js
-        function Rabbit(adjective) {
-          this.adjective = adjective;
-        }
-        Rabbit.prototype.speak = function(line) {
-          print("The ", this.adjective, " rabbit says '", line, "'");
-        };
-
-        var hazelRabbit = new Rabbit("hazel");
-        hazelRabbit.speak("Good Frith!");
-      #+END_SRC
-    - Personally, I treat writing documentation as a 'finishing touch'
-      to add to a system. When it feels ready, it is time to write
-      something about it, and to see if it sounds as good in English
-      (or whatever language) as it does in JavaScript (or whatever
-      programming language).
-    - (ends 8)
 ** [#B] PART [[./user_guide_0.16.1.pdf][scikit-learn user guide]]
 *** quotes
     - Despite its simplicity, nearest neighbors has been successful in
@@ -8750,6 +8593,92 @@
       - (ends 47.3)
 *** ref
     [[file:master.bib::scikit-learn][Pedregosa et al. 2011: Scikit]]
+** [#B] PART Applied Cryptography
+*** summary
+    2) [@2] Protocol Building Blocks
+
+       1) Introduction to Protocols
+
+	  0) [@0]
+
+	     - "cryptography solves problems [of...] secrecy,
+               authentication, integrity, and dishonest people."
+
+	     - protocol: "series of steps, involving two or more parties,
+               designed to accomplish a task"
+
+	       - must be
+
+		 - well-known by all parties,
+
+		 - agreed to
+
+		 - unambiguous === well-defined
+
+		 - complete: specific action for every possible situation
+
+	     - cryptographic protocol
+
+	       - prevent or detect eavesdropping or cheating via cryptography
+
+	       - should not be possible to learn or do more than
+		 specified in the protocol
+
+	  1) The Purpose of Protocols
+
+	     - how computers talk to each other (people do it
+               informally all the time)
+
+	  2) The Players
+
+	     - Alice, Bob, Carol, Dave
+
+	     - Eve: Eavesdropper
+
+	     - Mallory: Malicious active attaker
+
+	     - Trent: Trusted arbitrator
+
+	     - Walter: Warden; guards Alice, Bob, ...
+
+	  3) Arbitrated Protocols
+
+	     - truthful entity with no vested interest
+
+	       - like lawyer as escrow agent, or stock exchange, or banker
+
+	     - trusted party old institution,
+
+	     - problems with computers:
+
+	       - cannot see,
+
+	       - network must bear the cost,
+
+	       - delay,
+
+	       - arbitrator is bottleneck
+
+	       - vulnerable point for subverter
+
+	  4) Adjudicated Protocols
+
+	     - (only) detect cheating, do not prevent
+
+	       - this should discourage cheating, though
+
+	     - adjudicator: external authority, called on only in conflict
+
+	     - like judge in real life
+
+	  5) Self-Enforcing Protocols
+*** quotes
+    2) [@2]
+       1)
+	  1) The Purpose of Protocols
+	     - It is naïve to assume that [people on, the managers of,
+               the designers of] computer networks are honest. Most
+               are, but the dishonest few can do a lot of damage.
 ** PART [#B] [[./ESLII_print4.pdf][The Elements of Statistical Learning]]
 *** summary
     1) Introduction
@@ -9704,6 +9633,301 @@
       of training data and are more likely to make mistakes for small
       and noisy data sets.
     - (ends 14.0)
+** PART [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Eloquent Javascript]]
+*** summary
+    8. [@8] Object-oriented Programming
+
+       - 90s trend, persistent, "solid and useful"
+
+       - create objects, attach methods and properties
+
+       - easy: just attach function values to object
+
+       - =apply(object, params)=: first parameter (mapped to =this=) is object
+
+	 - also =call(object, params*)= separate arguments instead of array
+
+       - constructor
+
+	 - Capitalized
+
+	 - use with =new=
+
+	 - always sets =this= to object, returns it
+
+	 - also sets =constructor= property and some other stuff
+
+       - .prototype
+
+	 - like =class=, but dynamically augmentable
+
+       - always changes object, object never changes .prototype
+
+	 - access goes up the prototype hierarchy until name is found
+
+       - use =hasOwnProperty= to find out if really the object has the
+         attribute, or it's somewhere else
+
+         - workaround for when hasOwnProperty is an attribute
+
+	 - code to apply function to each property of object
+	   #+BEGIN_SRC js
+             function forEachIn(object, action) {
+                 for (var property in object) {
+                     if (object.hasOwnProperty(property))
+                         action(property, object[property]);
+                 }
+             };
+	   #+END_SRC
+
+       - above fails in Firefox, which assigns a __proto__ to all objects
+
+	 - objects are "values with methods" and "sets of properties"
+
+       - =Dictionary= class for "sets of properties"
+
+       - external api vs internal implementation
+
+       - could add methods to f.ex. =Object=: be careful, but possible
+
+       - Exercise project: Terrarium
+
+	 - 2d, discrete time and place, # wall, ' ' free, o
+
+         - functions: =toString=, =step=, =start=, =stop= for terrarium
+
+       - first point, addpoints, samepoint
+	 #+BEGIN_SRC js
+           function Point(x, y) {
+               this.x = x;
+               this.y = y;
+           };
+
+           Point.prototype.add(other) {
+               return new Point(this.x + other.x, this.y += other.y);
+           };
+
+           Point.prototype.isEqualTo(other) {
+               return this.x === other.x && this.y === other.y;
+           };
+	 #+END_SRC
+
+       - need to decide what are methods, what are functions, what are
+         new objects
+
+	 - keep object as small as possible
+
+       - 2-dim array as 1-dim, accessed via
+	 #+BEGIN_SRC js
+           var grid = ["0,0", "1,0", "2,0",
+                       "0,1", "1,1", "2,1"];
+           show(grid[2 + 1 * 3]);
+	 #+END_SRC
+
+       - ex. 8.2 =each=
+	 #+BEGIN_SRC js
+           Grid.prototype.each(func(point, stuff)) {
+               for ( var j = 0; j < width; j += 1; ) {
+                   for ( var i = 0; i < height; i+= 1; ) {
+                       var p = new Point(i, j);
+                       func(p, valueAt(p));
+                   }
+               }
+           };
+	 #+END_SRC
+
+       - direction object (dictionary, {"n", 'ne', 'nw', ...})
+
+	 - action object ({"move", direction})
+
+	 - Bug.act function() = .. return action
+
+       - Terrarium: initialized with ascii plan
+
+	 - #=wall, o=bug, ' ' = nothing
+
+	 - elementFromCharacter maps above
+
+    12. [@12] The Document-Object Model
+
+	- =<HTML>= via =document.documentElement=
+
+	  - =<BODY>= via =document.body=
+
+	- f.ex. =document.body.parentNode= to get the parent
+
+	  - =.childNodes=, =.firstChild= and =.lastChild=
+
+	  - =.previousSibling= and =.nextSibling=
+
+	- if text node, then =node.nodeType= = 3, (most often) else 1
+
+	- =.nodeName= for tag name (CAPITALIZED)
+
+	  - =.firstChild.nodeValue= for text value
+
+	- exercise: get text of html tags
+
+	  #+BEGIN_SRC js
+            function getText(node) {
+              if ( isTextNode(node) ) {
+                return node.nodeValue;
+              } else {
+                var out = "";
+                for ( var i = 0; i < node.childNodes.length; i++ ) {
+                  out += getText(node.childNodes[i]);
+                }
+                return out;
+              }
+            };
+            print(getText(document.body));
+	  #+END_SRC
+
+	- =node.innerHTML= gives HTML, also changeable which effects website
+
+	- =document.getElementById("picture")= gives element
+
+	  - also =document.getElementsByTagName[0]=
+
+	- =var h = document.createElement("H1");= creates new header
+
+	  - =var text = document.createTextNode("hi there");= creates text node
+
+	  - =h.appendChild(text)= and =document.appendChild(h)= appends both
+
+	  - also =newImage.setAttribute("src", "img/Hiva Oa.png");=
+
+	- =setAttribute= workaround for IE, then
+
+	  - build dom elements
+	    #+BEGIN_SRC js
+              function dom(name, attributes) {
+                  var node = document.createElement(name);
+                  if (attributes) {
+                      forEachIn(attributes, function(name, value) {
+                          node.setAttribute(name, value);
+                      });
+                  }
+                  for (var i = 2; i < arguments.length; i++) {
+                      var child = arguments[i];
+                      if (typeof child == "string")
+                          child = document.createTextNode(child);
+                      node.appendChild(child);
+                  }
+                  return node;
+              };
+	    #+END_SRC
+
+	- =.insertBefore(someNode, beforeThis)=
+
+	  - =.replaceChild(newNode, toBeReplaced)=
+
+	  - =.removeChild(childNode)=
+
+	- "Write the convenient function removeElement which removes
+          the DOM node it is given as an argument from its parent
+          node."
+
+	  #+BEGIN_SRC js
+            function easyRemove(node) {
+                node.parentNode && node.parentNode.removeChild(node);
+            }
+	  #+END_SRC
+
+	- only moveable within single document, not from tab to tab, f.ex.
+
+	- html tables: ie needs tbody tag
+
+	- create table function
+
+	  her solution
+	  #+BEGIN_SRC js
+            function makeTable(data, columns) {
+              var headRow = dom("TR");
+              forEach(columns, function(name) {
+                headRow.appendChild(dom("TH", null, name));
+              });
+
+              var body = dom("TBODY", null, headRow);
+              forEach(data, function(object) {
+                var row = dom("TR");
+                forEach(columns, function(name) {
+                  row.appendChild(dom("TD", null, String(object[name])));
+                });
+                body.appendChild(row);
+              });
+
+              return dom("TABLE", null, body);
+            };
+	  #+END_SRC
+	  my part
+	  #+BEGIN_SRC js
+            function makeTable(objects, columnNames) {
+              var tableEls = [],
+                  i;
+
+              tableEls.push(dom("tr", null, dom("th", null, columnNames[0]), dom("th", null, columnNames[1])));
+              for (i = 0; i < objects.length; i++ ) {
+                tableEls.push(dom(tr, null, dom(td, null, objects[columnNames[0]]), dom(td, null, objects[columnNames[1]])));
+              };
+              // somehow append
+            };
+	  #+END_SRC
+
+	- CSS
+
+	  style attribute to node
+
+	- other style
+
+	  display = ""; makes it reappear, code
+	  #+BEGIN_SRC js
+            $("picture").style.display = "";
+	  #+END_SRC
+
+	- change position via js
+
+	  #+BEGIN_SRC js
+            node.style.position = "absolute";
+            node.style.left = 100px;
+            node.style.top = 10%; //?
+	  #+END_SRC
+
+	- also =.width=, =.height= to set
+
+	  - and =.offsetWidth= etc and =.clientWidth= to differentiate
+            outer/inner
+
+    13. Browser Events
+*** quotes
+    - (begins 4)
+    - The keyword `delete` cuts off properties. Trying to read a
+      non-existent property gives the value undefined.
+    - var now = new Date();
+    - (ends 4)
+    - Object-orientation's longevity can largely be explained by the
+      fact that the ideas at its core are very solid and useful. In
+      this chapter, we will discuss these ideas, along with
+      JavaScript's (rather eccentric) take on them.
+    - typing ={}= is equivalent to typing =new Object()=
+    - example object creation
+      #+BEGIN_SRC js
+        function Rabbit(adjective) {
+          this.adjective = adjective;
+        }
+        Rabbit.prototype.speak = function(line) {
+          print("The ", this.adjective, " rabbit says '", line, "'");
+        };
+
+        var hazelRabbit = new Rabbit("hazel");
+        hazelRabbit.speak("Good Frith!");
+      #+END_SRC
+    - Personally, I treat writing documentation as a 'finishing touch'
+      to add to a system. When it feels ready, it is time to write
+      something about it, and to see if it sounds as good in English
+      (or whatever language) as it does in JavaScript (or whatever
+      programming language).
+    - (ends 8)
 ** PART [[./javascript_the_good_parts.pdf][JavaScript: The Good Parts]]
 *** summary
     1. Good parts
@@ -10586,40 +10810,35 @@
 
       Return evenly spaced numbers over a specified interval.
 ** PART [[./btxdoc.pdf][BIBTEXing]]
-*** summary
 *** quotes
-    - (begins 3)
-    - *book*
-
-      A book with an explicit publisher. Required fields: author or
-      editor, title, publisher, year. Optional fields: volume or
-      number, series, address, edition, month, note.
-    - *inbook*
-
-      A part of a book, which may be a chapter (or section or
-      whatever) and/or a range of pages. Required fields: author or
-      editor, title, chapter and/or pages, publisher, year. Optional
-      fields: volume or number, series, type, address, edition, month,
-      note.
-    - *techreport*
-
-      A report published by a school or other institution, usually
-      numbered within a series. Required fields: author, title,
-      institution, year. Optional fields: type, number, address,
-      month, note.
-    - (ends 3.1)
-    - address
-
-      Usually the address of the publisher or other type of
-      institution. For major publishing houses, van Leunen recommends
-      omitting the information entirely. For small publishers, on the
-      other hand, you can help the reader by giving the complete
-      address.
-    - (begins 4)
-    - Thus, you should feel free to be creative in how you use these
-      entry types (but if you have to be too creative, there’s a good
-      chance you’re using the wrong entry type).
-    - (ends 4)
+    3) [@3] The Entries
+       1) Entry Types
+	  1) *book* A book with an explicit publisher. Required
+             fields: author or editor, title, publisher,
+             year. Optional fields: volume or number, series, address,
+             edition, month, note.
+	  2) *inbook* A part of a book, which may be a chapter (or
+             section or whatever) and/or a range of pages. Required
+             fields: author or editor, title, chapter and/or pages,
+             publisher, year. Optional fields: volume or number,
+             series, type, address, edition, month, note.
+	  3) *techreport* A report published by a school or other
+             institution, usually numbered within a series. Required
+             fields: author, title, institution, year. Optional
+             fields: type, number, address, month, note.
+	  4) *unpublished* A document having an author and title, but
+             not formally published. Required fields: author, title,
+             note. Optional fields: month, year.
+       2) Fields
+          1) *address* Usually the address of the publisher or other
+             type of institution. For major publishing houses, van
+             Leunen recommends omitting the information entirely. For
+             small publishers, on the other hand, you can help the
+             reader by giving the complete address.
+    4) Helpful Hints
+       - Thus, you should feel free to be creative in how you use
+         these entry types (but if you have to be too creative,
+         there’s a good chance you’re using the wrong entry type).
 ** PART [[./Google JavaScript Style Guide.html][Google JavaScript Style Guide]]
 *** summary
     1) JavaScript Language Rules
@@ -10994,7 +11213,39 @@
 	       #+BEGIN_LATEX
 	       All lines between these markers are exported literally
 	       #+END_LATEX
-** MAYBE [[./rijsbergen79_infor_retriev.pdf][INFORMATION RETRIEVAL]]
+** PART [[./Google%20Python%20Style%20Guide.html][Google Python Style Guide]]
+*** summary
+    1) Python Language Rules
+       1) Lint
+
+	  "Run pylint over your code."
+
+	  disable warnings by-case using symbolic names
+
+       2) Imports
+
+	  "Use imports for packages and modules only."
+
+	  - "Use import x for importing packages and modules."
+
+	  - "Use from x import y where x is the package prefix and y
+            is the module name with no prefix."
+
+	  - "Use from x import y as z if two modules named y are to be
+            imported or if y is an inconveniently long name."
+
+       3) Packages
+
+       4) [@4] Exceptions
+
+*** quotes
+    - Avoid using the + and += operators to accumulate a string within
+      a loop. Since strings are immutable, this creates unnecessary
+      temporary objects and results in quadratic rather than linear
+      running time. Instead, add each substring to a list and ''.join
+      the list after the loop terminates (or, write each substring to
+      a =io.BytesIO= buffer).
+** PART [[./rijsbergen79_infor_retriev.pdf][INFORMATION RETRIEVAL]]
 *** quotes
     |X ∩ Y| / |X ∪ Y| Jaccard's coefficient
 ** onion routing project
@@ -11367,38 +11618,6 @@
     1) Introduction
 *** quotes
 *** ref: [[file:master.bib::rfc7159][Bray 2014: JavaScript Object Notation]]
-** PART MOVE [[./Google%20Python%20Style%20Guide.html][Google Python Style Guide]]
-*** summary
-    1) Python Language Rules
-       1) Lint
-
-	  "Run pylint over your code."
-
-	  disable warnings by-case using symbolic names
-
-       2) Imports
-
-	  "Use imports for packages and modules only."
-
-	  - "Use import x for importing packages and modules."
-
-	  - "Use from x import y where x is the package prefix and y
-            is the module name with no prefix."
-
-	  - "Use from x import y as z if two modules named y are to be
-            imported or if y is an inconveniently long name."
-
-       3) Packages
-
-       4) [@4] Exceptions
-
-*** quotes
-    - Avoid using the + and += operators to accumulate a string within
-      a loop. Since strings are immutable, this creates unnecessary
-      temporary objects and results in quadratic rather than linear
-      running time. Instead, add each substring to a list and ''.join
-      the list after the loop terminates (or, write each substring to
-      a =io.BytesIO= buffer).
 ** [[./critique.html][A Critique of Website Traffic Fingerprinting Attacks]]
 *** summary
 *** quotes
@@ -11651,7 +11870,6 @@
     #+END_SRC
 ** [[file:Marionette%20Python%20Tests%20-%20Mozilla%20|%20MDN.html][Marionette Python Tests]]
 ** [[file:Marionette%20-%20Mozilla%20|%20MDN.html::<!DOCTYPE%20html][Marionette (main page)]]
-** TODO MOVE [[./1999-35.pdf][A Behavioral Model of Web Traffic]]
 ** [[./tcpdump.pdf]]
 ** [[shell:man npm-faq][man npm-faq]]
 *** quotes
@@ -11669,7 +11887,6 @@
        · https://github.com/coreybutler/nvm-windows
        · https://github.com/hakobera/nvmw
        · https://github.com/nanjingboy/nvmw
-** [[../sw/jasondavies_bloomfilter.js%20%C2%B7%20GitHub.html]]
 ** [[./reftex.pdf][RefTeX Manual]]
 ** [[./oakland2013-parrot.pdf][The Parrot is Dead: Observing Unobservable Network Communications]]
 ** [[./Wang_Tao.pdf][Wang - Website Fingerprinting: Attacks and Defenses]]
@@ -11693,92 +11910,3 @@
 
 	      - faulty implementation in 1.0: hangs on proxy use
 *** quotes
-** TODO MOVE [#B] [[./Analysis_of_Web_Data_Compression_and_its_Impact_on_Traffic_and_Energy_Consumption.pdf]]
-*** summary
-*** quotes
-** PART MOVE Applied Cryptography
-*** summary
-    2) [@2] Protocol Building Blocks
-
-       1) Introduction to Protocols
-
-	  0) [@0]
-
-	     - "cryptography solves problems [of...] secrecy,
-               authentication, integrity, and dishonest people."
-
-	     - protocol: "series of steps, involving two or more parties,
-               designed to accomplish a task"
-
-	       - must be
-
-		 - well-known by all parties,
-
-		 - agreed to
-
-		 - unambiguous === well-defined
-
-		 - complete: specific action for every possible situation
-
-	     - cryptographic protocol
-
-	       - prevent or detect eavesdropping or cheating via cryptography
-
-	       - should not be possible to learn or do more than
-		 specified in the protocol
-
-	  1) The Purpose of Protocols
-
-	     - how computers talk to each other (people do it
-               informally all the time)
-
-	  2) The Players
-
-	     - Alice, Bob, Carol, Dave
-
-	     - Eve: Eavesdropper
-
-	     - Mallory: Malicious active attaker
-
-	     - Trent: Trusted arbitrator
-
-	     - Walter: Warden; guards Alice, Bob, ...
-
-	  3) Arbitrated Protocols
-
-	     - truthful entity with no vested interest
-
-	       - like lawyer as escrow agent, or stock exchange, or banker
-
-	     - trusted party old institution,
-
-	     - problems with computers:
-
-	       - cannot see,
-
-	       - network must bear the cost,
-
-	       - delay,
-
-	       - arbitrator is bottleneck
-
-	       - vulnerable point for subverter
-
-	  4) Adjudicated Protocols
-
-	     - (only) detect cheating, do not prevent
-
-	       - this should discourage cheating, though
-
-	     - adjudicator: external authority, called on only in conflict
-
-	     - like judge in real life
-
-	  5) Self-Enforcing Protocols
-*** quotes
-    2) [@2]
-       1)
-	  1) The Purpose of Protocols
-	     - It is naïve to assume that [people on, the managers of,
-               the designers of] computer networks are honest. Most
-               are, but the dishonest few can do a lot of damage.
