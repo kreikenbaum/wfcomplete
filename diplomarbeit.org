@@ -70,12 +70,12 @@
     The progress of web protocols made website fingerprinting
     harder. In the original HTTP/1.0\cite{rfc1945} protocol, each
     request used a separate TCP-connection. This facilitated the
-    original attacks against HTTPS browsing\cite{quantifying} and an
-    anonymizing proxy\cite{hintz02}, which thus extracted the exact
-    file size of each embedded object.
+    original attacks against HTTPS browsing\cite{quantifying} and the
+    anonymizing web proxy SafeWeb\cite{hintz02}, which both extracted
+    the exact file size of each embedded object.
 
     As building a new connection for each transferred object turned out
-    to be inefficient, persistent connections were added in some
+    to be inefficient, persistent connections were added in some HTTP
     implementations \cite{rfc2068} and later specified in HTTP/1.1
     \cite{rfc2616}. This meant that it was no longer trivial to extract
     the files' sizes. You had to determine the start and end of each
@@ -85,22 +85,23 @@
     [[./pictures/HTTP_persistent_connection.svg.png]]
 
     In addition to persistent connections, HTTP/1.1 allowed pipelining
-    several HTTP requests in a single connection without waiting for the
-    files to arrive in between. This further cloaked the file
-    boundaries. (Yet, when pipelining was enabled by the Tor Browser
-    developers, enabling this feature did not lead to harder detection).
+    several HTTP requests in a single connection without waiting for
+    the files to arrive in between. This further cloaked the file
+    boundaries. Yet, when pipelining was enabled by the Tor Browser
+    developers, fingerprinting became easier, not
+    harder.\cite{ccs2012-fingerprinting}
 
     [[./pictures/HTTP_pipelining2.svg.png]]
 
-    Pipelining creates problems with some servers, so it is disabled by
-    default in Firefox \cite{firefox-pipelining} and Chrome
-    \cite{chromium-pipelining}, and not implemented in Internet Explorer
-    ([[ie pipelining]]).)
+    It had to be enabled, as pipelining creates problems with some
+    servers, so it is disabled by default in Firefox
+    \cite{firefox-pipelining} and Chrome \cite{chromium-pipelining},
+    and not implemented in Internet Explorer \cite{ie-pipelining}.
 
     Originally, a browser should open at most two connections per host
     \cite{rfc2616} to retrieve the files one-by-one. An update
-    \cite{rfc7230} increased this limit to 6.
-**** TODO cite which paper shows that pipelining does not help
+    \cite{rfc7230} removed this fixed limit, encouraging clients to be
+    "conservative" in the number, instead.
 *** Who could attack via WF
     As website fingerprinting requires very litte resources, a specific
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
@@ -3119,17 +3120,6 @@ mean = 0.763238095238
 * lit
 ** firefox pipelining
    [[file:~/da/docs/master.bib::firefox-pipelining][2015: Enable HTTP]]
-** TODO ie pipelining [0/1]
-   #+BEGIN_SRC bibtex
-     @misc{ie-pipelining,
-       author = "td",
-       title = "td",
-       year = "2010",
-       url = "\url{http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp/expertzone/chats/transcripts/08_0814_ez_ie8.mspx}",
-       note = "[td]"
-     }
-   #+END_SRC
-*** TODO dl src
 ** HTTP/1.1
    [[file:~/da/docs/master.bib::rfc2616][R. & Berners-Lee 1999: Hypertext Transfer Protocol]]
 ** RFC7230
