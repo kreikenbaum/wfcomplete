@@ -4,13 +4,15 @@
  * load to approximate the target. The HTML call is done on creation,
  * embedded object calls on {@code loadNext}.
  */
+const Simple = require('sdk/simple-prefs');
 
 const debug = require("./debug.js");
 const stats = require("./stats.js");
 
 // td: changeable by pref (slider?)
+// prefs allow only integers, no floats
 /** overhead of dummy traffic -1; 1.5 has overhead of 50% */
-const FACTOR = 1.5;
+const FACTOR = 1 + (Simple.prefs.factor / 100);
 const MIN_PROB = 0.1; // td: test and think through
 
 /**

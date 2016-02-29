@@ -35,7 +35,7 @@
 **** WAIT may \to (ohne) (falls richtig)
 ** Introduction
 ** Materials and Methods
-* TODO topics [0/18]
+* TODO topics [0/16]
 ** TODO Website Fingerprinting [0/3]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
@@ -66,7 +66,7 @@
     yielded results. Prior to to [[file:docs/lit.org::*%5B%5B./acmccs-wpes11-fingerprinting.pdf%5D%5BPanchenko%20-%20Website%20Fingerprinting%20in%20Onion%20Routing%20Based%20Anonymization%20Networks%5D%5D][Panchenkos et al]], it was expected that
     Tor introduced multiplexing, enough padding and latency into website
     retrieval that this attack was inapplicable.
-*** TODO Hurdles to website fingerprinting
+*** CHECK Hurdles to website fingerprinting
     The progress of web protocols made website fingerprinting
     harder. In the original HTTP/1.0\cite{rfc1945} protocol, each
     request used a separate TCP-connection. This facilitated the
@@ -86,17 +86,22 @@
 
     In addition to persistent connections, HTTP/1.1 allowed pipelining
     several HTTP requests in a single connection without waiting for
-    the files to arrive in between. This further cloaked the file
-    boundaries. Yet, when pipelining was enabled by the Tor Browser
-    developers, fingerprinting became easier, not
-    harder.\cite{ccs2012-fingerprinting}
+    the files to arrive in between.
 
     [[./pictures/HTTP_pipelining2.svg.png]]
 
-    It had to be enabled, as pipelining creates problems with some
-    servers, so it is disabled by default in Firefox
-    \cite{firefox-pipelining} and Chrome \cite{chromium-pipelining},
-    and not implemented in Internet Explorer \cite{ie-pipelining}.
+    As it created problems with some servers, pipelining was disabled
+    by default in Firefox \cite{firefox-pipelining} and Chrome
+    \cite{chromium-pipelining}, and not implemented in Internet
+    Explorer \cite{ie-pipelining}.
+
+
+    After the Panchenko paper\cite{panchenko} an additional no-cost
+    defense prototype was implemented in the Tor-Browser-Bundle
+    \cite{experimental}: Firefox's built-in request pipelining was
+    enabled with added request order randomization.  Cai et al. found
+    fingerprinting to be easier with this defense enabled than
+    without. \cite{ccs2012-fingerprinting}
 
     Originally, a browser should open at most two connections per host
     \cite{rfc2616} to retrieve the files one-by-one. An update
@@ -106,19 +111,6 @@
     As website fingerprinting requires very litte resources, a specific
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
     state.
-*** TODO Current defenses in Tor [0/2]
-    After the Panchenko paper\cite{panchenko} an additional no-cost
-    defense was implemented in the
-    Tor-Browser-Bundle\cite{experimental}: Firefox's built-in request
-    pipelining was enabled with added request order randomization.
-
-    Concerning randomization, if Firefox would ordinarly request
-    images 1 to 10, in that order, the images are requested in random
-    order, f.ex. 5,2,8,9,4,6,7,3,1,10 in batches of random sizes.
-**** TODO link to implementation/details
-     - https://gitweb.torproject.org/torbrowser.git/blob/maint-2.2:/src/current-patches/0006-Randomize-HTTP-pipeline-order-and-depth.patch
-     - or https://trac.torproject.org/projects/tor/ticket/3914
-**** TODO check maximum again
 *** practical wf: Capturing traces
 **** [[capture alternatives]]
 **** [[shell script]]
