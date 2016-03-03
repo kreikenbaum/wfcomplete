@@ -6,7 +6,6 @@ const xhr = require("sdk/net/xhr");
 
 const debug = require("./debug.js");
 
-// needs RequestPolicy to be disabled
 /** @param toLoad load this url as cover (discarded afterwards) */
 function http(toLoad) {
     debug.log("load: http(" + toLoad + ")");

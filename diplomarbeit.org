@@ -42,7 +42,7 @@
     webpages or websites a user visits via an anonymizing proxy. It is a
     type of traffic analysis\cite{applied96}, where characteristics of
     traffic are used to infer conjectures about content and metadata.
-*** What happens during a website request
+*** TODO What happens during a websiet request
     When a user visits a webpage, the browser first sends a request for
     the HTML page. The Webserver answers with that HTML page. Then, the
     browser requests the objects embedded into that page, such as
@@ -52,7 +52,8 @@
     objects embedded within a page could allow a local passive observer
     to infer whether the user requests a specific web page from a set of
     pages.
-*** Why could website fingerprinting be a problem
+**** TODO how are fonts included
+*** CHECK Why could website fingerprinting be a problem
     As a typical scenario, consider the government of some state. A
     whistleblower posts something very critical of the regime on a
     well-known critical website. The whistleblower uses Tor or some
@@ -60,13 +61,13 @@
     monitors and records all Tor connections. Even though Tor obfuscates
     the user's traffic, the specific data-pattern of the website gives
     the whistleblower away.[fn::This is, as of now, a theoretical
-    threat. It has not yet been observed.]
+    threat. It has not been observed in the wild.]
 *** Panchenko's Attack via Website Fingerprinting
     For a long time, traffic analysis attacks against Tor had not
-    yielded results. Prior to to [[file:docs/lit.org::*%5B%5B./acmccs-wpes11-fingerprinting.pdf%5D%5BPanchenko%20-%20Website%20Fingerprinting%20in%20Onion%20Routing%20Based%20Anonymization%20Networks%5D%5D][Panchenkos et al]], it was expected that
-    Tor introduced multiplexing, enough padding and latency into website
-    retrieval that this attack was inapplicable.
-*** CHECK Hurdles to website fingerprinting
+    yielded results. Prior to Panchenko et al\cite{panchenko}, it was
+    assumed that Tor introduced multiplexing, enough padding and
+    latency into website retrieval that this attack was inapplicable.
+*** Hurdles to website fingerprinting
     The progress of web protocols made website fingerprinting
     harder. In the original HTTP/1.0\cite{rfc1945} protocol, each
     request used a separate TCP-connection. This facilitated the
@@ -74,13 +75,13 @@
     anonymizing web proxy SafeWeb\cite{hintz02}, which both extracted
     the exact file size of each embedded object.
 
-    As building a new connection for each transferred object turned out
-    to be inefficient, persistent connections were added in some HTTP
-    implementations \cite{rfc2068} and later specified in HTTP/1.1
-    \cite{rfc2616}. This meant that it was no longer trivial to extract
+    Building a new connection for each transferred object proved to be
+    inefficient. Some HTTP implementations \cite{rfc2068} used
+    persistent connections. These were included HTTP/1.1
+    \cite{rfc2616}. Due to this, it was no longer trivial to extract
     the files' sizes. You had to determine the start and end of each
-    request. (which was still possible by seeing when the client sent a
-    new request).
+    request. (which was still possible by seeing when the client sent
+    a new request).
 
     [[./pictures/HTTP_persistent_connection.svg.png]]
 
@@ -90,11 +91,10 @@
 
     [[./pictures/HTTP_pipelining2.svg.png]]
 
-    As it created problems with some servers, pipelining was disabled
+    As this created problems with some servers, pipelining was disabled
     by default in Firefox \cite{firefox-pipelining} and Chrome
     \cite{chromium-pipelining}, and not implemented in Internet
     Explorer \cite{ie-pipelining}.
-
 
     After the Panchenko paper\cite{panchenko} an additional no-cost
     defense prototype was implemented in the Tor-Browser-Bundle
@@ -105,8 +105,8 @@
 
     Originally, a browser should open at most two connections per host
     \cite{rfc2616} to retrieve the files one-by-one. An update
-    \cite{rfc7230} removed this fixed limit, encouraging clients to be
-    "conservative" in the number, instead.
+    \cite{rfc7230} removed this fixed limit, but encouraged clients
+    "to be conservative when opening multiple connections".
 *** Who could attack via WF
     As website fingerprinting requires very litte resources, a specific
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
@@ -123,6 +123,7 @@
 *** Related Work
 **** [[History of Website Fingerprinting]]
 **** [[MERGE history of website fingerprinting in Tor]]
+*** [[History of website fingerprinting]]
 ** TODO Tor [0/8]
 *** How to use Tor
     Tor offers a SOCKS5\cite{rfc1928}-(TCP\cite{rfc793}-)proxy for
@@ -1008,7 +1009,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 ** each load of page
 ** end of page load
 * MOVE appendix Python web server for cover traffic
-  This did not scale too well, so it was not used. It is included as a
+  This approach did not scale, so it was not used. It is included as a
   reference of what seems to work, but did not.
 
   The python module =TrafficHTTPServer= can be started on the command-line via 
@@ -1022,8 +1023,14 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 
   retrieves a document with 10 bytes content from a TrafficHTTPServer
   running at localhost port 8000.
-
+** TODO include file
 * TODO mod_wsgi
+  =mod_wsgi= module is a module for the apache web server. It provides
+  functionality to execute python scripts implementing the WSGI
+  standard. Contrary to normal apache installation, a server using
+  only wsgi is easily set up via the =mod_wsgi-express= command, which
+  is included in the =mod_wsgi= python package.
+
   installation
 
   - apt-get install apache2-bin apache2-dev
@@ -1034,7 +1041,9 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - ~/.local/bin/mod_wsgi-express start-server wsgi.py
 
   (here, also --port 7777), as for the script wsgi.py see appendix
-  
+** TODO WSGI lit
+** TODO link to pypi mod_wsgi
+** TODO link to comparison via nichol.as
 * TODO Tor overview
 * misc: tex bibliography
 \bibliography{docs/master}
