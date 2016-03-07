@@ -1325,7 +1325,7 @@
 
       so timing information is omitted?
 *** ref
-    [[file:./master.bib::ccs2014-critical][Juarez et al. 2014: Critical Evaluation Website Fingerprinting Attacks]]
+    [[file:master.bib::effective][Wang et al. 2014: Effective Attacks Provable]]
 ** [[./ccs14.pdf][Cai 2014 - A Systematic Approach to Developing and Evaluating Website Fingerprinting Defenses]]
 *** summary
     0) [@0] ABSTRACT
@@ -3033,7 +3033,7 @@
     - no longer developed
 *** ref
     [[file:master.bib::chickenfoot][2015: Chickenfoot]]
-** TODO [[./1512.00524v1.pdf][Juarez - WTF-PAD: Toward an Efficient Website Fingerprinting Defense for Tor]]
+** [[./1512.00524v1.pdf][Juarez - WTF-PAD: Toward an Efficient Website Fingerprinting Defense for Tor]]
 *** summary
     0) [@0] Abstract
 
@@ -3399,7 +3399,7 @@
       optimal configuration for each client. We propose to have
       WTF-PAD bootstrap these values during installation.
     - (ends 8)
-*** TODO ref
+*** ref
     [[file:master.bib::wtfpad][Juarez et al. 2015: WTF PAD]]
 ** [[./Intercepting Page Loads - Mozilla | MDN.html][Intercepting Page Loads]]
 *** summary
@@ -4561,7 +4561,8 @@
       | Reading Time  | 39.70 (max 10,000 sec) | 324.92 | Lognormal (μ=-0.495204, σ=2.7731) |
       | Request Size  | 318.59          | 179.46 | Uniform (350 Bytes)          |
 *** questions
-    - correlation of features (high object count \to high page size)
+*** ref
+    [[file:master.bib::newtrafficmodel][Mistry & Raman 2007: NEW TRAFFIC MODEL]]
 ** [[./ndss16-wfp-internet-scale.pdf][Website Fingerprinting at Internet Scale]]
 *** summary
     0) [@0] Abstract
@@ -5984,6 +5985,42 @@
 
        2) How this Works
 
+	  special name, 5 different objects bound
+
+	  1) The Global Scope
+
+	     - in global scope: to global object
+
+	       - except for strict mode: undefined
+
+	  2) Calling a Function
+
+	     - global object
+
+	       - except for strict mode: undefined
+
+	  3) Calling a Method
+
+	     - to the containing object
+
+	  4) Calling a Constructor
+
+	     to newly created object
+
+	  5) Explicit Setting of this
+
+	     #+BEGIN_SRC js
+               function foo(a, b, c) {}
+
+               var bar = {};
+               foo.apply(bar, [1, 2, 3]); // array will expand to the below
+               foo.call(bar, 1, 2, 3); // results in a = 1, b = 2, c = 3
+	     #+END_SRC
+
+	     =this= explicitly set to bar
+
+	  6) Common Pitfalls
+
        5) [@5] Constructors
 
 	  1) Basics
@@ -6070,6 +6107,35 @@
 	    - if not set \to global object
 
        2) scope chains and \[\[scope\]\]
+
+	  - scope chain is constructed by prepending
+            Activation/Variable object to function's [\[scope]]
+
+	  - Function object: scope is global object
+
+	  - function declarations and function expressions have a scope chain
+
+	  - global declaration / expression:
+
+	    - global object
+
+	    - expression evaluated lated, but still global object
+
+	  - inner declaration / expression:
+
+	    - scope of outer function, incluing Activation object
+
+	  - with
+
+	    - sets to scope chain
+
+	    - evaluates block
+
+	    - does affect function expressions
+
+	      - not function declarations
+
+       3) Identifier Resolution
 *** quotes
     - running javascript code forms a stack of execution contexts.
 ** TODO [#A] [[./hintz02.pdf][Hintz - Fingerprinting Websites Using Traffic Analysis]]
@@ -6127,6 +6193,32 @@
        - service shut down before large scale tests were possible
 
     7) Improving the Attack
+
+       so far small-scale, for large-scale, improvements would be
+
+       1) Analyzing the Order of Transmissions
+
+	  - also order HTML-embedded
+
+	  - create several fingerprints (for different web browsing programs)
+
+       2) Improving Creation of Fingerprints
+
+	  - always some noise
+
+	  - maybe from different computers, adding sizes
+
+       3) Expanding Fingerprints to Entire Websites
+
+	  - f.ex. by getting all sizes of all files on the website
+            (cnn.com f.ex.)
+
+       4) Improving Matching
+
+	  - range matching (adding ranges after exact matches) created
+            more false positives
+
+    8) Protecting Against Fingerprinting
 *** quotes
     - The process of monitoring the nature and behavior of traffic,
       rather than its content, is known as traffic analysis.
@@ -6192,6 +6284,42 @@
             websites instead of web pages via Hidden Markov Models
 
        3) TOR
+
+	  0) [@0]
+
+	     - anonymization service
+
+	     - volunteers
+
+	     - if wf works, not anonymizing
+
+	     - defense
+
+	  1) Circuits and Streams
+
+	     - guard nodes rather fixed
+
+	     - middle and exit nodes
+
+	     - varying bandwidths per node
+
+	     - SENDME cells like ACKS
+
+	       - should be removed
+
+	  2) Defenses
+
+	     - tor browser defense
+
+	       1) enable pipelining
+
+	       2) randomize request order
+
+	       3) randomize pipeline size
+
+	     - cai found to fail, this evluates, too
+
+       4) DATA COLLECTION AND PROCESSING
 *** quotes
     - dynamic content such as advertisements may cause a variation in
       incoming packets but not outgoing packets, and dynamic content
@@ -6350,9 +6478,29 @@
 
     6) Active attacks
 
-       - impose timing signature via active dropping
+       0) [@0]
 
-       - ...
+	  - impose timing signature
+
+	  - attacker cannot create or replay packets
+
+       1) Artificial gaps
+
+	  - drops of several packets in a row
+
+	    - recognizable with defensive dropping
+
+	    - but not with adaptive padding
+
+       2) Artificial bursts
+
+	  - queue packets, then send all at once
+
+	    - defensive dropping crossover rate drops to 0
+
+	    - adaptive padding lower, the longer (.21 with 15-second-queue)
+
+    7) Comparison with constant-rate defenses
 *** quotes
     - Many mix networks are specifically intended to provide anonymity
       against attackers who control the communication medium.
@@ -8039,43 +8187,7 @@
       see into the panopticon, into the tower, and so they never knew
       if they were being watched or even when.
 *** ref
-#+BEGIN_SRC bibtex
-     @misc{privacy-g,
-       author = "Glenn Greenwald",
-       title = "Why Privacy Matters",
-       url = "\url{www.ted.com/talks/glenn_greenwald_why_privacy_matters/transcript}",
-       note = "[Online; accessed 15-October-2015]"
-     }
-#+END_SRC
-** TODO [[./tor_overview.html][Tor Project: Overview]]
-*** summary
-    1) Overview
-
-       - tor increases privacy and security
-
-       - series of virtual tunnels
-
-       - censorship circumvention
-
-       - groups
-	 - individuals: keep from tracking, connect to blocked
-           websites, hidden services allow to publish, socially
-           sensitive communication
-
-	 - journalists: communicate with whistleblowers
-
-	 - indymedia, eff recommend Tor, corporations for
-           investigating competitors
-
-	 - U.S. Navy: comint, teams,
-
-	 - law enforcement: surveil websites, sting
-
-    2) Why we need Tor
-
-       - f.ex. foreign country, s/o could observe where you are connecting
-
-    3) The solution: a distributed, anonymous network
+    [[file:master.bib::privacy-g][Greenwald: Why Privacy Matters]]
 ** TODO [[./Levenshtein.html][Levenshtein-Distanz]]
 *** quotes
     - ist die minimale Anzahl von Einfüge-, Lösch- und

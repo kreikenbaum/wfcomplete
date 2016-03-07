@@ -35,7 +35,7 @@
 **** WAIT may \to (ohne) (falls richtig)
 ** Introduction
 ** Materials and Methods
-* TODO topics [0/16]
+* TODO topics [0/28]
 ** TODO Website Fingerprinting [0/3]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
@@ -53,6 +53,8 @@
     to infer whether the user requests a specific web page from a set of
     pages.
 **** TODO how are fonts included
+     @font-family or @font-face, see
+     http://stackoverflow.com/questions/107936/how-to-add-some-non-standard-font-to-a-website
 *** CHECK Why could website fingerprinting be a problem
     As a typical scenario, consider the government of some state. A
     whistleblower posts something very critical of the regime on a
@@ -123,7 +125,19 @@
 *** Related Work
 **** [[History of Website Fingerprinting]]
 **** [[MERGE history of website fingerprinting in Tor]]
-*** [[History of website fingerprinting]]
+*** TODO History of Website Fingerprinting
+    The idea of using traffic analysis to gather information about
+    encrypted traffic was mentioned in \cite{applied96} and applied
+    in the analysis of SSL 3.0 by Schneier and Wagner in
+    1997\cite{SSL}.
+
+    - quantifying etc
+
+    The term /website fingerprinting/ was coined by
+    Hintz in 2002. A successful attack against single-hop proxies was
+    carried out by Herrmann et al. in 2009.
+**** SSL
+     [[file:~/da/docs/master.bib::SSL][Wagner & Schneier 1997: Analysis SSL]]
 ** TODO Tor [0/8]
 *** How to use Tor
     Tor offers a SOCKS5\cite{rfc1928}-(TCP\cite{rfc793}-)proxy for
@@ -212,7 +226,24 @@
     - troubleshooting IT systems.
 **** TODO "nowadays" used like this and here?
 **** TODO client numbers with link (footnote?)
-*** [[Tor Threat Model]]
+*** TODO Tor Threat Model [0/2]
+    Tor does not attempt to protect against a global passive adversary,
+    who can observe all connections. A Tor adversary can\cite{tor-design}
+
+    - observe a fraction of all traffic,
+    - generate, modify, and delete traffic,
+    - operate its own Onion Routers, and
+    - compromise a fraction of the other ORs
+
+    This adversary is not purely passive, but lacks global information.
+
+    Tor is not intended to protect you
+    - if someone can monitor a big amount of internet traffic (td: quote)
+    - if someone can exploit your browser
+    - if someone can exploit your computer
+    - if you enter identifying information while using tor
+**** TODO maybe schneier re adversaries
+**** TODO quote big amount internet traffic, read paper
 *** Tor Browser
     There are many technologies based on the Tor protocol. Top of the
     list ([[file:docs/lit.org::*%5B%5B./projects.html%5D%5BSoftware%20&%20Services%5D%5D][Software & Services*]]) is the Tor Browser Bundle. This is a
@@ -221,7 +252,9 @@
 
     Among the additional privacy features the Tor-Browser-Bundle
     provides are added request randomization and enabled pipelining.
-*** [[tbb anti-wf modification]]
+*** TODO tbb anti-wf modification
+    - pipelining enabled
+    - request order randomization
 *** TODO history of website fingerprinting in Tor
 **** with  [[History of Website Fingerprinting]]
     The website fingerprinting attack scenario is already described in
@@ -230,28 +263,119 @@
     effective"\cite{tor-design} against Tor, due to stream/circuit
     multiplexing and fixed cell sizes.
 *** TODO sort subtopics
-** TODO MOVE TO [[Addon Design and Implementation]] Developing Firefox Addons [0/2]
-*** [[Mozilla Add-On Sdk]]
-*** Debugger
-*** [[Available Data]]
-*** separation of scripts
-    As a security measure, there is a separation between
+** TODO Addon Design and Implementation [0/9]
+*** TODO Mozilla Add-On Sdk [0/2]
+**** TODO Introduction to the Mozilla Add-On Sdk
+     The Add-on SDK by Mozilla supports the development of
+     Firefox-Addons.
 
-    1) /add-on scripts/, which are run in the browser context, but
-       cannot access the web page, and
-    2) /content scripts/, which are run in the page context. They can
-       access the DOM, but not add-on scripts. nor
-    3) /page scripts/, which are those included in the website via
-       f.ex. =<script>= tags
+     It allows users to create addons using HTML and Javascript only, as
+     opposed to the previous use of
+     XUL[fn::\url{https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XUL}],
+     the XML User-interface Language.
 
-    Bridging this separation, f.ex. accessing page scripts (and vice
-    versa) is possible, but needs some extra work.
-**** LATER index: page scripts, content scripts, add-on scripts
-*** [[message-passing]]
-*** TODO collect/list all addon sections
-*** TODO organize all addon sections
-** Addon Design and Implementation
-*** [[Design]]
+     The addon execution entry point (like `main` in C and Java) can be
+     configured via the =preferences.json= file. By default, the main
+     addon-script is called =index.js=.
+
+     The SDK contains many tools to interact with the browser. URLs can
+     be loaded in the background via the =page-worker= module; the
+     =page-mod= module injects Javascript code into the page the user is
+     browsing to. User-created code can be tested via unit tests.
+
+     If none of the easily accessible high-, or low-level modules
+     suffice, much of the browser's functionality is accessible via the
+     XPCOM module.
+***** TODO link XUL
+**** Debugger
+**** TODO Available Data
+     Firefox offers several ways for an add-on to listen for web activity.
+
+     - contents of main page
+       \to links to each domain
+     - page-mod
+       - problems: only when page is loaded, problem for cover traffic
+       - but +: ends of all the loading (and processing)
+     [[file:git/docs/lit.org::*%5B%5B./Intercepting%20Page%20Loads%20-%20Mozilla%20|%20MDN.html%5D%5BIntercepting%20Page%20Loads%5D%5D][Intercepting Page Loads*]] lists several
+     - load events
+     - http observer
+     - webprogersslistener
+     - xpcom
+       - policymanager
+       - documentloader
+***** each load of page
+***** end of page load
+**** separation of scripts
+     As a security measure, there is a separation between
+
+     1) /add-on scripts/, which are run in the browser context, but
+	cannot access the web page, and
+     2) /content scripts/, which are run in the page context. They can
+	access the DOM, but not add-on scripts. nor
+     3) /page scripts/, which are those included in the website via
+	f.ex. =<script>= tags
+
+     Bridging this separation, f.ex. accessing page scripts (and vice
+     versa) is possible, but needs some extra work.
+***** LATER index: page scripts, content scripts, add-on scripts
+**** CHECK message-passing
+     There is a mechanism to pass content from the add-on to the
+     content scripts, as shown in the example.
+
+     A single string can be passed. As this string can be any serialized
+     JSON\cite{rfc7159} object, this is not much of a limitation. (It
+     effectively disallows the passing of functions and circular
+     objects).
+
+     In a content-script, a message can be sent via
+     =self.port.emit('message_type', param)= and received via
+     =self.port.on('message_type', function(param))=.
+
+     In the Addon-Context, a =worker= object is used and the
+     content-script's =self= is replaced by a =worker=. The worker is
+     initialized via the =onAttach= parameter of f.ex. the page-mod.
+**** TODO collect/list all addon sections
+**** TODO organize all addon sections
+**** [[page-worker]]
+**** [[page-mod]]
+**** [[Installation and Use of Jpm (the build tool)]]
+**** [[interacting with page-scripts]]
+**** [[DOM]]
+*** TODO [#B] Design
+    #+BEGIN_LATEX
+    \begin{adjustbox}{max width=\textwidth}
+    \input{pictures/model.tex}
+    \end{adjustbox}
+    #+END_LATEX
+**** tmp [[shell:dia pictures/model.dia &]]
+**** needs to do
+     - make wf harder such that it is impossible
+**** by
+     - generating cover traffic
+**** procedural
+***** check which urls user loads
+****** aggregate by domain
+***** on finish load: tick off domains which were included
+****** else still active (?)
+***** for each loaded url, maybe load something else
+**** objects
+***** UserWatcher
+      notifies when user loads sth
+****** maybe change name
+****** methods
+       - loads
+       - endsLoad
+***** Cover(Loader=default)
+      provides cover traffic
+***** Loader(Source=default2)
+      loads new cover page (mockable)
+***** Stats - Static functions
+      statistical distributions (html, embedded, etc)
+***** Source
+      source for cover traffic
+      1. fixed domain, fixed elements
+      2. fixed domain, size as parameter
+      3. LATER MAYBE get new ones from cover traffic
 *** Implementation
 **** Unit Testing
 * MAYBE_AND_MOVE How to not use Tor
@@ -269,40 +393,6 @@
   Using a client called /Onion Proxy/ on the local computer, almost all
 ** TODO ref onion routing
 ** TODO onion routing
-* TODO Tor Threat Model [0/2]
-  Tor does not attempt to protect against a global passive adversary,
-  who can observe all connections. A Tor adversary can\cite{tor-design}
-
-  - observe a fraction of all traffic,
-  - generate, modify, and delete traffic,
-  - operate its own Onion Routers, and
-  - compromise a fraction of the other ORs
-
-  This adversary is not purely passive, but lacks global information.
-
-  Tor is not intended to protect you
-  - if someone can monitor a big amount of internet traffic (td: quote)
-  - if someone can exploit your browser
-  - if someone can exploit your computer
-  - if you enter identifying information while using tor
-** TODO maybe schneier re adversaries
-** TODO quote big amount internet traffic, read paper
-* TODO tbb anti-wf modification
-  - pipelining enabled
-  - request order randomization
-* TODO History of Website Fingerprinting
-  The idea of using traffic analysis to gather information about
-  encrypted traffic was mentioned in \cite{applied96} and applied
-  in the analysis of SSL 3.0 by Schneier and Wagner in
-  1997\cite{SSL}.
-
-  - quantifying etc
-
-  The term /website fingerprinting/ was coined by
-  Hintz in 2002. A successful attack against single-hop proxies was
-  carried out by Herrmann et al. in 2009.
-** SSL
-   [[file:~/da/docs/master.bib::SSL][Wagner & Schneier 1997: Analysis SSL]]
 * MAYBE-then-TODO torben
   Torben is a deanonymization attack based on injected website content
   in combination with Pattern Recognition. The authors show that when
@@ -330,28 +420,6 @@
   - fundamental human need
   - concentration camp:
     "solitude in a Camp is more precious and rare than bread." -- primo levi
-* TODO Mozilla Add-On Sdk
-  The Add-on SDK by Mozilla supports the development of
-  Firefox-Addons.
-
-  It allows users to create addons using HTML and Javascript only, as
-  opposed to the previous use of
-  XUL[fn::\url{https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XUL}],
-  the XML User-interface Language.
-
-  The addon execution entry point (like `main` in C and Java) can be
-  configured via the =preferences.json= file. By default, the main
-  addon-script is called =index.js=.
-
-  The SDK contains many tools to interact with the browser. URLs can
-  be loaded in the background via the =page-worker= module; the
-  =page-mod= module injects Javascript code into the page the user is
-  browsing to. User-created code can be tested via unit tests.
-
-  If none of the easily accessible high-, or low-level modules
-  suffice, much of the browser's functionality is accessible via the
-  XPCOM module.
-** TODO link XUL
 * CHECK page-worker
   A =page-worker= creates "a permanent, invisible page and access[es]
   its
@@ -396,6 +464,7 @@
    nodejs.org
 ** TODO link online signing.
 ** jpm xpi date/time problem
+** TODO include [[unit tests jpm]]
 * TODO page-mod
   The
   page-mod[fn::\url{http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html}]
@@ -430,22 +499,6 @@
   execution, stylesheet modification, etc.
 ** link page-mod
    http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
-* CHECK message-passing
-  There is a mechanism to pass content from the add-on to the
-  content scripts, as shown in the example.
-
-  A single string can be passed. As this string can be any serialized
-  JSON\cite{rfc7159} object, this is not much of a limitation. (It
-  effectively disallows the passing of functions and circular
-  objects).
-
-  In a content-script, a message can be sent via
-  =self.port.emit('message_type', param)= and received via
-  =self.port.on('message_type', function(param))=.
-
-  In the Addon-Context, a =worker= object is used and the
-  content-script's =self= is replaced by a =worker=. The worker is
-  initialized via the =onAttach= parameter of f.ex. the page-mod.
 * TODO interacting with page-scripts
   By default, content-scripts are isolated from the modifications
   done by page-scripts.[[Interacting with page scripts]]
@@ -473,7 +526,14 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 * TODO js coding best practices
   - "use strict";
   - unit tests
-  - mention subset of ...
+  - mention "good parts"?
+  - jshint
+* TODO wf defenses
+  - walkie-talkie
+  - wtfpad
+  - supersequence
+  - tamaraw
+  - buflo
 * TODO other defenses
   There are other methods of defense, which might help mitigate
   website fingerprinting. One is based on reducing the fingerprint by
@@ -954,60 +1014,12 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - only helps in cover traffic, (unless warm/cold site model is used)
 * TODO assumptions
   split traffic traces
-* TODO [#B] Design
-  #+BEGIN_LATEX
-  \begin{adjustbox}{max width=\textwidth}
-  \input{pictures/model.tex}
-  \end{adjustbox}
-  #+END_LATEX
-** tmp [[shell:dia pictures/model.dia &]]
-** procedural
-*** check which urls user loads
-**** aggregate by domain
-*** on finish load: tick off domains which were included
-**** else still active (?)
-*** for each loaded url, maybe load something else
-** objects
-*** UserWatcher
-    notifies when user loads sth
-**** maybe change name
-**** methods
-     - loads
-     - endsLoad
-*** Cover(Loader=default)
-    provides cover traffic
-*** Loader(Source=default2)
-    loads new cover page (mockable)
-*** Stats - Static functions
-    statistical distributions (html, embedded, etc)
-*** Source
-    source for cover traffic
-    1. fixed domain, fixed elements
-    2. fixed domain, size as parameter
-    3. LATER MAYBE get new ones from cover traffic
 * TODO who used which retrieval method
   - list
   - chickenfoot
   - modified browser
   - selenium: daniel
   - plain tor bundle
-* TODO Available Data
-  Firefox offers several ways for an add-on to listen for web activity.
-
-  - contents of main page
-    \to links to each domain
-  - page-mod
-    - problems: only when page is loaded, problem for cover traffic
-    - but +: ends of all the loading (and processing)
-  [[file:git/docs/lit.org::*%5B%5B./Intercepting%20Page%20Loads%20-%20Mozilla%20|%20MDN.html%5D%5BIntercepting%20Page%20Loads%5D%5D][Intercepting Page Loads*]] lists several
-  - load events
-  - http observer
-  - webprogersslistener
-  - xpcom
-    - policymanager
-    - documentloader
-** each load of page
-** end of page load
 * MOVE appendix Python web server for cover traffic
   This approach did not scale, so it was not used. It is included as a
   reference of what seems to work, but did not.
