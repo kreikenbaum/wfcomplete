@@ -6021,6 +6021,23 @@
 
 	  6) Common Pitfalls
 
+	     - in method definitions, =this= refers to global object, solution:
+	       #+BEGIN_SRC js
+                 Foo.method = function() {
+                     var test = function() {
+                         // this now refers to Foo
+                     }.bind(this);
+                     test();
+                 };
+	       #+END_SRC
+
+	  7) Assigning Methods
+
+	     aliasing as =var test = someObject.methodTest;= has the
+             same problem
+
+       3) Closures and References
+
        5) [@5] Constructors
 
 	  1) Basics
@@ -6136,9 +6153,17 @@
 	      - not function declarations
 
        3) Identifier Resolution
+
+	  - up the scope chain
+
+	  - function call: first Activation object for formal
+            parameters, inner function declaration names or local
+            variables, then up scope chain
+
+    4) Closures
 *** quotes
     - running javascript code forms a stack of execution contexts.
-** TODO [#A] [[./hintz02.pdf][Hintz - Fingerprinting Websites Using Traffic Analysis]]
+** MOVE [#A] [[./hintz02.pdf][Hintz - Fingerprinting Websites Using Traffic Analysis]]
 *** summary
     0) [@0] Abstract
 
@@ -6219,6 +6244,46 @@
             more false positives
 
     8) Protecting Against Fingerprinting
+
+       several ways
+
+       1) Adding Noise to Traffic
+
+	  0) [@0]
+
+	     - possible by proxy
+
+	     - SafeWeb already reformats HTML to point back to SafeWeb
+
+	  1) Modify Sizes of Connections
+
+	     - modify sizes of files (comments to HTML, jpg, f.ex.)
+
+	     - increase amount of bandwith
+
+	  2) Add Extra Fake Connections
+
+	     - f.ex. by embedding 1x1 sized pictures
+
+	       - drawbacks: rendering, high amount of bandwidth
+
+       2) Reduce Number of Files Transferred
+
+	  - "quick and easy solution": disable graphics, etc
+
+	    - reduced number of files by 3/4
+
+       3) Transfer Everything in One Connection
+
+	  - f.ex. one tarball
+
+	  - (or HTML/1.1)
+
+    9) Conclusion
+
+       - applicable to other services
+
+	 - f.ex. SSH: determine size of password
 *** quotes
     - The process of monitoring the nature and behavior of traffic,
       rather than its content, is known as traffic analysis.
@@ -6228,8 +6293,7 @@
     - Although the government would have a huge amount of traffic to
       analyze, https traffic comprises only a very small portion of
       all Internet traffic. (5)
-*** ref
-    [[file:master.bib::hintz02][Hintz 2002: Fingerprinting Websites Using Traffic Analysis]]
+*** ref [[file:master.bib::hintz02][Hintz 2002: Fingerprinting Websites Using Traffic Analysis]]
 ** TODO [#A] [[./webfingerprint-wpes.pdf][Improved Website Fingerprinting on Tor]]
 *** summary
     0) [@0] Abstract
