@@ -5755,11 +5755,34 @@
 
 	    - implementierer hat operationsImp
 
-	    - implementierer-kindklassen benutzen nur operationsImp
+	    - implementierer-kindklassen operationsImp konkret um bzw. verwendent sie
 
-	  - Interaktion: abstraktion leite anfragen (von klienten) weiter
+	  - Interaktion: abstraktion leitet anfragen (von klienten) weiter
 
-	  - konsequenzen
+	  - Konsequenzen
+
+	    - entkopplung Schnittstelle/Implementierung
+
+	    - verbesserte Erweiterbarkeit
+
+	  - Implementierung
+
+	    - degeneriert: ein Implementor-typ, falls nicht neu uebersetzt werden soll
+
+	    - welches Implementorobjekt erzeugen?
+
+	      - entweder default, dann anpassen
+
+	      - oder Fabrikmuster fuer erzeugung
+
+	  - Verwandte Muster:
+
+	    - Abstrakte Fabrik kann Bruecke erzeugen,
+
+	    - Adapter wird in bereits bestehendem System verwendet,
+              bruecke im Design
+
+       3) TODO Dekorierer
 
     5) [@5] Verhaltensmuster
 
@@ -6038,6 +6061,82 @@
 
        3) Closures and References
 
+	  0) [@0]
+
+	     "One of JavaScript's most powerful features"
+
+	  1) Emulating private variables
+
+	     using closures
+	     #+BEGIN_SRC js
+               function Counter(start) {
+                   var count = start;
+                   return {
+                       increment: function() {
+                           count++;
+                       },
+                       get: function() {
+                           return count;
+                       }
+                   }
+               }
+	     #+END_SRC
+	     =count= is hidden from the outside
+
+	  2) Why Private Variables Work
+
+	     - =count= referenced by =increment= and =get=, but
+               otherwise unavailable
+
+	     - scopes cannot be assigned or referenced
+
+	  3) Closures Inside Loops
+
+	     - often a problem: variable is referenced, thus always
+               the same (f.ex. with =setTimeout=)
+
+	  4) Avoiding the Reference Problem
+
+	     1) anonymous wrapper (see also 2.6)
+		#+BEGIN_SRC js
+                  for(var i = 0; i < 10; i++) {
+                      (function(e) {
+                          setTimeout(function() {
+                              console.log(e);
+                          }, 1000);
+                      })(i);
+                  }
+		#+END_SRC
+
+	     2) return a function from the anonymous wrapper
+		#+BEGIN_SRC js
+                  for(var i = 0; i < 10; i++) {
+                      setTimeout((function(e) {
+                          return function() {
+                              console.log(e);
+                          }
+                      })(i), 1000)
+                  }
+		#+END_SRC
+
+	     3) additional argument to setTimeout
+		#+BEGIN_SRC js
+                  for(var i = 0; i < 10; i++) {
+                      setTimeout(function(e) {
+                          console.log(e);
+                      }, 1000, i);
+                  }
+		#+END_SRC
+
+	     4) using .bind
+		#+BEGIN_SRC js
+                  for(var i = 0; i < 10; i++) {
+                      setTimeout(console.log.bind(console, i), 1000);
+                  }
+		#+END_SRC
+
+	  5) The arguments Object
+
        5) [@5] Constructors
 
 	  1) Basics
@@ -6161,8 +6260,47 @@
             variables, then up scope chain
 
     4) Closures
+
+       1) Automatic Garbage Collection
+
+	  - all objects that are no longer used are freed
+
+	    - normally outside of scopes
+
+       2) Forming Closures
+
+	  - example: =exampleClosureForm(arg1, arg2)= returning
+            =exampleReturned(innerArg)= using =localVar=
+
+	  - =var globalVar = exampleClosureForm(2, 4);=
+
+	    - object called =globalVar= has a [\[scope]] property
+
+	    - scope is
+	      #+BEGIN_SRC js
+                ActOuter1 = {
+                    arg1: 2,
+                    arg2: 4,
+                    localVar: 8,
+                    exampleReturned: [...inner function...]
+                }
+	      #+END_SRC
+
+	  - execution:
+
+	    - new execution context, scope chain:
+	      =ActInner1-> ActOuter1-> global object=
+
+	  - nesting possible
+
+    5) What can be done with Closures?
 *** quotes
-    - running javascript code forms a stack of execution contexts.
+    3) [@3] Identifier Resolution, Execution Contexts and scope chains
+       1) The Execution Context
+	  - running javascript code forms a stack of execution contexts.
+    4) Closures
+       1) [@2] Forming Closures
+	  - The ECMAScript specification requires a scope chain to be finite
 ** MOVE [#A] [[./hintz02.pdf][Hintz - Fingerprinting Websites Using Traffic Analysis]]
 *** summary
     0) [@0] Abstract
@@ -6384,10 +6522,60 @@
 	     - cai found to fail, this evluates, too
 
        4) DATA COLLECTION AND PROCESSING
+
+	  1) Collecting Data
+
+	     0) [@0]
+
+		different clients, different traces
+
+	     1) Circuit Construction
+
+		- should control circuit construction manually (?if
+                  done in sequence?)
+
+	     2) Timing
+
+		- should train on sites several hours apart (not
+                  feasible in real-time because of training time)
+
+	     3) Localization
+
+		- problem of redirects to localized site
+                  (f.ex. google.ca)
+
+		- problem of localized content (f.ex. advertising)
+
+	     4) Our Methodology
+
+		- tor controller
+
+		- 100@40 sites
+
+		- batch: 4 instances
+
+		- maximum circuit duration
+
+		- removed similar sites (google.de|be|... unified)
+
+		- try to get localized sites (yahoo.de)
+
+		- remove trace if size is  less than 20% of median
+
+		- disable cacheing
+
+	  2) Processing Data
 *** quotes
-    - dynamic content such as advertisements may cause a variation in
-      incoming packets but not outgoing packets, and dynamic content
-      is often loaded last in a website.
+    1) INTRODUCTION
+       - [@?] dynamic content such as advertisements may cause a
+         variation in incoming packets but not outgoing packets, and
+         dynamic content is often loaded last in a website.
+    4) [@4] DATA COLLECTION AND PROCESSING
+       1) Collecting Data
+	  1) Circuit Construction
+	     - the top 1% of relays comprised 29% of the total
+               bandwidth of Tor and the top 20% of relays comprised
+               93% of the bandwidth.
 *** ref
     [[file:master.bib::wpes13-fingerprinting][Wang & Goldberg 2013: Improved Website Fingerprinting Tor]]
 ** TODO [#B] [[./ShWa-Timing06.pdf][Timing analysis in low-latency mix networks: attacks and defenses]]
