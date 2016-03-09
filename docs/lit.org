@@ -5782,7 +5782,7 @@
 	    - Adapter wird in bereits bestehendem System verwendet,
               bruecke im Design
 
-       3) TODO Dekorierer
+       3) Dekorierer
 
     5) [@5] Verhaltensmuster
 
@@ -6135,7 +6135,45 @@
                   }
 		#+END_SRC
 
-	  5) The arguments Object
+       4) The arguments Object
+
+	  0) [@0]
+
+	     - in every function scope
+
+	     - array-like, not array
+
+	  1) Converting to an Array
+
+	     slow, avoid in performance-critical parts
+	     #+BEGIN_SRC js
+               Array.prototype.slice.call(arguments);
+	     #+END_SRC
+
+	  2) Passing Arguments
+
+	     recommended:
+	     #+BEGIN_SRC js
+               function foo() {
+                   bar.apply(null, arguments);
+               }
+               function bar(a, b, c) {
+                   // do stuff here
+               }
+	     #+END_SRC
+
+	     you can also use =call= and =apply= together to turn
+             methods into normal functions
+
+	  3) Formal Parameters and Arguments Indices
+
+	     setting the parameter also changes =arguments= (except
+             for strict mode)
+
+	  4) Performance Myths and Truths
+
+	     using =arguments.callee= may make things slower, as
+             functions can no longer be inlined
 
        5) [@5] Constructors
 
@@ -6159,7 +6197,11 @@
 
 	     - inheritance harder
 
-	     - "contrary to spirity of the language"
+	     - "contrary to spirit of the language"
+
+	  4) In Conclusion
+
+	     depends on application, but prototypes have many benefits, too
 
        6) Scopes and Namespaces
 ** TODO [#A] [[./Javascript Closures.prototype_chain.html][Javascript Closures]]
@@ -6294,6 +6336,21 @@
 	  - nesting possible
 
     5) What can be done with Closures?
+
+       "emulate anything"
+
+       1) Example 1: setTimeout with Function References
+	  #+BEGIN_SRC js
+            function callLater(paramA, paramB, paramC){
+                return (function(){
+                    // do sth with paramA, paramB and paramC
+                });
+            }
+            var functRef = callLater(elStyle, "display", "none");
+            setTimeout(functRef, 500);
+	  #+END_SRC
+
+       2) Example 2: Associating Functions with Object Instance Methods
 *** quotes
     3) [@3] Identifier Resolution, Execution Contexts and scope chains
        1) The Execution Context
@@ -6565,6 +6622,34 @@
 		- disable cacheing
 
 	  2) Processing Data
+
+	     0) [@0]
+
+		- "After processing, each traffic instance is
+                  represented as a sequence of positive and negative
+                  integers."
+
+	     1) TCP/IP packet instances
+
+		- length field
+
+		- cai and panchenko rounded sizes by increments of 600
+
+	     2) Tor cell instances
+
+		- TCP/IP layer info has problems f.ex. with retransmit
+
+		- round down to closest multiple of 512, divide by 512
+
+		- "will produce the number of Tor cells in the record."
+
+	     3) Removing SENDMEs
+
+		- guess the p2-th cell to be a sendme after p1 start cells
+
+		- p1=45, p2=40 gave TPR .62, FPR .057
+
+       5) CLASSIFICATION
 *** quotes
     1) INTRODUCTION
        - [@?] dynamic content such as advertisements may cause a
@@ -6753,6 +6838,29 @@
 	    - adaptive padding lower, the longer (.21 with 15-second-queue)
 
     7) Comparison with constant-rate defenses
+
+       compare to constant-rate defenses
+
+       - latency is prohibitive: especially in low-latency mix networks
+
+	 maybe for non-interactive applications
+
+       - Everybody must send at the same constant rate: see section
+         5.2 most flows must use this, in contrast to adaptive padding
+
+       - There is no “right” constant rate: f.ex. bursts require high
+         rate which might congest the network
+
+       - Defense fails against active attacks: see section 6
+
+       - Defense fails at high traffic rates: if higher rate than
+         fixed, most packets are real, which "is vulnerable to basic
+         timing analysis"
+
+       - Defense reveals presence of real traffic: sparse is padding,
+         dense is real traffic
+
+    8) Creation and management of dummy packets
 *** quotes
     - Many mix networks are specifically intended to provide anonymity
       against attackers who control the communication medium.
