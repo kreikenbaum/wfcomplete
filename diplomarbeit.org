@@ -739,6 +739,13 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 
   and start the retrieval as mentioned above.
 * TODO how to process the data
+  The aim of processing is to extract features relevant for machine
+  learning from the original trace files, which are in =pcap= format.
+
+  Of the several tools available for reading =pcap=, =tshark= was
+  chosen. It is the command-line version of the Wireshark protocol
+  analyzer [[fn::\url{http://www.wireshark.org}]].
+
   - tshark internally
   - python triggers
   - collects,
@@ -1056,6 +1063,38 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 ** TODO link to pypi mod_wsgi
 ** TODO link to comparison via nichol.as
 * TODO Tor overview
+* TODO bloom filter sizes
+  The statistical size generation works with application-level sizes
+  on the network, as the authors analysed squid
+  proxy[[fn::\url{http://www.squid-cache.org}]] logs.
+
+  The HTML-sizes could not be trivially obtained in the browser, as
+  there are additional headers and size-reduction via compression. The
+  sizes were determined by retrieving the files with =wget= via squid
+
+  #+BEGIN_SRC sh
+    sudo squid3 -k shutdown &&\
+    sudo squid3 -k kill &&\
+    echo '' | sudo tee /var/log/squid3/access.log &&\
+    sudo squid3
+    sleep 3
+    # retrieves sites
+    for i in $(cat ~/sw/top-100-modified.csv | cut -d "," -f 2); do
+        mkdir $i
+        cd $i
+        env http_proxy='http://127.0.0.1:3128' wget $i
+        cd ..
+    done
+  #+END_SRC
+
+  and examining the log file =access.log= via the command sequence
+
+  sudo cat /var/log/squid3/access.log | tr -s ' ' | cut -d ' ' -f 5,7
+  > /mnt/data/HTML-sizes
+
+  The second important feature that is used in generating cover
+  traffic is the number of embedded files per HTML-page.
+** TODO number embedded
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
