@@ -4550,16 +4550,16 @@
       next HTML object overlaps.
     - (ends 3)
     - Table 2: Analysis Result of HTTP Model Parameters
-      | Parameters    | Mean            |   S.D. | Best Fit                     |
-      |---------------+-----------------+--------+------------------------------|
-      | <13>          | <15>            |        | <28>                         |
-      | HTML Object size | 11872 (Max 2MB) |  38306 | Truncated Lognormal (μ=7.90272, σ=1.7643) |
-      | Embedded ObjectSize | 12460 (Max 6MB) | 116050 | Truncated Lognormal (μ=7.51384, σ 2.17454) |
-      | Number of Embedded objects | 5.07 (Max 300)  |        | Gamma (κ=0.141385, θ=40.3257) |
+      | Parameters    | Mean            |   S.D. | Best Fit                                    |
+      |---------------+-----------------+--------+---------------------------------------------|
+      | <13>          | <15>            |        |                                             |
+      | HTML Object size | 11872 (Max 2MB) |  38306 | Truncated Lognormal (μ=7.90272, σ=1.7643)   |
+      | Embedded ObjectSize | 12460 (Max 6MB) | 116050 | Truncated Lognormal (μ=7.51384, σ 2.17454)  |
+      | Number of Embedded objects | 5.07 (Max 300)  |        | Gamma (κ=0.141385, θ=40.3257)               |
       | Parsing Time  | 3.12 (median 0.30)(max 300 sec) |  14.21 | Truncated Lognormal (μ=-1.24892, σ=2.08427) |
-      | Embedded Object IAT | 0.83            |    8.4 | Weibull (α=0.2089, β=0.376)  |
-      | Reading Time  | 39.70 (max 10,000 sec) | 324.92 | Lognormal (μ=-0.495204, σ=2.7731) |
-      | Request Size  | 318.59          | 179.46 | Uniform (350 Bytes)          |
+      | Embedded Object IAT | 0.83            |    8.4 | Weibull (α=0.2089, β=0.376)                 |
+      | Reading Time  | 39.70 (max 10,000 sec) | 324.92 | Lognormal (μ=-0.495204, σ=2.7731)           |
+      | Request Size  | 318.59          | 179.46 | Uniform (350 Bytes)                         |
 *** questions
 *** ref
     [[file:master.bib::newtrafficmodel][Mistry & Raman 2007: NEW TRAFFIC MODEL]]
@@ -11206,6 +11206,161 @@
       other Python applications running on the same system.
     - (ends Appendix A)
 ** PART [[/home/chive/IT-gg/python/scipy-ref-0.15.1.pdf][SciPy Reference Guide]]
+*** summary
+1) Tutorial
+
+   13) [@13] Statistics (scipy.stats)
+
+       1) Introduction: many, but not all features, see ref
+
+       2) Random Variables
+
+          0) [@0]
+
+             - 89 continuous, 13 discrete
+
+             - please add if you create one
+
+          1) Getting Help
+
+             - docstring =stats.norm.__doc__=
+
+             - bounds:
+
+               - lower: =norm.a=,
+
+               - upper: =norm.b=
+
+             - list all properties with =dir(norm)=, but some of
+               those are private
+
+               - better: list frozen distribution
+		 #+BEGIN_SRC python
+                   >>> rv = norm()
+                   >>> dir(rv) # reformatted
+                   [’__class__’, ’__delattr__’, ’__dict__’, ’__doc__’,
+                    ’__getattribute__’, ’__hash__’, ’__init__’, ’__module__’, ’__new__’,
+                    ’__reduce__’, ’__reduce_ex__’, ’__repr__’, ’__setattr__’, ’__str__’,
+                    ’__weakref__’, ’args’, ’cdf’, ’dist’, ’entropy’, ’isf’, ’kwds’,
+                    ’moment’, ’pdf’, ’pmf’, ’ppf’, ’rvs’, ’sf’, ’stats’]
+		 #+END_SRC
+
+               - obtain list of available distributions
+		 #+BEGIN_SRC python
+                   import warnings
+                   warnings.simplefilter(’ignore’, DeprecationWarning)
+                   dist_continu = [d for d in dir(stats) if
+                                   isinstance(getattr(stats,d), stats.rv_continuous)]
+                   dist_discrete = [d for d in dir(stats) if
+                                    isinstance(getattr(stats,d), stats.rv_discrete)]
+                   print ’number of continuous distributions:’, len(dist_continu)
+                   print ’number of discrete distributions: ’, len(dist_discrete)
+                       
+		 #+END_SRC
+
+          2) Common Methods
+             
+             - methods: rvs, pdf, cdf,
+
+               - sf: survival (1-cdf)
+
+               - ppf: percent point (CDF^{-1}) = quantile
+
+               - isf: inverse survival (sf^{-1})
+
+               - stats: mean, variance, skew, kurtosis
+
+               - moment
+
+             - pass array of values:
+               #+BEGIN_SRC python
+                 norm.cdf([-1., 0, 1])
+                 import numpy as np
+                 norm.cdf(np.array([-1., 0, 1]))
+               #+END_SRC
+
+             - median via
+               #+BEGIN_SRC python
+                 norm.ppf(0.5)
+               #+END_SRC
+
+             - generate several via =size= parameter
+
+             - set via =np.random.seed()= for reproducible results
+
+               - or use =random_state= parameter per function
+
+          3) Shifting and Scaling
+
+             - set =loc= and =scale=
+
+             - recommended to use as (explicit) keywords, not as arguments
+
+             - freeze as seen below
+
+          4) Shape Parameters
+
+             - one more parameter
+
+               - f.ex. for gamma distribution (a)
+
+               - evaluate by
+                 #+BEGIN_SRC python
+                   from scipy.stats import gamma
+                   gamma.numargs
+                   gamma.shapes
+                 #+END_SRC
+
+               - use as
+                 #+BEGIN_SRC python
+                   gamma(1, scale=2.).stats(moments="mv")
+                   gamma(a=1, scale=2.).stats(moments="mv")
+                 #+END_SRC
+
+          5) Freezing a Distribution
+
+             fix parameters to not repeat them
+             #+BEGIN_SRC python
+               rv = gamma(1, scale=2.)
+               rv.mean(), rv.std()
+             #+END_SRC
+
+          6) Broadcasting
+
+             combine values (numpy possibility) works
+
+          7) Specific Points for Discrete Distributions
+
+             - pmf instead of pdf
+
+             - no scale, but loc
+
+             - ppf has other definition
+
+          8) Fitting Distributions
+
+             - rest of main methods
+
+               - fit: estimates all
+
+               - fit_loc_scale: shape given
+
+               - nnlf
+
+               - expect: "Calculate the expectation of a function
+                 against the pdf or pmf"
+
+          9) Performance Issues and Cautionary Remarks
+
+             - some functions very slow (generic method)
+
+          10) Remaining Issues
+
+              - some bugs
+
+              - fit uses maximum likelihood and needs good starting points
+
+       3) Building Specific Distributions
 *** quotes
     - (begins 1.13)
     - Freezing a Distribution
@@ -11214,7 +11369,7 @@
       quite bothersome. The concept of freezing a RV is used to solve
       such problems.
       #+BEGIN_SRC python
-        >>> rv = gamma(1, scale=2.)
+        rv = gamma(1, scale=2.)
       #+END_SRC
       By using rv we no longer have to include the scale or the shape
       parameters anymore. Thus, distributions can be used in one of
@@ -11258,6 +11413,7 @@
         plt.show()
       #+END_SRC
     - (ends 5.31)
+    - (help(scipy.stats.lognorm))
 ** PART [[/home/chive/IT-gg/python/numpy-ref-1.9.1.pdf][NumPy Reference]]
 *** quotes
     - numpy.random.exponential(scale=1.0, size=None)
@@ -11645,7 +11801,72 @@
 
 	      3) @fileoverview: "Makes the comment block provide file
                  level information."
-** PART [[/home/chive/IT-gg/org.pdf][The Org Manual]]
+** PART [[~/chive/gg/org.pdf][The Org Manual]]
+*** summary
+    continue at 1
+    8) [@8] Dates and times
+
+       called "timestamp"
+
+       1) Timestamps, deadlines, and scheduling
+	  types:
+
+	  - Plain timestamp; Event; Appointment
+	    <2006-11-01 Wed 19:15>
+
+	  - Timestamp with repeater interval
+	    <2007-05-16 Wed 12:30 +1w>
+
+	  - Diary-style sexp entries
+	    <%%(diary-float t 4 2)>
+
+	  - Time/Date range
+	    <2004-08-23 Mon>--<2004-08-26 Thu>
+
+	  - Inactive timestamp: triggers no agenda entry
+	    [2006-11-01 Wed]
+
+       2) Creating timestamps
+
+	  0) [@0]
+
+	     - C-c . calls 'org-time-stamp
+
+	     - ...
+
+	     - S-[left|right] calls 'org-timestamp-[down|up]-day,
+	       change day at cursor by one day
+
+	  1) The date/time prompt
+
+	     - absolute:
+
+	       - *default date* filled in: date under cursor OR current
+
+	       - many ways to specify: 14, 2/5, Fri, sep 15,  12:45, w4
+
+	     - relative:
+
+	       - +/- is relative to today
+
+	       - ++/-- is relative to default date
+
+	       - add [hdwmy]
+
+	       - "." for today
+
+	     - range: start-[-]end OR start+duration
+
+	     - calendar: S-[right/left] day S-[down/up] week M-S[right/left]mon
+
+	  2) Custom time format
+
+	     - possible
+
+       3) Deadlines and scheduling
+
+    9) [@9] Capture - Refile - Archive
+
 *** quotes
    2) [@2] Document structure
       - M-S-LEFT: Kill the current column.
@@ -12430,3 +12651,21 @@
 	  - this specification does not mandate a particular maximum
             number of connections but, instead, encourages clients to
             be conservative when opening multiple connections.
+** PART MOVE [[./Quantile%20function%20-%20Wikipedia,%20the%20free%20encyclopedia.html][Quantile function]]
+*** summary
+    1) Definition
+
+       - strictly monotonic continuos function f: quantile Q_f is the
+         "threshold value x below which random draws from [f] would
+         fall p percent of the time."
+
+	 - Q(q) = inf{x \in R: p \le F(x)}
+
+	 - if F continuous: Q = F^{-1}
+
+    2) Simple example
+*** quotes
+    0) [@0]
+       - It is also called the percent point function or inverse
+         cumulative distribution function.
+*** ref: [[file:master.bib::wiki:quantile][Wikipedia 2016: Quantile]]
