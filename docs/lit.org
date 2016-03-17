@@ -6204,6 +6204,109 @@
 	     depends on application, but prototypes have many benefits, too
 
        6) Scopes and Namespaces
+
+          0) [@0]
+
+             - only function scope (except for js6)
+
+             - only global namespace
+
+          1) The Bane of Global Variables
+
+             always use =var= unless you *explicitly* want outer
+             scope
+
+          2) Local Variables
+
+             only =var= and function parameters (and let and const)
+
+          3) Hoisting
+
+             - function declarations and var statements get /hoiste/
+               to the top of their scope
+               #+BEGIN_SRC js
+                 bar();
+                 var bar = function() {};
+                 var someValue = 42;
+
+                 test();
+                 function test(data) {
+                     if (false) {
+                         goo = 1;
+                     } else {
+                         var goo = 2;
+                     }
+                     for(var i = 0; i < 100; i++) {
+                         var e = data[i];
+                     }
+                 }
+               #+END_SRC
+               becomes
+               #+BEGIN_SRC js
+                 // var statements got moved here
+                 var bar, someValue; // default to 'undefined'
+                 
+                 // the function declaration got moved up too
+                 function test(data) {
+                     var goo, i, e; // missing block scope moves these here
+                     if (false) {
+                         goo = 1;
+                     } else {
+                         goo = 2;
+                     }
+                     for(i = 0; i < 100; i++) {
+                         e = data[i];
+                     }
+                 }
+                 
+                 bar(); // fails with a TypeError: bar still 'undefined'
+                 someValue = 42; // assignments not affected by hoisting
+                 bar = function() {};
+                 
+                 test();
+               #+END_SRC
+               var inside the for-loop, in if-statement and in
+               for-declaration all get hoisted
+
+          4) Name Resolution Order
+
+             - var
+
+             - then parameter
+
+             - then function name
+
+             - repeat in outer scope
+
+          5) Namespaces
+
+             several ways to avoid polluting the global namespace
+
+             unnamed functions somehow
+
+          6) In Conclusion
+
+             best to use anonymous wrapper
+
+    3) Arrays
+
+       1) Array Iteration and Properties
+
+          0) [@0]
+
+             avoid for in
+
+          1) Iteration
+
+             - best for performance is the classic for loop
+               #+BEGIN_SRC js
+                 var list = [1, 2, 3, 4, 5, ...... 100000000];
+                 for(var i = 0, l = list.length; i < l; i++) {
+                     console.log(list[i]);
+                 }
+               #+END_SRC
+
+               - half as fast without caching =l=
 ** TODO [#A] [[./Javascript Closures.prototype_chain.html][Javascript Closures]]
 *** summary
     1) Introduction
@@ -6351,6 +6454,47 @@
 	  #+END_SRC
 
        2) Example 2: Associating Functions with Object Instance Methods
+
+          attach event listener to DOM object
+          #+BEGIN_SRC js
+            /* Associates an object instance with an event handler. The returned
+               inner function is used as the event handler.  The object instance
+               is passed as the - obj - parameter and the name of the method that
+               is to be called on that object is passed as the - methodName -
+               (string) parameter.
+            ,*/
+            function associateObjWithEvent(obj, methodName){
+                /* The returned inner function is intended to act as an event
+                   handler for a DOM element:-
+                ,*/
+                return (function(e){
+                    e = e||window.event;
+                    return obj[methodName](e, this);
+                });
+            }
+
+            /* Creates objects that associate themselves with DOM elements whose
+               IDs are passed to the constructor as a string.
+            ,*/
+            function DhtmlObject(elementId){
+                var el = getElementWithId(elementId);
+                /* The following block is only executed if the - el - variable
+                   refers to a DOM element:-
+                ,*/
+                if(el){
+                    /* assign a function as the element's event handler */
+                    el.onclick = associateObjWithEvent(this, "doOnClick");
+                    el.onmouseover = associateObjWithEvent(this, "doMouseOver");
+                    ...
+                }
+            }
+            DhtmlObject.prototype.doOnClick = function(event, element){
+                ... // doOnClick method body.
+            }
+            DhtmlObject.prototype.doMouseOver = function(event, element){
+                ... // doMouseOver method body.
+            }
+          #+END_SRC
 *** quotes
     3) [@3] Identifier Resolution, Execution Contexts and scope chains
        1) The Execution Context
@@ -6650,6 +6794,42 @@
 		- p1=45, p2=40 gave TPR .62, FPR .057
 
        5) CLASSIFICATION
+
+          0) [@0]
+
+             - monitored vs others (open world)
+
+             - site vs rest (closed world)
+
+          1) Support Vector Machine
+
+             - find separating hyperplane
+
+             - cost function if cannot be foun
+
+             - lift to higher dimension to find hyperplane there
+
+             - ovo as ovm was not better
+
+             - which metric to use?
+
+          2) Distance-based Metrics
+
+             1) Optimal String Alignment Distance
+
+                - transposition limited to originally adjacent
+                  elements
+
+                - cai: lower cost for transpositions
+
+             2) Damerau-Levenshtein Distance
+
+                - all transpositions allowed
+
+                - implementation: also elements not adjacent with
+                  deletion an insertion
+
+             3) Removing Substitutions
 *** quotes
     1) INTRODUCTION
        - [@?] dynamic content such as advertisements may cause a
@@ -11200,13 +11380,92 @@
     - The installation method can be changed any time by running:
       dpkg-reconfigure wireshark-common
 ** PART [[./python-doc-library.pdf][The Python Library Reference]]
+*** summary
+    25) [@25] DEVELOPMENT TOOLS
+        1) pydoc — Documentation generator and online help system
+
+           - generates on calls to =help=
+
+           - recursively list docstrings
+
+             - or close comment if no docstring
+
+           - command-line: -w writes to HTML
+
+             - -k does apropos-search
+
+             - -p start doc web server on 1234
+
+             - -g also starts tkinter web interface
+
+        2) doctest — Test interactive Python examples
+
+           0) [@0]
+
+              - any interpreter command in documentation executed, compared via
+                #+BEGIN_SRC python
+                  if __name__ == "__main__":
+                      import doctest
+                      doctest.testmod()
+                #+END_SRC
+
+           1) Simple Usage: Checking Examples in Docstrings
+
+              ... (TODO)
+
+        3) unittest — Unit testing framework
+
+           0) [@0]
+
+              - test vocabulary
+
+                - fixture: setup/teardown
+
+                - case: smallest unit
+
+                - suite: collection of cases and suites
+
+                - runner: runs tests
+
+           1) Basic example
+
+              - necessary parts
+                #+BEGIN_SRC python
+                  import unittest
+                  class TestMyStuff(unittest.TestCase):
+                      def test_sth(self):
+                          self.assertEqual(someExpression, 'equaoToThis')
+                      def test_sth_else(self):
+                          self.assertTrue(truthStatement)
+                  if __name__ == '__main__':
+                      unittest.main()
+                #+END_SRC
+
+              - more verbose output (and control which tests) via
+                #+BEGIN_SRC python
+                  suite = unittest.TestLoader().loadTestsFromTestCase(TestStringMethods)
+                  unittest.TextTestRunner(verbosity=2).run(suite)
+                #+END_SRC
+
+           2) Command-Line Interface
+
+              - example (module, class, single test)
+                #+BEGIN_SRC sh
+                  python -m unittest test_module1 test_module2
+                  python -m unittest test_module.TestClass
+                  python -m unittest test_module.TestClass.test_method
+                #+END_SRC
+
+              - also: -c catches C-c terminates after current test
+
+           3) Test Discovery
+
+              - via python -m unittest discover
+
+           4) Organizing test code
+
+
 *** quotes
-    - doctest
-      #+BEGIN_SRC python
-        if __name__ == "__main__":
-            import doctest
-            doctest.testmod()
-      #+END_SRC
     - os.walk(top, topdown=True, onerror=None, followlinks=False)
 
       Generate the file names in a directory tree by walking the tree
