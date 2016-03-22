@@ -7,6 +7,7 @@
 const Simple = require('sdk/simple-prefs');
 
 const debug = require("./debug.js");
+const sizeCache = require("./size-cache.js");
 const stats = require("./stats.js");
 
 // td: changeable by pref (slider?)
@@ -15,18 +16,20 @@ const stats = require("./stats.js");
 const FACTOR = 1 + (Simple.prefs.factor / 100);
 const MIN_PROB = 0.1; // td: test and think through
 
+const LOAD = require('./load.js');
+
 /**
  * Creates cover traffic. Once on creation, then on {@code loadNext()}.
  * @constructor
  * @param {module load.js} module which provides loading capabilities
  */
-function CoverTraffic(load) {
+function CoverTraffic(toHost, load=LOAD) {
     this.load = load;
 
     this.site = {};
     this.pad = {};
 
-    this.site.html = stats.htmlSize(1); // td: buffer known sites in bloomfilter
+    this.site.html = sizeCache.htmlSize(1);
     this.pad.html = stats.htmlSize(FACTOR) - this.site.html;
     this.site.numEmbedded = stats.numberEmbeddedObjects(1); // td: see above
     this.pad.numEmbedded =

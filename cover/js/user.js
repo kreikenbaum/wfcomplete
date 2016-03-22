@@ -3,13 +3,14 @@
 const NAME = 'user';
 exports.DOC = 'what to do on traffic by the user';
 
+//td: rename to 'controller'?
+
 const { setTimeout } = require("sdk/timers");
 
 const _ = require('../lib/underscore-min.js');
 
 const coverTraffic = require('./coverTraffic.js');
 const debug = require('./debug.js');
-const load = require('./load.js');
 
 const TIMEOUT = 110 * 1000;
 
@@ -22,7 +23,7 @@ function loads(URL) {
     if ( _.contains(activeHosts, URL.host) ) { // has already started
 	activeHosts[URL.host].loadNext();
     } else {
-	activeHosts[URL.host] = new coverTraffic.CoverTraffic(load);
+	activeHosts[URL.host] = new coverTraffic.CoverTraffic(URL.host, load);
 	// td: removal code: better also watch endsload
 	setTimeout(function() {
 	    delete activeHosts[URL.host];

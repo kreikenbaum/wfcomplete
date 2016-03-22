@@ -3,10 +3,12 @@
 const coverTraffic = require("../js/coverTraffic.js");
 const mockLoad = require("./mock-load.js");
 
+const HOSTNAME = 'unknown host';
+
 exports["test object"] = function(assert) {
     mockLoad.reset();
     assert.ok(mockLoad.getCount() === 0, 'initialization error');
-    var ct = new coverTraffic.CoverTraffic(mockLoad);
+    var ct = new coverTraffic.CoverTraffic(HOSTNAME, mockLoad);
     assert.ok(mockLoad.getCount() === 1, 'no calls to mock');
     for ( var i = 20; i > 0; i -= 1 ) {
 	ct.loadNext();
@@ -18,9 +20,9 @@ exports["test object"] = function(assert) {
 exports["test two objects"] = function(assert) {
     mockLoad.reset();
     assert.ok(mockLoad.getCount() === 0, 'initialization error');
-    var ct = new coverTraffic.CoverTraffic(mockLoad);
+    var ct = new coverTraffic.CoverTraffic(HOSTNAME, mockLoad);
     assert.ok(mockLoad.getCount() === 1, 'no call to mock of ct');
-    var c2 = new coverTraffic.CoverTraffic(mockLoad);
+    var c2 = new coverTraffic.CoverTraffic(HOSTNAME, mockLoad);
     assert.ok(mockLoad.getCount() === 2, 'no call to mock of ct2');
     for ( var i = 10; i > 0; i -= 1 ) {
 	ct.loadNext();
