@@ -2,7 +2,7 @@
 #+TODO: TODO CHECK | LATER DONE
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{tikz}
-* TODO [#A] move ordered (and MOVE) sections
+* TODO [#A] move ordered sections
 * final sections
 ** LATER Abstract
 *** Teaser
@@ -36,8 +36,8 @@
 **** WAIT may \to (ohne) (falls richtig)
 ** Introduction
 ** Materials and Methods
-* TODO topics [1/30]
-** TODO Website Fingerprinting [0/6]
+* TODO topics [2/56]
+** TODO Website Fingerprinting [0/9]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
     webpages or websites a user visits via an anonymizing proxy. It is a
@@ -71,6 +71,106 @@
     yielded results. Prior to Panchenko et al\cite{panchenko}, it was
     assumed that Tor introduced multiplexing, enough padding and
     latency into website retrieval that this attack was inapplicable.
+*** CHECK visual inspection of data
+    To exemplify the task of a websitefingerprinter, consider the
+    following pictures which represent complete (considered to contain
+    all relevant information([[file:docs/lit.org::*%5B%5B./ccs14.pdf%5D%5BCai%20-%20A%20Systematic%20Approach%20to%20Developing%20and%20Evaluating%20Website%20Fingerprinting%20Defenses%5D%5D][a-systematic]]) packet trace data in the form
+    of (delay, packet size), which is
+**** facebook.com
+     [[file:pictures/facebook_com@1445350531.png]]
+     [[file:pictures/facebook_com@1445422155.png]]
+     [[file:pictures/facebook_com@1445425799.png]]
+     [[file:pictures/facebook_com@1445429729.png]]
+**** craigslist.org
+     [[./pictures/craigslist_org@1445352269.png]]
+     [[./pictures/craigslist_org@1445428146.png]]
+     [[./pictures/craigslist_org@1445435476.png]]
+     [[./pictures/craigslist_org@1445442917.png]]
+**** creation of pictures
+
+     The pictures were created by the commands
+
+     #+BEGIN_EXAMPLE
+      for fb in $(ls | grep facebook); do
+        python ~/da/bin/counter.py ./$fb  | tail -1 | sed 's/),/\n/g' | \
+            tr -d "'()][" > /tmp/times;
+        gnuplot -e "set terminal png size 1024,680; \
+                set output \"/tmp/${fb}.png\"; plot '/tmp/times' with boxes;";
+      done
+     #+END_EXAMPLE
+
+     and respectively for craigslist, in the directories containing the
+     pcap files.
+
+     These commands first extract the timing attributes (at git commit
+     791af76 the last line of the output of counter.py), format it for
+     gnuplot (inserting appropriate newlines via =sed= and removing
+     extra characters via =tr=), and =gnuplot= s it to a png file with
+     the name of the trace file as prefix.
+*** TODO [[*what%20did%20panchenko%20do%20(wf)?][what did panchenko do (wf)?]]
+**** maybe merge with [[Panchenko's Attack via Website Fingerprinting]]
+**** practical wf: Capturing traces
+*** tools
+**** CHECK capture alternatives [0/1]
+     Several applications can capture network traffic to files. The most
+     well-known and oldest of these is tcpdump
+     [[fn::\url{http://tcpdump.org}]] It is a command-line utility, which is
+     available on many UNIX-like systems and Windows.
+
+     A modern contender with a GUI is wireshark. It also offers a
+     command-line version, tshark. As it offers TLS packet reassembly,
+     tshark was used in this thesis.
+
+     Both programs rely on the libpcap library for access to network
+     packets.
+***** TODO subsect to [[*SECTION%20HOW%20TO%20CAPTURE%20TRACE%20FILES][SECTION HOW TO CAPTURE TRACE FILES]]
+**** [[shell script]]
+**** [[Selenium]]
+**** [[Chickenfoot]]
+**** [[Marionette]]
+**** [[Marionette installation]]
+**** [[criteria for tool to retrieve websites]]
+**** [[*who%20used%20which%20retrieval%20method][who used which retrieval method]]
+**** setup
+***** [[by-hand initialization to retrieve websites]]
+***** [[*one_site.py:%20retrieval%20of%20a%20single%20page][*one_site.py: retrieval of a single page]]
+***** [[*tshark%20installation][tshark installation]]
+***** [[*how%20to%20get%20tor%20browser%20bundle%20to%20work][how to get tor browser bundle to work]]
+***** [[*how%20to%20avoid%20the%20safe%20mode%20error%20on%20multiple%20restarts][how to avoid the safe mode error on multiple restarts]]
+***** [[*headless%20configuration][headless configuration]]
+****** TODO merge or something
+***** [[*problematic%20websites][problematic websites]]
+***** [[thoughts on size of data set]]
+**** [[*what%20happens%20when%20retrieving%20a%20website][what happens when retrieving a website]]
+**** practical wf: analyzing traces
+***** [[how to process the data]]
+***** [[transform to panchenko-features]]
+***** [[*how%20to%20get%20wang/goldberg%20to%20work][how to get wang/goldberg to work]]
+***** [[*libsvm%20(short)][libsvm (short)]]
+***** [[*transform%20features%20to%20vector][transform features to vector]]
+***** [[*effect%20of%20panchenko's%20weighting%20schema][effect of panchenko's weighting schema]]
+***** [[*scikit-learn][scikit-learn]]
+**** Related Work
+***** [[History of Website Fingerprinting]]
+***** [[MERGE history of website fingerprinting in Tor]]
+**** TODO History of Website Fingerprinting
+     The idea of using traffic analysis to gather information about
+     encrypted traffic was mentioned in \cite{applied96} and applied
+     in the analysis of SSL 3.0 by Schneier and Wagner in
+     1997\cite{SSL}.
+
+     - quantifying etc
+
+     The term /website fingerprinting/ was coined by
+     Hintz in 2002. A successful attack against single-hop proxies was
+     carried out by Herrmann et al. in 2009.
+***** SSL
+      [[file:~/da/docs/master.bib::SSL][Wagner & Schneier 1997: Analysis SSL]]
+**** [[wf defenses]]
+**** [[other defenses]]
+***** TODO rename both above to ...
+**** [[*visual%20inspection%20of%20data][visual inspection of data]]
+**** [[distribution of (main) features]]
 *** Hurdles to website fingerprinting
     The progress of web protocols made website fingerprinting
     harder. In the original HTTP/1.0\cite{rfc1945} protocol, each
@@ -115,59 +215,11 @@
     As website fingerprinting requires very litte resources, a specific
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
     state.
-*** [[visual inspection of data]]
-*** [[*what%20did%20panchenko%20do%20(wf)?][what did panchenko do (wf)?]]
-**** maybe merge with [[Panchenko's Attack via Website Fingerprinting]]
-*** practical wf: Capturing traces
-**** tools
-***** [[capture alternatives]]
-***** [[shell script]]
-***** [[Selenium]]
-***** [[Chickenfoot]]
-***** [[Marionette]]
-***** [[Marionette installation]]
-***** [[criteria for tool to retrieve websites]]
-***** [[*who%20used%20which%20retrieval%20method][who used which retrieval method]]
-**** setup
-***** [[by-hand initialization to retrieve websites]]
-***** [[*one_site.py:%20retrieval%20of%20a%20single%20page][*one_site.py: retrieval of a single page]]
-***** [[*tshark%20installation][tshark installation]]
-***** [[*how%20to%20get%20tor%20browser%20bundle%20to%20work][how to get tor browser bundle to work]]
-***** [[*how%20to%20avoid%20the%20safe%20mode%20error%20on%20multiple%20restarts][how to avoid the safe mode error on multiple restarts]]
-***** [[*headless%20configuration][headless configuration]]
-****** TODO merge or something
-***** [[*problematic%20websites][problematic websites]]
-***** [[thoughts on size of data set]]
-**** [[*what%20happens%20when%20retrieving%20a%20website][what happens when retrieving a website]]
-*** practical wf: analyzing traces
-**** [[how to process the data]]
-**** [[transform to panchenko-features]]
-**** [[*how%20to%20get%20wang/goldberg%20to%20work][how to get wang/goldberg to work]]
-**** [[*libsvm%20(short)][libsvm (short)]]
-**** [[*transform%20features%20to%20vector][transform features to vector]]
-**** [[*effect%20of%20panchenko's%20weighting%20schema][effect of panchenko's weighting schema]]
-**** [[*scikit-learn][scikit-learn]]
-*** Related Work
-**** [[History of Website Fingerprinting]]
-**** [[MERGE history of website fingerprinting in Tor]]
-*** TODO History of Website Fingerprinting
-    The idea of using traffic analysis to gather information about
-    encrypted traffic was mentioned in \cite{applied96} and applied
-    in the analysis of SSL 3.0 by Schneier and Wagner in
-    1997\cite{SSL}.
-
-    - quantifying etc
-
-    The term /website fingerprinting/ was coined by
-    Hintz in 2002. A successful attack against single-hop proxies was
-    carried out by Herrmann et al. in 2009.
-**** SSL
-     [[file:~/da/docs/master.bib::SSL][Wagner & Schneier 1997: Analysis SSL]]
-*** [[wf defenses]]
-*** [[other defenses]]
-**** TODO rename both above to ...
-*** [[*visual%20inspection%20of%20data][visual inspection of data]]
-*** [[distribution of (main) features]]
+*** TODO what did panchenko do (wf)?
+    [[file:docs/lit.org::*%5B%5B./acmccs-wpes11-fingerprinting.pdf%5D%5BPanchenko%20-%20Website%20Fingerprinting%20in%20Onion%20Routing%20Based%20Anonymization%20Networks%5D%5D][Panchenko]] first published a successful website fingerprinting attack
+    on Tor. He extracted HTTP-specific features from the packet trace
+    and used those in a hand-tuned support vector machine with a radial
+    basis function kernel.
 ** TODO Tor [0/8]
 *** How to use Tor
     Tor offers a SOCKS5\cite{rfc1928}-(TCP\cite{rfc793}-)proxy for
@@ -293,7 +345,7 @@
     effective"\cite{tor-design} against Tor, due to stream/circuit
     multiplexing and fixed cell sizes.
 *** TODO sort subtopics
-*** [[*Tor%20overview][Tor overview]]
+*** TODO Tor overview
 ** TODO Addon Design and Implementation [0/9]
 *** TODO Mozilla Add-On Sdk [0/2]
 **** TODO Introduction to the Mozilla Add-On Sdk
@@ -367,12 +419,109 @@
      initialized via the =onAttach= parameter of f.ex. the page-mod.
 **** TODO collect/list all addon sections
 **** TODO organize all addon sections
-**** [[page-worker]]
-**** [[page-mod]]
-**** [[Installation and Use of Jpm (the build tool)]]
-**** [[interacting with page-scripts]]
-**** [[DOM]]
-**** [[unit tests jpm]]
+**** CHECK page-worker
+     A =page-worker= creates "a permanent, invisible page and access[es]
+     its
+     DOM."[fn::\url{developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html}]
+
+     New pages can be loaded in the background, which would allow for the
+     retrieval of camouflage traffic, as described by \cite{panchenko}.
+
+     A minimal new page-worker is created via
+
+     #+BEGIN_SRC js
+       var pageWorker = require("sdk/page-worker").Page({});
+     #+END_SRC
+
+     The page-worker's page can be set dynamically via
+
+     pageWorker.contentURL = "http://en.wikipedia.org/wiki/Cheese"
+
+     This fetches only the file pointed to. The retrieval of included
+     images, stylesheets, etc, is not automatic.
+
+     A page-worker was used in the initial prototype. The RequestPolicy
+     addon blocked this method of retrieval.
+
+**** TODO page-mod
+     The
+     page-mod[fn::\url{http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html}]
+     module injects "scripts in the context of web pages whose URL
+     matches a given pattern."
+
+     The pattern can be given as ="*"= or =/.*/= to run on every
+     user-visited page.
+
+     It thus offers the possibility to check for the end of a web page
+     load by the user.
+
+     A page-mod example is
+
+     #+BEGIN_SRC js
+       pageMod.PageMod({
+           include: /.*/,
+           contentScriptFile: "./getLinks.js",
+           onAttach: function(worker) {
+               worker.port.on("links", function(JSONlinks) {
+                   addToCandidates(JSON.parse(JSONlinks));
+               });
+           }
+       });
+     #+END_SRC
+
+     , which is run on every page, applies the =getLinks.js= script and
+     listens for its feedback, which is then used via
+     `addToCandidates()`.
+
+     A page-mod offers other parameters, such as the moment of the script
+     execution, stylesheet modification, etc.
+***** link page-mod
+      http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
+**** TODO Installation and Use of Jpm (the build tool)
+     (SDK-)addons can be built via the =jpm=-tool. It is available as a
+     NodeJS-Module via the built-in NodeJS Package Manager =npm=.
+
+     Installing =jpm= is thus a two-step process. Firstly, install
+     NodeJS either via built-in tools (for example =apt-get install
+     nodejs-legacy= in Debian and Ubuntu) or via [[link npm][download]], then, do a
+
+     npm install jpm
+
+     to install jpm (for the current user, global installation is done
+     via =npm install -g jpm=).
+
+     Once =jpm= is installed, new addons can be created via =jpm init=,
+     unit-tested via =jpm test=, live-tested via =jpm run=, the addon
+     package built via =jpm xpi= and signed via =jpm xpi= (or online).
+***** link npm
+      nodejs.org
+***** TODO link online signing.
+***** jpm xpi date/time problem
+***** TODO include [[unit tests jpm]]
+**** TODO interacting with page-scripts
+     By default, content-scripts are isolated from the modifications
+     done by page-scripts.[[Interacting with page scripts]]
+
+     To access object inside the page-scripts context, you can use
+     =unsafeWindow=.
+
+     The reverse is only true for primitive values. If page-scripts
+     need to see altered behavior, it is possible to override
+     functionality of the page by using =exportFunction=, as in
+
+     exportFunction(open,
+		    unsafeWindow.XMLHttpRequest.prototype,
+		    {defineAs: "open"});
+
+     This exports the (previously-defined) function =open()= to the
+     XMLHttpRequest.prototype, where it replaces the built-in
+     functionality.
+***** Interacting with page scripts
+developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_page_scripts.html
+**** TODO [#C] DOM
+     domain-object-model
+**** TODO unit tests jpm
+     JPM also offers the ability to write unit-tests.
 *** TODO [#B] Design
     #+BEGIN_LATEX
     \begin{adjustbox}{max width=\textwidth}
@@ -408,17 +557,110 @@
       1. fixed domain, fixed elements
       2. fixed domain, size as parameter
       3. LATER MAYBE get new ones from cover traffic
-**** [[*HTML%20traffic%20model][HTML traffic model]]
-**** [[*cacheing][cacheing]]
-**** [[*determine%20bloom%20filter%20sizes][determine bloom filter sizes]]
-**** [[*bloom%20filter][bloom filter]]
+**** TODO HTML traffic model
+     - intel
+       - html object lognormal with params \mu = 7.90272, \sigma = 1.7643
+       - embedded objects
+     - test
+       - download html top 10000
+       - analysis
+**** TODO cacheing
+     - browsers cache
+     - only helps in cover traffic, (unless warm/cold site model is used)
+***** TODO where to put this?
+**** TODO determine bloom filter sizes
+     The statistical size generation works with application-level sizes
+     on the network, as the authors analysed squid
+     proxy[[fn::\url{http://www.squid-cache.org}]] logs.
+
+     The HTML-sizes could not be trivially obtained in the browser, as
+     there are additional headers and size-reduction via compression. The
+     sizes were determined by retrieving the files with =wget= via squid
+
+     #+BEGIN_SRC sh
+       sudo squid3 -k shutdown &&\
+       sudo squid3 -k kill &&\
+       echo '' | sudo tee /var/log/squid3/access.log &&\
+       sudo squid3
+       sleep 3
+       # retrieves sites
+       for i in $(cat ~/sw/top-100-modified.csv | cut -d "," -f 2); do
+           mkdir $i
+           cd $i
+           env http_proxy='http://127.0.0.1:3128' wget $i
+           cd ..
+       done
+     #+END_SRC
+
+     and examining the log file =access.log= via the command sequence
+
+     sudo cat /var/log/squid3/access.log | tr -s ' ' | cut -d ' ' -f 5,7
+     > /mnt/data/HTML-sizes
+
+     The second important feature that is used in generating cover
+     traffic is the number of embedded files per HTML-page.
+***** TODO number embedded
+**** TODO bloom filter
+     - many to size up
+     - bloom filter general idea
+     - split by quantiles
+***** error rate computing
 *** Implementation
-**** [[js coding best practices]]
+**** TODO js coding best practices
+     - "use strict";
+     - unit tests
+     - mention "good parts"?
+     - jshint
 **** Unit Testing
-**** [[Cover add-on]]
-**** [[http server for testing]]
-**** [[*description%20of%20add-on][description of add-on]]
-**** [[*mod_wsgi][mod_wsgi]]
+**** LATER Cover add-on
+     Defends against website fingerprinting by injecting artificial
+     cover traffic into the communication.
+***** when stable
+      also cover against website fingerprinting by injecting really
+      artificial cover traffic
+
+      for every request, do one as well,
+***** why as an add-on
+      This is one of the few low-latency communication methods, Instead
+      of burdening all of Tor with extra bells and whistles, this solves
+      this deanonymization problem at the application layer, where its
+      origins are. (Separation of Concerns)
+**** TODO http server for testing
+**** TODO description of add-on
+     The add-on is an experimental defense against website
+     fingerprinting.
+
+     - detect start of transmission
+       - request extra HTML doc to obfuscate that
+       - maybe do something to IPP-model (trigger off/on-state on some)
+     - always send dummy traffic
+       - on each request
+       - better: leave some out
+     - better: delay some requests (f.ex. images)
+     - detect end of page load
+       - maybe do something to IPP-model (trigger on/off-state on some)
+     - request size uniform [0, 300)
+       - except if request.len > 300
+**** TODO mod_wsgi
+     =mod_wsgi= module is a module for the apache web server. It provides
+     functionality to execute python scripts implementing the WSGI
+     standard. Contrary to normal apache installation, a server using
+     only wsgi is easily set up via the =mod_wsgi-express= command, which
+     is included in the =mod_wsgi= python package.
+
+     installation
+
+     - apt-get install apache2-bin apache2-dev
+     - pip install mod_wsgi
+
+     start via
+
+     - ~/.local/bin/mod_wsgi-express start-server wsgi.py
+
+     (here, also --port 7777), as for the script wsgi.py see appendix
+***** TODO WSGI lit
+***** TODO link to pypi mod_wsgi
+***** TODO link to comparison via nichol.as
 *** Evaluation
 **** add-on
 ***** [[*differences%20to%20adaptive%20padding/wtfpad][differences to adaptive padding/wtfpad]]
@@ -466,114 +708,6 @@
   - fundamental human need
   - concentration camp:
     "solitude in a Camp is more precious and rare than bread." -- primo levi
-* CHECK page-worker
-  A =page-worker= creates "a permanent, invisible page and access[es]
-  its
-  DOM."[fn::\url{developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html}]
-
-  New pages can be loaded in the background, which would allow for the
-  retrieval of camouflage traffic, as described by \cite{panchenko}.
-
-  A minimal new page-worker is created via
-
-  #+BEGIN_SRC js
-    var pageWorker = require("sdk/page-worker").Page({});
-  #+END_SRC
-
-  The page-worker's page can be set dynamically via
-
-  pageWorker.contentURL = "http://en.wikipedia.org/wiki/Cheese"
-
-  This fetches only the file pointed to. The retrieval of included
-  images, stylesheets, etc, is not automatic.
-
-  A page-worker was used in the initial prototype. The RequestPolicy
-  addon blocked this method of retrieval.
-
-* TODO Installation and Use of Jpm (the build tool)
-  (SDK-)addons can be built via the =jpm=-tool. It is available as a
-  NodeJS-Module via the built-in NodeJS Package Manager =npm=.
-
-  Installing =jpm= is thus a two-step process. Firstly, install
-  NodeJS either via built-in tools (for example =apt-get install
-  nodejs-legacy= in Debian and Ubuntu) or via [[link npm][download]], then, do a
-
-  npm install jpm
-
-  to install jpm (for the current user, global installation is done
-  via =npm install -g jpm=).
-
-  Once =jpm= is installed, new addons can be created via =jpm init=,
-  unit-tested via =jpm test=, live-tested via =jpm run=, the addon
-  package built via =jpm xpi= and signed via =jpm xpi= (or online).
-** link npm
-   nodejs.org
-** TODO link online signing.
-** jpm xpi date/time problem
-** TODO include [[unit tests jpm]]
-* TODO page-mod
-  The
-  page-mod[fn::\url{http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html}]
-  module injects "scripts in the context of web pages whose URL
-  matches a given pattern."
-
-  The pattern can be given as ="*"= or =/.*/= to run on every
-  user-visited page.
-
-  It thus offers the possibility to check for the end of a web page
-  load by the user.
-
-  A page-mod example is
-
-  #+BEGIN_SRC js
-    pageMod.PageMod({
-        include: /.*/,
-        contentScriptFile: "./getLinks.js",
-        onAttach: function(worker) {
-            worker.port.on("links", function(JSONlinks) {
-                addToCandidates(JSON.parse(JSONlinks));
-            });
-        }
-    });
-  #+END_SRC
-
-  , which is run on every page, applies the =getLinks.js= script and
-  listens for its feedback, which is then used via
-  `addToCandidates()`.
-
-  A page-mod offers other parameters, such as the moment of the script
-  execution, stylesheet modification, etc.
-** link page-mod
-   http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
-* TODO interacting with page-scripts
-  By default, content-scripts are isolated from the modifications
-  done by page-scripts.[[Interacting with page scripts]]
-
-  To access object inside the page-scripts context, you can use
-  =unsafeWindow=.
-
-  The reverse is only true for primitive values. If page-scripts
-  need to see altered behavior, it is possible to override
-  functionality of the page by using =exportFunction=, as in
-
-  exportFunction(open,
-		 unsafeWindow.XMLHttpRequest.prototype,
-		 {defineAs: "open"});
-
-  This exports the (previously-defined) function =open()= to the
-  XMLHttpRequest.prototype, where it replaces the built-in
-  functionality.
-** Interacting with page scripts
-developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_page_scripts.html
-* TODO [#C] DOM
-  domain-object-model
-* TODO unit tests jpm
-  JPM also offers the ability to write unit-tests.
-* TODO js coding best practices
-  - "use strict";
-  - unit tests
-  - mention "good parts"?
-  - jshint
 * TODO wf defenses
   - walkie-talkie
   - wtfpad
@@ -623,32 +757,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
    non-javascript browser such as Lynx might be a mitigation for those
    who consider this trade-off acceptable.
 *** TODO lynx link
-* CHECK capture alternatives [0/1]
-  Several applications can capture network traffic to files. The most
-  well-known and oldest of these is tcpdump
-  [[fn::\url{http://tcpdump.org}]] It is a command-line utility, which is
-  available on many UNIX-like systems and Windows.
-
-  A modern contender with a GUI is wireshark. It also offers a
-  command-line version, tshark. As it offers TLS packet reassembly,
-  tshark was used in this thesis.
-
-  Both programs rely on the libpcap library for access to network
-  packets.
-** TODO subsect to [[*SECTION%20HOW%20TO%20CAPTURE%20TRACE%20FILES][SECTION HOW TO CAPTURE TRACE FILES]]
-* LATER Cover add-on
-  Defends against website fingerprinting by injecting artificial
-  cover traffic into the communication.
-** when stable
-   also cover against website fingerprinting by injecting really
-   artificial cover traffic
-
-   for every request, do one as well,
-** why as an add-on
-   This is one of the few low-latency communication methods, Instead
-   of burdening all of Tor with extra bells and whistles, this solves
-   this deanonymization problem at the application layer, where its
-   origins are. (Separation of Concerns)
 * Selenium
   Selenium is the de-facto standard for testing web applications. It
   has drivers for several browsers, allowing it to control them, and
@@ -701,7 +809,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   was developed at MIT\cite{chickenfoot}. The most recent GitHub
   release[fn::\url{https://github.com/bolinfest/chickenfoot}] is for
   Firefox 4.
-* TODO http server for testing
 * criteria for tool to retrieve websites
   - script tor browser: load new page
   - easy set-up
@@ -916,47 +1023,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 
   thus, there should be 5-6 (depending on robots.txt) requests
 ** TODO tshark for normal (non-tor) retrieval
-* TODO what did panchenko do (wf)?
-  [[file:docs/lit.org::*%5B%5B./acmccs-wpes11-fingerprinting.pdf%5D%5BPanchenko%20-%20Website%20Fingerprinting%20in%20Onion%20Routing%20Based%20Anonymization%20Networks%5D%5D][Panchenko]] first published a successful website fingerprinting attack
-  on Tor. He extracted HTTP-specific features from the packet trace
-  and used those in a hand-tuned support vector machine with a radial
-  basis function kernel.
-* CHECK visual inspection of data
-  To exemplify the task of a websitefingerprinter, consider the
-  following pictures which represent complete (considered to contain
-  all relevant information([[file:docs/lit.org::*%5B%5B./ccs14.pdf%5D%5BCai%20-%20A%20Systematic%20Approach%20to%20Developing%20and%20Evaluating%20Website%20Fingerprinting%20Defenses%5D%5D][a-systematic]]) packet trace data in the form
-  of (delay, packet size), which is
-** facebook.com
-   [[file:pictures/facebook_com@1445350531.png]]
-   [[file:pictures/facebook_com@1445422155.png]]
-   [[file:pictures/facebook_com@1445425799.png]]
-   [[file:pictures/facebook_com@1445429729.png]]
-** craigslist.org
-   [[./pictures/craigslist_org@1445352269.png]]
-   [[./pictures/craigslist_org@1445428146.png]]
-   [[./pictures/craigslist_org@1445435476.png]]
-   [[./pictures/craigslist_org@1445442917.png]]
-** creation of pictures
-
-   The pictures were created by the commands
-
-   #+BEGIN_EXAMPLE
-    for fb in $(ls | grep facebook); do
-      python ~/da/bin/counter.py ./$fb  | tail -1 | sed 's/),/\n/g' | \
-          tr -d "'()][" > /tmp/times;
-      gnuplot -e "set terminal png size 1024,680; \
-              set output \"/tmp/${fb}.png\"; plot '/tmp/times' with boxes;";
-    done
-   #+END_EXAMPLE
-
-   and respectively for craigslist, in the directories containing the
-   pcap files.
-
-   These commands first extract the timing attributes (at git commit
-   791af76 the last line of the output of counter.py), format it for
-   gnuplot (inserting appropriate newlines via =sed= and removing
-   extra characters via =tr=), and =gnuplot= s it to a png file with
-   the name of the trace file as prefix.
 * distribution of (main) features
   These distribution histograms show how Panchenko's main features are
   distributed. They are stacked histograms with classes separated by
@@ -1016,21 +1082,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
       - 100 \to 800 once a 20 \to 40 twice
   - (currently closed world)
 ** TODO more complete list?
-* TODO description of add-on
-  The add-on is an experimental defense against website
-  fingerprinting.
-
-  - detect start of transmission
-    - request extra HTML doc to obfuscate that
-    - maybe do something to IPP-model (trigger off/on-state on some)
-  - always send dummy traffic
-    - on each request
-    - better: leave some out
-  - better: delay some requests (f.ex. images)
-  - detect end of page load
-    - maybe do something to IPP-model (trigger on/off-state on some)
-  - request size uniform [0, 300)
-    - except if request.len > 300
 * TODO differences to adaptive padding/wtfpad
 ** no cooperator necessary
    dummy packets chosen as response to real request (as in web traffic)
@@ -1042,97 +1093,12 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 * TODO why several covers
 ** competition
 ** harder to break
-* TODO HTML traffic model
-  - intel
-    - html object lognormal with params \mu = 7.90272, \sigma = 1.7643
-    - embedded objects
-  - test
-    - download html top 10000
-    - analysis
-* TODO cacheing
-  - browsers cache
-  - only helps in cover traffic, (unless warm/cold site model is used)
-** TODO where to put this?
 * TODO who used which retrieval method
   - list
   - chickenfoot
   - modified browser
   - selenium: daniel
   - plain tor bundle
-* MOVE appendix Python web server for cover traffic
-  This approach did not scale, so it was not used. It is included as a
-  reference of what seems to work, but did not.
-
-  The python module =TrafficHTTPServer= can be started on the command-line via 
-
-  python TrafficHTTPServer.py portname
-
-  with portname set to 8000 by default. It generates cover traffic of the
-  size given by the =size= parameter, for example the command
-
-  wget 'http://localhost:8000/?size=10'
-
-  retrieves a document with 10 bytes content from a TrafficHTTPServer
-  running at localhost port 8000.
-** TODO include file
-* TODO mod_wsgi
-  =mod_wsgi= module is a module for the apache web server. It provides
-  functionality to execute python scripts implementing the WSGI
-  standard. Contrary to normal apache installation, a server using
-  only wsgi is easily set up via the =mod_wsgi-express= command, which
-  is included in the =mod_wsgi= python package.
-
-  installation
-
-  - apt-get install apache2-bin apache2-dev
-  - pip install mod_wsgi
-
-  start via
-
-  - ~/.local/bin/mod_wsgi-express start-server wsgi.py
-
-  (here, also --port 7777), as for the script wsgi.py see appendix
-** TODO WSGI lit
-** TODO link to pypi mod_wsgi
-** TODO link to comparison via nichol.as
-* TODO Tor overview
-* TODO determine bloom filter sizes
-  The statistical size generation works with application-level sizes
-  on the network, as the authors analysed squid
-  proxy[[fn::\url{http://www.squid-cache.org}]] logs.
-
-  The HTML-sizes could not be trivially obtained in the browser, as
-  there are additional headers and size-reduction via compression. The
-  sizes were determined by retrieving the files with =wget= via squid
-
-  #+BEGIN_SRC sh
-    sudo squid3 -k shutdown &&\
-    sudo squid3 -k kill &&\
-    echo '' | sudo tee /var/log/squid3/access.log &&\
-    sudo squid3
-    sleep 3
-    # retrieves sites
-    for i in $(cat ~/sw/top-100-modified.csv | cut -d "," -f 2); do
-        mkdir $i
-        cd $i
-        env http_proxy='http://127.0.0.1:3128' wget $i
-        cd ..
-    done
-  #+END_SRC
-
-  and examining the log file =access.log= via the command sequence
-
-  sudo cat /var/log/squid3/access.log | tr -s ' ' | cut -d ' ' -f 5,7
-  > /mnt/data/HTML-sizes
-
-  The second important feature that is used in generating cover
-  traffic is the number of embedded files per HTML-page.
-** TODO number embedded
-* TODO bloom filter
-  - many to size up
-  - bloom filter general idea
-  - split by quantiles
-** error rate computing
 * TODO bloom usage and implementation
   - bloom sort
     - error rate computation
@@ -3239,6 +3205,22 @@ mean = 0.763238095238
 ** LATER [[file:../bin/extract_attribute.py][extract_attribute.py]]
    insert file here
 ** TODO [[file:../bin/wsgi.py]]
+** Python web server for cover traffic
+   This approach did not scale, so it was not used. It is included as a
+   reference of what seems to work, but did not.
+
+   The python module =TrafficHTTPServer= can be started on the command-line via 
+
+   python TrafficHTTPServer.py portname
+
+   with portname set to 8000 by default. It generates cover traffic of the
+   size given by the =size= parameter, for example the command
+
+   wget 'http://localhost:8000/?size=10'
+
+   retrieves a document with 10 bytes content from a TrafficHTTPServer
+   running at localhost port 8000.
+*** TODO include file
 * unclear
 ** TODO assumptions
    split traffic traces

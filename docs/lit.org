@@ -5083,7 +5083,7 @@
       #+END_SRC
       - better: typed array for performance (=array= is used directly)
 ** TODO [#A] Entwurfsmuster
-*** summary
+*** TODO summary (weiter bei 0.4.3.Beispielcode S.206)
     0) [@0] Preface
        1) Vorwort
 
@@ -5113,7 +5113,7 @@
 
 	     - effizient vorher abwaegen
 
-    1) [@1] Einfuehrung
+    1) Einfuehrung
 
        0) [@0] wie die Experten:  Muster, um Problem zu loesen
 
@@ -5784,6 +5784,78 @@
 
        3) Dekorierer
 
+          - objektbasiert
+
+          - Zweck: objekt dynamisch erweitern
+
+          - Motivation
+
+            - vererbung ist unflexibel
+
+            - besser in anderem Objekt einschliessen, dass
+              z.b. scrolling hinzufuegt: /Dekorierer/
+
+              - hat dieselbe schnittstelle wie anderes object,
+                evtl. erweitert, z.b. um /scrolleBis()/
+
+          - Anwendbarkeit:
+
+            - zusaetzliche funktionalitaet
+
+              - wieder entfernbar
+
+            - unterklassen vermeiden (versteckt oder exponentielle vermehrung)
+
+          - Struktur / Teilnehmer:
+
+            - abstrakteKomponente hat
+
+              - konkreteKomponente (erweiterbar), und
+
+              - Dekorierer, der enthaelt abstrakteKomponente und Unterklassen
+
+          - Interaktionen:
+
+            - leitet anfragen weiter
+
+            - fuehrt zusaetliche aktionen davor oder danach aus
+
+          - Konsequenzen:
+
+            - flexibilitaet
+
+              - weniger klassen als bei mehrfachvererbung
+
+              - mehrfach dasselbe (zwei rahmen)
+
+            - erweitern unten im klassenstammbaum, nicht eine komplexe
+              elternklasse
+
+            - keine tests auf objektidentitaet
+
+            - viele kleine gleiche Objekte, schwerer zu verstehen
+
+          - Implementierung:
+
+            - schnittstellen: alle funktionen uebernehmen
+
+            - leichgewichtige komponentenklassen
+
+            - Strategiemuster ändert das Verhalten, Dekorierer die "Hülle"
+
+              - Strategie ("Delegation eines Teils der Verhalten an
+                separates Strategieobjekt") bei schwergewichtigen
+                Komponenten
+
+              - z.B. separates Rahmenobjekt
+
+              - z.B. in MacView, da seine Views sehr schwergewichtig,
+                also extra /Adorner/-Klasse
+
+              - für Strategie muss die Klasse verändert werden
+
+          - Beispielcode
+
     5) [@5] Verhaltensmuster
 
        6) [@6] Memento
@@ -6307,6 +6379,35 @@
                #+END_SRC
 
                - half as fast without caching =l=
+
+             - notes: also [].forEach(callback(element, index, array))
+
+          2) The length Property
+
+             - can be used to truncate array or make it sparse
+
+          3) In Conclusion
+
+             - bet performance with plain for loop (with =length= caching)
+
+       2) The Array Constructor
+
+          1)
+
+             - use =[]= instead
+
+             - except for repeating f.ex. a string without =for=
+               #+BEGIN_SRC js
+                 new Array(count + 1).join(stringToRepeat);
+               #+END_SRC
+
+          2) In Conclusion
+
+             use [] almost all the time
+
+    4) Types
+
+       1) Equality and Comparisons
 ** TODO [#A] [[./Javascript Closures.prototype_chain.html][Javascript Closures]]
 *** summary
     1) Introduction
@@ -6472,7 +6573,6 @@
                     return obj[methodName](e, this);
                 });
             }
-
             /* Creates objects that associate themselves with DOM elements whose
                IDs are passed to the constructor as a string.
             ,*/
@@ -6495,6 +6595,35 @@
                 ... // doMouseOver method body.
             }
           #+END_SRC
+
+       3) Example 3: Encapsulating Related Functionality
+
+          have a array which is filled on execution with various values
+
+       4) Other Examples
+
+          - crockford: private instance variables
+
+            - extended to private static:
+              http://myweb.tiscali.co.uk/cornford/js_info/private_static.html
+
+    6) Accidental Closures
+
+       - if used accidentally, can lead to less efficiency:
+         #+BEGIN_SRC js
+           var quantaty = 5;
+           function addGlobalQueryOnClick(linkRef){
+               if(linkRef){
+                   linkRef.onclick = function(){
+                       this.href += ('?quantaty='+escape(quantaty));
+                       return true;
+                   };
+               }
+           }
+         #+END_SRC
+         creates a function for each call to the function
+
+       - TODO: after function
 *** quotes
     3) [@3] Identifier Resolution, Execution Contexts and scope chains
        1) The Execution Context
@@ -6830,6 +6959,27 @@
                   deletion an insertion
 
              3) Removing Substitutions
+
+                these do not correspond to realistic scenarios as
+                deletions, insertions and transpositions do
+
+             4) Different costs for Incoming/Outgoing Packets
+
+                make changes to outgoing packets more costly
+
+             5) Varying transposition cost
+
+                - reduce transposition costs the later an element occurs
+
+                - at beginning, always HTML page
+
+                - then simultaneous connections
+
+                - cost = (1 - 0.9 min(i/m, j/n))^2
+
+             6) Fast Levenshtein-like distance
+
+                efficient new levenshtein algorithm in O(m+n)
 *** quotes
     1) INTRODUCTION
        - [@?] dynamic content such as advertisements may cause a
@@ -7041,6 +7191,16 @@
          dense is real traffic
 
     8) Creation and management of dummy packets
+
+       - simplest: creation by mix, but nonforwardeable
+
+       - pre-computed on generation and times of quiet
+
+         - con: stream ciphers
+
+       - Malicious clients and servers.
+
+         bad, a.p. requires server cooperation, TODO: reread
 *** quotes
     - Many mix networks are specifically intended to provide anonymity
       against attackers who control the communication medium.
@@ -11464,7 +11624,25 @@
 
            4) Organizing test code
 
+              - simplest class: override =runTest=
 
+              - =setUp= loaded for each instantiation
+
+                - similar, =tearDown=
+
+              - =test_*=-methods get executed
+
+           5) Re-using old test code
+
+              - use =FunctionTestCase=
+
+                - AssertionErrors signal test failures
+
+                  - but not guaranteed to
+
+              - also =DocTestSuite= available
+
+           6) Skipping tests and expected failures
 *** quotes
     - os.walk(top, topdown=True, onerror=None, followlinks=False)
 
@@ -11513,7 +11691,7 @@
     - The typical usage to break into the debugger from a running
       program is to insert
 
-      #+BEGIN_SRC python
+       #+BEGIN_SRC python
         import pdb; pdb.set_trace()
       #+END_SRC
 

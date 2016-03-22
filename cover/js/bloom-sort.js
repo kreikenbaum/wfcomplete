@@ -2,8 +2,15 @@
 /**
 * @fileoverview uses bloomfilters to sort elements
 */
-const Bloom = require("../lib/bloomfilter.js");
 const _ = require('../lib/underscore-min.js');
+const Bloom = require("../lib/bloomfilter.js");
+const Storage = require("sdk/simple-storage").storage;
+
+const debug = require("./debug.js");
+
+// td later (in thesis):choose parameters 
+const NUM_BITS = 32 * 256; // number of bits to allocate.
+const NUM_HASH = 3; 
 
 // td: typeerror if sizes.length !== splits.length + 1
 // td: maybe test if sizes and splits are sorted and arrayed correctly
@@ -15,11 +22,10 @@ const _ = require('../lib/underscore-min.js');
 */
 function BloomSort(sizes, splits) {
     this.sizes = sizes;
-    this.num_filters = sizes.length;
     this.splits = splits; // || determine_splits(sizes);
     this.filters = [];
-    for ( let i = 0; i < this.num_filters; i++ ) {
-	this.filters[i] = new Bloom.BloomFilter(50, 3); // td:choose parameters 
+    for ( let i = 0; i < sizes.length; i++ ) {
+	this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH); 
     }
 }
 /** adds element of size {@code size} */
@@ -49,8 +55,31 @@ BloomSort.prototype.query = function(id) {
     }
     return this.sizes[pos];
 };
-/** @return {string} JSONified version of BloomSort */
+/** saves BloomSort-array to local storage */
 BloomSort.prototype.save = function() {
-    // td;
+    Storage.filters = [];
+    for ( let i = 0; i < this.filters.length; i++ ) {
+        Storage.filters[i] = [].slice.call(this.filters[i].buckets);
+    }
+    Storage.splits = this.splits;
+    Storage.sizes = this.sizes;
 };
+BloomSort.prototype.toString = function() {
+    let out = 'BloomSort = {\n';
+    out += 'sizes: ' + this.sizes + '\n';
+    out += 'splits: ' + this.splits + '\n';
+    out += 'filters: ' + this.filters + '\n';
+    out += '}';
+    return out;
+}
 exports.BloomSort = BloomSort;
+
+/** @return bloomSort restored from local storage */
+function restore() {
+    let s = new BloomSort(Storage.sizes, Storage.splits);
+    for ( let i = 0; i < s.filters.length; i++ ) {
+	s.filters[i] = new Bloom.BloomFilter(Storage.filters[i], NUM_HASH);
+    }
+    return s;
+};
+exports.restore = restore;
