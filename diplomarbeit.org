@@ -2,7 +2,7 @@
 #+TODO: TODO CHECK | LATER DONE
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{tikz}
-* TODO [#A] move ordered sections
+* TODO [#A] move sections to list and MOVE
 * final sections
 ** LATER Abstract
 *** Teaser
@@ -36,7 +36,7 @@
 **** WAIT may \to (ohne) (falls richtig)
 ** Introduction
 ** Materials and Methods
-* TODO topics [3/58]
+* TODO topics [3/61]
 ** TODO Website Fingerprinting [0/9]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
@@ -346,7 +346,7 @@
     multiplexing and fixed cell sizes.
 *** TODO sort subtopics
 *** TODO Tor overview
-** TODO Addon Design and Implementation [3/31]
+** TODO Addon Design and Implementation [3/34]
 *** TODO Mozilla Add-On Sdk [0/2]
 **** TODO Introduction to the Mozilla Add-On Sdk
      The Add-on SDK by Mozilla supports the development of
@@ -568,38 +568,47 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      - browsers cache
      - only helps in cover traffic, (unless warm/cold site model is used)
 ***** TODO where to put this?
-**** TODO determine bloom filter sizes
-     The statistical size generation works with application-level sizes
-     on the network, as the authors analysed squid
-     proxy[[fn::\url{http://www.squid-cache.org}]] logs.
+**** TODO find HTML-size
+     The statistical size generation works with application-level
+     sizes on the network, as the authors analysed logfiles of the
+     Squid proxy[[fn::\url{http://www.squid-cache.org}]].
 
-     The HTML-sizes could not be trivially obtained in the browser, as
-     there are additional headers and size-reduction via compression. The
-     sizes were determined by retrieving the files with =wget= via squid
+     The HTML-sizes could not be trivially obtained from the
+     =Content-Length= in the browser, as there are additional headers
+     and size-reduction via compression. The sizes were determined by
+     retrieving the files with =wget= via squid. This is implemented
+     via the [[./bin/html_top_100.sh]] file (see appendix).
 
-     #+BEGIN_SRC sh
-       sudo squid3 -k shutdown &&\
-       sudo squid3 -k kill &&\
-       echo '' | sudo tee /var/log/squid3/access.log &&\
-       sudo squid3
-       sleep 3
-       # retrieves sites
-       for i in $(cat ~/sw/top-100-modified.csv | cut -d "," -f 2); do
-           mkdir $i
-           cd $i
-           env http_proxy='http://127.0.0.1:3128' wget $i
-           cd ..
-       done
-     #+END_SRC
+     It empties the =access.log= file and the squid cache by
+     restarting. Afterwards, the top-100 files are retrieved with
+     =wget= via squid.
 
-     and examining the log file =access.log= via the command sequence
+     From the log file =access.log=, the sizes are extracted via the
+     command sequence
 
      sudo cat /var/log/squid3/access.log | tr -s ' ' | cut -d ' ' -f 5,7
      > /mnt/data/HTML-sizes
 
+     These sizes are then converted to a JSON-array via the
+     [[./htmlSizeToJSON.py]]-file.
+**** TODO find number of embedded elements
      The second important feature that is used in generating cover
      traffic is the number of embedded files per HTML-page.
-***** TODO number embedded
+
+     These in the top-100 sites are extracted via the python script
+     [[file:bin/htmlToNumEmbedded.py]] (see appendix).
+
+     It uses python's lxml module to parse the HTML's DOM, then extracts
+     the URLs of embedded files from the attributes of several tags,
+     namely, f.ex. the =src= element of =img= tags.
+
+     It seems better for cover traffic to slightly underestimate the
+     number of embedded elements. This which might generate more
+     traffic than strictly necessary, but here, safe seems better than
+     sorry. Extracting just the right URLs is a matter of further research.
+***** TODO [#A] directly from URLs
+***** TODO link DOM
+***** TODO link further research
 **** TODO bloom filter
      - many to size up
      - bloom filter general idea
@@ -905,12 +914,12 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 ** TODO why filtering allowed
 ** TODO see if merge/unify with [[transform to panchenko-features]]
 ** TODO and if include stuff from [[*from%20%5B%5B*transform%20to%20panchenko-features%5D%5D][from {{*transform to panchenko-features}}]]
-* LATER how sally works
+* TODO MOVE how sally works
   - configuration file
     - input
     - features
     - output
-** maybe move to unused
+** TODO MOVE to unused
 * TODO libsvm (short)
   LibSVM is a library for support vector machine classification and
   regression. It is used under-the-hood for scikit-learn, yet one part
@@ -1108,6 +1117,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 * TODO extract dom tags python
   - diveintopython
   - which tags?
+* TODO page size
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
@@ -3182,10 +3192,16 @@ mean = 0.763238095238
 
     There exists basic code to use a list of webpages, given their
     sizes. It could be augmented by following links.
+    - update from visited URLs
   - no morphing (delay, segmentation)
     - justify why good idea
   - bloomsort save/restore
   - truncated lognormal instead of lognormal
+  - number of embedded elements lacks <style> tags and some in <link>
+    - does not honor reloads/cacheing
+      - or does it? (maybe only called on cacheing)
+    - but better than too many?
+  - elaborate on [[find number of embedded elements]]
 ** onion host for cover traffic
    As indicated f.ex. by Wang and Goldberg,
    \cite{wpes13-fingerprinting}, network load already is a bottleneck
@@ -3203,7 +3219,7 @@ mean = 0.763238095238
    [[file:~/da/docs/master.bib::rfc2616][R. & Berners-Lee 1999: Hypertext Transfer Protocol]]
 ** RFC7230
    [[file:docs/master.bib::rfc7230][R. & J. 2014: Hypertext Transfer Protocol HTTP]]
-* TODO appendices [0/3]
+* TODO appendices [3/6]
 ** TODO [[file:./bin/one_site.py]]
    insert file here
 ** LATER [[file:../bin/extract_attribute.py][extract_attribute.py]]
@@ -3225,6 +3241,22 @@ mean = 0.763238095238
    retrieves a document with 10 bytes content from a TrafficHTTPServer
    running at localhost port 8000.
 *** TODO include file
+** LATER include [[file:bin/htmlToNumEmbedded.py]]
+** html_top_100.sh
+     #+BEGIN_SRC sh
+       sudo squid3 -k shutdown &&\
+       sudo squid3 -k kill &&\
+       echo '' | sudo tee /var/log/squid3/access.log &&\
+       sudo squid3
+       sleep 3
+       # retrieves sites
+       for i in $(cat ~/sw/top-100-modified.csv | cut -d "," -f 2); do
+           mkdir $i
+           cd $i
+           env http_proxy='http://127.0.0.1:3128' wget $i
+           cd ..
+       done
+     #+END_SRC
 * unclear
 ** TODO assumptions
    split traffic traces
