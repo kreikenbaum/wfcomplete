@@ -1,4 +1,369 @@
 [[./master.bib]]
+** [#A] [[./HTTP Traffic Model_v1 1 white paper.pdf][Lee - A NEW TRAFFIC MODEL FOR CURRENT USER WEB BROWSING BEHAVIOR]]
+*** summary
+    0) [@0] ABSTRACT
+
+       - squid log analyzer
+
+       - well-matching http model and generator
+
+    1) INTRODUCTION
+
+       - previous data limited
+
+       - need for privacy-aware data gathering
+
+	 - +: constant updates of data
+
+       - new model
+
+    2) RELATED WORKS
+
+       - empirical: web page
+
+       - web request
+
+       - based on TCP/IP headers (problem: top level vs embedded)
+
+       - distinguish user clicks
+
+    3) HTTP TRAFFIC MODELING OVERVIEW
+
+       - on and off
+
+       - boundary: web request
+
+	 - 1 second: user can blick before that
+
+	 - user action: not possible to distinguish
+
+	 - referer: can be used for both cases, is optional
+
+    4) MODELING METHODOLOGY
+
+       squid logs
+
+       1) Traffic Parsing
+
+	  - browser cache not modeled, unclear (but also irrelevant)
+
+	  - cache files: time logged to end of sending (not receipt) \to algo
+
+	  - privacy filtered (url out, except for file extension)
+
+	  - separated by client-IP
+
+	  - each "http session" has parameters computed
+
+	  - fitted with lognormal, weibull, exponential, gamma,
+            generalized pareto,
+
+	    - selected by log-likelihood and finite parameters
+
+       2) Response Arrival Time
+
+	  - algorithm for time, dependent on MTU < L < 10*MTU
+
+       3) HTTP Session
+
+	  - browsing session, after about 2:45 hrs
+
+       4) Web-Request
+
+	  - session = series of Web-Requests
+
+	  - Web-Request: HTML + [embedded]+
+
+	    - next HTML ends
+
+	    - parallelism consciously ignored
+
+	  - embedded IAT, parsing time bounded by 5 minutes (TCP session)
+
+	  - HTML by Content-type || file-ending: html/htm, cgi, asp,
+            sml, stm, php, '/'
+
+	  - see quotes-table
+
+    5) MODEL AND ANALYSIS RESULT
+
+       1) Model Parameters
+
+	  0) [@0] details about specific parameters in detail
+
+	  1) /HTML object size/ and /Embedded object size/
+
+	     - embedded bigger than html
+
+	  2) Number of embedded objects
+
+	     - same as before, maybe due to cacheing
+
+	  3) Parsing time: between HTML *arrival* and first object *arrival*
+
+	  4) Embedded Object Interarrival time: between object *arrivals*
+
+	  5) Reading time: arrival last object to arrival new HTML object
+
+	  6) HTML object IAT: between two html objects (validation param)
+
+	  7) request size: size of http requests
+
+       2) Caching Model
+
+          - identified by http 304
+
+          - only 190 bytes on average
+
+          - 16% cached of all requests
+
+          - 1.5%of html average size
+
+          - model number of consecutive hits
+
+    6) VALIDATION
+
+       - test via HTML IAT (only)
+
+    7) CONCLUSIONS
+
+       - changes in user behavior
+
+	 - video streaming increases embedded object size
+
+	 - less IAT reading times: high speed networks, caching, proxies, ...
+
+       - no packet data, thus no timing,
+
+	 - believe to be fair
+*** quotes
+    - the actual packet inter-arrival time (IAT) is governed by
+      specific conditions that existed in the internet when the trace
+      was collected and are unique in that context.
+    - (ends 1+2)
+    - Typically, HTTP traffic is modeled as an ON/OFF source with the
+      ON state corresponding to the request and download of the
+      objects and the OFF state corresponding to the inactive time.
+    - It is possible that the ON state lasts over multiple Web-Request
+      periods when the downloading of the last embedded object and the
+      next HTML object overlaps.
+    - (ends 3)
+    - Table 2: Analysis Result of HTTP Model Parameters
+      | Parameters    | Mean            |   S.D. | Best Fit                                    |
+      |---------------+-----------------+--------+---------------------------------------------|
+      | <13>          | <15>            |        |                                             |
+      | HTML Object size | 11872 (Max 2MB) |  38306 | Truncated Lognormal (μ=7.90272, σ=1.7643)   |
+      | Embedded ObjectSize | 12460 (Max 6MB) | 116050 | Truncated Lognormal (μ=7.51384, σ 2.17454)  |
+      | Number of Embedded objects | 5.07 (Max 300)  |        | Gamma (κ=0.141385, θ=40.3257)               |
+      | Parsing Time  | 3.12 (median 0.30)(max 300 sec) |  14.21 | Truncated Lognormal (μ=-1.24892, σ=2.08427) |
+      | Embedded Object IAT | 0.83            |    8.4 | Weibull (α=0.2089, β=0.376)                 |
+      | Reading Time  | 39.70 (max 10,000 sec) | 324.92 | Lognormal (μ=-0.495204, σ=2.7731)           |
+      | Request Size  | 318.59          | 179.46 | Uniform (350 Bytes)                         |
+*** questions
+*** ref
+    [[file:master.bib::newtrafficmodel][Mistry & Raman 2007: NEW TRAFFIC MODEL]]
+** [#A] [[./hintz02.pdf][Hintz - Fingerprinting Websites Using Traffic Analysis]]
+*** summary
+    0) [@0] Abstract
+
+       Attack to find out whether user is visiting certain websites,
+       even though he uses an encrypted proxy.
+
+       Plus discussion: better attack and defenses
+
+    1) Introduction
+
+       With normal encryption, metadata is visible.
+
+       With one-hop proxies, metadata is discoverable.
+
+       There are several defenses.
+
+    2) Definition of Traffic Analysis
+
+       sender, receiver, amount of data transferred (ssl does not try
+       to obfuscate)
+
+    3) SafeWeb
+
+       - anonymizing one-hop proxy with some content-rewriting
+
+       - JS and SSL-based
+
+    4) Fingerprinting Websites
+
+       - HTML \to images, stylesheets
+
+       - separate TCP connection and port
+
+       - many combinatorical possibilities to uniquely identify each page
+
+    5) The Real World Threat
+
+       - easy to distinguish
+
+       - little https vs other traffic, thus easier
+
+    6) Implementing a Fingerprinting Attack
+
+       - analyse log files for occurring sizes (data received per port)
+
+       - compare these sizes*counts with other sizes*counts
+
+       - same site: smallest number of exact matches = 21, typically 75%
+
+       - different sites: biggest number = 2, most often 1, 0, at most 6%
+
+       - service shut down before large scale tests were possible
+
+    7) Improving the Attack
+
+       so far small-scale, for large-scale, improvements would be
+
+       1) Analyzing the Order of Transmissions
+
+	  - also order HTML-embedded
+
+	  - create several fingerprints (for different web browsing programs)
+
+       2) Improving Creation of Fingerprints
+
+	  - always some noise
+
+	  - maybe from different computers, adding sizes
+
+       3) Expanding Fingerprints to Entire Websites
+
+	  - f.ex. by getting all sizes of all files on the website
+            (cnn.com f.ex.)
+
+       4) Improving Matching
+
+	  - range matching (adding ranges after exact matches) created
+            more false positives
+
+    8) Protecting Against Fingerprinting
+
+       several ways
+
+       1) Adding Noise to Traffic
+
+	  0) [@0]
+
+	     - possible by proxy
+
+	     - SafeWeb already reformats HTML to point back to SafeWeb
+
+	  1) Modify Sizes of Connections
+
+	     - modify sizes of files (comments to HTML, jpg, f.ex.)
+
+	     - increase amount of bandwith
+
+	  2) Add Extra Fake Connections
+
+	     - f.ex. by embedding 1x1 sized pictures
+
+	       - drawbacks: rendering, high amount of bandwidth
+
+       2) Reduce Number of Files Transferred
+
+	  - "quick and easy solution": disable graphics, etc
+
+	    - reduced number of files by 3/4
+
+       3) Transfer Everything in One Connection
+
+	  - f.ex. one tarball
+
+	  - (or HTML/1.1)
+
+    9) Conclusion
+
+       - applicable to other services
+
+	 - f.ex. SSH: determine size of password
+*** quotes
+    - The process of monitoring the nature and behavior of traffic,
+      rather than its content, is known as traffic analysis.
+    - Websites that are purely HTML and do not reference any other
+      files, such as graphics, would probably not have a unique
+      fingerprint.
+    - Although the government would have a huge amount of traffic to
+      analyze, https traffic comprises only a very small portion of
+      all Internet traffic. (5)
+*** ref [[file:master.bib::hintz02][Hintz 2002: Fingerprinting Websites Using Traffic Analysis]]
+** [#C] [[./torproject.orgSLASHaboutSLASHtorusers.html][Who uses Tor?]]
+*** summary
+    1) Inception
+
+       - U.S. Navy
+
+       - primary purpose: "protecting government communications"
+
+    2) Normal people use Tor
+
+       - protect privacy, communication, children (IP-address),
+
+       - do research f.ex. tibet,
+
+       - skirt surveillance, circumvent censorship
+
+    3) Militaries use Tor
+
+       - field agents
+
+       - hidden services
+
+       - intelligence gathering
+
+    4) Journalists and their audience use Tor
+
+       - readers and publishing and research
+
+    5) Law enforcement officers use Tor
+
+       - online surveillance
+
+       - sting operations
+
+       - anonymous tips
+
+    6) Activists & Whistleblowers use Tor
+
+       - report injustices without repercussions
+
+       - regain privacy
+
+    7) High & low profile people use Tor
+
+       - banker with diverse clientele
+
+       - living in poverty
+
+    8) Business executives use Tor
+
+       - report security risks and internal malfeasance
+
+       - evaluate competition and investments
+
+    9) Bloggers use Tor
+
+       - avoid problems for legal things
+
+    10) IT Professionals use Tor
+
+	- audit firewalls, disallowed content, services
+
+	- access resources
+
+	- mitigate outage
+
+    11) end
+
+	- send stories
+*** ref
+    [[file:master.bib::who-uses-tor][Project td: Who Tor]]
 ** [[./2015-asiaccs.pdf][Torben: A Practical Side-Channel Attack for Deanonymizing Tor Communication]]
 *** quotes
     - (a) web pages can be easily manipulated to load content from
@@ -16,7 +381,7 @@
     request packets per JS. they have sizes of 2k, 4k, 6k, 8k = 2bit
     information. Wait after page load, trigger js xmlhttprequest.
 
-    0) [@0] 
+    0) [@0]
        deanonymization via traffic injection and identification of
        request-response pairs
     1) user's browser does side-channel communication via
@@ -26,7 +391,7 @@
        1) low-latency anonymization
        2) active attacker: remote markers via embed (ads) or local (at server)
        3) side-channel (see 3)
-    3) 
+    3)
        1) preprocessing:
           1) not ip, but TLS (removes *1 layer* of retransmissions)
 	  2) empty out, merge adjacent, filter control (discard 512b-cells), merge again, sizes as multiples fo 2k
@@ -38,7 +403,7 @@
     4) Evaluation: fixed set vs 60000 vs live
        1) Data Collection via Selenium with Firefox, if not loaded, discard
        2) extracting via Sally, learning via LibSVM, generate, record 50 transmissions, train
-       3) closed-world: 
+       3) closed-world:
           reverse proxy, inject js, delay 30secs, 120secs on slow load
 	  transmission takes 12-20 secs, compare to fingerprinting, 95%
        4) open-world: 91%, no false positives
@@ -99,7 +464,7 @@
 
        torben introduced (see also [[Torben: A Practical Side-Channel Attack for Deanonymizing Tor Communication]])
     2) Background
-       1) The Tor Network: 
+       1) The Tor Network:
 
           bunch of routers, symmetric keys per hop in the circuit,
           onion encryption, each router only sees neighbors, each
@@ -146,7 +511,7 @@
 
 	  hash URLs to SHA-1 (optimal when fixed: walsh-hadamard code)
        4) Detection
-	  1) 
+	  1)
 	     - gelesene Sequenz gegeben (experiment: 100 symbols)
 	     - A = {2,4,6,8}^2 (Torben-Alphabet, mit minus fuer request)
 	       |A| = 16
@@ -159,10 +524,10 @@
 
 	     - positional n-grams:
 
-               P = S \times N, 
+               P = S \times N,
                mit Element p=(s,i) mit s \in S, i Position von s in Sequenz
 
-	     - \varphi bildet von allen n-grammen A^* nach R^{|P|}.  
+	     - \varphi bildet von allen n-grammen A^* nach R^{|P|}.
 	       \varphi(x) \to (#(x,p))_{p \in P}
 
                Jedes n-gramm (s,i) hat seine Haeufigkeit zwischen i und
@@ -194,7 +559,7 @@
 	  - remove similar, vergleich mit fingerprint (die failen)
 
        2) Detection
-	  
+
 	  - Sally verwandelt von Netzwerktraces in positional n-grams
 
 	  - learning libsvm
@@ -210,7 +575,7 @@
 	  - the SVM regularization to C = 0.1
 
        3) Closed-World Evaluation
-	  
+
 	  - top 100 seiten je 50 mal
 
 	  - jeweils im februar und april 2014
@@ -770,7 +1135,7 @@
 
        8) The importance of false positives
 
-	  - Open-world: 
+	  - Open-world:
 
 	    4 top sites vs 32710 other sites.
 
@@ -873,7 +1238,7 @@
       a traffic trace actually corresponds to a monitored webpage
       given that the classifier recognized it as monitored.[...]
 
-      P (M | C) 
+      P (M | C)
       = [P (C | M) P (M)] / [P (M) P (C | M) + P (¬M) P (C | ¬M)]
     - The results show that the BDR doubles when we use the
       Classify-Verify approach.
@@ -929,7 +1294,7 @@
     3) Related Work
 
        HTTP/1.0 (resource lengths)
-       
+
        \to HTTP/1.1, VPN, SSH-Tunnel (packet lengths)
 
        \to TOR (padded packet lengths)
@@ -4400,169 +4765,6 @@
       traffic.
 
       How about timing data?
-** MOVE [#A] [[./HTTP Traffic Model_v1 1 white paper.pdf][Lee - A NEW TRAFFIC MODEL FOR CURRENT USER WEB BROWSING BEHAVIOR]]
-*** summary
-    0) [@0] ABSTRACT
-
-       - squid log analyzer
-
-       - well-matching http model and generator
-
-    1) INTRODUCTION
-
-       - previous data limited
-
-       - need for privacy-aware data gathering
-
-	 - +: constant updates of data
-
-       - new model
-
-    2) RELATED WORKS
-
-       - empirical: web page
-
-       - web request
-
-       - based on TCP/IP headers (problem: top level vs embedded)
-
-       - distinguish user clicks
-
-    3) HTTP TRAFFIC MODELING OVERVIEW
-
-       - on and off
-
-       - boundary: web request
-
-	 - 1 second: user can blick before that
-
-	 - user action: not possible to distinguish
-
-	 - referer: can be used for both cases, is optional
-
-    4) MODELING METHODOLOGY
-
-       squid logs
-
-       1) Traffic Parsing
-
-	  - browser cache not modeled, unclear (but also irrelevant)
-
-	  - cache files: time logged to end of sending (not receipt) \to algo
-
-	  - privacy filtered (url out, except for file extension)
-
-	  - separated by client-IP
-
-	  - each "http session" has parameters computed
-
-	  - fitted with lognormal, weibull, exponential, gamma,
-            generalized pareto,
-
-	    - selected by log-likelihood and finite parameters
-
-       2) Response Arrival Time
-
-	  - algorithm for time, dependent on MTU < L < 10*MTU
-
-       3) HTTP Session
-
-	  - browsing session, after about 2:45 hrs
-
-       4) Web-Request
-
-	  - session = series of Web-Requests
-
-	  - Web-Request: HTML + [embedded]+
-
-	    - next HTML ends
-
-	    - parallelism consciously ignored
-
-	  - embedded IAT, parsing time bounded by 5 minutes (TCP session)
-
-	  - HTML by Content-type || file-ending: html/htm, cgi, asp,
-            sml, stm, php, '/'
-
-	  - see quotes-table
-
-    5) MODEL AND ANALYSIS RESULT
-
-       1) Model Parameters
-
-	  0) [@0] details about specific parameters in detail
-
-	  1) /HTML object size/ and /Embedded object size/
-
-	     - embedded bigger than html
-
-	  2) Number of embedded objects
-
-	     - same as before, maybe due to cacheing
-
-	  3) Parsing time: between HTML *arrival* and first object *arrival*
-
-	  4) Embedded Object Interarrival time: between object *arrivals*
-
-	  5) Reading time: arrival last object to arrival new HTML object
-
-	  6) HTML object IAT: between two html objects (validation param)
-
-	  7) request size: size of http requests
-
-       2) Caching Model
-
-          - identified by http 304
-
-          - only 190 bytes on average
-
-          - 16% cached of all requests
-
-          - 1.5%of html average size
-
-          - model number of consecutive hits
-
-    6) VALIDATION
-
-       - test via HTML IAT (only)
-
-    7) CONCLUSIONS
-
-       - changes in user behavior
-
-	 - video streaming increases embedded object size
-
-	 - less IAT reading times: high speed networks, caching, proxies, ...
-
-       - no packet data, thus no timing,
-
-	 - believe to be fair
-*** quotes
-    - the actual packet inter-arrival time (IAT) is governed by
-      specific conditions that existed in the internet when the trace
-      was collected and are unique in that context.
-    - (ends 1+2)
-    - Typically, HTTP traffic is modeled as an ON/OFF source with the
-      ON state corresponding to the request and download of the
-      objects and the OFF state corresponding to the inactive time.
-    - It is possible that the ON state lasts over multiple Web-Request
-      periods when the downloading of the last embedded object and the
-      next HTML object overlaps.
-    - (ends 3)
-    - Table 2: Analysis Result of HTTP Model Parameters
-      | Parameters    | Mean            |   S.D. | Best Fit                                    |
-      |---------------+-----------------+--------+---------------------------------------------|
-      | <13>          | <15>            |        |                                             |
-      | HTML Object size | 11872 (Max 2MB) |  38306 | Truncated Lognormal (μ=7.90272, σ=1.7643)   |
-      | Embedded ObjectSize | 12460 (Max 6MB) | 116050 | Truncated Lognormal (μ=7.51384, σ 2.17454)  |
-      | Number of Embedded objects | 5.07 (Max 300)  |        | Gamma (κ=0.141385, θ=40.3257)               |
-      | Parsing Time  | 3.12 (median 0.30)(max 300 sec) |  14.21 | Truncated Lognormal (μ=-1.24892, σ=2.08427) |
-      | Embedded Object IAT | 0.83            |    8.4 | Weibull (α=0.2089, β=0.376)                 |
-      | Reading Time  | 39.70 (max 10,000 sec) | 324.92 | Lognormal (μ=-0.495204, σ=2.7731)           |
-      | Request Size  | 318.59          | 179.46 | Uniform (350 Bytes)                         |
-*** questions
-*** ref
-    [[file:master.bib::newtrafficmodel][Mistry & Raman 2007: NEW TRAFFIC MODEL]]
 ** [[./ndss16-wfp-internet-scale.pdf][Website Fingerprinting at Internet Scale]]
 *** summary
     0) [@0] Abstract
@@ -4982,77 +5184,6 @@
         any of the pages on this site.
 
 *** TODO ref [[file:master.bib::quantifying][Mistry & Raman 1998: Quantifying Traffic Analysis]]
-** [#C] [[./torproject.orgSLASHaboutSLASHtorusers.html][Who uses Tor?]]
-*** summary
-    1) Inception
-
-       - U.S. Navy
-
-       - primary purpose: "protecting government communications"
-
-    2) Normal people use Tor
-
-       - protect privacy, communication, children (IP-address),
-
-       - do research f.ex. tibet,
-
-       - skirt surveillance, circumvent censorship
-
-    3) Militaries use Tor
-
-       - field agents
-
-       - hidden services
-
-       - intelligence gathering
-
-    4) Journalists and their audience use Tor
-
-       - readers and publishing and research
-
-    5) Law enforcement officers use Tor
-
-       - online surveillance
-
-       - sting operations
-
-       - anonymous tips
-
-    6) Activists & Whistleblowers use Tor
-
-       - report injustices without repercussions
-
-       - regain privacy
-
-    7) High & low profile people use Tor
-
-       - banker with diverse clientele
-
-       - living in poverty
-
-    8) Business executives use Tor
-
-       - report security risks and internal malfeasance
-
-       - evaluate competition and investments
-
-    9) Bloggers use Tor
-
-       - avoid problems for legal things
-
-    10) IT Professionals use Tor
-
-	- audit firewalls, disallowed content, services
-
-	- access resources
-
-	- mitigate outage
-
-    11) end
-
-	- send stories
-*** ref
-    [[file:master.bib::who-uses-tor][Project td: Who Tor]]
 ** [[../sw/jasondavies_bloomfilter.js%20%C2%B7%20GitHub.html]]
 *** summary
     - bloom filter using Fowler–Noll–Vo hash function
@@ -5083,7 +5214,7 @@
       #+END_SRC
       - better: typed array for performance (=array= is used directly)
 ** TODO [#A] Entwurfsmuster
-*** TODO summary (weiter bei 0.4.3.Beispielcode S.206)
+*** TODO summary (weiter bei 0.4.4 S.212)
     0) [@0] Preface
        1) Vorwort
 
@@ -5854,7 +5985,26 @@
 
               - für Strategie muss die Klasse verändert werden
 
-          - Beispielcode
+          - Beispielcode: VisuelleKomponente als Metaklasse
+
+            - wird von Dekorierern und wirklicher Komponente abgeleitet
+
+          - Bekannte Verwendungen:
+
+            - Android Views
+
+            - I/O-Streams (java)
+
+          - Verwandte Muster:
+
+            - Adapter verändert Schnittstelle
+
+            - Strategie verändert inneres Verhalten, Dekorierer äußeres
+
+            - Kompositum: Dekorierer ist degeneriertes Kompositum,
+              allerdings auch mit zusätlicher Funktionalität
+
+       4) Fassade
 
     5) [@5] Verhaltensmuster
 
@@ -6470,8 +6620,54 @@
        3) The instanceof Operator
 
           only useful for custom-made objects
+          #+BEGIN_SRC js
+            function Foo() {}
+            function Bar() {}
+            Bar.prototype = new Foo();
+            new Bar() instanceof Bar; // true
+            new Bar() instanceof Foo; // true
+            // This just sets Bar.prototype to the function object Foo,
+            // but not to an actual instance of Foo
+            Bar.prototype = Foo;
+            new Bar() instanceof Foo; // false
+          #+END_SRC
 
-          1) Comparing Custom Objects
+       4) Type Casting
+
+          type coercion "whereever possible": best use strict equality
+
+          1) Constructors of Built-In Types
+
+             behave differently when used with =new= and without
+             #+BEGIN_SRC js
+               new Number(10) === 10;     // False, Object and Number
+               Number(10) === 10;         // True, Number and Number
+               new Number(10) + 0 === 10; // True, due to implicit conversion
+             #+END_SRC
+             =Number= etc without new do type conversion
+
+          2) Casting to a String
+
+             prepend with ='' +=
+             #+BEGIN_SRC js
+               '' + 10 === '10'; // true
+             #+END_SRC
+
+          3) Casting to a Number
+
+             prepend unary +:
+             #+BEGIN_SRC js
+               +'10' === 10; // true
+             #+END_SRC
+
+          4) Casting to a Boolean
+
+             !!
+
+       5) Core
+
+          1) Why Not to Use eval
+
 ** TODO [#A] [[./Javascript Closures.prototype_chain.html][Javascript Closures]]
 *** summary
     1) Introduction
@@ -6687,7 +6883,21 @@
          #+END_SRC
          creates a function for each call to the function
 
-       - TODO: after function
+       - better: assign function ref
+         #+BEGIN_SRC js
+           var quantaty = 5;
+           function addGlobalQueryOnClick(linkRef){
+               if(linkRef){
+                   linkRef.onclick = forAddQueryOnClick;
+               }
+           }
+           function forAddQueryOnClick(){
+               this.href += ('?quantaty='+escape(quantaty));
+               return true;
+           }
+         #+END_SRC
+
+       - continue below 2nd
 *** quotes
     3) [@3] Identifier Resolution, Execution Contexts and scope chains
        1) The Execution Context
@@ -6695,137 +6905,6 @@
     4) Closures
        1) [@2] Forming Closures
 	  - The ECMAScript specification requires a scope chain to be finite
-** MOVE [#A] [[./hintz02.pdf][Hintz - Fingerprinting Websites Using Traffic Analysis]]
-*** summary
-    0) [@0] Abstract
-
-       Attack to find out whether user is visiting certain websites,
-       even though he uses an encrypted proxy.
-
-       Plus discussion: better attack and defenses
-
-    1) Introduction
-
-       With normal encryption, metadata is visible.
-
-       With one-hop proxies, metadata is discoverable.
-
-       There are several defenses.
-
-    2) Definition of Traffic Analysis
-
-       sender, receiver, amount of data transferred (ssl does not try
-       to obfuscate)
-
-    3) SafeWeb
-
-       - anonymizing one-hop proxy with some content-rewriting
-
-       - JS and SSL-based
-
-    4) Fingerprinting Websites
-
-       - HTML \to images, stylesheets
-
-       - separate TCP connection and port
-
-       - many combinatorical possibilities to uniquely identify each page
-
-    5) The Real World Threat
-
-       - easy to distinguish
-
-       - little https vs other traffic, thus easier
-
-    6) Implementing a Fingerprinting Attack
-
-       - analyse log files for occurring sizes (data received per port)
-
-       - compare these sizes*counts with other sizes*counts
-
-       - same site: smallest number of exact matches = 21, typically 75%
-
-       - different sites: biggest number = 2, most often 1, 0, at most 6%
-
-       - service shut down before large scale tests were possible
-
-    7) Improving the Attack
-
-       so far small-scale, for large-scale, improvements would be
-
-       1) Analyzing the Order of Transmissions
-
-	  - also order HTML-embedded
-
-	  - create several fingerprints (for different web browsing programs)
-
-       2) Improving Creation of Fingerprints
-
-	  - always some noise
-
-	  - maybe from different computers, adding sizes
-
-       3) Expanding Fingerprints to Entire Websites
-
-	  - f.ex. by getting all sizes of all files on the website
-            (cnn.com f.ex.)
-
-       4) Improving Matching
-
-	  - range matching (adding ranges after exact matches) created
-            more false positives
-
-    8) Protecting Against Fingerprinting
-
-       several ways
-
-       1) Adding Noise to Traffic
-
-	  0) [@0]
-
-	     - possible by proxy
-
-	     - SafeWeb already reformats HTML to point back to SafeWeb
-
-	  1) Modify Sizes of Connections
-
-	     - modify sizes of files (comments to HTML, jpg, f.ex.)
-
-	     - increase amount of bandwith
-
-	  2) Add Extra Fake Connections
-
-	     - f.ex. by embedding 1x1 sized pictures
-
-	       - drawbacks: rendering, high amount of bandwidth
-
-       2) Reduce Number of Files Transferred
-
-	  - "quick and easy solution": disable graphics, etc
-
-	    - reduced number of files by 3/4
-
-       3) Transfer Everything in One Connection
-
-	  - f.ex. one tarball
-
-	  - (or HTML/1.1)
-
-    9) Conclusion
-
-       - applicable to other services
-
-	 - f.ex. SSH: determine size of password
-*** quotes
-    - The process of monitoring the nature and behavior of traffic,
-      rather than its content, is known as traffic analysis.
-    - Websites that are purely HTML and do not reference any other
-      files, such as graphics, would probably not have a unique
-      fingerprint.
-    - Although the government would have a huge amount of traffic to
-      analyze, https traffic comprises only a very small portion of
-      all Internet traffic. (5)
-*** ref [[file:master.bib::hintz02][Hintz 2002: Fingerprinting Websites Using Traffic Analysis]]
 ** TODO [#A] [[./webfingerprint-wpes.pdf][Improved Website Fingerprinting on Tor]]
 *** summary
     0) [@0] Abstract
@@ -7044,6 +7123,20 @@
              6) Fast Levenshtein-like distance
 
                 efficient new levenshtein algorithm in O(m+n)
+
+          3) Post-processing
+
+             - need values in [0,1] with 0 greatest similarity
+
+             - as Cai: transform via
+
+               - D'(s 1 , s 2 ) = D(s 1 , s 2 ) / min(|s 1 |, |s 2 |), and
+
+               - K(s 1 , s 2 ) = e^{ −D'(s 1 ,s 2 )^2}
+
+       6) EXPERIMENTAL RESULTS
+
+          1) Setting
 *** quotes
     1) INTRODUCTION
        - [@?] dynamic content such as advertisements may cause a
@@ -7256,15 +7349,22 @@
 
     8) Creation and management of dummy packets
 
-       - simplest: creation by mix, but nonforwardeable
+       1) simplest: creation by mix, but nonforwardeable
 
-       - pre-computed on generation and times of quiet
+       2) pre-computed on generation and times of quiet
 
-         - con: stream ciphers
+          - con: stream ciphers
 
-       - Malicious clients and servers.
+       3) Malicious clients and servers.
 
          bad, a.p. requires server cooperation, TODO: reread
+
+       4) Reverse routes.
+
+          === Server shares keys with all route mixes, but there is an
+          attack
+
+    9) Challenges and future directions
 *** quotes
     - Many mix networks are specifically intended to provide anonymity
       against attackers who control the communication medium.
@@ -9227,6 +9327,15 @@
 ** TODO [[./Getting Started - Ajax | MDN.html]]
 ** TODO [[./XMLHttpRequest - Web API Referenz | MDN.6limit.html]]
 ** TODO [[./1999-35.pdf][A Behavioral Model of Web Traffic]]
+** TODO [[./Vererbung und die Prototypkette - JavaScript | MDN.html]]
+*** summary
+    0) [@0]
+
+       - chain of prototypes, last is =null=
+
+       - more powerful than classic model
+
+    1) Vererbung mit der Prototyp-Kette
 ** PART [#A] [[./random.pdf][Computer Generation of Statistical Distributions]]
 *** summary
     1) SUMMARY
@@ -10581,357 +10690,7 @@
       - The reason why many discrete processes follow the Poisson
         distribution is that it can be seen as the limit over the
         average of a large number of Bernoulli draws
-** PART [#C] [[./irbookonlinereading.pdf][An Introduction to Information Retrieval]]
-*** summary
-    0. [@0] Preface
-
-       - from specialized academic study to www
-
-       - Book organization and course development
-
-	 - chapter: 75 to 90 minutes
-
-	 - 1-8 foundation topics
-
-       - Prerequisites
-
-       - Book layout
-
-	 - pencil: worked examples
-
-	 - scissors: advanced, can leave out
-
-	 - ? exercise, with difficulty * to ***
-
-       - Acknowledgments
-
-    1. Boolean retrieval
-*** quotes
-    - Chapter 10 considers information retrieval from documents that
-      are structured with markup languages like XML and HTML.
-    - (ends 0)
-    - Most commonly, the edit operations allowed for this purpose are:
-      (i) insert a character into a string; (ii) delete a character
-      from a string and (iii) replace a character of a string by
-      another character; for these operations, edit distance
-      is sometimes known as *Levenshtein distance*.
-    - EDIT DISTANCE ( s_{1} , s_{2} )
-      1. int m [ i, j ] = 0
-      2. for i ← 1 to | s_{1} |
-      3. do m [ i, 0 ] = i
-      4. for j ← 1 to | s_{2} |
-      5. do m [ 0, j ] = j
-      6. for i ← 1 to | s_{1} |
-      7. do for j ← 1 to | s_{2} |
-      8. do m [ i, j ] = min { m [i−1, j−1]
-	 + if ( s1[i] = s2[j]) then 0 else 1 fi,
-      9. m [ i − 1, j ] + 1,
-      10. m [ i, j − 1 ] + 1 }
-      11. return m [| s_{1} | , | s_{2} |]
-    - (ends 3.3)
-    - *Contiguity hypothesis*. Documents in the same class form a
-      contiguous region and regions of different classes do not
-      overlap.
-    - Nonlinear models have more parameters to fit on a limited amount
-      of training data and are more likely to make mistakes for small
-      and noisy data sets.
-    - (ends 14.0)
-** PART [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Eloquent Javascript]]
-*** summary
-    8. [@8] Object-oriented Programming
-
-       - 90s trend, persistent, "solid and useful"
-
-       - create objects, attach methods and properties
-
-       - easy: just attach function values to object
-
-       - =apply(object, params)=: first parameter (mapped to =this=) is object
-
-	 - also =call(object, params*)= separate arguments instead of array
-
-       - constructor
-
-	 - Capitalized
-
-	 - use with =new=
-
-	 - always sets =this= to object, returns it
-
-	 - also sets =constructor= property and some other stuff
-
-       - .prototype
-
-	 - like =class=, but dynamically augmentable
-
-       - always changes object, object never changes .prototype
-
-	 - access goes up the prototype hierarchy until name is found
-
-       - use =hasOwnProperty= to find out if really the object has the
-         attribute, or it's somewhere else
-
-         - workaround for when hasOwnProperty is an attribute
-
-	 - code to apply function to each property of object
-	   #+BEGIN_SRC js
-             function forEachIn(object, action) {
-                 for (var property in object) {
-                     if (object.hasOwnProperty(property))
-                         action(property, object[property]);
-                 }
-             };
-	   #+END_SRC
-
-       - above fails in Firefox, which assigns a __proto__ to all objects
-
-	 - objects are "values with methods" and "sets of properties"
-
-       - =Dictionary= class for "sets of properties"
-
-       - external api vs internal implementation
-
-       - could add methods to f.ex. =Object=: be careful, but possible
-
-       - Exercise project: Terrarium
-
-	 - 2d, discrete time and place, # wall, ' ' free, o
-
-         - functions: =toString=, =step=, =start=, =stop= for terrarium
-
-       - first point, addpoints, samepoint
-	 #+BEGIN_SRC js
-           function Point(x, y) {
-               this.x = x;
-               this.y = y;
-           };
-
-           Point.prototype.add(other) {
-               return new Point(this.x + other.x, this.y += other.y);
-           };
-
-           Point.prototype.isEqualTo(other) {
-               return this.x === other.x && this.y === other.y;
-           };
-	 #+END_SRC
-
-       - need to decide what are methods, what are functions, what are
-         new objects
-
-	 - keep object as small as possible
-
-       - 2-dim array as 1-dim, accessed via
-	 #+BEGIN_SRC js
-           var grid = ["0,0", "1,0", "2,0",
-                       "0,1", "1,1", "2,1"];
-           show(grid[2 + 1 * 3]);
-	 #+END_SRC
-
-       - ex. 8.2 =each=
-	 #+BEGIN_SRC js
-           Grid.prototype.each(func(point, stuff)) {
-               for ( var j = 0; j < width; j += 1; ) {
-                   for ( var i = 0; i < height; i+= 1; ) {
-                       var p = new Point(i, j);
-                       func(p, valueAt(p));
-                   }
-               }
-           };
-	 #+END_SRC
-
-       - direction object (dictionary, {"n", 'ne', 'nw', ...})
-
-	 - action object ({"move", direction})
-
-	 - Bug.act function() = .. return action
-
-       - Terrarium: initialized with ascii plan
-
-	 - #=wall, o=bug, ' ' = nothing
-
-	 - elementFromCharacter maps above
-
-    12. [@12] The Document-Object Model
-
-	- =<HTML>= via =document.documentElement=
-
-	  - =<BODY>= via =document.body=
-
-	- f.ex. =document.body.parentNode= to get the parent
-
-	  - =.childNodes=, =.firstChild= and =.lastChild=
-
-	  - =.previousSibling= and =.nextSibling=
-
-	- if text node, then =node.nodeType= = 3, (most often) else 1
-
-	- =.nodeName= for tag name (CAPITALIZED)
-
-	  - =.firstChild.nodeValue= for text value
-
-	- exercise: get text of html tags
-
-	  #+BEGIN_SRC js
-            function getText(node) {
-              if ( isTextNode(node) ) {
-                return node.nodeValue;
-              } else {
-                var out = "";
-                for ( var i = 0; i < node.childNodes.length; i++ ) {
-                  out += getText(node.childNodes[i]);
-                }
-                return out;
-              }
-            };
-            print(getText(document.body));
-	  #+END_SRC
-
-	- =node.innerHTML= gives HTML, also changeable which effects website
-
-	- =document.getElementById("picture")= gives element
-
-	  - also =document.getElementsByTagName[0]=
-
-	- =var h = document.createElement("H1");= creates new header
-
-	  - =var text = document.createTextNode("hi there");= creates text node
-
-	  - =h.appendChild(text)= and =document.appendChild(h)= appends both
-
-	  - also =newImage.setAttribute("src", "img/Hiva Oa.png");=
-
-	- =setAttribute= workaround for IE, then
-
-	  - build dom elements
-	    #+BEGIN_SRC js
-              function dom(name, attributes) {
-                  var node = document.createElement(name);
-                  if (attributes) {
-                      forEachIn(attributes, function(name, value) {
-                          node.setAttribute(name, value);
-                      });
-                  }
-                  for (var i = 2; i < arguments.length; i++) {
-                      var child = arguments[i];
-                      if (typeof child == "string")
-                          child = document.createTextNode(child);
-                      node.appendChild(child);
-                  }
-                  return node;
-              };
-	    #+END_SRC
-
-	- =.insertBefore(someNode, beforeThis)=
-
-	  - =.replaceChild(newNode, toBeReplaced)=
-
-	  - =.removeChild(childNode)=
-
-	- "Write the convenient function removeElement which removes
-          the DOM node it is given as an argument from its parent
-          node."
-
-	  #+BEGIN_SRC js
-            function easyRemove(node) {
-                node.parentNode && node.parentNode.removeChild(node);
-            }
-	  #+END_SRC
-
-	- only moveable within single document, not from tab to tab, f.ex.
-
-	- html tables: ie needs tbody tag
-
-	- create table function
-
-	  her solution
-	  #+BEGIN_SRC js
-            function makeTable(data, columns) {
-              var headRow = dom("TR");
-              forEach(columns, function(name) {
-                headRow.appendChild(dom("TH", null, name));
-              });
-
-              var body = dom("TBODY", null, headRow);
-              forEach(data, function(object) {
-                var row = dom("TR");
-                forEach(columns, function(name) {
-                  row.appendChild(dom("TD", null, String(object[name])));
-                });
-                body.appendChild(row);
-              });
-
-              return dom("TABLE", null, body);
-            };
-	  #+END_SRC
-	  my part
-	  #+BEGIN_SRC js
-            function makeTable(objects, columnNames) {
-              var tableEls = [],
-                  i;
-
-              tableEls.push(dom("tr", null, dom("th", null, columnNames[0]), dom("th", null, columnNames[1])));
-              for (i = 0; i < objects.length; i++ ) {
-                tableEls.push(dom(tr, null, dom(td, null, objects[columnNames[0]]), dom(td, null, objects[columnNames[1]])));
-              };
-              // somehow append
-            };
-	  #+END_SRC
-
-	- CSS
-
-	  style attribute to node
-
-	- other style
-
-	  display = ""; makes it reappear, code
-	  #+BEGIN_SRC js
-            $("picture").style.display = "";
-	  #+END_SRC
-
-	- change position via js
-
-	  #+BEGIN_SRC js
-            node.style.position = "absolute";
-            node.style.left = 100px;
-            node.style.top = 10%; //?
-	  #+END_SRC
-
-	- also =.width=, =.height= to set
-
-	  - and =.offsetWidth= etc and =.clientWidth= to differentiate
-            outer/inner
-
-    13. Browser Events
-*** quotes
-    - (begins 4)
-    - The keyword `delete` cuts off properties. Trying to read a
-      non-existent property gives the value undefined.
-    - var now = new Date();
-    - (ends 4)
-    - Object-orientation's longevity can largely be explained by the
-      fact that the ideas at its core are very solid and useful. In
-      this chapter, we will discuss these ideas, along with
-      JavaScript's (rather eccentric) take on them.
-    - typing ={}= is equivalent to typing =new Object()=
-    - example object creation
-      #+BEGIN_SRC js
-        function Rabbit(adjective) {
-          this.adjective = adjective;
-        }
-        Rabbit.prototype.speak = function(line) {
-          print("The ", this.adjective, " rabbit says '", line, "'");
-        };
-
-        var hazelRabbit = new Rabbit("hazel");
-        hazelRabbit.speak("Good Frith!");
-      #+END_SRC
-    - Personally, I treat writing documentation as a 'finishing touch'
-      to add to a system. When it feels ready, it is time to write
-      something about it, and to see if it sounds as good in English
-      (or whatever language) as it does in JavaScript (or whatever
-      programming language).
-    - (ends 8)
-** [#B] MOVE PART [[./javascript_the_good_parts.pdf][JavaScript: The Good Parts]]
+** [#B] PART [[./javascript_the_good_parts.pdf][JavaScript: The Good Parts]]
 *** summary
     1. Good parts
 
@@ -11591,6 +11350,356 @@
     - I have never seen a piece ofcode that was not improved by
       refactoring it to remove the continue statement.
     - (ends bp)
+** PART [#C] [[./irbookonlinereading.pdf][An Introduction to Information Retrieval]]
+*** summary
+    0. [@0] Preface
+
+       - from specialized academic study to www
+
+       - Book organization and course development
+
+	 - chapter: 75 to 90 minutes
+
+	 - 1-8 foundation topics
+
+       - Prerequisites
+
+       - Book layout
+
+	 - pencil: worked examples
+
+	 - scissors: advanced, can leave out
+
+	 - ? exercise, with difficulty * to ***
+
+       - Acknowledgments
+
+    1. Boolean retrieval
+*** quotes
+    - Chapter 10 considers information retrieval from documents that
+      are structured with markup languages like XML and HTML.
+    - (ends 0)
+    - Most commonly, the edit operations allowed for this purpose are:
+      (i) insert a character into a string; (ii) delete a character
+      from a string and (iii) replace a character of a string by
+      another character; for these operations, edit distance
+      is sometimes known as *Levenshtein distance*.
+    - EDIT DISTANCE ( s_{1} , s_{2} )
+      1. int m [ i, j ] = 0
+      2. for i ← 1 to | s_{1} |
+      3. do m [ i, 0 ] = i
+      4. for j ← 1 to | s_{2} |
+      5. do m [ 0, j ] = j
+      6. for i ← 1 to | s_{1} |
+      7. do for j ← 1 to | s_{2} |
+      8. do m [ i, j ] = min { m [i−1, j−1]
+	 + if ( s1[i] = s2[j]) then 0 else 1 fi,
+      9. m [ i − 1, j ] + 1,
+      10. m [ i, j − 1 ] + 1 }
+      11. return m [| s_{1} | , | s_{2} |]
+    - (ends 3.3)
+    - *Contiguity hypothesis*. Documents in the same class form a
+      contiguous region and regions of different classes do not
+      overlap.
+    - Nonlinear models have more parameters to fit on a limited amount
+      of training data and are more likely to make mistakes for small
+      and noisy data sets.
+    - (ends 14.0)
+** PART [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Eloquent Javascript]]
+*** summary
+    8. [@8] Object-oriented Programming
+
+       - 90s trend, persistent, "solid and useful"
+
+       - create objects, attach methods and properties
+
+       - easy: just attach function values to object
+
+       - =apply(object, params)=: first parameter (mapped to =this=) is object
+
+	 - also =call(object, params*)= separate arguments instead of array
+
+       - constructor
+
+	 - Capitalized
+
+	 - use with =new=
+
+	 - always sets =this= to object, returns it
+
+	 - also sets =constructor= property and some other stuff
+
+       - .prototype
+
+	 - like =class=, but dynamically augmentable
+
+       - always changes object, object never changes .prototype
+
+	 - access goes up the prototype hierarchy until name is found
+
+       - use =hasOwnProperty= to find out if really the object has the
+         attribute, or it's somewhere else
+
+         - workaround for when hasOwnProperty is an attribute
+
+	 - code to apply function to each property of object
+	   #+BEGIN_SRC js
+             function forEachIn(object, action) {
+                 for (var property in object) {
+                     if (object.hasOwnProperty(property))
+                         action(property, object[property]);
+                 }
+             };
+	   #+END_SRC
+
+       - above fails in Firefox, which assigns a __proto__ to all objects
+
+	 - objects are "values with methods" and "sets of properties"
+
+       - =Dictionary= class for "sets of properties"
+
+       - external api vs internal implementation
+
+       - could add methods to f.ex. =Object=: be careful, but possible
+
+       - Exercise project: Terrarium
+
+	 - 2d, discrete time and place, # wall, ' ' free, o
+
+         - functions: =toString=, =step=, =start=, =stop= for terrarium
+
+       - first point, addpoints, samepoint
+	 #+BEGIN_SRC js
+           function Point(x, y) {
+               this.x = x;
+               this.y = y;
+           };
+
+           Point.prototype.add(other) {
+               return new Point(this.x + other.x, this.y += other.y);
+           };
+
+           Point.prototype.isEqualTo(other) {
+               return this.x === other.x && this.y === other.y;
+           };
+	 #+END_SRC
+
+       - need to decide what are methods, what are functions, what are
+         new objects
+
+	 - keep object as small as possible
+
+       - 2-dim array as 1-dim, accessed via
+	 #+BEGIN_SRC js
+           var grid = ["0,0", "1,0", "2,0",
+                       "0,1", "1,1", "2,1"];
+           show(grid[2 + 1 * 3]);
+	 #+END_SRC
+
+       - ex. 8.2 =each=
+	 #+BEGIN_SRC js
+           Grid.prototype.each(func(point, stuff)) {
+               for ( var j = 0; j < width; j += 1; ) {
+                   for ( var i = 0; i < height; i+= 1; ) {
+                       var p = new Point(i, j);
+                       func(p, valueAt(p));
+                   }
+               }
+           };
+	 #+END_SRC
+
+       - direction object (dictionary, {"n", 'ne', 'nw', ...})
+
+	 - action object ({"move", direction})
+
+	 - Bug.act function() = .. return action
+
+       - Terrarium: initialized with ascii plan
+
+	 - #=wall, o=bug, ' ' = nothing
+
+	 - elementFromCharacter maps above
+
+    12. [@12] The Document-Object Model
+
+	- =<HTML>= via =document.documentElement=
+
+	  - =<BODY>= via =document.body=
+
+	- f.ex. =document.body.parentNode= to get the parent
+
+	  - =.childNodes=, =.firstChild= and =.lastChild=
+
+	  - =.previousSibling= and =.nextSibling=
+
+	- if text node, then =node.nodeType= = 3, (most often) else 1
+
+	- =.nodeName= for tag name (CAPITALIZED)
+
+	  - =.firstChild.nodeValue= for text value
+
+	- exercise: get text of html tags
+
+	  #+BEGIN_SRC js
+            function getText(node) {
+              if ( isTextNode(node) ) {
+                return node.nodeValue;
+              } else {
+                var out = "";
+                for ( var i = 0; i < node.childNodes.length; i++ ) {
+                  out += getText(node.childNodes[i]);
+                }
+                return out;
+              }
+            };
+            print(getText(document.body));
+	  #+END_SRC
+
+	- =node.innerHTML= gives HTML, also changeable which effects website
+
+	- =document.getElementById("picture")= gives element
+
+	  - also =document.getElementsByTagName[0]=
+
+	- =var h = document.createElement("H1");= creates new header
+
+	  - =var text = document.createTextNode("hi there");= creates text node
+
+	  - =h.appendChild(text)= and =document.appendChild(h)= appends both
+
+	  - also =newImage.setAttribute("src", "img/Hiva Oa.png");=
+
+	- =setAttribute= workaround for IE, then
+
+	  - build dom elements
+	    #+BEGIN_SRC js
+              function dom(name, attributes) {
+                  var node = document.createElement(name);
+                  if (attributes) {
+                      forEachIn(attributes, function(name, value) {
+                          node.setAttribute(name, value);
+                      });
+                  }
+                  for (var i = 2; i < arguments.length; i++) {
+                      var child = arguments[i];
+                      if (typeof child == "string")
+                          child = document.createTextNode(child);
+                      node.appendChild(child);
+                  }
+                  return node;
+              };
+	    #+END_SRC
+
+	- =.insertBefore(someNode, beforeThis)=
+
+	  - =.replaceChild(newNode, toBeReplaced)=
+
+	  - =.removeChild(childNode)=
+
+	- "Write the convenient function removeElement which removes
+          the DOM node it is given as an argument from its parent
+          node."
+
+	  #+BEGIN_SRC js
+            function easyRemove(node) {
+                node.parentNode && node.parentNode.removeChild(node);
+            }
+	  #+END_SRC
+
+	- only moveable within single document, not from tab to tab, f.ex.
+
+	- html tables: ie needs tbody tag
+
+	- create table function
+
+	  her solution
+	  #+BEGIN_SRC js
+            function makeTable(data, columns) {
+              var headRow = dom("TR");
+              forEach(columns, function(name) {
+                headRow.appendChild(dom("TH", null, name));
+              });
+
+              var body = dom("TBODY", null, headRow);
+              forEach(data, function(object) {
+                var row = dom("TR");
+                forEach(columns, function(name) {
+                  row.appendChild(dom("TD", null, String(object[name])));
+                });
+                body.appendChild(row);
+              });
+
+              return dom("TABLE", null, body);
+            };
+	  #+END_SRC
+	  my part
+	  #+BEGIN_SRC js
+            function makeTable(objects, columnNames) {
+              var tableEls = [],
+                  i;
+
+              tableEls.push(dom("tr", null, dom("th", null, columnNames[0]), dom("th", null, columnNames[1])));
+              for (i = 0; i < objects.length; i++ ) {
+                tableEls.push(dom(tr, null, dom(td, null, objects[columnNames[0]]), dom(td, null, objects[columnNames[1]])));
+              };
+              // somehow append
+            };
+	  #+END_SRC
+
+	- CSS
+
+	  style attribute to node
+
+	- other style
+
+	  display = ""; makes it reappear, code
+	  #+BEGIN_SRC js
+            $("picture").style.display = "";
+	  #+END_SRC
+
+	- change position via js
+
+	  #+BEGIN_SRC js
+            node.style.position = "absolute";
+            node.style.left = 100px;
+            node.style.top = 10%; //?
+	  #+END_SRC
+
+	- also =.width=, =.height= to set
+
+	  - and =.offsetWidth= etc and =.clientWidth= to differentiate
+            outer/inner
+
+    13. Browser Events
+*** quotes
+    - (begins 4)
+    - The keyword `delete` cuts off properties. Trying to read a
+      non-existent property gives the value undefined.
+    - var now = new Date();
+    - (ends 4)
+    - Object-orientation's longevity can largely be explained by the
+      fact that the ideas at its core are very solid and useful. In
+      this chapter, we will discuss these ideas, along with
+      JavaScript's (rather eccentric) take on them.
+    - typing ={}= is equivalent to typing =new Object()=
+    - example object creation
+      #+BEGIN_SRC js
+        function Rabbit(adjective) {
+          this.adjective = adjective;
+        }
+        Rabbit.prototype.speak = function(line) {
+          print("The ", this.adjective, " rabbit says '", line, "'");
+        };
+
+        var hazelRabbit = new Rabbit("hazel");
+        hazelRabbit.speak("Good Frith!");
+      #+END_SRC
+    - Personally, I treat writing documentation as a 'finishing touch'
+      to add to a system. When it feels ready, it is time to write
+      something about it, and to see if it sounds as good in English
+      (or whatever language) as it does in JavaScript (or whatever
+      programming language).
+    - (ends 8)
 ** PART [[./sally/Example1.html]]
 *** summary
     - input files example1.cfg reuters.zip
@@ -12409,7 +12518,53 @@
                  level information."
 ** PART [[~/chive/gg/org.pdf][The Org Manual]]
 *** summary
-    continue at 1
+    1) Introduction
+
+       1) Summary
+
+          editor, planner, notes taker, agenda, technical doc system
+
+       2) Installation
+
+          pre-installed with emacs
+
+       3) Activation
+
+          - enabled by default
+
+          - enable four global keys with
+            #+BEGIN_SRC elisp
+              (global-set-key "\C-cl" 'org-store-link)
+              (global-set-key "\C-ca" 'org-agenda)
+              (global-set-key "\C-cc" 'org-capture)
+              (global-set-key "\C-cb" 'org-iswitchb)
+            #+END_SRC
+
+          - start non =.org= file with line like
+            #+BEGIN_EXAMPLE
+              MY PROJECTS -*- mode: org; -*-
+            #+END_EXAMPLE
+
+            - auto by setting =org-insert-mode-line-in-empty-file=
+
+       4) Feedback
+
+          how to report a bug/troubleshoot: complete example to
+          mailing list with =M-x emacs-version= and =M-x org-version=
+
+       5) Typesetting conventions used in this manual
+
+          1) TODO keywords, tags, properties, etc.
+
+             - TODO, WAITING: all caps for user-defined and built-in TODOs
+
+             - boss, ARCHIVE: all caps for built-in, small caps for user tags
+
+             - Release, PRIORITY: user-defined properties are
+               capitalized, system are in all-caps
+
+          2) Keybindings and commands
+
     8) [@8] Dates and times
 
        called "timestamp"
@@ -12587,6 +12742,137 @@
 ** PART [[./rijsbergen79_infor_retriev.pdf][INFORMATION RETRIEVAL]]
 *** quotes
     |X ∩ Y| / |X ∪ Y| Jaccard's coefficient
+** PART [[./Quantile%20function%20-%20Wikipedia,%20the%20free%20encyclopedia.html][Quantile function]]
+*** summary
+    1) Definition
+
+       - strictly monotonic continuos function f: quantile Q_f is the
+         "threshold value x below which random draws from [f] would
+         fall p percent of the time."
+
+	 - Q(q) = inf{x \in R: p \le F(x)}
+
+	 - if F continuous: Q = F^{-1}
+
+    2) Simple example
+*** quotes
+    0) [@0]
+       - It is also called the percent point function or inverse
+         cumulative distribution function.
+*** ref: [[file:master.bib::wiki:quantile][Wikipedia 2016: Quantile]]
+** PART [[./diveintopython.pdf][Dive Into Python]]
+*** summary
+    8) [@8] HTML Processing
+
+       1) Diving in
+
+    9) XML Processing
+
+       5) [@5] Searching for elements
+
+          accessing elements by tag name
+          #+BEGIN_SRC python
+            from xml.dom import minidom
+            xmldoc = minidom.parse('binary.xml')
+            reflist = xmldoc.getElementsByTagName('ref')
+          #+END_SRC
+
+          searches recursively through the whole document,
+
+          returns list of /Element/ s
+
+** PART Mozilla Add-On SDK
+*** Guides
+**** XUL Migration Guide
+     - Using XPCOM This example uses the action button API, which is
+       only available from Firefox 29 onwards.
+
+       Finally, if none of the above techniques work for you, you can
+       use the require("chrome") statement to get direct access to the
+       Components object, which you can then use to load and access
+       any XPCOM object.
+
+       The following complete add-on uses nsIPromptService to display
+       an alert dialog:
+       #+BEGIN_SRC javascript
+         var {Cc, Ci} = require("chrome");
+
+         var promptSvc = Cc["@mozilla.org/embedcomp/prompt-service;1"].
+                         getService(Ci.nsIPromptService);
+
+         require("sdk/ui/button/action").ActionButton({
+           id: "xpcom-example",
+           label: "Hello from XPCOM",
+           icon: "./icon-16.png",
+           onClick: function() {
+             promptSvc.alert(null, "My Add-on", "Hello from XPCOM");
+           }
+         });
+       #+END_SRC
+
+       It's good practice to encapsulate code which uses XPCOM by
+       packaging it in its own module. For example, we could package
+       the alert feature implemented above using a script like:
+
+       #+BEGIN_SRC javascript
+         var {Cc, Ci} = require("chrome");
+
+         var promptSvc = Cc["@mozilla.org/embedcomp/prompt-service;1"].
+                     getService(Ci.nsIPromptService);
+
+         exports.alert = function(title, text) {
+             promptSvc.alert(null, title, text);
+         };
+       #+END_SRC
+
+       If we save this as "alert.js" in our add-on's lib directory, we
+       can rewrite main.js to use it as follows:
+
+       #+BEGIN_SRC javascript
+         require("sdk/ui/button/action").ActionButton({
+           id: "xpcom-example",
+           label: "Hello from XPCOM",
+           icon: "./icon-16.png",
+           onClick: function() {
+             require("./alert").alert("My Add-on", "Hello from XPCOM");
+           }
+         });
+       #+END_SRC
+*** LL apis/
+**** system/events
+     - Usage The system/events module provides core (low level) API
+       for working with the application observer service, also known
+       as nsIObserverService. You can find a list of events dispatched
+       by firefox codebase here.
+       #+BEGIN_SRC javascript
+         var events = require("sdk/system/events");
+         var { Ci } = require("chrome");
+
+         function listener(event) {
+           var channel = event.subject.QueryInterface(Ci.nsIHttpChannel);
+           channel.setRequestHeader("User-Agent", "MyBrowser/1.0", false);
+         }
+
+         events.on("http-on-modify-request", listener);
+       #+END_SRC
+**** window/utils
+     - getWindowLoadingContext(window)
+       Returns the nsILoadContext.
+       - Parameters
+         window : nsIDOMWindow
+       - Returns
+	 nsILoadContext
+*** Tools
+**** [[developer.mozilla.org/en-US/Add-ons/SDK/Tools/console.html][console]] ([[file:///home/chive/IT-gg/js/Mozilla_Addon_SDK_doc/developer.mozilla.org/en-US/Add-ons/SDK/Tools/console.html][local link]])
+     - When you run your add-on using jpm run or jpm test, the global
+       extensions.sdk.console.logLevel preference is automatically set
+       to "info". This means that calls to console.log() will appear
+       in the console output.
+     - When you install an add-on into Firefox, the logging level will
+       be "error" by default (that is, unless you have set one of the
+       two preferences). This means that messages written using
+       debug(), log(), info(), trace(), and warn() will not appear in
+       the console.
 ** onion routing project
 *** [[~/da/git/docs/onion-routing_pet2000.pdf][Towards an Analysis of Onion Routing Security]]
 **** ref
@@ -12957,9 +13243,29 @@
     1) Introduction
 *** quotes
 *** ref: [[file:master.bib::rfc7159][Bray 2014: JavaScript Object Notation]]
-** [[./critique.html][A Critique of Website Traffic Fingerprinting Attacks]]
+** TODO MOVE [[./critique.html][A Critique of Website Traffic Fingerprinting Attacks]]
 *** summary
+    0) [@0] A Critique of Website Traffic Fingerprinting Attacks
+
+       - closed vs open world
+
+       - pages vs websites
+
+    1) Pinning Down the Adversary Model
+
+       - leave rest of traffic unmolested, only block specific traffic
+
+       - identifying users visiting small set
+
+       - recognizing every single web page
+
+    2) Theoretical Issues: Factors Affecting Classification Accuracy
 *** quotes
+    0)
+      - defenses were "broken" and dismissed primarily by taking a
+        number of shortcuts that ignore basic properties of machine
+        learning theory and statistics in order to enable their claims
+        of success
 *** ref [[file:master.bib::critique][Critique Website Traffic Fingerprinting Attacks]]
 ** [[./top_ml_algo.pdf][Top 10 algorithms in data mining]]
 ** SO: Sklearn kNN usage with a user defined metric
@@ -12975,98 +13281,6 @@
         >>> nbrs = NearestNeighbors(n_neighbors=4, algorithm='ball_tree',
         ...            metric='pyfunc', func=mydist)
       #+END_SRC
-** PART Mozilla Add-On SDK
-*** Guides
-**** XUL Migration Guide
-     - Using XPCOM This example uses the action button API, which is
-       only available from Firefox 29 onwards.
-
-       Finally, if none of the above techniques work for you, you can
-       use the require("chrome") statement to get direct access to the
-       Components object, which you can then use to load and access
-       any XPCOM object.
-
-       The following complete add-on uses nsIPromptService to display
-       an alert dialog:
-       #+BEGIN_SRC javascript
-         var {Cc, Ci} = require("chrome");
-
-         var promptSvc = Cc["@mozilla.org/embedcomp/prompt-service;1"].
-                         getService(Ci.nsIPromptService);
-
-         require("sdk/ui/button/action").ActionButton({
-           id: "xpcom-example",
-           label: "Hello from XPCOM",
-           icon: "./icon-16.png",
-           onClick: function() {
-             promptSvc.alert(null, "My Add-on", "Hello from XPCOM");
-           }
-         });
-       #+END_SRC
-
-       It's good practice to encapsulate code which uses XPCOM by
-       packaging it in its own module. For example, we could package
-       the alert feature implemented above using a script like:
-
-       #+BEGIN_SRC javascript
-         var {Cc, Ci} = require("chrome");
-
-         var promptSvc = Cc["@mozilla.org/embedcomp/prompt-service;1"].
-                     getService(Ci.nsIPromptService);
-
-         exports.alert = function(title, text) {
-             promptSvc.alert(null, title, text);
-         };
-       #+END_SRC
-
-       If we save this as "alert.js" in our add-on's lib directory, we
-       can rewrite main.js to use it as follows:
-
-       #+BEGIN_SRC javascript
-         require("sdk/ui/button/action").ActionButton({
-           id: "xpcom-example",
-           label: "Hello from XPCOM",
-           icon: "./icon-16.png",
-           onClick: function() {
-             require("./alert").alert("My Add-on", "Hello from XPCOM");
-           }
-         });
-       #+END_SRC
-*** LL apis/
-**** system/events
-     - Usage The system/events module provides core (low level) API
-       for working with the application observer service, also known
-       as nsIObserverService. You can find a list of events dispatched
-       by firefox codebase here.
-       #+BEGIN_SRC javascript
-         var events = require("sdk/system/events");
-         var { Ci } = require("chrome");
-
-         function listener(event) {
-           var channel = event.subject.QueryInterface(Ci.nsIHttpChannel);
-           channel.setRequestHeader("User-Agent", "MyBrowser/1.0", false);
-         }
-
-         events.on("http-on-modify-request", listener);
-       #+END_SRC
-**** window/utils
-     - getWindowLoadingContext(window)
-       Returns the nsILoadContext.
-       - Parameters
-         window : nsIDOMWindow
-       - Returns
-	 nsILoadContext
-*** Tools
-**** [[developer.mozilla.org/en-US/Add-ons/SDK/Tools/console.html][console]] ([[file:///home/chive/IT-gg/js/Mozilla_Addon_SDK_doc/developer.mozilla.org/en-US/Add-ons/SDK/Tools/console.html][local link]])
-     - When you run your add-on using jpm run or jpm test, the global
-       extensions.sdk.console.logLevel preference is automatically set
-       to "info". This means that calls to console.log() will appear
-       in the console output.
-     - When you install an add-on into Firefox, the logging level will
-       be "error" by default (that is, unless you have set one of the
-       two preferences). This means that messages written using
-       debug(), log(), info(), trace(), and warn() will not appear in
-       the console.
 ** [[./js/javascript%20-%20Firefox%20Addon%20observer%20http-on-modify-request%20not%20working%20properly%20-%20Stack%20Overflow.html][Firefox Addon observer http-on-modify-request not working properly]]
 *** quotes
     - set up
@@ -13230,15 +13444,6 @@
 ** [[./oakland2013-parrot.pdf][The Parrot is Dead: Observing Unobservable Network Communications]]
 ** [[./Wang_Tao.pdf][Wang - Website Fingerprinting: Attacks and Defenses]]
 ** [[./Huhta14-UCL-Msc.pdf][LINKING TOR CIRCUITS]]
-** TODO [[./Vererbung und die Prototypkette - JavaScript | MDN.html]]
-*** summary
-    0) [@0]
-
-       - chain of prototypes, last is =null=
-
-       - more powerful than classic model
-
-    1) Vererbung mit der Prototyp-Kette
 ** [[./rfc2068.txt][Hypertext Transfer Protocol -- HTTP/1.1]]
 *** summary
     19) [@19] Appendices
@@ -13257,43 +13462,26 @@
 	  - this specification does not mandate a particular maximum
             number of connections but, instead, encourages clients to
             be conservative when opening multiple connections.
-** PART MOVE [[./Quantile%20function%20-%20Wikipedia,%20the%20free%20encyclopedia.html][Quantile function]]
+** TODO PART -s 1,5,7 [[./McGrawHill_-_Machine_Learning_-Tom_Mitchell.pdf]]
 *** summary
-    1) Definition
+    1) INTRODUCTION
 
-       - strictly monotonic continuos function f: quantile Q_f is the
-         "threshold value x below which random draws from [f] would
-         fall p percent of the time."
+       0) [@0]
 
-	 - Q(q) = inf{x \in R: p \le F(x)}
+          - programming computers to learn
 
-	 - if F continuous: Q = F^{-1}
+       1) WELL-POSED LEARNING PROBLEMS
 
-    2) Simple example
+          - definition: see quotes
+
+          - fits many examples from simple (db query optimizer) to
+            complex (robot car driver, checkers play algorithm)
+
+       2) DESIGNING A LEARNING SYSTEM
 *** quotes
-    0) [@0]
-       - It is also called the percent point function or inverse
-         cumulative distribution function.
-*** ref: [[file:master.bib::wiki:quantile][Wikipedia 2016: Quantile]]
-** PART MOVE [[./diveintopython.pdf][Dive Into Python]]
-*** summary
-    8) [@8] HTML Processing
-
-       1) Diving in
-
-    9) XML Processing
-
-       5) [@5] Searching for elements
-
-          accessing elements by tag name
-          #+BEGIN_SRC python
-            from xml.dom import minidom
-            xmldoc = minidom.parse('binary.xml')
-            reflist = xmldoc.getElementsByTagName('ref')
-          #+END_SRC
-
-          searches recursively through the whole document,
-
-          returns list of /Element/ s
-
-
+    1) INTRODUCTION
+       1) WELL-POSED LEARNING PROBLEMS
+          - Definition: A computer program is said to learn from
+            experience E with respect to some class of tasks T and
+            performance measure P, if its performance at tasks in T,
+            as measured by P, improves with experience E.
