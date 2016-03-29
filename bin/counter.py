@@ -307,7 +307,13 @@ class Counter(object):
     def from_(*args):
         '''helper method to handle empty argument'''
         logging.info('args: %s, length: %d', args, len(args))
-        if len(args) > 1:
+        if len(args) == 2:
+            try:
+                os.chdir(args[1])
+                out = Counter.all_from_dir('.')
+            except OSError:
+                pass # ok, was a filename
+        else if len(args) > 1:
             out = {}
             for filename in args[1:]:
                 _append_features(out, filename)
@@ -323,6 +329,6 @@ if __name__ == "__main__":
     counters = Counter.from_(*argv)
     from ctypes import pythonapi
     # if non-interactive, print timing data
-    if !os.environ.get('PYTHONINSPECT') && !pythonapi.Py_InspectFlag > 0:
+    if not os.environ.get('PYTHONINSPECT') and not pythonapi.Py_InspectFlag > 0:
         for t in [trace for domain in counters.values() for trace in domain]:
             print t.timing

@@ -5214,7 +5214,7 @@
       #+END_SRC
       - better: typed array for performance (=array= is used directly)
 ** TODO [#A] Entwurfsmuster
-*** TODO summary (weiter bei 0.4.4 S.212)
+*** TODO summary (weiter bei 0.4.4.Konsequenzen S.215)
     0) [@0] Preface
        1) Vorwort
 
@@ -6006,6 +6006,39 @@
 
        4) Fassade
 
+          - objektbasiert
+
+          - Zweck: einheitliche Schnittstelle (zu Menge von Schnittstellen)
+
+          - Motivation: zusätzlich zu eigentlicher Funktionalität noch
+            Fassadenklasse, die die Benutzung vereinfacht
+
+          - Anwendbarkeit:
+
+            - einfache Schnittstelle zu komplexen System: häufige Verwendung
+
+            - Abhängigkeiten zwischen Klienten und
+              Implementierungsklassen entfernen
+
+              - bessere Unbaehängigkeit und Portabilität des Subsystems
+
+            - Subsysteme in Schichten aufteilen, dann Abhängigkeiten
+              vereinfachen
+
+          - Struktur/Teilnehmer:
+
+            - Fassade: delegiert Anfragen an das zuständige Subsystemmodul
+
+            - Subsystemklassen:
+
+              - implementieren Funktionalität
+
+              - wissen nichts von der Fassade, führen nur aus
+
+            - Interaktionen: Klient an Fassade, Fassade an Subsystem
+
+            - Konsequenzen:
+
     5) [@5] Verhaltensmuster
 
        6) [@6] Memento
@@ -6668,6 +6701,30 @@
 
           1) Why Not to Use eval
 
+             0) [@0]
+
+                - =eval= changes locally-scoped variables
+
+                  - except if not called by name =eval=, then globals
+
+                - avoid it
+
+             1) eval in Disguise
+
+                - setTimeout takes string as arg, evals it
+
+             2) Security Issues
+
+                - evaluates **any string**
+
+             3) In Conclusion
+
+                never be used, code using should be questioned
+                (workings, performance, security)
+
+                (except maybe REPL-loops)
+
+          2) undefined and null
 ** TODO [#A] [[./Javascript Closures.prototype_chain.html][Javascript Closures]]
 *** summary
     1) Introduction
@@ -8996,12 +9053,46 @@
 
 	  - most often not caught
 
+          - =bltin-exceptions= for exceptions
+
+       3) Handling Exceptions
+
 	  - multiple with 
 	    #+BEGIN_SRC python
               except (RuntimeError, TypeError, NameError):
                    ...
               pass
 	    #+END_SRC
+
+          - unexpected exceptions
+            #+BEGIN_SRC python
+              except:
+                  print "Unexpected error:", sys.exc_info()[0]
+                  raise
+            #+END_SRC
+
+          - else clause if try did not throw ("better than adding
+            additional code to the try clause")
+            #+BEGIN_SRC python
+              for arg in sys.argv[1:]:
+                  try:
+                      f = open(arg, 'r')
+                  except IOError:
+                      print 'cannot open', arg
+                  else:
+                      print arg, 'h
+            #+END_SRC
+
+       4) Raising Exceptions
+
+          - raise sth based on =Exception=
+            #+BEGIN_SRC python
+              raise NameError('HiThere')
+            #+END_SRC
+
+          - re-raise via =raise=
+
+       5) User-defined Exceptions
 *** quotes
     - it’s good practice to include docstrings in code that you write,
       so make a habit of it.
@@ -11714,6 +11805,24 @@
       dpkg-reconfigure wireshark-common
 ** PART [[./python-doc-library.pdf][The Python Library Reference]]
 *** summary
+    1) INTRODUCTION
+
+       - also semantics of builtin data types and functions
+
+       - then ordered from least to most important
+
+    15) [@15] GENERIC OPERATING SYSTEM SERVICES
+
+        1) os — Miscellaneous operating system interfaces
+
+           1) Process Parameters
+
+              current process and user info
+
+              - os.environ
+
+                changes this process's environment variables,
+                f.ex. =environ[’HOME’]=
     25) [@25] DEVELOPMENT TOOLS
         1) pydoc — Documentation generator and online help system
 
@@ -11817,91 +11926,102 @@
 
            6) Skipping tests and expected failures
 *** quotes
-    - os.walk(top, topdown=True, onerror=None, followlinks=False)
+    1) [@2] BUILT-IN FUNCTIONS
+       - staticmethod(function)
 
-      Generate the file names in a directory tree by walking the tree
-      either top-down or bottom-up. For each directory in the tree
-      rooted at directory top (including top itself), it yields a
-      3-tuple (dirpath, dirnames, filenames).  dirpath is a string,
-      the path to the directory. dirnames is a list of the names of
-      the subdirectories in dirpath (excluding ’.’ and
-      ’..’). filenames is a list of the names of the non-directory
-      files in dirpath. Note that the names in the listscontain no
-      path components. To get a full path (which begins with top) to a
-      file or directory in dirpath, do os.path.join(dirpath, name).
-    - str.lstrip( [ chars ] )
+         Return a static method for function. A static method does not
+         receive an implicit first argument. To declare a static
+         method, use this idiom:
+         #+BEGIN_SRC python
+          class C(object):
+              @staticmethod
+              def f(arg1, arg2, ...):
+                  ...
+         #+END_SRC
+    5) [@5] BUILT-IN TYPES
+       6) [@6] Sequence Types — str, unicode, list, [...] buffer, xrange
+          1) String Methods
+             - str.lstrip( [ chars ] )
 
-      Return a copy of the string with leading characters removed. The
-      chars argument is a string specifying the set of characters to
-      be removed.
-    - str.partition(sep)
+               Return a copy of the string with leading characters
+               removed. The chars argument is a string specifying the
+               set of characters to be removed.
+             - str.partition(sep)
 
-      Split the string at the first occurrence of sep, and return a
-      3-tuple containing the part before the separator, the separator
-      itself, and the part after the separator. If the separator is
-      not found, return a 3-tuple containing the string itself,
-      followed by two empty strings.
-    - (ends 5)
-    - os.path.basename(path)
+               Split the string at the first occurrence of sep, and
+               return a 3-tuple containing the part before the
+               separator, the separator itself, and the part after the
+               separator. If the separator is not found, return a
+               3-tuple containing the string itself, followed by two
+               empty strings.
+    10) [@10] FILE AND DIRECTORY ACCESS
+        1) os.path — Common pathname manipulations
+           - os.path.basename(path)
 
-      Return the base name of pathname path.
-    - staticmethod(function)
+             Return the base name of pathname path.
+    15) [@15] GENERIC OPERATING SYSTEM SERVICES
+        1) os — Miscellaneous operating system interfaces
+           4) [@4] Files and Directories
+              - os.walk(top, topdown=True, onerror=None, followlinks=False)
 
-      Return a static method for function. A static method does not
-      receive an implicit first argument. To declare a static method,
-      use this idiom:
-      #+BEGIN_SRC python
-        class C(object):
-            @staticmethod
-            def f(arg1, arg2, ...):
-                ...
-      #+END_SRC
-    - pdb.py can also be invoked as a script to debug other scripts. For example:
+                Generate the file names in a directory tree by walking
+                the tree either top-down or bottom-up. For each
+                directory in the tree rooted at directory top
+                (including top itself), it yields a 3-tuple (dirpath,
+                dirnames, filenames).  dirpath is a string, the path
+                to the directory. dirnames is a list of the names of
+                the subdirectories in dirpath (excluding ’.’ and
+                ’..’). filenames is a list of the names of the
+                non-directory files in dirpath. Note that the names in
+                the listscontain no path components. To get a full
+                path (which begins with top) to a file or directory in
+                dirpath, do os.path.join(dirpath, name).
+    17) pdb.py can also be invoked as a script to debug other scripts. For example:
 
-      #+BEGIN_SRC python
-        python -m pdb myscript.py
-      #+END_SRC
-    - The typical usage to break into the debugger from a running
-      program is to insert
+        #+BEGIN_SRC python
+          python -m pdb myscript.py
+        #+END_SRC
+    18) The typical usage to break into the debugger from a running
+        program is to insert
 
-       #+BEGIN_SRC python
-        import pdb; pdb.set_trace()
-      #+END_SRC
+         #+BEGIN_SRC python
+          import pdb; pdb.set_trace()
+        #+END_SRC
 
-      at the location you want to break into the debugger.
-    - (begins 20)
-    - class httplib.HTTPConnection(host [ , port [ , strict [ ,
-      timeout [ , source_address ]]]] )
+        at the location you want to break into the debugger.
+    19) (begins 20)
+    20) class httplib.HTTPConnection(host [ , port [ , strict [ ,
+        timeout [ , source_address ]]]] )
 
-      An HTTPConnection instance represents one transaction with an HTTP server.
-    - (ends 20.7.0)
-    - HTTPConnection.request(method, url [ , body [ , headers ]] )
+        An HTTPConnection instance represents one transaction with an HTTP server.
+    21) (ends 20.7.0)
+    22) HTTPConnection.request(method, url [ , body [ , headers ]] )
 
-      This will send a request to the server using the HTTP request
-      method /method/ and the selector url.
-    - (ends 20.7.1)
-      HTTPResponse.getheaders()
+        This will send a request to the server using the HTTP request
+        method /method/ and the selector url.
+    23) (ends 20.7.1)
+        HTTPResponse.getheaders()
 
-      Return a list of (header, value) tuples.
-    - HTTPResponse.status
+        Return a list of (header, value) tuples.
+    24) HTTPResponse.status
 
-      Status code returned by server.
-    - (ends 20.7.2)
-    - (begins 20.19)
-    - The SimpleHTTPServer module can also be invoked directly using
-      the -m switch of the interpreter with a port number
-      argument. Similar to the previous example, this serves the files
-      relative to the current directory.
+        Status code returned by server.
+    25) (ends 20.7.2)
+    26) (begins 20.19)
+    27) The SimpleHTTPServer module can also be invoked directly using
+        the -m switch of the interpreter with a port number
+        argument. Similar to the previous example, this serves the files
+        relative to the current directory.
 
-      python -m SimpleHTTPServer 8000
-    - (ends 20.19)
-    - virtual environment
+        python -m SimpleHTTPServer 8000
+    28) (ends 20.19)
+    29) virtual environment
 
-      A cooperatively isolated runtime environment that allows Python
-      users and applications to install and upgrade Python
-      distribution packages without interfering with the behaviour of
-      other Python applications running on the same system.
-    - (ends Appendix A)
+        A cooperatively isolated runtime environment that allows Python
+        users and applications to install and upgrade Python
+        distribution packages without interfering with the behaviour of
+        other Python applications running on the same system.
+    30) (ends Appendix A)
 ** PART [[/home/chive/IT-gg/python/scipy-ref-0.15.1.pdf][SciPy Reference Guide]]
 *** summary
 1) Tutorial

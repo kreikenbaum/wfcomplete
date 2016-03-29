@@ -2,6 +2,7 @@
 #+TODO: TODO CHECK | LATER DONE
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{tikz}
+* [#A] next: order other parts
 * TODO [#A] move sections to list and MOVE
 * final sections
 ** LATER Abstract
@@ -345,7 +346,7 @@
     multiplexing and fixed cell sizes.
 *** TODO sort subtopics
 *** TODO Tor overview
-** TODO Addon Design and Implementation [3/34]
+** TODO Addon Design and Implementation [3/35]
 *** TODO Mozilla Add-On Sdk [0/2]
 **** TODO Introduction to the Mozilla Add-On Sdk
      The Add-on SDK by Mozilla supports the development of
@@ -567,10 +568,11 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      - browsers cache
      - only helps in cover traffic, (unless warm/cold site model is used)
 ***** TODO where to put this?
-**** TODO find HTML-size
+**** TODO sizes of HTML-documents
      The statistical size generation works with application-level
-     sizes on the network, as the authors analysed logfiles of the
-     Squid proxy[[fn::\url{http://www.squid-cache.org}]].
+     sizes on the network, as the authors of the HTML traffic
+     model\cite{newtrafficmodel} analysed logfiles of the Squid
+     proxy[[fn::\url{http://www.squid-cache.org}]].
 
      The HTML-sizes could not be trivially obtained from the
      =Content-Length= in the browser, as there are additional headers
@@ -589,22 +591,27 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      > /mnt/data/HTML-sizes
 
      These sizes are then converted to a JSON-array via the
-     [[./htmlSizeToJSON.py]]-file.
+     [[./htmlSizeToJSON.py]]-file. It also does a check for duplicate
+     values, choosing the lower one. This increases traffic, but the
+     opposite might be too little traffic, thus easier website
+     fingerprinting, which should be avoided.
 **** TODO find number of embedded elements
      The second important feature that is used in generating cover
      traffic is the number of embedded files per HTML-page.
 
      These in the top-100 sites are extracted via the python script
-     [[file:bin/htmlToNumEmbedded.py]] (see appendix).
+     [[file:bin/htmlToNumEmbedded.py]] (see appendix) which is called by
+     [[./bin/retrieve_100_embedded.sh]].
 
      It uses python's lxml module to parse the HTML's DOM, then extracts
      the URLs of embedded files from the attributes of several tags,
      namely, f.ex. the =src= element of =img= tags.
 
      It seems better for cover traffic to slightly underestimate the
-     number of embedded elements. This which might generate more
-     traffic than strictly necessary, but here, safe seems better than
-     sorry. Extracting just the right URLs is a matter of further research.
+     number of embedded elements. This might generate more traffic
+     than strictly necessary, but here, safe seems better than
+     sorry. Extracting just the right URLs is a matter of further
+     research.
 ***** TODO [#A] directly from URLs
 ***** TODO link DOM
 ***** TODO link further research
@@ -612,7 +619,9 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      - many to size up
      - bloom filter general idea
      - split by quantiles
-***** error rate computing
+       - of lognormal for HTML-sizes
+     - 3 buckets for test
+***** TODO error rate computing
 *** Implementation
 **** TODO js coding best practices
      - "use strict";
@@ -716,7 +725,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - fundamental human need
   - concentration camp:
     "solitude in a Camp is more precious and rare than bread." -- primo levi
-* TODO wf defenses
+* TODO wf-specific defenses
   - walkie-talkie
   - wtfpad
   - supersequence
@@ -726,7 +735,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   There are other methods of defense, which might help mitigate
   website fingerprinting. One is based on reducing the fingerprint by
   browser plugins and text-only browsing, another on rate limiting.
-** TODO Plugins
+** TODO Plugins: noscript and requestpolicy
    There exist two plugins, which should both allow mitigation of this
    attack. Used in parallel, they may hinder normal browsing somewhat
    (which is why they are not enabled/installed by default in the Tor
@@ -735,10 +744,8 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
    The first is NoScript, which selects which Javascript sources to
    run and which to block. This is installed by default in the Tor
    Browser Bundle for the additional security benefits it brings (XSS
-   defense etc). It is considered as a one of the most
-   security-enhancing plugins by ... o'reilly:
-
-   QUOTE
+   defense etc), but not fully enabled. It is recommended by Edward
+   Snowden and many others\cite{noscript}.
 
    A second Add-On with a different set of protective measures is
    RequestPolicy: This add-on controls, which third-party content to
@@ -747,7 +754,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
    approved. It comes with a restrictive set of pre-defined rules (for
    example google pages are allowed to access gstatic), and a
    blacklist and whitelist mode.
-*** TODO quote o'reilly
+*** TODO link Requestpolicy
 ** write new plugins
    Instead of inserting dummy traffic into the connection, one could
    throttle the "data rate" of request and responses (or only requests
@@ -757,7 +764,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 
 ** TODO link tor browser bundle
 *** or writeup something
-** TODO link Requestpolicy
 ** TODO running an OR
 ** TODO text-only
    As the sizes and interconnection of HTML and embedded content is
@@ -1098,6 +1104,9 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 ** end of transmission detectable
 ** TODO correct this
 * TODO differences to walkie-talkie
+* TODO differences to panchenkos
+  - feature extraction via python class directly from pcap
+    - packet data saveable to JSON
 * TODO why several covers
 ** competition
 ** harder to break
@@ -1117,6 +1126,10 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - diveintopython
   - which tags?
 * TODO page size
+* TODO modified top-100
+  - take out duplicates: google, amazon, bbc, ...
+  - take out non-responding sites
+    - list of taken out
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
@@ -3211,6 +3224,11 @@ mean = 0.763238095238
    reduce latency, if this does not reduce privacy.
 *** TODO tor proposals as of tor.sx
 *** TODO read/skim and cite "on performance..."
+** more thorough evaluation
+   - only two panchenko approaches
+   - assumption: can split traces
+** TODO always also link in text
+*** TODO check with darp
 * lit
 ** firefox pipelining
    [[file:~/da/docs/master.bib::firefox-pipelining][2015: Enable HTTP]]
@@ -3256,10 +3274,7 @@ mean = 0.763238095238
            cd ..
        done
      #+END_SRC
-* unclear
-** TODO assumptions
-   split traffic traces
-*** TODO what did this mean?
+** LATER [[./bin/retrieve_100_embedded.sh]].
 * unused
 ** from [[*transform to panchenko-features]]
   The code to examine a single trace file is in =analyze_file()=
