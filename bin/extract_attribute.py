@@ -1,9 +1,9 @@
 #! /usr/bin/env python
 '''extracts (panchenko's) features from pcap and analyses them'''
 
+import numpy as np
 import doctest
 import logging
-import numpy as np
 from sklearn import svm, neighbors, cross_validation
 import sys
 
@@ -113,12 +113,12 @@ if __name__ == "__main__":
     # for c in Cs:
     #     test(X, y, svm.SVC(C=c, kernel='linear'))
     # metrics (single)
+    from scipy.spatial import distance
     for dist in [distance.braycurtis, distance.canberra,
                  distance.chebyshev, distance.cityblock, distance.correlation,
                  distance.cosine, distance.euclidean, distance.sqeuclidean]:
         test(X, y, neighbors.KNeighborsClassifier(metric='pyfunc', func=dist))
     # td: knn + levenshtein
-    # from scipy.spatial import distance
     # import math
     # def mydist(x, y):
     #     fixedm = distance.sqeuclidean(x[:8], y[:8])
@@ -131,4 +131,3 @@ if __name__ == "__main__":
     #     variable2 = gdl.metric(x[xbounds2[0]:xbounds2[1]],
     #                            y[ybounds2[0]:ybounds2[1]])
     #     return math.sqrt(fixedm + variable1 + variable2)
-    

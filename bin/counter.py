@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 '''aggregates trace data, extracts features'''
 import doctest
+import itertools
 import json
 import logging
 import math
 import os
 import subprocess
+import sys
 
 HOME_IP = '134.76.96.47' #td: get ips
 #LOGLEVEL = logging.DEBUG
@@ -226,7 +228,7 @@ class Counter(object):
             out = [self.fixed[key]
                    for key in self.fixed.keys()
                    if key != 'duration']
-        if type(pad_by) is int:
+        if isinstance(pad_by, int):
             tmp = {}
             for key in self.variable.keys():
                 tmp[key] = pad_by
@@ -274,10 +276,10 @@ class Counter(object):
         # number markers
         self.variable['number_markers'] = _sum_numbers(self.packets)
         # occurring packet sizes in + out
-        self.fixed['num_sizes_out'] = (discretize(len(set([x for x in
-                                        self.packets if x > 0])), 2))
-        self.fixed['num_sizes_in'] = (discretize(len(set([x for x in
-                                        self.packets if x < 0])), 2))
+        self.fixed['num_sizes_out'] = (discretize(len(set(
+            [x for x in self.packets if x > 0])), 2))
+        self.fixed['num_sizes_in'] = (discretize(len(set(
+            [x for x in self.packets if x < 0])), 2))
         logging.debug('fixed: %s', self.fixed)
         # helper
         (packets_in, packets_out) = num_packets(self.packets)
@@ -313,7 +315,7 @@ class Counter(object):
                 out = Counter.all_from_dir('.')
             except OSError:
                 pass # ok, was a filename
-        else if len(args) > 1:
+        elif len(args) > 1:
             out = {}
             for filename in args[1:]:
                 _append_features(out, filename)
@@ -325,10 +327,10 @@ if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
 
-    from sys import argv
-    counters = Counter.from_(*argv)
-    from ctypes import pythonapi
-    # if non-interactive, print timing data
-    if not os.environ.get('PYTHONINSPECT') and not pythonapi.Py_InspectFlag > 0:
-        for t in [trace for domain in counters.values() for trace in domain]:
-            print t.timing
+    COUNTERS = Counter.from_(*sys.argv)
+    ## if non-interactive, print timing data
+    #    from ctypes import pythonapi
+    #    if not os.environ.get('PYTHONINSPECT') and not pythonapi.Py_InspectFlag > 0:
+    for t in itertools.chain.from_iterable(COUNTERS.values()):
+         # was [trace for domain in COUNTERS.values() for trace in domain]:
+        print t.timing
