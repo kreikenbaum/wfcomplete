@@ -3,7 +3,6 @@
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{tikz}
 * [#A] next: order other parts
-** TODO first move [[*tools][tools]] subsections
 * TODO [#A] move sections to list and MOVE
 * final sections
 ** LATER Abstract
@@ -123,13 +122,72 @@
      Both programs rely on the libpcap library for access to network
      packets.
 ***** TODO subsect to [[*SECTION%20HOW%20TO%20CAPTURE%20TRACE%20FILES][SECTION HOW TO CAPTURE TRACE FILES]]
-**** [[shell script]]
-**** [[Selenium]]
-**** [[Chickenfoot]]
-**** [[Marionette]]
-**** [[Marionette installation]]
-**** [[criteria for tool to retrieve websites]]
-**** [[*who%20used%20which%20retrieval%20method][who used which retrieval method]]
+**** shell script
+     Simply calling =firefox website= loads the website in Firefox. This
+     is the approach Wang recommended(\cite{wang-scripting}.
+***** TODO how to check that page has loaded
+**** Selenium
+     Selenium is the de-facto standard for testing web applications. It
+     has drivers for several browsers, allowing it to control them, and
+     evaluate the retrieved page. Its documentation is currently
+     transferring from Version 1 to Version 2.
+**** Chickenfoot
+     Chickenfoot was a Firefox addon which allowed browser scripting. It
+     was developed at MIT\cite{chickenfoot}. The most recent GitHub
+     release[fn::\url{https://github.com/bolinfest/chickenfoot}] is for
+     Firefox 4.
+**** Marionette
+     Marionette is the next generation mozilla testing framework. It is
+     made to work just like Selenium. It was chosen for this thesis, as
+     it made the Tor Browser Bundle easily accessible:
+
+     After installation (see below), controlling the browser takes two
+     easy steps:
+
+     1. start the Tor Browser Bundle with the `-marionette` switch
+
+        #+BEGIN_SRC sh
+          cd tor-browser_en-US/Browser
+          ./firefox -marionette
+        #+END_SRC
+
+     2. attach to a running browser in Python
+
+        #+BEGIN_SRC python
+          from marionette import Marionette
+          client = Marionette('localhost', port=2828);
+          client.start_session()
+          client.navigate('http://cnn.com'); # navigate loads a website
+        #+END_SRC
+
+     Marionette has the benefit that the =client.navigate()= call returns
+     only after the page has loaded, (and throws an error if the page
+     could not be loaded). This obsoletes the need to test whether a page
+     loaded completely([[Panchenko]]).
+**** CHECK Marionette installation
+     Marionette exists as a Python Package. It is thus easily installed
+     via
+
+     pip install marionette_client
+
+     After installation pip via =sudo apt-get install python-pip=). Using
+     a virtualenv is highly recommended in the documentation. If using
+     only Marionette, it proved to be unnecessary. The combined
+     installation of Marionette with Mozmill broke Marionette.
+**** criteria for tool to retrieve websites
+     - script tor browser: load new page
+     - easy set-up
+     - should
+       - register page load or error
+     - might
+       - set tor's paranoia slider
+       - install extra addon
+**** TODO who used which retrieval method
+     - list
+     - chickenfoot
+     - modified browser
+     - selenium: daniel
+     - plain tor bundle
 **** setup
 ***** [[by-hand initialization to retrieve websites]]
 ***** [[*one_site.py:%20retrieval%20of%20a%20single%20page][*one_site.py: retrieval of a single page]]
@@ -140,7 +198,25 @@
 ****** TODO merge or something
 ***** [[*problematic%20websites][problematic websites]]
 ***** [[thoughts on size of data set]]
-**** [[*what%20happens%20when%20retrieving%20a%20website][what happens when retrieving a website]]
+**** TODO what happens when retrieving a website
+     The complete data of google.com can be retrieved via
+
+     =mkdir site; cd site; wget -p -H google.com=
+
+     which yields (in germany) the files (=find . -type f -ls=, formatted)
+
+     |  size | url                                                               |
+     |-------+-------------------------------------------------------------------|
+     |       | <65>                                                              |
+     | 18979 | google.com/index.html                                             |
+     | 17284 | www.google.de/images/nav_logo229.png                              |
+     |  1834 | www.google.de/images/icons/product/chrome-48.png                  |
+     |  5482 | www.google.de/images/branding/googlelogo/1x/googlelogo_white_background_color_272x92dp.png |
+     |  5430 | www.google.de/images/branding/product/ico/googleg_lodp.ico        |
+     |  8080 | www.google.de/robots.txt                                          |
+
+     thus, there should be 5-6 (depending on robots.txt) requests
+***** TODO tshark for normal (non-tor) retrieval
 **** practical wf: analyzing traces
 ***** [[how to process the data]]
 ***** [[transform to panchenko-features]]
@@ -165,11 +241,88 @@
      carried out by Herrmann et al. in 2009.
 ***** SSL
       [[file:~/da/docs/master.bib::SSL][Wagner & Schneier 1997: Analysis SSL]]
-**** [[wf defenses]]
-**** [[other defenses]]
-***** TODO rename both above to ...
-**** [[*visual%20inspection%20of%20data][visual inspection of data]]
-**** [[distribution of (main) features]]
+**** TODO wf-specific defenses
+     - walkie-talkie
+     - wtfpad
+     - supersequence
+     - tamaraw
+     - buflo
+**** TODO other defenses
+     There are other methods of defense, which might help mitigate
+     website fingerprinting. One is based on reducing the fingerprint by
+     browser plugins and text-only browsing, another on rate limiting.
+***** TODO Plugins: noscript and requestpolicy
+      There exist two plugins, which should both allow mitigation of this
+      attack. Used in parallel, they may hinder normal browsing somewhat
+      (which is why they are not enabled/installed by default in the Tor
+      Browser Bundle).
+
+      The first is NoScript, which selects which Javascript sources to
+      run and which to block. This is installed by default in the Tor
+      Browser Bundle for the additional security benefits it brings (XSS
+      defense etc), but not fully enabled. It is recommended by Edward
+      Snowden and many others\cite{noscript}.
+
+      A second Add-On with a different set of protective measures is
+      RequestPolicy: This add-on controls, which third-party content to
+      load on a given page. Every query to the original domain is passed,
+      while requests to other domains must be temporarily or permanently
+      approved. It comes with a restrictive set of pre-defined rules (for
+      example google pages are allowed to access gstatic), and a
+      blacklist and whitelist mode.
+****** TODO link Requestpolicy
+***** write new plugins
+      Instead of inserting dummy traffic into the connection, one could
+      throttle the "data rate" of request and responses (or only requests
+      or the ratio). As this approach has been used by
+      f.ex. \cite{effective}, and has been proven to work, albeit
+      requiring higher latency, it has not been explored further.
+
+***** TODO link tor browser bundle
+****** or writeup something
+***** TODO running an OR
+***** TODO text-only
+      As the sizes and interconnection of HTML and embedded content is
+      what makes a webpage easily identifyable, using a text-only
+      non-javascript browser such as Lynx might be a mitigation for those
+      who consider this trade-off acceptable.
+****** TODO lynx link
+**** distribution of (main) features
+     These distribution histograms show how Panchenko's main features are
+     distributed. They are stacked histograms with classes separated by
+     colors. They are compared (visually) to the [[file:docs/lit.org::*%5B%5B./HTTP%20Traffic%20Model_v1%201%20white%20paper.pdf%5D%5D][HTTP Traffic Model]].
+
+     [[file:pictures/all_count_in.png]]
+     shows the number of downstream/incoming packets.
+
+     The general form of a gamma distribution may be
+     fitting. Conceptually, this should be approximately
+
+     num_embedded (gamma) * size_embedded (lognormal) / packet_size
+
+     [[file:pictures/all_count_out.png]]
+     shows the number of upstream/outgoing packets.
+
+     Conceptually, the
+
+     [[file:pictures/all_length_0.png]]
+     the length of the Size Marker feature vector.
+
+     [[file:pictures/all_num_sizes_in.png]]
+     number of different packet sizes downstream/incoming.
+
+     [[file:pictures/all_num_sizes_out.png]]
+     number of different packet sizes upstream/outgoing.
+
+     [[file:pictures/all_percentage_in.png]]
+     percentage of incoming bytes (of total).
+
+     [[file:pictures/all_total_in.png]]
+     total bytes downstream/incoming.
+
+     [[file:pictures/all_total_out.png]]
+     total bytes upstream/outgoing.
+***** TODO compare to HTTP model
 *** Hurdles to website fingerprinting
     The progress of web protocols made website fingerprinting
     harder. In the original HTTP/1.0\cite{rfc1945} protocol, each
@@ -603,28 +756,51 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      The second important feature that is used in generating cover
      traffic is the number of embedded files per HTML-page.
 
-     These in the top-100 sites are extracted via the python script
-     [[file:bin/htmlToNumEmbedded.py]] (see appendix) which is called by
-     [[./bin/retrieve_100_embedded.sh]].
+     These in the top-100 (modified) sites are extracted via the
+     python script [[file:bin/htmlToNumEmbedded.py]] (see appendix) which
+     is called by [[./bin/retrieve_100_embedded.sh]].
 
-     It uses python's lxml module to parse the HTML's DOM, then extracts
+     It uses python's lxml module to parse the HTML's DOM, extracts
      the URLs of embedded files from the attributes of several tags,
      namely, f.ex. the =src= element of =img= tags.
 
-     It seems better for cover traffic to slightly underestimate the
-     number of embedded elements. This might generate more traffic
-     than strictly necessary, but here, safe seems better than
-     sorry. Extracting just the right URLs is a matter of further
-     research.
+     This implementation currently omits some possibly embedded
+     elements, f.ex. those embedded in css files and =style= tags via
+     the =@url= css-directive. It seems better for cover traffic to
+     slightly underestimate the number of embedded elements. This
+     might generate more traffic than strictly necessary, but here,
+     safe seems better than sorry. Extracting just the right URLs is a
+     matter of further research.
 ***** TODO [#A] directly from URLs
 ***** TODO link DOM
 ***** TODO link further research
 **** TODO bloom filter
      - many to size up
      - bloom filter general idea
-     - split by quantiles
-       - of lognormal for HTML-sizes
      - 3 buckets for test
+     - split by quantiles
+       - 6-quantiles for center and border values
+       - of lognormal for HTML-sizes
+       - of embedded data for num-embedded
+         - with parameters, buckets would be at
+           - center at 1/6: value 7.91496440504e-05
+           - border at 2/6: value 0.0106585874684, etc
+           - center at 3/6: value 0.188298787995
+           - at 4/6: value 1.48122777354
+           - at 5/6: value 8.25955384493
+         - this does not work
+           - impractical (two buckets for only 0 and 1-elements)
+           - and does not match real values for sites, which are
+             - 1/6: 6
+             - 2/6: 10 2/3
+             - 3/6: 20
+             - 4/6: 36 2/3
+             - 5/6: 59 2/3
+           - it fits better if you enlarge the sizes by 0 for each
+             redirected element (there are 176 elements in the html
+             filter, including redirects, and only 99 in the embedded
+             filter, if you pad the embedded filter by 0 for each of
+             those, it is not a perfect fit, but better)
 ***** TODO error rate computing
 *** Implementation
 **** TODO js coding best practices
@@ -729,112 +905,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - fundamental human need
   - concentration camp:
     "solitude in a Camp is more precious and rare than bread." -- primo levi
-* TODO wf-specific defenses
-  - walkie-talkie
-  - wtfpad
-  - supersequence
-  - tamaraw
-  - buflo
-* TODO other defenses
-  There are other methods of defense, which might help mitigate
-  website fingerprinting. One is based on reducing the fingerprint by
-  browser plugins and text-only browsing, another on rate limiting.
-** TODO Plugins: noscript and requestpolicy
-   There exist two plugins, which should both allow mitigation of this
-   attack. Used in parallel, they may hinder normal browsing somewhat
-   (which is why they are not enabled/installed by default in the Tor
-   Browser Bundle).
-
-   The first is NoScript, which selects which Javascript sources to
-   run and which to block. This is installed by default in the Tor
-   Browser Bundle for the additional security benefits it brings (XSS
-   defense etc), but not fully enabled. It is recommended by Edward
-   Snowden and many others\cite{noscript}.
-
-   A second Add-On with a different set of protective measures is
-   RequestPolicy: This add-on controls, which third-party content to
-   load on a given page. Every query to the original domain is passed,
-   while requests to other domains must be temporarily or permanently
-   approved. It comes with a restrictive set of pre-defined rules (for
-   example google pages are allowed to access gstatic), and a
-   blacklist and whitelist mode.
-*** TODO link Requestpolicy
-** write new plugins
-   Instead of inserting dummy traffic into the connection, one could
-   throttle the "data rate" of request and responses (or only requests
-   or the ratio). As this approach has been used by
-   f.ex. \cite{effective}, and has been proven to work, albeit
-   requiring higher latency, it has not been explored further.
-
-** TODO link tor browser bundle
-*** or writeup something
-** TODO running an OR
-** TODO text-only
-   As the sizes and interconnection of HTML and embedded content is
-   what makes a webpage easily identifyable, using a text-only
-   non-javascript browser such as Lynx might be a mitigation for those
-   who consider this trade-off acceptable.
-*** TODO lynx link
-* Selenium
-  Selenium is the de-facto standard for testing web applications. It
-  has drivers for several browsers, allowing it to control them, and
-  evaluate the retrieved page. Its documentation is currently
-  transferring from Version 1 to Version 2.
-* Marionette
-  Marionette is the next generation mozilla testing framework. It is
-  made to work just like Selenium. It was chosen for this thesis, as
-  it made the Tor Browser Bundle easily accessible:
-
-  After installation (see below), controlling the browser takes two
-  easy steps:
-
-  1. start the Tor Browser Bundle with the `-marionette` switch
-
-     #+BEGIN_SRC sh
-       cd tor-browser_en-US/Browser
-       ./firefox -marionette
-     #+END_SRC
-
-  2. attach to a running browser in Python
-
-     #+BEGIN_SRC python
-       from marionette import Marionette
-       client = Marionette('localhost', port=2828);
-       client.start_session()
-       client.navigate('http://cnn.com'); # navigate loads a website
-     #+END_SRC
-
-  Marionette has the benefit that the =client.navigate()= call returns
-  only after the page has loaded, (and throws an error if the page
-  could not be loaded). This obsoletes the need to test whether a page
-  loaded completely([[Panchenko]]).
-* CHECK Marionette installation
-  Marionette exists as a Python Package. It is thus easily installed
-  via
-
-  pip install marionette_client
-
-  After installation pip via =sudo apt-get install python-pip=). Using
-  a virtualenv is highly recommended in the documentation. If using
-  only Marionette, it proved to be unnecessary. The combined
-  installation of Marionette with Mozmill broke Marionette.
-* shell script
-  Simply calling =firefox website= loads the website in Firefox. This
-  is the approach Wang recommended(\cite{wang-scripting}.
-** TODO how to check that page has loaded
-* Chickenfoot
-  Chickenfoot was a Firefox addon which allowed browser scripting. It
-  was developed at MIT\cite{chickenfoot}. The most recent GitHub
-  release[fn::\url{https://github.com/bolinfest/chickenfoot}] is for
-  Firefox 4.
-* criteria for tool to retrieve websites
-  - script tor browser: load new page
-  - easy set-up
-  - should
-    - register page load or error
-  - might
-    - set tor's paranoia slider
-    - install extra addon
 * by-hand initialization to retrieve websites
   After installation, the tor browser bundle performs some
   initialization steps. To complete these easily, start the tor
@@ -1022,61 +1092,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   Currently, fixed attributes are weighted heavily in favor of total
   incoming/outgoing bytes.
 ** maybe
-* TODO what happens when retrieving a website
-  The complete data of google.com can be retrieved via
-
-  =mkdir site; cd site; wget -p -H google.com=
-
-  which yields (in germany) the files (=find . -type f -ls=, formatted)
-
-  |  size | url                                                               |
-  |-------+-------------------------------------------------------------------|
-  |       | <65>                                                              |
-  | 18979 | google.com/index.html                                             |
-  | 17284 | www.google.de/images/nav_logo229.png                              |
-  |  1834 | www.google.de/images/icons/product/chrome-48.png                  |
-  |  5482 | www.google.de/images/branding/googlelogo/1x/googlelogo_white_background_color_272x92dp.png |
-  |  5430 | www.google.de/images/branding/product/ico/googleg_lodp.ico        |
-  |  8080 | www.google.de/robots.txt                                          |
-
-  thus, there should be 5-6 (depending on robots.txt) requests
-** TODO tshark for normal (non-tor) retrieval
-* distribution of (main) features
-  These distribution histograms show how Panchenko's main features are
-  distributed. They are stacked histograms with classes separated by
-  colors. They are compared (visually) to the [[file:docs/lit.org::*%5B%5B./HTTP%20Traffic%20Model_v1%201%20white%20paper.pdf%5D%5D][HTTP Traffic Model]].
-
-  [[file:pictures/all_count_in.png]]
-  shows the number of downstream/incoming packets.
-
-  The general form of a gamma distribution may be
-  fitting. Conceptually, this should be approximately
-
-  num_embedded (gamma) * size_embedded (lognormal) / packet_size
-
-  [[file:pictures/all_count_out.png]]
-  shows the number of upstream/outgoing packets.
-
-  Conceptually, the
-
-  [[file:pictures/all_length_0.png]]
-  the length of the Size Marker feature vector.
-
-  [[file:pictures/all_num_sizes_in.png]]
-  number of different packet sizes downstream/incoming.
-
-  [[file:pictures/all_num_sizes_out.png]]
-  number of different packet sizes upstream/outgoing.
-
-  [[file:pictures/all_percentage_in.png]]
-  percentage of incoming bytes (of total).
-
-  [[file:pictures/all_total_in.png]]
-  total bytes downstream/incoming.
-
-  [[file:pictures/all_total_out.png]]
-  total bytes upstream/outgoing.
-** TODO compare to HTTP model
 * TODO scikit-learn
   The python module scikit-learn\cite{scikit-learn} is described as a
   collection of "tools for data mining and data analysis".
@@ -1114,12 +1129,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 * TODO why several covers
 ** competition
 ** harder to break
-* TODO who used which retrieval method
-  - list
-  - chickenfoot
-  - modified browser
-  - selenium: daniel
-  - plain tor bundle
 * TODO bloom usage and implementation
   - bloom sort
     - error rate computation
@@ -1131,6 +1140,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - which tags?
 * TODO page size
 * TODO modified top-100
+  - originally alexa-top-1m, from September 30, 2015 condensed
   - take out duplicates: google, amazon, bbc, ...
   - take out non-responding (to urllib) sites:
     - list of taken out

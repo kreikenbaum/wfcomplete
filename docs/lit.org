@@ -1,5 +1,4 @@
 [[./master.bib]]
-** [#C] next: continue ordering scikit-learn user guide qutoes
 ** [#A] [[./HTTP Traffic Model_v1 1 white paper.pdf][Lee - A NEW TRAFFIC MODEL FOR CURRENT USER WEB BROWSING BEHAVIOR]]
 *** summary
     0) [@0] ABSTRACT
@@ -9528,6 +9527,10 @@
 
 	  11) [@11] Gamma
 
+              - Density Function:
+                f(x) = 1/Gamma(c) *b^{-c} *(x-a)^{c-1} *e^{-(x-a)/b}
+                if x>a, else 0
+
 	      - Input: scale parameter b > 0; shape parameter c > 0
 
 		c == \kappa, b == \theta
@@ -9906,8 +9909,7 @@
                   as one cluster, which it splits recursively) and
                   statistically ill-posed."
 *** quotes
-  1) 
-  2) A tutorial on statistical-learning for scientific data processing
+  2) [@2] A tutorial on statistical-learning for scientific data processing
      - import pylab as pl
        pl.imshow
   4) [@4] Supervised learning
@@ -9978,7 +9980,7 @@
                 clf = RandomForestClassifier(n_estimators=10)
                 clf = clf.fit(X, Y)
               #+END_SRC
-            - 
+            - somewhere
               #+BEGIN_SRC python
                 from sklearn.ensemble import ExtraTreesClassifier
                 [...]
@@ -9988,108 +9990,121 @@
                 forest.fit(X, y)
                 importances = forest.feature_importances_
               #+END_SRC
-            - (begins 12)
-            - Firstly, many estimators take precomputed distance/similarity
-              matrices, so if the dataset is not too large, you can compute
-              distances for all pairs of inputs. If the dataset is large, you
-              can use feature vectors with only one “feature”, which is an
-              index into a separate data structure, and supply a custom metric
-              function that looks up the actual data in this data
-              structure. E.g., to use DBSCAN with Levenshtein distances:
-              #+BEGIN_SRC python
-                >>> from leven import levenshtein
-                >>> import numpy as np
-                >>> from sklearn.cluster import dbscan
-                >>> data = ["ACCTCCTAGAAG", "ACCTACTAGAAGTT", "GAATATTAGGCCGA"]
-                >>> def lev_metric(x, y):
-                ...
-                i, j = int(x[0]), int(y[0])
-                # extract indices
-                ...
-                return levenshtein(data[i], data[j])
-                ...
-                >>> X = np.arange(len(data)).reshape(-1, 1)
-                >>> X
-                array([[0],
-                [1],
-                [2]])
-                >>> dbscan(X, metric=lev_metric, eps=5, min_samples=2)
-                ([0, 1], array([ 0, 0, -1]))
-              #+END_SRC
-              (This uses the third-party edit distance package leven.) Similar
-              tricks can be used, with some care, for tree kernels, graph
-              kernels, etc.
-            - (ends 12.12)
-            - (begins 42)
-            - class sklearn.neighbors.KNeighborsClassifier(n_neighbors=5,
-              weights=’uniform’, algorithm=’auto’, leaf_size=30, p=2,
-              metric=’minkowski’, metric_params=None, **kwargs)
-              [...]
+     12) Frequently Asked Questions
+         12) [@12] How do I deal with string data (or trees, graphs...)?
+             - Firstly, many estimators take precomputed distance/similarity
+               matrices, so if the dataset is not too large, you can compute
+               distances for all pairs of inputs. If the dataset is large, you
+               can use feature vectors with only one “feature”, which is an
+               index into a separate data structure, and supply a custom metric
+               function that looks up the actual data in this data
+               structure. E.g., to use DBSCAN with Levenshtein distances:
+               #+BEGIN_SRC python
+                 >>> from leven import levenshtein
+                 >>> import numpy as np
+                 >>> from sklearn.cluster import dbscan
+                 >>> data = ["ACCTCCTAGAAG", "ACCTACTAGAAGTT", "GAATATTAGGCCGA"]
+                 >>> def lev_metric(x, y):
+                 ...
+                 i, j = int(x[0]), int(y[0])
+                 # extract indices
+                 ...
+                 return levenshtein(data[i], data[j])
+                 ...
+                 >>> X = np.arange(len(data)).reshape(-1, 1)
+                 >>> X
+                 array([[0],
+                 [1],
+                 [2]])
+                 >>> dbscan(X, metric=lev_metric, eps=5, min_samples=2)
+                 ([0, 1], array([ 0, 0, -1]))
+               #+END_SRC
+               (This uses the third-party edit distance package leven.) Similar
+               tricks can be used, with some care, for tree kernels, graph
+               kernels, etc.
+     42) [@42] Reference
+         25) [@25] sklearn.neighbors: Nearest Neighbors
+             2) [@2] sklearn.neighbors.KNeighborsClassifier
+                - class
+                  sklearn.neighbors.KNeighborsClassifier(n_neighbors=5,
+                  weights=’uniform’, algorithm=’auto’,
+                  leaf_size=30, p=2, metric=’minkowski’,
+                  metric_params=None, **kwargs) [...]
 
-              metric : string or DistanceMetric object (default = ‘minkowski’)
-              the distance metric to use for the tree. The default metric is
-              minkowski, and with p=2 is equivalent to the standard Euclidean
-              metric. See the documentation of the Distance-Metric class for
-              a list of available metrics.
-            - “braycurtis” | BrayCurtisDistance | sum(|x - y|) / (sum(|x|) + sum(|y|))
-            - (ends 42.25.2)
-            - class sklearn.pipeline.Pipeline(steps) Pipeline of transforms
-              with a final estimator. Sequentially apply a list of transforms
-              and a final estimator. Intermediate steps of the pipeline must
-              be ‘transforms’, that is, they must implement fit and transform
-              methods. The final estimator only needs to implement fit. The
-              purpose of the pipeline is to assemble several steps that can be
-              cross-validated together while setting different parameters. For
-              this, it enables setting parameters of the various steps using
-              their names and the parameter name separated by a ‘__’, as in
-              the example below.
+                  metric : string or DistanceMetric object
+                  (default = ‘minkowski’) the distance metric to
+                  use for the tree. The default metric is
+                  minkowski, and with p=2 is equivalent to the
+                  standard Euclidean metric. See the documentation
+                  of the Distance-Metric class for a list of
+                  available metrics.
+             10) [@10] sklearn.neighbors.DistanceMetric
+                 - “braycurtis” | BrayCurtisDistance | sum(|x - y|)
+                   / (sum(|x|) + sum(|y|))
 
-              Parameterssteps: list :List of (name, transform) tuples
-              (implementing fit/transform) that are chained, in the order in
-              which they are chained, with the last object an estimator.
+         29) [@29] sklearn.pipeline: Pipeline
+             1) sklearn.pipeline.Pipeline
+                - class sklearn.pipeline.Pipeline(steps) Pipeline
+                  of transforms with a final
+                  estimator. Sequentially apply a list of
+                  transforms and a final estimator. Intermediate
+                  steps of the pipeline must be ‘transforms’, that
+                  is, they must implement fit and transform
+                  methods. The final estimator only needs to
+                  implement fit. The purpose of the pipeline is to
+                  assemble several steps that can be
+                  cross-validated together while setting different
+                  parameters. For this, it enables setting
+                  parameters of the various steps using their
+                  names and the parameter name separated by a
+                  ‘__’, as in the example below.
 
-              Examples
-              #+BEGIN_SRC python
-                >>> from sklearn import svm
-                >>> from sklearn.datasets import samples_generator
-                >>> from sklearn.feature_selection import SelectKBest
-                >>> from sklearn.feature_selection import f_regression
-                >>> from sklearn.pipeline import Pipeline
-                >>> # generate some data to play with
-                >>> X, y = samples_generator.make_classification(
-                ...
-                n_informative=5, n_redundant=0, random_state=42)
-                >>> # ANOVA SVM-C
-                >>> anova_filter = SelectKBest(f_regression, k=5)
-                >>> clf = svm.SVC(kernel='linear')
-                >>> anova_svm = Pipeline([('anova', anova_filter), ('svc', clf)])
-                >>> # You can set the parameters using the names issued
-                >>> # For instance, fit using a k of 10 in the SelectKBest
-                >>> # and a parameter 'C' of the svm
-                >>> anova_svm.set_params(anova__k=10, svc__C=.1).fit(X, y)
-                ...
-                Pipeline(steps=[...])
-                >>> prediction = anova_svm.predict(X)
-                >>> anova_svm.score(X, y)
-                0.77...
-                #+END_SRC
-              - (ends 42.29.1)
-              - class sklearn.tree.DecisionTreeClassifier[...]
+                  Parameterssteps: list :List of (name, transform)
+                  tuples (implementing fit/transform) that are
+                  chained, in the order in which they are chained,
+                  with the last object an estimator.
 
-	        feature_importances_ : array of shape = [n_features]
+                  Examples
+                  #+BEGIN_SRC python
+                    >>> from sklearn import svm
+                    >>> from sklearn.datasets import samples_generator
+                    >>> from sklearn.feature_selection import SelectKBest
+                    >>> from sklearn.feature_selection import f_regression
+                    >>> from sklearn.pipeline import Pipeline
+                    >>> # generate some data to play with
+                    >>> X, y = samples_generator.make_classification(
+                    ...
+                    n_informative=5, n_redundant=0, random_state=42)
+                    >>> # ANOVA SVM-C
+                    >>> anova_filter = SelectKBest(f_regression, k=5)
+                    >>> clf = svm.SVC(kernel='linear')
+                    >>> anova_svm = Pipeline([('anova', anova_filter), ('svc', clf)])
+                    >>> # You can set the parameters using the names issued
+                    >>> # For instance, fit using a k of 10 in the SelectKBest
+                    >>> # and a parameter 'C' of the svm
+                    >>> anova_svm.set_params(anova__k=10, svc__C=.1).fit(X, y)
+                    ...
+                    Pipeline(steps=[...])
+                    >>> prediction = anova_svm.predict(X)
+                    >>> anova_svm.score(X, y)
+                    0.77...
+                    #+END_SRC
+                  - (ends 42.29.1)
+                  - class sklearn.tree.DecisionTreeClassifier[...]
 
-	        The feature importances.
-              - (ends 42.35.1)
-              - It is however still interesting to check what’s happening
-                inside the _nls_subproblem function which is the hotspot if we
-                only consider Python code: it takes around 100% of the
-                cumulated time of the module. In order to better understand
-                the profile of this specific function, let us install
-                line-prof and wire it to IPython:
-	        #+BEGIN_SRC sh
-                  pip install line-profiler
-	        #+END_SRC
-              - (ends 47.3)
+	            feature_importances_ : array of shape = [n_features]
+
+	            The feature importances.
+                  - (ends 42.35.1)
+                  - It is however still interesting to check what’s happening
+                    inside the _nls_subproblem function which is the hotspot if we
+                    only consider Python code: it takes around 100% of the
+                    cumulated time of the module. In order to better understand
+                    the profile of this specific function, let us install
+                    line-prof and wire it to IPython:
+	            #+BEGIN_SRC sh
+                      pip install line-profiler
+	            #+END_SRC
 *** ref
     [[file:master.bib::scikit-learn][Pedregosa et al. 2011: Scikit]]
 *** exercises
@@ -12223,7 +12238,6 @@
        - also semantics of builtin data types and functions
 
        - then ordered from least to most important
-
     15) [@15] GENERIC OPERATING SYSTEM SERVICES
 
         1) os — Miscellaneous operating system interfaces
@@ -12339,7 +12353,7 @@
 
            6) Skipping tests and expected failures
 *** quotes
-    1) [@2] BUILT-IN FUNCTIONS
+    2) [@2] BUILT-IN FUNCTIONS
        - staticmethod(function)
 
          Return a static method for function. A static method does not
@@ -12389,53 +12403,63 @@
                 the listscontain no path components. To get a full
                 path (which begins with top) to a file or directory in
                 dirpath, do os.path.join(dirpath, name).
-    17) pdb.py can also be invoked as a script to debug other scripts. For example:
+    20) [@20] Internet Protocols and Support
+        7) [@7] httplib — HTTP protocol client
+           0) [@0] ...
+              - class httplib.HTTPConnection(host [ , port [ , strict [ ,
+                timeout [ , source_address ]]]] )
 
-        #+BEGIN_SRC python
-          python -m pdb myscript.py
-        #+END_SRC
-    18) The typical usage to break into the debugger from a running
-        program is to insert
+                An HTTPConnection instance represents one transaction
+                with an HTTP server.
+           1) HTTPConnection Objects
+              - HTTPConnection.request(method, url [ , body [ ,
+                headers]])
 
-         #+BEGIN_SRC python
-          import pdb; pdb.set_trace()
-        #+END_SRC
+                This will send a request to the server using the HTTP
+                request method /method/ and the selector url.
 
-        at the location you want to break into the debugger.
-    19) (begins 20)
-    20) class httplib.HTTPConnection(host [ , port [ , strict [ ,
-        timeout [ , source_address ]]]] )
+           2) HTTPResponse Objects
+              - HTTPResponse.getheaders()
 
-        An HTTPConnection instance represents one transaction with an HTTP server.
-    21) (ends 20.7.0)
-    22) HTTPConnection.request(method, url [ , body [ , headers ]] )
+                Return a list of (header, value) tuples.
+              - HTTPResponse.status
 
-        This will send a request to the server using the HTTP request
-        method /method/ and the selector url.
-    23) (ends 20.7.1)
-        HTTPResponse.getheaders()
-
-        Return a list of (header, value) tuples.
-    24) HTTPResponse.status
-
-        Status code returned by server.
-    25) (ends 20.7.2)
-    26) (begins 20.19)
-    27) The SimpleHTTPServer module can also be invoked directly using
-        the -m switch of the interpreter with a port number
-        argument. Similar to the previous example, this serves the files
-        relative to the current directory.
-
-        python -m SimpleHTTPServer 8000
-    28) (ends 20.19)
-    29) virtual environment
+                Status code returned by server.
+        16) [@16] urlparse — Parse URLs into components
+            - Parse a URL into six components, returning a
+              6-tuple. This corresponds to the general structure of a
+              URL:
+              scheme://netloc/path;parameters?query#fragment. Each
+              tuple item is a string, possibly empty.
+        17) SimpleHTTPServer — Simple HTTP request handler
+            - The SimpleHTTPServer module can also be invoked directly
+              using the -m switch of the interpreter with a port
+              number argument. Similar to the previous example, this
+              serves the files relative to the current directory.
+              #+BEGIN_SRC sh
+                python -m SimpleHTTPServer 8000
+              #+END_SRC
+    26) [@26] Debugging and Profiling
+        2) [@2] pdb — The Python Debugger
+           - pdb.py can also be invoked as a script to debug other
+             scripts. For example:
+             #+BEGIN_SRC python
+               python -m pdb myscript.py
+             #+END_SRC
+           - The typical usage to break into the debugger from a
+             running program is to insert
+             #+BEGIN_SRC python
+               import pdb; pdb.set_trace()
+             #+END_SRC
+             at the location you want to break into the debugger.
+    28) virtual environment
 
         A cooperatively isolated runtime environment that allows Python
         users and applications to install and upgrade Python
         distribution packages without interfering with the behaviour of
         other Python applications running on the same system.
-    30) (ends Appendix A)
-** PART [[/home/chive/IT-gg/python/scipy-ref-0.15.1.pdf][SciPy Reference Guide]]
+    29) (ends Appendix A)
+** [#A] MOVE PART [[./scipy-ref-0.17.0.pdf][SciPy Reference Guide]]
 *** summary
 1) Tutorial
 
@@ -12596,135 +12620,170 @@
 
    27) [@27] Statistical functions (scipy.stats)
 
-       1) scipy.stats.rv_continuous
+       - scipy.stats.rv_continuous
 
-          - base class, cannot be used directly
+         - base class, cannot be used directly
 
-          - override pdf or cdf to create new rv
+         - override pdf or cdf to create new rv
 
-          - freezing possible
+         - freezing possible
 
-       2) scipy.stats.lognorm
+       - scipy.stats.lognorm
 
-          - parametrization via normal(mu, sigma) is implemented by
-            setting =s=sigma= and =scale=math.exp(mu)=, s is first
-            parameter anyways
+         - parametrization via normal(mu, sigma) is implemented by
+           setting =s=sigma= and =scale=math.exp(mu)=, s is first
+           parameter anyways
+
+       - scipy.stats.gamma
+         
+         - parameters
+
+           - shape parameter: computer ... c, here shape=a
+
+             - kappa == a
+
+           - loc parameter: computer... a, here none (or loc)
+
+           - computer... b, here ==1
 *** quotes
-    - (begins 1.13)
-    - Freezing a Distribution
+    1) SciPy Tutorial
+       13) [@13] Statistics (scipy.stats)
+           - Freezing a Distribution
 
-      Passing the loc and scale keywords time and again can become
-      quite bothersome. The concept of freezing a RV is used to solve
-      such problems.
-      #+BEGIN_SRC python
-        rv = gamma(1, scale=2.)
-      #+END_SRC
-      By using rv we no longer have to include the scale or the shape
-      parameters anymore. Thus, distributions can be used in one of
-      two ways, either by passing all distribution parameters to each
-      method call (such as we did earlier) or by freezing the
-      parameters for the instance of the distribution.
-    - (ends 1.13)
-    - (begins 5)
-    - scipy.spatial.distance.euclidean(u, v)
+             Passing the loc and scale keywords time and again can
+             become quite bothersome. The concept of freezing a RV is
+             used to solve such problems.
+             #+BEGIN_SRC python
+              rv = gamma(1, scale=2.)
+             #+END_SRC
+             By using rv we no longer have to include the scale or the
+             shape parameters anymore. Thus, distributions can be used
+             in one of two ways, either by passing all distribution
+             parameters to each method call (such as we did earlier) or
+             by freezing the parameters for the instance of the
+             distribution.
+    5) [@5] Reference
+       24) [@24] Spatial algorithms and data structures (scipy.spatial)
+           - scipy.spatial.distance.euclidean(u, v)
 
-      Computes the Euclidean distance between two 1-D arrays.
-    - Y = pdist(X, ’braycurtis’)
+             Computes the Euclidean distance between two 1-D arrays.
 
-      Computes the Bray-Curtis distance between the points. The
-      Bray-Curtis distance between two points u and v is
+           - Y = pdist(X, ’braycurtis’)
 
-      d(u, v) = ∑_{i} u_{i} − v_{i} / ∑_{i} u_{i} + v_{i}
-    - (ends 5.29)
-    - scipy.special.btdtr(a, b, x) = <ufunc ‘btdtr’>
+             Computes the Bray-Curtis distance between the points. The
+             Bray-Curtis distance between two points u and v is
 
-      Cumulative beta distribution. Returns the area from zero to x
-      under the beta density function:
+             d(u, v) = ∑_{i} u_{i} − v_{i} / ∑_{i} u_{i} + v_{i}
 
-      gamma(a+b)/(gamma(a)*gamma(b)))*integral(t**(a-1) (1-t)**(b-1),
-      t=0..x)
-    - (ends 5.30)
-    - Poisson distribution
-      #+BEGIN_SRC python
-        from scipy.stats import poisson
-        import matplotlib.pyplot as plt
-        fig, ax = plt.subplots(1, 1)
-        # Calculate a few first moments:
-        mu = 0.6
-        mean, var, skew, kurt = poisson.stats(mu, moments=’mvsk’)
-        # Display the probability mass function (pmf):
-        x = np.arange(poisson.ppf(0.01, mu),
-                      poisson.ppf(0.99, mu))
-        ax.plot(x, poisson.pmf(x, mu), ’bo’, ms=8, label=’poisson pmf’)
-        ax.vlines(x, 0, poisson.pmf(x, mu), colors=’b’, lw=5, alpha=0.5)
+       26) [@26] Special functions (scipy.special)
+           - scipy.special.btdtr(a, b, x) = <ufunc ‘btdtr’>
 
-        plt.show()
-      #+END_SRC
-    - (ends 5.31)
-    - (help(scipy.stats.lognorm))
-** PART [[/home/chive/IT-gg/python/numpy-ref-1.9.1.pdf][NumPy Reference]]
+             Cumulative beta distribution. Returns the area from zero
+             to x under the beta density function:
+
+             gamma(a+b)/(gamma(a)*gamma(b)))*integral(t**(a-1)
+             (1-t)**(b-1), t=0..x)
+
+       27) Statistical functions (scipy.stats)
+           - scipy.stats.gamma
+             - The probability density function for gamma is:
+               gamma.pdf(x, a) = x**(a-1) * exp(-x) / gamma(a)
+
+             - gamma has a shape parameter _a_ which needs to be set
+               explicitly.
+
+             - To shift and/or scale the distribution use the loc and
+               scale parameters. Specifically, gamma.pdf(x, a, loc,
+               scale) is identically equivalent to gamma.pdf(y, a) /
+               scale with y = (x - loc) / scale
+           - Poisson distribution
+             #+BEGIN_SRC python
+                     from scipy.stats import poisson
+               import matplotlib.pyplot as plt
+               fig, ax = plt.subplots(1, 1)
+               # Calculate a few first moments:
+               mu = 0.6
+               mean, var, skew, kurt = poisson.stats(mu, moments=’mvsk’)
+               # Display the probability mass function (pmf):
+               x = np.arange(poisson.ppf(0.01, mu),
+                             poisson.ppf(0.99, mu))
+               ax.plot(x, poisson.pmf(x, mu), ’bo’, ms=8, label=’poisson pmf’)
+               ax.vlines(x, 0, poisson.pmf(x, mu), colors=’b’, lw=5, alpha=0.5)
+               
+               plt.show()
+             #+END_SRC
+    6) whereever
+       - help(scipy.stats.lognorm)
+** PART [[./numpy-ref-1.10.1.pdf][NumPy Reference]]
 *** quotes
-    - numpy.random.exponential(scale=1.0, size=None)
+   3) [@3] Routines
+      1) Array creation routines
+         1) Ones and zeros
+            - numpy.zeros(shape, dtype=float, order=’C’)
 
-      Exponential distribution. Its probability density function is
+              Return a new array of given shape and type, filled with zeros.
+         2) From existing data
+             - numpy.array(object, dtype=None, copy=True, order=None,
+               subok=False, ndmin=0)
 
-      f (x; 1/\beta) = 1/\beta exp(- x/\beta)
+               Create an array.
+      25) [@25] Random sampling (numpy.random)
+          3) [@3] Distributions
+             - numpy.random.exponential(scale=1.0, size=None)
 
-      for x > 0 and 0 elsewhere. β is the scale parameter, which is
-      the inverse of the rate parameter λ = 1/\beta.
-    - numpy.random.gamma(shape, scale=1.0, size=None)
+               Draw samples from an exponential distribution. Its
+               probability density function is
 
-      Draw samples from a Gamma distribution. Samples are drawn from a
-      Gamma distribution with specified parameters, shape (sometimes
-      designated “k”) and scale (sometimes designated “theta”), where
-      both parameters are > 0.
+               f (x; 1/\beta) = 1/\beta exp(- x/\beta)
 
-      Parameters
+               for x > 0 and 0 elsewhere. β is the scale parameter,
+               which is the inverse of the rate parameter λ = 1/\beta.
+             - numpy.random.gamma(shape, scale=1.0, size=None)
 
-      shape : scalar > 0 The shape of the gamma distribution.
+               Draw samples from a Gamma distribution. Samples are
+               drawn from a Gamma distribution with specified
+               parameters, shape (sometimes designated “k”) and scale
+               (sometimes designated “theta”), where both parameters
+               are > 0.
 
-      scale : scalar > 0, optional The scale of the gamma
-      distribution. Default is equal to 1.
+               Parameters
 
-      [...]
+               shape : scalar > 0 The shape of the gamma distribution.
 
-      Draw samples from the distribution:
-      #+BEGIN_SRC python
-        shape, scale = 2., 2. # mean and dispersion
-        s = np.random.gamma(shape, scale, 1000)
-      #+END_SRC
-      Display the histogram of the samples, along with the probability
-      density function:
-      #+BEGIN_SRC python
-        import matplotlib.pyplot as plt
-        import scipy.special as sps
-        count, bins, ignored = plt.hist(s, 50, normed=True)
-        y = bins**(shape-1)*(np.exp(-bins/scale) /
-        (sps.gamma(shape)*scale**shape))
-        plt.plot(bins, y, linewidth=2, color=’r’)
-        plt.show()
-      #+END_SRC
-    - (ends 3.25)
-    - numpy.zeros(shape, dtype=float, order=’C’)
+               scale : scalar > 0, optional The scale of the gamma
+               distribution. Default is equal to 1.
 
-      Return a new array of given shape and type, filled with zeros.
+               [...]
 
-    - numpy.array(object, dtype=None, copy=True, order=None,
-      subok=False, ndmin=0)
+               Draw samples from the distribution:
+               #+BEGIN_SRC python
+                 shape, scale = 2., 2. # mean and dispersion
+                 s = np.random.gamma(shape, scale, 1000)
+               #+END_SRC
+               Display the histogram of the samples, along with the probability
+               density function:
+               #+BEGIN_SRC python
+                 import matplotlib.pyplot as plt
+                 import scipy.special as sps
+                 count, bins, ignored = plt.hist(s, 50, normed=True)
+                 y = bins**(shape-1)*(np.exp(-bins/scale) /
+                 (sps.gamma(shape)*scale**shape))
+                 plt.plot(bins, y, linewidth=2, color=’r’)
+                 plt.show()
+               #+END_SRC
+             - (ends 3.25)
+          4) TODO
+             - numpy.ma.arange( [ start ] , stop [ , step ] , dtype=None)
 
-      Create an array.
+               Return evenly spaced values within a given interval.  [...]
+               When using a non-integer step, such as 0.1, the results will
+               often not be consistent. It is better to use linspace for these
+               cases.
 
-    - numpy.ma.arange( [ start ] , stop [ , step ] , dtype=None)
+             - numpy.linspace(start, stop, num=50, endpoint=True,
+               retstep=False, dtype=None)
 
-      Return evenly spaced values within a given interval.  [...]
-      When using a non-integer step, such as 0.1, the results will
-      often not be consistent. It is better to use linspace for these
-      cases.
-
-    - numpy.linspace(start, stop, num=50, endpoint=True,
-      retstep=False, dtype=None)
-
-      Return evenly spaced numbers over a specified interval.
+               Return evenly spaced numbers over a specified interval.
 ** PART [[./btxdoc.pdf][BIBTEXing]]
 *** quotes
     3) [@3] The Entries
@@ -13603,13 +13662,13 @@
 
 	 - positive real numbers
 
-       - k integer: erlang distribution
+       - if k is integer == erlang distribution
 
        - maximum entropy probability distribution
 
-       - Mean \scriptstyle \mathbf{E}[ X] = k \theta
+       - Mean: E[X] = k * \theta
 
-       - Variance \scriptstyle\operatorname{Var}[ X] = k \theta^2
+       - Variance: Var[X] = k * \theta^2
 
     1) Characterization using shape k and scale θ
 
@@ -13618,7 +13677,6 @@
     2) Characterization using shape α and rate β
 
        - pdf: g(x;\alpha,\beta) = \frac{\beta^{\alpha} x^{\alpha-1} e^{-x\beta}}{\Gamma(\alpha)}
-
 *** quotes
     - The common exponential distribution and chi-squared distribution
       are special cases of the gamma distribution.
