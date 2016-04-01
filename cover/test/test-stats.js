@@ -3,7 +3,7 @@
 const stats = require("../js/stats.js");
 const sumAvg = require("./sum-avg.js");
 
-exports["test htmlMean"] = function(assert) {
+exports["test htmlSize mean"] = function(assert) {
     sumAvg.test(stats.htmlSize, 10000,
 		stats.htmlMean(), 0.2 * stats.htmlMean(), assert);
 };
@@ -13,10 +13,12 @@ exports["test htmlSize > 0"] = function(assert) {
     assert.ok(result > 0, 'htmlSize: ' + result + ' negative');
 };
 
-exports["test embeddedMean"] = function(assert) {
+// td: this could use the variance to clarify and cut down on 20000
+exports["test embeddedObjectSize mean"] = function(assert) {
     sumAvg.test(stats.embeddedObjectSize, 20000,
-		stats.embeddedObjectMean(), 0.3 * stats.embeddedObjectMean(),
-		assert);
+                stats.embeddedObjectSizeMean(),
+                0.3 * stats.embeddedObjectSizeMean(),
+                assert);
 };
 
 exports["test embeddedObjectSize > 0"] = function(assert) {
@@ -24,15 +26,22 @@ exports["test embeddedObjectSize > 0"] = function(assert) {
     assert.ok(result > 0, 'embeddedObjectSize: ' + result + ' negative');
 };
 
-exports["test embeddedObjectNumber > 0"] = function(assert) {
+exports["test numberEmbeddedObjects > 0"] = function(assert) {
     var result = stats.numberEmbeddedObjects();
     assert.ok(result >= 0, 'numberEmbeddedObjects: ' + result + ' negative');
 };
 
-exports["test embeddedObjectNumber is whole number"] = function(assert) {
+exports["test numberEmbeddedObjects is whole number"] = function(assert) {
     var result = stats.numberEmbeddedObjects();
     assert.ok(result % 1 === 0,
 	      'numberEmbeddedObjects: ' + result + ' not a whole number');
+};
+
+exports["test numberEmbeddedObjects mean"] = function(assert) {
+    sumAvg.test(stats.numberEmbeddedObjects, 1000,
+		stats.numberEmbeddedObjectsMean(),
+                Math.sqrt(stats.numberEmbeddedObjectsVar()),
+		assert);
 };
 
 exports["test request length"] = function(assert) {

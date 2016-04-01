@@ -37,7 +37,7 @@
 **** WAIT may \to (ohne) (falls richtig)
 ** Introduction
 ** Materials and Methods
-* TODO topics [3/61]
+* TODO topics [6/90]
 ** TODO Website Fingerprinting [0/9]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
@@ -217,112 +217,219 @@
 
      thus, there should be 5-6 (depending on robots.txt) requests
 ***** TODO tshark for normal (non-tor) retrieval
-**** practical wf: analyzing traces
-***** [[how to process the data]]
-***** [[transform to panchenko-features]]
-***** [[*how%20to%20get%20wang/goldberg%20to%20work][how to get wang/goldberg to work]]
-***** [[*libsvm%20(short)][libsvm (short)]]
-***** [[*transform%20features%20to%20vector][transform features to vector]]
-***** [[*effect%20of%20panchenko's%20weighting%20schema][effect of panchenko's weighting schema]]
-***** [[*scikit-learn][scikit-learn]]
-**** Related Work
-***** [[History of Website Fingerprinting]]
-***** [[MERGE history of website fingerprinting in Tor]]
-**** TODO History of Website Fingerprinting
-     The idea of using traffic analysis to gather information about
-     encrypted traffic was mentioned in \cite{applied96} and applied
-     in the analysis of SSL 3.0 by Schneier and Wagner in
-     1997\cite{SSL}.
+*** practical wf: analyzing traces
+**** TODO how to process the data
+     The aim of processing is to extract features relevant for machine
+     learning from the original trace files, which are in =pcap= format.
 
-     - quantifying etc
+     Of the several tools available for reading =pcap=, =tshark= was
+     chosen. It is the command-line version of the Wireshark protocol
+     analyzer [[fn::\url{http://www.wireshark.org}]].
 
-     The term /website fingerprinting/ was coined by
-     Hintz in 2002. A successful attack against single-hop proxies was
-     carried out by Herrmann et al. in 2009.
-***** SSL
-      [[file:~/da/docs/master.bib::SSL][Wagner & Schneier 1997: Analysis SSL]]
-**** TODO wf-specific defenses
-     - walkie-talkie
-     - wtfpad
-     - supersequence
-     - tamaraw
-     - buflo
-**** TODO other defenses
-     There are other methods of defense, which might help mitigate
-     website fingerprinting. One is based on reducing the fingerprint by
-     browser plugins and text-only browsing, another on rate limiting.
-***** TODO Plugins: noscript and requestpolicy
-      There exist two plugins, which should both allow mitigation of this
-      attack. Used in parallel, they may hinder normal browsing somewhat
-      (which is why they are not enabled/installed by default in the Tor
-      Browser Bundle).
+     - tshark internally
+     - python triggers
+     - collects,
+     - sums in the end
+     - displays
+     - =Counts=-class
+***** TODO why filtering allowed
+***** TODO see if merge/unify with [[transform to panchenko-features]]
+***** TODO and if include stuff from [[*from%20%5B%5B*transform%20to%20panchenko-features%5D%5D][from {{*transform to panchenko-features}}]]
+**** transform to panchenko-features
+     In encoding packet sizes, this thesis follows Panchenko et al.'s
+     approach, who recorded "incoming packets as positive, outgoing ones
+     as negative numbers."\cite{panchenko}
 
-      The first is NoScript, which selects which Javascript sources to
-      run and which to block. This is installed by default in the Tor
-      Browser Bundle for the additional security benefits it brings (XSS
-      defense etc), but not fully enabled. It is recommended by Edward
-      Snowden and many others\cite{noscript}.
+     Once the website traces are stored in pcap-files, feature vectors
+     need to be extracted. A feature vector is represented by a Python
+     class `Counter`, which can be created from a pcap file, or persisted
+     to a json file containing timing and packet size information (to
+     save time and space).
 
-      A second Add-On with a different set of protective measures is
-      RequestPolicy: This add-on controls, which third-party content to
-      load on a given page. Every query to the original domain is passed,
-      while requests to other domains must be temporarily or permanently
-      approved. It comes with a restrictive set of pre-defined rules (for
-      example google pages are allowed to access gstatic), and a
-      blacklist and whitelist mode.
-****** TODO link Requestpolicy
-***** write new plugins
-      Instead of inserting dummy traffic into the connection, one could
-      throttle the "data rate" of request and responses (or only requests
-      or the ratio). As this approach has been used by
-      f.ex. \cite{effective}, and has been proven to work, albeit
-      requiring higher latency, it has not been explored further.
+     To create a counter, you can use `counter.Counter.from(filename1,
+     filename2, ...)`. This is also called indirectly when using
+     `counter.py` from the command line, as in
 
-***** TODO link tor browser bundle
-****** or writeup something
-***** TODO running an OR
-***** TODO text-only
-      As the sizes and interconnection of HTML and embedded content is
-      what makes a webpage easily identifyable, using a text-only
-      non-javascript browser such as Lynx might be a mitigation for those
-      who consider this trade-off acceptable.
-****** TODO lynx link
-**** distribution of (main) features
-     These distribution histograms show how Panchenko's main features are
-     distributed. They are stacked histograms with classes separated by
-     colors. They are compared (visually) to the [[file:docs/lit.org::*%5B%5B./HTTP%20Traffic%20Model_v1%201%20white%20paper.pdf%5D%5D][HTTP Traffic Model]].
+     python -i /path/to/counter.py
 
-     [[file:pictures/all_count_in.png]]
-     shows the number of downstream/incoming packets.
+     This extracts data from all pcap files in the current directory and
+     subdirectories (excluding Address Resolution Protocol messages and
+     ACKs). The filename of the pcap files needs to be `domain@tstamp`,
+     for example `craigslist.org@1445352269`. The part up to the
+     separator `@` is treated as the URL. If JSON-files of the name
+     `domain.json` (for example `craigslist.com.json`) exist, those are
+     preferred instead of the pcap files.
 
-     The general form of a gamma distribution may be
-     fitting. Conceptually, this should be approximately
+     In the interactive shell, there is a dictionary called `counters`,
+     with the domain names as keys and an array of `Counter`s as
+     values. To persist these to JSON, you can use `save` in the
+     python interactive shell, for example
 
-     num_embedded (gamma) * size_embedded (lognormal) / packet_size
+     >>> Counter.save(counters)
 
-     [[file:pictures/all_count_out.png]]
-     shows the number of upstream/outgoing packets.
+     To distill the features from a single `Counter`, call its
+     `panchenko()`, to inspect single features, call
+     `get('feature_name')` (for example
+     `counters['cnn.com'][0].get('duration')').
 
-     Conceptually, the
+     `panchenko()` yields a feature vector with default padding of
+     Panchenko's variable-length features. Since [[Panchenko]] et al gave
+     explicit size conversions, the sizes have not been normalized
+     further. The default padding (300 per feature) might not be large
+     enough for some traces.
+***** TODO maybe rename counter.py to trace.py
+**** LATER and MAYBE how to get wang/goldberg to work
+     As the =notes= file says:
 
-     [[file:pictures/all_length_0.png]]
-     the length of the Size Marker feature vector.
+     "svm-train and svm-predict come from the libSVM package."
+***** maybe to unused
+**** TODO libsvm (short)
+     LibSVM is a library for support vector machine classification and
+     regression. It is used under-the-hood for scikit-learn, yet one part
+     of functionality required a specific module which was not
+     integrated.
 
-     [[file:pictures/all_num_sizes_in.png]]
-     number of different packet sizes downstream/incoming.
+     Its input format is very simple: First a number determining the
+     class of the data, then a colon, finally all the data for an
+     instance, separated by whitespace.
+***** TODO link to code to generate
+**** TODO transform features to vector
+     Once the `Counter`s are obtained, they need to be modified to fit as
+     input for scikit-learn's\cite{scikit-learn} classifiers.
 
-     [[file:pictures/all_num_sizes_out.png]]
-     number of different packet sizes upstream/outgoing.
+     The code to convert these features to classification input can be
+     found in `extract_attribute.py`. This determines the maximum length
+     of the variable-length features, gets Panchenko's features
+     appropriately padded, and converts them to an array fit for input
+     into scikit-learn's classifiers. When called from the command line, as
 
-     [[file:pictures/all_percentage_in.png]]
-     percentage of incoming bytes (of total).
+     python -i /path/to/extract_attribute.py
 
-     [[file:pictures/all_total_in.png]]
-     total bytes downstream/incoming.
+     , it will extract the feature vectors from JSON or pcap files in the
+     current directory, and run some (5-fold) cross-validated classifiers
+     against the data.
 
-     [[file:pictures/all_total_out.png]]
-     total bytes upstream/outgoing.
-***** TODO compare to HTTP model
+     This is transformed into scikit-learn input in the `to_features()`
+     function, which normalizes all vectors to have the same size
+     (padding with 0s), and creates the feature matrix `X` with numeric
+     class labels `y` (and class names in `y_domain`).
+
+     If you wish to run LibSVM on the command-line, there is also
+     `to_libsvm(X, y, fname='libsvm_in')`, which can be called with the
+     output of `to_features`. It writes lines in X with labels in y to the
+     file 'libsvm_in' (by default).
+***** TODO maybe rename extract_attribute.py? To what?
+***** TODO ref stackoverflow why 0 padding
+****** TODO better:
+**** LATER effect of panchenko's weighting schema
+     Currently, fixed attributes are weighted heavily in favor of total
+     incoming/outgoing bytes.
+***** maybe
+**** TODO scikit-learn
+     The python module scikit-learn\cite{scikit-learn} is described as a
+     collection of "tools for data mining and data analysis".
+
+     It combines python's ease-of-use with the efficiency of libraries
+     written in C, such as LibSVM. It offers many different classifiers
+     and regressors, such as K-NN, SVM, decision trees, linear
+     approximation, random trees, etc.
+***** TODO regressor? wording
+*** TODO History of Website Fingerprinting
+    The idea of using traffic analysis to gather information about
+    encrypted traffic was mentioned in \cite{applied96} and applied
+    in the analysis of SSL 3.0 by Schneier and Wagner in
+    1997\cite{SSL}.
+
+    - quantifying etc
+
+    The term /website fingerprinting/ was coined by
+    Hintz in 2002. A successful attack against single-hop proxies was
+    carried out by Herrmann et al. in 2009.
+**** SSL
+     [[file:~/da/docs/master.bib::SSL][Wagner & Schneier 1997: Analysis SSL]]
+**** MERGE MAYBE [[history of website fingerprinting in Tor]]
+*** TODO wf-specific defenses
+    - walkie-talkie
+    - wtfpad
+    - supersequence
+    - tamaraw
+    - buflo
+*** TODO other defenses
+    There are other methods of defense, which might help mitigate
+    website fingerprinting. One is based on reducing the fingerprint by
+    browser plugins and text-only browsing, another on rate limiting.
+**** TODO Plugins: noscript and requestpolicy
+     There exist two plugins, which should both allow mitigation of this
+     attack. Used in parallel, they may hinder normal browsing somewhat
+     (which is why they are not enabled/installed by default in the Tor
+     Browser Bundle).
+
+     The first is NoScript, which selects which Javascript sources to
+     run and which to block. This is installed by default in the Tor
+     Browser Bundle for the additional security benefits it brings (XSS
+     defense etc), but not fully enabled. It is recommended by Edward
+     Snowden and many others\cite{noscript}.
+
+     A second Add-On with a different set of protective measures is
+     RequestPolicy: This add-on controls, which third-party content to
+     load on a given page. Every query to the original domain is passed,
+     while requests to other domains must be temporarily or permanently
+     approved. It comes with a restrictive set of pre-defined rules (for
+     example google pages are allowed to access gstatic), and a
+     blacklist and whitelist mode.
+***** TODO link Requestpolicy
+**** write new plugins
+     Instead of inserting dummy traffic into the connection, one could
+     throttle the "data rate" of request and responses (or only requests
+     or the ratio). As this approach has been used by
+     f.ex. \cite{effective}, and has been proven to work, albeit
+     requiring higher latency, it has not been explored further.
+
+**** TODO link tor browser bundle
+***** or writeup something
+**** TODO running an OR
+**** TODO text-only
+     As the sizes and interconnection of HTML and embedded content is
+     what makes a webpage easily identifyable, using a text-only
+     non-javascript browser such as Lynx might be a mitigation for those
+     who consider this trade-off acceptable.
+***** TODO lynx link
+*** distribution of (main) features
+    These distribution histograms show how Panchenko's main features are
+    distributed. They are stacked histograms with classes separated by
+    colors. They are compared (visually) to the [[file:docs/lit.org::*%5B%5B./HTTP%20Traffic%20Model_v1%201%20white%20paper.pdf%5D%5D][HTTP Traffic Model]].
+
+    [[file:pictures/all_count_in.png]]
+    shows the number of downstream/incoming packets.
+
+    The general form of a gamma distribution may be
+    fitting. Conceptually, this should be approximately
+
+    num_embedded (gamma) * size_embedded (lognormal) / packet_size
+
+    [[file:pictures/all_count_out.png]]
+    shows the number of upstream/outgoing packets.
+
+    Conceptually, the
+
+    [[file:pictures/all_length_0.png]]
+    the length of the Size Marker feature vector.
+
+    [[file:pictures/all_num_sizes_in.png]]
+    number of different packet sizes downstream/incoming.
+
+    [[file:pictures/all_num_sizes_out.png]]
+    number of different packet sizes upstream/outgoing.
+
+    [[file:pictures/all_percentage_in.png]]
+    percentage of incoming bytes (of total).
+
+    [[file:pictures/all_total_in.png]]
+    total bytes downstream/incoming.
+
+    [[file:pictures/all_total_out.png]]
+    total bytes upstream/outgoing.
+**** TODO compare to HTTP model
 *** Hurdles to website fingerprinting
     The progress of web protocols made website fingerprinting
     harder. In the original HTTP/1.0\cite{rfc1945} protocol, each
@@ -500,7 +607,7 @@
     multiplexing and fixed cell sizes.
 *** TODO sort subtopics
 *** TODO Tor overview
-** TODO Addon Design and Implementation [3/35]
+** TODO Addon Design and Implementation [4/36]
 *** Defenses
 **** [[*wf-specific%20defenses][wf-specific defenses]]
 **** [[*other%20defenses][other defenses]]
@@ -774,34 +881,35 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 ***** TODO [#A] directly from URLs
 ***** TODO link DOM
 ***** TODO link further research
-**** TODO bloom filter
-     - many to size up
-     - bloom filter general idea
-     - 3 buckets for test
-     - split by quantiles
-       - 6-quantiles for center and border values
-       - of lognormal for HTML-sizes
-       - of embedded data for num-embedded
-         - with parameters, buckets would be at
-           - center at 1/6: value 7.91496440504e-05
-           - border at 2/6: value 0.0106585874684, etc
-           - center at 3/6: value 0.188298787995
-           - at 4/6: value 1.48122777354
-           - at 5/6: value 8.25955384493
-         - this does not work
-           - impractical (two buckets for only 0 and 1-elements)
-           - and does not match real values for sites, which are
-             - 1/6: 6
-             - 2/6: 10 2/3
-             - 3/6: 20
-             - 4/6: 36 2/3
-             - 5/6: 59 2/3
-           - it fits better if you enlarge the sizes by 0 for each
-             redirected element (there are 176 elements in the html
-             filter, including redirects, and only 99 in the embedded
-             filter, if you pad the embedded filter by 0 for each of
-             those, it is not a perfect fit, but better)
+**** TODO bloom-sort usage
+     It is impractical to store the sizes of all URLs. Another
+     possibility is to use Bloom Filters to aggregate groups of URLs
+     with similar values, as described in [[*bloom-sort][bloom-sort]].
+
+     Each groups gets borders (/splits/) and a size which represents each
+     contained element.
+
+     Determining the optimal number of groups, splits and sizes is a
+     topic of [[*Further%20work][Further work]]. Here, initially the quantiles of the
+     HTML-model (see [[*HTML%20traffic%20model][HTML traffic model]]) were used. When the data were
+     to be inserted, it turned out that especially the numbers of
+     embedded elements did not match the theoretically proposed groups:
+
+     For three groups, the splits would be given by the 33 1/3 and 66
+     2/3 quantiles, as 0.0107 and 1.481. As the number of embedded
+     elements is a whole number, two thirds of the information would
+     be if an element is 0, the next group would contain all other
+     elements: The (representative) sizes of the groups were given as
+     7.915E-05, 0.188, and 8.260 (quantiles 16 1/6, 50, and 83 5/6).
+
+     The data to be inserted (see previous section) had the splits
+     (quantiles) at 10 2/3 and 36 2/3 and the sizes at 6, 20, and 59
+     2/3.
+
+     In addition to using the observed sizes for the bloom filter, the
+     number of groups was increased to 5.
 ***** TODO error rate computing
+***** LATER check "see previous section"
 *** Implementation
 **** TODO js coding best practices
      - "use strict";
@@ -937,11 +1045,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   dpkg-reconfigure wireshark-common= and adding the user to the
   =wireshark= group (in =/etc/groups=).
 ** TODO scripts source + doc
-* LATER how to get wang/goldberg to work
-  As the =notes= file says:
-
-  "svm-train and svm-predict come from the libSVM package."
-** maybe to unused
 * how to get tor browser bundle to work
   In order to start the tor browser bundle via the =./firefox=
   command, you need libraries, which are bundled with the binary.
@@ -976,39 +1079,12 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   =export DISPLAY:1=
 
   and start the retrieval as mentioned above.
-* TODO how to process the data
-  The aim of processing is to extract features relevant for machine
-  learning from the original trace files, which are in =pcap= format.
-
-  Of the several tools available for reading =pcap=, =tshark= was
-  chosen. It is the command-line version of the Wireshark protocol
-  analyzer [[fn::\url{http://www.wireshark.org}]].
-
-  - tshark internally
-  - python triggers
-  - collects,
-  - sums in the end
-  - displays
-  - =Counts=-class
-** TODO why filtering allowed
-** TODO see if merge/unify with [[transform to panchenko-features]]
-** TODO and if include stuff from [[*from%20%5B%5B*transform%20to%20panchenko-features%5D%5D][from {{*transform to panchenko-features}}]]
 * TODO MOVE how sally works
   - configuration file
     - input
     - features
     - output
 ** TODO MOVE to unused
-* TODO libsvm (short)
-  LibSVM is a library for support vector machine classification and
-  regression. It is used under-the-hood for scikit-learn, yet one part
-  of functionality required a specific module which was not
-  integrated.
-
-  Its input format is very simple: First a number determining the
-  class of the data, then a colon, finally all the data for an
-  instance, separated by whitespace.
-** TODO link to code to generate
 * TODO problematic websites
   The above setup worked on most websites.
   The websites sina.com.cn and xinhuanet.com both did not terminate loading.
@@ -1017,90 +1093,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - do they load completely when not Tor, repeat necessary
   - is this by design?
 ** MAYBE exclude
-* transform to panchenko-features
-  In encoding packet sizes, this thesis follows Panchenko et al.'s
-  approach, who recorded "incoming packets as positive, outgoing ones
-  as negative numbers."\cite{panchenko}
-
-  Once the website traces are stored in pcap-files, feature vectors
-  need to be extracted. A feature vector is represented by a Python
-  class `Counter`, which can be created from a pcap file, or persisted
-  to a json file containing timing and packet size information (to
-  save time and space).
-
-  To create a counter, you can use `counter.Counter.from(filename1,
-  filename2, ...)`. This is also called indirectly when using
-  `counter.py` from the command line, as in
-
-  python -i /path/to/counter.py
-
-  This extracts data from all pcap files in the current directory and
-  subdirectories (excluding Address Resolution Protocol messages and
-  ACKs). The filename of the pcap files needs to be `domain@tstamp`,
-  for example `craigslist.org@1445352269`. The part up to the
-  separator `@` is treated as the URL. If JSON-files of the name
-  `domain.json` (for example `craigslist.com.json`) exist, those are
-  preferred instead of the pcap files.
-
-  In the interactive shell, there is a dictionary called `counters`,
-  with the domain names as keys and an array of `Counter`s as
-  values. To persist these to JSON, you can use `save` in the
-  python interactive shell, for example
-
-  >>> Counter.save(counters)
-
-  To distill the features from a single `Counter`, call its
-  `panchenko()`, to inspect single features, call
-  `get('feature_name')` (for example
-  `counters['cnn.com'][0].get('duration')').
-
-  `panchenko()` yields a feature vector with default padding of
-  Panchenko's variable-length features. Since [[Panchenko]] et al gave
-  explicit size conversions, the sizes have not been normalized
-  further. The default padding (300 per feature) might not be large
-  enough for some traces.
-** TODO maybe rename counter.py to trace.py
-* TODO transform features to vector
-  Once the `Counter`s are obtained, they need to be modified to fit as
-  input for scikit-learn's\cite{scikit-learn} classifiers.
-
-  The code to convert these features to classification input can be
-  found in `extract_attribute.py`. This determines the maximum length
-  of the variable-length features, gets Panchenko's features
-  appropriately padded, and converts them to an array fit for input
-  into scikit-learn's classifiers. When called from the command line, as
-
-  python -i /path/to/extract_attribute.py
-
-  , it will extract the feature vectors from JSON or pcap files in the
-  current directory, and run some (5-fold) cross-validated classifiers
-  against the data.
-
-  This is transformed into scikit-learn input in the `to_features()`
-  function, which normalizes all vectors to have the same size
-  (padding with 0s), and creates the feature matrix `X` with numeric
-  class labels `y` (and class names in `y_domain`).
-
-  If you wish to run LibSVM on the command-line, there is also
-  `to_libsvm(X, y, fname='libsvm_in')`, which can be called with the
-  output of `to_features`. It writes lines in X with labels in y to the
-  file 'libsvm_in' (by default).
-** TODO maybe rename extract_attribute.py? To what?
-** TODO ref stackoverflow why 0 padding
-*** TODO better:
-* LATER effect of panchenko's weighting schema
-  Currently, fixed attributes are weighted heavily in favor of total
-  incoming/outgoing bytes.
-** maybe
-* TODO scikit-learn
-  The python module scikit-learn\cite{scikit-learn} is described as a
-  collection of "tools for data mining and data analysis".
-
-  It combines python's ease-of-use with the efficiency of libraries
-  written in C, such as LibSVM. It offers many different classifiers
-  and regressors, such as K-NN, SVM, decision trees, linear
-  approximation, random trees, etc.
-** TODO regressor? wording
 * TODO thoughts on size of data set
   - computable (n^2 for svm with good results)
   - number of instances negligible for computation
@@ -1146,6 +1138,104 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
     - list of taken out
       - googleusercontent.com
       - youku.com
+* TODO what is a bloom filter
+  A Bloom Filter is a data structure to test membership in a set. It
+  has a fixed size and a certain one-way error rate. If an item is in
+  the set, the Bloom Filter is guaranteed to report this. If an item
+  is not in the set, there is a certain probability, the /error rate/,
+  of reporting that it belongs. 
+
+  This error rate is dependent on the size of the bloom filter and the
+  number of inserted elements.
+* TODO bloom-sort
+  By separating the data into groups, it becomes possible to use bloom
+  filters for the estimation of sizes, by using one bloom filter for
+  each group.
+
+  To achieve this, sensible separation criteria (called /splits/) for
+  the groups need to be found. Afterwards, each group needs to be
+  assigned a value for all elements in the group (called /sizes/). See
+  section [[*bloom-sort%20usage][bloom-sort usage]] on determining the sizes and splits.
+
+  The bloom-sort then is initialized with an array of splits, and an
+  array of sizes. The sizes-array needs to have one more element than
+  the splits-array, as the groups are bounded on the left by 0, and on
+  the right by infinity.
+
+  #+BEGIN_SRC js
+    /** 
+     ,* @param {sizes Array} array of values for each bucket, must be sorted
+     ,* @param {splits Array} array of bucket borders, must be sorted
+    ,*/
+    function BloomSort(sizes, splits) {
+        this.sizes = sizes;
+        this.splits = splits;
+        this.filters = [];
+        for ( let i = 0; i < sizes.length; i++ ) {
+            this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH); 
+        }
+    }
+  #+END_SRC
+
+  Thus, you get
+
+  0 \le size0 \le split0 \le size1 \le split1 \le ... \le split(n-1) \le sizen < infinity
+
+  Given the splits, it becomes possible to add the elements to their
+  groups:
+
+  #+BEGIN_SRC js
+    BloomSort.prototype.add = function(id, size) {
+        this.filters[_.sortedIndex(this.splits, size)].add(id);
+    };
+  #+END_SRC
+
+  where =_.sortedIndex()= gives the index at which =size= would be
+  inserted into the =this.splits= array.
+
+  The retrieval of element sizes looks into each bloom filter,
+  checking whether it might contain the element =id=. If one bloom
+  filter reports containment, its corresponding element- =size= is
+  returned. If several or no bloom filters report containment, an
+  exception is thrown.
+  #+BEGIN_SRC js
+    /** determines size of element, raises exception if unclear */
+    BloomSort.prototype.query = function(id) {
+        let pos = -1;
+        for ( let i = 0; i < this.filters.length; i++ ) {
+            if ( this.filters[i].test(id) ) {
+                if ( pos === -1 ) {
+                    pos = i;
+                } else {
+                    throw {
+                        name: 'BloomError',
+                        message: 'Contains multiple entries'
+                    };
+                }
+            }
+        }
+        if ( pos === -1 ) {
+            throw {
+                name: 'BloomError',
+                message: 'Contains no entries'
+            };
+        }
+        return this.sizes[pos];
+    };
+  #+END_SRC
+* TODO differences theoretical HTML-num embedded and observed
+  - redirects
+    - html had 176 elements, embedded only 100
+    - the others were redirects (f.ex. from google.com to
+      www.google.de)
+    - these could be counted as having 0 embedded elements,
+      - yet still a difference remains
+  - it fits better if you enlarge the sizes by 0 for each redirected
+    element (there are 176 elements in the html filter, including
+    redirects, and only 99 in the embedded filter, if you pad the
+    embedded filter by 0 for each of those, it is not a perfect fit,
+    but better)
+  - [[*Further%20work][Further work]]
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
@@ -3198,7 +3288,7 @@ mean = 0.763238095238
   - Prof. Dr. Konrad Rieck
   - Tao Wang
   - ...
-* WAIT Further work
+* LATER Further work
   - source cover traffic: user gives domain as starting point
   - how to generate
     - how often, which parameters
@@ -3230,6 +3320,9 @@ mean = 0.763238095238
       - or does it? (maybe only called on cacheing)
     - but better than too many?
   - elaborate on [[find number of embedded elements]]
+  - number of bloom filters,
+  - how to set splits and sizes
+  - [[differences theoretical HTML-num embedded and observed]]
 ** onion host for cover traffic
    As indicated f.ex. by Wang and Goldberg,
    \cite{wpes13-fingerprinting}, network load already is a bottleneck

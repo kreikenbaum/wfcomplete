@@ -59,13 +59,22 @@ function htmlMean() {
 }
 exports.htmlMean = htmlMean;
 /** mean of lognormal_(EMBEDDED_SIZE_MU, EMBEDDED_SIZE_SIGMA) */
-function embeddedObjectMean() {
+function embeddedObjectSizeMean() {
     return Math.exp(EMBEDDED_SIZE_MU + EMBEDDED_SIZE_SIGMA * EMBEDDED_SIZE_SIGMA / 2);
 }
-exports.embeddedObjectMean = embeddedObjectMean;
+exports.embeddedObjectSizeMean = () => embeddedObjectSizeMean();
 
+function numberEmbeddedObjectsMean() {
+    return EMBEDDED_NUM_KAPPA * EMBEDDED_NUM_THETA;
+}
+exports.numberEmbeddedObjectsMean = () => numberEmbeddedObjectsMean();
 
+function numberEmbeddedObjectsVar() {
+    return EMBEDDED_NUM_KAPPA * EMBEDDED_NUM_THETA * EMBEDDED_NUM_THETA;
+}
+exports.numberEmbeddedObjectsVar = () => numberEmbeddedObjectsVar();
 
+// PRIVATE
 /** sample from lognormal_ distribution */
 function lognormal_(mu, sigma) {
     return Math.exp(normal_(mu, sigma));

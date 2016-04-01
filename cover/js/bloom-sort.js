@@ -82,4 +82,4 @@ function restore() {
     }
     return s;
 };
-exports.restore = restore;
+exports.restore = () => restore();
