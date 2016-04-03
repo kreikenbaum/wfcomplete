@@ -10,7 +10,7 @@ const debug = require("./debug.js");
 function http(toLoad) {
     debug.log("load: http(" + toLoad + ")");
     let x = new xhr.XMLHttpRequest();
-    x.addEventListener("load", reqListener);
+//    x.addEventListener("load", reqListener);
     x.open("GET", toLoad);
     x.send();
 }
@@ -23,7 +23,7 @@ function sized(size) {
 }
 exports.sized = (size) => sized(size);
 
-function reqListener() {
-    debug.log("load: response length: " + this.responseText.length);
-}
+// function reqListener() {
+//     debug.log("load: response length: " + this.responseText.length);
+// }
 // [:4]: " + this.responseText.substr(0, 4) +

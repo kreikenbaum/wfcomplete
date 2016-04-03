@@ -6704,6 +6704,29 @@
              non in production, can be replaced
 
        3) Automatic Semicolon Insertion
+
+          parser needs semicola, inserts if it encouters error with
+          certain rules, retries
+
+          1) How it Works
+
+             - example with (group stuff) on new line
+
+             - can lead to errors
+
+          2) Leading Parenthesis
+             #+BEGIN_SRC js
+               log('testing!')
+               (options.list || []).forEach(function(i) {})
+             #+END_SRC
+             without semicolon insertion yields `TypeError` because
+             log does not return a function
+
+          3) In Conclusion
+
+             recommended to always use them
+
+       4) The delete Operator
 ** MOVE [#A] [[./Javascript Closures.prototype_chain.html][Javascript Closures]]
 *** summary
     1) Introduction
@@ -7257,6 +7280,14 @@
 
           4) Evaluation of Tor’s Pipelining and Order Randomization
              Defense
+
+             - no significatn difference between results,
+
+             - slight better detection with defense enabled
+
+       7) DISCUSSION
+
+          1) Training set size and selection
 *** quotes
     1) INTRODUCTION
        - [@?] dynamic content such as advertisements may cause a
@@ -9393,6 +9424,14 @@
 
        7) Displaying the date/time in messages
 *** quotes
+    1) Basic Logging Tutorial
+       1) When to use logging
+         |          | <65>                                                              |
+         | DEBUG    | Detailed information, typically of interest only when diagnosing problems. |
+         | INFO     | Confirmation that things are working as expected.                 |
+         | WARNING  | An indication that something unexpected happened, or indicative of some problem in the near future (e.g. ‘disk space low’). The software is still working as expected. |
+         | ERROR    | Due to a more serious problem, the software has not been able to perform some function. |
+         | CRITICAL | A serious error, indicating that the program itself may be unable to continue running. |
 ** TODO [[./ton96.pdf][Self-Similarity in World Wide Web Traffic: Evidence and Possible Causes]]
 *** summary
 *** quotes
@@ -9884,9 +9923,13 @@
 
              1) K-means clustering
 	        #+BEGIN_SRC python
-                  >>> k_means = cluster.KMeans(n_clusters=3)
-                  >>> k_means.fit(X_iris)
-                  >>> print(k_means.labels_[::10])
+                  from sklearn import cluster, datasets
+                  iris = datasets.load_iris()
+                  X_iris = iris.data
+                  y_iris = iris.target
+                  k_means = cluster.KMeans(n_clusters=3)
+                  k_means.fit(X_iris)
+                  print(k_means.labels_[::10])
 	        #+END_SRC
 
 	        iris: almost correct with 8 clusters, off on border with 3
@@ -9990,121 +10033,129 @@
                 forest.fit(X, y)
                 importances = forest.feature_importances_
               #+END_SRC
-     12) Frequently Asked Questions
-         12) [@12] How do I deal with string data (or trees, graphs...)?
-             - Firstly, many estimators take precomputed distance/similarity
-               matrices, so if the dataset is not too large, you can compute
-               distances for all pairs of inputs. If the dataset is large, you
-               can use feature vectors with only one “feature”, which is an
-               index into a separate data structure, and supply a custom metric
-               function that looks up the actual data in this data
-               structure. E.g., to use DBSCAN with Levenshtein distances:
+  5) Unsupervised learning
+     3) [@3] Clustering
+        1) [@2] K-means
+           - The KMeans algorithm clusters data by trying to separate
+             samples in n groups of equal variance, minimizing a
+             criterion known as the inertia <inertia> or
+             within-cluster sum-of-squares. This algorithm requires
+             the number of clusters to be specified.
+  12) [@12] Frequently Asked Questions
+      12) [@12] How do I deal with string data (or trees, graphs...)?
+          - Firstly, many estimators take precomputed distance/similarity
+                matrices, so if the dataset is not too large, you can compute
+                distances for all pairs of inputs. If the dataset is large, you
+                can use feature vectors with only one “feature”, which is an
+                index into a separate data structure, and supply a custom metric
+                function that looks up the actual data in this data
+                structure. E.g., to use DBSCAN with Levenshtein distances:
+                #+BEGIN_SRC python
+                  >>> from leven import levenshtein
+                  >>> import numpy as np
+                  >>> from sklearn.cluster import dbscan
+                  >>> data = ["ACCTCCTAGAAG", "ACCTACTAGAAGTT", "GAATATTAGGCCGA"]
+                  >>> def lev_metric(x, y):
+                  ...
+                  i, j = int(x[0]), int(y[0])
+                  # extract indices
+                  ...
+                  return levenshtein(data[i], data[j])
+                  ...
+                  >>> X = np.arange(len(data)).reshape(-1, 1)
+                  >>> X
+                  array([[0],
+                  [1],
+                  [2]])
+                  >>> dbscan(X, metric=lev_metric, eps=5, min_samples=2)
+                  ([0, 1], array([ 0, 0, -1]))
+                #+END_SRC
+                (This uses the third-party edit distance package leven.) Similar
+                tricks can be used, with some care, for tree kernels, graph
+                kernels, etc.
+  42) [@42] Reference
+      25) [@25] sklearn.neighbors: Nearest Neighbors
+          2) [@2] sklearn.neighbors.KNeighborsClassifier
+             - class
+               sklearn.neighbors.KNeighborsClassifier(n_neighbors=5,
+               weights=’uniform’, algorithm=’auto’,
+               leaf_size=30, p=2, metric=’minkowski’,
+               metric_params=None, **kwargs) [...]
+
+               metric : string or DistanceMetric object
+               (default = ‘minkowski’) the distance metric to
+               use for the tree. The default metric is
+               minkowski, and with p=2 is equivalent to the
+               standard Euclidean metric. See the documentation
+               of the Distance-Metric class for a list of
+               available metrics.
+          10) [@10] sklearn.neighbors.DistanceMetric
+              - “braycurtis” | BrayCurtisDistance | sum(|x - y|)
+                / (sum(|x|) + sum(|y|))
+      29) [@29] sklearn.pipeline: Pipeline
+          1) sklearn.pipeline.Pipeline
+             - class sklearn.pipeline.Pipeline(steps) Pipeline
+               of transforms with a final
+               estimator. Sequentially apply a list of
+               transforms and a final estimator. Intermediate
+               steps of the pipeline must be ‘transforms’, that
+               is, they must implement fit and transform
+               methods. The final estimator only needs to
+               implement fit. The purpose of the pipeline is to
+               assemble several steps that can be
+               cross-validated together while setting different
+               parameters. For this, it enables setting
+               parameters of the various steps using their
+               names and the parameter name separated by a
+               ‘__’, as in the example below.
+
+               Parameterssteps: list :List of (name, transform)
+               tuples (implementing fit/transform) that are
+               chained, in the order in which they are chained,
+               with the last object an estimator.
+
+               Examples
                #+BEGIN_SRC python
-                 >>> from leven import levenshtein
-                 >>> import numpy as np
-                 >>> from sklearn.cluster import dbscan
-                 >>> data = ["ACCTCCTAGAAG", "ACCTACTAGAAGTT", "GAATATTAGGCCGA"]
-                 >>> def lev_metric(x, y):
+                 >>> from sklearn import svm
+                 >>> from sklearn.datasets import samples_generator
+                 >>> from sklearn.feature_selection import SelectKBest
+                 >>> from sklearn.feature_selection import f_regression
+                 >>> from sklearn.pipeline import Pipeline
+                 >>> # generate some data to play with
+                 >>> X, y = samples_generator.make_classification(
                  ...
-                 i, j = int(x[0]), int(y[0])
-                 # extract indices
+                 n_informative=5, n_redundant=0, random_state=42)
+                 >>> # ANOVA SVM-C
+                 >>> anova_filter = SelectKBest(f_regression, k=5)
+                 >>> clf = svm.SVC(kernel='linear')
+                 >>> anova_svm = Pipeline([('anova', anova_filter), ('svc', clf)])
+                 >>> # You can set the parameters using the names issued
+                 >>> # For instance, fit using a k of 10 in the SelectKBest
+                 >>> # and a parameter 'C' of the svm
+                 >>> anova_svm.set_params(anova__k=10, svc__C=.1).fit(X, y)
                  ...
-                 return levenshtein(data[i], data[j])
-                 ...
-                 >>> X = np.arange(len(data)).reshape(-1, 1)
-                 >>> X
-                 array([[0],
-                 [1],
-                 [2]])
-                 >>> dbscan(X, metric=lev_metric, eps=5, min_samples=2)
-                 ([0, 1], array([ 0, 0, -1]))
-               #+END_SRC
-               (This uses the third-party edit distance package leven.) Similar
-               tricks can be used, with some care, for tree kernels, graph
-               kernels, etc.
-     42) [@42] Reference
-         25) [@25] sklearn.neighbors: Nearest Neighbors
-             2) [@2] sklearn.neighbors.KNeighborsClassifier
-                - class
-                  sklearn.neighbors.KNeighborsClassifier(n_neighbors=5,
-                  weights=’uniform’, algorithm=’auto’,
-                  leaf_size=30, p=2, metric=’minkowski’,
-                  metric_params=None, **kwargs) [...]
+                 Pipeline(steps=[...])
+                 >>> prediction = anova_svm.predict(X)
+                 >>> anova_svm.score(X, y)
+                 0.77...
+                 #+END_SRC
+               - (ends 42.29.1)
+               - class sklearn.tree.DecisionTreeClassifier[...]
 
-                  metric : string or DistanceMetric object
-                  (default = ‘minkowski’) the distance metric to
-                  use for the tree. The default metric is
-                  minkowski, and with p=2 is equivalent to the
-                  standard Euclidean metric. See the documentation
-                  of the Distance-Metric class for a list of
-                  available metrics.
-             10) [@10] sklearn.neighbors.DistanceMetric
-                 - “braycurtis” | BrayCurtisDistance | sum(|x - y|)
-                   / (sum(|x|) + sum(|y|))
+	         feature_importances_ : array of shape = [n_features]
 
-         29) [@29] sklearn.pipeline: Pipeline
-             1) sklearn.pipeline.Pipeline
-                - class sklearn.pipeline.Pipeline(steps) Pipeline
-                  of transforms with a final
-                  estimator. Sequentially apply a list of
-                  transforms and a final estimator. Intermediate
-                  steps of the pipeline must be ‘transforms’, that
-                  is, they must implement fit and transform
-                  methods. The final estimator only needs to
-                  implement fit. The purpose of the pipeline is to
-                  assemble several steps that can be
-                  cross-validated together while setting different
-                  parameters. For this, it enables setting
-                  parameters of the various steps using their
-                  names and the parameter name separated by a
-                  ‘__’, as in the example below.
+	         The feature importances.
+               - (ends 42.35.1)
+               - It is however still interesting to check what’s happening
+                 inside the _nls_subproblem function which is the hotspot if we
+                 only consider Python code: it takes around 100% of the
+                 cumulated time of the module. In order to better understand
+                 the profile of this specific function, let us install
+                 line-prof and wire it to IPython:
+	         #+BEGIN_SRC sh
+                   pip install line-profiler
+	         #+END_SRC
 
-                  Parameterssteps: list :List of (name, transform)
-                  tuples (implementing fit/transform) that are
-                  chained, in the order in which they are chained,
-                  with the last object an estimator.
-
-                  Examples
-                  #+BEGIN_SRC python
-                    >>> from sklearn import svm
-                    >>> from sklearn.datasets import samples_generator
-                    >>> from sklearn.feature_selection import SelectKBest
-                    >>> from sklearn.feature_selection import f_regression
-                    >>> from sklearn.pipeline import Pipeline
-                    >>> # generate some data to play with
-                    >>> X, y = samples_generator.make_classification(
-                    ...
-                    n_informative=5, n_redundant=0, random_state=42)
-                    >>> # ANOVA SVM-C
-                    >>> anova_filter = SelectKBest(f_regression, k=5)
-                    >>> clf = svm.SVC(kernel='linear')
-                    >>> anova_svm = Pipeline([('anova', anova_filter), ('svc', clf)])
-                    >>> # You can set the parameters using the names issued
-                    >>> # For instance, fit using a k of 10 in the SelectKBest
-                    >>> # and a parameter 'C' of the svm
-                    >>> anova_svm.set_params(anova__k=10, svc__C=.1).fit(X, y)
-                    ...
-                    Pipeline(steps=[...])
-                    >>> prediction = anova_svm.predict(X)
-                    >>> anova_svm.score(X, y)
-                    0.77...
-                    #+END_SRC
-                  - (ends 42.29.1)
-                  - class sklearn.tree.DecisionTreeClassifier[...]
-
-	            feature_importances_ : array of shape = [n_features]
-
-	            The feature importances.
-                  - (ends 42.35.1)
-                  - It is however still interesting to check what’s happening
-                    inside the _nls_subproblem function which is the hotspot if we
-                    only consider Python code: it takes around 100% of the
-                    cumulated time of the module. In order to better understand
-                    the profile of this specific function, let us install
-                    line-prof and wire it to IPython:
-	            #+BEGIN_SRC sh
-                      pip install line-profiler
-	            #+END_SRC
 *** ref
     [[file:master.bib::scikit-learn][Pedregosa et al. 2011: Scikit]]
 *** exercises
@@ -12404,6 +12455,13 @@
                 path (which begins with top) to a file or directory in
                 dirpath, do os.path.join(dirpath, name).
     20) [@20] Internet Protocols and Support
+        5) [@5] urllib — Open arbitrary resources by URL
+           1) [@2] Utility functions
+              - urllib.unquote(string)
+
+                Replace %xx escapes by their single-character
+                equivalent. Example: unquote(’/%7Econnolly/’) yields
+                ’/~connolly/’.
         7) [@7] httplib — HTTP protocol client
            0) [@0] ...
               - class httplib.HTTPConnection(host [ , port [ , strict [ ,
@@ -12452,13 +12510,13 @@
                import pdb; pdb.set_trace()
              #+END_SRC
              at the location you want to break into the debugger.
-    28) virtual environment
+    27) virtual environment
 
         A cooperatively isolated runtime environment that allows Python
         users and applications to install and upgrade Python
         distribution packages without interfering with the behaviour of
         other Python applications running on the same system.
-    29) (ends Appendix A)
+    28) (ends Appendix A)
 ** [#A] MOVE PART [[./scipy-ref-0.17.0.pdf][SciPy Reference Guide]]
 *** summary
 1) Tutorial
@@ -12716,6 +12774,17 @@
        - help(scipy.stats.lognorm)
 ** PART [[./numpy-ref-1.10.1.pdf][NumPy Reference]]
 *** quotes
+   1) Array objects
+      4) [@4] Indexing
+        1) Basic Slicing and Indexing
+         - A common use case for this is filtering for desired element
+           values. For example one may wish to select all entries from an
+           array which are not NaN:
+           #+BEGIN_SRC python
+             >>> x = np.array([[1., 2.], [np.nan, 3.], [np.nan, np.nan]])
+             >>> x[~np.isnan(x)]
+             array([ 1., 2., 3.])
+           #+END_SRC
    3) [@3] Routines
       1) Array creation routines
          1) Ones and zeros
@@ -12723,10 +12792,10 @@
 
               Return a new array of given shape and type, filled with zeros.
          2) From existing data
-             - numpy.array(object, dtype=None, copy=True, order=None,
-               subok=False, ndmin=0)
+            - numpy.array(object, dtype=None, copy=True, order=None,
+              subok=False, ndmin=0)
 
-               Create an array.
+              Create an array.
       25) [@25] Random sampling (numpy.random)
           3) [@3] Distributions
              - numpy.random.exponential(scale=1.0, size=None)
@@ -13248,9 +13317,14 @@
           [fn:1] The link is: http://orgmode.org
 	#+END_EXAMPLE
       - (ends 2.10)
+   3) Tables
+      1) [@2] Column width and alignment
+         - To set the width of a column, one field anywhere in the
+           column may contain just the string ‘<N>’ where ‘N’ is an
+           integer specifying the width of the column in characters.
    5) [@5] TODO Items
       2) [@2] Extended use of TODO keywords
-	 1) [@5] Setting up keywords for individual files For example,
+	 5) [@5] Setting up keywords for individual files For example,
             to set one of the two examples discussed above, you need
             one of the following lines, starting in column zero
             anywhere in the file:
