@@ -37,8 +37,8 @@
 **** WAIT may \to (ohne) (falls richtig)
 ** Introduction
 ** Materials and Methods
-* TODO topics [6/91]
-** TODO Website Fingerprinting [2/38]
+* TODO topics [7/93]
+** TODO Website Fingerprinting [2/39]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
     webpages or websites a user visits via an anonymizing proxy. It is a
@@ -378,13 +378,13 @@
      example google pages are allowed to access gstatic), and a
      blacklist and whitelist mode.
 ***** TODO link Requestpolicy
-**** write new plugins
+**** TODO write new plugins
      Instead of inserting dummy traffic into the connection, one could
-     throttle the "data rate" of request and responses (or only requests
-     or the ratio). As this approach has been used by
-     f.ex. \cite{effective}, and has been proven to work, albeit
-     requiring higher latency, it has not been explored further.
-
+     throttle the "data rate" of request and responses (or only
+     requests or the ratio) --- optionally padding with dummies up to
+     the maximum rate. As this approach has been used by
+     f.ex. \cite{effective}, and has been proven to work, requiring
+     higher latency, it has not been explored further.
 **** TODO link tor browser bundle
 ***** or writeup something
 **** TODO running an OR
@@ -607,7 +607,7 @@
     multiplexing and fixed cell sizes.
 *** TODO sort subtopics
 *** TODO Tor overview
-** TODO Addon Design and Implementation [4/37]
+** TODO Addon Design and Implementation [5/38]
 *** Defenses
 **** [[*wf-specific%20defenses][wf-specific defenses]]
 **** [[*other%20defenses][other defenses]]
@@ -793,6 +793,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
     \end{adjustbox}
     #+END_LATEX
 **** tmp [[shell:dia pictures/model.dia &]]
+***** TODO how to show (singleton)-module in jUML
 **** needs to do
      - make wf harder such that it is impossible
 **** by
@@ -800,8 +801,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 **** procedural
 ***** check which urls user loads
 ****** aggregate by domain
-***** on finish load: tick off domains which were included
-****** else still active (?)
 ***** for each loaded url, maybe load something else
 **** objects
 ***** Watcher
@@ -833,7 +832,22 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
       Lengths of elements if stores, else uses distribution
       +htmlSize(url)
       +numberEmbeddedObjects(url)
-**** TODO how to show (singleton)-module in UML
+**** cover traffic distribution generation
+     - each retrieval maybe triggers additional retrieval(s)
+       - based on statistical model
+     - for each page being retrieved
+       - either size can be estimated or it must be guessed
+       - either number of embedded elements can be estimated or must
+         be guessed
+       - determine target size and number of embedded elements
+       - fill up HTML traffic with another request with content size
+         page.size - target.size
+       - for each embedded element
+         - generate request for additional embedded element(s) with
+           probability (target.number_embedded - page.number_embedded)
+           /page.number_embedded
+           - if probability > 1, generate those certainly and iterate
+             with probability -1, until probability < 0
 **** TODO HTML traffic model
      - intel
        - html object lognormal with params \mu = 7.90272, \sigma = 1.7643
@@ -841,11 +855,11 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      - test
        - download html top 10000
        - analysis
-**** TODO cacheing
+**** TODO browser caching
      - browsers cache
      - only helps in cover traffic, (unless warm/cold site model is used)
-***** TODO where to put this?
-**** TODO sizes of HTML-documents
+***** LATER where to put this?
+**** TODO find sizes of HTML-documents
      The statistical size generation works with application-level
      sizes on the network, as the authors of the HTML traffic
      model\cite{newtrafficmodel} analysed logfiles of the Squid

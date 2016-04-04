@@ -293,6 +293,288 @@
       analyze, https traffic comprises only a very small portion of
       all Internet traffic. (5)
 *** ref [[file:master.bib::hintz02][Hintz 2002: Fingerprinting Websites Using Traffic Analysis]]
+** [#B] [[./Javascript Closures.prototype_chain.html][Javascript Closures]]
+*** summary
+    1) Introduction
+
+       - closure: free variables with an environment that binds them
+
+       - complicated, easy to misuse, powerful
+
+    2) The Resolution of Property Names on Objects
+
+       0) [@0]
+
+	  - native vs. host, built-in \sub native objects
+
+	  - undefined: does not remove, but sets to undefined
+
+       1) Assignment of Values
+
+	  - create properties by assigning,
+
+	    - either .property or ["property"]
+
+       2) Reading of Values
+
+	  - object, then prototype chain, until =Object.prototype=
+
+	  - else undefined
+
+	  - overridden if defined in object
+
+    3) Identifier Resolution, Execution Contexts and scope chains
+
+       1) The Execution Context
+
+	  - "All javascript code is executed in an execution context."
+
+	  - Global context for sourced scripts in HTML
+
+	  - function context for each function call
+
+	  - =eval= has its own context, too
+
+	  - Activation object
+
+	    - not real object
+
+	    - hold =arguments= array-like in arguments property
+
+	  - scope is =\[\[scope\]\]= of function with Activation added in front
+
+	  - variables with Activation object for function's formal parameters
+
+	    - if not enough arguments, =undefined=
+
+	    - inner function definition
+
+	  - set value of =this=
+
+	    - if not set \to global object
+
+       2) scope chains and \[\[scope\]\]
+
+	  - scope chain is constructed by prepending
+            Activation/Variable object to function's [\[scope]]
+
+	  - Function object: scope is global object
+
+	  - function declarations and function expressions have a scope chain
+
+	  - global declaration / expression:
+
+	    - global object
+
+	    - expression evaluated lated, but still global object
+
+	  - inner declaration / expression:
+
+	    - scope of outer function, incluing Activation object
+
+	  - with
+
+	    - sets to scope chain
+
+	    - evaluates block
+
+	    - does affect function expressions
+
+	      - not function declarations
+
+       3) Identifier Resolution
+
+	  - up the scope chain
+
+	  - function call: first Activation object for formal
+            parameters, inner function declaration names or local
+            variables, then up scope chain
+
+    4) Closures
+
+       1) Automatic Garbage Collection
+
+	  - all objects that are no longer used are freed
+
+	    - normally outside of scopes
+
+       2) Forming Closures
+
+	  - example: =exampleClosureForm(arg1, arg2)= returning
+            =exampleReturned(innerArg)= using =localVar=
+
+	  - =var globalVar = exampleClosureForm(2, 4);=
+
+	    - object called =globalVar= has a [\[scope]] property
+
+	    - scope is
+	      #+BEGIN_SRC js
+                ActOuter1 = {
+                    arg1: 2,
+                    arg2: 4,
+                    localVar: 8,
+                    exampleReturned: [...inner function...]
+                }
+	      #+END_SRC
+
+	  - execution:
+
+	    - new execution context, scope chain:
+	      =ActInner1-> ActOuter1-> global object=
+
+	  - nesting possible
+
+    5) What can be done with Closures?
+
+       "emulate anything"
+
+       1) Example 1: setTimeout with Function References
+	  #+BEGIN_SRC js
+            function callLater(paramA, paramB, paramC){
+                return (function(){
+                    // do sth with paramA, paramB and paramC
+                });
+            }
+            var functRef = callLater(elStyle, "display", "none");
+            setTimeout(functRef, 500);
+	  #+END_SRC
+
+       2) Example 2: Associating Functions with Object Instance Methods
+
+          attach event listener to DOM object
+          #+BEGIN_SRC js
+            /* Associates an object instance with an event handler. The returned
+               inner function is used as the event handler.  The object instance
+               is passed as the - obj - parameter and the name of the method that
+               is to be called on that object is passed as the - methodName -
+               (string) parameter.
+            ,*/
+            function associateObjWithEvent(obj, methodName){
+                /* The returned inner function is intended to act as an event
+                   handler for a DOM element:-
+                ,*/
+                return (function(e){
+                    e = e||window.event;
+                    return obj[methodName](e, this);
+                });
+            }
+            /* Creates objects that associate themselves with DOM elements whose
+               IDs are passed to the constructor as a string.
+            ,*/
+            function DhtmlObject(elementId){
+                var el = getElementWithId(elementId);
+                /* The following block is only executed if the - el - variable
+                   refers to a DOM element:-
+                ,*/
+                if(el){
+                    /* assign a function as the element's event handler */
+                    el.onclick = associateObjWithEvent(this, "doOnClick");
+                    el.onmouseover = associateObjWithEvent(this, "doMouseOver");
+                    ...
+                }
+            }
+            DhtmlObject.prototype.doOnClick = function(event, element){
+                ... // doOnClick method body.
+            }
+            DhtmlObject.prototype.doMouseOver = function(event, element){
+                ... // doMouseOver method body.
+            }
+          #+END_SRC
+
+       3) Example 3: Encapsulating Related Functionality
+
+          have a array which is filled on execution with various values
+
+       4) Other Examples
+
+          - crockford: private instance variables
+
+            - extended to private static:
+              http://myweb.tiscali.co.uk/cornford/js_info/private_static.html
+
+    6) Accidental Closures
+
+       - if used accidentally, can lead to less efficiency:
+         #+BEGIN_SRC js
+           var quantaty = 5;
+           function addGlobalQueryOnClick(linkRef){
+               if(linkRef){
+                   linkRef.onclick = function(){
+                       this.href += ('?quantaty='+escape(quantaty));
+                       return true;
+                   };
+               }
+           }
+         #+END_SRC
+         creates a function for each call to the function
+
+         - better: assign function ref
+         #+BEGIN_SRC js
+           var quantaty = 5;
+           function addGlobalQueryOnClick(linkRef){
+               if(linkRef){
+                   linkRef.onclick = forAddQueryOnClick;
+               }
+           }
+           function forAddQueryOnClick(){
+               this.href += ('?quantaty='+escape(quantaty));
+               return true;
+           }
+         #+END_SRC
+
+       - same for object methods
+         #+BEGIN_SRC js
+           function ExampleConst(param){
+               this.method1 = function(){
+                   ... // method body.
+               };
+               this.method2 = function(){
+                   ... // method body.
+               };
+               this.method3 = function(){
+                   ... // method body.
+               };
+               this.publicProp = param;
+           }
+         #+END_SRC
+         creates new function objects for each object
+
+         - better:
+           #+BEGIN_SRC js
+             function ExampleConst(param){
+                 this.publicProp = param;
+             }
+             ExampleConst.prototype.method1 = function(){
+                 ... // method body.
+             };
+             ExampleConst.prototype.method2 = function(){
+                 ... // method body.
+             };
+             ExampleConst.prototype.method3 = function(){
+                 ... // method body.
+             };
+           #+END_SRC
+           create the functions just once
+
+    7) The Internet Explorer Memory Leak Problem
+
+       circular references were not cleaned up
+
+       example see quotes
+*** quotes
+    3) [@3] Identifier Resolution, Execution Contexts and scope chains
+       1) The Execution Context
+	  - running javascript code forms a stack of execution contexts.
+    4) Closures
+       2) [@2] Forming Closures
+	  - The ECMAScript specification requires a scope chain to be finite
+    5) [@7]
+       - If a function object that forms a closure is assigned as, for
+         example, and event handler on a DOM Node, and a reference to
+         that Node is assigned to one of the Activation/Variable
+         objects in its scope chain then a circular reference
+         exists. DOM_Node.onevent -> function_object.[[scope]] ->
+         scope_chain -> Activation_object.nodeRef -> DOM_Node
 ** [#C] [[./torproject.orgSLASHaboutSLASHtorusers.html][Who uses Tor?]]
 *** summary
     1) Inception
@@ -6727,288 +7009,49 @@
              recommended to always use them
 
        4) The delete Operator
-** MOVE [#A] [[./Javascript Closures.prototype_chain.html][Javascript Closures]]
-*** summary
-    1) Introduction
 
-       - closure: free variables with an environment that binds them
+          if =DontDelete= attribute is set, impossible to delete
 
-       - complicated, easy to misuse, powerful
+          1) Global code and Function code
 
-    2) The Resolution of Property Names on Objects
+             - elements (var or function) of global and function scope
+               have DontDelete set, so undeleteable
+               #+BEGIN_SRC js
+                 var a = 1; // DontDelete is set
+                 delete a; // false
+                 a; // 1
+               #+END_SRC
 
-       0) [@0]
+             - no longer true in firefox
 
-	  - native vs. host, built-in \sub native objects
+          2) Explicit properties
 
-	  - undefined: does not remove, but sets to undefined
+             - those can be deleted normally
 
-       1) Assignment of Values
+             - use this to delete global vars:
+               #+BEGIN_SRC js
+                 var GLOBAL_OBJECT = this;
+                 GLOBAL_OBJECT.a = 1;
+                 a === GLOBAL_OBJECT.a; // true - just a global var
+                 delete GLOBAL_OBJECT.a; // true
+                 GLOBAL_OBJECT.a; // undefined
+               #+END_SRC
 
-	  - create properties by assigning,
+          3) Function arguments and built-ins
 
-	    - either .property or ["property"]
+             DontDelete also set (?) for function arguments and
+             built-in properties, f.ex. .length
 
-       2) Reading of Values
+          4) Host objects
 
-	  - object, then prototype chain, until =Object.prototype=
+             unpredictable (what are these)
 
-	  - else undefined
+          5) In conclusion
 
-	  - overridden if defined in object
+             recommended only for "explicitly set properties on normal
+             objects"
 
-    3) Identifier Resolution, Execution Contexts and scope chains
-
-       1) The Execution Context
-
-	  - "All javascript code is executed in an execution context."
-
-	  - Global context for sourced scripts in HTML
-
-	  - function context for each function call
-
-	  - =eval= has its own context, too
-
-	  - Activation object
-
-	    - not real object
-
-	    - hold =arguments= array-like in arguments property
-
-	  - scope is =\[\[scope\]\]= of function with Activation added in front
-
-	  - variables with Activation object for function's formal parameters
-
-	    - if not enough arguments, =undefined=
-
-	    - inner function definition
-
-	  - set value of =this=
-
-	    - if not set \to global object
-
-       2) scope chains and \[\[scope\]\]
-
-	  - scope chain is constructed by prepending
-            Activation/Variable object to function's [\[scope]]
-
-	  - Function object: scope is global object
-
-	  - function declarations and function expressions have a scope chain
-
-	  - global declaration / expression:
-
-	    - global object
-
-	    - expression evaluated lated, but still global object
-
-	  - inner declaration / expression:
-
-	    - scope of outer function, incluing Activation object
-
-	  - with
-
-	    - sets to scope chain
-
-	    - evaluates block
-
-	    - does affect function expressions
-
-	      - not function declarations
-
-       3) Identifier Resolution
-
-	  - up the scope chain
-
-	  - function call: first Activation object for formal
-            parameters, inner function declaration names or local
-            variables, then up scope chain
-
-    4) Closures
-
-       1) Automatic Garbage Collection
-
-	  - all objects that are no longer used are freed
-
-	    - normally outside of scopes
-
-       2) Forming Closures
-
-	  - example: =exampleClosureForm(arg1, arg2)= returning
-            =exampleReturned(innerArg)= using =localVar=
-
-	  - =var globalVar = exampleClosureForm(2, 4);=
-
-	    - object called =globalVar= has a [\[scope]] property
-
-	    - scope is
-	      #+BEGIN_SRC js
-                ActOuter1 = {
-                    arg1: 2,
-                    arg2: 4,
-                    localVar: 8,
-                    exampleReturned: [...inner function...]
-                }
-	      #+END_SRC
-
-	  - execution:
-
-	    - new execution context, scope chain:
-	      =ActInner1-> ActOuter1-> global object=
-
-	  - nesting possible
-
-    5) What can be done with Closures?
-
-       "emulate anything"
-
-       1) Example 1: setTimeout with Function References
-	  #+BEGIN_SRC js
-            function callLater(paramA, paramB, paramC){
-                return (function(){
-                    // do sth with paramA, paramB and paramC
-                });
-            }
-            var functRef = callLater(elStyle, "display", "none");
-            setTimeout(functRef, 500);
-	  #+END_SRC
-
-       2) Example 2: Associating Functions with Object Instance Methods
-
-          attach event listener to DOM object
-          #+BEGIN_SRC js
-            /* Associates an object instance with an event handler. The returned
-               inner function is used as the event handler.  The object instance
-               is passed as the - obj - parameter and the name of the method that
-               is to be called on that object is passed as the - methodName -
-               (string) parameter.
-            ,*/
-            function associateObjWithEvent(obj, methodName){
-                /* The returned inner function is intended to act as an event
-                   handler for a DOM element:-
-                ,*/
-                return (function(e){
-                    e = e||window.event;
-                    return obj[methodName](e, this);
-                });
-            }
-            /* Creates objects that associate themselves with DOM elements whose
-               IDs are passed to the constructor as a string.
-            ,*/
-            function DhtmlObject(elementId){
-                var el = getElementWithId(elementId);
-                /* The following block is only executed if the - el - variable
-                   refers to a DOM element:-
-                ,*/
-                if(el){
-                    /* assign a function as the element's event handler */
-                    el.onclick = associateObjWithEvent(this, "doOnClick");
-                    el.onmouseover = associateObjWithEvent(this, "doMouseOver");
-                    ...
-                }
-            }
-            DhtmlObject.prototype.doOnClick = function(event, element){
-                ... // doOnClick method body.
-            }
-            DhtmlObject.prototype.doMouseOver = function(event, element){
-                ... // doMouseOver method body.
-            }
-          #+END_SRC
-
-       3) Example 3: Encapsulating Related Functionality
-
-          have a array which is filled on execution with various values
-
-       4) Other Examples
-
-          - crockford: private instance variables
-
-            - extended to private static:
-              http://myweb.tiscali.co.uk/cornford/js_info/private_static.html
-
-    6) Accidental Closures
-
-       - if used accidentally, can lead to less efficiency:
-         #+BEGIN_SRC js
-           var quantaty = 5;
-           function addGlobalQueryOnClick(linkRef){
-               if(linkRef){
-                   linkRef.onclick = function(){
-                       this.href += ('?quantaty='+escape(quantaty));
-                       return true;
-                   };
-               }
-           }
-         #+END_SRC
-         creates a function for each call to the function
-
-         - better: assign function ref
-         #+BEGIN_SRC js
-           var quantaty = 5;
-           function addGlobalQueryOnClick(linkRef){
-               if(linkRef){
-                   linkRef.onclick = forAddQueryOnClick;
-               }
-           }
-           function forAddQueryOnClick(){
-               this.href += ('?quantaty='+escape(quantaty));
-               return true;
-           }
-         #+END_SRC
-
-       - same for object methods
-         #+BEGIN_SRC js
-           function ExampleConst(param){
-               this.method1 = function(){
-                   ... // method body.
-               };
-               this.method2 = function(){
-                   ... // method body.
-               };
-               this.method3 = function(){
-                   ... // method body.
-               };
-               this.publicProp = param;
-           }
-         #+END_SRC
-         creates new function objects for each object
-
-         - better:
-           #+BEGIN_SRC js
-             function ExampleConst(param){
-                 this.publicProp = param;
-             }
-             ExampleConst.prototype.method1 = function(){
-                 ... // method body.
-             };
-             ExampleConst.prototype.method2 = function(){
-                 ... // method body.
-             };
-             ExampleConst.prototype.method3 = function(){
-                 ... // method body.
-             };
-           #+END_SRC
-           create the functions just once
-
-    7) The Internet Explorer Memory Leak Problem
-
-       circular references were not cleaned up
-
-       example see quotes
-*** quotes
-    3) [@3] Identifier Resolution, Execution Contexts and scope chains
-       1) The Execution Context
-	  - running javascript code forms a stack of execution contexts.
-    4) Closures
-       2) [@2] Forming Closures
-	  - The ECMAScript specification requires a scope chain to be finite
-    5) [@7]
-       - If a function object that forms a closure is assigned as, for
-         example, and event handler on a DOM Node, and a reference to
-         that Node is assigned to one of the Activation/Variable
-         objects in its scope chain then a circular reference
-         exists. DOM_Node.onevent -> function_object.[[scope]] ->
-         scope_chain -> Activation_object.nodeRef -> DOM_Node
+    6) Other
 ** TODO [#A] [[./webfingerprint-wpes.pdf][Improved Website Fingerprinting on Tor]]
 *** summary
     0) [@0] Abstract
@@ -7288,6 +7331,17 @@
        7) DISCUSSION
 
           1) Training set size and selection
+
+             - circuit rotation while fetching has quite an impact
+
+             - number of training set: the more instances the better
+
+               - OSAD outperformed
+
+             - open-world background-set: the more training sites the
+               better (for given background set size)
+
+          2) Testing set size and selection
 *** quotes
     1) INTRODUCTION
        - [@?] dynamic content such as advertisements may cause a
@@ -7299,9 +7353,13 @@
 	     - the top 1% of relays comprised 29% of the total
                bandwidth of Tor and the top 20% of relays comprised
                93% of the bandwidth.
+    7) [@7] DISCUSSION
+       1) Training set size and selection
+          - the attacker can increase their open-world success rate by
+            training on more non-monitored sites.
 *** ref
     [[file:master.bib::wpes13-fingerprinting][Wang & Goldberg 2013: Improved Website Fingerprinting Tor]]
-** TODO [#B] [[./ShWa-Timing06.pdf][Timing analysis in low-latency mix networks: attacks and defenses]]
+** MOVE [#B] [[./ShWa-Timing06.pdf][Timing analysis in low-latency mix networks: attacks and defenses]]
 *** summary
     0) [@0] Abstract
 
@@ -7516,50 +7574,67 @@
           attack
 
     9) Challenges and future directions
+
+       - only some attacks looked at
+
+       - difficult to hide that there is traffic
+
+       - the more padding the later in the chain
+
+         - detectable
 *** quotes
-    - Many mix networks are specifically intended to provide anonymity
-      against attackers who control the communication medium.
-    - Traffic analysis is an especially serious threat for low-latency
-      mix networks because it is very difficult to hide statistical
-      characteristics of the packet stream and satisfy the stringent
-      latency requirements imposed by interactive applications.
-    - The standard measure of success is the /crossover error rate/, at
-      which the attacker’s false positive rate is equal to his false
-      negative rate.
-    - (Maximum crossover error rate is 0.5, which corresponds to
-      random guessing.)
-    - recognized as a serious threat to low-latency mix networks, but
-      few defenses have been proposed to date.
-    - (ends 2?)
-    - An active attacker can also impose his own unique timing
-      signature (by dropping packets or introducing artificial bursts)
-      onto the flow he is interested in, and then attempt to identify
-      this signature on other network links.
-    - (ends 3)
-    - samples from the statistical distribution of inter-packet
-      intervals. If the next packet arrives before the chosen interval
-      expires, it is forwarded and a new value is sampled. To avoid
-      skewing resulting intervals towards short values, the
-      distribution is modified slightly to increase the probability of
-      drawing a longer interval next time.
-    - rough statistical distribution of inter packet intervals for a
-      “normal” flow [...] can be pre-computed from traffic
-      repositories such as NLANR [21]
-    - increasing the range represented by each bin exponentially with
-      the bin index works well.
-    - (ends 4.Data structures)
-    - We do not model TCP acknowledgements, re-transmissions,
-      exponential backoff in response to dropped packets, and other
-      TCP features that may be exploited by a sophisticated attacker.
-    - (ends 5.0)
-    - We conjecture that long-term attacks cannot be prevented without
-      assuming that some senders or mixes emit cover traffic in
-      perfect synchrony, which cannot be achieved by any real system.
-    - The attacker chooses t [threshold for correlation r(d)] so that
-      the false positive and false negative rates are equal. This is
-      the attacker’s crossover error rate. High crossover rate means
-      that the defense is effective.
-    - (ends 5.1)
+   0) [@0] unsorted
+      - Many mix networks are specifically intended to provide anonymity
+        against attackers who control the communication medium.
+      - Traffic analysis is an especially serious threat for low-latency
+        mix networks because it is very difficult to hide statistical
+        characteristics of the packet stream and satisfy the stringent
+        latency requirements imposed by interactive applications.
+      - The standard measure of success is the /crossover error rate/, at
+        which the attacker’s false positive rate is equal to his false
+        negative rate.
+      - (Maximum crossover error rate is 0.5, which corresponds to
+        random guessing.)
+      - recognized as a serious threat to low-latency mix networks, but
+        few defenses have been proposed to date.
+      - (ends 2?)
+      - An active attacker can also impose his own unique timing
+        signature (by dropping packets or introducing artificial bursts)
+        onto the flow he is interested in, and then attempt to identify
+        this signature on other network links.
+      - (ends 3)
+      - samples from the statistical distribution of inter-packet
+        intervals. If the next packet arrives before the chosen interval
+        expires, it is forwarded and a new value is sampled. To avoid
+        skewing resulting intervals towards short values, the
+        distribution is modified slightly to increase the probability of
+        drawing a longer interval next time.
+      - rough statistical distribution of inter packet intervals for a
+        “normal” flow [...] can be pre-computed from traffic
+        repositories such as NLANR [21]
+      - increasing the range represented by each bin exponentially with
+        the bin index works well.
+      - (ends 4.Data structures)
+      - We do not model TCP acknowledgements, re-transmissions,
+        exponential backoff in response to dropped packets, and other
+        TCP features that may be exploited by a sophisticated attacker.
+      - (ends 5.0)
+      - We conjecture that long-term attacks cannot be prevented without
+        assuming that some senders or mixes emit cover traffic in
+        perfect synchrony, which cannot be achieved by any real system.
+      - The attacker chooses t [threshold for correlation r(d)] so that
+        the false positive and false negative rates are equal. This is
+        the attacker’s crossover error rate. High crossover rate means
+        that the defense is effective.
+      - (ends 5.1)
+   9) [@9] Challenges and future directions
+      - We made the standard, unrealistic assumption that all
+        connections start at the same time. In reality, attacks based
+        on correlating start and end times of connections may prove
+        very successful.
+      - it is very difficult to hide connection start and end times
+        using dummy traffic because the mix network handles dummy and
+        real packets differently
 ** TODO [#B] [[./LZCLCP_NDSS11.pdf][HTTPOS: Sealing Information Leaks with Browser-side Obfuscation of Encrypted Flows]]
 *** summary
     0) [@0] Abstract
@@ -7598,11 +7673,31 @@
 
 	  - Liberatore: flow direction, packet size; jaccard + bayesian
 
+            - LLJC: D = {d_1, d_2 ...} set of tuples
+
+              S(D_{new}, D_i) = |D_{new} \cap D_i| / |D_{new} \cup D_i|
+
+              for D_i tuples for i-th website and D_{new} new trace
+              observed sizes
+
 	  - Chen: also,
 
 	    - flow vector, not individual packets
 
        2) Two defense strategies
+
+          - "introducing features that have not been involved in
+            training the algorithm."
+
+          - confuse classifier to make it misclassify
+
+       3) The diffusion strategy
+
+          - (Lemma 1) if based on packet size, and a flow has only
+            packets of size not know to classifier, then random guess
+            is best alternative
+
+            - Proof:
 *** quotes
     - Extensive evaluation of HTTPOS on live web traffic shows that it
       can successfully prevent the state-of-the-art attacks from
@@ -7798,6 +7893,30 @@
 ** TODO [#B] [[./Analysis_of_Web_Data_Compression_and_its_Impact_on_Traffic_and_Energy_Consumption.pdf]]
 *** summary
 *** quotes
+** TODO [#B] [[./critique.html][A Critique of Website Traffic Fingerprinting Attacks]]
+*** summary
+    0) [@0] A Critique of Website Traffic Fingerprinting Attacks
+
+       - closed vs open world
+
+       - pages vs websites
+
+    1) Pinning Down the Adversary Model
+
+       - leave rest of traffic unmolested, only block specific traffic
+
+       - identifying users visiting small set
+
+       - recognizing every single web page
+
+    2) Theoretical Issues: Factors Affecting Classification Accuracy
+*** quotes
+    0)
+      - defenses were "broken" and dismissed primarily by taking a
+        number of shortcuts that ignore basic properties of machine
+        learning theory and statistics in order to enable their claims
+        of success
+*** ref [[file:master.bib::critique][Critique Website Traffic Fingerprinting Attacks]]
 ** TODO [#C] [[./morphing09.pdf][Traffic Morphing: An Efficient Defense Against Statistical Traffic Analysis]]
 *** summary
     0. [@0] Abstract
@@ -9724,6 +9843,260 @@
                    return int( log( uniform( 0., 1. ) ) / log( 1. - p ) );
                  }
 	       #+END_SRC
+** [#A] PART [[./scipy-ref-0.17.0.pdf][SciPy Reference Guide]]
+*** summary
+1) Tutorial
+
+   13) [@13] Statistics (scipy.stats)
+
+       1) Introduction: many, but not all features, see ref
+
+       2) Random Variables
+
+          0) [@0]
+
+             - 89 continuous, 13 discrete
+
+             - please add if you create one
+
+          1) Getting Help
+
+             - docstring =stats.norm.__doc__=
+
+             - bounds:
+
+               - lower: =norm.a=,
+
+               - upper: =norm.b=
+
+             - list all properties with =dir(norm)=, but some of
+               those are private
+
+               - better: list frozen distribution
+		 #+BEGIN_SRC python
+                   >>> rv = norm()
+                   >>> dir(rv) # reformatted
+                   [’__class__’, ’__delattr__’, ’__dict__’, ’__doc__’,
+                    ’__getattribute__’, ’__hash__’, ’__init__’, ’__module__’, ’__new__’,
+                    ’__reduce__’, ’__reduce_ex__’, ’__repr__’, ’__setattr__’, ’__str__’,
+                    ’__weakref__’, ’args’, ’cdf’, ’dist’, ’entropy’, ’isf’, ’kwds’,
+                    ’moment’, ’pdf’, ’pmf’, ’ppf’, ’rvs’, ’sf’, ’stats’]
+		 #+END_SRC
+
+               - obtain list of available distributions
+		 #+BEGIN_SRC python
+                   import warnings
+                   warnings.simplefilter(’ignore’, DeprecationWarning)
+                   dist_continu = [d for d in dir(stats) if
+                                   isinstance(getattr(stats,d), stats.rv_continuous)]
+                   dist_discrete = [d for d in dir(stats) if
+                                    isinstance(getattr(stats,d), stats.rv_discrete)]
+                   print ’number of continuous distributions:’, len(dist_continu)
+                   print ’number of discrete distributions: ’, len(dist_discrete)
+		 #+END_SRC
+
+          2) Common Methods
+
+             - methods: rvs, pdf, cdf,
+
+               - sf: survival (1-cdf)
+
+               - ppf: percent point (CDF^{-1}) = quantile
+
+               - isf: inverse survival (sf^{-1})
+
+               - stats: mean, variance, skew, kurtosis
+
+               - moment
+
+             - pass array of values:
+               #+BEGIN_SRC python
+                 norm.cdf([-1., 0, 1])
+                 import numpy as np
+                 norm.cdf(np.array([-1., 0, 1]))
+               #+END_SRC
+
+             - median via
+               #+BEGIN_SRC python
+                 norm.ppf(0.5)
+               #+END_SRC
+
+             - generate several via =size= parameter
+
+             - set via =np.random.seed()= for reproducible results
+
+               - or use =random_state= parameter per function
+
+          3) Shifting and Scaling
+
+             - set =loc= and =scale=
+
+             - recommended to use as (explicit) keywords, not as arguments
+
+             - freeze as seen below
+
+          4) Shape Parameters
+
+             - one more parameter
+
+               - f.ex. for gamma distribution (a)
+
+               - evaluate by
+                 #+BEGIN_SRC python
+                   from scipy.stats import gamma
+                   gamma.numargs
+                   gamma.shapes
+                 #+END_SRC
+
+               - use as
+                 #+BEGIN_SRC python
+                   gamma(1, scale=2.).stats(moments="mv")
+                   gamma(a=1, scale=2.).stats(moments="mv")
+                 #+END_SRC
+
+          5) Freezing a Distribution
+
+             fix parameters to not repeat them
+             #+BEGIN_SRC python
+               rv = gamma(1, scale=2.)
+               rv.mean(), rv.std()
+             #+END_SRC
+
+          6) Broadcasting
+
+             combine values (numpy possibility) works
+
+          7) Specific Points for Discrete Distributions
+
+             - pmf instead of pdf
+
+             - no scale, but loc
+
+             - ppf has other definition
+
+          8) Fitting Distributions
+
+             - rest of main methods
+
+               - fit: estimates all
+
+               - fit_loc_scale: shape given
+
+               - nnlf
+
+               - expect: "Calculate the expectation of a function
+                 against the pdf or pmf"
+
+          9) Performance Issues and Cautionary Remarks
+
+             - some functions very slow (generic method)
+
+          10) Remaining Issues
+
+              - some bugs
+
+              - fit uses maximum likelihood and needs good starting points
+
+       3) Building Specific Distributions
+
+5) [@5] REFERENCE
+
+   27) [@27] Statistical functions (scipy.stats)
+
+       - scipy.stats.rv_continuous
+
+         - base class, cannot be used directly
+
+         - override pdf or cdf to create new rv
+
+         - freezing possible
+
+       - scipy.stats.lognorm
+
+         - parametrization via normal(mu, sigma) is implemented by
+           setting =s=sigma= and =scale=math.exp(mu)=, s is first
+           parameter anyways
+
+       - scipy.stats.gamma
+
+         - parameters
+
+           - shape parameter: computer ... c, here shape=a
+
+             - kappa == a
+
+           - loc parameter: computer... a, here none (or loc)
+
+           - computer... b, here ==1
+*** quotes
+    1) SciPy Tutorial
+       13) [@13] Statistics (scipy.stats)
+           - Freezing a Distribution
+
+             Passing the loc and scale keywords time and again can
+             become quite bothersome. The concept of freezing a RV is
+             used to solve such problems.
+             #+BEGIN_SRC python
+              rv = gamma(1, scale=2.)
+             #+END_SRC
+             By using rv we no longer have to include the scale or the
+             shape parameters anymore. Thus, distributions can be used
+             in one of two ways, either by passing all distribution
+             parameters to each method call (such as we did earlier) or
+             by freezing the parameters for the instance of the
+             distribution.
+    5) [@5] Reference
+       24) [@24] Spatial algorithms and data structures (scipy.spatial)
+           - scipy.spatial.distance.euclidean(u, v)
+
+             Computes the Euclidean distance between two 1-D arrays.
+
+           - Y = pdist(X, ’braycurtis’)
+
+             Computes the Bray-Curtis distance between the points. The
+             Bray-Curtis distance between two points u and v is
+
+             d(u, v) = ∑_{i} u_{i} − v_{i} / ∑_{i} u_{i} + v_{i}
+
+       26) [@26] Special functions (scipy.special)
+           - scipy.special.btdtr(a, b, x) = <ufunc ‘btdtr’>
+
+             Cumulative beta distribution. Returns the area from zero
+             to x under the beta density function:
+
+             gamma(a+b)/(gamma(a)*gamma(b)))*integral(t**(a-1)
+             (1-t)**(b-1), t=0..x)
+
+       27) Statistical functions (scipy.stats)
+           - scipy.stats.gamma
+             - The probability density function for gamma is:
+               gamma.pdf(x, a) = x**(a-1) * exp(-x) / gamma(a)
+
+             - gamma has a shape parameter _a_ which needs to be set
+               explicitly.
+
+             - To shift and/or scale the distribution use the loc and
+               scale parameters. Specifically, gamma.pdf(x, a, loc,
+               scale) is identically equivalent to gamma.pdf(y, a) /
+               scale with y = (x - loc) / scale
+           - Poisson distribution
+             #+BEGIN_SRC python
+                     from scipy.stats import poisson
+               import matplotlib.pyplot as plt
+               fig, ax = plt.subplots(1, 1)
+               # Calculate a few first moments:
+               mu = 0.6
+               mean, var, skew, kurt = poisson.stats(mu, moments=’mvsk’)
+               # Display the probability mass function (pmf):
+               x = np.arange(poisson.ppf(0.01, mu),
+                             poisson.ppf(0.99, mu))
+               ax.plot(x, poisson.pmf(x, mu), ’bo’, ms=8, label=’poisson pmf’)
+               ax.vlines(x, 0, poisson.pmf(x, mu), colors=’b’, lw=5, alpha=0.5)
+
+               plt.show()
+             #+END_SRC
+    6) whereever
+       - help(scipy.stats.lognorm)
 ** TODO [#B] PART [[./user_guide_0.16.1.pdf][scikit-learn user guide]] [0/1]
 *** TODO [#A] continue 2-tutorial at 2.4/2.5
 *** summary
@@ -9951,10 +10324,71 @@
                   approach is both slow (due to all observations starting
                   as one cluster, which it splits recursively) and
                   statistically ill-posed."
+
+             3) Connectivity-constrained clustering
+
+                - cluster depending on adjacency
+
+                - f.ex. used to find separating lines in lena picture
+
+             4) Feature agglomeration
+
+                - defeat curse of dimensionality by merging "similar
+                  features"
+
+          2) Decompositions: from a signal to components and loadings
+
+             decompose signal X into components C and loadings C
+
+             1) Principal component analysis: PCA
+
+                - extracts combinations which explain "maximum
+                  variance" (see quotes)
+
+             2) Independent Component Analysis: ICA
+
+                - might work better for analysis of non-gaussian data
+                  comparison (example see quotes)
+
+       5) Putting it all together
 *** quotes
   2) [@2] A tutorial on statistical-learning for scientific data processing
-     - import pylab as pl
-       pl.imshow
+     1)
+        - import pylab as pl
+          pl.imshow
+     4) [@4] Unsupervised learning: seeking representations of the data
+        2) [@2] Decompositions: from a signal to components and loadings
+           - Create a signal with only 2 useful dimensions, analyse
+             #+BEGIN_SRC python
+               x1 = np.random.normal(size=100)
+               x2 = np.random.normal(size=100)
+               x3 = x1 + x2
+               X = np.c_[x1, x2, x3]
+               from sklearn import decomposition
+               pca = decomposition.PCA()
+               pca.fit(X)
+               PCA(copy=True, n_components=None, whiten=False)
+               print(pca.explained_variance_)
+               pca.n_components = 2
+               X_reduced = pca.fit_transform(X)
+               X_reduced
+             #+END_SRC
+           - Combine signals
+             #+BEGIN_SRC python
+               time = np.linspace(0, 10, 2000)
+               s1 = np.sin(2 * time) # Signal 1 : sinusoidal signal
+               s2 = np.sign(np.sin(3 * time)) # Signal 2 : square signal
+               S = np.c_[s1, s2]
+               S += 0.2 * np.random.normal(size=S.shape) # Add noise
+               S /= S.std(axis=0) # Standardize data
+               # Mix data
+               A = np.array([[1, 1], [0.5, 2]]) # Mixing matrix
+               X = np.dot(S, A.T) # Generate observations
+               ica = decomposition.FastICA() # Compute ICA
+               S_ = ica.fit_transform(X) # Get the estimated sources
+               A_ = ica.mixing_.T
+               np.allclose(X, np.dot(S_, A_) + ica.mean_)
+             #+END_SRC
   4) [@4] Supervised learning
      4) [@4] Support Vector Machines
         1) Classification
@@ -10035,7 +10469,7 @@
               #+END_SRC
   5) Unsupervised learning
      3) [@3] Clustering
-        1) [@2] K-means
+        2) [@2] K-means
            - The KMeans algorithm clusters data by trying to separate
              samples in n groups of equal variance, minimizing a
              criterion known as the inertia <inertia> or
@@ -12517,274 +12951,19 @@
         distribution packages without interfering with the behaviour of
         other Python applications running on the same system.
     28) (ends Appendix A)
-** [#A] MOVE PART [[./scipy-ref-0.17.0.pdf][SciPy Reference Guide]]
-*** summary
-1) Tutorial
-
-   13) [@13] Statistics (scipy.stats)
-
-       1) Introduction: many, but not all features, see ref
-
-       2) Random Variables
-
-          0) [@0]
-
-             - 89 continuous, 13 discrete
-
-             - please add if you create one
-
-          1) Getting Help
-
-             - docstring =stats.norm.__doc__=
-
-             - bounds:
-
-               - lower: =norm.a=,
-
-               - upper: =norm.b=
-
-             - list all properties with =dir(norm)=, but some of
-               those are private
-
-               - better: list frozen distribution
-		 #+BEGIN_SRC python
-                   >>> rv = norm()
-                   >>> dir(rv) # reformatted
-                   [’__class__’, ’__delattr__’, ’__dict__’, ’__doc__’,
-                    ’__getattribute__’, ’__hash__’, ’__init__’, ’__module__’, ’__new__’,
-                    ’__reduce__’, ’__reduce_ex__’, ’__repr__’, ’__setattr__’, ’__str__’,
-                    ’__weakref__’, ’args’, ’cdf’, ’dist’, ’entropy’, ’isf’, ’kwds’,
-                    ’moment’, ’pdf’, ’pmf’, ’ppf’, ’rvs’, ’sf’, ’stats’]
-		 #+END_SRC
-
-               - obtain list of available distributions
-		 #+BEGIN_SRC python
-                   import warnings
-                   warnings.simplefilter(’ignore’, DeprecationWarning)
-                   dist_continu = [d for d in dir(stats) if
-                                   isinstance(getattr(stats,d), stats.rv_continuous)]
-                   dist_discrete = [d for d in dir(stats) if
-                                    isinstance(getattr(stats,d), stats.rv_discrete)]
-                   print ’number of continuous distributions:’, len(dist_continu)
-                   print ’number of discrete distributions: ’, len(dist_discrete)
-                       
-		 #+END_SRC
-
-          2) Common Methods
-             
-             - methods: rvs, pdf, cdf,
-
-               - sf: survival (1-cdf)
-
-               - ppf: percent point (CDF^{-1}) = quantile
-
-               - isf: inverse survival (sf^{-1})
-
-               - stats: mean, variance, skew, kurtosis
-
-               - moment
-
-             - pass array of values:
-               #+BEGIN_SRC python
-                 norm.cdf([-1., 0, 1])
-                 import numpy as np
-                 norm.cdf(np.array([-1., 0, 1]))
-               #+END_SRC
-
-             - median via
-               #+BEGIN_SRC python
-                 norm.ppf(0.5)
-               #+END_SRC
-
-             - generate several via =size= parameter
-
-             - set via =np.random.seed()= for reproducible results
-
-               - or use =random_state= parameter per function
-
-          3) Shifting and Scaling
-
-             - set =loc= and =scale=
-
-             - recommended to use as (explicit) keywords, not as arguments
-
-             - freeze as seen below
-
-          4) Shape Parameters
-
-             - one more parameter
-
-               - f.ex. for gamma distribution (a)
-
-               - evaluate by
-                 #+BEGIN_SRC python
-                   from scipy.stats import gamma
-                   gamma.numargs
-                   gamma.shapes
-                 #+END_SRC
-
-               - use as
-                 #+BEGIN_SRC python
-                   gamma(1, scale=2.).stats(moments="mv")
-                   gamma(a=1, scale=2.).stats(moments="mv")
-                 #+END_SRC
-
-          5) Freezing a Distribution
-
-             fix parameters to not repeat them
-             #+BEGIN_SRC python
-               rv = gamma(1, scale=2.)
-               rv.mean(), rv.std()
-             #+END_SRC
-
-          6) Broadcasting
-
-             combine values (numpy possibility) works
-
-          7) Specific Points for Discrete Distributions
-
-             - pmf instead of pdf
-
-             - no scale, but loc
-
-             - ppf has other definition
-
-          8) Fitting Distributions
-
-             - rest of main methods
-
-               - fit: estimates all
-
-               - fit_loc_scale: shape given
-
-               - nnlf
-
-               - expect: "Calculate the expectation of a function
-                 against the pdf or pmf"
-
-          9) Performance Issues and Cautionary Remarks
-
-             - some functions very slow (generic method)
-
-          10) Remaining Issues
-
-              - some bugs
-
-              - fit uses maximum likelihood and needs good starting points
-
-       3) Building Specific Distributions
-
-5) [@5] REFERENCE
-
-   27) [@27] Statistical functions (scipy.stats)
-
-       - scipy.stats.rv_continuous
-
-         - base class, cannot be used directly
-
-         - override pdf or cdf to create new rv
-
-         - freezing possible
-
-       - scipy.stats.lognorm
-
-         - parametrization via normal(mu, sigma) is implemented by
-           setting =s=sigma= and =scale=math.exp(mu)=, s is first
-           parameter anyways
-
-       - scipy.stats.gamma
-
-         - parameters
-
-           - shape parameter: computer ... c, here shape=a
-
-             - kappa == a
-
-           - loc parameter: computer... a, here none (or loc)
-
-           - computer... b, here ==1
-*** quotes
-    1) SciPy Tutorial
-       13) [@13] Statistics (scipy.stats)
-           - Freezing a Distribution
-
-             Passing the loc and scale keywords time and again can
-             become quite bothersome. The concept of freezing a RV is
-             used to solve such problems.
-             #+BEGIN_SRC python
-              rv = gamma(1, scale=2.)
-             #+END_SRC
-             By using rv we no longer have to include the scale or the
-             shape parameters anymore. Thus, distributions can be used
-             in one of two ways, either by passing all distribution
-             parameters to each method call (such as we did earlier) or
-             by freezing the parameters for the instance of the
-             distribution.
-    5) [@5] Reference
-       24) [@24] Spatial algorithms and data structures (scipy.spatial)
-           - scipy.spatial.distance.euclidean(u, v)
-
-             Computes the Euclidean distance between two 1-D arrays.
-
-           - Y = pdist(X, ’braycurtis’)
-
-             Computes the Bray-Curtis distance between the points. The
-             Bray-Curtis distance between two points u and v is
-
-             d(u, v) = ∑_{i} u_{i} − v_{i} / ∑_{i} u_{i} + v_{i}
-
-       26) [@26] Special functions (scipy.special)
-           - scipy.special.btdtr(a, b, x) = <ufunc ‘btdtr’>
-
-             Cumulative beta distribution. Returns the area from zero
-             to x under the beta density function:
-
-             gamma(a+b)/(gamma(a)*gamma(b)))*integral(t**(a-1)
-             (1-t)**(b-1), t=0..x)
-
-       27) Statistical functions (scipy.stats)
-           - scipy.stats.gamma
-             - The probability density function for gamma is:
-               gamma.pdf(x, a) = x**(a-1) * exp(-x) / gamma(a)
-
-             - gamma has a shape parameter _a_ which needs to be set
-               explicitly.
-
-             - To shift and/or scale the distribution use the loc and
-               scale parameters. Specifically, gamma.pdf(x, a, loc,
-               scale) is identically equivalent to gamma.pdf(y, a) /
-               scale with y = (x - loc) / scale
-           - Poisson distribution
-             #+BEGIN_SRC python
-                     from scipy.stats import poisson
-               import matplotlib.pyplot as plt
-               fig, ax = plt.subplots(1, 1)
-               # Calculate a few first moments:
-               mu = 0.6
-               mean, var, skew, kurt = poisson.stats(mu, moments=’mvsk’)
-               # Display the probability mass function (pmf):
-               x = np.arange(poisson.ppf(0.01, mu),
-                             poisson.ppf(0.99, mu))
-               ax.plot(x, poisson.pmf(x, mu), ’bo’, ms=8, label=’poisson pmf’)
-               ax.vlines(x, 0, poisson.pmf(x, mu), colors=’b’, lw=5, alpha=0.5)
-
-               plt.show()
-             #+END_SRC
-    6) whereever
-       - help(scipy.stats.lognorm)
 ** PART [[./numpy-ref-1.10.1.pdf][NumPy Reference]]
 *** quotes
    1) Array objects
       4) [@4] Indexing
-        1) Basic Slicing and Indexing
-         - A common use case for this is filtering for desired element
-           values. For example one may wish to select all entries from an
-           array which are not NaN:
-           #+BEGIN_SRC python
-             >>> x = np.array([[1., 2.], [np.nan, 3.], [np.nan, np.nan]])
-             >>> x[~np.isnan(x)]
-             array([ 1., 2., 3.])
-           #+END_SRC
+         1) Basic Slicing and Indexing
+            - A common use case for this is filtering for desired element
+              values. For example one may wish to select all entries from an
+              array which are not NaN:
+              #+BEGIN_SRC python
+                >>> x = np.array([[1., 2.], [np.nan, 3.], [np.nan, np.nan]])
+                >>> x[~np.isnan(x)]
+                array([ 1., 2., 3.])
+              #+END_SRC
    3) [@3] Routines
       1) Array creation routines
          1) Ones and zeros
@@ -12796,6 +12975,23 @@
               subok=False, ndmin=0)
 
               Create an array.
+         3) [@5] Numerical ranges
+             - numpy.ma.arange( [ start ] , stop [ , step ] , dtype=None)
+
+               Return evenly spaced values within a given interval.  [...]
+               When using a non-integer step, such as 0.1, the results will
+               often not be consistent. It is better to use linspace for these
+               cases.
+             - numpy.linspace(start, stop, num=50, endpoint=True,
+               retstep=False, dtype=None)
+
+               Return evenly spaced numbers over a specified interval.
+      18) [@18] Logic functions
+          5) [@5] Comparison
+             - numpy.allclose(a, b, rtol=1e-05, atol=1e-08, equal_nan=False)
+
+               Returns True if two arrays are element-wise equal
+               within a tolerance.
       25) [@25] Random sampling (numpy.random)
           3) [@3] Distributions
              - numpy.random.exponential(scale=1.0, size=None)
@@ -12840,19 +13036,6 @@
                  plt.plot(bins, y, linewidth=2, color=’r’)
                  plt.show()
                #+END_SRC
-             - (ends 3.25)
-          4) TODO
-             - numpy.ma.arange( [ start ] , stop [ , step ] , dtype=None)
-
-               Return evenly spaced values within a given interval.  [...]
-               When using a non-integer step, such as 0.1, the results will
-               often not be consistent. It is better to use linspace for these
-               cases.
-
-             - numpy.linspace(start, stop, num=50, endpoint=True,
-               retstep=False, dtype=None)
-
-               Return evenly spaced numbers over a specified interval.
 ** PART [[./btxdoc.pdf][BIBTEXing]]
 *** quotes
     3) [@3] The Entries
@@ -13634,30 +13817,6 @@
     1) Introduction
 *** quotes
 *** ref: [[file:master.bib::rfc7159][Bray 2014: JavaScript Object Notation]]
-** TODO MOVE [[./critique.html][A Critique of Website Traffic Fingerprinting Attacks]]
-*** summary
-    0) [@0] A Critique of Website Traffic Fingerprinting Attacks
-
-       - closed vs open world
-
-       - pages vs websites
-
-    1) Pinning Down the Adversary Model
-
-       - leave rest of traffic unmolested, only block specific traffic
-
-       - identifying users visiting small set
-
-       - recognizing every single web page
-
-    2) Theoretical Issues: Factors Affecting Classification Accuracy
-*** quotes
-    0)
-      - defenses were "broken" and dismissed primarily by taking a
-        number of shortcuts that ignore basic properties of machine
-        learning theory and statistics in order to enable their claims
-        of success
-*** ref [[file:master.bib::critique][Critique Website Traffic Fingerprinting Attacks]]
 ** [[./top_ml_algo.pdf][Top 10 algorithms in data mining]]
 ** SO: Sklearn kNN usage with a user defined metric
 *** quotes

@@ -23,7 +23,7 @@ function loads(URL) {
     if ( _.contains(activeHosts, URL.host) ) { // has already started
 	activeHosts[URL.host].loadNext();
     } else {
-	activeHosts[URL.host] = new coverTraffic.CoverTraffic(URL.host, load);
+	activeHosts[URL.host] = new coverTraffic.CoverTraffic(URL.host);
 	// td: removal code: better also watch endsload
 	setTimeout(function() {
 	    delete activeHosts[URL.host];

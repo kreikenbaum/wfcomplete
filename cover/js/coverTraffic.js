@@ -29,9 +29,9 @@ function CoverTraffic(toHost, load=LOAD) {
     this.site = {};
     this.pad = {};
 
-    this.site.html = sizeCache.htmlSize(1);
+    this.site.html = sizeCache.htmlSize(toHost);
+    this.site.numEmbedded = sizeCache.numberEmbeddedObjects(toHost));
     this.pad.html = stats.htmlSize(FACTOR) - this.site.html;
-    this.site.numEmbedded = stats.numberEmbeddedObjects(1); // td: see above
     this.pad.numEmbedded =
 	stats.numberEmbeddedObjects(FACTOR) - this.site.numEmbedded;
 

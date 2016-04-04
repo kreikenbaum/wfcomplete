@@ -71,7 +71,7 @@ BloomSort.prototype.toString = function() {
     out += 'filters: ' + this.filters + '\n';
     out += '}';
     return out;
-}
+};
 exports.BloomSort = BloomSort;
 
 /** @return bloomSort restored from local storage */
@@ -81,5 +81,5 @@ function restore() {
 	s.filters[i] = new Bloom.BloomFilter(Storage.filters[i], NUM_HASH);
     }
     return s;
-};
+}
 exports.restore = () => restore();
