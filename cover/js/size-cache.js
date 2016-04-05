@@ -1,4 +1,11 @@
 "use strict";
+/**
+* @fileoverview stores approximate sizes of HTML files and number of
+* embedded elements.
+*
+* If the store does not have accurate information, the default
+* distribution is used.
+*/
 
 const BloomSort = require("./bloom-sort.js");
 const stats = require("./stats.js");

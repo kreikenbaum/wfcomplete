@@ -14,6 +14,7 @@ const stats = require("./stats.js");
 // prefs allow only integers, no floats
 /** overhead of dummy traffic -1; 1.5 has overhead of 50% */
 const FACTOR = 1 + (Simple.prefs.factor / 100);
+/** minimum probability of also requesting a cover element per embedded */
 const MIN_PROB = 0.1; // td: test and think through
 
 const LOAD = require('./load.js');
@@ -42,6 +43,7 @@ function CoverTraffic(toHost, load=LOAD) {
 
 CoverTraffic.prototype.loadNext = function() {
     var i;
+    // do once for each 1-integer part and maybe for the fraction
     for ( i = (stats.withProbability( this.prob % 1 ) ? Math.ceil(this.prob)
 	       : Math.floor(this.prob)) ;
 	  i >= 0 ;

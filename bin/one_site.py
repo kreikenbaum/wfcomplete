@@ -51,7 +51,7 @@ def _open_browser(exe='/home/mkreik/bin/tor-browser_en-US/Browser/firefox -mario
     (exedir, exefile) = os.path.split(exewholepath)
     env_with_debug["LD_LIBRARY_PATH"] = '/lib:/usr/lib:' + (
         exedir + '/TorBrowser/Tor')
-    print 'lpath: %s' % env_with_debug["LD_LIBRARY_PATH"]
+    #print 'lpath: %s' % env_with_debug["LD_LIBRARY_PATH"]
 #    browser = subprocess.Popen(args=['/home/mkreik/bin/tor-browser_en-US/Browser/firefox','-marionette'], cwd=exedir, stdout=subprocess.PIPE, env=env_with_debug);
     browser = subprocess.Popen(args=[exewholepath,exeargs], cwd=exedir, stdout=subprocess.PIPE, env=env_with_debug);
 

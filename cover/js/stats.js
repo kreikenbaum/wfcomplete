@@ -1,7 +1,8 @@
 "use strict";
-
-exports.DOC = 'distributions, also application of distributions (html etc)';
-
+/**
+* @fileoverview Some basic distributions with their HTTP-related
+* applications for modelling web traffic.
+*/
 const random = require("js/random.js");
 
 const HTML_MU = 7.90272;
@@ -10,13 +11,13 @@ const EMBEDDED_SIZE_MU = 7.51384;
 const EMBEDDED_SIZE_SIGMA = 2.17454;
 const EMBEDDED_NUM_KAPPA = 0.141385;
 const EMBEDDED_NUM_THETA = 40.3257;
-const PARSINGTIME_MU = -1.24892;
-const PARSINGTIME_SIGMA = 2.08427;
+//const PARSINGTIME_MU = -1.24892;
+//const PARSINGTIME_SIGMA = 2.08427;
 const REQUEST_LENGTH_MAX = 700;
 
 // td: refactor, remove "factor"
 /** @return expected size of html response * factor */
-function htmlSize(factor = 1) {
+function htmlSize(factor=1) {
     return factor * lognormal_(HTML_MU, HTML_SIGMA);
 }
 exports.htmlSize = (factor) => htmlSize(factor);
@@ -45,7 +46,7 @@ function requestLength() {
 }
 exports.requestLength = requestLength;
 
-/** returns true with a probability of <code>chance</code> (for chance
+/** @return true with a probability of <code>chance</code> (for chance
  * >1: always)*/
 function withProbability(chance) {
     return random.uniform01() < chance;

@@ -1174,20 +1174,19 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 
   This error rate is dependent on the size of the bloom filter and the
   number of inserted elements.
-* TODO bloom-sort
-  By separating the data into groups, it becomes possible to use bloom
-  filters for the estimation of sizes, by using one bloom filter for
-  each group.
+* CHECK bloom-sort
+  By ordering data into bins, it becomes possible to use bloom filters
+  for the estimation of sizes, using one bloom filter for each bin.
 
   To achieve this, sensible separation criteria (called /splits/) for
-  the groups need to be found. Afterwards, each group needs to be
-  assigned a value for all elements in the group (called /sizes/). See
-  section [[*bloom-sort%20usage][bloom-sort usage]] on determining the sizes and splits.
+  the bins need to be found. Afterwards, each bin needs to be assigned
+  a value (called /size/) for all contained elements. See section
+  [[*bloom-sort%20usage][bloom-sort usage]] on determining the sizes and splits.
 
-  The bloom-sort then is initialized with an array of splits, and an
-  array of sizes. The sizes-array needs to have one more element than
-  the splits-array, as the groups are bounded on the left by 0, and on
-  the right by infinity.
+  This data-structure, called /bloom-sort/ is initialized with an
+  array of splits, and an array of sizes. The sizes-array needs to
+  have one more element than the splits-array, as the bins are bounded
+  on the left by 0, and on the right by infinity.
 
   #+BEGIN_SRC js
     /** 
@@ -1206,10 +1205,10 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 
   Thus, you get
 
-  0 \le size0 \le split0 \le size1 \le split1 \le ... \le split(n-1) \le sizen < infinity
+  0[[fn::this could also allow negative values]] \le size0 \le split0 \le size1 \le split1 \le ... \le split(n-1) \le sizen < infinity
 
   Given the splits, it becomes possible to add the elements to their
-  groups:
+  bins:
 
   #+BEGIN_SRC js
     BloomSort.prototype.add = function(id, size) {
@@ -1218,13 +1217,15 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   #+END_SRC
 
   where =_.sortedIndex()= gives the index at which =size= would be
-  inserted into the =this.splits= array.
+  inserted into the sorted =this.splits= array.
 
   The retrieval of element sizes looks into each bloom filter,
   checking whether it might contain the element =id=. If one bloom
   filter reports containment, its corresponding element- =size= is
   returned. If several or no bloom filters report containment, an
-  exception is thrown.
+  exception is thrown. The exception is used to allow all possible
+  return values, not blocking one of them, say =-1=, for the error
+  condition.
   #+BEGIN_SRC js
     /** determines size of element, raises exception if unclear */
     BloomSort.prototype.query = function(id) {
@@ -1250,6 +1251,14 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
         return this.sizes[pos];
     };
   #+END_SRC
+
+  It can be used by initializing with 
+  
+  let htmlSizes = new BloomSort.BloomSort([400, 1000, 20000], [700, 10000]);
+
+  then adding elements via =htmlSizes.add("http://google.com/", 613)=
+  and querying via =htmlSizes.query("http://google.com/")=, which
+  would yield =400=. (see usage in [[file:cover/js/size-cache.js::let%20numEmbeddeds%20%3D%20new%20BloomSort.BloomSort(NUM_EMBEDDED_SIZES,][size-cache]])
 * TODO differences theoretical HTML-num embedded and observed
   - redirects
     - html had 176 elements, embedded only 100
