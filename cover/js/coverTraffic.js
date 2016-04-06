@@ -10,7 +10,7 @@ const debug = require("./debug.js");
 const sizeCache = require("./size-cache.js");
 const stats = require("./stats.js");
 
-// td: changeable by pref (slider?)
+// td: auto-update pref
 // prefs allow only integers, no floats
 /** overhead of dummy traffic -1; 1.5 has overhead of 50% */
 const FACTOR = 1 + (Simple.prefs.factor / 100);
@@ -31,7 +31,7 @@ function CoverTraffic(toHost, load=LOAD) {
     this.pad = {};
 
     this.site.html = sizeCache.htmlSize(toHost);
-    this.site.numEmbedded = sizeCache.numberEmbeddedObjects(toHost));
+    this.site.numEmbedded = sizeCache.numberEmbeddedObjects(toHost);
     this.pad.html = stats.htmlSize(FACTOR) - this.site.html;
     this.pad.numEmbedded =
 	stats.numberEmbeddedObjects(FACTOR) - this.site.numEmbedded;

@@ -6,11 +6,11 @@ const Simple = require('sdk/simple-prefs');
 
 const PROTOCOL = 'http://';
 
-var HOST = Simple.prefs['Traffic-HOST'];
+let HOST = Simple.prefs['Traffic-HOST'];
 Simple.on("Traffic-HOST", function() {
     HOST = Simple.prefs['Traffic-HOST'];
 });
-var PORT = Simple.prefs['Traffic-PORT'];
+let PORT = Simple.prefs['Traffic-PORT'];
 Simple.on("Traffic-PORT", function() {
     PORT = Simple.prefs['Traffic-PORT'];
 });

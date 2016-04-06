@@ -6,6 +6,7 @@
 * If the store does not have accurate information, the default
 * distribution is used.
 */
+const Simple = require('sdk/simple-prefs');
 
 const BloomSort = require("./bloom-sort.js");
 const stats = require("./stats.js");
@@ -19,9 +20,18 @@ let htmlSizes = new BloomSort.BloomSort(HTML_SIZES, HTML_SPLITS);
 let numEmbeddeds = new BloomSort.BloomSort(NUM_EMBEDDED_SIZES,
                                            NUM_EMBEDDED_SPLITS);
 
+let active = Simple.prefs['bloom'];
+Simple.on("bloom", function() {
+    active = Simple.prefs['bloom'];
+});
+
 function htmlSize(url) {
     try {
-        return htmlSizes.query(url);
+        if ( active ) {
+            return htmlSizes.query(url);
+        } else {
+            throw {name: 'BloomError', message:'non-active, just use stats'};
+        }
     } catch (e) {
         return stats.htmlSize();
     }
@@ -30,7 +40,11 @@ exports.htmlSize = (url) => htmlSize(url);
 
 function numberEmbeddedObjects(url) {
     try {
-        return numEmbeddeds.query(url);
+        if ( active ) {
+            return numEmbeddeds.query(url);
+        } else {
+            throw {name: 'non-active, just use stats'};
+        }
     } catch (e) {
         return stats.numberEmbeddedObjects();
     }
