@@ -5,7 +5,8 @@
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] || exit
 
 # start xvfb, set display
-if ! [ $(pgrep Xvfb) ]; then
+if ! [ $(pgrep Xvfb) ] || [ ! -v DISPLAY ]; then
+    killall Xvfb
     echo starting xvfb
     mkdir -p /tmp/xvfb
     Xvfb :1 -fbdir /tmp/xvfb > /tmp/xvfb_output 2>&1 &

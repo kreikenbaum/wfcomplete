@@ -19,6 +19,13 @@ def browse_to(page):
     browser = _open_browser()
     _open_with_timeout(browser, page)
 
+# cheap hack
+def _avoid_safe_mode(exedir):
+    '''avoids safe mode by removing the line which contains count of failures'''
+    os.system("sed -i '/toolkit\.startup\.recent_crashes/d' " +
+              os.path.join(exedir,
+                           "TorBrowser/Data/Browser/profile.default/prefs.js"))
+
 def _open_with_timeout(browser, page, timeout=600):
     '''navigates browser to url while capturing the packet dump, aborts after timeout'''
     client = Marionette('localhost', port=2828)
@@ -51,6 +58,7 @@ def _open_browser(exe='/home/mkreik/bin/tor-browser_en-US/Browser/firefox -mario
     (exedir, exefile) = os.path.split(exewholepath)
     env_with_debug["LD_LIBRARY_PATH"] = '/lib:/usr/lib:' + (
         exedir + '/TorBrowser/Tor')
+    _avoid_safe_mode(exedir)
     #print 'lpath: %s' % env_with_debug["LD_LIBRARY_PATH"]
 #    browser = subprocess.Popen(args=['/home/mkreik/bin/tor-browser_en-US/Browser/firefox','-marionette'], cwd=exedir, stdout=subprocess.PIPE, env=env_with_debug);
     browser = subprocess.Popen(args=[exewholepath,exeargs], cwd=exedir, stdout=subprocess.PIPE, env=env_with_debug);
