@@ -2,9 +2,9 @@
 '''extracts (panchenko's) features from pcap and analyses them'''
 
 import numpy as np
+from sklearn import svm, neighbors, cross_validation
 import doctest
 import logging
-from sklearn import svm, neighbors, cross_validation
 import sys
 
 # if you import by hand, include the path for the counter-module via
@@ -113,11 +113,11 @@ if __name__ == "__main__":
     # for c in Cs:
     #     test(X, y, svm.SVC(C=c, kernel='linear'))
     # metrics (single)
-    from scipy.spatial import distance
-    for dist in [distance.braycurtis, distance.canberra,
-                 distance.chebyshev, distance.cityblock, distance.correlation,
-                 distance.cosine, distance.euclidean, distance.sqeuclidean]:
-        test(X, y, neighbors.KNeighborsClassifier(metric='pyfunc', func=dist))
+    # from scipy.spatial import distance
+    # for dist in [distance.braycurtis, distance.canberra,
+    #              distance.chebyshev, distance.cityblock, distance.correlation,
+    #              distance.cosine, distance.euclidean, distance.sqeuclidean]:
+    #     test(X, y, neighbors.KNeighborsClassifier(metric='pyfunc', func=dist))
     # td: knn + levenshtein
     # import math
     # def mydist(x, y):

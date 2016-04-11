@@ -2,8 +2,7 @@
 #+TODO: TODO CHECK | LATER DONE
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{tikz}
-* [#A] next: move f.ex. 'why several covers' (and order other parts)
-* TODO [#A] move sections to list and MOVE
+* TODO promote subtree [[*setup][setup]]
 * final sections
 ** LATER Abstract
 *** Teaser
@@ -37,8 +36,8 @@
 **** WAIT may \to (ohne) (falls richtig)
 ** Introduction
 ** Materials and Methods
-* TODO topics [7/90]
-** TODO Website Fingerprinting [2/39]
+* TODO topics [7/99]
+** TODO Website Fingerprinting [2/48]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
     webpages or websites a user visits via an anonymizing proxy. It is a
@@ -189,15 +188,121 @@
      - selenium: daniel
      - plain tor bundle
 **** setup
-***** [[by-hand initialization to retrieve websites]]
-***** [[*one_site.py:%20retrieval%20of%20a%20single%20page][*one_site.py: retrieval of a single page]]
-***** [[*tshark%20installation][tshark installation]]
-***** [[*how%20to%20get%20tor%20browser%20bundle%20to%20work][how to get tor browser bundle to work]]
-***** [[*how%20to%20avoid%20the%20safe%20mode%20error%20on%20multiple%20restarts][how to avoid the safe mode error on multiple restarts]]
-***** [[*headless%20configuration][headless configuration]]
-****** TODO merge or something
-***** [[*problematic%20websites][problematic websites]]
-***** [[thoughts on size of data set]]
+***** by-hand initialization to retrieve websites
+      After installation, the tor browser bundle performs some
+      initialization steps. To complete these easily, start the tor
+      browser bundle-firefox by hand once.
+
+      Set the connection type and have it load its first website via
+      Tor. This also downloads descriptors to connect quicker later on.
+***** TODO one_site.py: retrieval of a single page
+      Once you ensured that the Browser Bundle is working by starting it
+      manually once, webpages can be retrieved automatically. This is done
+      via the [[file:../bin/one_site.py][one_site.py]] script.
+
+      It
+
+      1. starts Firefox, waiting up to 60 seconds for its initialization
+      2. starts the capture
+      3. loads the page (given as first parameter)
+      4. waits up to 600 seconds for the load to finish
+      5. ends the capture
+      6. ends Firefox
+
+      This setup (restart after each trace) avoids caching issues with
+      website fingerprinting, as the Tor Browser Bundle cleans the cache
+      between restarts. If a more realistic scenario is desired, the
+      script could to be modified to omit terminating the browser
+      instance.
+***** tshark installation
+      You also need to install =tshark= via =sudo apt-get install tshark=
+      and set the current user to be able to capture packets via =sudo
+      dpkg-reconfigure wireshark-common= and adding the user to the
+      =wireshark= group (in =/etc/groups=).
+****** TODO scripts source + doc
+***** how to get tor browser bundle to work
+      In order to start the tor browser bundle via the =./firefox=
+      command, you need libraries, which are bundled with the binary.
+      They can be found inside the =/TorBrowser/Tor= directory.
+
+      The library path environment variable can be set on the command-line via
+
+      export LD_LIBRARY_PATH=/lib:/usr/lib:/path/to/bundle/Browser/TorBrowser/Tor
+
+      The script [[*%5B%5Bfile:./bin/one_site.py%5D%5D][one_site.py]] uses this internally.
+
+****** TODO where exactly is the torrc: directory
+***** how to avoid the safe mode error on multiple restarts
+      If Firefox was killed via a signal (as opposed to closing the
+      window), it prompts to start in Safe Mode afterwards.
+
+      This behavior can be avoided in three ways:
+
+      You can set the firefox preference
+      =toolkit.startup.max_resumed_crashes= to -1, you can set the
+      environment variable =MOZ_DISABLE_AUTO_SAFE_MODE= (did not work in
+      Tor Browser Bundle version ...), or --- as a last resort --- you can
+      remove the line in the =prefs.js= config file which saves the number
+      of consecutive kills via =sed -i
+      '/toolkit\.startup\.recent_crashes/d' /path/to/prefs.js=.
+****** TODO TBB current version
+***** headless configuration
+      If you want to capture on a headless server, you can use the
+      =xvfb=-package. which is installed via =sudo apt-get install xvfb=.
+
+      Then, you can run the X Virtual Framebuffer via
+
+      =Xvfb :1=
+
+      tell the browser to use it via
+
+      =export DISPLAY:1=
+
+      and start the retrieval as mentioned above.
+***** TODO problematic websites
+      The above setup worked on most websites.
+      The websites sina.com.cn and xinhuanet.com both did not terminate loading.
+      This might need further looking into.
+
+      - do they load completely when not Tor, repeat necessary
+      - is this by design?
+****** MAYBE exclude
+***** TODO thoughts on size of data set
+      - computable (n^2 for svm with good results)
+      - number of instances negligible for computation
+        - check this
+      - stable results
+      - recent papers
+        - Panchenko: 775 a 20
+        - Wang:
+          - 100 a 90 of sensitive pages
+          - 5000 a 1 of non-monitored pages
+        - Cai: 400 samples of bbc.co.uk
+          - 100 \to 800 once a 20 \to 40 twice
+      - (currently closed world)
+****** TODO more complete list?
+***** filtering tshark files
+      - same host as cover traffic generator
+        - ran on port 7777
+        - see below mod_wsgi
+      - in tshark files
+      - needs to be filtered
+        - tshark can do this
+        - -R read-filter
+        - filters see [[file:docs/master.bib::wireshark-filter][wireshark-filter]]
+      - command
+        tshark -r google.com@1460052589 -2 -R "tcp.dstport ne 7777 and tcp.srcport ne 7777"  -w filtered/google.com@1460052589
+        - [[fn::See \url{https://www.wireshark.org/docs/dfref/t/tcp.html} for the tcp filters]]
+        - for all files
+          #+BEGIN_SRC sh
+            for NAME in $(ls); do
+                tshark -r $NAME -2 -R "tcp.dstport ne 7777 and tcp.srcport ne 7777" -w ../../2_7777_filtered/pcap_addon_cached_sizes/$NAME;
+            done
+          #+END_SRC
+****** TODO link to mod_wsgi
+       at see below
+****** TODO link to man tshark
+****** TODO link to [[file:docs/master.bib::wireshark-filter][wireshark-filter]]
 **** TODO what happens when retrieving a website
      The complete data of google.com can be retrieved via
 
@@ -260,17 +365,17 @@
      `domain.json` (for example `craigslist.com.json`) exist, those are
      preferred instead of the pcap files.
 
-     In the interactive shell, there is a dictionary called `counters`,
+     In the interactive shell, there is a dictionary called `COUNTERS`,
      with the domain names as keys and an array of `Counter`s as
      values. To persist these to JSON, you can use `save` in the
      python interactive shell, for example
 
-     >>> Counter.save(counters)
+     >>> Counter.save(COUNTERS)
 
      To distill the features from a single `Counter`, call its
      `panchenko()`, to inspect single features, call
      `get('feature_name')` (for example
-     `counters['cnn.com'][0].get('duration')').
+     `COUNTERS['cnn.com'][0].get('duration')').
 
      `panchenko()` yields a feature vector with default padding of
      Panchenko's variable-length features. Since Panchenko et
@@ -376,13 +481,18 @@
      example google pages are allowed to access gstatic), and a
      blacklist and whitelist mode.
 ***** TODO link Requestpolicy
-**** TODO write new plugins
+**** CHECK write new plugins
      Instead of inserting dummy traffic into the connection, one could
      throttle the "data rate" of request and responses (or only
      requests or the ratio) --- optionally padding with dummies up to
-     the maximum rate. As this approach has been used by
-     f.ex. \cite{effective}, and has been proven to work, requiring
-     higher latency, it has not been explored further.
+     the maximum rate.
+
+     This approach has been used by f.ex. \cite{effective}, and has
+     been proven to work, albeit requiring higher latency, it has not
+     been explored further, as
+     - it might be hard to implement in a plug-in, and
+     - randomized defenses seem offer adequate defense at reduced
+       latency and bandwith
 **** TODO link tor browser bundle
 ***** or writeup something
 **** TODO running an OR
@@ -607,7 +717,7 @@
     multiplexing and fixed cell sizes.
 *** TODO sort subtopics
 *** TODO Tor overview
-** TODO Addon Design and Implementation [5/35]
+** TODO Addon Design and Implementation [5/36]
 *** Defenses
 **** [[*wf-specific%20defenses][wf-specific defenses]]
 **** [[*other%20defenses][other defenses]]
@@ -935,6 +1045,14 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      In addition to using the observed sizes for the bloom filter, the
      number of groups was increased to 5.
 ***** TODO error rate computing
+      - sources of error
+        - filter tells that is has element when it has not
+      - how does error appear
+        - collision: one of several, the other might be true
+        - replacement: simulates being another url
+      - rates of error
+        - "add" the error rates of the filters? (times population density?)
+***** maybe graphics?
 ***** LATER check "see previous section"
 *** Implementation
 **** TODO js coding best practices
@@ -979,7 +1097,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      only wsgi is easily set up via the =mod_wsgi-express= command, which
      is included in the =mod_wsgi= python package.
 
-     installation
+     Installation (Ubuntu Server Edition and Linux Mint 17.1 Rebecca)
 
      - apt-get install apache2-bin apache2-dev python-dev
      - pip install mod_wsgi
@@ -1039,105 +1157,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - fundamental human need
   - concentration camp:
     "solitude in a Camp is more precious and rare than bread." -- primo levi
-* by-hand initialization to retrieve websites
-  After installation, the tor browser bundle performs some
-  initialization steps. To complete these easily, start the tor
-  browser bundle-firefox by hand once.
-
-  Set the connection type and have it load its first website via
-  Tor. This also downloads descriptors to connect quicker later on.
-* TODO one_site.py: retrieval of a single page
-  Once you ensured that the Browser Bundle is working by starting it
-  manually once, webpages can be retrieved automatically. This is done
-  via the [[file:../bin/one_site.py][one_site.py]] script.
-
-  It
-
-  1. starts Firefox, waiting up to 60 seconds for its initialization
-  2. starts the capture
-  3. loads the page (given as first parameter)
-  4. waits up to 600 seconds for the load to finish
-  5. ends the capture
-  6. ends Firefox
-
-  This setup (restart after each trace) avoids caching issues with
-  website fingerprinting, as the Tor Browser Bundle cleans the cache
-  between restarts. If a more realistic scenario is desired, the
-  script could to be modified to omit terminating the browser
-  instance.
-* tshark installation
-  You also need to install =tshark= via =sudo apt-get install tshark=
-  and set the current user to be able to capture packets via =sudo
-  dpkg-reconfigure wireshark-common= and adding the user to the
-  =wireshark= group (in =/etc/groups=).
-** TODO scripts source + doc
-* how to get tor browser bundle to work
-  In order to start the tor browser bundle via the =./firefox=
-  command, you need libraries, which are bundled with the binary.
-  They can be found inside the =/TorBrowser/Tor= directory.
-
-  The library path environment variable can be set on the command-line via
-
-  export LD_LIBRARY_PATH=/lib:/usr/lib:/path/to/bundle/Browser/TorBrowser/Tor
-
-  The script [[*%5B%5Bfile:./bin/one_site.py%5D%5D][one_site.py]] uses this internally.
-
-** TODO where exactly is the torrc: directory
-* how to avoid the safe mode error on multiple restarts
-  If Firefox was killed via a signal (as opposed to closing the
-  window), it prompts to start in Safe Mode afterwards.
-
-  This behavior can be avoided in three ways:
-
-  You can set the firefox preference
-  =toolkit.startup.max_resumed_crashes= to -1, you can set the
-  environment variable =MOZ_DISABLE_AUTO_SAFE_MODE= (did not work in
-  Tor Browser Bundle version ...), or --- as a last resort --- you can
-  remove the line in the =prefs.js= config file which saves the number
-  of consecutive kills via =sed -i
-  '/toolkit\.startup\.recent_crashes/d' /path/to/prefs.js=.
-** TODO TBB current version
-* headless configuration
-  If you want to capture on a headless server, you can use the
-  =xvfb=-package. which is installed via =sudo apt-get install xvfb=.
-
-  Then, you can run the X Virtual Framebuffer via
-
-  =Xvfb :1=
-
-  tell the browser to use it via
-
-  =export DISPLAY:1=
-
-  and start the retrieval as mentioned above.
-* TODO MOVE how sally works
-  - configuration file
-    - input
-    - features
-    - output
-** TODO MOVE to unused
-* TODO problematic websites
-  The above setup worked on most websites.
-  The websites sina.com.cn and xinhuanet.com both did not terminate loading.
-  This might need further looking into.
-
-  - do they load completely when not Tor, repeat necessary
-  - is this by design?
-** MAYBE exclude
-* TODO thoughts on size of data set
-  - computable (n^2 for svm with good results)
-  - number of instances negligible for computation
-    - check this
-  - stable results
-  - recent papers
-    - Panchenko: 775 a 20
-    - Wang:
-      - 100 a 90 of sensitive pages
-      - 5000 a 1 of non-monitored pages
-    - Cai: 400 samples of bbc.co.uk
-      - 100 \to 800 once a 20 \to 40 twice
-  - (currently closed world)
-** TODO more complete list?
 * TODO differences to adaptive padding/wtfpad
 ** no cooperator necessary
    dummy packets chosen as response to real request (as in web traffic)
@@ -1161,7 +1180,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 * TODO extract dom tags python
   - diveintopython
   - which tags?
-* TODO page size
 * TODO modified top-100
   - originally alexa-top-1m, from September 30, 2015 condensed
   - take out duplicates: google, amazon, bbc, ...
@@ -3476,3 +3494,9 @@ mean = 0.763238095238
    well suffice for reducing the bandwidth of the side-channel enough
    to make it insignificant.
 ** TODO in-browser vs tcp-level ( ???)
+** how sally works
+   - configuration file
+     - input
+     - features
+     - output
+

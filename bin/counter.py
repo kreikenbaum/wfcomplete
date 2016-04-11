@@ -141,6 +141,7 @@ class Counter(object):
             out.append(Counter.from_json(entry))
         return out
 
+    # td: separate json parsing and pcap-parsing
     @staticmethod
     def all_from_dir(dirname):
         '''all packets traces in subdirectories of the name domain@tstamp are
@@ -322,6 +323,34 @@ class Counter(object):
         else:
             out = Counter.all_from_dir('.')
         return out
+
+    def cumul(self, num_features=100):
+        '''@return CUMUL feature vector'''
+        total = []
+        cum = []
+        inSize = 0
+        outSize = 0
+        inCount = 0
+        outCount = 0
+
+        # copied &modified from panchenko's generate-feature.py
+        # init
+        inCount = 1
+        if packetsize > 0:
+            inSize = packetsize
+            cum.append(packetsize)
+            total.append(packetsize)
+
+        # loop
+        for packetsize in self.packets[1:]:
+            if packetsize > 0:
+                # cumulated packetsizes
+                cum.append(cum[-1] + packetsize)
+                total.append(total[-1] + abs(packetsize))
+            
+            
+
+        
 
 if __name__ == "__main__":
     doctest.testmod()
