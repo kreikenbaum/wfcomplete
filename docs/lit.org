@@ -5153,6 +5153,11 @@
 
 	  - remove outliers by quantiles (5%)
 
+            - of sum of incoming packet sizes =: I
+
+            - formula
+              Q1 − 1.5(Q3 − Q1) < I < Q3 + 1.5(Q3 − Q1).
+
     6) A NOVEL WEBSITE FINGERPRINTING ATTACK
 
        - contrary to wang: abstract representation
@@ -5411,7 +5416,7 @@
         did not have to use any locality information for recognizing
         any of the pages on this site.
 
-*** TODO ref [[file:master.bib::quantifying][Mistry & Raman 1998: Quantifying Traffic Analysis]]
+*** ref: [[file:master.bib::quantifying][Mistry & Raman 1998: Quantifying Traffic Analysis]]
 ** [[../sw/jasondavies_bloomfilter.js%20%C2%B7%20GitHub.html]]
 *** summary
     - bloom filter using Fowler–Noll–Vo hash function
@@ -5442,7 +5447,7 @@
       #+END_SRC
       - better: typed array for performance (=array= is used directly)
 ** TODO [#A] Entwurfsmuster
-*** TODO summary (weiter bei 0.4.5.Zweck S.223)
+*** TODO summary (weiter bei 0.4.5.Struktur S.227)
     0) [@0] Preface
        1) Vorwort
 
@@ -6303,7 +6308,35 @@
 
           - objektbasert
 
-          - Zweck:
+          - Zweck: viele Objekte kleiner Granularität
+
+          - Motivation: Texteditor:
+
+            - Zeichen sind Objekte
+
+              - es gibt z.B. ein Objekt für "a"
+
+            - Glyph hat Fkt Zeichne(Kontext) und Unterklassen Zeile,
+              Spalte, Zeichen
+
+            - speichert nur intrinsischen Zustand (welches Zeichen)
+
+            - extrinsischer Zustand ist vom Kontext vorgegeben
+
+          - Anwendbarkeit: nur wenn (alles gemeinsam)
+
+            - viele Objekte,
+
+            - Speicherkosten deswegen hoch,
+
+            - Großteil des Zustands in Kontext verlagerbar,
+
+            - dann Gruppen zusammenfassbar zu wenigen gemeinsam
+              genutzten Objekten, UND
+
+            - Identität der Objekte unwichtig.
+
+          - Struktur:
 
     5) [@5] Verhaltensmuster
 
@@ -6414,7 +6447,7 @@
     - *In C++* sind statische Member-Funktionen zudem niemals
       virtuell, so dass Unterklassen sie nicht polymorph
       ueberschreiben koennen.
-** TODO [#A] [[./JavaScript Garden.html]]
+** MOVE [#A] [[./JavaScript Garden.html]]
 *** summary
     1) Objects
 
@@ -7091,6 +7124,38 @@
           - call setTimeout() in function after blocking code
 
        4) Manually Clearing Timeouts
+          #+BEGIN_SRC js
+            var id = setTimeout(foo, 1000);
+            clearTimeout(id);
+          #+END_SRC
+
+       5) Clearing All Timeouts
+          
+          - no fixed method
+
+          - simple: clear all up to 1000
+
+          - often monotonically increasing, then
+            #+BEGIN_SRC js
+              var biggestTimeoutId = window.setTimeout(function(){}, 1), i;
+              for(i = 1; i <= biggestTimeoutId; i++) {
+                  clearTimeout(i);
+              }
+            #+END_SRC
+            "works on all major browsers"
+
+          - better keep track of IDs, clear individually
+
+       6) Hidden Use of eval
+
+          - if string as first parameter, uses =eval= in global scope
+
+       7) In Conclusion
+
+          - avoid string use
+
+          - avoid setInterval, as "its scheduler is not blocked by
+            executing JavaScript."
 *** quotes
     6) Other
        - Note: As setTimeout takes a function object as its first
@@ -8712,6 +8777,15 @@
 
     4. Context Management
 *** quotes
+    - class marionette_driver.marionette.Marionette(host=’localhost’,
+      port=2828, app=None, app_args=None, bin=None, profile=None,
+      emulator=None, sd-card=None, emulator_img=None,
+      emulator_binary=None, emulator_res=None,
+      connect_to_running_emulator=False, gecko_log=None, homedir=None,
+      baseurl=None, no_window=False, logdir=None, busybox=None,
+      symbols_path=None, timeout=None, socket_timeout=360,
+      device_serial=None, adb_path=None, process_args=None,
+      adb_host=None, adb_port=None, prefs=None)
 ** TODO [[./python-doc-howto-doanddont.pdf][Idioms and Anti-Idioms in Python]]
 *** summary
     1) Language Constructs You Should Not Use
@@ -12889,7 +12963,7 @@
                3-tuple containing the string itself, followed by two
                empty strings.
     9) [@9] Numeric and Mathematical Modules
-       1) [@7] itertools — Functions creating iterators for efficient looping
+       7) [@7] itertools — Functions creating iterators for efficient looping
           - itertools.islice(iterable, stop)
             itertools.islice(iterable, start, stop [ , step ] )
 
@@ -12922,6 +12996,11 @@
                 the listscontain no path components. To get a full
                 path (which begins with top) to a file or directory in
                 dirpath, do os.path.join(dirpath, name).
+        7) [@7] asdf
+           7) [@7] LogRecord attributes
+              |          |              | <30>                           |
+              | filename | %(filename)s | Filename portion of pathname.  |
+              | funcname | %(funcName)s | Name of function containing the logging call. |
     18) [@18] Internet Data Handling
         2) [@2] json — JSON encoder and decoder
            - Using json.tool from the shell to validate and pretty-print:

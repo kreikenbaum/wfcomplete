@@ -19,7 +19,7 @@ TIME_SEPARATOR = '@'
 
 
 def to_features(counters):
-    '''transforms counter data to feature vector pair (X,y)'''
+    '''transforms counter data to panchenko.v1-feature vector pair (X,y)'''
     max_lengths = counters.values()[0][0].variable_lengths()
     all_lengths = []
     for domain, domain_values in counters.iteritems():
@@ -36,17 +36,34 @@ def to_features(counters):
 
     X_in = []
     out_y = []
-    feature = 0
+    class_number = 0
     domain_names = []
     for domain, dom_counters in counters.iteritems():
         for count in dom_counters:
             if not count.warned:
                 X_in.append(count.panchenko(max_lengths))
-                out_y.append(feature)
+                out_y.append(class_number)
                 domain_names.append(domain)
             else:
                 logging.warn('%s: one discarded', domain)
-        feature += 1
+        class_number += 1
+    return (np.array(X_in), np.array(out_y), domain_names)
+
+def to_features_cumul(counters):
+    '''transforms counter data to CUMUL-feature vector pair (X,y)'''
+    X_in = []
+    out_y = []
+    class_number = 0
+    domain_names = []
+    for domain, dom_counters in counters.iteritems():
+        for count in dom_counters:
+            if not count.warned:
+                X_in.append(count.cumul())
+                out_y.append(class_number)
+                domain_names.append(domain)
+            else:
+                logging.warn('%s: one discarded', domain)
+        class_number += 1
     return (np.array(X_in), np.array(out_y), domain_names)
 
 
@@ -70,13 +87,14 @@ def test(X, y, estimator):
 
 
 if __name__ == "__main__":
-    doctest.testmod()
     logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
 
     # if by hand: change to the right directory before importing
     # os.chdir('/home/w00k/da/sw/data/json/part')
+    # import os; os.chdir('/home/uni/da/git/sw/data/json/addon_guess_sizes')
     # os.chdir('/mnt/data/2-top100dupremoved_cleaned/')
-    (X, y, y_domains) = to_features(counter.Counter.from_(sys.argv))
+    #(X, y, y_domains) = to_features(counter.Counter.from_(sys.argv))
+    (X, y, y_domains) = to_features_cumul(counter.Counter.from_(sys.argv))
 
     test(X, y, svm.SVC(C=10**-20, gamma=4.175318936560409e-10))
     test(X, y, svm.SVC(kernel='linear'))

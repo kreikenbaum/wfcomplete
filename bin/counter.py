@@ -5,6 +5,7 @@ import itertools
 import json
 import logging
 import math
+import numpy
 import os
 import subprocess
 import sys
@@ -12,6 +13,8 @@ import sys
 HOME_IP = '134.76.96.47' #td: get ips
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
+LOGFORMAT='%(levelname)s:%(filename)s:$(funcName)s:%(message)s'
+
 TIME_SEPARATOR = '@'
 
 def _append_features(keys, filename):
@@ -327,6 +330,7 @@ class Counter(object):
     def cumul(self, num_features=100):
         '''@return CUMUL feature vector'''
         total = []
+        # cumulated packetsizes
         cum = []
         inSize = 0
         outSize = 0
@@ -334,27 +338,42 @@ class Counter(object):
         outCount = 0
 
         # copied &modified from panchenko's generate-feature.py
-        # init
-        inCount = 1
-        if packetsize > 0:
-            inSize = packetsize
-            cum.append(packetsize)
-            total.append(packetsize)
-
-        # loop
-        for packetsize in self.packets[1:]:
+        for packetsize in self.packets:
             if packetsize > 0:
-                # cumulated packetsizes
-                cum.append(cum[-1] + packetsize)
-                total.append(total[-1] + abs(packetsize))
-            
-            
+                inSize += packetsize
+                inCount += 1
+                if len(cum) == 0:
+                    cum.append(packetsize)
+                    total.append(packetsize)
+                else:
+                    cum.append(cum[-1] + packetsize)
+                    total.append(total[-1] + abs(packetsize))
+            elif packetsize < 0:
+                outSize += abs(packetsize)
+                outCount += 1
+                if len(cum) == 0:
+                    cum.append(packetsize)
+                    total.append(abs(packetsize))
+                else:
+                    cum.append(cum[-1] + packetsize)
+                    total.append(total[-1] + abs(packetsize))
+            else:
+                logging.warn('packetsize == 0 in cumul')
 
+        features = [inCount, outCount, outSize, inSize]
+        cumFeatures = numpy.interp(numpy.linspace(total[0], total[-1],
+                                                  num_features+1),
+                                   total, cum)
+        # could be cumFeatures[1:], but never change a running system
+        for el in itertools.islice(cumFeatures, 1, None):
+            features.append(el)
+
+        return features
         
 
 if __name__ == "__main__":
     doctest.testmod()
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
+    logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 
     COUNTERS = Counter.from_(*sys.argv)
     ## if non-interactive, print timing data

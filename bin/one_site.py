@@ -28,7 +28,7 @@ def _avoid_safe_mode(exedir):
 
 def _open_with_timeout(browser, page, timeout=600):
     '''navigates browser to url while capturing the packet dump, aborts after timeout'''
-    client = Marionette('localhost', port=2828)
+    client = Marionette('localhost', port=2828, socket_timeout=timeout)
     client.start_session()
     client.timeouts('page load', timeout * 1000);# not working
 
