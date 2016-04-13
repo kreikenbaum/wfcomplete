@@ -6,9 +6,9 @@ import string
 
 def application(environ, start_response):
     status = '200 OK'
-    logging.warning('got request with ' + environ['QUERY_STRING'])
+    logging.info('got request: ' + environ['QUERY_STRING'])
 
-    output = _randomString(_getSize(environ['QUERY_STRING']))
+    output = _randomString(_reduceSize(_getSize(environ['QUERY_STRING'])))
 
     response_headers = [('Content-type', 'text/plain'),
                         ('Content-Length', str(len(output)))]
@@ -16,6 +16,13 @@ def application(environ, start_response):
 
     return [output]
 
+# this depends on if "Proxy-Connection: keep-alive" is included, better safe...
+def _reduceSize(size):
+    '''reduces size by header length'''
+    my_len = size -135 -len(str(size))
+    my_len += len(str(size)) - len(str(my_len))
+    logging.debug('size: %d', my_len)
+    return my_len
 
 def _getSize(query):
     '''extracts value of size parameter'''

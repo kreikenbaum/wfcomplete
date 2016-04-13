@@ -328,7 +328,7 @@
      - collects,
      - sums in the end
      - displays
-     - =Counts=-class
+     - =Counter=-class
 ***** TODO why filtering allowed
 ***** TODO see if merge/unify with [[transform to panchenko-features]]
 ***** TODO and if include stuff from [[*from%20%5B%5B*transform%20to%20panchenko-features%5D%5D][from {{*transform to panchenko-features}}]]
@@ -336,7 +336,7 @@
      In encoding packet sizes, this thesis follows Panchenko et al.'s
      approach, who recorded "incoming packets as positive, outgoing ones
      as negative numbers."\cite{panchenko}
-
+**** usage of counter.py to extract features from pcap
      Once the website traces are stored in pcap-files, feature vectors
      need to be extracted. A feature vector is represented by a Python
      class `Counter`, which can be created from a pcap file, or persisted
@@ -1171,7 +1171,16 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
     - error rate computation
   - size taken from example...
     - maybe change when altered
-* TODO python web server nichol.as
+* CHECK python web server nichol.as
+  The naïve implementation based on Python's BaseHTTPServer did not
+  perform flawlessly (see [[*Python%20web%20server%20for%20cover%20traffic][Python web server for cover traffic]]), even
+  for the queries of a single addon. This prompted the search for a
+  python-based, adequately-performing technology stack.
+
+  Luckily, an evaluation of Python web server performance had been
+  performed by Nicholas Piël \cite{nicholas}. It shows the apache
+  server with the mod_wsgi module as well-performing. As it was noted
+  to be very easy to set up, it was chosen for this evaluation.
 * TODO extract dom tags python
   - diveintopython
   - which tags?
@@ -1276,6 +1285,35 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   then adding elements via =htmlSizes.add("http://google.com/", 613)=
   and querying via =htmlSizes.query("http://google.com/")=, which
   would yield =400=. (see usage in [[file:cover/js/size-cache.js::let%20numEmbeddeds%20%3D%20new%20BloomSort.BloomSort(NUM_EMBEDDED_SIZES,][size-cache]])
+* TODO wsgi.py cover traffic server and generator
+  Once the technology stack to implement the cover traffic generator
+  is settled, implementation becomes a single-page file.
+
+  Yet, the length of the content gets inflated by the
+  content-headers. To decrease again, the length (which depends on the
+  size) needs to be calculated and subtracted from the body-length.  A
+  minor caveat is that the =Proxy-Connection: keep-alive= header is
+  headed in some circumstances. The implementation errs on the side of
+  returning too much data.
+
+  Once that is given, a pseudo-random choice from the list of all
+  printable characters is returned to the HTML query.
+
+  To test this algorithm, the first 1000 sizes are retrieved via
+    #+BEGIN_SRC sh
+      for i in $(seq 1000); do
+          curl -D /tmp/curlheaders/$i.head 127.0.0.1:8000/?size=$i > /tmp/curlheaders/$i.body; 
+      done
+    #+END_SRC
+  which outputs the header and body of each query to the files,
+  f.ex. =134.head= and =134.body=.
+
+  This data is then evaluated by hand to check the sizes:
+    #+BEGIN_SRC sh
+      for i in $(seq 1000); do
+          echo "$i: $(cat ${i}.* | wc -c)";
+      done
+    #+END_SRC
 * TODO differences theoretical HTML-num embedded and observed
   - redirects
     - html had 176 elements, embedded only 100
@@ -3401,7 +3439,8 @@ mean = 0.763238095238
    This approach did not scale, so it was not used. It is included as a
    reference of what seems to work, but did not.
 
-   The python module =TrafficHTTPServer= can be started on the command-line via 
+   The python module =TrafficHTTPServer= can be started on the
+   command-line via
 
    python TrafficHTTPServer.py portname
 
