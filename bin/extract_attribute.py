@@ -97,7 +97,7 @@ if __name__ == "__main__":
     (X, y, y_domains) = to_features_cumul(counter.Counter.from_(sys.argv))
 
     test(X, y, svm.SVC(C=10**-20, gamma=4.175318936560409e-10))
-    test(X, y, svm.SVC(kernel='linear'))
+    test(X, y, svm.SVC(kernel='linear')) #problematic, but best
     test(X, y, neighbors.KNeighborsClassifier())
     test(X, y, svm.LinearSVC())
     #grid rbf

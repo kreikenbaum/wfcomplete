@@ -36,7 +36,7 @@
 **** WAIT may \to (ohne) (falls richtig)
 ** Introduction
 ** Materials and Methods
-* TODO topics [7/98]
+* TODO topics [7/99]
 ** TODO Website Fingerprinting [2/47]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
@@ -274,14 +274,21 @@
       - (currently closed world)
 ****** TODO more complete list?
 ***** filtering tshark files
-      - same host as cover traffic generator
-        - ran on port 7777
-        - see below mod_wsgi
-      - in tshark files
-      - needs to be filtered
-        - tshark can do this
-        - -R read-filter
-        - filters see [[file:docs/master.bib::wireshark-filter][wireshark-filter]]
+      Although this requirement might later be removed (see [[*Further%20work][further
+      work]]), the addon currently needs a generator of cover traffic to
+      work. While it can be set in the add-on's preferences, this
+      generator ran on the same host as the tor client. Thus, the
+      capture files also contained traffic of the cover traffic
+      server. As they do not belong to the Tor traffic, are not what
+      the adversary sees, and might distort the result, they were
+      filtered. (Even though the accuracy results were not greatly
+      changed).
+
+      Fortunately, =tshark= offers a way to filter these files as
+      shown in \cite{splitcap}. The filter commands are described in
+      the manual \cite{wireshark-filter}, with the tcp protocol
+      specific fields as given in \cite{tcp-filter-fields}.
+****** solution
       - command
         tshark -r google.com@1460052589 -2 -R "tcp.dstport ne 7777 and tcp.srcport ne 7777"  -w filtered/google.com@1460052589
         - [[fn::See \url{https://www.wireshark.org/docs/dfref/t/tcp.html} for the tcp filters]]
@@ -291,6 +298,13 @@
                 tshark -r $NAME -2 -R "tcp.dstport ne 7777 and tcp.srcport ne 7777" -w ../../2_7777_filtered/pcap_addon_cached_sizes/$NAME;
             done
           #+END_SRC
+      - legit as firewall blocked much, among which outgoing traffic
+        to 7777
+****** implementation
+      - summary approach: file 7777.sh takes each (pcap) file in
+        current directory, filters the port 7777 out
+      - apply this to each subdirectory
+      - the move all files to a common directory
 ****** TODO link to mod_wsgi
        at see below
 ****** TODO link to man tshark
@@ -582,7 +596,7 @@
     vector machine with a radial basis function kernel.
 **** maybe merge with [[Panchenko's Attack via Website Fingerprinting]]
 **** practical wf: Capturing traces
-** TODO Tor [0/8]
+** TODO Tor [0/14]
 *** How to use Tor
     Tor offers a SOCKS5\cite{rfc1928}-(TCP\cite{rfc793}-)proxy for
     users. (If an application has no proxy settings, the
@@ -670,7 +684,7 @@
     - troubleshooting IT systems.
 **** TODO "nowadays" used like this and here?
 **** TODO client numbers with link (footnote?)
-*** TODO Tor Threat Model [0/2]
+*** TODO Tor Threat Model [0/3]
     Tor does not attempt to protect against a global passive adversary,
     who can observe all connections. A Tor adversary can\cite{tor-design}
 
@@ -687,6 +701,7 @@
     - if someone can exploit your computer
     - if you enter identifying information while using tor
 **** TODO maybe schneier re adversaries
+***** TODO book from library                                        :library:
 **** TODO quote big amount internet traffic, read paper
 *** Tor Browser
     There are many technologies based on the Tor protocol. Top of
@@ -972,7 +987,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      =Content-Length= in the browser, as there are additional headers
      and size-reduction via compression. The sizes were determined by
      retrieving the files with =wget= via squid. This is implemented
-     via the [[./bin/html_top_100.sh]] file (see appendix).
+     via the [[./bin/html_top_100.sh]] script (see appendix).
 
      It empties the =access.log= file and the squid cache by
      restarting. Afterwards, the top-100 files are retrieved with
@@ -1285,19 +1300,21 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   then adding elements via =htmlSizes.add("http://google.com/", 613)=
   and querying via =htmlSizes.query("http://google.com/")=, which
   would yield =400=. (see usage in [[file:cover/js/size-cache.js::let%20numEmbeddeds%20%3D%20new%20BloomSort.BloomSort(NUM_EMBEDDED_SIZES,][size-cache]])
-* TODO wsgi.py cover traffic server and generator
-  Once the technology stack to implement the cover traffic generator
-  is settled, implementation becomes a single-page file.
+* CHECK wsgi.py cover traffic server and generator
+  With the technology stack to implement the cover traffic generator
+  being settled, implementation becomes a single-page file, see
+  appendix: [[*%5B%5Bfile:../bin/wsgi.py%5D%5D][{{file:../bin/wsgi.py}}]].
 
-  Yet, the length of the content gets inflated by the
-  content-headers. To decrease again, the length (which depends on the
-  size) needs to be calculated and subtracted from the body-length.  A
-  minor caveat is that the =Proxy-Connection: keep-alive= header is
-  headed in some circumstances. The implementation errs on the side of
-  returning too much data.
+  One detail is that the length of the content gets inflated by the
+  content-headers. To decrease this again, the length (which in turn
+  depends on the required length) needs to be calculated and
+  subtracted from the body-length. Some uncertainty arises because the
+  =Proxy-Connection: keep-alive= header is headed in some
+  circumstances. The implementation errs on the side of returning too
+  much data.
 
-  Once that is given, a pseudo-random choice from the list of all
-  printable characters is returned to the HTML query.
+  Once the size is computed, a pseudo-random choice from the list of
+  all printable characters is returned to the HTML query.
 
   To test this algorithm, the first 1000 sizes are retrieved via
     #+BEGIN_SRC sh
@@ -1327,6 +1344,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
     embedded filter by 0 for each of those, it is not a perfect fit,
     but better)
   - [[*Further%20work][Further work]]
+* TODO also helps against global observer if .onion generator is used
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
@@ -3429,12 +3447,12 @@ mean = 0.763238095238
    - assumption: can split traces
 ** TODO always also link in text
 *** TODO check with darp
-* TODO appendices [3/6]
+* TODO appendices [4/6]
 ** TODO [[file:./bin/one_site.py]]
    insert file here
 ** LATER [[file:../bin/extract_attribute.py][extract_attribute.py]]
    insert file here
-** TODO [[file:../bin/wsgi.py]]
+** LATER [[file:../bin/wsgi.py]]
 ** Python web server for cover traffic
    This approach did not scale, so it was not used. It is included as a
    reference of what seems to work, but did not.
