@@ -2,8 +2,6 @@
 #+TODO: TODO CHECK | LATER DONE
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{tikz}
-* TODO [#A] move [[*add-on][add-on]] parts
-* TODO promote subtree [[*setup][setup]]
 * final sections
 ** LATER Abstract
 *** Teaser
@@ -37,7 +35,7 @@
 **** WAIT may \to (ohne) (falls richtig)
 ** Introduction
 ** Materials and Methods
-* TODO topics [7/99]
+* TODO topics [7/104]
 ** TODO Website Fingerprinting [2/49]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
@@ -194,147 +192,147 @@
      - modified browser
      - selenium: daniel
      - plain tor bundle
-**** setup
-***** by-hand initialization to retrieve websites
-      After installation, the tor browser bundle performs some
-      initialization steps. To complete these easily, start the tor
-      browser bundle-firefox by hand once.
+*** setup
+**** by-hand initialization to retrieve websites
+     After installation, the tor browser bundle performs some
+     initialization steps. To complete these easily, start the tor
+     browser bundle-firefox by hand once.
 
-      Set the connection type and have it load its first website via
-      Tor. This also downloads descriptors to connect quicker later on.
-***** TODO one_site.py: retrieval of a single page
-      Once you ensured that the Browser Bundle is working by starting it
-      manually once, webpages can be retrieved automatically. This is done
-      via the [[file:../bin/one_site.py][one_site.py]] script.
+     Set the connection type and have it load its first website via
+     Tor. This also downloads descriptors to connect quicker later on.
+**** TODO one_site.py: retrieval of a single page
+     Once you ensured that the Browser Bundle is working by starting it
+     manually once, webpages can be retrieved automatically. This is done
+     via the [[file:../bin/one_site.py][one_site.py]] script.
 
-      It
+     It
 
-      1. starts Firefox, waiting up to 60 seconds for its initialization
-      2. starts the capture
-      3. loads the page (given as first parameter)
-      4. waits up to 600 seconds for the load to finish
-      5. ends the capture
-      6. ends Firefox
+     1. starts Firefox, waiting up to 60 seconds for its initialization
+     2. starts the capture
+     3. loads the page (given as first parameter)
+     4. waits up to 600 seconds for the load to finish
+     5. ends the capture
+     6. ends Firefox
 
-      This setup (restart after each trace) avoids caching issues with
-      website fingerprinting, as the Tor Browser Bundle cleans the cache
-      between restarts. If a more realistic scenario is desired, the
-      script could to be modified to omit terminating the browser
-      instance.
-***** tshark installation
-      You also need to install =tshark= via =sudo apt-get install tshark=
-      and set the current user to be able to capture packets via =sudo
-      dpkg-reconfigure wireshark-common= and adding the user to the
-      =wireshark= group (in =/etc/groups=).
-****** TODO scripts source + doc
-***** how to get tor browser bundle to work
-      In order to start the tor browser bundle via the =./firefox=
-      command, you need libraries, which are bundled with the binary.
-      They can be found inside the =/TorBrowser/Tor= directory.
+     This setup (restart after each trace) avoids caching issues with
+     website fingerprinting, as the Tor Browser Bundle cleans the cache
+     between restarts. If a more realistic scenario is desired, the
+     script could to be modified to omit terminating the browser
+     instance.
+**** tshark installation
+     You also need to install =tshark= via =sudo apt-get install tshark=
+     and set the current user to be able to capture packets via =sudo
+     dpkg-reconfigure wireshark-common= and adding the user to the
+     =wireshark= group (in =/etc/groups=).
+***** TODO scripts source + doc
+**** how to get tor browser bundle to work
+     In order to start the tor browser bundle via the =./firefox=
+     command, you need libraries, which are bundled with the binary.
+     They can be found inside the =/TorBrowser/Tor= directory.
 
-      The library path environment variable can be set on the command-line via
+     The library path environment variable can be set on the command-line via
 
-      export LD_LIBRARY_PATH=/lib:/usr/lib:/path/to/bundle/Browser/TorBrowser/Tor
+     export LD_LIBRARY_PATH=/lib:/usr/lib:/path/to/bundle/Browser/TorBrowser/Tor
 
-      The script [[*%5B%5Bfile:./bin/one_site.py%5D%5D][one_site.py]] uses this internally.
+     The script [[*%5B%5Bfile:./bin/one_site.py%5D%5D][one_site.py]] uses this internally.
 
-****** TODO where exactly is the torrc: directory
-***** how to avoid the safe mode error on multiple restarts
-      If Firefox was killed via a signal (as opposed to closing the
-      window), it prompts to start in Safe Mode afterwards.
+***** TODO where exactly is the torrc: directory
+**** how to avoid the safe mode error on multiple restarts
+     If Firefox was killed via a signal (as opposed to closing the
+     window), it prompts to start in Safe Mode afterwards.
 
-      This behavior can be avoided in three ways:
+     This behavior can be avoided in three ways:
 
-      You can set the firefox preference
-      =toolkit.startup.max_resumed_crashes= to -1, you can set the
-      environment variable =MOZ_DISABLE_AUTO_SAFE_MODE= (did not work in
-      Tor Browser Bundle version ...), or --- as a last resort --- you can
-      remove the line in the =prefs.js= config file which saves the number
-      of consecutive kills via =sed -i
-      '/toolkit\.startup\.recent_crashes/d' /path/to/prefs.js=.
-****** TODO TBB current version
-***** headless configuration
-      If you want to capture on a headless server, you can use the
-      =xvfb=-package. which is installed via =sudo apt-get install xvfb=.
+     You can set the firefox preference
+     =toolkit.startup.max_resumed_crashes= to -1, you can set the
+     environment variable =MOZ_DISABLE_AUTO_SAFE_MODE= (did not work in
+     Tor Browser Bundle version ...), or --- as a last resort --- you can
+     remove the line in the =prefs.js= config file which saves the number
+     of consecutive kills via =sed -i
+     '/toolkit\.startup\.recent_crashes/d' /path/to/prefs.js=.
+***** TODO TBB current version
+**** headless configuration
+     If you want to capture on a headless server, you can use the
+     =xvfb=-package. which is installed via =sudo apt-get install xvfb=.
 
-      Then, you can run the X Virtual Framebuffer via
+     Then, you can run the X Virtual Framebuffer via
 
-      =Xvfb :1=
+     =Xvfb :1=
 
-      tell the browser to use it via
+     tell the browser to use it via
 
-      =export DISPLAY:1=
+     =export DISPLAY:1=
 
-      and start the retrieval as mentioned above.
-***** TODO thoughts on size of data set
-      - computable (n^2 for svm with good results)
-      - number of instances negligible for computation
-        - check this
-      - stable results
-      - recent papers
-        - Panchenko: 775 a 20
-        - Wang:
-          - 100 a 90 of sensitive pages
-          - 5000 a 1 of non-monitored pages
-        - Cai: 400 samples of bbc.co.uk
-          - 100 \to 800 once a 20 \to 40 twice
-      - (currently closed world)
-****** TODO more complete list?
-***** filtering tshark files
-      Although this requirement might later be removed (see [[*Further%20work][further
-      work]]), the addon currently needs a generator of cover traffic to
-      work. While it can be set in the add-on's preferences, this
-      generator ran on the same host as the tor client. Thus, the
-      capture files also contained traffic of the cover traffic
-      server. As they do not belong to the Tor traffic, are not what
-      the adversary sees, and might distort the result, they were
-      filtered. (Even though the accuracy results were not greatly
-      changed).
+     and start the retrieval as mentioned above.
+**** TODO thoughts on size of data set
+     - computable (n^2 for svm with good results)
+     - number of instances negligible for computation
+       - check this
+     - stable results
+     - recent papers
+       - Panchenko: 775 a 20
+       - Wang:
+         - 100 a 90 of sensitive pages
+         - 5000 a 1 of non-monitored pages
+       - Cai: 400 samples of bbc.co.uk
+         - 100 \to 800 once a 20 \to 40 twice
+     - (currently closed world)
+***** TODO more complete list?
+**** filtering tshark files
+     Although this requirement might later be removed (see [[*Further%20work][further
+     work]]), the addon currently needs a generator of cover traffic to
+     work. While it can be set in the add-on's preferences, this
+     generator ran on the same host as the tor client. Thus, the
+     capture files also contained traffic of the cover traffic
+     server. As they do not belong to the Tor traffic, are not what
+     the adversary sees, and might distort the result, they were
+     filtered. (Even though the accuracy results were not greatly
+     changed).
 
-      Fortunately, =tshark= offers a way to filter these files as
-      shown in \cite{splitcap}. The filter commands are described in
-      the manual \cite{wireshark-filter}, with the tcp protocol
-      specific fields as given in \cite{tcp-filter-fields}.
-****** solution
-      - command
-        tshark -r google.com@1460052589 -2 -R "tcp.dstport ne 7777 and tcp.srcport ne 7777"  -w filtered/google.com@1460052589
-        - [[fn::See \url{https://www.wireshark.org/docs/dfref/t/tcp.html} for the tcp filters]]
-        - for all files
-          #+BEGIN_SRC sh
-            for NAME in $(ls); do
-                tshark -r $NAME -2 -R "tcp.dstport ne 7777 and tcp.srcport ne 7777" -w ../../2_7777_filtered/pcap_addon_cached_sizes/$NAME;
-            done
-          #+END_SRC
-      - legit as firewall blocked much, among which outgoing traffic
-        to 7777
-****** implementation
-      - summary approach: file 7777.sh takes each (pcap) file in
-        current directory, filters the port 7777 out
-      - apply this to each subdirectory
-      - the move all files to a common directory
-****** TODO link to mod_wsgi
-       at see below
-****** TODO link to man tshark
-****** TODO link to [[file:docs/master.bib::wireshark-filter][wireshark-filter]]
-**** TODO what happens when retrieving a website
-     The complete data of google.com can be retrieved via
+     Fortunately, =tshark= offers a way to filter these files as
+     shown in \cite{splitcap}. The filter commands are described in
+     the manual \cite{wireshark-filter}, with the tcp protocol
+     specific fields as given in \cite{tcp-filter-fields}.
+***** solution
+     - command
+       tshark -r google.com@1460052589 -2 -R "tcp.dstport ne 7777 and tcp.srcport ne 7777"  -w filtered/google.com@1460052589
+       - [[fn::See \url{https://www.wireshark.org/docs/dfref/t/tcp.html} for the tcp filters]]
+       - for all files
+         #+BEGIN_SRC sh
+           for NAME in $(ls); do
+               tshark -r $NAME -2 -R "tcp.dstport ne 7777 and tcp.srcport ne 7777" -w ../../2_7777_filtered/pcap_addon_cached_sizes/$NAME;
+           done
+         #+END_SRC
+     - legit as firewall blocked much, among which outgoing traffic
+       to 7777
+***** implementation
+     - summary approach: file 7777.sh takes each (pcap) file in
+       current directory, filters the port 7777 out
+     - apply this to each subdirectory
+     - the move all files to a common directory
+***** TODO link to mod_wsgi
+      at see below
+***** TODO link to man tshark
+***** TODO link to [[file:docs/master.bib::wireshark-filter][wireshark-filter]]
+*** TODO what happens when retrieving a website
+    The complete data of google.com can be retrieved via
 
-     =mkdir site; cd site; wget -p -H google.com=
+    =mkdir site; cd site; wget -p -H google.com=
 
-     which yields (in germany) the files (=find . -type f -ls=, formatted)
+    which yields (in germany) the files (=find . -type f -ls=, formatted)
 
-     |  size | url                                                               |
-     |-------+-------------------------------------------------------------------|
-     |       | <65>                                                              |
-     | 18979 | google.com/index.html                                             |
-     | 17284 | www.google.de/images/nav_logo229.png                              |
-     |  1834 | www.google.de/images/icons/product/chrome-48.png                  |
-     |  5482 | www.google.de/images/branding/googlelogo/1x/googlelogo_white_background_color_272x92dp.png |
-     |  5430 | www.google.de/images/branding/product/ico/googleg_lodp.ico        |
-     |  8080 | www.google.de/robots.txt                                          |
+    |  size | url                                                               |
+    |-------+-------------------------------------------------------------------|
+    |       | <65>                                                              |
+    | 18979 | google.com/index.html                                             |
+    | 17284 | www.google.de/images/nav_logo229.png                              |
+    |  1834 | www.google.de/images/icons/product/chrome-48.png                  |
+    |  5482 | www.google.de/images/branding/googlelogo/1x/googlelogo_white_background_color_272x92dp.png |
+    |  5430 | www.google.de/images/branding/product/ico/googleg_lodp.ico        |
+    |  8080 | www.google.de/robots.txt                                          |
 
-     thus, there should be 5-6 (depending on robots.txt) requests
-***** TODO tshark for normal (non-tor) retrieval
+    thus, there should be 5-6 (depending on robots.txt) requests
+**** TODO tshark for normal (non-tor) retrieval
 *** practical wf: analyzing traces
 **** TODO how to process the data
      The aim of processing is to extract features relevant for machine
@@ -411,15 +409,17 @@
      class of the data, then a colon, finally all the data for an
      instance, separated by whitespace.
 ***** TODO link to code to generate
-**** TODO transform features to vector
+**** CHECK transform features to vector
      Once the `Counter`s are obtained, they need to be modified to fit as
      input for scikit-learn's\cite{scikit-learn} classifiers.
 
      The code to convert these features to classification input can be
-     found in `extract_attribute.py`. This determines the maximum length
-     of the variable-length features, gets Panchenko's features
-     appropriately padded, and converts them to an array fit for input
-     into scikit-learn's classifiers. When called from the command line, as
+     found in `extract_attribute.py` (see
+     [[*%5B%5Bfile:../bin/extract_attribute.py%5D%5Bextract_attribute.py%5D%5D][{{file:../bin/extract_attribute.py}{appendix}}]]) . This determines
+     the maximum length of all variable-length features, pads
+     Panchenko's features appropriately, and converts them to an array
+     fit for input into scikit-learn's classifiers. When called from
+     the command line, as
 
      python -i /path/to/extract_attribute.py
 
@@ -436,9 +436,9 @@
      `to_libsvm(X, y, fname='libsvm_in')`, which can be called with the
      output of `to_features`. It writes lines in X with labels in y to the
      file 'libsvm_in' (by default).
-***** TODO maybe rename extract_attribute.py? To what?
+***** TODO maybe rename extract_attribute.py? To analyse.py?
 ***** TODO ref stackoverflow why 0 padding
-****** TODO better:
+***** TODO see also to_features_cumul
 **** LATER effect of panchenko's weighting schema
      Currently, fixed attributes are weighted heavily in favor of total
      incoming/outgoing bytes.
@@ -927,6 +927,8 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 ***** check which urls user loads
 ****** aggregate by domain
 ***** for each loaded url, maybe load something else
+      - this generates the cover traffic over the loading of the website
+      - yet only augments bursts, does not equalize them
 **** objects
 ***** Watcher
       notifies when user loads sth
@@ -1124,9 +1126,22 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      (here, also --port 7777), as for the script wsgi.py see appendix
 *** Evaluation
 **** add-on
-***** [[*differences%20to%20adaptive%20padding/wtfpad][differences to adaptive padding/wtfpad]]
-***** [[*differences%20to%20walkie-talkie][differences to walkie-talkie]]
-***** [[*why%20several%20covers][why several covers]]
+***** TODO differences to adaptive padding/wtfpad
+****** no cooperator necessary
+       dummy packets chosen as response to real request (as in web traffic)
+****** knowledge of packets
+****** delay of some possible (f.ex. images)
+****** end of transmission detectable
+****** TODO correct this
+***** TODO differences to walkie-talkie
+***** TODO differences to panchenkos
+      - feature extraction via python class directly from pcap
+        - packet data saveable to JSON
+***** TODO why several covers
+      - competition
+      - when this started, walkie-talkie and juarez had not yet published
+      - harder to break
+        - more effort: one classifier for each cover scheme
 * MAYBE_AND_MOVE How to not use Tor
 * MAYBE_AND_MOVE what sets Tor apart / other anonymity networks
   There are other anonymity networks, such as JonDonym, I2P, MixNet
@@ -1170,22 +1185,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - fundamental human need
   - concentration camp:
     "solitude in a Camp is more precious and rare than bread." -- primo levi
-* TODO differences to adaptive padding/wtfpad
-** no cooperator necessary
-   dummy packets chosen as response to real request (as in web traffic)
-** knowledge of packets
-** delay of some possible (f.ex. images)
-** end of transmission detectable
-** TODO correct this
-* TODO differences to walkie-talkie
-* TODO differences to panchenkos
-  - feature extraction via python class directly from pcap
-    - packet data saveable to JSON
-* TODO why several covers
-  - competition
-  - when this started, walkie-talkie and juarez had not yet published
-  - harder to break
-    - more effort: one classifier for each cover scheme
 * TODO bloom usage and implementation
   - bloom sort
     - error rate computation

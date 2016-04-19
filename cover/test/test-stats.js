@@ -8,6 +8,11 @@ exports["test htmlSize mean"] = function(assert) {
 		stats.htmlMean(), 0.2 * stats.htmlMean(), assert);
 };
 
+exports["test htmlSize < limit"] = function(assert) {
+    var result = stats.htmlSize();
+    assert.ok(result < stats.HTML_TOP, 'htmlSize: ' + result + ' over cutoff');
+};
+
 exports["test htmlSize > 0"] = function(assert) {
     var result = stats.htmlSize();
     assert.ok(result > 0, 'htmlSize: ' + result + ' negative');

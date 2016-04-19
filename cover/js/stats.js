@@ -7,6 +7,8 @@ const random = require("js/random.js");
 
 const HTML_MU = 7.90272;
 const HTML_SIGMA = 1.7643;
+const HTML_TOP = 2 * 1024 * 1024; // 2 MB
+exports.HTML_TOP = HTML_TOP; // testing
 const EMBEDDED_SIZE_MU = 7.51384;
 const EMBEDDED_SIZE_SIGMA = 2.17454;
 const EMBEDDED_NUM_KAPPA = 0.141385;
@@ -18,7 +20,11 @@ const REQUEST_LENGTH_MAX = 700;
 // td: refactor, remove "factor"
 /** @return expected size of html response * factor */
 function htmlSize(factor=1) {
-    return factor * lognormal_(HTML_MU, HTML_SIGMA);
+    let out = factor * lognormal_(HTML_MU, HTML_SIGMA);
+    while ( out > HTML_TOP ) {
+        out = factor * lognormal_(HTML_MU, HTML_SIGMA);
+    }
+    return out;
 }
 exports.htmlSize = (factor) => htmlSize(factor);
 
@@ -56,7 +62,8 @@ exports.withProbability = withProbability;
 // TESTING
 /** mean of lognormal_(HTML_MU, HTML_SIGMA) */
 function htmlMean() {
-    return Math.exp(HTML_MU + HTML_SIGMA * HTML_SIGMA / 2);
+//    return Math.exp(HTML_MU + HTML_SIGMA * HTML_SIGMA / 2); // non-truncated
+    return 11872; // truncated at 2MB
 }
 exports.htmlMean = htmlMean;
 /** mean of lognormal_(EMBEDDED_SIZE_MU, EMBEDDED_SIZE_SIGMA) */

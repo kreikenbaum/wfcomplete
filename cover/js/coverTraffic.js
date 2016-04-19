@@ -49,6 +49,7 @@ CoverTraffic.prototype.loadNext = function() {
 	  i >= 0 ;
 	  i -= 1 ) {
 	this.load.sized(stats.embeddedObjectSize());
+        this.pad.numEmbedded -= 1;
     }
 };
 exports.CoverTraffic = CoverTraffic;

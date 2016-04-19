@@ -7681,6 +7681,66 @@
           - "aims to define a distance-based classifier."
 
        1) k-fingerprints from random forests
+
+          - each forest gives a leaf identifier
+
+            - choose k-closest by hamming distance
+
+          - robust
+
+          - vary k for a TPR/FPR trade-off
+
+            - classify if all k agree
+
+            - majority label also possible
+
+       2) The k-fingerprinting attack
+
+          - select monitored pages
+
+            - collect monitored and some non-monitored traces
+
+            - generate fingerprints
+
+              - (fixed-length)
+
+          - listen to client's browsing
+
+            - generate fingerprint
+
+            - compute k closest training examples by hamming distance
+
+            - say monitored if all k agree that monitored
+
+          - measurements: TPR, FPR, and
+
+            - BDR:  (TPR. Pr(M)) / (TPR. Pr(M) + FPR. Pr(U))
+              Bayesian Detection Rate (BDR):
+
+              with Pr(M) = |Monitored| / |Total Pages|,
+              and  Pr(U) = 1 − P(M).
+
+              - "probability that the classifier made a correct prediction"
+
+    4) Data gathering
+
+       - normal (Selenium + PhantomJS)
+
+         - 55@30 monitored vs 7000 unmonitored
+
+       - and Tor Browser (Selenium)
+
+         - 55@100 monitored
+
+         - 30@80 hidden services
+
+         - unmonitored: 100'000 top alexa - top 55
+
+       - compare to WG 100@90 + 5000 unmonitored (random from Alexa top 10'000)
+
+       - Nielsen: number of unique websites/month: 89 avg
+
+    5) Feature selection
 *** quotes
     1) Introduction
        - Traditional encryption obscures only the content of
@@ -7689,6 +7749,10 @@
          systems obscure both content and metadata, preventing a
          passive attacker from observing the source or destination of
          communication.
+    2) [@4] Data gathering
+       - By including website visits to trending topics we argue that
+         this diminishes the ability to properly measure how effective
+         a website fingerprinting attack will perform in general.
 *** ref [[file:master.bib::kfingerprint][Hayes & Danezis]]
 ** MOVE [#B] [[./ShWa-Timing06.pdf][Timing analysis in low-latency mix networks: attacks and defenses]]
 *** summary
@@ -8289,6 +8353,12 @@
     3) BACKGROUND
 
        1) Tor and Tor Browser
+
+          - entry, middle, exit, padding, no global protection
+
+          - here: much weaker: local passive adversary
+
+       2) Website Fingerprinting
 *** quotes
     1) INTRODUCTION
        - it is very hard to generate sufficient background noise on
@@ -10985,37 +11055,54 @@
              the number of clusters to be specified.
   12) [@12] Frequently Asked Questions
       12) [@12] How do I deal with string data (or trees, graphs...)?
-          - Firstly, many estimators take precomputed distance/similarity
-                matrices, so if the dataset is not too large, you can compute
-                distances for all pairs of inputs. If the dataset is large, you
-                can use feature vectors with only one “feature”, which is an
-                index into a separate data structure, and supply a custom metric
-                function that looks up the actual data in this data
-                structure. E.g., to use DBSCAN with Levenshtein distances:
-                #+BEGIN_SRC python
-                  >>> from leven import levenshtein
-                  >>> import numpy as np
-                  >>> from sklearn.cluster import dbscan
-                  >>> data = ["ACCTCCTAGAAG", "ACCTACTAGAAGTT", "GAATATTAGGCCGA"]
-                  >>> def lev_metric(x, y):
-                  ...
-                  i, j = int(x[0]), int(y[0])
-                  # extract indices
-                  ...
-                  return levenshtein(data[i], data[j])
-                  ...
-                  >>> X = np.arange(len(data)).reshape(-1, 1)
-                  >>> X
-                  array([[0],
-                  [1],
-                  [2]])
-                  >>> dbscan(X, metric=lev_metric, eps=5, min_samples=2)
-                  ([0, 1], array([ 0, 0, -1]))
-                #+END_SRC
-                (This uses the third-party edit distance package leven.) Similar
-                tricks can be used, with some care, for tree kernels, graph
-                kernels, etc.
+          - Firstly, many estimators take precomputed
+            distance/similarity matrices, so if the dataset is not too
+            large, you can compute distances for all pairs of
+            inputs. If the dataset is large, you can use feature
+            vectors with only one “feature”, which is an index into a
+            separate data structure, and supply a custom metric
+            function that looks up the actual data in this data
+            structure. E.g., to use DBSCAN with Levenshtein distances:
+            #+BEGIN_SRC python
+              >>> from leven import levenshtein
+              >>> import numpy as np
+              >>> from sklearn.cluster import dbscan
+              >>> data = ["ACCTCCTAGAAG", "ACCTACTAGAAGTT", "GAATATTAGGCCGA"]
+              >>> def lev_metric(x, y):
+              ...
+              i, j = int(x[0]), int(y[0])
+              # extract indices
+              ...
+              return levenshtein(data[i], data[j])
+              ...
+              >>> X = np.arange(len(data)).reshape(-1, 1)
+              >>> X
+              array([[0],
+              [1],
+              [2]])
+              >>> dbscan(X, metric=lev_metric, eps=5, min_samples=2)
+              ([0, 1], array([ 0, 0, -1]))
+            #+END_SRC
+            (This uses the third-party edit distance package leven.)
+            Similar tricks can be used, with some care, for tree
+            kernels, graph kernels, etc.
   42) [@42] Reference
+      9) [@9] sklearn.ensemble: Ensemble Methods
+         9) [@9] sklearn.ensemble.RandomForestClassifier
+            - apply(X)
+
+              Apply trees in the forest to X, return leaf indices.
+              - Parameters X : array-like or sparse matrix, shape =
+                [n_samples, n_features]
+
+                The input samples. Internally, it will be converted to
+                dtype=np.float32 and if a sparse matrix is provided to
+                a sparse csr_matrix.
+              - Returns X_leaves : array_like, shape = [n_samples,
+                n_estimators]
+
+                For each datapoint x in X and for each tree in the
+                forest, return the index of the leaf x ends up in.
       25) [@25] sklearn.neighbors: Nearest Neighbors
           2) [@2] sklearn.neighbors.KNeighborsClassifier
              - class
@@ -11080,24 +11167,24 @@
                  >>> prediction = anova_svm.predict(X)
                  >>> anova_svm.score(X, y)
                  0.77...
-                 #+END_SRC
-               - (ends 42.29.1)
-               - class sklearn.tree.DecisionTreeClassifier[...]
+               #+END_SRC
+      35) [@35] sklearn.tree: Decision Trees
+          - class sklearn.tree.DecisionTreeClassifier[...]
 
-	         feature_importances_ : array of shape = [n_features]
+            feature_importances_ : array of shape = [n_features]
 
-	         The feature importances.
-               - (ends 42.35.1)
-               - It is however still interesting to check what’s happening
-                 inside the _nls_subproblem function which is the hotspot if we
-                 only consider Python code: it takes around 100% of the
-                 cumulated time of the module. In order to better understand
-                 the profile of this specific function, let us install
-                 line-prof and wire it to IPython:
-	         #+BEGIN_SRC sh
-                   pip install line-profiler
-	         #+END_SRC
-
+            The feature importances.
+  47) [@47] Chapter 47. How to optimize for speed
+      3) [@3] Profiling Python code
+         - It is however still interesting to check what’s happening
+           inside the _nls_subproblem function which is the hotspot if
+           we only consider Python code: it takes around 100% of the
+           cumulated time of the module. In order to better understand
+           the profile of this specific function, let us install
+           line-prof and wire it to IPython:
+           #+BEGIN_SRC sh
+             pip install line-profiler
+           #+END_SRC
 *** ref
     [[file:master.bib::scikit-learn][Pedregosa et al. 2011: Scikit]]
 *** exercises
@@ -13498,7 +13585,6 @@
         users and applications to install and upgrade Python
         distribution packages without interfering with the behaviour of
         other Python applications running on the same system.
-    28) (ends Appendix A)
 ** PART [[./numpy-ref-1.10.1.pdf][NumPy Reference]]
 *** summary
 *** quotes
@@ -14752,6 +14838,7 @@
 ** TODO [#A] PART MOVE [[./Truncated distribution - Wikipedia, the free encyclopedia.html]]
 *** quotes
     1) Definition
+       - CDF: \frac{\int_a^x g(t) dt}{F(b)-F(a)}
        - Mean: \frac{\int_a^b x g(x) dx}{F(b)-F(a)}
        - g(x) = f(x) for all a <x \leq b and g(x) = 0 everywhere else
        - we wish to know how X is distributed given a < X \leq b.

@@ -10,5 +10,3 @@ html = stats.lognorm(s=sigma, scale=math.exp(mu))
 for i in range(2*parts):
     q = float(i) / (2*parts)
     print 'at {}: value {}'.format(q, html.ppf(q))
-
-
