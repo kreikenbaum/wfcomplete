@@ -7632,6 +7632,55 @@
          - distinguish hidden services
 
     2) Related Work
+
+       1) Website Fingerprinting.
+
+          - Wright et al.'s traffic morphing helped against early
+            size-based attacks
+
+          - Panchenko et al.'s decoy reduced accuracy from 55% to 5%
+
+          - Luo et al.'s HTTPOS "was successful in defending against a
+            number of classifiers"
+
+          - Dyer et al.'s BuFLO improved upon others with "high
+            bandwidth overhead"
+
+            - Cai et al. improved with rate adaptation
+
+            - Nithyanand: Glove groups website traffic, "provides
+              information theoretic privacy guarantees and reduces the
+              bandwidth overhead by intelligently grouping web traffic
+              in to similar sets."
+
+          - Cai et al. improved Panchenko's attack
+
+            - improved by WG (0.95 vs 0.002)
+
+          - Wang et al, kNN open-world (0.85 vs 0.006)
+
+          - WG half-duplex
+
+          - WG practical deployment: parse on 1.5 second-gap
+
+          - Gu et al: multi-tab, 50 websites first @ 75.9%, background @ 40.5%
+
+          - Kwon et al: apply to hidden services: 50 hs, (88% vs 7.8%)
+
+          - Panchenko: CUMUL, huge, suffers from simple defenses
+
+       2) Random Forests.
+
+          - "no need for k-fold cross validation to measure
+            k-fingerprinting performance"
+
+    3) Attack Design
+
+       0) [@0]
+
+          - "aims to define a distance-based classifier."
+
+       1) k-fingerprints from random forests
 *** quotes
     1) Introduction
        - Traditional encryption obscures only the content of
@@ -7945,9 +7994,11 @@
 
        1) The state-of-the-art attacks
 
-	  - Sun: "number and size"
+	  - Sun's SSWRPQ: "number and size"
 
 	    - amount from server between two consecutive requests
+
+            - then jaccard coefficient
 
 	  - Bissias: time and size
 
@@ -7961,6 +8012,10 @@
 
               for D_i tuples for i-th website and D_{new} new trace
               observed sizes
+
+            - LLNBC: "The relationship between V and D is that for a
+              given feature in V, its value is equal to zero if the
+              corresponding tuple is not in D and KDE is not used."
 
 	  - Chen: also,
 
@@ -7977,24 +8032,37 @@
 
           - (Lemma 1) if based on packet size, and a flow has only
             packets of size not know to classifier, then random guess
-            is best alternative
+            is best alternative for LLJC, LLNBC and SSWRPQ
 
             - Proof:
+
+              - LLJC: S(D_new, D_i) = 0 for all,
+
+              - similar for SSWRPQ as also JC
+
+              - LLNBC: V by definition 0, if kernel function adds up
+                to \neq 0, choose dissimilar sizes, so that sum = 0
+
+            - [34]: small number of values in packet sizes, thus
+              lemma1-defense feasible
 *** quotes
-    - Extensive evaluation of HTTPOS on live web traffic shows that it
-      can successfully prevent the state-of-the-art attacks from
-      inferring private information from encrypted HTTP flows.
-    - (ends 0)
-    - the efficacy of these methods has not been validated thoroughly
-      based on actual implementations and live HTTP traffic.
-    - TCP (e.g., Maximal Segment Size (MSS) negotiation and
-      advertising window) and HTTP (e.g., HTTP Range and HTTP
-      Pipelining).
-    - (ends 1+2)
-    - four basic features that can affect the information used by
-      those traffic-analysis attacks: packet size, timing of packets,
-      web object size, and flow size.
-    - (ends 3.0)
+   0) [@0] Abstract
+      - Extensive evaluation of HTTPOS on live web traffic shows that it
+        can successfully prevent the state-of-the-art attacks from
+        inferring private information from encrypted HTTP flows.
+   1) Introduction
+      - the efficacy of these methods has not been validated thoroughly
+        based on actual implementations and live HTTP traffic.
+      - TCP (e.g., Maximal Segment Size (MSS) negotiation and
+        advertising window) and HTTP (e.g., HTTP Range and HTTP
+        Pipelining).
+   3) [@3] Defending against traffic-analysis attacks
+      0) [@0]
+         - four basic features that can affect the information used by
+           those traffic-analysis attacks: packet size, timing of packets,
+           web object size, and flow size.
+      1) [@3] The diffusion strategy
+         - we extract HTTP flows that have at least five packets
 ** TODO [#B] [[./oakland2012-peekaboo.pdf][Dyer - Peek-a-Boo, I Still See You: Why Efficient Traffic Analysis Countermeasures Fail]]
 *** summary
     0) [@0] Abstract
@@ -10789,6 +10857,8 @@
                  logistic__C=Cs))
                  estimator.fit(X_digits, y_digits)
                #+END_SRC
+
+          2) Face recognition with eigenfaces
 *** quotes
   2) [@2] A tutorial on statistical-learning for scientific data processing
      1)
@@ -13339,11 +13409,12 @@
                 the listscontain no path components. To get a full
                 path (which begins with top) to a file or directory in
                 dirpath, do os.path.join(dirpath, name).
-        7) [@7] asdf
+        7) [@7] logging — Logging facility for Python
            7) [@7] LogRecord attributes
               |          |              | <30>                           |
               | filename | %(filename)s | Filename portion of pathname.  |
               | funcname | %(funcName)s | Name of function containing the logging call. |
+              | lineno   | %(lineno)d   | Source line number where the logging call was issued (if available). |
     18) [@18] Internet Data Handling
         2) [@2] json — JSON encoder and decoder
            - Using json.tool from the shell to validate and pretty-print:
@@ -13396,7 +13467,19 @@
               #+BEGIN_SRC sh
                 python -m SimpleHTTPServer 8000
               #+END_SRC
-    26) [@26] Debugging and Profiling
+    25) [@25] Development Tools
+        3) [@3] unittest — Unit testing framework
+           - assertAlmostEqual(first, second, places=7, msg=None,
+             delta=None)
+
+             assertNotAlmostEqual(first, second, places=7,
+             msg=None, delta=None)
+
+             Test that first and second are approximately (or not
+             approximately) equal by computing the difference,
+             rounding to the given number of decimal places (default
+             7), and comparing to zero.
+    26) Debugging and Profiling
         2) [@2] pdb — The Python Debugger
            - pdb.py can also be invoked as a script to debug other
              scripts. For example:
@@ -14680,3 +14763,11 @@
          f(x|X \leq y) = \frac{g(x)}{F(y)}
 *** ref [[file:master.bib::wiki:truncated][Wikipedia 2015: Truncated]]
 ** (for picture): [[./10_3-ndss2016-slides.pdf][Website Fingerprinting at Internet Scale Presentation]]
+** [[./PEP 257 -- Docstring Conventions.html]]
+** TODO [[./PEP 3333 -- Python Web Server Gateway Interface v1.0.1 | Python.org.html]]
+*** summary
+*** quotes
+   3) [@3] Original Rationale and Goals (from PEP 333)
+      - WSGI must be easy to implement, so that an author's initial
+        investment in the interface can be reasonably low.
+*** ref [[file:master.bib::pep3333][Eby 2010: Python Web Server]]

@@ -13,7 +13,7 @@ import sys
 HOME_IP = '134.76.96.47' #td: get ips
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
-LOGFORMAT='%(levelname)s:%(filename)s:$(funcName)s:%(message)s'
+LOGFORMAT='%(levelname)s:%(filename)s:$(lineno)d:%(message)s'
 
 TIME_SEPARATOR = '@'
 
@@ -25,7 +25,7 @@ def _append_features(keys, filename):
     if not keys.has_key(domain):
         keys[domain] = []
     counter = Counter.from_pcap(filename)
-    if not counter.warned:
+    if counter.packets and not counter.warned:
         keys[domain].append(counter)
     else:
         logging.warn('%s discarded', counter.name)
