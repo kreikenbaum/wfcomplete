@@ -162,8 +162,7 @@
       | Reading Time  | 39.70 (max 10,000 sec) | 324.92 | Lognormal (μ=-0.495204, σ=2.7731)           |
       | Request Size  | 318.59          | 179.46 | Uniform (350 Bytes)                         |
 *** questions
-*** ref
-    [[file:master.bib::newtrafficmodel][Mistry & Raman 2007: NEW TRAFFIC MODEL]]
+*** ref: [[file:master.bib::newtrafficmodel][Lee & Gupta 2007]]
 ** [#A] [[./hintz02.pdf][Hintz - Fingerprinting Websites Using Traffic Analysis]]
 *** summary
     0) [@0] Abstract
@@ -7741,6 +7740,55 @@
        - Nielsen: number of unique websites/month: 89 avg
 
     5) Feature selection
+
+       - few previous studies
+
+       - randomized forest, use gini coefficient to determine feature
+         importances
+
+         - 30 most important features contain most of the info
+
+         - 150 used as it did not increase running time significantly
+
+         - top ~12 really important
+
+         - assign rank as average of 100 experiments
+
+       - feature importances
+
+         - most important (@.. are fixed positions, rest vary)
+
+           1) [@1] number of incoming packets
+
+           2) number of outgoing packets
+
+           3) number of incoming packets as fraction of total
+
+           4) [@4] standard deviation of packet ordering list (how many
+              packets of same type before this)
+
+           5) number of outgoing packets as fraction of total
+
+         - other important features:
+
+           - packet ordering incoming/outgoing average/stddev
+
+           - mean of number of outgoing packets in each 20-chunk
+
+           - split number of packets into 20 evenly-sized set
+             (alternative), average of this
+
+    6) Attack on Hardened Defenses
+
+       - Wang dataset: 100@90 + 5000@1 background
+
+       - better and faster than both kNN and CUMUL
+
+       - also against many defenses
+
+       - Juarez' Adaptive Padding works down to 30% accuracy
+
+    7) k-fingerprinting the Wang et al data set
 *** quotes
     1) Introduction
        - Traditional encryption obscures only the content of
@@ -14789,6 +14837,51 @@
                2. a representation for this target knowledge
                3. a learning mechanism
           2) Choosing the Target Function
+
+             - 1st idea: maps state to next move
+
+             - 2nd idea (better to compute): maps board state B to real number
+
+               - won\to 100, lost \to -100, tie \to 0
+
+               - compute back from every state, assuming optimal
+                 strategy of both
+
+               - nonoperational: hard to compute
+
+               - operational approximation V^{\tilde} : B \to {real numbers}
+
+          3) Choosing a Representation for the Target Function
+
+             - possibilities: table with values, neural network,
+               polynomial based on board state, ...
+
+             - here, simple choice: linear function with weights
+
+               d(x) = w0 + w1 x1 + ... + w6 x6
+
+               with weights as number of b/w pieces/kings/threatened by other
+
+          4) Choosing a Function Approximation Algorithm
+
+             training data, f.ex ((0, 1, 0, 0, 0, 0), -100) (black won)
+
+             1) Estimating training values
+
+                - simple approach: assign value of successor (next
+                  state that can be played by this side)
+
+                  V_train(b) = V^{\tilde}(successor(b))
+
+             2) Estimating the Weights
+
+                - minimize the squared error \sum (V_train - V^{\tilde})^2
+
+                - method: least mean squares, for each instance (b, V_train(b))
+
+                  w_i = w_i + \eta (V_train(b) -v^{\tilde}(b)) x_i
+
+          5) The Final Design
 *** quotes
     1) INTRODUCTION
        1) WELL-POSED LEARNING PROBLEMS
