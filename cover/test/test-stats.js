@@ -18,12 +18,17 @@ exports["test htmlSize > 0"] = function(assert) {
     assert.ok(result > 0, 'htmlSize: ' + result + ' negative');
 };
 
-// td: this could use the variance to clarify and cut down on 20000
 exports["test embeddedObjectSize mean"] = function(assert) {
-    sumAvg.test(stats.embeddedObjectSize, 20000,
+    sumAvg.test(stats.embeddedObjectSize, 1000,
                 stats.embeddedObjectSizeMean(),
-                0.3 * stats.embeddedObjectSizeMean(),
+                stats.embeddedObjectSizeStd(),
                 assert);
+};
+
+exports["test embeddedObjectSizeMean < limit"] = function(assert) {
+    var result = stats.embeddedObjectSize();
+    assert.ok(result < stats.EMBEDDED_SIZE_TOP,
+	      'embeddedObjectSize: ' + result + ' over cutoff');
 };
 
 exports["test embeddedObjectSize > 0"] = function(assert) {
@@ -34,6 +39,12 @@ exports["test embeddedObjectSize > 0"] = function(assert) {
 exports["test numberEmbeddedObjects > 0"] = function(assert) {
     var result = stats.numberEmbeddedObjects();
     assert.ok(result >= 0, 'numberEmbeddedObjects: ' + result + ' negative');
+};
+
+exports["test numberEmbeddedObjects < limit"] = function(assert) {
+    var result = stats.numberEmbeddedObjects();
+    assert.ok(result < stats.EMBEDDED_NUM_TOP,
+	      'numberEmbeddedObjects: ' + result + ' over cutoff');
 };
 
 exports["test numberEmbeddedObjects is whole number"] = function(assert) {

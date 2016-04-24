@@ -35,8 +35,8 @@
 **** WAIT may \to (ohne) (falls richtig)
 ** Introduction
 ** Materials and Methods
-* TODO topics [7/104]
-** TODO Website Fingerprinting [2/49]
+* TODO topics [7/107]
+** TODO Website Fingerprinting [2/52]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
     webpages or websites a user visits via an anonymizing proxy. It is a
@@ -203,27 +203,30 @@
 **** TODO one_site.py: retrieval of a single page
      Once you ensured that the Browser Bundle is working by starting it
      manually once, webpages can be retrieved automatically. This is done
-     via the [[file:../bin/one_site.py][one_site.py]] script.
+     via the [[*Script%20to%20capture%20pcap%20traces:%20%5B%5Bfile:./bin/one_site.py%5D%5D][one_site.py]] script (see Appendix.
 
      It
 
-     1. starts Firefox, waiting up to 60 seconds for its initialization
-     2. starts the capture
-     3. loads the page (given as first parameter)
+     1. starts the Tor Browser Bundle's =firefox= binary, enabling
+        remote-control via the =-marionette= command-line argument,
+        waiting up to 60 seconds for its initialization
+     2. starts the =tshark= capture
+     3. loads the page (given as first parameter) via Marionette
      4. waits up to 600 seconds for the load to finish
      5. ends the capture
      6. ends Firefox
 
      This setup (restart after each trace) avoids caching issues with
-     website fingerprinting, as the Tor Browser Bundle cleans the cache
-     between restarts. If a more realistic scenario is desired, the
-     script could to be modified to omit terminating the browser
-     instance.
+     website fingerprinting, as the Tor Browser Bundle cleans the
+     cache between restarts (mentioned f.ex. in \cite{critique}). If a
+     browsing-session scenario is desired, the script could be
+     modified to omit terminating the browser instance.
 **** tshark installation
-     You also need to install =tshark= via =sudo apt-get install tshark=
-     and set the current user to be able to capture packets via =sudo
-     dpkg-reconfigure wireshark-common= and adding the user to the
-     =wireshark= group (in =/etc/groups=).
+     You also need to install =tshark=[[fn::via f.ex. =sudo apt-get
+     install tshark= on Debian-based systems]] and enable the user to
+     capture packets[[fn::via (Debian-based) =sudo dpkg-reconfigure
+     wireshark-common= and adding the user to the =wireshark= group
+     (in =/etc/groups=)]].
 ***** TODO scripts source + doc
 **** how to get tor browser bundle to work
      In order to start the tor browser bundle via the =./firefox=
@@ -278,7 +281,7 @@
          - 100 \to 800 once a 20 \to 40 twice
      - (currently closed world)
 ***** TODO more complete list?
-**** filtering tshark files
+**** TODO filtering tshark files [0/5]
      Although this requirement might later be removed (see [[*Further%20work][further
      work]]), the addon currently needs a generator of cover traffic to
      work. While it can be set in the add-on's preferences, this
@@ -293,7 +296,7 @@
      shown in \cite{splitcap}. The filter commands are described in
      the manual \cite{wireshark-filter}, with the tcp protocol
      specific fields as given in \cite{tcp-filter-fields}.
-***** solution
+***** TODO solution
      - command
        tshark -r google.com@1460052589 -2 -R "tcp.dstport ne 7777 and tcp.srcport ne 7777"  -w filtered/google.com@1460052589
        - [[fn::See \url{https://www.wireshark.org/docs/dfref/t/tcp.html} for the tcp filters]]
@@ -305,7 +308,8 @@
          #+END_SRC
      - legit as firewall blocked much, among which outgoing traffic
        to 7777
-***** implementation
+       - otherwise combine with f.ex. ip
+***** TODO implementation
      - summary approach: file 7777.sh takes each (pcap) file in
        current directory, filters the port 7777 out
      - apply this to each subdirectory
@@ -313,7 +317,6 @@
 ***** TODO link to mod_wsgi
       at see below
 ***** TODO link to man tshark
-***** TODO link to [[file:docs/master.bib::wireshark-filter][wireshark-filter]]
 *** TODO what happens when retrieving a website
     The complete data of google.com can be retrieved via
 
@@ -1202,14 +1205,15 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   to be very easy to set up, it was chosen for this evaluation.
 * TODO extract dom tags python
   - diveintopython
-  - which tags?
-* TODO modified top-100
+  - see code
+* LATER modified top-100
   - originally alexa-top-1m, from September 30, 2015 condensed
   - take out duplicates: google, amazon, bbc, ...
   - take out non-responding (to urllib) sites:
     - list of taken out
       - googleusercontent.com
       - youku.com
+** LATER complete list
 * TODO what is a bloom filter
   A Bloom Filter is a data structure to test membership in a set. It
   has a fixed size and a certain one-way error rate. If an item is in
@@ -1350,6 +1354,10 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - [[*Further%20work][Further work]]
 * TODO also helps against global observer if .onion generator is used
 * TODO panchenko CUMUL
+* TODO truncated distributions
+  - html: truncated lognormal instead of lognormal
+  - embeddedSize: ebd
+  - numEmbeddedObjects: truncated gamma instead of gamma
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
@@ -3409,10 +3417,11 @@ mean = 0.763238095238
     - just triggered by start and until end, or for each load
   - background if non-active (IPP self-similar)
     - 802.16 model
-  - does a new connection to another site create a measurable response
+  - does a new connection to another site create a measurable tor-response
     (with variable-length packets)?
   - provable protection
   - size of bloom filter
+    == number of bloom filters,
   - which and how many items to prepopulate
     - country-specific f.ex. google.com
     - leave out redirect from prepopulation
@@ -3428,15 +3437,15 @@ mean = 0.763238095238
   - no morphing (delay, segmentation)
     - justify why good idea
   - bloomsort save/restore
-  - truncated lognormal instead of lognormal
   - number of embedded elements lacks <style> tags and some in <link>
     - does not honor reloads/cacheing
       - or does it? (maybe only called on cacheing)
     - but better than too many?
+      - some approaches yes, buckets no
   - elaborate on [[find number of embedded elements]]
-  - number of bloom filters,
   - how to set splits and sizes
   - [[differences theoretical HTML-num embedded and observed]]
+  - improve code to include css, (iframes?), js
 ** onion host for cover traffic
    As indicated f.ex. by Wang and Goldberg,
    \cite{wpes13-fingerprinting}, network load already is a bottleneck
@@ -3452,29 +3461,37 @@ mean = 0.763238095238
    - assumption: can split traces
 ** TODO always also link in text
 *** TODO check with darp
-* TODO appendices [4/6]
-** TODO [[file:./bin/one_site.py]]
+* LATER appendices [8/8]
+** LATER Script to capture pcap traces: [[file:./bin/one_site.py]]
    insert file here
-** LATER [[file:../bin/extract_attribute.py][extract_attribute.py]]
+** LATER Script to classify the data [[file:../bin/extract_attribute.py]]
    insert file here
-** LATER [[file:../bin/wsgi.py]]
-** Python web server for cover traffic
-   This approach did not scale, so it was not used. It is included as a
-   reference of what seems to work, but did not.
+** LATER Script to parse pcap files:
+** LATER Cover Traffic Server [[file:../bin/wsgi.py]]
+*** LATER Non-parallelized-based web server for cover traffic [1/1]
+    This approach did not scale to several parallel connections, so it
+    was not used. It is included as a reference of what seems to work,
+    but did not.
 
-   The python module =TrafficHTTPServer= can be started on the
-   command-line via
+    The python module =TrafficHTTPServer= can be started on the
+    command-line via
 
-   python TrafficHTTPServer.py portname
+    python TrafficHTTPServer.py portname
 
-   with portname set to 8000 by default. It generates cover traffic of the
-   size given by the =size= parameter, for example the command
+    with portname set to 8000 by default. It generates cover traffic of the
+    size given by the =size= parameter, for example the command
 
-   wget 'http://localhost:8000/?size=10'
+    wget 'http://localhost:8000/?size=10'
 
-   retrieves a document with 10 bytes content from a TrafficHTTPServer
-   running at localhost port 8000.
-*** TODO include file
+    retrieves a document with 10 bytes content from a TrafficHTTPServer
+    running at localhost port 8000.
+**** Problems
+     - did not scale: did not respond immediately for parallel
+       connections
+       - obviously delays problematic as they in effect create less
+         cover traffic
+     - maybe further work: test that really works worse
+**** LATER include file [[../bin/unused/TrafficHTTPServer.py]]
 ** LATER include [[file:bin/htmlToNumEmbedded.py]]
 ** html_top_100.sh
      #+BEGIN_SRC sh

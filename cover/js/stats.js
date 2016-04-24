@@ -11,33 +11,46 @@ const HTML_TOP = 2 * 1024 * 1024; // 2 MB
 exports.HTML_TOP = HTML_TOP; // testing
 const EMBEDDED_SIZE_MU = 7.51384;
 const EMBEDDED_SIZE_SIGMA = 2.17454;
+const EMBEDDED_SIZE_TOP = 6 * 1024 * 1024; // 6 MB
+exports.EMBEDDED_SIZE_TOP = EMBEDDED_SIZE_TOP; // testing
 const EMBEDDED_NUM_KAPPA = 0.141385;
 const EMBEDDED_NUM_THETA = 40.3257;
+const EMBEDDED_NUM_TOP = 300;
+exports.EMBEDDED_NUM_TOP = EMBEDDED_NUM_TOP; // testing
 //const PARSINGTIME_MU = -1.24892;
 //const PARSINGTIME_SIGMA = 2.08427;
 const REQUEST_LENGTH_MAX = 700;
 
 // td: refactor, remove "factor"
-/** @return expected size of html response * factor */
+/** @return (expected size of html response) * factor */
 function htmlSize(factor=1) {
-    let out = factor * lognormal_(HTML_MU, HTML_SIGMA);
+    let out = lognormal_(HTML_MU, HTML_SIGMA);
     while ( out > HTML_TOP ) {
-        out = factor * lognormal_(HTML_MU, HTML_SIGMA);
+        out = lognormal_(HTML_MU, HTML_SIGMA);
     }
-    return out;
+    return factor * out;
 }
 exports.htmlSize = (factor) => htmlSize(factor);
 
 /** @return expected size of embedded object response * factor */
 function embeddedObjectSize(factor = 1) {
-    return factor * lognormal_(EMBEDDED_SIZE_MU, EMBEDDED_SIZE_SIGMA);
+    let out = lognormal_(EMBEDDED_SIZE_MU, EMBEDDED_SIZE_SIGMA);
+    while ( out > EMBEDDED_SIZE_TOP ) {
+	out = lognormal_(EMBEDDED_SIZE_MU, EMBEDDED_SIZE_SIGMA);
+    }
+    return factor * out;
 }
 exports.embeddedObjectSize = (factor) => embeddedObjectSize(factor);
 
 /** returns at least 1, at most ceil(factor * numEmbedded) */
 function numberEmbeddedObjects(factor=1) {
-    return Math.max(1, Math.ceil(factor * gamma_(EMBEDDED_NUM_KAPPA,
-						 EMBEDDED_NUM_THETA)));
+    let out = Math.max(1, Math.ceil(factor * gamma_(EMBEDDED_NUM_KAPPA,
+						    EMBEDDED_NUM_THETA)));
+    while ( out > EMBEDDED_SIZE_TOP ) {
+	out = Math.max(1, Math.ceil(factor * gamma_(EMBEDDED_NUM_KAPPA,
+						    EMBEDDED_NUM_THETA)));
+    }
+    return factor * out;
 }
 exports.numberEmbeddedObjects = (factor) => numberEmbeddedObjects(factor);
 
@@ -63,14 +76,20 @@ exports.withProbability = withProbability;
 /** mean of lognormal_(HTML_MU, HTML_SIGMA) */
 function htmlMean() {
 //    return Math.exp(HTML_MU + HTML_SIGMA * HTML_SIGMA / 2); // non-truncated
-    return 11872; // truncated at 2MB
+    return 11872; // truncated at 2MB, value from paper
 }
 exports.htmlMean = htmlMean;
 /** mean of lognormal_(EMBEDDED_SIZE_MU, EMBEDDED_SIZE_SIGMA) */
 function embeddedObjectSizeMean() {
-    return Math.exp(EMBEDDED_SIZE_MU + EMBEDDED_SIZE_SIGMA * EMBEDDED_SIZE_SIGMA / 2);
+//    return Math.exp(EMBEDDED_SIZE_MU + EMBEDDED_SIZE_SIGMA * EMBEDDED_SIZE_SIGMA / 2);
+    return 12460; // truncated at 6MB, value from paper
 }
 exports.embeddedObjectSizeMean = () => embeddedObjectSizeMean();
+
+function embeddedObjectSizeStd() {
+    return 116050; // value from paper
+}
+exports.embeddedObjectSizeStd = () => embeddedObjectSizeStd();
 
 function numberEmbeddedObjectsMean() {
     return EMBEDDED_NUM_KAPPA * EMBEDDED_NUM_THETA;

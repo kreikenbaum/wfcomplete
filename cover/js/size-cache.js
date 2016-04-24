@@ -20,9 +20,9 @@ let htmlSizes = new BloomSort.BloomSort(HTML_SIZES, HTML_SPLITS);
 let numEmbeddeds = new BloomSort.BloomSort(NUM_EMBEDDED_SIZES,
                                            NUM_EMBEDDED_SPLITS);
 
-let active = Simple.prefs['bloom'];
+let active = Simple.prefs.bloom;
 Simple.on("bloom", function() {
-    active = Simple.prefs['bloom'];
+    active = Simple.prefs.bloom;
 });
 
 function htmlSize(url) {

@@ -1,6 +1,5 @@
 #+TODO: TODO MOVE | DONE
 [[./master.bib]]
-** TODO move MOVE sections
 ** [#A] [[./HTTP Traffic Model_v1 1 white paper.pdf][Lee - A NEW TRAFFIC MODEL FOR CURRENT USER WEB BROWSING BEHAVIOR]]
 *** summary
     0) [@0] ABSTRACT
@@ -151,16 +150,16 @@
       next HTML object overlaps.
     - (ends 3)
     - Table 2: Analysis Result of HTTP Model Parameters
-      | Parameters    | Mean            |   S.D. | Best Fit                                    |
-      |---------------+-----------------+--------+---------------------------------------------|
-      | <13>          | <15>            |        |                                             |
-      | HTML Object size | 11872 (Max 2MB) |  38306 | Truncated Lognormal (μ=7.90272, σ=1.7643)   |
-      | Embedded ObjectSize | 12460 (Max 6MB) | 116050 | Truncated Lognormal (μ=7.51384, σ 2.17454)  |
-      | Number of Embedded objects | 5.07 (Max 300)  |        | Gamma (κ=0.141385, θ=40.3257)               |
-      | Parsing Time  | 3.12 (median 0.30)(max 300 sec) |  14.21 | Truncated Lognormal (μ=-1.24892, σ=2.08427) |
-      | Embedded Object IAT | 0.83            |    8.4 | Weibull (α=0.2089, β=0.376)                 |
-      | Reading Time  | 39.70 (max 10,000 sec) | 324.92 | Lognormal (μ=-0.495204, σ=2.7731)           |
-      | Request Size  | 318.59          | 179.46 | Uniform (350 Bytes)                         |
+      | Parameters          | Mean            |   S.D. | Best Fit             |
+      |---------------------+-----------------+--------+----------------------|
+      | <19>                | <15>            |        | <20>                 |
+      | HTML Object size    | 11872 (Max 2MB) |  38306 | Truncated Lognormal (μ=7.90272, σ=1.7643) |
+      | Embedded ObjectSize | 12460 (Max 6MB) | 116050 | Truncated Lognormal (μ=7.51384, σ 2.17454) |
+      | Number of Embedded objects | 5.07 (Max 300)  |        | Gamma (κ=0.141385, θ=40.3257) |
+      | Parsing Time        | 3.12 (median 0.30)(max 300 sec) |  14.21 | Truncated Lognormal (μ=-1.24892, σ=2.08427) |
+      | Embedded Object IAT | 0.83            |    8.4 | Weibull (α=0.2089, β=0.376) |
+      | Reading Time        | 39.70 (max 10,000 sec) | 324.92 | Lognormal (μ=-0.495204, σ=2.7731) |
+      | Request Size        | 318.59          | 179.46 | Uniform (350 Bytes)  |
 *** questions
 *** ref: [[file:master.bib::newtrafficmodel][Lee & Gupta 2007]]
 ** [#A] [[./hintz02.pdf][Hintz - Fingerprinting Websites Using Traffic Analysis]]
@@ -294,6 +293,1076 @@
       analyze, https traffic comprises only a very small portion of
       all Internet traffic. (5)
 *** ref [[file:master.bib::hintz02][Hintz 2002: Fingerprinting Websites Using Traffic Analysis]]
+** [#A] [[./JavaScript Garden.html]]
+*** summary
+    1) Objects
+
+       1) Object Usage and Properties
+
+	  0) [@0]
+
+	     =null= and =undefined= are not objects, others are coerced
+
+	  1) Objects as a Data Type
+
+	     - hash maps
+
+	  2) Accessing Properties
+
+	     - [] or .
+
+	  3) Deleting Properties
+
+	     - only per =delete=, setting to undefined or null keeps the key
+
+	  4) Notation of Keys
+
+	     - older engines: quote keywords as string, others: unquoted ok
+
+       2) The Prototype
+
+	  0) [@0]
+
+	     - prototypal inheritance:
+
+	     - object as class
+
+	  1) Property Lookup
+
+	     - prototype chain, up and up until =null=
+
+	  2) The Prototype Property
+
+	     - you can set =MyObject.prototype = new OtherObject()=
+
+	       - primitives are ignored
+
+	  3) Performance
+
+	     - impact for high-up objects or iteration
+
+	  4) Extension of Native Prototypes
+
+	     - "monkey patching"
+
+	     - only to backport newer-ES features
+
+	  5) In Conclusion
+
+	     - efficiency
+
+	     - no monkeypatch
+
+       3) hasOwnProperty
+
+	  0) [@0]
+
+	     - defined in object itself or not?
+
+	       - only thing not traversing prototype chain
+
+	  1) hasOwnProperty as a Property
+
+	     - can break (but then, you can always override Object.hasOwnProp
+
+	  2) In Conclusion
+
+	     - recommended for =for ... in= loop
+
+       4) The for in Loop
+
+	  - in operator: object has property, array has *key* (not value)
+
+	    - [3,4] has =1 in [3,4]=, but not =3 in [3,4]=
+
+	  - =for in= goes up the prototype chain
+
+	    - except if =Object.defineProperty= is used with
+              =enumerable= set to =false=
+
+	  - library code needs to make sure via =hasOwnProperty=
+
+	  - In Conclusion: always for ECMA <= 3. In ECMA 5, you can
+            defineProperty and omit the hasOwnProperty in for-in
+
+    2) Functions
+
+       1) Function Declarations and Expressions
+
+	  - can be used like any other objects
+
+	  - pass as (anonymous) parameters to other function as callback
+
+	  - *function Declaration* is hoisted = moved to top, available
+            in whole program
+	    #+BEGIN_SRC js
+              function foo() {}
+	    #+END_SRC
+
+	  - *function Expression* is defined at runtime
+	    #+BEGIN_SRC js
+              var foo = function() {};
+	    #+END_SRC
+
+	    - can be named with name available inside function
+
+       2) How this Works
+
+	  special name, 5 different objects bound
+
+	  1) The Global Scope
+
+	     - in global scope: to global object
+
+	       - except for strict mode: undefined
+
+	  2) Calling a Function
+
+	     - global object
+
+	       - except for strict mode: undefined
+
+	  3) Calling a Method
+
+	     - to the containing object
+
+	  4) Calling a Constructor
+
+	     to newly created object
+
+	  5) Explicit Setting of this
+
+	     #+BEGIN_SRC js
+               function foo(a, b, c) {}
+
+               var bar = {};
+               foo.apply(bar, [1, 2, 3]); // array will expand to the below
+               foo.call(bar, 1, 2, 3); // results in a = 1, b = 2, c = 3
+	     #+END_SRC
+
+	     =this= explicitly set to bar
+
+	  6) Common Pitfalls
+
+	     - in method definitions, =this= refers to global object, solution:
+	       #+BEGIN_SRC js
+                 Foo.method = function() {
+                     var test = function() {
+                         // this now refers to Foo
+                     }.bind(this);
+                     test();
+                 };
+	       #+END_SRC
+
+	  7) Assigning Methods
+
+	     aliasing as =var test = someObject.methodTest;= has the
+             same problem
+
+       3) Closures and References
+
+	  0) [@0]
+
+	     "One of JavaScript's most powerful features"
+
+	  1) Emulating private variables
+
+	     using closures
+	     #+BEGIN_SRC js
+               function Counter(start) {
+                   var count = start;
+                   return {
+                       increment: function() {
+                           count++;
+                       },
+                       get: function() {
+                           return count;
+                       }
+                   }
+               }
+	     #+END_SRC
+	     =count= is hidden from the outside
+
+	  2) Why Private Variables Work
+
+	     - =count= referenced by =increment= and =get=, but
+               otherwise unavailable
+
+	     - scopes cannot be assigned or referenced
+
+	  3) Closures Inside Loops
+
+	     - often a problem: variable is referenced, thus always
+               the same (f.ex. with =setTimeout=)
+
+	  4) Avoiding the Reference Problem
+
+	     1) anonymous wrapper (see also 2.6)
+		#+BEGIN_SRC js
+                  for(var i = 0; i < 10; i++) {
+                      (function(e) {
+                          setTimeout(function() {
+                              console.log(e);
+                          }, 1000);
+                      })(i);
+                  }
+		#+END_SRC
+
+	     2) return a function from the anonymous wrapper
+		#+BEGIN_SRC js
+                  for(var i = 0; i < 10; i++) {
+                      setTimeout((function(e) {
+                          return function() {
+                              console.log(e);
+                          }
+                      })(i), 1000)
+                  }
+		#+END_SRC
+
+	     3) additional argument to setTimeout
+		#+BEGIN_SRC js
+                  for(var i = 0; i < 10; i++) {
+                      setTimeout(function(e) {
+                          console.log(e);
+                      }, 1000, i);
+                  }
+		#+END_SRC
+
+	     4) using .bind
+		#+BEGIN_SRC js
+                  for(var i = 0; i < 10; i++) {
+                      setTimeout(console.log.bind(console, i), 1000);
+                  }
+		#+END_SRC
+
+       4) The arguments Object
+
+	  0) [@0]
+
+	     - in every function scope
+
+	     - array-like, not array
+
+	  1) Converting to an Array
+
+	     slow, avoid in performance-critical parts
+	     #+BEGIN_SRC js
+               Array.prototype.slice.call(arguments);
+	     #+END_SRC
+
+	  2) Passing Arguments
+
+	     recommended:
+	     #+BEGIN_SRC js
+               function foo() {
+                   bar.apply(null, arguments);
+               }
+               function bar(a, b, c) {
+                   // do stuff here
+               }
+	     #+END_SRC
+
+	     you can also use =call= and =apply= together to turn
+             methods into normal functions
+
+	  3) Formal Parameters and Arguments Indices
+
+	     setting the parameter also changes =arguments= (except
+             for strict mode)
+
+	  4) Performance Myths and Truths
+
+	     using =arguments.callee= may make things slower, as
+             functions can no longer be inlined
+
+       5) [@5] Constructors
+
+	  1) Basics
+
+	     - any function with =new=
+
+	     - sets =this= and Object.prototype to prototype
+
+	     - returns =this= if no obect given
+
+	  2) Factories
+
+	     - return object, =new= unimportant, allows for information hiding
+
+	     - does not affect prototype
+
+	  3) Creating New Objects via Factories
+
+	     - uses more memory (no prototypes)
+
+	     - inheritance harder
+
+	     - "contrary to spirit of the language"
+
+	  4) In Conclusion
+
+	     depends on application, but prototypes have many benefits, too
+
+       6) Scopes and Namespaces
+
+          0) [@0]
+
+             - only function scope (except for js6)
+
+             - only global namespace
+
+          1) The Bane of Global Variables
+
+             always use =var= unless you *explicitly* want outer
+             scope
+
+          2) Local Variables
+
+             only =var= and function parameters (and let and const)
+
+          3) Hoisting
+
+             - function declarations and var statements get /hoiste/
+               to the top of their scope
+               #+BEGIN_SRC js
+                 bar();
+                 var bar = function() {};
+                 var someValue = 42;
+
+                 test();
+                 function test(data) {
+                     if (false) {
+                         goo = 1;
+                     } else {
+                         var goo = 2;
+                     }
+                     for(var i = 0; i < 100; i++) {
+                         var e = data[i];
+                     }
+                 }
+               #+END_SRC
+               becomes
+               #+BEGIN_SRC js
+                 // var statements got moved here
+                 var bar, someValue; // default to 'undefined'
+
+                 // the function declaration got moved up too
+                 function test(data) {
+                     var goo, i, e; // missing block scope moves these here
+                     if (false) {
+                         goo = 1;
+                     } else {
+                         goo = 2;
+                     }
+                     for(i = 0; i < 100; i++) {
+                         e = data[i];
+                     }
+                 }
+
+                 bar(); // fails with a TypeError: bar still 'undefined'
+                 someValue = 42; // assignments not affected by hoisting
+                 bar = function() {};
+
+                 test();
+               #+END_SRC
+               var inside the for-loop, in if-statement and in
+               for-declaration all get hoisted
+
+          4) Name Resolution Order
+
+             - var
+
+             - then parameter
+
+             - then function name
+
+             - repeat in outer scope
+
+          5) Namespaces
+
+             several ways to avoid polluting the global namespace
+
+             unnamed functions somehow
+
+          6) In Conclusion
+
+             best to use anonymous wrapper
+
+    3) Arrays
+
+       1) Array Iteration and Properties
+
+          0) [@0]
+
+             avoid for in
+
+          1) Iteration
+
+             - best for performance is the classic for loop
+               #+BEGIN_SRC js
+                 var list = [1, 2, 3, 4, 5, ...... 100000000];
+                 for(var i = 0, l = list.length; i < l; i++) {
+                     console.log(list[i]);
+                 }
+               #+END_SRC
+
+               - half as fast without caching =l=
+
+             - notes: also [].forEach(callback(element, index, array))
+
+          2) The length Property
+
+             - can be used to truncate array or make it sparse
+
+          3) In Conclusion
+
+             - bet performance with plain for loop (with =length= caching)
+
+       2) The Array Constructor
+
+          1) 
+
+             - use =[]= instead
+
+             - except for repeating f.ex. a string without =for=
+               #+BEGIN_SRC js
+                 new Array(count + 1).join(stringToRepeat);
+               #+END_SRC
+
+          2) In Conclusion
+
+             use [] almost all the time
+
+    4) Types
+
+       1) Equality and Comparisons
+
+          two ways to do
+
+          1) The Equality Operator
+
+             - ==
+
+             - type corecion
+
+             - bad for performance
+
+          2) The Strict Equality Operator
+
+             - ===
+
+             - no type coercion, hardens code
+
+             - better performance
+
+          3) Comparing Objects
+
+             both compare object identity
+
+          4) In Conclusion
+
+             - use only ===
+
+             - if you need type coercion, use it explicitly
+
+       2) The typeof Operator
+
+          broken
+
+          1) The JavaScript Type Table
+
+             is hard to grok (typeof 'ab' !== typeof new String('ab'))
+
+          2) The Class of an Object
+
+             determine via =Object.prototype.toString=
+             #+BEGIN_SRC js
+               function is(type, obj) {
+                   var clas = Object.prototype.toString.call(obj).slice(8, -1);
+                   return obj !== undefined && obj !== null && clas === type;
+               }
+             #+END_SRC
+
+          3) Testing for Undefined Variables
+
+             test via
+             #+BEGIN_SRC js
+               typeof foo !== 'undefined'
+             #+END_SRC
+             "This is the only thing typeof is actually useful for."
+
+          4) In Conclusion
+
+             use Object.prototype.toString to test type
+
+       3) The instanceof Operator
+
+          only useful for custom-made objects
+          #+BEGIN_SRC js
+            function Foo() {}
+            function Bar() {}
+            Bar.prototype = new Foo();
+            new Bar() instanceof Bar; // true
+            new Bar() instanceof Foo; // true
+            // This just sets Bar.prototype to the function object Foo,
+            // but not to an actual instance of Foo
+            Bar.prototype = Foo;
+            new Bar() instanceof Foo; // false
+          #+END_SRC
+
+       4) Type Casting
+
+          type coercion "whereever possible": best use strict equality
+
+          1) Constructors of Built-In Types
+
+             behave differently when used with =new= and without
+             #+BEGIN_SRC js
+               new Number(10) === 10;     // False, Object and Number
+               Number(10) === 10;         // True, Number and Number
+               new Number(10) + 0 === 10; // True, due to implicit conversion
+             #+END_SRC
+             =Number= etc without new do type conversion
+
+          2) Casting to a String
+
+             prepend with ='' +=
+             #+BEGIN_SRC js
+               '' + 10 === '10'; // true
+             #+END_SRC
+
+          3) Casting to a Number
+
+             prepend unary +:
+             #+BEGIN_SRC js
+               +'10' === 10; // true
+             #+END_SRC
+
+          4) Casting to a Boolean
+
+             !!
+
+    5) Core
+
+       1) Why Not to Use eval
+
+          0) [@0]
+
+             - =eval= changes locally-scoped variables
+
+               - except if not called by name =eval=, then globals
+
+             - avoid it
+
+          1) eval in Disguise
+
+             - setTimeout takes string as arg, evals it
+
+          2) Security Issues
+
+             - evaluates **any string**
+
+          3) In Conclusion
+
+             never be used, code using should be questioned
+             (workings, performance, security)
+
+             (except maybe REPL-loops)
+
+       2) undefined and null
+
+          two values for nothing, use =undefined=
+
+          1) The Value undefined
+
+             used for uninitialized variables, and much more
+
+          2) Handling Changes to the Value of undefined
+
+             not necessary in strict mode
+
+          3) Uses of null
+
+             non in production, can be replaced
+
+       3) Automatic Semicolon Insertion
+
+          parser needs semicola, inserts if it encouters error with
+          certain rules, retries
+
+          1) How it Works
+
+             - example with (group stuff) on new line
+
+             - can lead to errors
+
+          2) Leading Parenthesis
+             #+BEGIN_SRC js
+               log('testing!')
+               (options.list || []).forEach(function(i) {})
+             #+END_SRC
+             without semicolon insertion yields `TypeError` because
+             log does not return a function
+
+          3) In Conclusion
+
+             recommended to always use them
+
+       4) The delete Operator
+
+          if =DontDelete= attribute is set, impossible to delete
+
+          1) Global code and Function code
+
+             - elements (var or function) of global and function scope
+               have DontDelete set, so undeleteable
+               #+BEGIN_SRC js
+                 var a = 1; // DontDelete is set
+                 delete a; // false
+                 a; // 1
+               #+END_SRC
+
+             - no longer true in firefox
+
+          2) Explicit properties
+
+             - those can be deleted normally
+
+             - use this to delete global vars:
+               #+BEGIN_SRC js
+                 var GLOBAL_OBJECT = this;
+                 GLOBAL_OBJECT.a = 1;
+                 a === GLOBAL_OBJECT.a; // true - just a global var
+                 delete GLOBAL_OBJECT.a; // true
+                 GLOBAL_OBJECT.a; // undefined
+               #+END_SRC
+
+          3) Function arguments and built-ins
+
+             DontDelete also set (?) for function arguments and
+             built-in properties, f.ex. .length
+
+          4) Host objects
+
+             unpredictable (what are these)
+
+          5) In conclusion
+
+             recommended only for "explicitly set properties on normal
+             objects"
+
+    6) Other
+
+       1) setTimeout and setInterval
+
+          - js asynchronous: schedule function to run
+
+          - no exact scheduling guaranteed (fn might block)
+
+          - =this= is global object on execution
+
+       2) Stacking Calls with setInterval
+
+          - discouraged
+
+       3) Dealing with Possible Blocking Code
+
+          - call setTimeout() in function after blocking code
+
+       4) Manually Clearing Timeouts
+          #+BEGIN_SRC js
+            var id = setTimeout(foo, 1000);
+            clearTimeout(id);
+          #+END_SRC
+
+       5) Clearing All Timeouts
+
+          - no fixed method
+
+          - simple: clear all up to 1000
+
+          - often monotonically increasing, then
+            #+BEGIN_SRC js
+              var biggestTimeoutId = window.setTimeout(function(){}, 1), i;
+              for(i = 1; i <= biggestTimeoutId; i++) {
+                  clearTimeout(i);
+              }
+            #+END_SRC
+            "works on all major browsers"
+
+          - better keep track of IDs, clear individually
+
+       6) Hidden Use of eval
+
+          - if string as first parameter, uses =eval= in global scope
+
+       7) In Conclusion
+
+          - avoid string use
+
+          - avoid setInterval, as "its scheduler is not blocked by
+            executing JavaScript."
+*** quotes
+    6) Other
+       - Note: As setTimeout takes a function object as its first
+         parameter, a common mistake is to use setTimeout(foo(),
+         1000), which will use the return value of the call foo and
+         not foo. This is, most of the time, a silent error, since
+         when the function returns undefined setTimeout will not raise
+         any error.
+** [#A] [[./webfingerprint-wpes.pdf][Improved Website Fingerprinting on Tor]]
+*** summary
+    0) [@0] Abstract
+
+       - new attack
+
+       - new data gathering methodology
+
+       - removal of useless cells, views Tor layer, not TCP/IP
+
+    1) INTRODUCTION
+
+       - evaluate metrics
+
+       - contributions:
+
+         - data gathering: modify tor browser
+
+	 - new data processing
+
+	   - not at TCP/IP level, but above
+
+	   - remove SENDME cells
+
+	 - New website fingerprinting metrics:
+
+	   - dynamic content is loaded last and varies only incoming
+
+	   - new metric
+
+    2) RELATED WORK
+
+       Defenses not implemented because of network load and ineffective
+
+       1) Non-distance-based methods
+
+	  - only sizes and occurrence counts as features
+
+	  - liberatore: naive bayes (normal frequency)
+
+	  - herrmann: multinomial naive bayes, more successful, only
+            3$ accuracy on Tor
+
+       2) Distance-based methods
+
+	  - liberatore: jaccard-based, without occurence, less
+            effective than naive bayes
+
+	  - panchenko: svm, several features
+
+	  - cai: "optimal string alignment distance", also for
+            websites instead of web pages via Hidden Markov Models
+
+       3) TOR
+
+	  0) [@0]
+
+	     - anonymization service
+
+	     - volunteers
+
+	     - if wf works, not anonymizing
+
+	     - defense
+
+	  1) Circuits and Streams
+
+	     - guard nodes rather fixed
+
+	     - middle and exit nodes
+
+	     - varying bandwidths per node
+
+	     - SENDME cells like ACKS
+
+	       - should be removed
+
+	  2) Defenses
+
+	     - tor browser defense
+
+	       1) enable pipelining
+
+	       2) randomize request order
+
+	       3) randomize pipeline size
+
+	     - cai found to fail, this evluates, too
+
+       4) DATA COLLECTION AND PROCESSING
+
+	  1) Collecting Data
+
+	     0) [@0]
+
+		different clients, different traces
+
+	     1) Circuit Construction
+
+		- should control circuit construction manually (?if
+                  done in sequence?)
+
+	     2) Timing
+
+		- should train on sites several hours apart (not
+                  feasible in real-time because of training time)
+
+	     3) Localization
+
+		- problem of redirects to localized site
+                  (f.ex. google.ca)
+
+		- problem of localized content (f.ex. advertising)
+
+	     4) Our Methodology
+
+		- tor controller
+
+		- 100@40 sites
+
+		- batch: 4 instances
+
+		- maximum circuit duration
+
+		- removed similar sites (google.de|be|... unified)
+
+		- try to get localized sites (yahoo.de)
+
+		- remove trace if size is  less than 20% of median
+
+		- disable cacheing
+
+	  2) Processing Data
+
+	     0) [@0]
+
+		- "After processing, each traffic instance is
+                  represented as a sequence of positive and negative
+                  integers."
+
+	     1) TCP/IP packet instances
+
+		- length field
+
+		- cai and panchenko rounded sizes by increments of 600
+
+	     2) Tor cell instances
+
+		- TCP/IP layer info has problems f.ex. with retransmit
+
+		- round down to closest multiple of 512, divide by 512
+
+		- "will produce the number of Tor cells in the record."
+
+	     3) Removing SENDMEs
+
+		- guess the p2-th cell to be a sendme after p1 start cells
+
+		- p1=45, p2=40 gave TPR .62, FPR .057
+
+       5) CLASSIFICATION
+
+          0) [@0]
+
+             - monitored vs others (open world)
+
+             - site vs rest (closed world)
+
+          1) Support Vector Machine
+
+             - find separating hyperplane
+
+             - cost function if cannot be foun
+
+             - lift to higher dimension to find hyperplane there
+
+             - ovo as ovm was not better
+
+             - which metric to use?
+
+          2) Distance-based Metrics
+
+             1) Optimal String Alignment Distance
+
+                - transposition limited to originally adjacent
+                  elements
+
+                - cai: lower cost for transpositions
+
+             2) Damerau-Levenshtein Distance
+
+                - all transpositions allowed
+
+                - implementation: also elements not adjacent with
+                  deletion an insertion
+
+             3) Removing Substitutions
+
+                these do not correspond to realistic scenarios as
+                deletions, insertions and transpositions do
+
+             4) Different costs for Incoming/Outgoing Packets
+
+                make changes to outgoing packets more costly
+
+             5) Varying transposition cost
+
+                - reduce transposition costs the later an element occurs
+
+                - at beginning, always HTML page
+
+                - then simultaneous connections
+
+                - cost = (1 - 0.9 min(i/m, j/n))^2
+
+             6) Fast Levenshtein-like distance
+
+                efficient new levenshtein algorithm in O(m+n)
+
+          3) Post-processing
+
+             - need values in [0,1] with 0 greatest similarity
+
+             - as Cai: transform via
+
+               - D'(s 1 , s 2 ) = D(s 1 , s 2 ) / min(|s 1 |, |s 2 |), and
+
+               - K(s 1 , s 2 ) = e^{ −D'(s 1 ,s 2 )^2}
+
+       6) EXPERIMENTAL RESULTS
+
+          1) Setting
+
+             - "embarassingly parallel"
+
+             - no alterations to tbb except for disabled cache
+
+             - set UseEntryGuards to 0 to disable (otherwise limited
+               test validity)
+
+             - iMacros
+
+          2) Closed-World Results
+
+             0) [@0]
+
+                - avoid overfitting by settings the costs once
+
+                - vary SVM cost param from 4^0 to 4^10, choose best for
+                  each metric
+
+                - 91% for SENDME removed and combined OSAD (appendix D)
+
+                - Cai: 88%
+
+                - fast: 283 vs 608000 CPU seconds, 70%
+
+             1) Cai’s Data
+
+                similar results, thus analysis seems robust
+
+          3) Open-World Results
+
+             - alexa 101 to 1000 as background
+
+               - 860 successfully loaded
+
+               - 96.9% recall
+
+          4) Evaluation of Tor’s Pipelining and Order Randomization
+             Defense
+
+             - no significatn difference between results,
+
+             - slight better detection with defense enabled
+
+       7) DISCUSSION
+
+          1) Training set size and selection
+
+             - circuit rotation while fetching has quite an impact
+
+             - number of training set: the more instances the better
+
+               - OSAD outperformed
+
+             - open-world background-set: the more training sites the
+               better (for given background set size)
+
+          2) Testing set size and selection
+
+             - Alexa's top100 to compare with Panchenko and Cai
+
+             - 10 sites very high accuracy
+
+               - 20: 92.3%
+
+               - 100: 90.9%
+
+             - little decrease as number of sites increases
+
+          3) Difficult sites and Defenses
+
+             problems arose from
+
+             - Localization
+
+             - frequently updated content
+
+             - slides: "the number of slide images that are loaded
+               depended on the total load time"
+
+             - randomized content: recommendations based on prefs
+
+             how web designers can help anonymize
+
+       8) CONCLUSION
+
+          - realistically capture data
+
+            - modify Tor/ TBB
+
+          - cells better,
+
+            - better without SENDME (?where?)
+
+          - better results:
+
+            - recall 95%
+
+            - fpr < 0.2%
+
+          - compare to previous: 35% fewer mistakes
+
+          - justify use of Alexa top-100 (closed-world) and top-1000
+            (open world)
+*** quotes
+    1) INTRODUCTION
+       - [@?] dynamic content such as advertisements may cause a
+         variation in incoming packets but not outgoing packets, and
+         dynamic content is often loaded last in a website.
+    4) [@4] DATA COLLECTION AND PROCESSING
+       1) Collecting Data
+	  1) Circuit Construction
+	     - the top 1% of relays comprised 29% of the total
+               bandwidth of Tor and the top 20% of relays comprised
+               93% of the bandwidth.
+    7) [@7] DISCUSSION
+       1) Training set size and selection
+          - the attacker can increase their open-world success rate by
+            training on more non-monitored sites.
+*** ref
+    [[file:master.bib::wpes13-fingerprinting][Wang & Goldberg 2013: Improved Website Fingerprinting Tor]]
 ** [#B] [[./Javascript Closures.prototype_chain.html][Javascript Closures]]
 *** summary
     1) Introduction
@@ -576,6 +1645,282 @@
          objects in its scope chain then a circular reference
          exists. DOM_Node.onevent -> function_object.[[scope]] ->
          scope_chain -> Activation_object.nodeRef -> DOM_Node
+** [#B] [[./ShWa-Timing06.pdf][Timing analysis in low-latency mix networks: attacks and defenses]]
+*** summary
+    0) [@0] Abstract
+
+       Analyze correlation attacks on low-latency mix networks.
+
+       previous defenses ineffective or huge latency or huge overhead
+
+    1) Introduction
+
+       - low-latency mix networks
+
+       - path establishment not researched
+
+       - realistic traffic model based on HTTP traces
+
+       - adaptive padding
+
+	 - fill statistically unlikely gaps
+
+	 - also against active attackers
+
+       - compare to constant rate dummy traffic
+
+    2) Related work
+
+       - Venkatraman: mathematical model, defense requiring complete knowledge
+
+       - Timmerman: traffic masking: assure certain profile via cover
+         traffic and artificial delays
+
+       - Berthold: high-latency, intermediate dummy, global,
+
+         - CONTRA: not fine-grained
+
+       - Rennhard: artificially delay traffic
+
+         - CONTRA: latency
+
+       - Fu: constant rate is vulnerable to analysis of inter-packet
+         arrivals,
+
+         - SOLUTION: variable inter-packet intervals
+
+       - defensive-dropping: drop at intermediate, same constant rate,
+
+         - CONTRA: latency
+
+       - Overlier: trusted entry node,
+
+	 - PRO: combines with this
+
+    3) Model and metrics
+
+       1) Network
+
+	  sender, path of N (small: {2,3}, large: {5..8}) mixes, destination
+
+	  like tarzan
+
+	  (end-to-end TCP?)
+
+       2) Timing analysis
+
+	  - attacker measures inter-packet intervals
+
+	  - active: also impose unique timing signature
+
+	  - simple model: ignores TCP effect of drops and bursts
+
+       3) Defense metric.
+
+	  - adversary: correlate packet counts
+
+	  - crossover rate: see "timing...systems"
+
+       4) Negative impact on network performance.
+
+	  - metric: padding ratio
+
+	  - metric: extra delay
+
+    4) Adaptive padding
+
+       create statistic traffic, send if no packet in next drawn
+       sample time
+
+       1) Data structures: bins, indexed exponentially
+
+       2) Adaptive padding algorithm
+
+	  1. take token
+
+	     - if packet arrives before time, remove token for packet
+               arrival time, replace token into bin
+
+	     - else, send dummary after token's time
+
+	  2. until token buckets empty
+
+       3) Destroying natural fingerprints
+
+	  - 2 modes
+
+	    - burst: packet received, take expected high-duration
+
+	    - gap: dummy sent, take expected low-duration
+
+    5) Experimental evaluation
+
+       0) [@0] 
+
+	  - 4 schemes
+
+	    - undefended
+
+	    - defensive dropping
+
+	    - defensive dropping variant with constant rate cover traffic
+
+	    - adaptive padding
+
+	  - exponential distribution
+
+       1) Attack model
+
+	  - observes 60 seconds
+
+	  - does cross-correlation for 1-second-steps
+
+	  - sets threshold t to equals FPR and FNR
+
+	  - defender's goal: high t
+
+       2) Evaluation results
+
+	  - constant rate dummies and no cover fails
+
+	  - defensive dropping works by upping other streams' correlation
+
+	  - adaptive padding works by lowering this stream's correlation
+
+       3) Short paths
+
+	  2-3 mixes
+
+	  - defensive dropping works worse
+
+	  - adaptive padding works better
+
+    6) Active attacks
+
+       0) [@0]
+
+	  - impose timing signature
+
+	  - attacker cannot create or replay packets
+
+       1) Artificial gaps
+
+	  - drops of several packets in a row
+
+	    - recognizable with defensive dropping
+
+	    - but not with adaptive padding
+
+       2) Artificial bursts
+
+	  - queue packets, then send all at once
+
+	    - defensive dropping crossover rate drops to 0
+
+	    - adaptive padding lower, the longer (.21 with 15-second-queue)
+
+    7) Comparison with constant-rate defenses
+
+       compare to constant-rate defenses
+
+       - latency is prohibitive: especially in low-latency mix networks
+
+	 maybe for non-interactive applications
+
+       - Everybody must send at the same constant rate: see section
+         5.2 most flows must use this, in contrast to adaptive padding
+
+       - There is no “right” constant rate: f.ex. bursts require high
+         rate which might congest the network
+
+       - Defense fails against active attacks: see section 6
+
+       - Defense fails at high traffic rates: if higher rate than
+         fixed, most packets are real, which "is vulnerable to basic
+         timing analysis"
+
+       - Defense reveals presence of real traffic: sparse is padding,
+         dense is real traffic
+
+    8) Creation and management of dummy packets
+
+       1) simplest: creation by mix, but nonforwardeable
+
+       2) pre-computed on generation and times of quiet
+
+          - con: stream ciphers
+
+       3) Malicious clients and servers.
+
+         bad, a.p. requires server cooperation, TODO: reread
+
+       4) Reverse routes.
+
+          === Server shares keys with all route mixes, but there is an
+          attack
+
+    9) Challenges and future directions
+
+       - only some attacks looked at
+
+       - difficult to hide that there is traffic
+
+       - the more padding the later in the chain
+
+         - detectable
+*** quotes
+   0) [@0] unsorted
+      - Many mix networks are specifically intended to provide anonymity
+        against attackers who control the communication medium.
+      - Traffic analysis is an especially serious threat for low-latency
+        mix networks because it is very difficult to hide statistical
+        characteristics of the packet stream and satisfy the stringent
+        latency requirements imposed by interactive applications.
+      - The standard measure of success is the /crossover error rate/, at
+        which the attacker’s false positive rate is equal to his false
+        negative rate.
+      - (Maximum crossover error rate is 0.5, which corresponds to
+        random guessing.)
+      - recognized as a serious threat to low-latency mix networks, but
+        few defenses have been proposed to date.
+      - (ends 2?)
+      - An active attacker can also impose his own unique timing
+        signature (by dropping packets or introducing artificial bursts)
+        onto the flow he is interested in, and then attempt to identify
+        this signature on other network links.
+      - (ends 3)
+      - samples from the statistical distribution of inter-packet
+        intervals. If the next packet arrives before the chosen interval
+        expires, it is forwarded and a new value is sampled. To avoid
+        skewing resulting intervals towards short values, the
+        distribution is modified slightly to increase the probability of
+        drawing a longer interval next time.
+      - rough statistical distribution of inter packet intervals for a
+        “normal” flow [...] can be pre-computed from traffic
+        repositories such as NLANR [21]
+      - increasing the range represented by each bin exponentially with
+        the bin index works well.
+      - (ends 4.Data structures)
+      - We do not model TCP acknowledgements, re-transmissions,
+        exponential backoff in response to dropped packets, and other
+        TCP features that may be exploited by a sophisticated attacker.
+      - (ends 5.0)
+      - We conjecture that long-term attacks cannot be prevented without
+        assuming that some senders or mixes emit cover traffic in
+        perfect synchrony, which cannot be achieved by any real system.
+      - The attacker chooses t [threshold for correlation r(d)] so that
+        the false positive and false negative rates are equal. This is
+        the attacker’s crossover error rate. High crossover rate means
+        that the defense is effective.
+      - (ends 5.1)
+   9) [@9] Challenges and future directions
+      - We made the standard, unrealistic assumption that all
+        connections start at the same time. In reality, attacks based
+        on correlating start and end times of connections may prove
+        very successful.
+      - it is very difficult to hide connection start and end times
+        using dummy traffic because the mix network handles dummy and
+        real packets differently
 ** [#C] [[./torproject.orgSLASHaboutSLASHtorusers.html][Who uses Tor?]]
 *** summary
     1) Inception
@@ -1451,7 +2796,7 @@
 
 	  data D = n (training pages) \cdot m (versions) \cdot i (instances)
 
-	  collection cost col(D) 
+	  collection cost col(D)
 
        2) Training cost:
 
@@ -2611,7 +3956,7 @@
 ** [[./paper-ssl-revised.pdf][Schneier - Analysis of the SSL 3.0 protocol]]
 *** summary
     0) [@0] Abstract
-       
+
        some minor flaws, yet easily corrected, good stuff
 
     1) Introduction
@@ -4993,7 +6338,7 @@
       traffic.
 
       How about timing data?
-** [[./ndss16-wfp-internet-scale.pdf][Website Fingerprinting at Internet Scale]]
+** [[./ndss16-wfp-internet-scale.pdf][Panchenko - Website Fingerprinting at Internet Scale]]
 *** summary
     0) [@0] Abstract
 
@@ -5448,7 +6793,7 @@
       #+END_SRC
       - better: typed array for performance (=array= is used directly)
 ** TODO [#A] Entwurfsmuster
-*** TODO summary (weiter bei 0.4.5.Konsequenzen S.229)
+*** TODO summary (weiter bei 0.4.6.Anwendbarkeit S.241)
     0) [@0] Preface
        1) Vorwort
 
@@ -6413,7 +7758,40 @@
 
             - Zustandsobjekte und Strategieobjekte häufig als Fliegengewicht
 
-       6) Kompositum
+       6) Kompositum (Composite)
+
+	  - objekbasiert
+
+	  - Zweck: Objekte zu Baumstrukturen kombinieren
+
+	  - Motivation:
+
+	    - Schemaeditor hat Linien, können kombiniert werden, dies
+              gibt neues Objekt (z.B. Klasse), kann wieder kombiniert
+              werden, etc
+
+	    - Implementierung ist schwieriger, wenn zwischen Behälter
+              und Basisobjekt (Linie, Rechteckt, Schrift)
+              unterschieden wird
+
+	    - Lösung: abstrakte Klasse für beides: Graphik
+
+	      - mit Funktionen Zeichne, FuegeHinzu(g), Entferne(g),
+                GibKindObjekt(id)
+
+	  - Anwendbarkeit:
+
+	    - Teil/Ganzes Hierarchien,
+
+	    - Unterschiede ignorieren
+
+	  - Struktur/Teilnehmer:
+
+	    - Klient benutzt Komponente (abstrakte Klasse=Schnittstele)
+
+	      - kann beides sein: Blatt oder Kompositum
+
+	      - Kompositum ruft operation der Kindobjekte auf
 
     5) [@5] Verhaltensmuster
 
@@ -6524,1076 +7902,6 @@
     - *In C++* sind statische Member-Funktionen zudem niemals
       virtuell, so dass Unterklassen sie nicht polymorph
       ueberschreiben koennen.
-** MOVE [#A] [[./JavaScript Garden.html]]
-*** summary
-    1) Objects
-
-       1) Object Usage and Properties
-
-	  0) [@0]
-
-	     =null= and =undefined= are not objects, others are coerced
-
-	  1) Objects as a Data Type
-
-	     - hash maps
-
-	  2) Accessing Properties
-
-	     - [] or .
-
-	  3) Deleting Properties
-
-	     - only per =delete=, setting to undefined or null keeps the key
-
-	  4) Notation of Keys
-
-	     - older engines: quote keywords as string, others: unquoted ok
-
-       2) The Prototype
-
-	  0) [@0]
-
-	     - prototypal inheritance:
-
-	     - object as class
-
-	  1) Property Lookup
-
-	     - prototype chain, up and up until =null=
-
-	  2) The Prototype Property
-
-	     - you can set =MyObject.prototype = new OtherObject()=
-
-	       - primitives are ignored
-
-	  3) Performance
-
-	     - impact for high-up objects or iteration
-
-	  4) Extension of Native Prototypes
-
-	     - "monkey patching"
-
-	     - only to backport newer-ES features
-
-	  5) In Conclusion
-
-	     - efficiency
-
-	     - no monkeypatch
-
-       3) hasOwnProperty
-
-	  0) [@0]
-
-	     - defined in object itself or not?
-
-	       - only thing not traversing prototype chain
-
-	  1) hasOwnProperty as a Property
-
-	     - can break (but then, you can always override Object.hasOwnProp
-
-	  2) In Conclusion
-
-	     - recommended for =for ... in= loop
-
-       4) The for in Loop
-
-	  - in operator: object has property, array has *key* (not value)
-
-	    - [3,4] has =1 in [3,4]=, but not =3 in [3,4]=
-
-	  - =for in= goes up the prototype chain
-
-	    - except if =Object.defineProperty= is used with
-              =enumerable= set to =false=
-
-	  - library code needs to make sure via =hasOwnProperty=
-
-	  - In Conclusion: always for ECMA <= 3. In ECMA 5, you can
-            defineProperty and omit the hasOwnProperty in for-in
-
-    2) Functions
-
-       1) Function Declarations and Expressions
-
-	  - can be used like any other objects
-
-	  - pass as (anonymous) parameters to other function as callback
-
-	  - *function Declaration* is hoisted = moved to top, available
-            in whole program
-	    #+BEGIN_SRC js
-              function foo() {}
-	    #+END_SRC
-
-	  - *function Expression* is defined at runtime
-	    #+BEGIN_SRC js
-              var foo = function() {};
-	    #+END_SRC
-
-	    - can be named with name available inside function
-
-       2) How this Works
-
-	  special name, 5 different objects bound
-
-	  1) The Global Scope
-
-	     - in global scope: to global object
-
-	       - except for strict mode: undefined
-
-	  2) Calling a Function
-
-	     - global object
-
-	       - except for strict mode: undefined
-
-	  3) Calling a Method
-
-	     - to the containing object
-
-	  4) Calling a Constructor
-
-	     to newly created object
-
-	  5) Explicit Setting of this
-
-	     #+BEGIN_SRC js
-               function foo(a, b, c) {}
-
-               var bar = {};
-               foo.apply(bar, [1, 2, 3]); // array will expand to the below
-               foo.call(bar, 1, 2, 3); // results in a = 1, b = 2, c = 3
-	     #+END_SRC
-
-	     =this= explicitly set to bar
-
-	  6) Common Pitfalls
-
-	     - in method definitions, =this= refers to global object, solution:
-	       #+BEGIN_SRC js
-                 Foo.method = function() {
-                     var test = function() {
-                         // this now refers to Foo
-                     }.bind(this);
-                     test();
-                 };
-	       #+END_SRC
-
-	  7) Assigning Methods
-
-	     aliasing as =var test = someObject.methodTest;= has the
-             same problem
-
-       3) Closures and References
-
-	  0) [@0]
-
-	     "One of JavaScript's most powerful features"
-
-	  1) Emulating private variables
-
-	     using closures
-	     #+BEGIN_SRC js
-               function Counter(start) {
-                   var count = start;
-                   return {
-                       increment: function() {
-                           count++;
-                       },
-                       get: function() {
-                           return count;
-                       }
-                   }
-               }
-	     #+END_SRC
-	     =count= is hidden from the outside
-
-	  2) Why Private Variables Work
-
-	     - =count= referenced by =increment= and =get=, but
-               otherwise unavailable
-
-	     - scopes cannot be assigned or referenced
-
-	  3) Closures Inside Loops
-
-	     - often a problem: variable is referenced, thus always
-               the same (f.ex. with =setTimeout=)
-
-	  4) Avoiding the Reference Problem
-
-	     1) anonymous wrapper (see also 2.6)
-		#+BEGIN_SRC js
-                  for(var i = 0; i < 10; i++) {
-                      (function(e) {
-                          setTimeout(function() {
-                              console.log(e);
-                          }, 1000);
-                      })(i);
-                  }
-		#+END_SRC
-
-	     2) return a function from the anonymous wrapper
-		#+BEGIN_SRC js
-                  for(var i = 0; i < 10; i++) {
-                      setTimeout((function(e) {
-                          return function() {
-                              console.log(e);
-                          }
-                      })(i), 1000)
-                  }
-		#+END_SRC
-
-	     3) additional argument to setTimeout
-		#+BEGIN_SRC js
-                  for(var i = 0; i < 10; i++) {
-                      setTimeout(function(e) {
-                          console.log(e);
-                      }, 1000, i);
-                  }
-		#+END_SRC
-
-	     4) using .bind
-		#+BEGIN_SRC js
-                  for(var i = 0; i < 10; i++) {
-                      setTimeout(console.log.bind(console, i), 1000);
-                  }
-		#+END_SRC
-
-       4) The arguments Object
-
-	  0) [@0]
-
-	     - in every function scope
-
-	     - array-like, not array
-
-	  1) Converting to an Array
-
-	     slow, avoid in performance-critical parts
-	     #+BEGIN_SRC js
-               Array.prototype.slice.call(arguments);
-	     #+END_SRC
-
-	  2) Passing Arguments
-
-	     recommended:
-	     #+BEGIN_SRC js
-               function foo() {
-                   bar.apply(null, arguments);
-               }
-               function bar(a, b, c) {
-                   // do stuff here
-               }
-	     #+END_SRC
-
-	     you can also use =call= and =apply= together to turn
-             methods into normal functions
-
-	  3) Formal Parameters and Arguments Indices
-
-	     setting the parameter also changes =arguments= (except
-             for strict mode)
-
-	  4) Performance Myths and Truths
-
-	     using =arguments.callee= may make things slower, as
-             functions can no longer be inlined
-
-       5) [@5] Constructors
-
-	  1) Basics
-
-	     - any function with =new=
-
-	     - sets =this= and Object.prototype to prototype
-
-	     - returns =this= if no obect given
-
-	  2) Factories
-
-	     - return object, =new= unimportant, allows for information hiding
-
-	     - does not affect prototype
-
-	  3) Creating New Objects via Factories
-
-	     - uses more memory (no prototypes)
-
-	     - inheritance harder
-
-	     - "contrary to spirit of the language"
-
-	  4) In Conclusion
-
-	     depends on application, but prototypes have many benefits, too
-
-       6) Scopes and Namespaces
-
-          0) [@0]
-
-             - only function scope (except for js6)
-
-             - only global namespace
-
-          1) The Bane of Global Variables
-
-             always use =var= unless you *explicitly* want outer
-             scope
-
-          2) Local Variables
-
-             only =var= and function parameters (and let and const)
-
-          3) Hoisting
-
-             - function declarations and var statements get /hoiste/
-               to the top of their scope
-               #+BEGIN_SRC js
-                 bar();
-                 var bar = function() {};
-                 var someValue = 42;
-
-                 test();
-                 function test(data) {
-                     if (false) {
-                         goo = 1;
-                     } else {
-                         var goo = 2;
-                     }
-                     for(var i = 0; i < 100; i++) {
-                         var e = data[i];
-                     }
-                 }
-               #+END_SRC
-               becomes
-               #+BEGIN_SRC js
-                 // var statements got moved here
-                 var bar, someValue; // default to 'undefined'
-                 
-                 // the function declaration got moved up too
-                 function test(data) {
-                     var goo, i, e; // missing block scope moves these here
-                     if (false) {
-                         goo = 1;
-                     } else {
-                         goo = 2;
-                     }
-                     for(i = 0; i < 100; i++) {
-                         e = data[i];
-                     }
-                 }
-                 
-                 bar(); // fails with a TypeError: bar still 'undefined'
-                 someValue = 42; // assignments not affected by hoisting
-                 bar = function() {};
-                 
-                 test();
-               #+END_SRC
-               var inside the for-loop, in if-statement and in
-               for-declaration all get hoisted
-
-          4) Name Resolution Order
-
-             - var
-
-             - then parameter
-
-             - then function name
-
-             - repeat in outer scope
-
-          5) Namespaces
-
-             several ways to avoid polluting the global namespace
-
-             unnamed functions somehow
-
-          6) In Conclusion
-
-             best to use anonymous wrapper
-
-    3) Arrays
-
-       1) Array Iteration and Properties
-
-          0) [@0]
-
-             avoid for in
-
-          1) Iteration
-
-             - best for performance is the classic for loop
-               #+BEGIN_SRC js
-                 var list = [1, 2, 3, 4, 5, ...... 100000000];
-                 for(var i = 0, l = list.length; i < l; i++) {
-                     console.log(list[i]);
-                 }
-               #+END_SRC
-
-               - half as fast without caching =l=
-
-             - notes: also [].forEach(callback(element, index, array))
-
-          2) The length Property
-
-             - can be used to truncate array or make it sparse
-
-          3) In Conclusion
-
-             - bet performance with plain for loop (with =length= caching)
-
-       2) The Array Constructor
-
-          1) 
-
-             - use =[]= instead
-
-             - except for repeating f.ex. a string without =for=
-               #+BEGIN_SRC js
-                 new Array(count + 1).join(stringToRepeat);
-               #+END_SRC
-
-          2) In Conclusion
-
-             use [] almost all the time
-
-    4) Types
-
-       1) Equality and Comparisons
-
-          two ways to do
-
-          1) The Equality Operator
-
-             - ==
-
-             - type corecion
-
-             - bad for performance
-
-          2) The Strict Equality Operator
-
-             - ===
-
-             - no type coercion, hardens code
-
-             - better performance
-
-          3) Comparing Objects
-
-             both compare object identity
-
-          4) In Conclusion
-
-             - use only ===
-
-             - if you need type coercion, use it explicitly
-
-       2) The typeof Operator
-
-          broken
-
-          1) The JavaScript Type Table
-
-             is hard to grok (typeof 'ab' !== typeof new String('ab'))
-
-          2) The Class of an Object
-
-             determine via =Object.prototype.toString=
-             #+BEGIN_SRC js
-               function is(type, obj) {
-                   var clas = Object.prototype.toString.call(obj).slice(8, -1);
-                   return obj !== undefined && obj !== null && clas === type;
-               }
-             #+END_SRC
-
-          3) Testing for Undefined Variables
-
-             test via
-             #+BEGIN_SRC js
-               typeof foo !== 'undefined'
-             #+END_SRC
-             "This is the only thing typeof is actually useful for."
-
-          4) In Conclusion
-
-             use Object.prototype.toString to test type
-
-       3) The instanceof Operator
-
-          only useful for custom-made objects
-          #+BEGIN_SRC js
-            function Foo() {}
-            function Bar() {}
-            Bar.prototype = new Foo();
-            new Bar() instanceof Bar; // true
-            new Bar() instanceof Foo; // true
-            // This just sets Bar.prototype to the function object Foo,
-            // but not to an actual instance of Foo
-            Bar.prototype = Foo;
-            new Bar() instanceof Foo; // false
-          #+END_SRC
-
-       4) Type Casting
-
-          type coercion "whereever possible": best use strict equality
-
-          1) Constructors of Built-In Types
-
-             behave differently when used with =new= and without
-             #+BEGIN_SRC js
-               new Number(10) === 10;     // False, Object and Number
-               Number(10) === 10;         // True, Number and Number
-               new Number(10) + 0 === 10; // True, due to implicit conversion
-             #+END_SRC
-             =Number= etc without new do type conversion
-
-          2) Casting to a String
-
-             prepend with ='' +=
-             #+BEGIN_SRC js
-               '' + 10 === '10'; // true
-             #+END_SRC
-
-          3) Casting to a Number
-
-             prepend unary +:
-             #+BEGIN_SRC js
-               +'10' === 10; // true
-             #+END_SRC
-
-          4) Casting to a Boolean
-
-             !!
-
-    5) Core
-
-       1) Why Not to Use eval
-
-          0) [@0]
-
-             - =eval= changes locally-scoped variables
-
-               - except if not called by name =eval=, then globals
-
-             - avoid it
-
-          1) eval in Disguise
-
-             - setTimeout takes string as arg, evals it
-
-          2) Security Issues
-
-             - evaluates **any string**
-
-          3) In Conclusion
-
-             never be used, code using should be questioned
-             (workings, performance, security)
-
-             (except maybe REPL-loops)
-
-       2) undefined and null
-
-          two values for nothing, use =undefined=
-
-          1) The Value undefined
-
-             used for uninitialized variables, and much more
-
-          2) Handling Changes to the Value of undefined
-
-             not necessary in strict mode
-
-          3) Uses of null
-
-             non in production, can be replaced
-
-       3) Automatic Semicolon Insertion
-
-          parser needs semicola, inserts if it encouters error with
-          certain rules, retries
-
-          1) How it Works
-
-             - example with (group stuff) on new line
-
-             - can lead to errors
-
-          2) Leading Parenthesis
-             #+BEGIN_SRC js
-               log('testing!')
-               (options.list || []).forEach(function(i) {})
-             #+END_SRC
-             without semicolon insertion yields `TypeError` because
-             log does not return a function
-
-          3) In Conclusion
-
-             recommended to always use them
-
-       4) The delete Operator
-
-          if =DontDelete= attribute is set, impossible to delete
-
-          1) Global code and Function code
-
-             - elements (var or function) of global and function scope
-               have DontDelete set, so undeleteable
-               #+BEGIN_SRC js
-                 var a = 1; // DontDelete is set
-                 delete a; // false
-                 a; // 1
-               #+END_SRC
-
-             - no longer true in firefox
-
-          2) Explicit properties
-
-             - those can be deleted normally
-
-             - use this to delete global vars:
-               #+BEGIN_SRC js
-                 var GLOBAL_OBJECT = this;
-                 GLOBAL_OBJECT.a = 1;
-                 a === GLOBAL_OBJECT.a; // true - just a global var
-                 delete GLOBAL_OBJECT.a; // true
-                 GLOBAL_OBJECT.a; // undefined
-               #+END_SRC
-
-          3) Function arguments and built-ins
-
-             DontDelete also set (?) for function arguments and
-             built-in properties, f.ex. .length
-
-          4) Host objects
-
-             unpredictable (what are these)
-
-          5) In conclusion
-
-             recommended only for "explicitly set properties on normal
-             objects"
-
-    6) Other
-
-       1) setTimeout and setInterval
-
-          - js asynchronous: schedule function to run
-
-          - no exact scheduling guaranteed (fn might block)
-
-          - =this= is global object on execution
-
-       2) Stacking Calls with setInterval
-
-          - discouraged
-
-       3) Dealing with Possible Blocking Code
-
-          - call setTimeout() in function after blocking code
-
-       4) Manually Clearing Timeouts
-          #+BEGIN_SRC js
-            var id = setTimeout(foo, 1000);
-            clearTimeout(id);
-          #+END_SRC
-
-       5) Clearing All Timeouts
-
-          - no fixed method
-
-          - simple: clear all up to 1000
-
-          - often monotonically increasing, then
-            #+BEGIN_SRC js
-              var biggestTimeoutId = window.setTimeout(function(){}, 1), i;
-              for(i = 1; i <= biggestTimeoutId; i++) {
-                  clearTimeout(i);
-              }
-            #+END_SRC
-            "works on all major browsers"
-
-          - better keep track of IDs, clear individually
-
-       6) Hidden Use of eval
-
-          - if string as first parameter, uses =eval= in global scope
-
-       7) In Conclusion
-
-          - avoid string use
-
-          - avoid setInterval, as "its scheduler is not blocked by
-            executing JavaScript."
-*** quotes
-    6) Other
-       - Note: As setTimeout takes a function object as its first
-         parameter, a common mistake is to use setTimeout(foo(),
-         1000), which will use the return value of the call foo and
-         not foo. This is, most of the time, a silent error, since
-         when the function returns undefined setTimeout will not raise
-         any error.
-** MOVE [#A] [[./webfingerprint-wpes.pdf][Improved Website Fingerprinting on Tor]]
-*** summary
-    0) [@0] Abstract
-
-       - new attack
-
-       - new data gathering methodology
-
-       - removal of useless cells, views Tor layer, not TCP/IP
-
-    1) INTRODUCTION
-
-       - evaluate metrics
-
-       - contributions:
-
-         - data gathering: modify tor browser
-
-	 - new data processing
-
-	   - not at TCP/IP level, but above
-
-	   - remove SENDME cells
-
-	 - New website fingerprinting metrics:
-
-	   - dynamic content is loaded last and varies only incoming
-
-	   - new metric
-
-    2) RELATED WORK
-
-       Defenses not implemented because of network load and ineffective
-
-       1) Non-distance-based methods
-
-	  - only sizes and occurrence counts as features
-
-	  - liberatore: naive bayes (normal frequency)
-
-	  - herrmann: multinomial naive bayes, more successful, only
-            3$ accuracy on Tor
-
-       2) Distance-based methods
-
-	  - liberatore: jaccard-based, without occurence, less
-            effective than naive bayes
-
-	  - panchenko: svm, several features
-
-	  - cai: "optimal string alignment distance", also for
-            websites instead of web pages via Hidden Markov Models
-
-       3) TOR
-
-	  0) [@0]
-
-	     - anonymization service
-
-	     - volunteers
-
-	     - if wf works, not anonymizing
-
-	     - defense
-
-	  1) Circuits and Streams
-
-	     - guard nodes rather fixed
-
-	     - middle and exit nodes
-
-	     - varying bandwidths per node
-
-	     - SENDME cells like ACKS
-
-	       - should be removed
-
-	  2) Defenses
-
-	     - tor browser defense
-
-	       1) enable pipelining
-
-	       2) randomize request order
-
-	       3) randomize pipeline size
-
-	     - cai found to fail, this evluates, too
-
-       4) DATA COLLECTION AND PROCESSING
-
-	  1) Collecting Data
-
-	     0) [@0]
-
-		different clients, different traces
-
-	     1) Circuit Construction
-
-		- should control circuit construction manually (?if
-                  done in sequence?)
-
-	     2) Timing
-
-		- should train on sites several hours apart (not
-                  feasible in real-time because of training time)
-
-	     3) Localization
-
-		- problem of redirects to localized site
-                  (f.ex. google.ca)
-
-		- problem of localized content (f.ex. advertising)
-
-	     4) Our Methodology
-
-		- tor controller
-
-		- 100@40 sites
-
-		- batch: 4 instances
-
-		- maximum circuit duration
-
-		- removed similar sites (google.de|be|... unified)
-
-		- try to get localized sites (yahoo.de)
-
-		- remove trace if size is  less than 20% of median
-
-		- disable cacheing
-
-	  2) Processing Data
-
-	     0) [@0]
-
-		- "After processing, each traffic instance is
-                  represented as a sequence of positive and negative
-                  integers."
-
-	     1) TCP/IP packet instances
-
-		- length field
-
-		- cai and panchenko rounded sizes by increments of 600
-
-	     2) Tor cell instances
-
-		- TCP/IP layer info has problems f.ex. with retransmit
-
-		- round down to closest multiple of 512, divide by 512
-
-		- "will produce the number of Tor cells in the record."
-
-	     3) Removing SENDMEs
-
-		- guess the p2-th cell to be a sendme after p1 start cells
-
-		- p1=45, p2=40 gave TPR .62, FPR .057
-
-       5) CLASSIFICATION
-
-          0) [@0]
-
-             - monitored vs others (open world)
-
-             - site vs rest (closed world)
-
-          1) Support Vector Machine
-
-             - find separating hyperplane
-
-             - cost function if cannot be foun
-
-             - lift to higher dimension to find hyperplane there
-
-             - ovo as ovm was not better
-
-             - which metric to use?
-
-          2) Distance-based Metrics
-
-             1) Optimal String Alignment Distance
-
-                - transposition limited to originally adjacent
-                  elements
-
-                - cai: lower cost for transpositions
-
-             2) Damerau-Levenshtein Distance
-
-                - all transpositions allowed
-
-                - implementation: also elements not adjacent with
-                  deletion an insertion
-
-             3) Removing Substitutions
-
-                these do not correspond to realistic scenarios as
-                deletions, insertions and transpositions do
-
-             4) Different costs for Incoming/Outgoing Packets
-
-                make changes to outgoing packets more costly
-
-             5) Varying transposition cost
-
-                - reduce transposition costs the later an element occurs
-
-                - at beginning, always HTML page
-
-                - then simultaneous connections
-
-                - cost = (1 - 0.9 min(i/m, j/n))^2
-
-             6) Fast Levenshtein-like distance
-
-                efficient new levenshtein algorithm in O(m+n)
-
-          3) Post-processing
-
-             - need values in [0,1] with 0 greatest similarity
-
-             - as Cai: transform via
-
-               - D'(s 1 , s 2 ) = D(s 1 , s 2 ) / min(|s 1 |, |s 2 |), and
-
-               - K(s 1 , s 2 ) = e^{ −D'(s 1 ,s 2 )^2}
-
-       6) EXPERIMENTAL RESULTS
-
-          1) Setting
-
-             - "embarassingly parallel"
-
-             - no alterations to tbb except for disabled cache
-
-             - set UseEntryGuards to 0 to disable (otherwise limited
-               test validity)
-
-             - iMacros
-
-          2) Closed-World Results
-
-             0) [@0]
-
-                - avoid overfitting by settings the costs once
-
-                - vary SVM cost param from 4^0 to 4^10, choose best for
-                  each metric
-
-                - 91% for SENDME removed and combined OSAD (appendix D)
-
-                - Cai: 88%
-
-                - fast: 283 vs 608000 CPU seconds, 70%
-
-             1) Cai’s Data
-
-                similar results, thus analysis seems robust
-
-          3) Open-World Results
-
-             - alexa 101 to 1000 as background
-
-               - 860 successfully loaded
-
-               - 96.9% recall
-
-          4) Evaluation of Tor’s Pipelining and Order Randomization
-             Defense
-
-             - no significatn difference between results,
-
-             - slight better detection with defense enabled
-
-       7) DISCUSSION
-
-          1) Training set size and selection
-
-             - circuit rotation while fetching has quite an impact
-
-             - number of training set: the more instances the better
-
-               - OSAD outperformed
-
-             - open-world background-set: the more training sites the
-               better (for given background set size)
-
-          2) Testing set size and selection
-
-             - Alexa's top100 to compare with Panchenko and Cai
-
-             - 10 sites very high accuracy
-
-               - 20: 92.3%
-
-               - 100: 90.9%
-
-             - little decrease as number of sites increases
-
-          3) Difficult sites and Defenses
-
-             problems arose from
-
-             - Localization
-
-             - frequently updated content
-
-             - slides: "the number of slide images that are loaded
-               depended on the total load time"
-
-             - randomized content: recommendations based on prefs
-
-             how web designers can help anonymize
-
-       8) CONCLUSION
-
-          - realistically capture data
-
-            - modify Tor/ TBB
-
-          - cells better,
-
-            - better without SENDME (?where?)
-
-          - better results:
-
-            - recall 95%
-
-            - fpr < 0.2%
-
-          - compare to previous: 35% fewer mistakes
-
-          - justify use of Alexa top-100 (closed-world) and top-1000
-            (open world)
-*** quotes
-    1) INTRODUCTION
-       - [@?] dynamic content such as advertisements may cause a
-         variation in incoming packets but not outgoing packets, and
-         dynamic content is often loaded last in a website.
-    4) [@4] DATA COLLECTION AND PROCESSING
-       1) Collecting Data
-	  1) Circuit Construction
-	     - the top 1% of relays comprised 29% of the total
-               bandwidth of Tor and the top 20% of relays comprised
-               93% of the bandwidth.
-    7) [@7] DISCUSSION
-       1) Training set size and selection
-          - the attacker can increase their open-world success rate by
-            training on more non-monitored sites.
-*** ref
-    [[file:master.bib::wpes13-fingerprinting][Wang & Goldberg 2013: Improved Website Fingerprinting Tor]]
 ** TODO [#A] [[./4b0fa48670a7269523b1166ad302440876da.pdf][k-fingerprinting: a Robust Scalable Website Fingerprinting Technique]]
 *** summary
     0) [@0] Abstract
@@ -7789,6 +8097,50 @@
        - Juarez' Adaptive Padding works down to 30% accuracy
 
     7) k-fingerprinting the Wang et al data set
+
+       - train on 60 instances for each of the 100 monitored web pages
+
+       - vary number of unmonitored
+
+	 - all as one single class
+
+       - feature numbers 200 and 150
+
+       - classify if all k agree
+
+       - 88% (\pm 1) vs 0.5% (\pm 0.1)
+
+	 - better than kNN (85% (\pm 4) vs 0.6% (\pm 0.4)
+
+       - best with training 3500 unmonitored, afterwards does not increase
+
+       - Fingerprint length
+
+	 - set k=1 with 4000 unmonitored
+
+	 - one fingerprint: 51% vs 90%
+
+	 - 20 fingerprints: 87% vs 1.3%
+
+	 - does not get much better
+
+    8) Attack evaluation on DS_{Tor}
+
+       55@100 vs 100'000 and 30@80 hidden services vs 100'000
+
+       1) Alexa web pages monitored set
+
+	  - (k=2) the more training pages, the better the BDR
+
+	    - due to reduction of FPR
+
+       2) Hidden services monitored set
+
+	  - lower TPR, but also lower FPR
+
+	    - BDR stays very high
+
+    9) Attack evaluation on DS_Norm
 *** quotes
     1) Introduction
        - Traditional encryption obscures only the content of
@@ -7797,287 +8149,165 @@
          systems obscure both content and metadata, preventing a
          passive attacker from observing the source or destination of
          communication.
-    2) [@4] Data gathering
+    4) [@4] Data gathering
        - By including website visits to trending topics we argue that
          this diminishes the ability to properly measure how effective
          a website fingerprinting attack will perform in general.
-*** ref [[file:master.bib::kfingerprint][Hayes & Danezis]]
-** MOVE [#B] [[./ShWa-Timing06.pdf][Timing analysis in low-latency mix networks: attacks and defenses]]
+    8) [@8] Attack evaluation on DS_{Tor}
+       1) Alexa web pages monitored set
+	  - an attacker needs to train on less than 10% of the entire
+            dataset to have nearly 70% confidence that classifier was
+            correct when it claims to have detected a monitored page.
+*** TODO ref [[file:master.bib::kfingerprint][Hayes & Danezis]]
+    there is arXiv:1509.00789v3 [cs.CR] 19 Feb 2016, check that
+** TODO [#A] PART -s 1,5,7 [[./McGrawHill_-_Machine_Learning_-Tom_Mitchell.pdf]]
 *** summary
-    0) [@0] Abstract
-
-       Analyze correlation attacks on low-latency mix networks.
-
-       previous defenses ineffective or huge latency or huge overhead
-
-    1) Introduction
-
-       - low-latency mix networks
-
-       - path establishment not researched
-
-       - realistic traffic model based on HTTP traces
-
-       - adaptive padding
-
-	 - fill statistically unlikely gaps
-
-	 - also against active attackers
-
-       - compare to constant rate dummy traffic
-
-    2) Related work
-
-       - Venkatraman: mathematical model, defense requiring complete knowledge
-
-       - Timmerman: traffic masking: assure certain profile via cover
-         traffic and artificial delays
-
-       - Berthold: high-latency, intermediate dummy, global,
-
-         - CONTRA: not fine-grained
-
-       - Rennhard: artificially delay traffic
-
-         - CONTRA: latency
-
-       - Fu: constant rate is vulnerable to analysis of inter-packet
-         arrivals,
-
-         - SOLUTION: variable inter-packet intervals
-
-       - defensive-dropping: drop at intermediate, same constant rate,
-
-         - CONTRA: latency
-
-       - Overlier: trusted entry node,
-
-	 - PRO: combines with this
-
-    3) Model and metrics
-
-       1) Network
-
-	  sender, path of N (small: {2,3}, large: {5..8}) mixes, destination
-
-	  like tarzan
-
-	  (end-to-end TCP?)
-
-       2) Timing analysis
-
-	  - attacker measures inter-packet intervals
-
-	  - active: also impose unique timing signature
-
-	  - simple model: ignores TCP effect of drops and bursts
-
-       3) Defense metric.
-
-	  - adversary: correlate packet counts
-
-	  - crossover rate: see "timing...systems"
-
-       4) Negative impact on network performance.
-
-	  - metric: padding ratio
-
-	  - metric: extra delay
-
-    4) Adaptive padding
-
-       create statistic traffic, send if no packet in next drawn
-       sample time
-
-       1) Data structures: bins, indexed exponentially
-
-       2) Adaptive padding algorithm
-
-	  1. take token
-
-	     - if packet arrives before time, remove token for packet
-               arrival time, replace token into bin
-
-	     - else, send dummary after token's time
-
-	  2. until token buckets empty
-
-       3) Destroying natural fingerprints
-
-	  - 2 modes
-
-	    - burst: packet received, take expected high-duration
-
-	    - gap: dummy sent, take expected low-duration
-
-    5) Experimental evaluation
-
-       0) [@0] 
-
-	  - 4 schemes
-
-	    - undefended
-
-	    - defensive dropping
-
-	    - defensive dropping variant with constant rate cover traffic
-
-	    - adaptive padding
-
-	  - exponential distribution
-
-       1) Attack model
-
-	  - observes 60 seconds
-
-	  - does cross-correlation for 1-second-steps
-
-	  - sets threshold t to equals FPR and FNR
-
-	  - defender's goal: high t
-
-       2) Evaluation results
-
-	  - constant rate dummies and no cover fails
-
-	  - defensive dropping works by upping other streams' correlation
-
-	  - adaptive padding works by lowering this stream's correlation
-
-       3) Short paths
-
-	  2-3 mixes
-
-	  - defensive dropping works worse
-
-	  - adaptive padding works better
-
-    6) Active attacks
+    1) INTRODUCTION
 
        0) [@0]
 
-	  - impose timing signature
+          - programming computers to learn
 
-	  - attacker cannot create or replay packets
+       1) WELL-POSED LEARNING PROBLEMS
 
-       1) Artificial gaps
+          - definition: see quotes
 
-	  - drops of several packets in a row
+          - fits many examples from simple (db query optimizer) to
+            complex (robot car driver, checkers play algorithm)
 
-	    - recognizable with defensive dropping
+       2) DESIGNING A LEARNING SYSTEM
 
-	    - but not with adaptive padding
+          0) [@0]
 
-       2) Artificial bursts
+             - checkers
 
-	  - queue packets, then send all at once
+               - performance measure: percent of games won in world tournament
 
-	    - defensive dropping crossover rate drops to 0
+          1) Choosing the Training Experience
 
-	    - adaptive padding lower, the longer (.21 with 15-second-queue)
+             - direct feedback vs indirect feedback
 
-    7) Comparison with constant-rate defenses
+               - best moves, vs
 
-       compare to constant-rate defenses
+               - sequence of game moves
 
-       - latency is prohibitive: especially in low-latency mix networks
+             - learner control over learning sequence
 
-	 maybe for non-interactive applications
+               - teacher selects, vs learner asks, vs learner explores
 
-       - Everybody must send at the same constant rate: see section
-         5.2 most flows must use this, in contrast to adaptive padding
+             - examples vs reality
 
-       - There is no “right” constant rate: f.ex. bursts require high
-         rate which might congest the network
+               - training set complete enough?
 
-       - Defense fails against active attacks: see section 6
+             Decision: plays against itself (+: no trainer, as much
+             data as time permits)
 
-       - Defense fails at high traffic rates: if higher rate than
-         fixed, most packets are real, which "is vulnerable to basic
-         timing analysis"
+             - Example
+               A checkers learning problem:
+               - Task T: playing checkers
+               - Performance measure P: percent of games won in the world tournament
+               - Training experience E: games played against itself
+               In order to complete the design of the learning system, we must now choose
+               1. the exact type of knowledge to be,learned
+               2. a representation for this target knowledge
+               3. a learning mechanism
+          2) Choosing the Target Function
 
-       - Defense reveals presence of real traffic: sparse is padding,
-         dense is real traffic
+             - 1st idea: maps state to next move
 
-    8) Creation and management of dummy packets
+             - 2nd idea (better to compute): maps board state B to real number
 
-       1) simplest: creation by mix, but nonforwardeable
+               - won\to 100, lost \to -100, tie \to 0
 
-       2) pre-computed on generation and times of quiet
+               - compute back from every state, assuming optimal
+                 strategy of both
 
-          - con: stream ciphers
+               - nonoperational: hard to compute
 
-       3) Malicious clients and servers.
+               - operational approximation V^{\tilde} : B \to {real numbers}
 
-         bad, a.p. requires server cooperation, TODO: reread
+          3) Choosing a Representation for the Target Function
 
-       4) Reverse routes.
+             - possibilities: table with values, neural network,
+               polynomial based on board state, ...
 
-          === Server shares keys with all route mixes, but there is an
-          attack
+             - here, simple choice: linear function with weights
 
-    9) Challenges and future directions
+               d(x) = w0 + w1 x1 + ... + w6 x6
 
-       - only some attacks looked at
+               with weights as number of b/w pieces/kings/threatened by other
 
-       - difficult to hide that there is traffic
+          4) Choosing a Function Approximation Algorithm
 
-       - the more padding the later in the chain
+             training data, f.ex ((0, 1, 0, 0, 0, 0), -100) (black won)
 
-         - detectable
+             1) Estimating training values
+
+                - simple approach: assign value of successor (next
+                  state that can be played by this side)
+
+		  #+BEGIN_EXAMPLE
+		  V_train(b) = V^{\tilde}(successor(b)) (ref:1.1)
+		  #+END_EXAMPLE
+
+             2) Estimating the Weights
+
+                - minimize the squared error \sum (V_train - V^{\tilde})^2
+
+                - method: least mean squares, for each instance (b, V_train(b))
+
+                  w_i = w_i + \eta (V_train(b) -v^{\tilde}(b)) x_i
+
+          5) The Final Design
+
+	     four parts
+
+	     1) Performance System: must solve task (f.ex. playing checkers)
+
+		- input: new problem (new game)
+
+		- output: solution (game trace)
+
+	     2) Critic:
+
+		- input solution (game trace)
+
+		- output: training examples of target function (similar to [[(1.1)]])
+
+	     3) Generalizer
+
+		- input: training examples
+
+		- output: estimate of target function (f.ex. via LMS)
+
+	     4) Experiment Generator: practice problems that maximize learning
+
+		- input: hypothesis/target function
+
+		- output: game start state
+
+       3) PERSPECTIVES AND ISSUES IN MACHINE LEARNING
 *** quotes
-   0) [@0] unsorted
-      - Many mix networks are specifically intended to provide anonymity
-        against attackers who control the communication medium.
-      - Traffic analysis is an especially serious threat for low-latency
-        mix networks because it is very difficult to hide statistical
-        characteristics of the packet stream and satisfy the stringent
-        latency requirements imposed by interactive applications.
-      - The standard measure of success is the /crossover error rate/, at
-        which the attacker’s false positive rate is equal to his false
-        negative rate.
-      - (Maximum crossover error rate is 0.5, which corresponds to
-        random guessing.)
-      - recognized as a serious threat to low-latency mix networks, but
-        few defenses have been proposed to date.
-      - (ends 2?)
-      - An active attacker can also impose his own unique timing
-        signature (by dropping packets or introducing artificial bursts)
-        onto the flow he is interested in, and then attempt to identify
-        this signature on other network links.
-      - (ends 3)
-      - samples from the statistical distribution of inter-packet
-        intervals. If the next packet arrives before the chosen interval
-        expires, it is forwarded and a new value is sampled. To avoid
-        skewing resulting intervals towards short values, the
-        distribution is modified slightly to increase the probability of
-        drawing a longer interval next time.
-      - rough statistical distribution of inter packet intervals for a
-        “normal” flow [...] can be pre-computed from traffic
-        repositories such as NLANR [21]
-      - increasing the range represented by each bin exponentially with
-        the bin index works well.
-      - (ends 4.Data structures)
-      - We do not model TCP acknowledgements, re-transmissions,
-        exponential backoff in response to dropped packets, and other
-        TCP features that may be exploited by a sophisticated attacker.
-      - (ends 5.0)
-      - We conjecture that long-term attacks cannot be prevented without
-        assuming that some senders or mixes emit cover traffic in
-        perfect synchrony, which cannot be achieved by any real system.
-      - The attacker chooses t [threshold for correlation r(d)] so that
-        the false positive and false negative rates are equal. This is
-        the attacker’s crossover error rate. High crossover rate means
-        that the defense is effective.
-      - (ends 5.1)
-   9) [@9] Challenges and future directions
-      - We made the standard, unrealistic assumption that all
-        connections start at the same time. In reality, attacks based
-        on correlating start and end times of connections may prove
-        very successful.
-      - it is very difficult to hide connection start and end times
-        using dummy traffic because the mix network handles dummy and
-        real packets differently
+    1) INTRODUCTION
+       1) WELL-POSED LEARNING PROBLEMS
+          - Definition: A computer program is said to learn from
+            experience E with respect to some class of tasks T and
+            performance measure P, if its performance at tasks in T,
+            as measured by P, improves with experience E.
+** MOVE [#A] PART [[./Truncated distribution - Wikipedia, the free encyclopedia.html]]
+*** quotes
+    1) Definition
+       - CDF: \frac{\int_a^x g(t) dt}{F(b)-F(a)}
+       - Mean: \frac{\int_a^b x g(x) dx}{F(b)-F(a)}
+       - g(x) = f(x) for all a <x \leq b and g(x) = 0 everywhere else
+       - we wish to know how X is distributed given a < X \leq b.
+
+         f(x|a < X \leq b) = \frac{g(x)}{F(b)-F(a)} = Tr(x)
+       - A truncated distribution where the top of the distribution has
+         been removed is as follows:
+
+         f(x|X \leq y) = \frac{g(x)}{F(y)}
+*** ref [[file:master.bib::wiki:truncated][Wikipedia 2015: Truncated]]
 ** TODO [#B] [[./LZCLCP_NDSS11.pdf][HTTPOS: Sealing Information Leaks with Browser-side Obfuscation of Encrypted Flows]]
 *** summary
     0) [@0] Abstract
@@ -8301,16 +8531,50 @@
             confidentiality provided"
 
     5) EXISTING COUNTERMEASURES VERSUS EXISTING CLASSIFIERS
+
+       Liberatore, Herrmann, Panchenko each vs nine countermeasures
+
+       1) Comparing the Datasets
+
+	  - worst: no countermeasure
+
+	  - some bugs in Liberatore dataset (tiny traces)
+
+	    - lead to worse classifier accuracy
+
+       2) Comparison of Classifiers
+
+	  - P best for all most all
+
+	    - graphics with classifier groups, world size (x), accuracy (y)
+
+       3) Comparison of Countermeasures
+
+	  - here: single value per session random padding is better
+            than per-packet ( "averages out" )
+
+	  - pad-to-MTU works worse than some other (leaks direction info)
+
+	  - Session Random was better than pad-to-MTU
+
+	    - less overhead
+
+	  - DTS works best
+
+    6) EXPLORING COARSE FEATURES
 *** quotes
-    - in the context of website identification, it is unlikely that
-      bandwidth-efficient, general-purpose TA countermeasures can ever
-      provide the type of security targeted in prior work.
-    - (ends 0)
-    - This implies that any effective countermeasure must produce
-      outputs that consume indistinguishable amounts of bandwidth.
-    - (ends 1)
-*** ref
-    [[file:~/da/docs/master.bib::oakland2012-peekaboo][Dyer et al. 2012: Peek Boo I]]
+    0) [@0] Abstract
+       - in the context of website identification, it is unlikely that
+	 bandwidth-efficient, general-purpose TA countermeasures can ever
+	 provide the type of security targeted in prior work.
+    1) INTRODUCTION
+       - This implies that any effective countermeasure must produce
+	 outputs that consume indistinguishable amounts of bandwidth.
+    5) [@5]
+      1) Comparing the Datasets
+       - The fraction of traces that have short duration, particularly
+         ones that are clearly degenerate (≤ 10 packets)
+*** ref [[file:~/da/docs/master.bib::oakland2012-peekaboo][Dyer et al. 2012: Peek Boo I]]
 ** TODO [#B] [[./cacr2015-09.pdf][Wang - On Realistically Attacking Tor with Website Fingerprinting]]
 *** summary
     0) [@0] Abstract
@@ -8407,6 +8671,16 @@
           - here: much weaker: local passive adversary
 
        2) Website Fingerprinting
+
+	  - tor: only (timing,direction)-tuples
+
+	  - wrong classified page counts as false positive
+
+	  - "As the base incidence rate [...] is expected to be low,
+            the false positive rate must be low as well to avoid the
+            base rate fallacy."
+
+       3) Experimental setup and evaluation
 *** quotes
     1) INTRODUCTION
        - it is very hard to generate sufficient background noise on
@@ -8420,7 +8694,6 @@
     6) [@10] REFERENCES
        - [21] Tor. Tor Metrics Portal.
          https://metrics.torproject.org/. Accessed Feb. 2015.
-
 ** TODO [#B] [[./webtraffic-imc11.pdf][Towards Understanding Modern Web Traffic]]
 ** TODO [#B] [[~/da/git/docs/timing-fc2004.pdf][Timing Attacks in Low-Latency Mix Systems]]
 ** TODO [#B] [[./usersrouted-ccs13.pdf][Users Get Routed: Traffic Correlation on Tor by Realistic Adversaries]]
@@ -8733,7 +9006,6 @@
       provides protection against eavesdropping as a side effect
 *** ref
     [[file:master.bib::anonymous-connections][G. et al. 1998: Anonymous]]
-** TODO MOVE [[~/da/git/docs/onion-discex00.pdf][Onion Routing Access Configurations]]
 ** TODO [#C] [[./xxx-multihop-padding-primitives.txt][Multihop Padding Primitives]]
 ** TODO [#C] [[./wfpadtools-spec.txt][WFPadTools Protocol Specification]]
 ** TODO [#C] [[./ethical.html][Ethical Tor Research: Guidelines]]
@@ -8833,6 +9105,7 @@
 ** TODO [#C] [[./pam2014-tor-nfattack.pdf][On the Effectiveness of Traffic Analysis Against Anonymity Networks Using Flow Records]]
 *** ref
     [[file:master.bib::nfattackpam14][Chakravarty et al. 2014: Effectiveness Traffic Analysis]]
+** TODO [[~/da/git/docs/onion-discex00.pdf][Onion Routing Access Configurations]]
 ** TODO [[./802163c-01_30r1.pdf][Traffic Model for 802.16 TG3 MAC/PHY Simulations]]
 *** summary
     1) Introduction
@@ -10703,8 +10976,7 @@
              #+END_SRC
     6) whereever
        - help(scipy.stats.lognorm)
-** TODO [#B] PART [[./user_guide_0.16.1.pdf][scikit-learn user guide]] [0/1]
-*** TODO [#A] continue 2-tutorial at 2.4/2.5
+** [#B] PART [[./user_guide_0.16.1.pdf][scikit-learn user guide]]
 *** summary
     1) AN INTRODUCTION TO MACHINE LEARNING WITH SCIKIT-LEARN
 
@@ -10977,6 +11249,53 @@
                #+END_SRC
 
           2) Face recognition with eigenfaces
+
+	     0) [@0] imports
+		#+BEGIN_SRC python
+                  from sklearn.cross_validation import train_test_split
+                  from sklearn.metrics import classification_report
+                  from sklearn.metrics import confusion_matrix
+		#+END_SRC
+
+	     1) get and prepare data
+		#+BEGIN_SRC python
+                  X_train, X_test, y_train, y_test = train_test_split(
+                      X, y, test_size=0.25)
+		#+END_SRC
+
+	     2) do PCA
+
+	     3) apply PCA to data
+
+	     4) train svm
+		#+BEGIN_SRC python
+                  clf = GridSearchCV(SVC(kernel='rbf', class_weight='auto'), param_grid)
+                  clf = clf.fit(X_train_pca, y_train)
+		#+END_SRC
+
+	     5) evaluate
+		#+BEGIN_SRC python
+                  y_pred = clf.predict(X_test_pca)
+                  print(classification_report(y_test, y_pred, target_names=target_names))
+                  print(confusion_matrix(y_test, y_pred, labels=range(n_classes)))
+		#+END_SRC
+
+	  3) Open problem: Stock Market Structure
+
+	     predict variation in Google stock price
+
+       6) Finding help
+
+	  1) The project mailing list
+
+	     "If you encounter a bug with scikit-learn or something
+             that needs clarification in the docstring or the online
+             documentation, please feel free to ask on [[http://scikit-learn.sourceforge.net/support.html][the Mailing
+             List]]"
+
+	  2) Q&A communities with Machine Learning practitioners
+
+	     - http://metaoptimize.com/qa
 *** quotes
   2) [@2] A tutorial on statistical-learning for scientific data processing
      1)
@@ -13022,36 +13341,96 @@
        - Acknowledgments
 
     1. Boolean retrieval
+
+    8. [@8] Evaluation in information retrieval
+
+       3. [@3] Evaluation of unranked retrieval sets
+
+	  - Precision: "the fraction of retrieved documents that  are
+            relevant"
+
+	  - Recall: "the fraction of relevant documents that are retrieved"
+
+	  - Problem with accuracy: f.ex. if many (f.ex. 99.9%) of
+            documents do not match, then always saying no yields high
+            (f.ex. 99.9%) accuracy.
+
+	    - "data is extremely skewed"
+
+	  - web surfers want high precision (first page fits)
+
+	  - legals / analysts want high recall
+
+	  - F-measure: harmonic mean of P and R (see quotes)
 *** quotes
-    - Chapter 10 considers information retrieval from documents that
-      are structured with markup languages like XML and HTML.
-    - (ends 0)
-    - Most commonly, the edit operations allowed for this purpose are:
-      (i) insert a character into a string; (ii) delete a character
-      from a string and (iii) replace a character of a string by
-      another character; for these operations, edit distance
-      is sometimes known as *Levenshtein distance*.
-    - EDIT DISTANCE ( s_{1} , s_{2} )
-      1. int m [ i, j ] = 0
-      2. for i ← 1 to | s_{1} |
-      3. do m [ i, 0 ] = i
-      4. for j ← 1 to | s_{2} |
-      5. do m [ 0, j ] = j
-      6. for i ← 1 to | s_{1} |
-      7. do for j ← 1 to | s_{2} |
-      8. do m [ i, j ] = min { m [i−1, j−1]
-	 + if ( s1[i] = s2[j]) then 0 else 1 fi,
-      9. m [ i − 1, j ] + 1,
-      10. m [ i, j − 1 ] + 1 }
-      11. return m [| s_{1} | , | s_{2} |]
-    - (ends 3.3)
-    - *Contiguity hypothesis*. Documents in the same class form a
-      contiguous region and regions of different classes do not
-      overlap.
-    - Nonlinear models have more parameters to fit on a limited amount
-      of training data and are more likely to make mistakes for small
-      and noisy data sets.
-    - (ends 14.0)
+  0. [@0] Preface
+     - Chapter 10 considers information retrieval from documents that
+       are structured with markup languages like XML and HTML.
+  3. [@3] Dictionaries and tolerant retrieval
+     3. [@3] Spelling correction
+	- Most commonly, the edit operations allowed for this purpose are:
+	  (i) insert a character into a string; (ii) delete a character
+	  from a string and (iii) replace a character of a string by
+	  another character; for these operations, edit distance
+	  is sometimes known as *Levenshtein distance*.
+	- EDIT DISTANCE ( s_{1} , s_{2} )
+	  1. int m [ i, j ] = 0
+	  2. for i ← 1 to | s_{1} |
+	  3. do m [ i, 0 ] = i
+	  4. for j ← 1 to | s_{2} |
+	  5. do m [ 0, j ] = j
+	  6. for i ← 1 to | s_{1} |
+	  7. do for j ← 1 to | s_{2} |
+	  8. do m [ i, j ] = min { m [i−1, j−1]
+	     + if ( s1[i] = s2[j]) then 0 else 1 fi,
+	  9. m [ i − 1, j ] + 1,
+	  10. m [ i, j − 1 ] + 1 }
+	  11. return m [| s_{1} | , | s_{2} |]
+  8. [@8] Evaluation in information retrieval
+     3. [@3] Evaluation of unranked retrieval sets
+	- Precision (P) is the fraction of retrieved documents that
+          are relevant
+
+	  Precision = # ( relevant items retrieved ) / # ( retrieved items )
+          = P ( relevant | retrieved )
+	- Recall (R) is the fraction of relevant documents that are retrieved
+
+          Recall = # ( relevant items retrieved ) / # ( relevant items )
+	  = P ( retrieved | relevant )
+	- A single measure that trades off precision versus recall
+          is the F measure, which is the weighted harmonic mean of
+          precision and recall:
+
+	  F = 1 / ((\alpha 1/P) + (1-\alpha) 1/R) = ( β 2 + 1 ) PR / (\beta^2P + R)
+
+	  where \beta^2 = (1-\alpha)/\alpha
+	- Values of β < 1 emphasize precision, while values of β > 1
+          emphasize recall.
+  14. [@14] Vector space classification
+      - *Contiguity hypothesis*. Documents in the same class form a
+	  contiguous region and regions of different classes do not
+	  overlap.
+      - Nonlinear models have more parameters to fit on a limited amount
+	  of training data and are more likely to make mistakes for small
+	  and noisy data sets.
+*** TODO ref
+** PART [#C] [[./Split or filter your PCAP files with SplitCap - NETRESEC Blog.htm]]
+*** summary
+    - fast splitter for files
+    - split by
+      - host
+      - ip
+      - ...
+    - can also just filter out stuff (ports)
+    - compare splitcap
+      #+BEGIN_SRC sh
+        SplitCap.exe -r dump.eth0.1059726000.pcap -ip 12.129.71.102 -s nosplit
+      #+END_SRC
+      to tshark:
+      #+BEGIN_SRC sh
+        tshark.exe -r dump.eth0.1059726000.pcap -R "ip.addr eq 12.129.71.102" -w defcon11_tshark_filtered.pcap
+      #+END_SRC
+*** ref: [[file:master.bib::splitcap][2011: Split PCAP SplitCap NETRESEC Blog]]
 ** PART [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Eloquent Javascript]]
 *** summary
     8. [@8] Object-oriented Programming
@@ -13752,11 +14131,14 @@
              fields: author or editor, title, chapter and/or pages,
              publisher, year. Optional fields: volume or number,
              series, type, address, edition, month, note.
-	  3) *techreport* A report published by a school or other
+	  3) *mastersthesis* A Master’s thesis. Required fields:
+             author, title, school, year. Optional fields: type,
+             address, month, note.
+	  4) *techreport* A report published by a school or other
              institution, usually numbered within a series. Required
              fields: author, title, institution, year. Optional
              fields: type, number, address, month, note.
-	  4) *unpublished* A document having an author and title, but
+	  5) *unpublished* A document having an author and title, but
              not formally published. Required fields: author, title,
              note. Optional fields: month, year.
        2) Fields
@@ -14071,7 +14453,7 @@
 
 	      3) @fileoverview: "Makes the comment block provide file
                  level information."
-** PART [[~/chive/gg/org.pdf][The Org Manual]]
+** PART [[/home/chive/IT-gg/org.pdf][The Org Manual]]
 *** summary
     1) Introduction
 
@@ -14297,6 +14679,31 @@
              - others
 
           3) Capture templates
+
+    11) [@11] Markup for rich export
+
+	f.ex. LaTeX can do more than org, how to prepare for richer export
+
+	1) Structural markup elements
+
+	   - Document title: use a =#TITLE: ...= line
+
+	   - Headings and sections: set depth of level-to-headings via
+             =#+OPTIONS: H:4=
+
+	   - Table of contents: by default before first headline
+
+	     - table of: listings: =#+TOC: listings=, tables: =#+TOC: tables=
+
+	   - Paragraphs, line breaks, and quoting:
+
+	     - paragraph by (\ge one) empty line, =\\= enforces line breaks
+
+	     - use =#+BEGIN_VERSE= for normal formatting,
+
+	     - =#+BEGIN_QUOTE= for indented and =#+BEGIN_CENTER= for centering
+
+	2) Images and Tables
 *** quotes
    2) [@2] Document structure
       - M-S-LEFT: Kill the current column.
@@ -14460,7 +14867,6 @@
           searches recursively through the whole document,
 
           returns list of /Element/ s
-
 ** PART Mozilla Add-On SDK
 *** Guides
 **** XUL Migration Guide
@@ -14785,129 +15191,8 @@
 	  - this specification does not mandate a particular maximum
             number of connections but, instead, encourages clients to
             be conservative when opening multiple connections.
-** TODO [#A] MOVE PART -s 1,5,7 [[./McGrawHill_-_Machine_Learning_-Tom_Mitchell.pdf]]
-*** summary
-    1) INTRODUCTION
-
-       0) [@0]
-
-          - programming computers to learn
-
-       1) WELL-POSED LEARNING PROBLEMS
-
-          - definition: see quotes
-
-          - fits many examples from simple (db query optimizer) to
-            complex (robot car driver, checkers play algorithm)
-
-       2) DESIGNING A LEARNING SYSTEM
-
-          0) [@0]
-
-             - checkers
-
-               - performance measure: percent of games won in world tournament
-
-          1) Choosing the Training Experience
-
-             - direct feedback vs indirect feedback
-
-               - best moves, vs
-
-               - sequence of game moves
-
-             - learner control over learning sequence
-
-               - teacher selects, vs learner asks, vs learner explores
-
-             - examples vs reality
-
-               - training set complete enough?
-
-             Decision: plays against itself (+: no trainer, as much
-             data as time permits)
-
-             - Example
-               A checkers learning problem:
-               - Task T: playing checkers
-               - Performance measure P: percent of games won in the world tournament
-               - Training experience E: games played against itself
-               In order to complete the design of the learning system, we must now choose
-               1. the exact type of knowledge to be,learned
-               2. a representation for this target knowledge
-               3. a learning mechanism
-          2) Choosing the Target Function
-
-             - 1st idea: maps state to next move
-
-             - 2nd idea (better to compute): maps board state B to real number
-
-               - won\to 100, lost \to -100, tie \to 0
-
-               - compute back from every state, assuming optimal
-                 strategy of both
-
-               - nonoperational: hard to compute
-
-               - operational approximation V^{\tilde} : B \to {real numbers}
-
-          3) Choosing a Representation for the Target Function
-
-             - possibilities: table with values, neural network,
-               polynomial based on board state, ...
-
-             - here, simple choice: linear function with weights
-
-               d(x) = w0 + w1 x1 + ... + w6 x6
-
-               with weights as number of b/w pieces/kings/threatened by other
-
-          4) Choosing a Function Approximation Algorithm
-
-             training data, f.ex ((0, 1, 0, 0, 0, 0), -100) (black won)
-
-             1) Estimating training values
-
-                - simple approach: assign value of successor (next
-                  state that can be played by this side)
-
-                  V_train(b) = V^{\tilde}(successor(b))
-
-             2) Estimating the Weights
-
-                - minimize the squared error \sum (V_train - V^{\tilde})^2
-
-                - method: least mean squares, for each instance (b, V_train(b))
-
-                  w_i = w_i + \eta (V_train(b) -v^{\tilde}(b)) x_i
-
-          5) The Final Design
-*** quotes
-    1) INTRODUCTION
-       1) WELL-POSED LEARNING PROBLEMS
-          - Definition: A computer program is said to learn from
-            experience E with respect to some class of tasks T and
-            performance measure P, if its performance at tasks in T,
-            as measured by P, improves with experience E.
 ** [[./DOM2-HTML.pdf][Document Object Model (DOM) Level 2 HTML Specification]]
 ** [[./DOM3-Core.pdf][Document Object Model (DOM) Level 3 Core Specification]]
-** MOVE [#C] [[./Split or filter your PCAP files with SplitCap - NETRESEC Blog.htm]]
-*** summary
-    - fast splitter for files
-    - split by
-      - host
-      - ip
-      - ...
-    - can also just filter out stuff (ports)
-    - compare splitcap
-      #+BEGIN_SRC sh
-        SplitCap.exe -r dump.eth0.1059726000.pcap -ip 12.129.71.102 -s nosplit
-      #+END_SRC
-      to tshark:
-      #+BEGIN_SRC sh
-        tshark.exe -r dump.eth0.1059726000.pcap -R "ip.addr eq 12.129.71.102" -w defcon11_tshark_filtered.pcap
-      #+END_SRC
-*** ref: [[file:master.bib::splitcap][2011: Split PCAP SplitCap NETRESEC Blog]]
 ** Wireshark-filter manual page
 *** quotes
     - FILTER SYNTAX
@@ -14928,20 +15213,6 @@
 *** quotes
     | tcp.srcport | Source Port      | Unsigned integer, 2 bytes |
     | tcp.dstport | Destination Port | Unsigned integer, 2 bytes |
-** TODO [#A] PART MOVE [[./Truncated distribution - Wikipedia, the free encyclopedia.html]]
-*** quotes
-    1) Definition
-       - CDF: \frac{\int_a^x g(t) dt}{F(b)-F(a)}
-       - Mean: \frac{\int_a^b x g(x) dx}{F(b)-F(a)}
-       - g(x) = f(x) for all a <x \leq b and g(x) = 0 everywhere else
-       - we wish to know how X is distributed given a < X \leq b.
-
-         f(x|a < X \leq b) = \frac{g(x)}{F(b)-F(a)} = Tr(x)
-       - A truncated distribution where the top of the distribution has
-         been removed is as follows:
-
-         f(x|X \leq y) = \frac{g(x)}{F(y)}
-*** ref [[file:master.bib::wiki:truncated][Wikipedia 2015: Truncated]]
 ** (for picture): [[./10_3-ndss2016-slides.pdf][Website Fingerprinting at Internet Scale Presentation]]
 ** [[./PEP 257 -- Docstring Conventions.html]]
 ** TODO [[./PEP 3333 -- Python Web Server Gateway Interface v1.0.1 | Python.org.html]]
@@ -14951,3 +15222,5 @@
       - WSGI must be easy to implement, so that an author's initial
         investment in the interface can be reasonably low.
 *** ref [[file:master.bib::pep3333][Eby 2010: Python Web Server]]
+** [[./Masterthesis.pdf]]
+*** ref: [[file:master.bib::malte][Hübner 2014: Automatische Erkennung Android Anwendungen]]
