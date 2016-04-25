@@ -28,17 +28,18 @@ function CoverTraffic(toHost, load=LOAD) {
     this.load = load;
 
     this.site = {};
-    this.pad = {};
+    this.target = {};
 
     this.site.html = sizeCache.htmlSize(toHost);
     this.site.numEmbedded = sizeCache.numberEmbeddedObjects(toHost);
-    this.pad.html = stats.htmlSize(FACTOR) - this.site.html;
-    this.pad.numEmbedded =
+    this.target.html = stats.htmlSize(FACTOR) - this.site.html;
+    this.target.numEmbedded =
 	stats.numberEmbeddedObjects(FACTOR) - this.site.numEmbedded;
 
-    this.prob = Math.max(this.pad.numEmbedded / this.site.numEmbedded,MIN_PROB);
+    this.prob = Math.max(this.target.numEmbedded / this.site.numEmbedded,
+			 MIN_PROB);
 
-    this.load.sized(this.pad.html);
+    this.load.sized(this.target.html);
 }
 
 CoverTraffic.prototype.loadNext = function() {
@@ -49,7 +50,7 @@ CoverTraffic.prototype.loadNext = function() {
 	  i >= 0 ;
 	  i -= 1 ) {
 	this.load.sized(stats.embeddedObjectSize());
-        this.pad.numEmbedded -= 1;
+        this.target.numEmbedded -= 1;
     }
 };
 exports.CoverTraffic = CoverTraffic;

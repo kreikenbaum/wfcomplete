@@ -34,6 +34,14 @@ BloomSort.prototype.add = function(id, size) {
 };
 /** determines size of element, raises exception if unclear */
 BloomSort.prototype.query = function(id) {
+    return this.sizes[this.getPosition(id)];
+}
+/** @return the upper border of the bucket in which id is found. Throw
+ * exception if not found or on duplicate */
+BloomSort.prototype.queryMax = function(id) {
+    return this.splits[this.getPosition(id)];
+}
+BloomSort.prototype.getPosition = function(id) {
     let pos = -1;
     for ( let i = 0; i < this.filters.length; i++ ) {
 	if ( this.filters[i].test(id) ) {
@@ -53,7 +61,7 @@ BloomSort.prototype.query = function(id) {
 	    message: 'Contains no entries'
 	};
     }
-    return this.sizes[pos];
+    return pos;
 };
 /** saves BloomSort-array to local storage */
 BloomSort.prototype.save = function() {

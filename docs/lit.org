@@ -6793,7 +6793,7 @@
       #+END_SRC
       - better: typed array for performance (=array= is used directly)
 ** TODO [#A] Entwurfsmuster
-*** TODO summary (weiter bei 0.4.6.Anwendbarkeit S.241)
+*** TODO summary (weiter bei 0.4.6.Bekannte Verwendungen S.252)
     0) [@0] Preface
        1) Vorwort
 
@@ -7791,7 +7791,85 @@
 
 	      - kann beides sein: Blatt oder Kompositum
 
-	      - Kompositum ruft operation der Kindobjekte auf
+	    - Kompositum ruft Operation der Kindobjekte auf
+
+	  - Interaktionen:
+
+	    - Blatt führt direkt aus,
+
+	    - Kompositum leitet meistens weiter, führt evtl. vorher
+              oder nachher zusätzliche Aktionen aus
+
+	    - Klienten verwenden die Klassenschnittestelle von Komponente
+
+	  - Konsequenzen
+
+	    - Klienten soll der Typ gleich sein: einfacherer Code
+
+	    - vereinfacht Hinzufügen neuer Klassen
+
+	    - kann Entwurf zu allgemein werden lassen, verhindert
+              compiler type checking
+
+	  - Implementierung
+
+	    - definiere besser Elternobjekt (in Komponentenklasse)
+
+	      - erleichtert z.B. Zuständigkeitskettenmuster und Löschen
+
+	      - erschwert gemeinsame Nutzung
+
+		- externer Zustand (siehe Fliegengewichtsmuster) als Lösung
+
+	    - maximale Komponentenschnittstelle
+
+	      - Defaultimplementierung z.B. die für Blätter, Koposita
+                überschreiben diese
+
+	    - deklarieren der Verwaltungsoperationen
+
+	      - entweder transparent: in der Komponentenklasse,
+
+	        - allerdings könnten Klienten dann versuchen, Blättern
+                  z.B. Kinder hinzuzufügen
+
+	      - oder sicherer: in der Kompositaklasse.
+
+		- allerdings haben dann Komposita und Blätter
+                  unterschiedliche Schnittstellen
+
+		- evtl. Exception als Defaultimplementation, in
+                  Komposita überschrieben
+
+	    - Speichern der enthaltenen Komponenten in der
+              Kompositionsklasse: in Elternklasse unnötiger
+              Blatt-Platzverbrauch
+
+	    - Ordnung der Kinder: bei Zugriff und Verwaltung
+              beachten. Siehe auch das Iteratormuster.
+
+	    - Caching bei häufigem Zugriff
+
+	      - z.B. speichert Graphikkompositum die
+                Koordinaten. Falls nicht sichtbar, werden keine
+                Handlungen ausgeführt
+
+		- Zwischenspeicher invalidieren bei Änderung
+
+	    - Löschen: ohne GC: Kompositum löscht
+
+	      - außer bei gemeinsam genutzten Blattobjekten
+
+	    - Listen, Bäume, Arrays, Hahs-Tabellen, hängt von
+              Ziel-Effizienz ab
+
+	  - Beispielcode: Geraet > ZusammengesetztesGeraet > Gehaeuse
+
+	    - GesamtPreis als Iterator aller Kinder
+
+	    - ZusammengesetztesGeraet hat =Liste<GErate*> _teile=
+
+	  - Bekannte Verwendungen
 
     5) [@5] Verhaltensmuster
 
@@ -8141,6 +8219,33 @@
 	    - BDR stays very high
 
     9) Attack evaluation on DS_Norm
+
+       standard encrypted web browsing or through VPN
+
+       1) Attack on encrypted browsing sessions
+
+	  - additional features:
+
+	    - size transmitted
+
+	    - size transmitted statistics of total, incoming and outgoing:
+
+	      - average,
+
+	      - standard deviation, variance
+
+	      - maximum
+
+	  - which web page from several websites
+
+	    - 55@30 monitored vs 7000 other pages
+
+	  - "larger cardinality of world size gives rise to more
+            opportunities for incorrect classifications"
+
+	  - 0.87 vs 0.004 (training with 4000 unmonitored web pages)
+
+       2) Attack without packet size features
 *** quotes
     1) Introduction
        - Traditional encryption obscures only the content of
@@ -8286,7 +8391,18 @@
 
 		- output: game start state
 
+	     summary
+
+	     - for good performance the solution should be modelable
+               similar to the linear approach
+
+	     - and depend mostly on the six features used for learning
+
        3) PERSPECTIVES AND ISSUES IN MACHINE LEARNING
+
+	  learning as searching the hypothesis space
+
+	  1) Issues in Machine Learning
 *** quotes
     1) INTRODUCTION
        1) WELL-POSED LEARNING PROBLEMS
@@ -13316,7 +13432,7 @@
     - I have never seen a piece ofcode that was not improved by
       refactoring it to remove the continue statement.
     - (ends bp)
-** PART [#C] [[./irbookonlinereading.pdf][An Introduction to Information Retrieval]]
+** PART [#B] [[./irbookonlinereading.pdf][An Introduction to Information Retrieval]]
 *** summary
     0. [@0] Preface
 
@@ -14400,7 +14516,11 @@
 
 	     - else: reindent at parenthesis or 4 spaces (block or global)
 
-	  4) CONTINUE HERE Passing Anonymous Functions
+	  4) Passing Anonymous Functions
+
+	     indented 2 spaces from left edge of (statement or function keyword)
+
+	  5) Aliasing with goog.scope
 
        8) [@8] Visibility (private and protected fields)
 
@@ -14420,7 +14540,8 @@
 
 	      - CONTINUE ...
 
-	   4) [@4] Top/File-Level Comments: @fileoverview (description, uses, dependencies)
+	   4) [@4] Top/File-Level Comments: @fileoverview
+              (description, uses, dependencies)
 
 	   5) Class Comments: =@constructor=, like 6), maybe =@extends=
 
@@ -14706,34 +14827,38 @@
 	2) Images and Tables
 *** quotes
    2) [@2] Document structure
-      - M-S-LEFT: Kill the current column.
-      - To set the width of a column, one field anywhere in the column
-	may contain just the string ‘<N>’ where ‘N’ is an integer
-	specifying the width of the column in characters. [...]  Note
-	that the full text is still in the buffer but is hidden. To see
-	the full text, hold the mouse over the field—a tool-tip window
-	will show the full content. To edit such a field, use the command
-	C-c ‘ (that is C-c followed by the backquote). This will open a
-	new window with the full field. Edit it and finish with C-c C-c.
-      - C-c C-x C-v: org-toggle-inline-images
+      10) [@10] Footnotes
+	  - M-S-LEFT: Kill the current column.
+	  - To set the width of a column, one field anywhere in the column
+	    may contain just the string ‘<N>’ where ‘N’ is an integer
+	    specifying the width of the column in characters. [...]  Note
+	    that the full text is still in the buffer but is hidden. To see
+	    the full text, hold the mouse over the field—a tool-tip window
+	    will show the full content. To edit such a field, use the command
+	    C-c ‘ (that is C-c followed by the backquote). This will open a
+	    new window with the full field. Edit it and finish with C-c C-c.
+	  - C-c C-x C-v: org-toggle-inline-images
 
-	Toggle the inline display of linked images. Normally this will
-	only inline images that have no description part in the link,
-	i.e., images that will also be inlined during export. When called
-	with a prefix argument, also display images that do have a link
-	description. You can ask for inline images to be displayed at
-	startup by configuring the variable `org-startup-with-inline-images`.
-      - (???)
-      - The footnote reference is simply the marker in square brackets,
-	inside text. For example:
-	#+BEGIN_EXAMPLE
-          The Org homepage[fn:1] now looks a lot better than it used to.
-          ...
-          [fn:1] The link is: http://orgmode.org
-	#+END_EXAMPLE
-      - (ends 2.10)
+	    Toggle the inline display of linked images. Normally this will
+	    only inline images that have no description part in the link,
+	    i.e., images that will also be inlined during export. When called
+	    with a prefix argument, also display images that do have a link
+	    description. You can ask for inline images to be displayed at
+	    startup by configuring the variable `org-startup-with-inline-images`.
+	  - (???)
+	  - The footnote reference is simply the marker in square brackets,
+	    inside text. For example:
+	    #+BEGIN_EXAMPLE
+              The Org homepage[fn:1] now looks a lot better than it used to.
+              ...
+              [fn:1] The link is: http://orgmode.org
+	    #+END_EXAMPLE
+	  - [fn:: This is the inline definition of this footnote]
+
+            A LATEX-like anonymous footnote where the definition is
+            given directly at the reference point.
    3) Tables
-      1) [@2] Column width and alignment
+      2) [@2] Column width and alignment
          - To set the width of a column, one field anywhere in the
            column may contain just the string ‘<N>’ where ‘N’ is an
            integer specifying the width of the column in characters.

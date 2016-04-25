@@ -4,6 +4,10 @@ import logging
 import random
 import string
 
+LOGFORMAT='%(levelname)s:%(filename)s:$(lineno)d:%(message)s'
+logging.basicConfig(format=LOGFORMAT, level=logging.INFO)
+
+
 def application(environ, start_response):
     status = '200 OK'
     logging.info('got request: ' + environ['QUERY_STRING'])
