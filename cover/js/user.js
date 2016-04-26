@@ -6,6 +6,10 @@ exports.DOC = 'what to do on traffic by the user';
 //td: rename to 'controller'?
 
 const { setTimeout } = require("sdk/timers");
+const { URL } = require("sdk/url");
+//const {Cc, Ci} = require("chrome");
+//const ioService = Cc["@mozilla.org/network/io-service;1"]
+//		    .getService(Ci.nsIIOService);
 
 const _ = require('../lib/underscore-min.js');
 
@@ -18,30 +22,41 @@ var activeHosts = {};
 
 // td: timeout AND endsLoading
 /** user starts loading url */
-function loads(URL) {
-    debug.log("user: loads(" + URL.spec + ")");
-    if ( _.contains(activeHosts, URL.host) ) { // has already started
-	activeHosts[URL.host].loadNext();
+function loads(url) {
+    debug.log("user: loads(" + url.spec + ")");
+    if ( _.contains(activeHosts, url.host) ) { // has already started
+	activeHosts[url.host].loadNext();
     } else {
-	activeHosts[URL.host] = new coverTraffic.CoverTraffic(URL.host);
+	activeHosts[url.host] = new coverTraffic.CoverTraffic(url.host);
 	// td: removal code: better also watch endsload
 	setTimeout(function() {
-	    delete activeHosts[URL.host];
+	    delete activeHosts[url.host];
 	}, TIMEOUT);
     }
 }
-exports.loads = URL => loads(URL);
+exports.loads = url => loads(url);
 
-function endsLoading(URL) {
-    debug.log('user: endsLoading('+URL.host+') NOT IMPLEMENTED');
+/**
+* @param {URL} url strips this
+*
+* @return {String} url without parameters and refs
+*/
+function stripParam(url) {
+    console.log('stripParam(' + JSON.stringify(url) + ')');
+    return URL(url.protocol + "//" + url.hostname + url.pathname);
 }
-exports.endsLoading = URL => endsLoading(URL);
+exports.stripParam = url => stripParam(url); // testing
+
+function endsLoading(url) {
+    debug.log('user: endsLoading('+url.host+') NOT IMPLEMENTED');
+}
+exports.endsLoading = url => endsLoading(url);
 // // unused
 // /** user ends loading url */
-// function endsLoading(URL) {
-//     debug.traceLog(NAME + ': end user load ' + URL.host);
-//     if ( _.contains(activeHosts, URL.host) ) {
-// 	activeHosts = _.without(activeHosts, URL.host);
+// function endsLoading(url) {
+//     debug.traceLog(NAME + ': end user load ' + url.host);
+//     if ( _.contains(activeHosts, url.host) ) {
+// 	activeHosts = _.without(activeHosts, url.host);
 //     }
 //     if ( isIdle() ) {
 // 	coverTraffic.stop();
@@ -49,7 +64,7 @@ exports.endsLoading = URL => endsLoading(URL);
 //     debug.traceLog(activeHosts);
 //     // td: if no sites are loading, switch mode
 // };
-// exports.endsLoading = URL => endsLoading(URL);
+// exports.endsLoading = url => endsLoading(url);
 
 // // unused
 // /** currently loading? */

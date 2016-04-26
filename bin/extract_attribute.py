@@ -8,7 +8,8 @@ import logging
 import sys
 
 # if you import by hand, include the path for the counter-module via
-# sys.path.append('/home/w00k/da/git/bin')
+# import os
+# sys.path.append(os.path.join(os.path.expanduser('~'), 'da', 'git', 'bin'))
 # sys.path.append('/home/mkreik/bin')
 import counter
 
@@ -90,11 +91,12 @@ if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
 
     # if by hand: change to the right directory before importing
-    # os.chdir('/home/w00k/da/sw/data/json/part')
-    # import os; os.chdir('/home/uni/da/git/sw/data/json/addon_guess_sizes')
+    # os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'sw', 'data', 'json', 'addon_guess_sizes'))
     # os.chdir('/mnt/data/2-top100dupremoved_cleaned/')
     #(X, y, y_domains) = to_features(counter.Counter.from_(sys.argv))
     (X, y, y_domains) = to_features_cumul(counter.Counter.from_(sys.argv))
+    # os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'sw', 'data', 'json', 'addon_disabled'))
+    # (X2, y2, y2_domains) = to_features_cumul(counter.Counter.from_(sys.argv))
 
     test(X, y, svm.SVC(C=10**-20, gamma=4.175318936560409e-10))
     test(X, y, svm.SVC(kernel='linear')) #problematic, but best

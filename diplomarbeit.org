@@ -34,8 +34,9 @@
      Repressalien zu groß war. (td: quote)
 **** WAIT may \to (ohne) (falls richtig)
 ** Introduction
+** Related Work
 ** Materials and Methods
-* TODO topics [7/109]
+* TODO topics [7/111]
 ** TODO Website Fingerprinting [2/52]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
@@ -571,13 +572,13 @@
     request. (which was still possible by seeing when the client sent
     a new request).
 
-    [[./pictures/HTTP_persistent_connection.svg.png]]
+    [[./pictures/HTTP_persistent_connection.png]]
 
     In addition to persistent connections, HTTP/1.1 allowed pipelining
     several HTTP requests in a single connection without waiting for
     the files to arrive in between.
 
-    [[./pictures/HTTP_pipelining2.svg.png]]
+    [[./pictures/HTTP_pipelining2.png]]
 
     As this created problems with some servers, pipelining was disabled
     by default in Firefox \cite{firefox-pipelining} and Chrome
@@ -643,11 +644,11 @@
 **** TODO pictures with attribution
 *** TODO Tor's Cryptography
     In Tor, each Onion Router has three distinct keys. One is an
-    /identity key/ of the onion router, a long-term key used for signing
-    only. This signs a medium-term /onion key/, which is kept at least
-    one week after advertising.
+    /identity key/ of the onion router, a long-term key used for
+    signing only. This signs a
+    (medium\cite{tor-spec}/short\cite{tor-design})-term /onion key/,
+    which is kept at least one week after advertising.
 
-    - each router has 3 keys, two of which are rotated, one identity key
     - fixed minimum messages size of 512 Byte
       - extensions allow other sizes
     - directory of all onion routers in directory servers
@@ -734,7 +735,7 @@
     multiplexing and fixed cell sizes.
 *** TODO sort subtopics
 *** TODO Tor overview
-** TODO Addon Design and Implementation [5/41]
+** TODO Addon Design and Implementation [5/43]
 *** Defenses
 **** [[*wf-specific%20defenses][wf-specific defenses]]
 **** [[*other%20defenses][other defenses]]
@@ -894,7 +895,7 @@
      and signed automatically. Otherwise, you can request an API key
      for signing and sign via the command =jpm sign --api-key $KEY
      --api-secret $SECRET=.
-***** TODO link online signing.
+***** TODO link online signing, also to bib, or as link???
 ***** TODO check version
 ***** TODO link addons.mozilla market
 ***** TODO link api key
@@ -968,10 +969,17 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
       provides randomization methods
       +string(length:number) pseudo-random string
       +uniform01() secure random float in the range [0,1)
-***** SizeCache
+***** TODO SizeCache
       Lengths of elements if stores, else uses distribution
       +htmlSize(url)
       +numberEmbeddedObjects(url)
+***** TODO User
+      - why indexed by host?
+	- workaround, can do better later
+	  - hard to find out which is HTML, which is non-HTML-traffic
+	  - so all is lumped together per domain
+	    - first request seen as HTML
+	    - other requests as non-HTML
 **** cover traffic distribution generation
      - each retrieval maybe triggers additional retrieval(s)
        - based on statistical model
@@ -1088,6 +1096,8 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      - "use strict";
      - unit tests
      - mention "good parts"?
+       - for what exactly?
+       - and javascript garden
      - jshint
 **** Unit Testing
 **** LATER Cover add-on
@@ -1140,12 +1150,17 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 *** Evaluation
 **** add-on
 ***** TODO differences to adaptive padding/wtfpad
-****** no cooperator necessary
-       dummy packets chosen as response to real request (as in web traffic)
-****** knowledge of packets
-****** delay of some possible (f.ex. images)
-****** end of transmission detectable
-****** TODO correct this
+- delay of some possible (f.ex. images)
+- knowledge of packets
+- end of transmission detectable
+- different target distributions
+- multiple distributions
+- optionally no cooperator necessary
+    dummy packets chosen as response to real request (as in web traffic)
+- add evaluation values
+- similarities: no delay
+- currently uses exit nodes
+****** TODO understand adaptive padding histogram
 ***** TODO differences to walkie-talkie
 ***** TODO differences to panchenkos
       - feature extraction via python class directly from pcap
@@ -1361,8 +1376,8 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
     redirects, and only 99 in the embedded filter, if you pad the
     embedded filter by 0 for each of those, it is not a perfect fit,
     but better)
+  - growth of websites
   - [[*Further%20work][Further work]]
-* TODO also helps against global observer if .onion generator is used
 * TODO panchenko CUMUL
 * TODO truncated distributions
   - html: truncated lognormal instead of lognormal
@@ -3432,11 +3447,12 @@ mean = 0.763238095238
     (with variable-length packets)?
   - provable protection
   - size of bloom filter
-    == number of bloom filters,
+  - number of bloom filters,
   - which and how many items to prepopulate
     - country-specific f.ex. google.com
     - leave out redirect from prepopulation
   - automatic update of bloom-filter
+    - with currently visited sites
   - loading further items
   - The choice of cover traffic domains was explicitly taken out of
     the research focus. Currently, all cover traffic is dynamically
@@ -3456,7 +3472,21 @@ mean = 0.763238095238
   - elaborate on [[find number of embedded elements]]
   - how to set splits and sizes
   - [[differences theoretical HTML-num embedded and observed]]
-  - improve code to include css, (iframes?), js
+  - improve code to include css, (iframes?), js in number of embedded elements
+  - web pages got bigger. See if \cite{newtrafficmodel}'s values are
+    still accurate.
+    - or only rely on quantiles of observed data
+      - but these are hard to gather
+	- use networkmanager code to do that
+  - more elaborate tests with different world sizes / open world / etc
+** TODO also helps against global observer if .onion generator is used
+   - murdoch/danezis: correlation
+   - this creates additional traffic which might hinder correlation attacks
+   - further work
+   - if cover traffic server is used by enough clients at once
+   - or is unobservable (hidden service)
+   - information-theoretical / stochastical analysis
+*** TODO first read murdoch/danezis paper
 ** onion host for cover traffic
    As indicated f.ex. by Wang and Goldberg,
    \cite{wpes13-fingerprinting}, network load already is a bottleneck

@@ -24,15 +24,16 @@ const LOAD = require('./load.js');
  * @constructor
  * @param {module load.js} module which provides loading capabilities
  */
-function CoverTraffic(toHost, load=LOAD) {
+function CoverTraffic(toUrl, load=LOAD) {
     this.load = load;
 
     this.site = {};
     this.target = {};
 
-    this.site.html = sizeCache.htmlSize(toHost);
-    this.site.numEmbedded = sizeCache.numberEmbeddedObjects(toHost);
-    this.target.html = stats.htmlSize(FACTOR) - this.site.html;
+    this.site.html = sizeCache.htmlSize(toUrl);
+    this.site.numEmbedded = sizeCache.numberEmbeddedObjects(toUrl);
+    //    this.target.html = stats.htmlSize(FACTOR) - this.site.html;
+    this.target.html = sizeCache.htmlSizeMax(toUrl) - this.site.html;
     this.target.numEmbedded =
 	stats.numberEmbeddedObjects(FACTOR) - this.site.numEmbedded;
 
