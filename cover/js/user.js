@@ -3,13 +3,7 @@
 const NAME = 'user';
 exports.DOC = 'what to do on traffic by the user';
 
-//td: rename to 'controller'?
-
 const { setTimeout } = require("sdk/timers");
-const { URL } = require("sdk/url");
-//const {Cc, Ci} = require("chrome");
-//const ioService = Cc["@mozilla.org/network/io-service;1"]
-//		    .getService(Ci.nsIIOService);
 
 const _ = require('../lib/underscore-min.js');
 
@@ -27,7 +21,7 @@ function loads(url) {
     if ( _.contains(activeHosts, url.host) ) { // has already started
 	activeHosts[url.host].loadNext();
     } else {
-	activeHosts[url.host] = new coverTraffic.CoverTraffic(url.host);
+	activeHosts[url.host] = new coverTraffic.CoverTraffic(url);
 	// td: removal code: better also watch endsload
 	setTimeout(function() {
 	    delete activeHosts[url.host];
@@ -35,17 +29,6 @@ function loads(url) {
     }
 }
 exports.loads = url => loads(url);
-
-/**
-* @param {URL} url strips this
-*
-* @return {String} url without parameters and refs
-*/
-function stripParam(url) {
-    console.log('stripParam(' + JSON.stringify(url) + ')');
-    return URL(url.protocol + "//" + url.hostname + url.pathname);
-}
-exports.stripParam = url => stripParam(url); // testing
 
 function endsLoading(url) {
     debug.log('user: endsLoading('+url.host+') NOT IMPLEMENTED');

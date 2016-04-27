@@ -8,22 +8,36 @@ exports["test add/query"] = function(assert) {
     assert.equal(s.query('hi'), 5, 'wrong result: ' + s.query('hi'));
 };
 
-exports["test add/queryMax"] = function(assert) {
-    let s = new BloomSort.BloomSort([5, 15], [10]);
-    s.add('hi', 3);
-    assert.equal(s.queryMax('hi'), 10, 'wrong result: ' + s.queryMax('hi'));
-};
-
 exports["test add/query 2"] = function(assert) {
     let s = new BloomSort.BloomSort([5, 15], [10]);
     s.add('hi', 8);
     assert.equal(s.query('hi'), 5, 'wrong result: ' + s.query('hi'));
 };
 
+exports["test add/queryMax"] = function(assert) {
+    let s = new BloomSort.BloomSort([5, 15], [10]);
+    s.add('hi', 3);
+    assert.equal(s.queryMax('hi'), 10, 'wrong result: ' + s.queryMax('hi'));
+};
+
 exports["test add/queryMax 2"] = function(assert) {
     let s = new BloomSort.BloomSort([5, 15], [10]);
-    s.add('hi', 8);
-    assert.equal(s.queryMax('hi'), 20, 'wrong result: ' + s.query('hi'));
+    s.add('hi', 12);
+    try {
+	let res = s.queryMax('hi');
+	assert.ok(false, 'did not throw: ' + res);
+    } catch (e) {
+	assert.equal(e.message, 'The last bucket has no border',
+		     "wrong exception");
+    }
+};
+
+exports["test add/queryMax 2 v.2"] = function(assert) {
+    let s = new BloomSort.BloomSort([5, 15], [10]);
+    s.add('hi', 12);
+    assert.throws(function() { s.queryMax('hi'); },
+		  /has no border/,
+		  "threw wrong or no exception");
 };
 
 exports["test add/query 2 with different sizes v.2"] = function(assert) {
@@ -34,7 +48,7 @@ exports["test add/query 2 with different sizes v.2"] = function(assert) {
 	s.query('hi');
 	assert.ok(false, 'did not throw');
     } catch (e) {
-	assert.ok(e.message === 'Contains multiple entries');
+	assert.equal(e.message, 'Contains multiple entries');
     }
 };
 exports["test add/query 2 with different sizes v.1"] = function(assert) {

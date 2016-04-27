@@ -24,21 +24,28 @@ const LOAD = require('./load.js');
  * @constructor
  * @param {module load.js} module which provides loading capabilities
  */
-function CoverTraffic(toUrl, load=LOAD) {
+function CoverTraffic(targetURL, load=LOAD) {
     this.load = load;
 
     this.site = {};
     this.target = {};
 
-    this.site.html = sizeCache.htmlSize(toUrl);
-    this.site.numEmbedded = sizeCache.numberEmbeddedObjects(toUrl);
+    try {
+	this.site.html = sizeCache.htmlSize(targetURL);
+	this.site.numEmbedded = sizeCache.numberEmbeddedObjects(targetURL);
+    } catch (e) { // guess sizes
+	//console.log('guessed sizes for: ' + targetURL);
+	this.site.html = stats.htmlSize();
+	this.site.numEmbedded = stats.numberEmbeddedObjects();
+    }
+
     //    this.target.html = stats.htmlSize(FACTOR) - this.site.html;
-    this.target.html = sizeCache.htmlSizeMax(toUrl) - this.site.html;
-    this.target.numEmbedded =
-	stats.numberEmbeddedObjects(FACTOR) - this.site.numEmbedded;
+    this.target.html = this.htmlStrategy1(targetURL);
+    this.target.numEmbedded = this.numStrategy1(targetURL);
+//	stats.numberEmbeddedObjects(FACTOR) - this.site.numEmbedded;
 
     this.prob = Math.max(this.target.numEmbedded / this.site.numEmbedded,
-			 MIN_PROB);
+			 MIN_PROB); // td: maybe * Math.sqrt(site.numEmbedded)
 
     this.load.sized(this.target.html);
 }
@@ -54,4 +61,42 @@ CoverTraffic.prototype.loadNext = function() {
         this.target.numEmbedded -= 1;
     }
 };
+
+// td later: strategy class, subclasses
+// td: exception handling here, not in sizeCache
+/**
+ * Strategy 1: take max
+ * on bloom failure: (v0.1) take default * FACTOR
+ */
+// td: better handling of last bucket
+CoverTraffic.prototype.htmlStrategy1 = function(targetURL) {
+    let targetHtmlSize;
+    try {
+	targetHtmlSize = sizeCache.htmlSizeMax(targetURL);
+    } catch (e) {
+	targetHtmlSize = stats.htmlSize(FACTOR);
+    }
+    return targetHtmlSize - this.site.html;
+}
+// td: is this code duplication
+CoverTraffic.prototype.numStrategy1 = function(targetURL) {
+    let targetPadSize;
+    try {
+	targetPadSize = sizeCache.numberEmbeddedObjectsMax(targetURL);
+    } catch (e) {
+	targetPadSize = stats.numberEmbeddedObjects(FACTOR);
+    }
+    return targetPadSize - this.site.numEmbedded;
+}
+
 exports.CoverTraffic = CoverTraffic;
+
+	// td: evaluate
+	// if ( e.message === 'The last bucket has no border' ) {
+	//     return stats.HTML_TOP;
+	//     return stats.HTML_999;
+	//     return HTML_SIZES[HTML_SIZES.length -1];
+	//     return HTML_SIZES[HTML_SIZES.length -1] * FACTOR; // favorite
+	// } else {
+//	    return stats.htmlSize();
+	// }

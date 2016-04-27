@@ -2,6 +2,7 @@
 #+TODO: TODO CHECK | LATER DONE
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{tikz}
+* TODO organize [[*Mozilla%20Add-On%20Sdk][addon]] sections
 * final sections
 ** LATER Abstract
 *** Teaser
@@ -36,7 +37,7 @@
 ** Introduction
 ** Related Work
 ** Materials and Methods
-* TODO topics [7/111]
+* TODO topics [7/122]
 ** TODO Website Fingerprinting [2/52]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
@@ -735,7 +736,7 @@
     multiplexing and fixed cell sizes.
 *** TODO sort subtopics
 *** TODO Tor overview
-** TODO Addon Design and Implementation [5/43]
+** TODO Addon Design and Implementation [5/54]
 *** Defenses
 **** [[*wf-specific%20defenses][wf-specific defenses]]
 **** [[*other%20defenses][other defenses]]
@@ -812,7 +813,6 @@
      content-script's =self= is replaced by a =worker=. The worker is
      initialized via the =onAttach= parameter of f.ex. the page-mod.
 **** TODO collect/list all addon sections
-**** TODO organize all addon sections
 **** CHECK page-worker
      A =page-worker= creates "a permanent, invisible page and access[es]
      its
@@ -943,29 +943,30 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 ***** for each loaded url, maybe load something else
       - this generates the cover traffic over the loading of the website
       - yet only augments bursts, does not equalize them
-**** objects
-***** Watcher
+**** TODO modules [0/11]
+***** TODO Watcher
       notifies when user loads sth
 ****** maybe change name
 ****** methods
        - loads
        - endsLoad
-***** CoverTraffic(Loader=default)
-      provides cover traffic
-***** Loader(Source=default2)
+***** TODO CoverTraffic(Loader=default)
+      - provides cover traffic
+      - simple strategy pattern
+***** TODO Loader(Source=default2)
       loads new cover page (mockable)
-***** Stats - Static functions
+***** TODO Stats - Static functions
       statistical distributions (html, embedded, etc)
-***** CoverUrl
+***** TODO CoverUrl
       source for cover traffic
       fixed domain, size as parameter
-***** BloomSort
+***** TODO BloomSort
       sorts elements by size using Bloom Filters
       +add(id, value)
       +query(id): value
       +save
       +restore
-***** Random
+***** TODO Random
       provides randomization methods
       +string(length:number) pseudo-random string
       +uniform01() secure random float in the range [0,1)
@@ -974,12 +975,29 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
       +htmlSize(url)
       +numberEmbeddedObjects(url)
 ***** TODO User
-      - why indexed by host?
-	- workaround, can do better later
-	  - hard to find out which is HTML, which is non-HTML-traffic
-	  - so all is lumped together per domain
-	    - first request seen as HTML
-	    - other requests as non-HTML
+      The User class handles user action. It is the main controller.
+
+      On each loading of an object, it receives a message from the
+      =Watcher= module via =loads()=, with the loaded URL as a
+      parameter.
+
+      If it is a new request to the host, loading of an HTML page is
+      assumed and a new =CoverTraffic=-Object is generated.
+
+      If the host has been active in the last =User.TIMEOUT=
+      milliseconds, an embedded page is assumed and the (existant)
+      related =CoverTraffic=-Object is told that an embedded element
+      was loaded.
+****** TODO see [[Further work]]
+****** TODO rename
+       to Control
+       or
+       - action
+       - user
+       - controller
+       - mediator
+       - flight control
+       - dispatcher
 **** cover traffic distribution generation
      - each retrieval maybe triggers additional retrieval(s)
        - based on statistical model
@@ -3479,6 +3497,13 @@ mean = 0.763238095238
       - but these are hard to gather
 	- use networkmanager code to do that
   - more elaborate tests with different world sizes / open world / etc
+  - User class: should aggregate smarter, not by-host, but by-page
+    with every page-embedded element as just that.
+    - indexed by host as workaround, can do better later
+      - hard to find out which is HTML, which is non-HTML-traffic
+      - so all is lumped together per domain
+	- first request seen as HTML
+	- other requests as non-HTML
 ** TODO also helps against global observer if .onion generator is used
    - murdoch/danezis: correlation
    - this creates additional traffic which might hinder correlation attacks

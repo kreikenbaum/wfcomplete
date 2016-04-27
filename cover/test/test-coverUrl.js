@@ -21,8 +21,8 @@ exports["test contains uncontained"] = function(assert) {
 
 exports["test sized"] = function(assert) {
     var result = coverUrl.sized(10)
-    assert.ok(result === 'http://' + HOST + ":" + PORT + '/?size=10',
-	      'failed: ' + result);
+    assert.equal(result, 'http://' + HOST + ":" + PORT + '/?size=10',
+		 'failed: ' + result);
 };
 
 require("sdk/test").run(exports);

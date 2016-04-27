@@ -30,6 +30,7 @@ function BloomSort(sizes, splits) {
 }
 /** adds element of size {@code size} */
 BloomSort.prototype.add = function(id, size) {
+    //console.log('add(' + id + ', ' + size + ')');
     this.filters[_.sortedIndex(this.splits, size)].add(id);
 };
 /** @return size of element, raises {@code BloomError} if unclear */
@@ -45,7 +46,7 @@ BloomSort.prototype.queryMax = function(id) {
     } else {
 	throw {
 	    name: 'BloomError',
-	    message: 'The Last bucket has no border'
+	    message: 'The last bucket has no border'
 	}
     }
 }
@@ -66,7 +67,7 @@ BloomSort.prototype.getPosition = function(id) {
     if ( pos === -1 ) {
 	throw {
 	    name: 'BloomError',
-	    message: 'Contains no entries'
+	    message: 'Contains no entries matching: ' + id
 	};
     }
     return pos;

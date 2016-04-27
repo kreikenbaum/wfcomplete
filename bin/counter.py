@@ -13,7 +13,7 @@ import sys
 HOME_IP = '134.76.96.47' #td: get ips
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
-LOGFORMAT='%(levelname)s:%(filename)s:$(lineno)d:%(message)s'
+LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 
 TIME_SEPARATOR = '@'
 

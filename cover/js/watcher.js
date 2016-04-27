@@ -4,6 +4,7 @@
 */
 const {Cc, Ci} = require("chrome");
 const pageMod = require("sdk/page-mod");
+const { URL } = require("sdk/url");
 
 const coverUrl = require("./coverUrl.js");
 
@@ -55,17 +56,14 @@ exports.unregister = unregister;
 
 
 /** watches for end of page load (all images etc loaded) */
-function createPageMod(user) {
+function createPageMod() {
     return pageMod.PageMod({
 	include: "*",
 	contentScript: "self.port.emit('loaded', document.location.href)",
 	contentScriptWhen: "end",
 	onAttach: function(worker) {
 	    worker.port.on("loaded", function(urlspec) {
-		// td: replace by addon-module
-		var ioService = Cc["@mozilla.org/network/io-service;1"]
-		    .getService(Ci.nsIIOService);
-		callback.endsLoading(ioService.newURI(urlspec, null, null));
+		callback.endsLoading(URL(urlspec));
 	    });
 	}
     });

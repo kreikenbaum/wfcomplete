@@ -4,7 +4,7 @@ import logging
 import random
 import string
 
-LOGFORMAT='%(levelname)s:%(filename)s:$(lineno)d:%(message)s'
+LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 logging.basicConfig(format=LOGFORMAT, level=logging.INFO)
 
 

@@ -79,7 +79,7 @@ exports["test withProbability(<0)"] = function(assert) {
 exports["test withProbability(0.5)"] = function(assert) {
     var sum = 0;
     for ( var i = 0; i < 100; i += 1 ) {
-	sum += (stats.withProbability(0.5) ? 1 : 0 );
+	sum += stats.withProbability(0.5); // js type coercion to 0 or 1 ;-)
     }
     assert.ok(Math.abs(sum - 50) <= 10, '(maybe) off for prob = 0.5');
 };
