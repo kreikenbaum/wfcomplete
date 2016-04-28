@@ -2,6 +2,7 @@
 #+TODO: TODO CHECK | LATER DONE
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{tikz}
+#+LATEX_CLASS_OPTIONS: [a4paper,10pt]
 * TODO organize [[*Mozilla%20Add-On%20Sdk][addon]] sections
 * final sections
 ** LATER Abstract
@@ -37,7 +38,7 @@
 ** Introduction
 ** Related Work
 ** Materials and Methods
-* TODO topics [7/122]
+* TODO topics [7/121]
 ** TODO Website Fingerprinting [2/52]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
@@ -239,7 +240,7 @@
 
      export LD_LIBRARY_PATH=/lib:/usr/lib:/path/to/bundle/Browser/TorBrowser/Tor
 
-     The script [[*%5B%5Bfile:./bin/one_site.py%5D%5D][one_site.py]] uses this internally.
+     The script [[*Script%20%5B%5B./bin/one_site.py%5D%5D:%20capture%20pcap%20traces][one_site.py]] uses this internally.
 
 ***** TODO where exactly is the torrc: directory
 **** how to avoid the safe mode error on multiple restarts
@@ -736,7 +737,7 @@
     multiplexing and fixed cell sizes.
 *** TODO sort subtopics
 *** TODO Tor overview
-** TODO Addon Design and Implementation [5/54]
+** TODO Addon Design and Implementation [5/53]
 *** Defenses
 **** [[*wf-specific%20defenses][wf-specific defenses]]
 **** [[*other%20defenses][other defenses]]
@@ -998,7 +999,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
        - mediator
        - flight control
        - dispatcher
-**** cover traffic distribution generation
+**** TODO cover traffic distribution generation
      - each retrieval maybe triggers additional retrieval(s)
        - based on statistical model
      - for each page being retrieved
@@ -1015,17 +1016,24 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
            - if probability > 1, generate those certainly and iterate
              with probability -1, until probability < 0
 **** TODO HTML traffic model
+     :PROPERTIES:
+     :CUSTOM_ID: HTML traffic model
+     :END:
      - intel
        - html object lognormal with params \mu = 7.90272, \sigma = 1.7643
        - embedded objects
      - test
        - download html top 10000
        - analysis
+     - link to
 **** TODO browser caching
      - browsers cache
      - only helps in cover traffic, (unless warm/cold site model is used)
 ***** LATER where to put this?
 **** TODO find sizes of HTML-documents
+     :PROPERTIES:
+     :CUSTOM_ID: find sizes of HTML-documents
+     :END:
      The statistical size generation works with application-level
      sizes on the network, as the authors of the HTML traffic
      model\cite{newtrafficmodel} analysed logfiles of the Squid
@@ -1044,8 +1052,9 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      From the log file =access.log=, the sizes are extracted via the
      command sequence
 
-     sudo cat /var/log/squid3/access.log | tr -s ' ' | cut -d ' ' -f 5,7
-     > /mnt/data/HTML-sizes
+     #+BEGIN_SRC sh
+       sudo cat /var/log/squid3/access.log | tr -s ' ' | cut -d ' ' -f 5,7 > /mnt/data/HTML-sizes
+     #+END_SRC
 
      These sizes are then converted to a JSON-array via the
      [[./htmlSizeToJSON.py]]-file. It also does a check for duplicate
@@ -1402,6 +1411,54 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
     truncated at 0.999918739 quantile
   - embeddedSize: ebd
   - numEmbeddedObjects: truncated gamma instead of gamma
+* CHECK Variations of Cover Traffic
+  To influence the generation of cover traffic, there are two
+  parameters which can be altered with a binary decision set, which
+  lead to four possible strategies.
+
+  The first parameter is the size of the webpage. This includes the
+  size of the HTML-page (see [[#find%20sizes%20of%20HTML-documents][find sizes of HTML-documents]]) and the
+  number of embedded elements (see [[*find%20number%20of%20embedded%20elements][find number of embedded elements]]).
+
+  If the parameter is unknown, the [[#HTML%20traffic%20model][HTML traffic model]] is used to
+  randomly guess [fn::The size of each embedded element is always
+  randomly guessed.].
+
+  If it is known, it can be used or treated as unknown. A priori, it
+  seems as though exact knowledge of the site's size should make cover
+  traffic generation more effective, as neither too much nor too
+  little traffic is generated. Still, this is the first parameter
+  evaluated.
+
+  The second parameter is the target size to pad to. One approach is
+  to group the webpages by their size into bins and to set the border
+  as the target size, as all webpages in the bin must have a size less
+  than or equal the border. This approach mimics that taken by Wang et
+  al. in \cite{effective} and Cai et al. in \cite{a-systematic}, with
+  the bins being equivalent to the anonymity sets / partitions.
+
+  The other approach is to have a single target distribution from
+  which values are sampled each time, once again from the [[#HTML%20traffic%20model][HTML traffic
+  model]]: For each webpage, a target number of elements and target size
+  of its HTML-page is randomly determined (and multiplied with the
+  overhead). From this, the webpage's html-size and number of elements
+  is subtracted. At the same time of the HTML-query, another query for
+  the remaining HTML-size (or a token amount if too small) is
+  sent. Concerning the embedded elements, the ratio of
+  (target-site)/site is computed. For each element, this ratio
+  determines the number of requests for embedded elements (these are
+  always of random sizes, once again from the [[#HTML traffic model][HTML traffic model]]. See
+  [[*cover%20traffic%20distribution%20generation][cover traffic distribution generation]] for the algorithms.
+
+  This leads to the following variations:
+
+  1) bloom binning with known sizes
+  2) bloom binning with random sizes
+  3) original size from bloom, one target distribution
+  4) random size, one target distribution
+* which features work well
+  see k-forest
+** MOVE to wf
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
@@ -3527,9 +3584,9 @@ mean = 0.763238095238
    - assumption: can split traces
 ** TODO always also link in text
 *** TODO check with darp
-* LATER appendices [8/8]
-** LATER Script to capture pcap traces: [[file:./bin/one_site.py]]
-   insert file here
+* DONE appendices [9/9]
+** LATER Script [[./bin/one_site.py]]: capture pcap traces
+   #+INCLUDE: "./bin/one_site.py" src python
 ** LATER Script to classify the data [[file:../bin/extract_attribute.py]]
    insert file here
 ** LATER Script to parse pcap files:
@@ -3559,6 +3616,8 @@ mean = 0.763238095238
      - maybe further work: test that really works worse
 **** LATER include file [[../bin/unused/TrafficHTTPServer.py]]
 ** LATER include [[file:bin/htmlToNumEmbedded.py]]
+** LATER Script [[./bin/html_top_100.sh]] to retrieve html pages via squid
+   #+INCLUDE: "./bin/html_top_100.sh" src sh
 ** html_top_100.sh
      #+BEGIN_SRC sh
        sudo squid3 -k shutdown &&\
