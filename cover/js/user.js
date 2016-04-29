@@ -21,7 +21,7 @@ function loads(url) {
     if ( _.contains(activeHosts, url.host) ) { // has already started
 	activeHosts[url.host].loadNext();
     } else {
-	activeHosts[url.host] = new coverTraffic.CoverTraffic(url);
+	activeHosts[url.host] = new coverTraffic.CoverTraffic(url.spec);
 	// td: removal code: better also watch endsload
 	setTimeout(function() {
 	    delete activeHosts[url.host];
@@ -29,7 +29,7 @@ function loads(url) {
     }
 }
 exports.loads = url => loads(url);
-
+//td: stop cover traffic to that
 function endsLoading(url) {
     debug.log('user: endsLoading('+url.host+') NOT IMPLEMENTED');
 }

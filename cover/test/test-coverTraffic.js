@@ -1,10 +1,8 @@
 "use strict";
-const { URL } = require("sdk/url");
-
 const coverTraffic = require("../js/coverTraffic.js");
 const mockLoad = require("./mock-load.js");
 
-const HOSTNAME = URL('http://unknown.host');
+const HOSTNAME = 'http://unknown.host';
 
 exports["test object"] = function(assert) {
     mockLoad.reset();
@@ -25,15 +23,23 @@ exports["test two objects"] = function(assert) {
     assert.equal(mockLoad.getCount(), 1, 'no call to mock of ct');
     var c2 = new coverTraffic.CoverTraffic(HOSTNAME, mockLoad);
     assert.equal(mockLoad.getCount(), 2, 'no call to mock of ct2');
-    for ( var i = 10; i > 0; i -= 1 ) {
+    for ( let i = 10; i > 0; i -= 1 ) {
 	ct.loadNext();
     }
-    for ( var i = 10; i > 0; i -= 1 ) {
+    for ( let i = 10; i > 0; i -= 1 ) {
 	c2.loadNext();
     }
     assert.ok(mockLoad.getCount() >= 4, 
-	      'no calls to mock on ct.loadNext() or c2.loadNext(): ' 
-	      + mockLoad.getCount());
+	      'no calls to mock on ct.loadNext() or c2.loadNext(): ' +
+	      mockLoad.getCount());
+};
+
+exports["test object only in htmlCache (strategy 1)"] = function(assert) {
+    const GURL = "http://google.com/";
+    mockLoad.reset();
+    assert.equal(mockLoad.getCount(), 0, 'initialization error');
+    var ct = new coverTraffic.CoverTraffic(GURL, mockLoad);
+    assert.equal(mockLoad.getSum(), 266);
 };
 
 // exports["test failure without loader"] = function(assert) {

@@ -32,10 +32,14 @@ function CoverTraffic(targetURL, load=LOAD) {
 
     try {
 	this.site.html = sizeCache.htmlSize(targetURL);
+	//console.log('site size hit for ' + targetURL + ": " + this.site.html);
+    } catch (e) { // guess sizes
+	this.site.html = stats.htmlSize();
+	//console.log('site size miss for ' + targetURL + ": " +JSON.stringify(e));
+    }
+    try {
 	this.site.numEmbedded = sizeCache.numberEmbeddedObjects(targetURL);
     } catch (e) { // guess sizes
-	//console.log('guessed sizes for: ' + targetURL);
-	this.site.html = stats.htmlSize();
 	this.site.numEmbedded = stats.numberEmbeddedObjects();
     }
 
@@ -63,9 +67,8 @@ CoverTraffic.prototype.loadNext = function() {
 };
 
 // td later: strategy class, subclasses
-// td: exception handling here, not in sizeCache
 /**
- * Strategy 1: take max
+ * Strategy 1: take bloom max
  * on bloom failure: (v0.1) take default * FACTOR
  */
 // td: better handling of last bucket
@@ -73,11 +76,14 @@ CoverTraffic.prototype.htmlStrategy1 = function(targetURL) {
     let targetHtmlSize;
     try {
 	targetHtmlSize = sizeCache.htmlSizeMax(targetURL);
+	//console.log('target size hit for ' + targetURL + ": " + targetHtmlSize);
     } catch (e) {
 	targetHtmlSize = stats.htmlSize(FACTOR);
+	//console.log('size miss for ' + JSON.stringify(targetURL)
+	//    + 'due to: ' + JSON.stringify(e));
     }
     return targetHtmlSize - this.site.html;
-}
+};
 // td: is this code duplication
 CoverTraffic.prototype.numStrategy1 = function(targetURL) {
     let targetPadSize;
@@ -87,7 +93,7 @@ CoverTraffic.prototype.numStrategy1 = function(targetURL) {
 	targetPadSize = stats.numberEmbeddedObjects(FACTOR);
     }
     return targetPadSize - this.site.numEmbedded;
-}
+};
 
 exports.CoverTraffic = CoverTraffic;
 

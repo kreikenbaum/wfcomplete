@@ -1,13 +1,12 @@
 "use strict";
 
 const Simple = require('sdk/simple-prefs');
-const { URL } = require("sdk/url");
 
 const SizeCache = require("../js/size-cache.js");
 //const stats = require("../js/stats.js");
 //const sumAvg = require("./sum-avg.js");
 
-const TEST = URL('http://www.google.com/search');
+const TEST = 'http://www.google.com/search';
 
 exports["test small html"] = function(assert) {
     assert.equal(SizeCache.htmlSize('http://google.com/'), 689);
@@ -73,11 +72,12 @@ exports["test unknown num"] = function(assert) {
 
 exports["test stripParam"] = function(assert) {
     //    console.log("url: " + TEST.href);
-    assert.equal(SizeCache.stripParamHref(TEST.href + '?asdf'), TEST.href);
-    assert.equal(SizeCache.stripParamHref(URL(TEST.href + '?asdf')), TEST.href);
-    assert.equal(SizeCache.stripParamHref(TEST), TEST.href);
-    assert.equal(SizeCache.stripParamHref(TEST.href + '#test'), TEST.href);
+    assert.equal(SizeCache.stripParamHref(TEST + '?asdf'), TEST);
+    assert.equal(SizeCache.stripParamHref(TEST), TEST);
+    assert.equal(SizeCache.stripParamHref(TEST + '#test'), TEST);
     assert.equal(SizeCache.stripParamHref("http://passport.weibo.com/visitor/visitor"), "http://passport.weibo.com/visitor/visitor");
+    assert.equal(SizeCache.stripParamHref("https://shavar.services.mozilla.com/downloads?client=navclient-auto-ffox&appver=46.0&pver=2.2"),
+		 "https://shavar.services.mozilla.com/downloads");
 };
 
 require("sdk/test").run(exports);

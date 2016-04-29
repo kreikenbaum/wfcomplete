@@ -98,10 +98,23 @@ if __name__ == "__main__":
     # os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'sw', 'data', 'json', 'addon_disabled'))
     # (X2, y2, y2_domains) = to_features_cumul(counter.Counter.from_(sys.argv))
 
+    ## GRID SEARCH SVC
+    X_train, X_test, y_train, y_test = cross_validation.train_test_split(
+        X, y, test_size=0.25)
+    Cs = np.logspace(11, 17, 7, base=2)
+    Gs = np.logspace(-3, 3, 7, base=2)
+    svc = svm.SVC()
+    clf = GridSearchCV(estimator=svc,
+                       param_grid=dict(C=Cs, gamma=Gs),
+                       n_jobs=-1)
+    clf.fit(X_train, y_train)
+    clf.best_score_
+    clf.best_estimator_
+
     test(X, y, svm.SVC(C=10**-20, gamma=4.175318936560409e-10))
-    test(X, y, svm.SVC(kernel='linear')) #problematic, but best
+    #test(X, y, svm.SVC(kernel='linear')) #problematic, but best
     test(X, y, neighbors.KNeighborsClassifier())
-    test(X, y, svm.LinearSVC())
+    #test(X, y, svm.LinearSVC())
     #grid rbf
 #     cstart, cstop = -45, -35
 #     Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))

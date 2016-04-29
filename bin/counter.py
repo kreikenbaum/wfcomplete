@@ -30,6 +30,16 @@ def _append_features(keys, filename):
     else:
         logging.warn('%s discarded', counter.name)
 
+def _normalize(array):
+    '''normalizes array so that its maximum absolute value is +- 1.0
+
+    >>> _normalize([3,4,5])
+    [0.6, 0.8, 1.0]
+    >>> _normalize([-4, 2, -10])
+    [-0.4, 0.2, -1.0]
+    '''
+    maxabs = float(max([abs(x) for x in array]))
+    return [x / maxabs for x in array]
 
 def discretize(number, step):
     '''discretizes number by increment, rounding up

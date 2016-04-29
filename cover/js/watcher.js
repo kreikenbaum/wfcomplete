@@ -4,7 +4,6 @@
 */
 const {Cc, Ci} = require("chrome");
 const pageMod = require("sdk/page-mod");
-const { URL } = require("sdk/url");
 
 const coverUrl = require("./coverUrl.js");
 
@@ -59,11 +58,11 @@ exports.unregister = unregister;
 function createPageMod() {
     return pageMod.PageMod({
 	include: "*",
-	contentScript: "self.port.emit('loaded', document.location.href)",
+	contentScript: "self.port.emit('loaded', document.location.host)",
 	contentScriptWhen: "end",
 	onAttach: function(worker) {
-	    worker.port.on("loaded", function(urlspec) {
-		callback.endsLoading(URL(urlspec));
+	    worker.port.on("loaded", function(host) {
+		callback.endsLoading(host);
 	    });
 	}
     });

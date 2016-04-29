@@ -8,7 +8,7 @@ function test(callback, thismany, mean, errorAllowed, assert) {
     }
     
     assert.ok(Math.abs(sum/thismany - mean) < errorAllowed, 
-	      'failed, off mean by: ' + (sum / thismany - mean)
-	      + ', allowed: ' + errorAllowed);
+	      'failed, off mean by: ' + (sum / thismany - mean) +
+	      ', allowed: ' + errorAllowed);
 }
 exports.test = test;
