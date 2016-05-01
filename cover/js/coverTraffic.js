@@ -23,29 +23,23 @@ const LOAD = require('./load.js');
  * Creates cover traffic. Once on creation, then on {@code loadNext()}.
  * @constructor
  * @param {module load.js} module which provides loading capabilities
+ * @param {String targetURL} first request to site was this URL
  */
+// td: refactor: member variable for targetURL?
 function CoverTraffic(targetURL, load=LOAD) {
     this.load = load;
 
     this.site = {};
     this.target = {};
 
-    try {
-	this.site.html = sizeCache.htmlSize(targetURL);
-	//console.log('site size hit for ' + targetURL + ": " + this.site.html);
-    } catch (e) { // guess sizes
-	this.site.html = stats.htmlSize();
-	//console.log('site size miss for ' + targetURL + ": " +JSON.stringify(e));
-    }
-    try {
-	this.site.numEmbedded = sizeCache.numberEmbeddedObjects(targetURL);
-    } catch (e) { // guess sizes
-	this.site.numEmbedded = stats.numberEmbeddedObjects();
-    }
+//    this.site.html = this.htmlStrategyA(targetURL);
+//    this.site.numEmbedded = this.numStrategyA(targetURL);
+    this.site.html = this.htmlStrategyB(targetURL);
+    this.site.numEmbedded = this.numStrategyB(targetURL);
 
     //    this.target.html = stats.htmlSize(FACTOR) - this.site.html;
-    this.target.html = this.htmlStrategy1(targetURL);
-    this.target.numEmbedded = this.numStrategy1(targetURL);
+    this.target.html = this.htmlStrategyI(targetURL);
+    this.target.numEmbedded = this.numStrategyI(targetURL);
 //	stats.numberEmbeddedObjects(FACTOR) - this.site.numEmbedded;
 
     this.prob = Math.max(this.target.numEmbedded / this.site.numEmbedded,
@@ -68,11 +62,11 @@ CoverTraffic.prototype.loadNext = function() {
 
 // td later: strategy class, subclasses
 /**
- * Strategy 1: take bloom max
+ * partial Strategy I: take bloom max for target
  * on bloom failure: (v0.1) take default * FACTOR
  */
 // td: better handling of last bucket
-CoverTraffic.prototype.htmlStrategy1 = function(targetURL) {
+CoverTraffic.prototype.htmlStrategyI = function(targetURL) {
     let targetHtmlSize;
     try {
 	targetHtmlSize = sizeCache.htmlSizeMax(targetURL);
@@ -85,7 +79,7 @@ CoverTraffic.prototype.htmlStrategy1 = function(targetURL) {
     return targetHtmlSize - this.site.html;
 };
 // td: is this code duplication
-CoverTraffic.prototype.numStrategy1 = function(targetURL) {
+CoverTraffic.prototype.numStrategyI = function(targetURL) {
     let targetPadSize;
     try {
 	targetPadSize = sizeCache.numberEmbeddedObjectsMax(targetURL);
@@ -95,14 +89,38 @@ CoverTraffic.prototype.numStrategy1 = function(targetURL) {
     return targetPadSize - this.site.numEmbedded;
 };
 
-exports.CoverTraffic = CoverTraffic;
+/**
+* partial Strategy II: one distribution for target
+*/
+// td
 
-	// td: evaluate
-	// if ( e.message === 'The last bucket has no border' ) {
-	//     return stats.HTML_TOP;
-	//     return stats.HTML_999;
-	//     return HTML_SIZES[HTML_SIZES.length -1];
-	//     return HTML_SIZES[HTML_SIZES.length -1] * FACTOR; // favorite
-	// } else {
-//	    return stats.htmlSize();
-	// }
+/**
+* partial Strategy A: known sizes for sites
+*/
+CoverTraffic.prototype.htmlStrategyA = function(targetURL) {
+    try {
+	return sizeCache.htmlSize(targetURL);
+	//console.log('site size hit for ' + targetURL + ": " + this.site.html);
+    } catch (e) { // guess sizes
+	return stats.htmlSize();
+	//console.log('site size miss for ' + targetURL + ": " +JSON.stringify(e));
+    }
+};
+CoverTraffic.prototype.numStrategyA = function(targetURL) {
+    try {
+	return sizeCache.numberEmbeddedObjects(targetURL);
+    } catch (e) { // guess sizes
+	return stats.numberEmbeddedObjects();
+    }
+};
+/**
+* partial Strategy B: random sizes for sites
+*/
+CoverTraffic.prototype.htmlStrategyB = function(targetURL) {
+    return stats.htmlSize();
+};
+CoverTraffic.prototype.numStrategyB = function(targetURL) {
+    return stats.numberEmbeddedObjects();
+};
+
+exports.CoverTraffic = CoverTraffic;
