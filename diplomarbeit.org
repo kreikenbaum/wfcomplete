@@ -1212,8 +1212,20 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
       origins are. (Separation of Concerns)
 **** TODO http server for testing
 **** TODO description of add-on
-     The add-on is an experimental defense against website
-     fingerprinting.
+     The add-on tries to defend against website fingerprinting by
+     adding HTTP-distributed extra traffic.
+
+     To do so, it detects the start of each web request. If it is a
+     request for a HTML page, an additional HTML page is requested.
+
+     If the request is determined to be for an embedded
+     object[fn::currently, the first page from a domain is the HTML,
+     all others within a certain time window are considered embedded],
+     an additional embedded object-size page is requested with a
+     certain probability.
+
+     Both the sizes of the extra HTML and the extra number of embedded
+     objects are determined based on the [[HTML traffic model][HTML traffic model]].
 
      - detect start of transmission
        - request extra HTML doc to obfuscate that
@@ -1226,6 +1238,11 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
        - maybe do something to IPP-model (trigger on/off-state on some)
      - request size uniform [0, 300)
        - except if request.len > 300
+     - source: cover traffic server
+     - size distributions
+       - html
+       - numembedded
+     - td describe best algo only?
 ***** TODO move to [[*Design][Design]]?
 **** CHECK Apache mod_wsgi
      =mod_wsgi= is a module for the Apache web
@@ -1329,14 +1346,14 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 * TODO extract dom tags python
   - diveintopython
   - see code
-* LATER modified top-100
+* TODO modified top-100
   - originally alexa-top-1m, from September 30, 2015 condensed
   - take out duplicates: google, amazon, bbc, ...
   - take out non-responding (to urllib) sites:
     - list of taken out
       - googleusercontent.com
       - youku.com
-** LATER complete list
+** TODO complete list in appendix
 * TODO what is a bloom filter
   A Bloom Filter is a data structure to test membership in a set. It
   has a fixed size and a certain one-way error rate. If an item is in
@@ -1527,9 +1544,13 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   2) bloom binning (I) with random sizes (B)
   3) one target distribution (II) with original size from bloom (A),
   4) one target distribution (II) with random sizes (B)
-* which features work well
+* TODO which features work well
   see k-forest
 ** MOVE to wf
+* TODO does this hide bursts?
+** (meta-bursts as request-response-pairs?)
+** maybe see cumul-graphics
+* LATER evaluation of [[*Variations%20of%20Cover%20Traffic][Variations of Cover Traffic]]
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
@@ -3632,6 +3653,8 @@ mean = 0.763238095238
       - so all is lumped together per domain
 	- first request seen as HTML
 	- other requests as non-HTML
+  - bursts maybe less hidden (number of)
+  - time not hidden (no delays of single files)
 ** TODO also helps against global observer if .onion generator is used
    - murdoch/danezis: correlation
    - this creates additional traffic which might hinder correlation attacks
@@ -3655,8 +3678,9 @@ mean = 0.763238095238
    - assumption: can split traces
 ** TODO always also link in text
 *** TODO check with darp
-* DONE appendices [9/9]
-** LATER Script [[./bin/one_site.py]]: capture pcap traces
+* TODO appendices [8/10]
+\appendix
+** Script [[./bin/one_site.py]]: capture pcap traces
    #+INCLUDE: "./bin/one_site.py" src python
 ** LATER Script to classify the data [[file:../bin/extract_attribute.py]]
    insert file here
@@ -3706,6 +3730,8 @@ mean = 0.763238095238
        done
      #+END_SRC
 ** LATER [[./bin/retrieve_100_embedded.sh]].
+** TODO modified top-100
+*** TODO download
 * unused
 ** from [[*transform to panchenko-features]]
   The code to examine a single trace file is in =analyze_file()=
