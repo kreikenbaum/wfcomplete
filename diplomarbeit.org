@@ -58,7 +58,7 @@
 #+LATEX_HEADER:   \end{tabular}
 #+LATEX_HEADER: }}
 * TODO organize [[*Mozilla%20Add-On%20Sdk][addon]] sections
-* final sections
+* Final Sections
 ** LATER Abstract
 *** Teaser
     #+BEGIN_QUOTE
@@ -94,7 +94,14 @@
 **** Related Work
 *** Website Fingerprinting
 **** Related Work
-** Materials and Methods
+** Related Work
+*** classifiers
+**** state of the art
+*** mitigation
+**** state of the art
+** Design
+** Implementation
+** Results and Evaluation
 * TODO topics [7/122]
 ** TODO Website Fingerprinting [2/52]
 *** What is Website Fingerprinting
@@ -361,25 +368,17 @@
      server. As they do not belong to the Tor traffic, are not what
      the adversary sees, and might distort the result, they were
      filtered. (Even though the accuracy results were not greatly
-     changed).
+     changed by this).
 
      Fortunately, =tshark= offers a way to filter these files as
-     shown in \cite{splitcap}. The filter commands are described in
-     the manual \cite{wireshark-filter}, with the tcp protocol
-     specific fields as given in \cite{tcp-filter-fields}.
-***** TODO solution
-     - command
-       tshark -r google.com@1460052589 -2 -R "tcp.dstport ne 7777 and tcp.srcport ne 7777"  -w filtered/google.com@1460052589
-       - [fn::See \url{https://www.wireshark.org/docs/dfref/t/tcp.html} for the tcp filters]
-       - for all files
-         #+BEGIN_SRC sh
-           for NAME in $(ls); do
-               tshark -r $NAME -2 -R "tcp.dstport ne 7777 and tcp.srcport ne 7777" -w ../../2_7777_filtered/pcap_addon_cached_sizes/$NAME;
-           done
-         #+END_SRC
-     - legit as firewall blocked much, among which outgoing traffic
-       to 7777
-       - otherwise combine with f.ex. ip
+     mentioned in \cite{splitcap}. The (read) filter commands are
+     described in the manual \cite{wireshark-filter}, with the tcp
+     protocol specific fields as given in \cite{tcp-filter-fields}.
+
+     The script to solve this is in the appendix [[7777]]. As the server
+     ran on port 7777, which was allowed only as an incoming port by
+     the firewall, it suffices to filter by port name. (Otherwise, the
+     read filter would need to be modified).
 ***** TODO implementation
      - summary approach: file 7777.sh takes each (pcap) file in
        current directory, filters the port 7777 out
@@ -1548,7 +1547,9 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   see k-forest
 ** MOVE to wf
 * TODO does this hide bursts?
-** (meta-bursts as request-response-pairs?)
+  - meta-bursts as described in walkie-talkie
+  - are those hidden, too, or can the number of bursts be found out
+  - easy to implement, maybe do this
 ** maybe see cumul-graphics
 * LATER evaluation of [[*Variations%20of%20Cover%20Traffic][Variations of Cover Traffic]]
 * misc: tex bibliography
@@ -3678,13 +3679,13 @@ mean = 0.763238095238
    - assumption: can split traces
 ** TODO always also link in text
 *** TODO check with darp
-* TODO appendices [8/10]
+* TODO appendices [8/11]
 \appendix
 ** Script [[./bin/one_site.py]]: capture pcap traces
    #+INCLUDE: "./bin/one_site.py" src python
-** LATER Script to classify the data [[file:../bin/extract_attribute.py]]
+** LATER Script to classify the data [[file:./bin/extract_attribute.py]]
    insert file here
-** LATER Script to parse pcap files:
+** LATER Script to parse pcap files: [[./bin/counter.py]]
 ** LATER Cover Traffic Server [[file:../bin/wsgi.py]]
    <<wsgi.py>>
 *** LATER Non-parallelized-based web server for cover traffic [1/1]
@@ -3732,6 +3733,8 @@ mean = 0.763238095238
 ** LATER [[./bin/retrieve_100_embedded.sh]].
 ** TODO modified top-100
 *** TODO download
+** TODO Remove same-host cover traffic server from traces: [[./bin/7777.sh]]
+   <<7777>>
 * unused
 ** from [[*transform to panchenko-features]]
   The code to examine a single trace file is in =analyze_file()=

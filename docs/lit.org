@@ -1363,6 +1363,343 @@
             training on more non-monitored sites.
 *** ref
     [[file:master.bib::wpes13-fingerprinting][Wang & Goldberg 2013: Improved Website Fingerprinting Tor]]
+** [#A] [[./4b0fa48670a7269523b1166ad302440876da.pdf][k-fingerprinting: a Robust Scalable Website Fingerprinting Technique]]
+*** summary
+    0) [@0] Abstract
+
+       - better, even against defenses
+
+         - and noisy data
+
+       - (85% vs 0.02%)
+
+       - world size 100'000
+
+       - error rates vary widely
+
+    1) Introduction
+
+       - analyze "order, timing and volume of resources"
+
+       - classification
+
+       - contributions
+
+         - new attack: more accurate and faster
+
+       - feature analysis
+
+       - bigger open world
+
+       - train only small fraction of data
+
+       - uneven error rate
+
+       - tor does not offer additional defenses vs normal browsing
+
+         - distinguish hidden services
+
+    2) Related Work
+
+       1) Website Fingerprinting.
+
+          - Wright et al.'s traffic morphing helped against early
+            size-based attacks
+
+          - Panchenko et al.'s decoy reduced accuracy from 55% to 5%
+
+          - Luo et al.'s HTTPOS "was successful in defending against a
+            number of classifiers"
+
+          - Dyer et al.'s BuFLO improved upon others with "high
+            bandwidth overhead"
+
+            - Cai et al. improved with rate adaptation
+
+            - Nithyanand: Glove groups website traffic, "provides
+              information theoretic privacy guarantees and reduces the
+              bandwidth overhead by intelligently grouping web traffic
+              in to similar sets."
+
+          - Cai et al. improved Panchenko's attack
+
+            - improved by WG (0.95 vs 0.002)
+
+          - Wang et al, kNN open-world (0.85 vs 0.006)
+
+          - WG half-duplex
+
+          - WG practical deployment: parse on 1.5 second-gap
+
+          - Gu et al: multi-tab, 50 websites first @ 75.9%, background @ 40.5%
+
+          - Kwon et al: apply to hidden services: 50 hs, (88% vs 7.8%)
+
+          - Panchenko: CUMUL, huge, suffers from simple defenses
+
+       2) Random Forests.
+
+          - "no need for k-fold cross validation to measure
+            k-fingerprinting performance"
+
+    3) Attack Design
+
+       0) [@0]
+
+          - "aims to define a distance-based classifier."
+
+       1) k-fingerprints from random forests
+
+          - each forest gives a leaf identifier
+
+            - choose k-closest by hamming distance
+
+          - robust
+
+          - vary k for a TPR/FPR trade-off
+
+            - classify if all k agree
+
+            - majority label also possible
+
+       2) The k-fingerprinting attack
+
+          - select monitored pages
+
+            - collect monitored and some non-monitored traces
+
+            - generate fingerprints
+
+              - (fixed-length)
+
+          - listen to client's browsing
+
+            - generate fingerprint
+
+            - compute k closest training examples by hamming distance
+
+            - say monitored if all k agree that monitored
+
+          - measurements: TPR, FPR, and
+
+            - BDR:  (TPR. Pr(M)) / (TPR. Pr(M) + FPR. Pr(U))
+              Bayesian Detection Rate (BDR):
+
+              with Pr(M) = |Monitored| / |Total Pages|,
+              and  Pr(U) = 1 − P(M).
+
+              - "probability that the classifier made a correct prediction"
+
+    4) Data gathering
+
+       - normal (Selenium + PhantomJS)
+
+         - 55@30 monitored vs 7000 unmonitored
+
+       - and Tor Browser (Selenium)
+
+         - 55@100 monitored
+
+         - 30@80 hidden services
+
+         - unmonitored: 100'000 top alexa - top 55
+
+       - compare to WG 100@90 + 5000 unmonitored (random from Alexa top 10'000)
+
+       - Nielsen: number of unique websites/month: 89 avg
+
+    5) Feature selection
+
+       - few previous studies
+
+       - randomized forest, use gini coefficient to determine feature
+         importances
+
+         - 30 most important features contain most of the info
+
+         - 150 used as it did not increase running time significantly
+
+         - top ~12 really important
+
+         - assign rank as average of 100 experiments
+
+       - feature importances
+
+         - most important (@.. are fixed positions, rest vary)
+
+           1) [@1] number of incoming packets
+
+           2) number of outgoing packets
+
+           3) number of incoming packets as fraction of total
+
+           4) [@4] standard deviation of packet ordering list (how many
+              packets of same type before this)
+
+           5) number of outgoing packets as fraction of total
+
+         - other important features:
+
+           - packet ordering incoming/outgoing average/stddev
+
+           - mean of number of outgoing packets in each 20-chunk
+
+           - split number of packets into 20 evenly-sized set
+             (alternative), average of this
+
+    6) Attack on Hardened Defenses
+
+       - Wang dataset: 100@90 + 5000@1 background
+
+       - better and faster than both kNN and CUMUL
+
+       - also against many defenses
+
+       - Juarez' Adaptive Padding works down to 30% accuracy
+
+    7) k-fingerprinting the Wang et al data set
+
+       - train on 60 instances for each of the 100 monitored web pages
+
+       - vary number of unmonitored
+
+	 - all as one single class
+
+       - feature numbers 200 and 150
+
+       - classify if all k agree
+
+       - 88% (\pm 1) vs 0.5% (\pm 0.1)
+
+	 - better than kNN (85% (\pm 4) vs 0.6% (\pm 0.4)
+
+       - best with training 3500 unmonitored, afterwards does not increase
+
+       - Fingerprint length
+
+	 - set k=1 with 4000 unmonitored
+
+	 - one fingerprint: 51% vs 90%
+
+	 - 20 fingerprints: 87% vs 1.3%
+
+	 - does not get much better
+
+    8) Attack evaluation on DS_{Tor}
+
+       55@100 vs 100'000 and 30@80 hidden services vs 100'000
+
+       1) Alexa web pages monitored set
+
+	  - (k=2) the more training pages, the better the BDR
+
+	    - due to reduction of FPR
+
+       2) Hidden services monitored set
+
+	  - lower TPR, but also lower FPR
+
+	    - BDR stays very high
+
+    9) Attack evaluation on DS_Norm
+
+       standard encrypted web browsing or through VPN
+
+       1) Attack on encrypted browsing sessions
+
+	  - additional features:
+
+	    - size transmitted
+
+	    - size transmitted statistics of total, incoming and outgoing:
+
+	      - average,
+
+	      - standard deviation, variance
+
+	      - maximum
+
+	  - which web page from several websites
+
+	    - 55@30 monitored vs 7000 other pages
+
+	  - "larger cardinality of world size gives rise to more
+            opportunities for incorrect classifications"
+
+	  - 0.87 vs 0.004 (training with 4000 unmonitored web pages)
+
+       2) Attack without packet size features
+
+	  - TPR - 5%, FPR + 0.1% (closed and open world)
+
+	    - "BDR is dominated by the amount of information that can
+              be trained upon."
+
+    10) Fine grained open-world false positives on Alexa monitored set of DS_{Tor}
+
+	- some pages are misclassified often
+
+	- removing them leads to more misclassification
+
+	- smart removal: split set into train, test, validation (?)
+
+    11) Attack Summary & Discussion
+
+	1) Attack Summary
+
+	   - best results "when training on approximately two thirds
+             of the unmonitored web pages"
+
+	     - but 2% of data also yields "a very small false positive
+               rate"
+
+	   - number of fingerprints has "greater influence"
+
+	   - robust: similar results for Wang, Kwon, own DS_...
+
+	   - possible to select targets with low misclassification
+             rates (misclassification is page-dependent)
+
+	2) Computational Efficiency: comparable to kNN, much faster
+           than Cai's approach
+
+	3) Discussion
+
+	   - big data sets feasible with high BDR and low FPR
+
+	   - fast-changing website, news etc, decay faster
+
+    12) Conclusion
+
+	- serious
+
+	- faster and more accurate
+
+	- "twice as large in terms of unique website"[s] as panchenko 2016
+
+	- four datasets
+
+	- small fraction of total data to train
+
+	- remove bad sites
+*** quotes
+    1) Introduction
+       - Traditional encryption obscures only the content of
+         communications and does not hide metadata such as the size
+         and direction of traffic over time. Anonymous communication
+         systems obscure both content and metadata, preventing a
+         passive attacker from observing the source or destination of
+         communication.
+    4) [@4] Data gathering
+       - By including website visits to trending topics we argue that
+         this diminishes the ability to properly measure how effective
+         a website fingerprinting attack will perform in general.
+    8) [@8] Attack evaluation on DS_{Tor}
+       1) Alexa web pages monitored set
+	  - an attacker needs to train on less than 10% of the entire
+            dataset to have nearly 70% confidence that classifier was
+            correct when it claims to have detected a monitored page.
+*** TODO ref [[file:master.bib::kfingerprint][Hayes & Danezis]]
 ** [#B] [[./Javascript Closures.prototype_chain.html][Javascript Closures]]
 *** summary
     1) Introduction
@@ -6334,6 +6671,7 @@
       traffic.
 
       How about timing data?
+*** ref [[file:master.bib::wang2015walkie][Wang & Goldberg 2015: Walkie Talkie]]
 ** [[./ndss16-wfp-internet-scale.pdf][Panchenko - Website Fingerprinting at Internet Scale]]
 *** summary
     0) [@0] Abstract
@@ -7400,557 +7738,579 @@
 
        0) [@0]
 
-	  - objektbasiert vs klassenbasiert
+	  0) [@0]
 
-	    - klassenbasiert z.b. adapter
+	     - objektbasiert vs klassenbasiert
 
-	    - objektbasiert z.b. Kompositionsmuster
+	       - klassenbasiert z.b. adapter
 
-	  - teils verwandt
+	       - objektbasiert z.b. Kompositionsmuster
 
-       1) Adapter
+	     - teils verwandt
 
-	  - anpassung von schnittstellen aneinander
+	  1) Adapter
 
-	  - klassenadapter: mehrfachvererbung
+	     - anpassung von schnittstellen aneinander
 
-	    - objektadapter: komposition
+	     - klassenadapter: mehrfachvererbung
 
-	  - konsequenzen
+	       - objektadapter: komposition
 
-	    - klassenadapter:
+	     - konsequenzen
 
-	      - +: anpassung, ueberschreiben da unterklasse, einzelnes objekt
+	       - klassenadapter:
 
-	    - objektadapter
+		 - +: anpassung, ueberschreiben da unterklasse, einzelnes objekt
 
-	      - +: mehrere anzupassende klassen
+	       - objektadapter
 
-	      - -: ueberschreiben schwieriger
+		 - +: mehrere anzupassende klassen
 
-	    - aufwand abhaengig vom grade der verschiedenheit
+		 - -: ueberschreiben schwieriger
 
-	    - weniger annahmen machen implementierung einfacher
+	       - aufwand abhaengig vom grade der verschiedenheit
 
-	    - zweiweg-adapter um beide richtungen abzudecken
+	       - weniger annahmen machen implementierung einfacher
 
-	  - implementierung: eines oeffentlich erben, anderes intern/privat
+	       - zweiweg-adapter um beide richtungen abzudecken
 
-	    - kleinste gemeinsame Menge von Operationen fuer Adaptierung
+	     - implementierung: eines oeffentlich erben, anderes intern/privat
 
-       2) Bruecke (Bridge)
+	       - kleinste gemeinsame Menge von Operationen fuer Adaptierung
 
-	  - objektbasiert
+	  2) Bruecke (Bridge)
 
-	  - Zweck: entkopple interface und implementierung
+	     - objektbasiert
 
-	  - Motivation: implementierung zur Laufzeit auswaehlen
+	     - Zweck: entkopple interface und implementierung
 
-	    - FensterImp grundklasse, kindklassen verwenden ihre funktionen
+	     - Motivation: implementierung zur Laufzeit auswaehlen
 
-	  - Anwendbarkeit:
+	       - FensterImp grundklasse, kindklassen verwenden ihre funktionen
 
-	    - dauerhafte verbindung vermeiden: zur laufzeit auswaehlen
+	     - Anwendbarkeit:
 
-	    - unterklassen fuer abstraktion (benutze elternklasse)
-              und implementierung (benutze imp-elternklasse)
+	       - dauerhafte verbindung vermeiden: zur laufzeit auswaehlen
 
-	  - Struktur + Teilnehmer:
+	       - unterklassen fuer abstraktion (benutze elternklasse)
+		 und implementierung (benutze imp-elternklasse)
 
-	    - abstraktion hat operation, definiert schnittstelle,
-              verwaltet referenz auf implementierer
+	     - Struktur + Teilnehmer:
 
-	    - spezialisierte abstraktion: erweitert abstraktion
+	       - abstraktion hat operation, definiert schnittstelle,
+		 verwaltet referenz auf implementierer
 
-	    - implementierer hat operationsImp
+	       - spezialisierte abstraktion: erweitert abstraktion
 
-	    - implementierer-kindklassen operationsImp konkret um bzw. verwendent sie
+	       - implementierer hat operationsImp
 
-	  - Interaktion: abstraktion leitet anfragen (von klienten) weiter
+	       - implementierer-kindklassen operationsImp konkret um bzw. verwendent sie
 
-	  - Konsequenzen
+	     - Interaktion: abstraktion leitet anfragen (von klienten) weiter
 
-	    - entkopplung Schnittstelle/Implementierung
+	     - Konsequenzen
 
-	    - verbesserte Erweiterbarkeit
+	       - entkopplung Schnittstelle/Implementierung
 
-	  - Implementierung
+	       - verbesserte Erweiterbarkeit
 
-	    - degeneriert: ein Implementor-typ, falls nicht neu uebersetzt werden soll
+	     - Implementierung
 
-	    - welches Implementorobjekt erzeugen?
+	       - degeneriert: ein Implementor-typ, falls nicht neu uebersetzt werden soll
 
-	      - entweder default, dann anpassen
+	       - welches Implementorobjekt erzeugen?
 
-	      - oder Fabrikmuster fuer erzeugung
+		 - entweder default, dann anpassen
 
-	  - Verwandte Muster:
+		 - oder Fabrikmuster fuer erzeugung
 
-	    - Abstrakte Fabrik kann Bruecke erzeugen,
+	     - Verwandte Muster:
 
-	    - Adapter wird in bereits bestehendem System verwendet,
-              bruecke im Design
+	       - Abstrakte Fabrik kann Bruecke erzeugen,
 
-       3) Dekorierer
+	       - Adapter wird in bereits bestehendem System verwendet,
+		 bruecke im Design
 
-          - objektbasiert
+	  3) Dekorierer
 
-          - Zweck: objekt dynamisch erweitern
+	     - objektbasiert
 
-          - Motivation
+	     - Zweck: objekt dynamisch erweitern
 
-            - vererbung ist unflexibel
+	     - Motivation
 
-            - besser in anderem Objekt einschliessen, dass
-              z.b. scrolling hinzufuegt: /Dekorierer/
+	       - vererbung ist unflexibel
 
-              - hat dieselbe schnittstelle wie anderes object,
-                evtl. erweitert, z.b. um /scrolleBis()/
+	       - besser in anderem Objekt einschliessen, dass
+		 z.b. scrolling hinzufuegt: /Dekorierer/
 
-          - Anwendbarkeit:
+		 - hat dieselbe schnittstelle wie anderes object,
+                   evtl. erweitert, z.b. um /scrolleBis()/
 
-            - zusaetzliche funktionalitaet
+	     - Anwendbarkeit:
 
-              - wieder entfernbar
+	       - zusaetzliche funktionalitaet
 
-            - unterklassen vermeiden (versteckt oder exponentielle vermehrung)
+		 - wieder entfernbar
 
-          - Struktur / Teilnehmer:
+	       - unterklassen vermeiden (versteckt oder exponentielle vermehrung)
 
-            - abstrakteKomponente hat
+	     - Struktur / Teilnehmer:
 
-              - konkreteKomponente (erweiterbar), und
+	       - abstrakteKomponente hat
 
-              - Dekorierer, der enthaelt abstrakteKomponente und Unterklassen
+		 - konkreteKomponente (erweiterbar), und
 
-          - Interaktionen:
+		 - Dekorierer, der enthaelt abstrakteKomponente und Unterklassen
 
-            - leitet anfragen weiter
+	     - Interaktionen:
 
-            - fuehrt zusaetliche aktionen davor oder danach aus
+	       - leitet anfragen weiter
 
-          - Konsequenzen:
+	       - fuehrt zusaetliche aktionen davor oder danach aus
 
-            - flexibilitaet
+	     - Konsequenzen:
 
-              - weniger klassen als bei mehrfachvererbung
+	       - flexibilitaet
 
-              - mehrfach dasselbe (zwei rahmen)
+		 - weniger klassen als bei mehrfachvererbung
 
-            - erweitern unten im klassenstammbaum, nicht eine komplexe
-              elternklasse
+		 - mehrfach dasselbe (zwei rahmen)
 
-            - keine tests auf objektidentitaet
+	       - erweitern unten im klassenstammbaum, nicht eine komplexe
+		 elternklasse
 
-            - viele kleine gleiche Objekte, schwerer zu verstehen
+	       - keine tests auf objektidentitaet
 
-          - Implementierung:
+	       - viele kleine gleiche Objekte, schwerer zu verstehen
 
-            - schnittstellen: alle funktionen uebernehmen
+	     - Implementierung:
 
-            - leichgewichtige komponentenklassen
+	       - schnittstellen: alle funktionen uebernehmen
 
-            - Strategiemuster ändert das Verhalten, Dekorierer die "Hülle"
+	       - leichgewichtige komponentenklassen
 
-              - Strategie ("Delegation eines Teils der Verhalten an
-                separates Strategieobjekt") bei schwergewichtigen
-                Komponenten
+	       - Strategiemuster ändert das Verhalten, Dekorierer die "Hülle"
 
-              - z.B. separates Rahmenobjekt
+		 - Strategie ("Delegation eines Teils der Verhalten an
+                   separates Strategieobjekt") bei schwergewichtigen
+                   Komponenten
 
-              - z.B. in MacView, da seine Views sehr schwergewichtig,
-                also extra /Adorner/-Klasse
+		 - z.B. separates Rahmenobjekt
 
-              - für Strategie muss die Klasse verändert werden
+		 - z.B. in MacView, da seine Views sehr schwergewichtig,
+                   also extra /Adorner/-Klasse
 
-          - Beispielcode: VisuelleKomponente als Metaklasse
+		 - für Strategie muss die Klasse verändert werden
 
-            - wird von Dekorierern und wirklicher Komponente abgeleitet
+	     - Beispielcode: VisuelleKomponente als Metaklasse
 
-          - Bekannte Verwendungen:
+	       - wird von Dekorierern und wirklicher Komponente abgeleitet
 
-            - Android Views
+	     - Bekannte Verwendungen:
 
-            - I/O-Streams (java)
+	       - Android Views
 
-          - Verwandte Muster:
+	       - I/O-Streams (java)
 
-            - Adapter verändert Schnittstelle
+	     - Verwandte Muster:
 
-            - Strategie verändert inneres Verhalten, Dekorierer äußeres
+	       - Adapter verändert Schnittstelle
 
-            - Kompositum: Dekorierer ist degeneriertes Kompositum,
-              allerdings auch mit zusätlicher Funktionalität
+	       - Strategie verändert inneres Verhalten, Dekorierer äußeres
 
-       4) Fassade
+	       - Kompositum: Dekorierer ist degeneriertes Kompositum,
+		 allerdings auch mit zusätlicher Funktionalität
 
-          - objektbasiert
+	  4) Fassade
 
-          - Zweck: einheitliche Schnittstelle (zu Menge von Schnittstellen)
+	     - objektbasiert
 
-          - Motivation: zusätzlich zu eigentlicher Funktionalität noch
-            Fassadenklasse, die die Benutzung vereinfacht
+	     - Zweck: einheitliche Schnittstelle (zu Menge von Schnittstellen)
 
-          - Anwendbarkeit:
+	     - Motivation: zusätzlich zu eigentlicher Funktionalität noch
+               Fassadenklasse, die die Benutzung vereinfacht
 
-            - einfache Schnittstelle zu komplexen System: häufige Verwendung
+	     - Anwendbarkeit:
 
-            - Abhängigkeiten zwischen Klienten und
-              Implementierungsklassen entfernen
+	       - einfache Schnittstelle zu komplexen System: häufige Verwendung
 
-              - bessere Unbaehängigkeit und Portabilität des Subsystems
+	       - Abhängigkeiten zwischen Klienten und
+		 Implementierungsklassen entfernen
 
-            - Subsysteme in Schichten aufteilen, dann Abhängigkeiten
-              vereinfachen
+		 - bessere Unbaehängigkeit und Portabilität des Subsystems
 
-          - Struktur/Teilnehmer:
+	       - Subsysteme in Schichten aufteilen, dann Abhängigkeiten
+		 vereinfachen
 
-            - Fassade: delegiert Anfragen an das zuständige Subsystemmodul
+	     - Struktur/Teilnehmer:
 
-            - Subsystemklassen:
+	       - Fassade: delegiert Anfragen an das zuständige Subsystemmodul
 
-              - implementieren Funktionalität
+	       - Subsystemklassen:
 
-              - wissen nichts von der Fassade, führen nur aus
+		 - implementieren Funktionalität
 
-          - Interaktionen: Klient an Fassade, Fassade an Subsystem
+		 - wissen nichts von der Fassade, führen nur aus
 
-          - Konsequenzen:
+	     - Interaktionen: Klient an Fassade, Fassade an Subsystem
 
-            - schirmt Klienten ab,
+	     - Konsequenzen:
 
-            - macht Subsystem einfacher zu benutzen
+	       - schirmt Klienten ab,
 
-            - lose Kopplung zwischen Subsystem und Klienten
+	       - macht Subsystem einfacher zu benutzen
 
-            - Subsystemklassen weiterhin verwendbar wenn nötig
+	       - lose Kopplung zwischen Subsystem und Klienten
 
-          - Implementierung:
+	       - Subsystemklassen weiterhin verwendbar wenn nötig
 
-            - abstrakte Klassen machen das Subsystem austauschbar
+	     - Implementierung:
 
-              - Komponenten ebenso
+	       - abstrakte Klassen machen das Subsystem austauschbar
 
-            - oeffentliche versus private Subklassen
+		 - Komponenten ebenso
 
-          - Beispielcode: Compilersubsystem mit Uebersetzer(file eingabe,
-            Bytecode ausgabe)-Fassade
+	       - oeffentliche versus private Subklassen
 
-          - Bekannte Verwendungen: Uebersetzer inspiriert von Smalltalk
+	     - Beispielcode: Compilersubsystem mit Uebersetzer(file eingabe,
+               Bytecode ausgabe)-Fassade
 
-          - Verwandte Muster:
+	     - Bekannte Verwendungen: Uebersetzer inspiriert von Smalltalk
 
-            - Abstrakte Fabrik zusammen, um Unabhaengigkeit vom
-              konkreten Subsystem zu erreichen
+	     - Verwandte Muster:
 
-            - Vermittlermuster: dem Subsystem bekannt (hilft bei
-              Kommunikation), dagegen Fassade unbekannt und keine neue
-              Funktionalität
+	       - Abstrakte Fabrik zusammen, um Unabhaengigkeit vom
+		 konkreten Subsystem zu erreichen
 
-            - Fassaden als Singletons
+	       - Vermittlermuster: dem Subsystem bekannt (hilft bei
+		 Kommunikation), dagegen Fassade unbekannt und keine neue
+		 Funktionalität
 
-       5) Fliegengewicht (Flyweight)
+	       - Fassaden als Singletons
 
-          - objektbasert
+	  5) Fliegengewicht (Flyweight)
 
-          - Zweck: viele Objekte kleiner Granularität
+	     - objektbasert
 
-          - Motivation: Texteditor:
+	     - Zweck: viele Objekte kleiner Granularität
 
-            - Zeichen sind Objekte
+	     - Motivation: Texteditor:
 
-              - es gibt z.B. ein Objekt für "a"
+	       - Zeichen sind Objekte
 
-            - Glyph hat Fkt Zeichne(Kontext) und Unterklassen Zeile,
-              Spalte, Zeichen
+		 - es gibt z.B. ein Objekt für "a"
 
-            - speichert nur intrinsischen Zustand (welches Zeichen)
+	       - Glyph hat Fkt Zeichne(Kontext) und Unterklassen Zeile,
+		 Spalte, Zeichen
 
-            - extrinsischer Zustand ist vom Kontext vorgegeben
+	       - speichert nur intrinsischen Zustand (welches Zeichen)
 
-          - Anwendbarkeit: nur wenn (alles gemeinsam)
+	       - extrinsischer Zustand ist vom Kontext vorgegeben
 
-            - viele Objekte,
+	     - Anwendbarkeit: nur wenn (alles gemeinsam)
 
-            - Speicherkosten deswegen hoch,
+	       - viele Objekte,
 
-            - Großteil des Zustands in Kontext verlagerbar,
+	       - Speicherkosten deswegen hoch,
 
-            - dann Gruppen zusammenfassbar zu wenigen gemeinsam
-              genutzten Objekten, UND
+	       - Großteil des Zustands in Kontext verlagerbar,
 
-            - Identität der Objekte unwichtig.
+	       - dann Gruppen zusammenfassbar zu wenigen gemeinsam
+		 genutzten Objekten, UND
 
-          - Struktur: Fabrik erzeugt und cached Fliegengewichte
+	       - Identität der Objekte unwichtig.
 
-          - Teilnehmer:
+	     - Struktur: Fabrik erzeugt und cached Fliegengewichte
 
-            - Fliegengewicht (Glyph): Scnittstelle um externen Zustand
-              zu erhalten und verarbeiten
+	     - Teilnehmer:
 
-            - Konkretes Fliegengewicht (Zeichen): evtl +intrinsischer Zustand
+	       - Fliegengewicht (Glyph): Scnittstelle um externen Zustand
+		 zu erhalten und verarbeiten
 
-            - Getrennt Genutztes Fliegengewicht: z.B. Zeile
+	       - Konkretes Fliegengewicht (Zeichen): evtl +intrinsischer Zustand
 
-            - Fabrik: erzeugt, verwaltet == stellt korrekte gemeinsame
-              Nutzung sicher
+	       - Getrennt Genutztes Fliegengewicht: z.B. Zeile
 
-            - Klient: etc
+	       - Fabrik: erzeugt, verwaltet == stellt korrekte gemeinsame
+		 Nutzung sicher
 
-          - Interaktionen:
+	       - Klient: etc
 
-            - klare Trennung Zustand extrinsisch/intrinsisch
+	     - Interaktionen:
 
-            - nie direkt erzeugt, immer per Fabrik
+	       - klare Trennung Zustand extrinsisch/intrinsisch
 
-          - Konsequenzen:
+	       - nie direkt erzeugt, immer per Fabrik
 
-            - Laufzeitkosten,
+	     - Konsequenzen:
 
-            - Speicherplatzgewinne, durch
+	       - Laufzeitkosten,
 
-              - weniger objekte
+	       - Speicherplatzgewinne, durch
 
-              - evtl. weniger intrinsischer Zustand
+		 - weniger objekte
 
-              - evtl. extrinsisch berechnet
+		 - evtl. weniger intrinsischer Zustand
 
-            - häufig mit Kompositionsmuster
+		 - evtl. extrinsisch berechnet
 
-          - Implementierung:
+	       - häufig mit Kompositionsmuster
 
-            - extrinsischer Zustand lohnt nur wenn auch zusammengefasst
+	     - Implementierung:
 
-            - Map für Objekte, evtl. mit Referenzzähler
+	       - extrinsischer Zustand lohnt nur wenn auch zusammengefasst
 
-              - außer bei wenigen fixen Objekten, wie z.B. ASCII
+	       - Map für Objekte, evtl. mit Referenzzähler
 
-          - Beispielcode:
+		 - außer bei wenigen fixen Objekten, wie z.B. ASCII
 
-            - B-Baum für Zeichensatz der Glyphen: geordnet nach
-              Glyphenposition (siehe Buch)
+	     - Beispielcode:
 
-              500 \to {1, 300, 199}
-              1 \to Times 24
+	       - B-Baum für Zeichensatz der Glyphen: geordnet nach
+		 Glyphenposition (siehe Buch)
 
-              300 \to {100, 6, 194}
-              100 \to Times 12
-              6 \to TimesItalic 12
-              194 \to (auch) Times 12
+		 500 \to {1, 300, 199}
+		 1 \to Times 24
 
-              199 \to {8, 1, 3, 187}
-              8 \to TimesBold 12
-              1 \to (auch) Times 12
-              3 \to Courier 24
-              187 \to (auch) Times 12
+		 300 \to {100, 6, 194}
+		 100 \to Times 12
+		 6 \to TimesItalic 12
+		 194 \to (auch) Times 12
 
-            - bei z.b. entfernen des italic wird der obere Teil zu
-              300 \to Times12 (300mal Times12 für Glyph)
+		 199 \to {8, 1, 3, 187}
+		 8 \to TimesBold 12
+		 1 \to (auch) Times 12
+		 3 \to Courier 24
+		 187 \to (auch) Times 12
 
-          - Bekannte Verwendungen:
+	       - bei z.b. entfernen des italic wird der obere Teil zu
+		 300 \to Times12 (300mal Times12 für Glyph)
 
-            - Doc-Editor (480 Zeichen, Layout auch als Fliegengewicht)
+	     - Bekannte Verwendungen:
 
-          - Verwandte Muster:
+	       - Doc-Editor (480 Zeichen, Layout auch als Fliegengewicht)
 
-            - häufig zusammen mit Kompositionsmuster
+	     - Verwandte Muster:
 
-            - Zustandsobjekte und Strategieobjekte häufig als Fliegengewicht
+	       - häufig zusammen mit Kompositionsmuster
 
-       6) Kompositum (Composite)
+	       - Zustandsobjekte und Strategieobjekte häufig als Fliegengewicht
 
-	  - objekbasiert
+	  6) Kompositum (Composite)
 
-	  - Zweck: Objekte zu Baumstrukturen kombinieren
+	     - objekbasiert
 
-	  - Motivation:
+	     - Zweck: Objekte zu Baumstrukturen kombinieren
 
-	    - Schemaeditor hat Linien, können kombiniert werden, dies
-              gibt neues Objekt (z.B. Klasse), kann wieder kombiniert
-              werden, etc
+	     - Motivation:
 
-	    - Implementierung ist schwieriger, wenn zwischen Behälter
-              und Basisobjekt (Linie, Rechteckt, Schrift)
-              unterschieden wird
+	       - Schemaeditor hat Linien, können kombiniert werden, dies
+		 gibt neues Objekt (z.B. Klasse), kann wieder kombiniert
+		 werden, etc
 
-	    - Lösung: abstrakte Klasse für beides: Graphik
+	       - Implementierung ist schwieriger, wenn zwischen Behälter
+		 und Basisobjekt (Linie, Rechteckt, Schrift)
+		 unterschieden wird
 
-	      - mit Funktionen Zeichne, FuegeHinzu(g), Entferne(g),
-                GibKindObjekt(id)
+	       - Lösung: abstrakte Klasse für beides: Graphik
 
-	  - Anwendbarkeit:
+		 - mit Funktionen Zeichne, FuegeHinzu(g), Entferne(g),
+                   GibKindObjekt(id)
 
-	    - Teil/Ganzes Hierarchien,
+	     - Anwendbarkeit:
 
-	    - Unterschiede ignorieren
+	       - Teil/Ganzes Hierarchien,
 
-	  - Struktur/Teilnehmer:
+	       - Unterschiede ignorieren
 
-	    - Klient benutzt Komponente (abstrakte Klasse=Schnittstele)
+	     - Struktur/Teilnehmer:
 
-	      - kann beides sein: Blatt oder Kompositum
+	       - Klient benutzt Komponente (abstrakte Klasse=Schnittstele)
 
-	    - Kompositum ruft Operation der Kindobjekte auf
+		 - kann beides sein: Blatt oder Kompositum
 
-	  - Interaktionen:
+	       - Kompositum ruft Operation der Kindobjekte auf
 
-	    - Blatt führt direkt aus,
+	     - Interaktionen:
 
-	    - Kompositum leitet meistens weiter, führt evtl. vorher
-              oder nachher zusätzliche Aktionen aus
+	       - Blatt führt direkt aus,
 
-	    - Klienten verwenden die Klassenschnittestelle von Komponente
+	       - Kompositum leitet meistens weiter, führt evtl. vorher
+		 oder nachher zusätzliche Aktionen aus
 
-	  - Konsequenzen
+	       - Klienten verwenden die Klassenschnittestelle von Komponente
 
-	    - Klienten soll der Typ gleich sein: einfacherer Code
+	     - Konsequenzen
 
-	    - vereinfacht Hinzufügen neuer Klassen
+	       - Klienten soll der Typ gleich sein: einfacherer Code
 
-	    - kann Entwurf zu allgemein werden lassen, verhindert
-              compiler type checking
+	       - vereinfacht Hinzufügen neuer Klassen
 
-	  - Implementierung
+	       - kann Entwurf zu allgemein werden lassen, verhindert
+		 compiler type checking
 
-	    - definiere besser Elternobjekt (in Komponentenklasse)
+	     - Implementierung
 
-	      - erleichtert z.B. Zuständigkeitskettenmuster und Löschen
+	       - definiere besser Elternobjekt (in Komponentenklasse)
 
-	      - erschwert gemeinsame Nutzung
+		 - erleichtert z.B. Zuständigkeitskettenmuster und Löschen
 
-		- externer Zustand (siehe Fliegengewichtsmuster) als Lösung
+		 - erschwert gemeinsame Nutzung
 
-	    - maximale Komponentenschnittstelle
+		   - externer Zustand (siehe Fliegengewichtsmuster) als Lösung
 
-	      - Defaultimplementierung z.B. die für Blätter, Koposita
-                überschreiben diese
+	       - maximale Komponentenschnittstelle
 
-	    - deklarieren der Verwaltungsoperationen
+		 - Defaultimplementierung z.B. die für Blätter, Koposita
+                   überschreiben diese
 
-	      - entweder transparent: in der Komponentenklasse,
+	       - deklarieren der Verwaltungsoperationen
 
-	        - allerdings könnten Klienten dann versuchen, Blättern
-                  z.B. Kinder hinzuzufügen
+		 - entweder transparent: in der Komponentenklasse,
 
-	      - oder sicherer: in der Kompositaklasse.
+		   - allerdings könnten Klienten dann versuchen, Blättern
+                     z.B. Kinder hinzuzufügen
 
-		- allerdings haben dann Komposita und Blätter
-                  unterschiedliche Schnittstellen
+		 - oder sicherer: in der Kompositaklasse.
 
-		- evtl. Exception als Defaultimplementation, in
-                  Komposita überschrieben
+		   - allerdings haben dann Komposita und Blätter
+                     unterschiedliche Schnittstellen
 
-	    - Speichern der enthaltenen Komponenten in der
-              Kompositionsklasse: in Elternklasse unnötiger
-              Blatt-Platzverbrauch
+		   - evtl. Exception als Defaultimplementation, in
+                     Komposita überschrieben
 
-	    - Ordnung der Kinder: bei Zugriff und Verwaltung
-              beachten. Siehe auch das Iteratormuster.
+	       - Speichern der enthaltenen Komponenten in der
+		 Kompositionsklasse: in Elternklasse unnötiger
+		 Blatt-Platzverbrauch
 
-	    - Caching bei häufigem Zugriff
+	       - Ordnung der Kinder: bei Zugriff und Verwaltung
+		 beachten. Siehe auch das Iteratormuster.
 
-	      - z.B. speichert Graphikkompositum die
-                Koordinaten. Falls nicht sichtbar, werden keine
-                Handlungen ausgeführt
+	       - Caching bei häufigem Zugriff
 
-		- Zwischenspeicher invalidieren bei Änderung
+		 - z.B. speichert Graphikkompositum die
+                   Koordinaten. Falls nicht sichtbar, werden keine
+                   Handlungen ausgeführt
 
-	    - Löschen: ohne GC: Kompositum löscht
+		   - Zwischenspeicher invalidieren bei Änderung
 
-	      - außer bei gemeinsam genutzten Blattobjekten
+	       - Löschen: ohne GC: Kompositum löscht
 
-	    - Listen, Bäume, Arrays, Hahs-Tabellen, hängt von
-              Ziel-Effizienz ab
+		 - außer bei gemeinsam genutzten Blattobjekten
 
-	  - Beispielcode: Geraet > ZusammengesetztesGeraet > Gehaeuse
+	       - Listen, Bäume, Arrays, Hahs-Tabellen, hängt von
+		 Ziel-Effizienz ab
 
-	    - GesamtPreis als Iterator aller Kinder
+	     - Beispielcode: Geraet > ZusammengesetztesGeraet > Gehaeuse
 
-	    - ZusammengesetztesGeraet hat =Liste<GErate*> _teile=
+	       - GesamtPreis als Iterator aller Kinder
 
-	  - Bekannte Verwendungen: Smalltalk View (geaendert spaeter)
+	       - ZusammengesetztesGeraet hat =Liste<GErate*> _teile=
 
-	  - Verwandte Muster:
+	     - Bekannte Verwendungen: Smalltalk View (geaendert spaeter)
 
-	    - Kompositum verwendet für Zuständigkeitskettenmuster
+	     - Verwandte Muster:
 
-	    - Dekorierer und Kompositum häufig gemeinsam
+	       - Kompositum verwendet für Zuständigkeitskettenmuster
 
-	    - Fliegengewichtsmuster ermöglicht gemeinsame Nutzung von
-              Komponenten (allerdings Problem mit Verweis auf Eltern)
+	       - Dekorierer und Kompositum häufig gemeinsam
 
-	    - Iteratormuster "um Komposita zu taversieren"
+	       - Fliegengewichtsmuster ermöglicht gemeinsame Nutzung von
+		 Komponenten (allerdings Problem mit Verweis auf Eltern)
 
-	    - Besuchermuster: "lokalisiert Operationen"
+	       - Iteratormuster "um Komposita zu taversieren"
 
-       7) Proxy
+	       - Besuchermuster: "lokalisiert Operationen"
 
-	  - objektbasiert (auch "Surrogat")
+	  7) Proxy
 
-	  - Zweck: kontrolliere Zugriff
+	     - objektbasiert (auch "Surrogat")
 
-	  - Motivation: lazy loading: eingebettete große Bilder, die
-            nur geladen werden sollen, wenn das Dokument sie auch
-            anzeigen muss
+	     - Zweck: kontrolliere Zugriff
 
-	  - Anwendbarkeit: u.a.
+	     - Motivation: lazy loading: eingebettete große Bilder, die
+               nur geladen werden sollen, wenn das Dokument sie auch
+               anzeigen muss
 
-	    - Remote-Proxy: anderer Adreßraum, z.B. Netzwerkzugriff
+	     - Anwendbarkeit: u.a.
 
-	    - virtuelles Proxy: teure Objekte wenn benötigt, z.B. Bild s.o.
+	       - Remote-Proxy: anderer Adreßraum, z.B. Netzwerkzugriff
 
-	    - Schutzproxy: bei unterschiedlichen Zugriffsrechten
+	       - virtuelles Proxy: teure Objekte wenn benötigt, z.B. Bild s.o.
 
-	    - Smart-Reference: ersetzt Referenz, evtl. mit
+	       - Schutzproxy: bei unterschiedlichen Zugriffsrechten
 
-	      - Zählen der Referenzen (bei 0 wieder freigeben)
+	       - Smart-Reference: ersetzt Referenz, evtl. mit
 
-	      - Test, ob gelockt vor Zugriff
+		 - Zählen der Referenzen (bei 0 wieder freigeben)
 
-	      - Laden/Speichern bei Benutzung/Schließen
+		 - Test, ob gelockt vor Zugriff
 
-	  - Struktur und Teilnehmer:
+		 - Laden/Speichern bei Benutzung/Schließen
 
-	    - Proxy und Echtes Subjekt leiten beide von Subjekt ab
+	     - Struktur und Teilnehmer:
 
-	    - Proxy ruft echtes Subjekt auf, bietet identische
-              Schnittstelle
+	       - Proxy und Echtes Subjekt leiten beide von Subjekt ab
 
-	    - Proxy erzeugt und löscht echtes Subjekt
+	       - Proxy ruft echtes Subjekt auf, bietet identische
+		 Schnittstelle
 
-	    - Subjekt definiert gemeinsame Schnittstelle
+	       - Proxy erzeugt und löscht echtes Subjekt
 
-	  - Interaktionen: wenn angebracht, Anfragen weiterleiten
+	       - Subjekt definiert gemeinsame Schnittstelle
 
-	  - Konsequenzen:
+	     - Interaktionen: wenn angebracht, Anfragen weiterleiten
 
-	    - Indirektion (Objekt woanders, Optimierungen, Schutz)
+	     - Konsequenzen:
 
-	    - Z.B. copy-on-write: bei schwerem Schreiben, erst bei
-              Änderung kopieren, sonst viele Klienten selbes Objekt.
+	       - Indirektion (Objekt woanders, Optimierungen, Schutz)
 
-	  - Implementierung: C++: ->-Operator überladen:
-	    #+BEGIN_SRC c++
-              Bild* BildZeige::LadeBild() {
-                if (_bild == 0) {
-                  _bild = LadeBildDatei(_bildDatei);
-                }
-                return _bild;
-              }
-              Bild* BildZeiger::operator->() {
-                return LadeBild();
-              }
-              // Beispiel
-              BildZeiger bild = BildZeiger("DateiName");
-              bild->Zeichne(Punkt(50, 100));
-              // wird zu (bild.operator->())->Zeichne(Punkt(50, 100));
-	    #+END_SRC
+	       - Z.B. copy-on-write: bei schwerem Schreiben, erst bei
+		 Änderung kopieren, sonst viele Klienten selbes Objekt.
 
-	    Allerdings unterschiedlich behandeln. Außerdem nicht immer
-            eine Lösung (wissen, wann benutzt; nur bei Zeichnen, nicht
-            bei ref, ...)
+	     - Implementierung: C++: ->-Operator überladen:
+	       #+BEGIN_SRC c++
+		 Bild* BildZeige::LadeBild() {
+                   if (_bild == 0) {
+                     _bild = LadeBildDatei(_bildDatei);
+                   }
+                   return _bild;
+		 }
+		 Bild* BildZeiger::operator->() {
+                   return LadeBild();
+		 }
+		 // Beispiel
+		 BildZeiger bild = BildZeiger("DateiName");
+		 bild->Zeichne(Punkt(50, 100));
+		 // wird zu (bild.operator->())->Zeichne(Punkt(50, 100));
+	       #+END_SRC
 
-	  - Beispielcode
+	       Allerdings unterschiedlich behandeln. Außerdem nicht immer
+               eine Lösung (wissen, wann benutzt; nur bei Zeichnen, nicht
+               bei ref, ...)
+
+	     - Beispielcode: Proxy, der die Ausmaße beim ersten Mal aus
+               der Datei extrahiert, danach aber noch gespeichert und
+               geladen werden kann
+
+	     - Bekannte Verwendungen: ET++-Textbaustein, NXProxy in NEXTSTEP
+
+	     - Verwandte Muster:
+
+	       - Adapter bietet andere Schnittstelle als Objekt (also
+		 auch als Proxy)
+
+	       - Dekorierer hat ähnliche Implementierung, aber der Zweck
+		 ist die Erweiterung
+
+		 - Schutzproxy genau wie Dekorierer
+
+		 - Remoteproxy hat keine direkte Referenz
+
+		 - virtueller Proxy erzeugt direkte Referenz bei Zugriff
+
+       1) Diskussion der Strukturmuster
 
     5) [@5] Verhaltensmuster
 
@@ -8061,343 +8421,6 @@
     - *In C++* sind statische Member-Funktionen zudem niemals
       virtuell, so dass Unterklassen sie nicht polymorph
       ueberschreiben koennen.
-** MOVE [#A] [[./4b0fa48670a7269523b1166ad302440876da.pdf][k-fingerprinting: a Robust Scalable Website Fingerprinting Technique]]
-*** summary
-    0) [@0] Abstract
-
-       - better, even against defenses
-
-         - and noisy data
-
-       - (85% vs 0.02%)
-
-       - world size 100'000
-
-       - error rates vary widely
-
-    1) Introduction
-
-       - analyze "order, timing and volume of resources"
-
-       - classification
-
-       - contributions
-
-         - new attack: more accurate and faster
-
-       - feature analysis
-
-       - bigger open world
-
-       - train only small fraction of data
-
-       - uneven error rate
-
-       - tor does not offer additional defenses vs normal browsing
-
-         - distinguish hidden services
-
-    2) Related Work
-
-       1) Website Fingerprinting.
-
-          - Wright et al.'s traffic morphing helped against early
-            size-based attacks
-
-          - Panchenko et al.'s decoy reduced accuracy from 55% to 5%
-
-          - Luo et al.'s HTTPOS "was successful in defending against a
-            number of classifiers"
-
-          - Dyer et al.'s BuFLO improved upon others with "high
-            bandwidth overhead"
-
-            - Cai et al. improved with rate adaptation
-
-            - Nithyanand: Glove groups website traffic, "provides
-              information theoretic privacy guarantees and reduces the
-              bandwidth overhead by intelligently grouping web traffic
-              in to similar sets."
-
-          - Cai et al. improved Panchenko's attack
-
-            - improved by WG (0.95 vs 0.002)
-
-          - Wang et al, kNN open-world (0.85 vs 0.006)
-
-          - WG half-duplex
-
-          - WG practical deployment: parse on 1.5 second-gap
-
-          - Gu et al: multi-tab, 50 websites first @ 75.9%, background @ 40.5%
-
-          - Kwon et al: apply to hidden services: 50 hs, (88% vs 7.8%)
-
-          - Panchenko: CUMUL, huge, suffers from simple defenses
-
-       2) Random Forests.
-
-          - "no need for k-fold cross validation to measure
-            k-fingerprinting performance"
-
-    3) Attack Design
-
-       0) [@0]
-
-          - "aims to define a distance-based classifier."
-
-       1) k-fingerprints from random forests
-
-          - each forest gives a leaf identifier
-
-            - choose k-closest by hamming distance
-
-          - robust
-
-          - vary k for a TPR/FPR trade-off
-
-            - classify if all k agree
-
-            - majority label also possible
-
-       2) The k-fingerprinting attack
-
-          - select monitored pages
-
-            - collect monitored and some non-monitored traces
-
-            - generate fingerprints
-
-              - (fixed-length)
-
-          - listen to client's browsing
-
-            - generate fingerprint
-
-            - compute k closest training examples by hamming distance
-
-            - say monitored if all k agree that monitored
-
-          - measurements: TPR, FPR, and
-
-            - BDR:  (TPR. Pr(M)) / (TPR. Pr(M) + FPR. Pr(U))
-              Bayesian Detection Rate (BDR):
-
-              with Pr(M) = |Monitored| / |Total Pages|,
-              and  Pr(U) = 1 − P(M).
-
-              - "probability that the classifier made a correct prediction"
-
-    4) Data gathering
-
-       - normal (Selenium + PhantomJS)
-
-         - 55@30 monitored vs 7000 unmonitored
-
-       - and Tor Browser (Selenium)
-
-         - 55@100 monitored
-
-         - 30@80 hidden services
-
-         - unmonitored: 100'000 top alexa - top 55
-
-       - compare to WG 100@90 + 5000 unmonitored (random from Alexa top 10'000)
-
-       - Nielsen: number of unique websites/month: 89 avg
-
-    5) Feature selection
-
-       - few previous studies
-
-       - randomized forest, use gini coefficient to determine feature
-         importances
-
-         - 30 most important features contain most of the info
-
-         - 150 used as it did not increase running time significantly
-
-         - top ~12 really important
-
-         - assign rank as average of 100 experiments
-
-       - feature importances
-
-         - most important (@.. are fixed positions, rest vary)
-
-           1) [@1] number of incoming packets
-
-           2) number of outgoing packets
-
-           3) number of incoming packets as fraction of total
-
-           4) [@4] standard deviation of packet ordering list (how many
-              packets of same type before this)
-
-           5) number of outgoing packets as fraction of total
-
-         - other important features:
-
-           - packet ordering incoming/outgoing average/stddev
-
-           - mean of number of outgoing packets in each 20-chunk
-
-           - split number of packets into 20 evenly-sized set
-             (alternative), average of this
-
-    6) Attack on Hardened Defenses
-
-       - Wang dataset: 100@90 + 5000@1 background
-
-       - better and faster than both kNN and CUMUL
-
-       - also against many defenses
-
-       - Juarez' Adaptive Padding works down to 30% accuracy
-
-    7) k-fingerprinting the Wang et al data set
-
-       - train on 60 instances for each of the 100 monitored web pages
-
-       - vary number of unmonitored
-
-	 - all as one single class
-
-       - feature numbers 200 and 150
-
-       - classify if all k agree
-
-       - 88% (\pm 1) vs 0.5% (\pm 0.1)
-
-	 - better than kNN (85% (\pm 4) vs 0.6% (\pm 0.4)
-
-       - best with training 3500 unmonitored, afterwards does not increase
-
-       - Fingerprint length
-
-	 - set k=1 with 4000 unmonitored
-
-	 - one fingerprint: 51% vs 90%
-
-	 - 20 fingerprints: 87% vs 1.3%
-
-	 - does not get much better
-
-    8) Attack evaluation on DS_{Tor}
-
-       55@100 vs 100'000 and 30@80 hidden services vs 100'000
-
-       1) Alexa web pages monitored set
-
-	  - (k=2) the more training pages, the better the BDR
-
-	    - due to reduction of FPR
-
-       2) Hidden services monitored set
-
-	  - lower TPR, but also lower FPR
-
-	    - BDR stays very high
-
-    9) Attack evaluation on DS_Norm
-
-       standard encrypted web browsing or through VPN
-
-       1) Attack on encrypted browsing sessions
-
-	  - additional features:
-
-	    - size transmitted
-
-	    - size transmitted statistics of total, incoming and outgoing:
-
-	      - average,
-
-	      - standard deviation, variance
-
-	      - maximum
-
-	  - which web page from several websites
-
-	    - 55@30 monitored vs 7000 other pages
-
-	  - "larger cardinality of world size gives rise to more
-            opportunities for incorrect classifications"
-
-	  - 0.87 vs 0.004 (training with 4000 unmonitored web pages)
-
-       2) Attack without packet size features
-
-	  - TPR - 5%, FPR + 0.1% (closed and open world)
-
-	    - "BDR is dominated by the amount of information that can
-              be trained upon."
-
-    10) Fine grained open-world false positives on Alexa monitored set of DS_{Tor}
-
-	- some pages are misclassified often
-
-	- removing them leads to more misclassification
-
-	- smart removal: split set into train, test, validation (?)
-
-    11) Attack Summary & Discussion
-
-	1) Attack Summary
-
-	   - best results "when training on approximately two thirds
-             of the unmonitored web pages"
-
-	     - but 2% of data also yields "a very small false positive
-               rate"
-
-	   - number of fingerprints has "greater influence"
-
-	   - robust: similar results for Wang, Kwon, own DS_...
-
-	   - possible to select targets with low misclassification
-             rates (misclassification is page-dependent)
-
-	2) Computational Efficiency: comparable to kNN, much faster
-           than Cai's approach
-
-	3) Discussion
-
-	   - big data sets feasible with high BDR and low FPR
-
-	   - fast-changing website, news etc, decay faster
-
-    12) Conclusion
-
-	- serious
-
-	- faster and more accurate
-
-	- "twice as large in terms of unique website"[s] as panchenko 2016
-
-	- four datasets
-
-	- small fraction of total data to train
-
-	- remove bad sites
-*** quotes
-    1) Introduction
-       - Traditional encryption obscures only the content of
-         communications and does not hide metadata such as the size
-         and direction of traffic over time. Anonymous communication
-         systems obscure both content and metadata, preventing a
-         passive attacker from observing the source or destination of
-         communication.
-    4) [@4] Data gathering
-       - By including website visits to trending topics we argue that
-         this diminishes the ability to properly measure how effective
-         a website fingerprinting attack will perform in general.
-    8) [@8] Attack evaluation on DS_{Tor}
-       1) Alexa web pages monitored set
-	  - an attacker needs to train on less than 10% of the entire
-            dataset to have nearly 70% confidence that classifier was
-            correct when it claims to have detected a monitored page.
-*** TODO ref [[file:master.bib::kfingerprint][Hayes & Danezis]]
 ** TODO [#A] PART -s 1,5,7 [[./McGrawHill_-_Machine_Learning_-Tom_Mitchell.pdf]]
 *** summary
     1) INTRODUCTION
@@ -8607,6 +8630,27 @@
 	     - simple representation: conjuction of constraints
 
 	  1) Notation
+
+	     - set of Instances X
+
+	     - target concept c: X \to {0, 1}
+
+	     - training example (x \in X, c(x))
+
+	       - positive if c(x) = 1, negative if c(x) = 0
+
+	     - hypothesis h \in H, h: X \to {0, 1}
+
+	       - aim: h = c for x \in X
+
+	  2) The Inductive Learning Hypothesis
+
+	     "Any hypothesis found to approximate the target function
+             well over a sufficiently large set of training examples
+             will also approximate the target function well over other
+             unobserved examples." (?stupid?)
+
+       3) CONCEPT LEARNING AS SEARCH
 
        7) [@7] INDUCTIVE BIAS
 
@@ -8939,6 +8983,36 @@
 	  - setting this time lower leads to better classification
 
        1) BuFLO Description
+
+	  - variables d: size of fixed-length packets,
+
+	    - \rho: rate at which to send packets (in milliseconds)
+
+	    - \tau: minimum amount of time for which to send packets
+
+	  - (this yields approximation of the webpage size :-( ---
+            while sending, keeps on, then finishes)
+
+       2) Experiments
+
+	  - assumptions: implementable, start detectable
+
+	  - several ranges: accuracy from 27.3% (1000, 40, 0) to 5.1%
+            (1500, 20, 10000) (each (d, \rho, \tau))
+
+       3) Observations about BuFLO
+
+	  - weaknesses:
+
+	    - yields some size and time data if at \tau
+
+	      - buffer is still full, or
+
+	      - website is still sending
+
+	    - enhances (!) timing-based classifier for low data rate
+
+    8) RELATED WORK
 *** quotes
     0) [@0] Abstract
        - in the context of website identification, it is unlikely that
@@ -15812,4 +15886,4 @@
 ** [[./The web is Doom - mobiForge.html][The web is Doom]]
 *** summary
 *** quotes
-*** ref
+*** ref [[file:master.bib::web-is-doom][Cremin 2016: Doom]]
