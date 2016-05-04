@@ -32,15 +32,15 @@ function CoverTraffic(targetURL, load=LOAD) {
     this.site = {};
     this.target = {};
 
-//    this.site.html = this.htmlStrategyA(targetURL);
-//    this.site.numEmbedded = this.numStrategyA(targetURL);
-    this.site.html = this.htmlStrategyB(targetURL);
-    this.site.numEmbedded = this.numStrategyB(targetURL);
+    this.site.html = this.htmlStrategyA(targetURL);
+    this.site.numEmbedded = this.numStrategyA(targetURL);
+//    this.site.html = this.htmlStrategyB(targetURL);
+//    this.site.numEmbedded = this.numStrategyB(targetURL);
 
-    //    this.target.html = stats.htmlSize(FACTOR) - this.site.html;
-    this.target.html = this.htmlStrategyI(targetURL);
-    this.target.numEmbedded = this.numStrategyI(targetURL);
-//	stats.numberEmbeddedObjects(FACTOR) - this.site.numEmbedded;
+//    this.target.html = this.htmlStrategyI(targetURL);
+//    this.target.numEmbedded = this.numStrategyI(targetURL);
+    this.target.html = this.htmlStrategyII(targetURL);
+    this.target.numEmbedded = this.numStrategyII(targetURL);
 
     this.prob = Math.max(this.target.numEmbedded / this.site.numEmbedded,
 			 MIN_PROB); // td: maybe * Math.sqrt(site.numEmbedded)
@@ -60,6 +60,8 @@ CoverTraffic.prototype.loadNext = function() {
     }
 };
 
+
+// ### strategies 1/2: bloom bucket max or one target distribution
 // td later: strategy class, subclasses
 /**
  * partial Strategy I: take bloom max for target
@@ -70,7 +72,7 @@ CoverTraffic.prototype.htmlStrategyI = function(targetURL) {
     let targetHtmlSize;
     try {
 	targetHtmlSize = sizeCache.htmlSizeMax(targetURL);
-	//console.log('target size hit for ' + targetURL + ": " + targetHtmlSize);
+	//console.log('target size hit for '+ targetURL + ": " + targetHtmlSize);
     } catch (e) {
 	targetHtmlSize = stats.htmlSize(FACTOR);
 	//console.log('size miss for ' + JSON.stringify(targetURL)
@@ -92,8 +94,14 @@ CoverTraffic.prototype.numStrategyI = function(targetURL) {
 /**
 * partial Strategy II: one distribution for target
 */
-// td
+CoverTraffic.prototype.htmlStrategyII = function(targetURL) {
+    return stats.htmlSize(FACTOR) - this.site.html;
+};
+CoverTraffic.prototype.numStrategyII = function(targetURL) {
+    return stats.numberEmbeddedObjects(FACTOR) - this.site.numEmbedded;
+};
 
+// ### strategies A/B know size or guess size
 /**
 * partial Strategy A: known sizes for sites
 */

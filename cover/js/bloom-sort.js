@@ -17,6 +17,8 @@ const NUM_HASH = 3;
 // td: generate splits if empty
 
 /** 
+ * sorts elements into bins limited by splits, assigns values in sizes
+ * @constructor
  * @param {sizes Array} array of values for each bucket, must be sorted
  * @param {splits Array} array of bucket borders, must be sorted
 */

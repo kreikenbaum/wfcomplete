@@ -34,7 +34,7 @@ exports["test two objects"] = function(assert) {
 	      mockLoad.getCount());
 };
 
-exports["test object only in htmlCache (strategy 1)"] = function(assert) {
+exports["test object only in htmlCache (strategy 1=IA)"] = function(assert) {
     const GURL = "http://google.com/";
     mockLoad.reset();
     assert.equal(mockLoad.getCount(), 0, 'initialization error');
