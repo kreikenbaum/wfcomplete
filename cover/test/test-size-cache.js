@@ -27,6 +27,14 @@ exports["test unknown html"] = function(assert) {
 		  "unknown string wrong behavior");
 };
 
+exports["test small html max"] = function(assert) {
+    assert.equal(SizeCache.htmlSizeMax('http://google.com/'), 955);
+};
+
+exports["test largest html max"] = function(assert) {
+    assert.equal(SizeCache.htmlSizeMax('http://stackoverflow.com/'), 242532);
+};
+
 // td: heed strategies
 // exports["test passive html"] = function(assert) {
 //     let cache = Simple.prefs.bloom;
@@ -38,10 +46,6 @@ exports["test unknown html"] = function(assert) {
 //                 assert);
 //     Simple.prefs.bloom=cache;
 // };
-
-exports["test small html max"] = function(assert) {
-    assert.equal(SizeCache.htmlSizeMax('http://google.com/'), 955);
-};
 
 exports["test small num"] = function(assert) {
     assert.equal(SizeCache.numberEmbeddedObjects("https://www.google.de/"), 4);
@@ -56,6 +60,15 @@ exports["test unknown num"] = function(assert) {
 		  SizeCache.numberEmbeddedObjects('http://non-known.string'),
                   /no entries matching/,
 		  "unknown string wrong behavior");
+};
+
+exports["test small num max"] = function(assert) {
+    assert.equal(SizeCache.numberEmbeddedObjectsMax('https://www.google.de/'),
+		 6);
+};
+
+exports["test largest num max"] = function(assert) {
+    assert.equal(SizeCache.numberEmbeddedObjectsMax('http://gmw.cn/'), 82);
 };
 
 // td: set strategy
@@ -74,6 +87,7 @@ exports["test stripParam"] = function(assert) {
     //    console.log("url: " + TEST.href);
     assert.equal(SizeCache.stripParamHref(TEST + '?asdf'), TEST);
     assert.equal(SizeCache.stripParamHref(TEST), TEST);
+    assert.equal(SizeCache.stripParamHref(TEST + '/'), TEST);
     assert.equal(SizeCache.stripParamHref(TEST + '#test'), TEST);
     assert.equal(SizeCache.stripParamHref("http://passport.weibo.com/visitor/visitor"), "http://passport.weibo.com/visitor/visitor");
     assert.equal(SizeCache.stripParamHref("https://shavar.services.mozilla.com/downloads?client=navclient-auto-ffox&appver=46.0&pver=2.2"),

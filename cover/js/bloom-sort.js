@@ -40,16 +40,13 @@ BloomSort.prototype.query = function(id) {
     return this.sizes[this.getPosition(id)];
 };
 /** @return {Number} the upper border of the bucket in which id is
- * found. Throw exception if last bucket, not found, or duplicate sizes exist */
+ * found. If biggest bucket, return its {@code size}. */
 BloomSort.prototype.queryMax = function(id) {
     let pos = this.getPosition(id);
     if ( pos < this.splits.length ) {
 	return this.splits[pos];
-    } else {
-	throw {
-	    name: 'BloomError',
-	    message: 'The last bucket has no border'
-	};
+    } else { // pos == this.splits.length
+	return this.sizes[pos];
     }
 };
 BloomSort.prototype.getPosition = function(id) {

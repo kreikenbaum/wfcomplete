@@ -42,6 +42,16 @@ exports["test object only in htmlCache (strategy 1=IA)"] = function(assert) {
     assert.equal(mockLoad.getSum(), 266);
 };
 
+exports["test finish"] = function(assert) {
+    mockLoad.reset();
+    assert.equal(mockLoad.getCount(), 0, 'initialization error');
+    let ct = new coverTraffic.CoverTraffic(HOSTNAME, mockLoad);
+    assert.equal(mockLoad.getCount(), 1);
+    let toLoad = ct.target.numEmbedded;
+    ct.finish();
+    assert.equal(mockLoad.getCount(), Math.ceil(toLoad) + 1);
+};
+
 // exports["test failure without loader"] = function(assert) {
 //     coverTraffic.setLoader(null);
 //     try {

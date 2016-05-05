@@ -113,7 +113,7 @@
 ** Design
 ** Implementation
 ** Results and Evaluation
-* TODO topics [7/122]
+* TODO topics [7/117]
 ** TODO Website Fingerprinting [2/52]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
@@ -637,6 +637,7 @@
     total bytes upstream/outgoing.
 **** TODO compare to HTTP model
 *** Hurdles to website fingerprinting
+    <<Hurdles>>
     The progress of web protocols made website fingerprinting
     harder. In the original HTTP/1.0\cite{rfc1945} protocol, each
     request used a separate TCP-connection. This facilitated the
@@ -815,11 +816,11 @@
     multiplexing and fixed cell sizes.
 *** TODO sort subtopics
 *** TODO Tor overview
-** TODO Addon Design and Implementation [5/55]
+** TODO Addon Design and Implementation [5/50]
 *** Defenses
 **** [[*wf-specific%20defenses][wf-specific defenses]]
 **** [[*other%20defenses][other defenses]]
-*** TODO Mozilla Add-On Sdk [1/19]
+*** TODO Mozilla Add-On Sdk [1/13]
 **** TODO Introduction to the Mozilla Add-On Sdk
      #INDEX: XUL
      #INDEX: XML User-interface Langage
@@ -952,12 +953,12 @@
      execution, stylesheet modification, etc.
 ***** link page-mod
       http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
-**** TODO Installation and Use of Jpm (the build tool)
+**** CHECK Installation and Use of Jpm (the build tool)
      (SDK-)addons can be built via the =jpm=-tool. It is available as a
      NodeJS-Module via the built-in NodeJS Package Manager =npm=.
 
-     Installing =jpm= is thus a two-step process. Firstly, install
-     NodeJS either via built-in tools[fn::for example =apt-get install
+     Installing =jpm= is a two-step process. Firstly, install NodeJS
+     either via built-in tools[fn::for example =apt-get install
      nodejs-legacy= in Debian and Ubuntu] or via
      download[fn::\url{https://nodejs.org}] then, do a
 
@@ -970,18 +971,14 @@
      unit-tested via =jpm test=, live-tested via =jpm run=, the addon
      package built via =jpm xpi=.
 
-     Another command that may be of use is =jpm sign=: as of version
-     44, Mozilla requires that all Firefox addons be signed. If they
-     are distributed via Mozilla's Addon Marketplace, they are checked
-     and signed automatically. Otherwise, you can request an API key
-     for signing and sign via the command =jpm sign --api-key $KEY
-     --api-secret $SECRET=.
-***** TODO link online signing, also to bib, or as link???
-***** TODO check version
-***** TODO link addons.mozilla market
-***** TODO link api key
-***** jpm xpi date/time problem
-***** TODO include [[unit tests jpm]]
+     Another command that may be of use is =jpm sign=: as of Firefox
+     version 47, Mozilla enforces that all addons be
+     signed\cite{addon-signing}. If they are distributed via Mozilla's
+     Addon Marketplace[fn::\url{https://addons.mozilla.org}], they are
+     checked and signed automatically. Otherwise, you can request an
+     API key for signing and sign via the command
+     [fn::\url{https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_sign}]
+     =jpm sign --api-key $SIGNING_KEY --api-secret $SIGNING_SECRET=.
 **** TODO interacting with page-scripts
      By default, content-scripts are isolated from the modifications
      done by page-scripts.[[Interacting with page scripts]]
@@ -1032,6 +1029,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
        - loads
        - endsLoad
 ***** TODO CoverTraffic(Loader=default)
+      <<CoverTraffic>>
       - provides cover traffic
       - simple strategy pattern
 ***** TODO Loader(Source=default2)
@@ -1567,6 +1565,28 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 * TODO mention tor browser bundle version etc
 * TODO upload source code etc to github (or sth else)
 * TODO why defense better
+* TODO which sites well-protected, which less
+* TODO bursts on addon site load finish
+  One characteristic which identified sites well as per Dyer et
+  al.\cite{oakland2012-peekaboo} and Wang and Goldberg
+  \cite{wang2015walkie} is the number of bursts to a web site.
+
+  As the addon would conceptually only increase burst sizes, and not
+  alter their number, this should be covered as well. To address this
+  feature, the per-site traffic module [[CoverTraffic]] remembers the
+  number of unsent requests for embedded elements. When the page
+  loading is finished, this number (which should be 0 or less in about
+  half of the cases) of embedded objects is requested. As the cover
+  traffic currently comes from a single server, the multiple
+  connection limit (compare [[Hurdles]]) should automatically lead to
+  multiple bursts if the number of embedded objects is high enough.
+
+  This should emulate normal browser traffic better than the proposed
+  random schemes by Wang and Goldberg (normal and uniform
+  distribution). It might be that their deterministic padding to
+  common values performs better, but this requires a priori knowledge
+  of all website burst sizes.
+** TODO maybe move to [[CoverTraffic]]
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}

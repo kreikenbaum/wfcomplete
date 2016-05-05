@@ -24,7 +24,7 @@ function loads(url) {
 	activeHosts[url.host] = new coverTraffic.CoverTraffic(url.spec);
 	// td: removal code: better also watch endsload
 	setTimeout(function() {
-	    delete activeHosts[url.host];
+	    delete activeHosts[url.host]; // ok if already removed by endsLoading
 	}, TIMEOUT);
     }
 }

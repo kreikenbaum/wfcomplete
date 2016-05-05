@@ -23,21 +23,8 @@ exports["test add/queryMax"] = function(assert) {
 exports["test add/queryMax 2"] = function(assert) {
     let s = new BloomSort.BloomSort([5, 15], [10]);
     s.add('hi', 12);
-    try {
-	let res = s.queryMax('hi');
-	assert.ok(false, 'did not throw: ' + res);
-    } catch (e) {
-	assert.equal(e.message, 'The last bucket has no border',
-		     "wrong exception");
-    }
-};
-
-exports["test add/queryMax 2 v.2"] = function(assert) {
-    let s = new BloomSort.BloomSort([5, 15], [10]);
-    s.add('hi', 12);
-    assert.throws(function() { s.queryMax('hi'); },
-		  /has no border/,
-		  "threw wrong or no exception");
+    let res = s.queryMax('hi');
+    assert.equal(res, 15);
 };
 
 exports["test add/query 2 with different sizes v.2"] = function(assert) {

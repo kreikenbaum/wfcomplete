@@ -10,7 +10,7 @@ const debug = require("./debug.js");
 const sizeCache = require("./size-cache.js");
 const stats = require("./stats.js");
 
-// td: auto-update pref
+// td: auto-update on pref change
 // prefs allow only integers, no floats
 /** overhead of dummy traffic -1; 1.5 has overhead of 50% */
 const FACTOR = 1 + (Simple.prefs.factor / 100);
@@ -32,13 +32,17 @@ function CoverTraffic(targetURL, load=LOAD) {
     this.site = {};
     this.target = {};
 
+//  KNOWN SIZES IF KNOWN
     this.site.html = this.htmlStrategyA(targetURL);
     this.site.numEmbedded = this.numStrategyA(targetURL);
+//  ONLY GUESSED SIZES
 //    this.site.html = this.htmlStrategyB(targetURL);
 //    this.site.numEmbedded = this.numStrategyB(targetURL);
 
+//  BLOOM BUCKET MAX
 //    this.target.html = this.htmlStrategyI(targetURL);
 //    this.target.numEmbedded = this.numStrategyI(targetURL);
+//  ONE TARGET DISTRIBUTION
     this.target.html = this.htmlStrategyII(targetURL);
     this.target.numEmbedded = this.numStrategyII(targetURL);
 
@@ -48,11 +52,12 @@ function CoverTraffic(targetURL, load=LOAD) {
     this.load.sized(this.target.html);
 }
 
+// td: think about this, maybe browser connection-per-site delay is
+// enough to create multiple bursts
 CoverTraffic.prototype.loadNext = function() {
-    var i;
     // do once for each 1-integer part and maybe for the fraction
-    for ( i = (stats.withProbability( this.prob % 1 ) ? Math.ceil(this.prob)
-	       : Math.floor(this.prob)) ;
+    for ( let i = (stats.withProbability( this.prob % 1 ) ? Math.ceil(this.prob)
+		   : Math.floor(this.prob)) ;
 	  i >= 0 ;
 	  i -= 1 ) {
 	this.load.sized(stats.embeddedObjectSize());
@@ -60,23 +65,24 @@ CoverTraffic.prototype.loadNext = function() {
     }
 };
 
+CoverTraffic.prototype.finish = function() {
+    console.log('ending traffic with ' + this.target.numEmbedded);
+    while ( this.target.numEmbedded > 0 ) {
+	this.load.sized(stats.embeddedObjectSize());
+	this.target.numEmbedded -= 1;
+    }
+};
 
-// ### strategies 1/2: bloom bucket max or one target distribution
+// ### strategies I/II: bloom bucket max or one target distribution
 // td later: strategy class, subclasses
-/**
- * partial Strategy I: take bloom max for target
- * on bloom failure: (v0.1) take default * FACTOR
- */
-// td: better handling of last bucket
+/** partial Strategy I: take bloom max for target */
+// last bucket handled by BloomSort
 CoverTraffic.prototype.htmlStrategyI = function(targetURL) {
     let targetHtmlSize;
     try {
 	targetHtmlSize = sizeCache.htmlSizeMax(targetURL);
-	//console.log('target size hit for '+ targetURL + ": " + targetHtmlSize);
     } catch (e) {
 	targetHtmlSize = stats.htmlSize(FACTOR);
-	//console.log('size miss for ' + JSON.stringify(targetURL)
-	//    + 'due to: ' + JSON.stringify(e));
     }
     return targetHtmlSize - this.site.html;
 };
@@ -91,9 +97,7 @@ CoverTraffic.prototype.numStrategyI = function(targetURL) {
     return targetPadSize - this.site.numEmbedded;
 };
 
-/**
-* partial Strategy II: one distribution for target
-*/
+/** partial Strategy II: use one distribution as target */
 CoverTraffic.prototype.htmlStrategyII = function(targetURL) {
     return stats.htmlSize(FACTOR) - this.site.html;
 };
@@ -102,9 +106,7 @@ CoverTraffic.prototype.numStrategyII = function(targetURL) {
 };
 
 // ### strategies A/B know size or guess size
-/**
-* partial Strategy A: known sizes for sites
-*/
+/** partial Strategy A: @return known sizes for sites */
 CoverTraffic.prototype.htmlStrategyA = function(targetURL) {
     try {
 	return sizeCache.htmlSize(targetURL);
@@ -121,9 +123,7 @@ CoverTraffic.prototype.numStrategyA = function(targetURL) {
 	return stats.numberEmbeddedObjects();
     }
 };
-/**
-* partial Strategy B: random sizes for sites
-*/
+/** partial Strategy B: @return random sizes for sites */
 CoverTraffic.prototype.htmlStrategyB = function(targetURL) {
     return stats.htmlSize();
 };
