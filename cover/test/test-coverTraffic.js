@@ -49,7 +49,7 @@ exports["test finish"] = function(assert) {
     assert.equal(mockLoad.getCount(), 1);
     let toLoad = ct.target.numEmbedded;
     ct.finish();
-    assert.equal(mockLoad.getCount(), Math.ceil(toLoad) + 1);
+    assert.equal(mockLoad.getCount(), Math.max(Math.ceil(toLoad), 0) + 1);
 };
 
 // exports["test failure without loader"] = function(assert) {

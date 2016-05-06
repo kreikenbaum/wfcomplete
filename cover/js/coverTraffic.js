@@ -66,7 +66,7 @@ CoverTraffic.prototype.loadNext = function() {
 };
 
 CoverTraffic.prototype.finish = function() {
-    console.log('ending traffic with ' + this.target.numEmbedded);
+    debug.log('ending traffic with ' + this.target.numEmbedded + ' to load');
     while ( this.target.numEmbedded > 0 ) {
 	this.load.sized(stats.embeddedObjectSize());
 	this.target.numEmbedded -= 1;

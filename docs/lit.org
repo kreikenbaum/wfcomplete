@@ -8700,6 +8700,21 @@
 
 	  1) Representation
 
+	     - consistent hypothesis: fits all examples (def see quotes)
+
+	     - version space: all hypotheses in H consistent with
+               training examples D (def see quotes)
+
+	  2) The LIST-THEN-ELIMINATE Algorithm
+
+	     - list all, eliminate non-fitting
+
+	     - guaranteed to terminate (on finite H), simple
+
+	     - takes too long
+
+	  3) A More Compact Representation for Version Spaces
+
        7) [@7] INDUCTIVE BIAS
 
 	  1) A Biased Hypothesis Space
@@ -8735,6 +8750,19 @@
 		   - Else replace a_i in h by the next more general
                      constraint that is satisfied by x
 	    3. Output hypothesis h
+       5) [@5] VERSION SPACES AND THE CANDIDATE-ELIMINATION ALGORITHM
+	  1) Representation
+	     - A hypothesis h is *consistent* with a set of training
+               examples D if and only if h(x) = c(x) for each example
+               (x, c(x)) in D.
+
+	       Consistent(h, D) \equiv (\forall(x, c(x)) \in D) h(x) = c(x)
+	     - The *version space*, denoted VS_{H, D} with respect to
+               hypothesis space H and training examples D, is the
+               subset of hypotheses from H consistent with the
+               training examples in D.
+
+	       VS_{H, D} \equiv {h \in H | Consistent(h, D)}
 ** TODO [#B] [[./LZCLCP_NDSS11.pdf][HTTPOS: Sealing Information Leaks with Browser-side Obfuscation of Encrypted Flows]]
 *** summary
     0) [@0] Abstract
@@ -9249,6 +9277,36 @@
 	    - 5000 of alexa top 10000 for open world background
 
     4) TRAINING SET MAINTENANCE
+
+       0) [@0]
+
+	  - keeping training data updated is easy
+
+	    - you need little training data
+
+	    - it can be updated on a single PC by age, consistency, or relevance
+
+       1) Training set size
+
+	  - number_sites * number_instances + number_non_monitored_sites
+
+	  - fixed number_sites using wang-kNN
+
+	    - number_instances = 31
+
+	    - number_non_monitored_sites = 3700
+
+	    - for number_sites = 100: 6800 pages
+
+	    - FPR \uparrow with TPR \uparrow for fewer non-monitored data points
+
+	  - doable
+
+	  - versioning: auto-update
+
+	  - must be at most 10 days apart
+
+       2) Training set update
 *** quotes
     1) INTRODUCTION
        - it is very hard to generate sufficient background noise on
@@ -9795,7 +9853,8 @@
 
 	  2) Ridge Regression
 
-	     penalty term for size of parameters: min ||Xw − y|| 2 + α||w|| 2
+	     penalty term for size of parameters: min ||Xw − y||^2 + α||w||^2
+
 	     #+BEGIN_SRC python
                clf = linear_model.Ridge (alpha = .5)
 	     #+END_SRC
@@ -9806,6 +9865,20 @@
                clf.fit([[0, 0], [0, 0], [1, 1]], [0, .1, 1])
                clf.alpha_
 	     #+END_SRC
+
+	     also has CV method
+
+	  3) Lasso
+
+	     for sparse parameters
+
+	     #+BEGIN_SRC python
+               clf = linear_model.Lasso(alpha = 0.1)
+               clf.fit([[0, 0], [1, 1]], [0, 1])
+               clf.predict([[1, 1]])
+	     #+END_SRC
+
+	  4) Elastic Net
 *** quotes
     2) [@2] A tutorial on statistical-learning for scientific data processing
        1) Statistical learning: the setting and the estimator object
@@ -9846,6 +9919,15 @@
 		 np.allclose(X, np.dot(S_, A_) + ica.mean_)
                #+END_SRC
     4) [@4] Supervised learning
+       1) Generalized Linear Models
+	  2) [@2] Ridge Regression
+	     - Here, α ≥ 0 is a complexity parameter that controls the
+               amount of shrinkage: the larger the value of α, the
+               greater the amount of shrinkage and thus the
+               coefficients become more robust to collinearity.
+	  3) [@3] Lasso
+	     - The alpha parameter controls the degree of sparsity of
+               the coefficients estimated.
        4) [@4] Support Vector Machines
 	  1) Classification
 	     - SVC and NuSVC implement the “one-against-one” approach
@@ -10251,8 +10333,14 @@
                 dot-notation
 
 	    - User-defined methods
+	      <<user-defined methods>>
+
+	      - combines class, class instance and callable object
+                (often function)
 
 	      - also extra (read-only) attributes
+
+	      - somehow transformed with that
 
 	    - Generator functions: use =yield=, =return= creates
               =StopIteration= exception
@@ -10270,7 +10358,66 @@
 	  - Modules: =import=-ed, have __name__, __doc__ and __file__
             (path) and __dict__ dictionary for module members
 
-	  - Classes: TD
+	  - Classes:
+
+	    - created by class definitions
+
+	    - members most often accessed via =__dict__=
+
+	    - name resolution by c3 method (for multi inheritance
+              paths) or depth-first search
+
+	    - also has =__name__=, =__module__=, =__bases__= (and =__doc__=)
+
+	  - Class instances:
+
+	    - "A class instance is created by calling a class object"
+
+	    - if =__setattr__= exists, it is called instead of
+              updating directly
+
+	      - same for =__delattr__=
+
+	    - can pretend to be built-in classes by implementing stuff (see 2.4)
+
+	    - =__class__= gives access to class object
+
+	  - Files: open file, =sys.stdin= f.ex., created by =open()= etc.
+
+	  - Internal types:
+
+	    - Code objects: bytecode, params etc are in the function object
+
+	      - has a bunch of internal read-only attributes:
+                =co_filename=, =co_name=, =co_code=, ...
+
+	    - Frame objects: like stack frames,
+
+	      - link to code objects =f_code=
+
+	      - and previous stack frames =f_back=
+
+	      - =f_trace= is called at the start of each line
+
+	    - Traceback objects
+
+	      - =sys.exc_traceback=,
+
+	        - also =sys.last_traceback= interactive
+
+	    - Slice objects: extended slice syntax =[start:stop:step]=
+
+	    - Static method objects
+
+	      - created by =staticmethod= constructor
+
+	      - belong to class, but less transformation
+
+	    - Class method objects
+
+	      - similar to static method, see above ([[user-defined methods]])
+
+       3) New-style and classic classes
 *** quotes
    5) [@5] EXPRESSIONS
       2) [@2] Atoms

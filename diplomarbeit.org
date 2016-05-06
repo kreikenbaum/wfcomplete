@@ -113,7 +113,7 @@
 ** Design
 ** Implementation
 ** Results and Evaluation
-* TODO topics [7/117]
+* TODO topics [8/120]
 ** TODO Website Fingerprinting [2/52]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
@@ -816,7 +816,7 @@
     multiplexing and fixed cell sizes.
 *** TODO sort subtopics
 *** TODO Tor overview
-** TODO Addon Design and Implementation [5/50]
+** TODO Addon Design and Implementation [6/53]
 *** Defenses
 **** [[*wf-specific%20defenses][wf-specific defenses]]
 **** [[*other%20defenses][other defenses]]
@@ -920,6 +920,7 @@
      addon blocked this method of retrieval.
 
 **** TODO page-mod
+     <<page-mod>>
      The
      page-mod[fn::\url{http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html}]
      module injects "scripts in the context of web pages whose URL
@@ -934,6 +935,7 @@
      A page-mod example is
 
      #+BEGIN_SRC js
+       const pageMod = require("sdk/page-mod");
        pageMod.PageMod({
            include: /.*/,
            contentScriptFile: "./getLinks.js",
@@ -949,8 +951,14 @@
      listens for its feedback, which is then used via
      `addToCandidates()`.
 
-     A page-mod offers other parameters, such as the moment of the script
-     execution, stylesheet modification, etc.
+     The page-mod has a =contentScriptWhen= parameter, which specifies
+     when to attach the script to the page. Valid values are =start=,
+     =ready=, and =end=, the last of which triggers at the
+     =window.onload= event, when the complete page, including
+     JavaScript, CSS, and images has loaded.
+
+     A page-mod offers many other options such as f.ex. stylesheets,
+     script parameters, etc.
 ***** link page-mod
       http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
 **** CHECK Installation and Use of Jpm (the build tool)
@@ -1021,17 +1029,53 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 ***** for each loaded url, maybe load something else
       - this generates the cover traffic over the loading of the website
       - yet only augments bursts, does not equalize them
-**** TODO modules [0/12]
+**** TODO modules [1/15]
 ***** TODO Watcher
       notifies when user loads sth
 ****** maybe change name
 ****** methods
        - loads
        - endsLoad
-***** TODO CoverTraffic(Loader=default)
-      <<CoverTraffic>>
-      - provides cover traffic
-      - simple strategy pattern
+***** CHECK CoverTraffic(Loader=default)
+      <<CoverTraffic>> The =CoverTraffic= module provides requests for a
+      single host contacted. This is the only module used with a
+      constructor, as it requires several instances, one for each host.
+
+      The cover traffic provided tries to mimic the [[HTML traffic
+      model]]s parameters.
+
+      There are two strategies implemented which have to be set by
+      modifying the source code.
+
+      One strategy deals with size estimation: for each page, the size
+      of its HTML request and the number of embedded elements are
+      stored in a statistic data structure depending on bloom filters,
+      called [[SizeCache]]. If the size is known, it can be used or
+      randomly guessed from the HTML traffic model.
+
+      Another strategy deals with target sizes. The size-cache stores
+      approximate sizes, due to binning of values. One strategy is to
+      pad both the HTML request size and the number of embedded
+      elements up to the bin border. The other strategy determines a
+      target distribution for each parameter, multiplies by the
+      overhead parameter, and tries to attain that.
+
+      Thus, on creation the site's and a target HTML size and number
+      of embedded elements are determined. As creation is synchronous
+      with the first HTML request, another request to pad up to the
+      target HTML size is sent. As the target number of requests for
+      embedded elements is a certain multiple of the actual number of
+      requests, on each such request[fn::signaled by the =loadNext=
+      call], a probability is sampled, potentially resulting in a
+      request for a cover embedded element. The cover element sizes
+      are once again drawn from the HTML traffic model.
+
+      After the page has finished loading, the =CoverTraffic='s
+      =finish()= method is called. If the number of embedded elements
+      requests has been to low, the remainder are then dispatched.
+****** LATER check if still two strategies
+****** TODO link to number of embedded elements and HTML request
+****** TODO link to sizecache
 ***** TODO Loader(Source=default2)
       loads new cover page (mockable)
 ***** TODO Stats - Static functions
@@ -1050,23 +1094,33 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
       +string(length:number) pseudo-random string
       +uniform01() secure random float in the range [0,1)
 ***** TODO SizeCache
-      Lengths of elements if stores, else uses distribution
+      <<SizeCache>>
+      Lengths of elements if stored.
       +htmlSize(url)
       +numberEmbeddedObjects(url)
+      - if fails, exception
+      - html and num
+      - caches sizes (internally currently)
+	- hard coded
 ***** TODO User
       The User class handles user action. It is the main controller.
 
       On each loading of an object, it receives a message from the
-      =Watcher= module via =loads()=, with the loaded URL as a
+      =Watcher= module via =loads()=, with the loaded URL as
       parameter.
 
       If it is a new request to the host, loading of an HTML page is
       assumed and a new =CoverTraffic=-Object is generated.
 
-      If the host has been active in the last =User.TIMEOUT=
-      milliseconds, an embedded page is assumed and the (existant)
-      related =CoverTraffic=-Object is told that an embedded element
-      was loaded.
+      If the host is known (as defined below), an embedded page is
+      assumed and the (existant) related =CoverTraffic=-Object is told
+      that an embedded element was loaded.
+
+      After the first request, the host is known. At completion of the
+      page load, indicated either by a [[page-mod]]'s integration into the
+      page (at =end=), or the end of a timeout of =User.TIMEOUT=
+      seconds, the CoverTraffic-object is notified of the ending and
+      removed from the internal host-to-CoverTraffic mapping.
 ****** TODO see [[Further work]]
 ****** TODO rename
        to Control

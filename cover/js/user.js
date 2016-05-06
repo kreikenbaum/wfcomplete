@@ -12,9 +12,9 @@ const debug = require('./debug.js');
 
 const TIMEOUT = 110 * 1000;
 
-var activeHosts = {};
+let activeHosts = {};
 
-// td: timeout AND endsLoading
+// td: 
 /** user starts loading url */
 function loads(url) {
     debug.log("user: loads(" + url.spec + ")");
@@ -24,16 +24,24 @@ function loads(url) {
 	activeHosts[url.host] = new coverTraffic.CoverTraffic(url.spec);
 	// td: removal code: better also watch endsload
 	setTimeout(function() {
-	    delete activeHosts[url.host]; // ok if already removed by endsLoading
+	    finish(url);
 	}, TIMEOUT);
     }
 }
 exports.loads = url => loads(url);
-//td: stop cover traffic to that
+
 function endsLoading(url) {
-    debug.log('user: endsLoading('+url.host+') NOT IMPLEMENTED');
+    finish(url);
 }
 exports.endsLoading = url => endsLoading(url);
+
+/** tells covertraffic for {@code url.host} to {@code finish} up, deletes it */
+function finish(url) {
+    if ( activeHosts.hasOwnProperty(url.host) ) {
+	activeHosts[url.host].finish();
+	delete activeHosts[url.host];
+    }
+}
 // // unused
 // /** user ends loading url */
 // function endsLoading(url) {
