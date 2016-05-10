@@ -26,11 +26,11 @@ def _avoid_safe_mode(exedir):
               os.path.join(exedir,
                            "TorBrowser/Data/Browser/profile.default/prefs.js"))
 
-def _open_with_timeout(browser, page, timeout=600):
+def _open_with_timeout(browser, page, timeout=600, burst_wait=3):
     '''navigates browser to url while capturing the packet dump, aborts after timeout'''
     client = Marionette('localhost', port=2828, socket_timeout=(timeout-30))
     client.start_session()
-    client.timeouts('page load', timeout * 1000);# not working
+    client.timeouts('page load', timeout * 1000) # not working
 
     (url, domain) = _normalize_url(page)
 
@@ -47,6 +47,7 @@ def _open_with_timeout(browser, page, timeout=600):
             _clean_up(browser, pcap)
             os.rename(file_name, file_name+'timeout')
             raise SystemExit("download aborted after timeout")
+    time.sleep(burst_wait)
     _clean_up(browser, pcap)
 
 

@@ -19,8 +19,8 @@ const NUM_HASH = 3;
 /** 
  * sorts elements into bins limited by splits, assigns values in sizes
  * @constructor
- * @param {sizes Array} array of values for each bucket, must be sorted
- * @param {splits Array} array of bucket borders, must be sorted
+ * @param {sizes Array} array of values for each bin, must be sorted
+ * @param {splits Array} array of bin borders, must be sorted
 */
 function BloomSort(sizes, splits) {
     this.sizes = sizes;
@@ -39,8 +39,8 @@ BloomSort.prototype.add = function(id, size) {
 BloomSort.prototype.query = function(id) {
     return this.sizes[this.getPosition(id)];
 };
-/** @return {Number} the upper border of the bucket in which id is
- * found. If biggest bucket, return its {@code size}. */
+/** @return {Number} the upper border of the bin in which id is
+ * found. If biggest bin, return its {@code size}. */
 BloomSort.prototype.queryMax = function(id) {
     let pos = this.getPosition(id);
     if ( pos < this.splits.length ) {

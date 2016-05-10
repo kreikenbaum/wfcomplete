@@ -1,5 +1,6 @@
 #+TODO: TODO | DONE
 [[./master.bib]]
+** TODO move MOVE sections
 ** [#A] [[./HTTP Traffic Model_v1 1 white paper.pdf][Lee - A NEW TRAFFIC MODEL FOR CURRENT USER WEB BROWSING BEHAVIOR]]
 *** summary
     0) [@0] ABSTRACT
@@ -1363,7 +1364,7 @@
             training on more non-monitored sites.
 *** ref
     [[file:master.bib::wpes13-fingerprinting][Wang & Goldberg 2013: Improved Website Fingerprinting Tor]]
-** [#A] [[./4b0fa48670a7269523b1166ad302440876da.pdf][k-fingerprinting: a Robust Scalable Website Fingerprinting Technique]]
+** [#A] [[./4b0fa48670a7269523b1166ad302440876da.pdf][Danezis - k-fingerprinting: a Robust Scalable Website Fingerprinting Technique]]
 *** summary
     0) [@0] Abstract
 
@@ -1700,6 +1701,7 @@
             dataset to have nearly 70% confidence that classifier was
             correct when it claims to have detected a monitored page.
 *** TODO ref [[file:master.bib::kfingerprint][Hayes & Danezis]]
+**** check which version to cite
 ** [#B] [[./Javascript Closures.prototype_chain.html][Javascript Closures]]
 *** summary
     1) Introduction
@@ -2646,7 +2648,6 @@
 
     - false positive: uncensored as censored / all uncensored (in %)
 *** summary
-
     0. [@0] Abstract: local website fingerprinting based on volume,
        time & direction
 
@@ -2919,8 +2920,7 @@
       to be explored whether more sophisticated statistical measures
       can achieve this extraction.
 
-*** ref
-    [[file:master.bib::panchenko][Panchenko et al. 2011: Website]]
+*** ref [[file:master.bib::panchenko][Panchenko et al. 2011: Website]]
 ** [[./experimental.html][Perry - Experimental Defense for Website Traffic Fingerprinting]]
 *** summary
     - prior: belief that all was well (failed attempts)
@@ -7129,7 +7129,7 @@
       #+END_SRC
       - better: typed array for performance (=array= is used directly)
 ** TODO [#A] Entwurfsmuster
-*** TODO summary (weiter bei 0.4.7.Beispielcode S.262)
+*** TODO summary (weiter bei Verhaltensmuster S. 271)
     0) [@0] Preface
 
        1) Vorwort
@@ -8317,6 +8317,22 @@
 
 	  1) Adapter versus Brücke
 
+	     - Adapter macht inkompatible Klasse kompatibel, Brücke
+               ist von vornherein auf mehrere Klassen ausgelegt
+
+	     - Adapter zu Beginn, Brücke um Codeduplizierung zu vermeiden
+
+	     - Fassade definiert neue Schnittstelle, Adapter passt an
+
+	  2) Kompositum versus Dekorierer versus Proxy
+
+	     - Kompositum fügt zusammen, Dekorierer ergänzt Funktionalität
+
+	       - oft zusammen verwendet: "Zusammenstecken" von Klassen
+
+	     - Proxy kontrolliert oder speichert Zugriff zwischen,
+               Dekorierer erweitert Funktionen
+
     5) [@5] Verhaltensmuster
 
        6) [@6] Memento
@@ -8669,9 +8685,11 @@
 
 	  1) General-to-Specific Ordering of Hypotheses
 
-	     - order hypotheses by moregeneral-than-or-equal-to (see quotes)
+	     - order hypotheses by moregeneral-than-or-equal-to
 
-	       - partial ordering
+	       - superset of hypotheses (see quotes)
+
+	       - is a partial ordering
 
 	       - algorithm based on this (see quotes)
 
@@ -8715,6 +8733,15 @@
 
 	  3) A More Compact Representation for Version Spaces
 
+	     - save only the most general and most specific consistent
+               hypotheses (see defs quotes, and
+               moregeneral-than-or-equal-to)
+
+	     - all instances in between are equal to the version space
+               (theorem see quotes)
+
+	  4) CANDIDATE-ELIMINATION Learning Algorithm
+
        7) [@7] INDUCTIVE BIAS
 
 	  1) A Biased Hypothesis Space
@@ -8738,7 +8765,7 @@
        3) [@3] CONCEPT LEARNING AS SEARCH
 	  - Definition: Let hj and hk be boolean-valued functions
             defined over X. Then hj is *moregeneral-than-or-equal-to* hk
-            (written h_{j} \ge h_{k} ) if and only if
+            (written h_{j} \ge_{g} h_{k} ) if and only if
 
 	    (\forall x \in X)[(hk(x) = 1) \to (hj(x) = 1)]
 	  - FIND-S Algorithm.
@@ -8763,6 +8790,29 @@
                training examples in D.
 
 	       VS_{H, D} \equiv {h \in H | Consistent(h, D)}
+	  3) [@3] A More Compact Representation for Version Spaces
+	     - Definition: The *general boundary* G, with respect to
+               hypothesis space H and training data D, is the set of
+               maximally general members of H consistent with D.
+
+	       G = {g \in H | Consistent(g, D)
+                    \wedge (\not\exists g' \in H) [(g' >_{g} g) \wedge Consistent(g', D)]]
+	     - Definition: The *specific boundary* S, with respect to
+               hypothesis space H and training data D, is the set of
+               minimally general (i.e., maximally specific) members of
+               H consistent with D.
+
+	       S = {s \in H | Consistent(s, D)
+                    \wedge (\not\exists s' \in H) [(s >_{g} s') \wedge Consistent(s', D)]]
+	     - Theorem 2.1. *Version space representation
+               theorem*. Let X be an arbitrary set of instances and
+               let H be a set of boolean-valued hypotheses defined
+               over X. Let c : X \to {O, 1) be an arbitrary target
+               concept defined over X, and let D be an arbitrary set
+               of training examples {<x, c(x)>). For all X, H, c, and
+               D such that S and G are well defined,
+
+	       VS_{H, D} = {h \in H | (\exists s \in S, g \in G)(g \ge_{g} h \ge_{g} s)}
 ** TODO [#B] [[./LZCLCP_NDSS11.pdf][HTTPOS: Sealing Information Leaks with Browser-side Obfuscation of Encrypted Flows]]
 *** summary
     0) [@0] Abstract
@@ -8820,28 +8870,34 @@
 
        2) Two defense strategies
 
-          - "introducing features that have not been involved in
-            training the algorithm."
+	  0) [@0]
 
-          - confuse classifier to make it misclassify
+	     - "introducing features that have not been involved in
+               training the algorithm."
 
-       3) The diffusion strategy
+	     - confuse classifier to make it misclassify
 
-          - (Lemma 1) if based on packet size, and a flow has only
-            packets of size not know to classifier, then random guess
-            is best alternative for LLJC, LLNBC and SSWRPQ
+          1) The diffusion strategy
 
-            - Proof:
+	     - (Lemma 1) if based on packet size, and a flow has only
+              packets of size not know to classifier, then random guess
+              is best alternative for LLJC, LLNBC and SSWRPQ
 
-              - LLJC: S(D_new, D_i) = 0 for all,
+	       - Proof:
 
-              - similar for SSWRPQ as also JC
+		 - LLJC: S(D_new, D_i) = 0 for all,
 
-              - LLNBC: V by definition 0, if kernel function adds up
-                to \neq 0, choose dissimilar sizes, so that sum = 0
+		 - similar for SSWRPQ as also JC
 
-            - [34]: small number of values in packet sizes, thus
-              lemma1-defense feasible
+		 - LLNBC: V by definition 0, if kernel function adds up
+                   to \neq 0, choose dissimilar sizes, so that sum = 0
+
+	       - [34]: small number of values in packet sizes, thus
+		 lemma1-defense feasible
+
+	     - solution: only choose values not occuring in size set
+
+	  2) The confusion strategy
 *** quotes
    0) [@0] Abstract
       - Extensive evaluation of HTTPOS on live web traffic shows that it
@@ -9307,6 +9363,17 @@
 	  - must be at most 10 days apart
 
        2) Training set update
+
+	  - some pages change fast, others slowly
+
+	    - better to update smartly
+
+	  - score for consistency and relevancy
+
+	  - update based on this score gave better results than
+            updating all
+
+    5) SPLITTING ALGORITHMS
 *** quotes
     1) INTRODUCTION
        - it is very hard to generate sufficient background noise on
@@ -9321,6 +9388,21 @@
        - [21] Tor. Tor Metrics Portal.
          https://metrics.torproject.org/. Accessed Feb. 2015.
 ** TODO [#B] [[./webtraffic-imc11.pdf][Towards Understanding Modern Web Traffic]]
+*** summary
+    0) [@0] ABSTRACT
+
+       - traffic has changed
+
+       - new analysis algorithm
+
+       - redundancy
+
+    1) INTRODUCTION
+
+       - dataset: five years, 70000 daily user from 187 countries
+*** quotes
+    1) INTRODUCTION
+      - generate a synthetic workload for benchmarking or simulation.
 ** TODO [#B] [[~/da/git/docs/timing-fc2004.pdf][Timing Attacks in Low-Latency Mix Systems]]
 ** TODO [#B] [[./Analysis_of_Web_Data_Compression_and_its_Impact_on_Traffic_and_Energy_Consumption.pdf]]
 *** summary
@@ -9414,6 +9496,16 @@
 	 - HMMs are user-specific (?), f.ex. twitter usage varies widely
 
     8) Literature Review: Tao Wang and Ian Goldberg
+
+       - improveable:
+
+	 - use current browser
+
+	 - bigger world size
+
+	 - have varying target sizes
+
+    9) Concluding Remarks: Suggestions for Future Work
 *** quotes
     0) [@0]
        - defenses were "broken" and dismissed primarily by taking a
@@ -9435,11 +9527,38 @@
 ** TODO [#B] [[/home/chive/own/tor/doc/read/tor-spec.txt][Tor Protocol Specification]]
 *** [#B] read through to 3, see that correct
 *** summary
-    0) [@0] Preliminaries: MUST, etc. keywords like RFC
-       1) Notation: PK, SK, K, a|b, [a b c], H(m)
+    0) [@0] Preliminaries:
+
+       MUST, etc. keywords like RFC
+
+       1) Notation:
+
+	  0) [@0]
+
+	     - PK public key, SK private key, K symmetric key,
+
+	     - a|b concatenation, [a0 b1 c2] three-byte sequence, H(m) hash
+
 	  1) all multibyte values are big-endian
-       2) Security: KEY_LEN, PK_ENC_LEN, PK_PAD_LEN, DH_LEN,
-          DH_SEC_LEN, HASH_LEN, PAYLOAD_LEN, CELL_LEN(v)
+
+       2) Security parameters:
+
+	  - KEY_LEN length of stream cipher key,
+
+	  - PK_ENC_LEN public key-encrypted message length,
+
+	    - PK_PAD_LEN padding added to PK_ENC_LEN,
+
+	    - DH_LEN number of bytes for dh-group-member,
+
+	      - DH_SEC_LEN dh private key length,
+
+	  - HASH_LEN length of hash function output,
+
+	  - PAYLOAD_LEN longest allowable cell payload (=509 bytes)
+
+	  - CELL_LEN(v) length of tor cell for protocol version v
+
        3) Ciphers
 	  - stream: 128bit counter-mode AES with IV=0x0...0
 	  - pk: 1024 bit AES with exponent of 65537
@@ -9879,6 +9998,86 @@
 	     #+END_SRC
 
 	  4) Elastic Net
+
+	     - sparse model like Lasso with regularization Ridge
+
+	     - correlated features
+
+       11) [@11] Ensemble methods
+
+	   0) [@0]
+
+	      - combine estimators
+
+	      - averaging methods: concurrently: bagging methods,
+                forests of randomized trees
+
+	      - boosting methods: subsequently
+
+	   1) Bagging meta-estimator
+
+	      - several instances on subsets of data (and features)
+
+	        - combine those
+
+	      - method to reduce variance
+
+	      - difference of drawing subsets: just so, with
+                replacement, subsets of features, both features and
+                samples
+	      #+BEGIN_SRC python
+              from sklearn.ensemble import BaggingClassifier
+              from sklearn.neighbors import KNeighborsClassifier
+              bagging = BaggingClassifier(KNeighborsClassifier(),
+              max_samples=0.5, max_features=0.5)
+	      #+END_SRC
+
+	   2) Forests of randomized trees
+
+	      based on decision trees, perturb-and-combine, multi-output
+
+	      1) Random Forests
+
+		 - sample drawn with replacement
+
+		 - each node chooses best of a random subset of features
+
+		 - this implementation averages probabilitic
+                   prediction of trees, instead of adding the votes
+
+	      2) Extremely Randomized Trees
+
+		 - difference: randomly draw threshholds for each
+                   feature and use the best of these
+
+		   - use whole dataset to bootstrap
+
+	      3) Parameters
+
+		 - best to cross-validate parameters
+
+		   - n_estimators, max_features, max_depth, min_samples_split
+
+	      4) Parallelization
+
+		 possible, but might not give linear speedup
+
+	      5) Feature importance evaluation
+
+		 - depth of feature relates to rank
+
+		 - averaging over several trees reduces variance
+
+	      6) Totally Random Trees Embedding
+
+		 - encodes the leaves
+
+		 - maybe used by k-forest
+
+		 - example see 11.11.8 "Hashing feature transformation
+                   using Totally Random Trees"
+
+	   3) AdaBoost
 *** quotes
     2) [@2] A tutorial on statistical-learning for scientific data processing
        1) Statistical learning: the setting and the estimator object
@@ -9995,16 +10194,8 @@
                   clf = RandomForestClassifier(n_estimators=10)
                   clf = clf.fit(X, Y)
 		#+END_SRC
-	      - somewhere
-		#+BEGIN_SRC python
-                  from sklearn.ensemble import ExtraTreesClassifier
-                  [...]
-                  # Build a forest and compute the feature importances
-                  forest = ExtraTreesClassifier(n_estimators=250,
-                  random_state=0)
-                  forest.fit(X, y)
-                  importances = forest.feature_importances_
-		#+END_SRC
+	      - The best parameter values should always be
+                cross-validated.
     5) Unsupervised learning
        3) [@3] Clustering
 	  2) [@2] K-means
@@ -10158,6 +10349,17 @@
              #+BEGIN_SRC sh
                pip install line-profiler
              #+END_SRC
+
+    48) somewhere
+		#+BEGIN_SRC python
+                  from sklearn.ensemble import ExtraTreesClassifier
+                  [...]
+                  # Build a forest and compute the feature importances
+                  forest = ExtraTreesClassifier(n_estimators=250,
+                  random_state=0)
+                  forest.fit(X, y)
+                  importances = forest.feature_importances_
+		#+END_SRC
 *** ref [[file:master.bib::scikit-learn][Pedregosa et al. 2011: Scikit]]
 *** exercises
 **** Exercise digits-knn-linear
@@ -10276,7 +10478,7 @@
         #     score = cross_validation.cross_val_score(lasso, X, y, n_jobs=1)
         #     print '%f, %s' % (a, np.mean(score))
       #+END_SRC
-** [#B] TODO PART 3.3 (maybe up to) [[~/da/git/docs/python-doc-reference.pdf][The Python Language Reference]]
+** MOVE [#B] PART [[~/da/git/docs/python-doc-reference.pdf][The Python Language Reference]]
 *** summary
     1) INTRODUCTION
 
@@ -10418,6 +10620,69 @@
 	      - similar to static method, see above ([[user-defined methods]])
 
        3) New-style and classic classes
+
+	  - old vs new style
+
+	  - =type()= vs =__class__=
+
+	  - motivation: unified object model for classes
+
+       4) Special method names
+
+	  extra functionality
+
+	  1) Basic customization
+
+	     - =__new__= create a new instance
+
+	       - often, super(currentclass, cls)..__new__ and then modify
+
+	     - =__init__=: between creation and returning the class instance
+
+	     - =__del__=: before instance is destroyed
+
+	       - =del= x does not call =__del__=, but only decrements
+                 reference count. calling is done upon GC (refcount == 0)
+
+	       - ignores exceptions thrown during execution
+
+	     - =__repr__=: '"official" string representation"'
+
+	     - =__str__=: user-readable for print statement
+
+	     - =__lt__= le, gt, ge, eq, ne: comparison
+
+	     - =__cmp__= if above not defined, return number <0 if self<other
+
+	     - =__hash__= return integer if eq then hash equal
+
+	       - rules for use:
+
+		 - if neither cmp nor eq, then not hash
+
+		 - if cmp or eq, but not hash, then unusable in hashed
+                   collections
+
+		 - if mutable and cmp or eq, should not implement hash
+
+	     - =__nonzero__= truth value testing, if not implemented,
+               __len__ is called
+
+	  2) Customizing attribute access
+
+	     - =__getattr__= called if member access failed
+
+	     - =__setattr__= set attribute, use self.__dict__[name] = value
+
+	       - new style, call base class
+		 #+BEGIN_SRC python
+                   object.__setattr__(self, name, value)
+		 #+END_SRC
+
+	     - =__delattr__= for deletion, only if =del obj.name= makes sense
+
+	     - =__getattribute__= new-style: always called, call
+               through to super
 *** quotes
    5) [@5] EXPRESSIONS
       2) [@2] Atoms
@@ -11177,6 +11442,23 @@
       symbols_path=None, timeout=None, socket_timeout=360,
       device_serial=None, adb_path=None, process_args=None,
       adb_host=None, adb_port=None, prefs=None)
+    - navigate(url)
+
+      Navigate to given url. Navigates the current top-level browsing
+      context’s content frame to the given URL and waits for the
+      document to load or the session’s page timeout duration to
+      elapse before returning. The command will return with a failure
+      if there is an error loading the document or the URL is
+      blocked. This can occur if it fails to reach the host, the URL
+      is malformed, the page is restricted (about:* pages), or if
+      there is a certificate issue to name some examples. The document
+      is considered successfully loaded when the DOMContentLoaded
+      event on the frame element associated with the window triggers
+      and document.readState is “complete”. In chrome context it will
+      change the current window‘s location to the supplied URL and
+      wait until document.readState equals “complete” or the page
+      timeout duration has elapsed. Parameters url – The URL to
+      navigate to.
 ** TODO [[./python-doc-howto-doanddont.pdf][Idioms and Anti-Idioms in Python]]
 *** summary
     1) Language Constructs You Should Not Use
@@ -15714,10 +15996,11 @@
 
 	   - precede with
 	     #+BEGIN_EXAMPLE
-               ,#+CAPTION: This is the caption for the next table (or link)
+               ,#+CAPTION: This is the caption for the next table or image (or link)
+               ,#+NAME tab:sth OR fig:sth
 	     #+END_EXAMPLE
 
-	   - Images exported if no description
+	   - Images exported if no description in link (f.ex. =[./img.png]=)
 
 	3) Literal examples
 
@@ -15852,6 +16135,12 @@
 	       #+BEGIN_LATEX
 	       All lines between these markers are exported literally
 	       #+END_LATEX
+
+	  4) LATEX specific attributes
+	     - Images in LATEX export
+	       #+BEGIN_SRC latex
+                 ,#+ATTR_LATEX: :width 5cm :options angle=90
+	       #+END_SRC
 ** PART [[./Google%20Python%20Style%20Guide.html][Google Python Style Guide]]
 *** summary
     1) Python Language Rules
@@ -16270,3 +16559,6 @@
 
     - or jpm: https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_sign
 *** ref [[file:master.bib::addon-signing][Mozilla 2016: Add Extension Signing]]
+** [B2001] 12. Breiman, “Random Forests”, Machine Learning, 45(1), 5-32, 2001.
+** [B1998] 12. Breiman, “Arcing Classifiers”, Annals of Statistics 1998.
+   - perturb-and-combine

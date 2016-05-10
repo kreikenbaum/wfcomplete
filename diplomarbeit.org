@@ -1,5 +1,5 @@
 #+TITLE: Selective Cover Traffic
-#+TODO: TODO CHECK | LATER DONE
+#+TODO: TODO CHECK | DONE
 * Configuration							    :ARCHIVE:
 #+LATEX_CLASS_OPTIONS: [a4paper,10pt]
 #+LATEX_HEADER: \usepackage{adjustbox}
@@ -113,7 +113,7 @@
 ** Design
 ** Implementation
 ** Results and Evaluation
-* TODO topics [8/120]
+* TODO topics [8/122]
 ** TODO Website Fingerprinting [2/52]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
@@ -148,23 +148,38 @@
     yielded results. Prior to Panchenko et al\cite{panchenko}, it was
     assumed that Tor introduced multiplexing, enough padding and
     latency into website retrieval that this attack was inapplicable.
-*** TODO visual inspection of data [0/2]
+*** TODO visual inspection of data [0/3]
     To exemplify the task of a websitefingerprinter, consider the
     following pictures which represent complete (considered to contain
     all relevant information \cite{a-systematic} packet trace data in
     the form of (delay, packet size), which is
 **** facebook.com
-     [[file:pictures/facebook_com@1445350531.png]]
+     #+CAPTION: facebook.com example 1
+     #+ATTR_LATEX: :width 0.3*\pagewidth
+     [[./pictures/facebook_com@1445350531.png]]
+     #+CAPTION: facebook.com example 2
+     #+ATTR_LATEX: :width 0.3*\pagewidth
      [[file:pictures/facebook_com@1445422155.png]]
+     #+CAPTION: facebook.com example 3
+     #+ATTR_LATEX: :width 0.3 * \pagewidth
      [[file:pictures/facebook_com@1445425799.png]]
+     #+CAPTION: facebook.com example 4
+     #+ATTR_LATEX: :width 0.3 * \pagewidth
      [[file:pictures/facebook_com@1445429729.png]]
 **** craigslist.org
+     #+CAPTION: craigslist.org example 1
+     #+ATTR_LATEX: :width 0.3 * \pagewidth
      [[./pictures/craigslist_org@1445352269.png]]
+     #+CAPTION: craigslist.org example 2
+     #+ATTR_LATEX: :width 0.3 * \pagewidth
      [[./pictures/craigslist_org@1445428146.png]]
+     #+CAPTION: craigslist.org example 3
+     #+ATTR_LATEX: :width 0.3 * \pagewidth
      [[./pictures/craigslist_org@1445435476.png]]
+     #+CAPTION: craigslist.org example 4
+     #+ATTR_LATEX: :width 0.3 * \pagewidth
      [[./pictures/craigslist_org@1445442917.png]]
 **** creation of pictures
-
      The pictures were created by the commands
 
      #+BEGIN_EXAMPLE
@@ -184,6 +199,7 @@
      gnuplot (inserting appropriate newlines via =sed= and removing
      extra characters via =tr=), and =gnuplot= s it to a png file with
      the name of the trace file as prefix.
+**** TODO when done, format in LaTeX (if not here) to two-column layout
 **** TODO visual representation of CUMUL
      - Panchenko et al.'s recent approach allows for the visual
        comparison of website traces.
@@ -218,13 +234,14 @@
      was developed at MIT\cite{chickenfoot}. The most recent GitHub
      release[fn::\url{https://github.com/bolinfest/chickenfoot}] is for
      Firefox 4.
-**** Marionette
-     Marionette is the next generation mozilla testing framework. It is
-     made to work just like Selenium. It was chosen for this thesis, as
-     it made the Tor Browser Bundle easily accessible:
+**** CHECK Marionette
+     <<Marionette>> Marionette is the next generation mozilla testing
+     framework. It is works just like Selenium and was designed to be
+     integrated into it. It was chosen for this thesis, as it made the
+     Tor Browser Bundle easily accessible.
 
-     After installation (see below), controlling the browser takes two
-     easy steps:
+     After installation of the library (see below), controlling the browser
+     takes two easy steps:
 
      1. start the Tor Browser Bundle with the `-marionette` switch
 
@@ -242,10 +259,10 @@
           client.navigate('http://cnn.com'); # navigate loads a website
         #+END_SRC
 
-     Marionette has the benefit that the =client.navigate()= call returns
-     only after the page has loaded, (and throws an error if the page
-     could not be loaded). This obsoletes the need to test whether a page
-     loaded completely([[Panchenko]]).
+     Marionette has the benefit that the =client.navigate()= call
+     returns only after the page has loaded, (and throws an error if
+     the page could not be loaded). This obsoletes f.ex. Panchenko et al.'s
+     \cite{panchenko} need to test whether a page loaded completely.
 **** CHECK Marionette installation
      Marionette exists as a Python Package. It is thus easily installed
      via
@@ -256,6 +273,7 @@
      a virtualenv is highly recommended in the documentation. If using
      only Marionette, it proved to be unnecessary. The combined
      installation of Marionette with Mozmill broke Marionette.
+***** TODO merge with above and split out pip install (also needed for wsgi)
 **** criteria for tool to retrieve websites
      - script tor browser: load new page
      - easy set-up
@@ -285,29 +303,29 @@
 **** by-hand initialization to retrieve websites
      After installation, the tor browser bundle performs some
      initialization steps. To complete these easily, start the tor
-     browser bundle-firefox by hand once.
+     browser bundle-firefox by hand once, set the connection type and
+     have it load any website via Tor. All this also downloads Tor
+     metadata, which allows to connect more quickly later on.
 
-     Set the connection type and have it load its first website via
-     Tor. This also downloads descriptors to connect quicker later on.
-**** TODO one_site.py: retrieval of a single page
-     Once you ensured that the Browser Bundle is working by starting it
-     manually once, webpages can be retrieved automatically. This is done
-     via the [[*Script%20to%20capture%20pcap%20traces:%20%5B%5Bfile:./bin/one_site.py%5D%5D][one_site.py]] script (see Appendix.
+     Once the Browser Bundle is working, as it runs when starting
+     manually, webpages can be retrieved automatically. This is done
+     via the [[one_site][one_site.py]] script.
 
-     It
+     The script
 
      1. starts the Tor Browser Bundle's =firefox= binary, enabling
-        remote-control via the =-marionette= command-line argument,
+        remote-control via the [[Marionette][=-marionette=]] command-line argument,
         waiting up to 60 seconds for its initialization
      2. starts the =tshark= capture
      3. loads the page (given as first parameter) via Marionette
-     4. waits up to 600 seconds for the load to finish
-     5. ends the capture
-     6. ends Firefox
+     4. waits up to 600 seconds for the page load to finish
+     5. waits 3 more seconds (for the last cover traffic to finish)
+     6. ends the capture
+     7. ends Firefox
 
      This setup (restart after each trace) avoids caching issues with
      website fingerprinting, as the Tor Browser Bundle cleans the
-     cache between restarts (mentioned f.ex. in \cite{critique}). If a
+     cache between restarts (as mentioned f.ex. in \cite{critique}). If a
      browsing-session scenario is desired, the script could be
      modified to omit terminating the browser instance.
 **** tshark installation
@@ -985,7 +1003,7 @@
      Addon Marketplace[fn::\url{https://addons.mozilla.org}], they are
      checked and signed automatically. Otherwise, you can request an
      API key for signing and sign via the command
-     [fn::\url{https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_sign}]
+     [fn::\url{https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm\#jpm_sign}]
      =jpm sign --api-key $SIGNING_KEY --api-secret $SIGNING_SECRET=.
 **** TODO interacting with page-scripts
      By default, content-scripts are isolated from the modifications
@@ -1442,8 +1460,8 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 
   #+BEGIN_SRC js
     /** 
-     ,* @param {sizes Array} array of values for each bucket, must be sorted
-     ,* @param {splits Array} array of bucket borders, must be sorted
+     ,* @param {sizes Array} array of values for each bin, must be sorted
+     ,* @param {splits Array} array of bin borders, must be sorted
     ,*/
     function BloomSort(sizes, splits) {
         this.sizes = sizes;
@@ -1608,8 +1626,26 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   3) one target distribution (II) with original size from bloom (A),
   4) one target distribution (II) with random sizes (B)
 * TODO which features work well
-  see k-forest
+  As noted by Perry in \cite{critique}, there has been little analysis
+  of which feature contribute the most towards
+  classification. Panchenko et al. \cite{panchenko} provided a
+  qualitative analysis. Hayes and Danezis \cite{kfingerprint} used
+  forests of randomized trees, which provide feature importance
+  estimation.
+
+  As Dyer et al \cite{oakland2012-peekaboo} noted and our tries with
+  Panchenko et al's estimator \cite{panchenko} support, you can get
+  good accuracy with several classifiers, given the right features.
+
+  The top-five features as determined by Hayes and Danezis are the
+  number (both absolute and percentage of total) of both incoming and
+  outgoing packets. The standard deviation of the packet ordering list
+  proposed by Panchenko et al completes the top five.
 ** MOVE to wf
+** TODO second link to hayes.. and panchenko..? in same section?
+** TODO explain "standard deviation of the packet ordering list"
+   at least link to panchenko
+** TODO mention _feature_importances?
 * TODO does this hide bursts?
   - meta-bursts as described in walkie-talkie
   - are those hidden, too, or can the number of bursts be found out
@@ -1617,30 +1653,30 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 ** maybe see cumul-graphics
 * LATER evaluation of [[*Variations%20of%20Cover%20Traffic][Variations of Cover Traffic]]
 * TODO mention tor browser bundle version etc
-* TODO upload source code etc to github (or sth else)
 * TODO why defense better
 * TODO which sites well-protected, which less
 * TODO bursts on addon site load finish
   One characteristic which identified sites well as per Dyer et
   al.\cite{oakland2012-peekaboo} and Wang and Goldberg
-  \cite{wang2015walkie} is the number of bursts to a web site.
+  \cite{wang2015walkie} is the number of bursts.
 
   As the addon would conceptually only increase burst sizes, and not
-  alter their number, this should be covered as well. To address this
-  feature, the per-site traffic module [[CoverTraffic]] remembers the
-  number of unsent requests for embedded elements. When the page
-  loading is finished, this number (which should be 0 or less in about
-  half of the cases) of embedded objects is requested. As the cover
-  traffic currently comes from a single server, the multiple
-  connection limit (compare [[Hurdles]]) should automatically lead to
-  multiple bursts if the number of embedded objects is high enough.
+  alter their number, this should be covered as well. To address this,
+  the per-site traffic module [[CoverTraffic]] remembers the number of
+  unsent requests for embedded elements. When the page loading is
+  finished, this number (which should be 0 or less in more than half
+  the cases) of embedded objects is requested. As the cover traffic
+  currently comes from a single server, the multiple connection limit
+  (compare [[Hurdles]]) should automatically lead to multiple bursts if
+  the number of embedded objects is high enough.
 
   This should emulate normal browser traffic better than the proposed
-  random schemes by Wang and Goldberg (normal and uniform
-  distribution). It might be that their deterministic padding to
-  common values performs better, but this requires a priori knowledge
-  of all website burst sizes.
+  probabilistic schemes by Wang and Goldberg (normal and uniform
+  distribution). It might be that Wang and Goldberg's deterministic
+  padding to common values performs better, but that seems require a
+  priori knowledge of website burst sizes.
 ** TODO maybe move to [[CoverTraffic]]
+* npm short installation/description
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
@@ -3694,6 +3730,8 @@ mean = 0.763238095238
   - Tao Wang
   - ...
 * LATER Further work
+  - bigger world sizes
+  - open world
   - source cover traffic: user gives domain as starting point
   - how to generate
     - how often, which parameters
@@ -3725,7 +3763,7 @@ mean = 0.763238095238
     - does not honor reloads/cacheing
       - or does it? (maybe only called on cacheing)
     - but better than too many?
-      - some approaches yes, buckets no
+      - some approaches yes, binning no
   - elaborate on [[find number of embedded elements]]
   - how to set splits and sizes
   - [[differences theoretical HTML-num embedded and observed]]
@@ -3772,16 +3810,17 @@ mean = 0.763238095238
    - assumption: can split traces
 ** TODO always also link in text
 *** TODO check with darp
-* TODO appendices [8/11]
+* TODO appendices [0/11]
 \appendix
 ** Script [[./bin/one_site.py]]: capture pcap traces
+   <<one_site>>
    #+INCLUDE: "./bin/one_site.py" src python
-** LATER Script to classify the data [[file:./bin/extract_attribute.py]]
+** TODO Script to classify the data [[file:./bin/extract_attribute.py]]
    insert file here
-** LATER Script to parse pcap files: [[./bin/counter.py]]
-** LATER Cover Traffic Server [[file:../bin/wsgi.py]]
+** TODO Script to parse pcap files: [[./bin/counter.py]]
+** TODO Cover Traffic Server [[file:../bin/wsgi.py]]
    <<wsgi.py>>
-*** LATER Non-parallelized-based web server for cover traffic [1/1]
+*** TODO Non-parallelized-based web server for cover traffic [0/1]
     This approach did not scale to several parallel connections, so it
     was not used. It is included as a reference of what seems to work,
     but did not.
@@ -3804,9 +3843,9 @@ mean = 0.763238095238
        - obviously delays problematic as they in effect create less
          cover traffic
      - maybe further work: test that really works worse
-**** LATER include file [[../bin/unused/TrafficHTTPServer.py]]
-** LATER include [[file:bin/htmlToNumEmbedded.py]]
-** LATER Script [[./bin/html_top_100.sh]] to retrieve html pages via squid
+**** TODO include file [[../bin/unused/TrafficHTTPServer.py]]
+** TODO include [[file:bin/htmlToNumEmbedded.py]]
+** TODO Script [[./bin/html_top_100.sh]] to retrieve html pages via squid
    #+INCLUDE: "./bin/html_top_100.sh" src sh
 ** html_top_100.sh
      #+BEGIN_SRC sh
@@ -3823,7 +3862,7 @@ mean = 0.763238095238
            cd ..
        done
      #+END_SRC
-** LATER [[./bin/retrieve_100_embedded.sh]].
+** TODO [[./bin/retrieve_100_embedded.sh]].
 ** TODO modified top-100
 *** TODO download
 ** TODO Remove same-host cover traffic server from traces: [[./bin/7777.sh]]

@@ -386,9 +386,12 @@ if __name__ == "__main__":
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 
     COUNTERS = Counter.from_(*sys.argv)
+    Counter.save(COUNTERS)
+    print 'counters saved to domain.json files'
     ## if non-interactive, print timing data
-    #    from ctypes import pythonapi
-    #    if not os.environ.get('PYTHONINSPECT') and not pythonapi.Py_InspectFlag > 0:
-    for t in itertools.chain.from_iterable(COUNTERS.values()):
+    from ctypes import pythonapi
+    if not os.environ.get('PYTHONINSPECT') and not pythonapi.Py_InspectFlag > 0:
+        for t in itertools.chain.from_iterable(COUNTERS.values()):
          # was [trace for domain in COUNTERS.values() for trace in domain]:
-        print t.timing
+            print t.timing
+    

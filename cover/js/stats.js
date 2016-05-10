@@ -9,8 +9,6 @@ const HTML_MU = 7.90272;
 const HTML_SIGMA = 1.7643;
 const HTML_TOP = 2 * 1024 * 1024; // 2 MB
 exports.HTML_TOP = HTML_TOP; // testing
-//const HTML_999 = 630846; // 99.9% quantile for top bucket
-//exports.HTML_999 = HTML_999;
 
 const EMBEDDED_SIZE_MU = 7.51384;
 const EMBEDDED_SIZE_SIGMA = 2.17454;

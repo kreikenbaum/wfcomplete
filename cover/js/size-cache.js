@@ -27,7 +27,7 @@ exports.htmlSize = (url) => htmlSize(url);
 /**
  * @param {String} url for which to get the size
  *
- * @return {Number} {@code queryMax} of the bucket in which url lies.
+ * @return {Number} {@code queryMax} of the bin in which url lies.
  */
 function htmlSizeMax(url) {
     // console.log('htmlSizeMax(' + url +')');

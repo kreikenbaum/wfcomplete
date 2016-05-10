@@ -39,7 +39,7 @@ function CoverTraffic(targetURL, load=LOAD) {
 //    this.site.html = this.htmlStrategyB(targetURL);
 //    this.site.numEmbedded = this.numStrategyB(targetURL);
 
-//  BLOOM BUCKET MAX
+//  BLOOM BIN MAX
 //    this.target.html = this.htmlStrategyI(targetURL);
 //    this.target.numEmbedded = this.numStrategyI(targetURL);
 //  ONE TARGET DISTRIBUTION
@@ -73,10 +73,10 @@ CoverTraffic.prototype.finish = function() {
     }
 };
 
-// ### strategies I/II: bloom bucket max or one target distribution
+// ### strategies I/II: bloom bin max or one target distribution
 // td later: strategy class, subclasses
 /** partial Strategy I: take bloom max for target */
-// last bucket handled by BloomSort
+// last bin handled by BloomSort
 CoverTraffic.prototype.htmlStrategyI = function(targetURL) {
     let targetHtmlSize;
     try {
