@@ -18,7 +18,7 @@ LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 TIME_SEPARATOR = '@'
 
 def _append_features(keys, filename):
-    '''appends features in trace file "filename" to keys
+    '''appends features in trace file of name "filename" to keys.
 
     keys is a dictionary, indexed by domain, holding arrays of Counter'''
     domain = _get_domain(filename)
@@ -313,7 +313,8 @@ class Counter(object):
         for i, val in enumerate(self._variable_lengths().values()):
             self.fixed['length_variable_'+str(i)] = val
         # all packets as of "A Systematic ..." svm.py code
-#        self.variable['all_packets'] = self.packets # grew too big 4 mem
+        #        self.variable['all_packets'] = self.packets # grew too big 4 mem
+        return self
 
     def to_json(self):
         '''prints packet trace to json, for reimport'''
@@ -352,30 +353,30 @@ class Counter(object):
             if packetsize > 0:
                 inSize += packetsize
                 inCount += 1
-                if len(cum) == 0:
-                    cum.append(packetsize)
+                if len(cumul) == 0:
+                    cumul.append(packetsize)
                     total.append(packetsize)
                 else:
-                    cum.append(cum[-1] + packetsize)
+                    cumul.append(cumul[-1] + packetsize)
                     total.append(total[-1] + abs(packetsize))
             elif packetsize < 0:
                 outSize += abs(packetsize)
                 outCount += 1
-                if len(cum) == 0:
-                    cum.append(packetsize)
+                if len(cumul) == 0:
+                    cumul.append(packetsize)
                     total.append(abs(packetsize))
                 else:
-                    cum.append(cum[-1] + packetsize)
+                    cumul.append(cumul[-1] + packetsize)
                     total.append(total[-1] + abs(packetsize))
             else:
                 logging.warn('packetsize == 0 in cumul')
 
         features = [inCount, outCount, outSize, inSize]
-        cumFeatures = numpy.interp(numpy.linspace(total[0], total[-1],
+        cumulFeatures = numpy.interp(numpy.linspace(total[0], total[-1],
                                                   num_features+1),
-                                   total, cum)
-        # could be cumFeatures[1:], but never change a running system
-        for el in itertools.islice(cumFeatures, 1, None):
+                                   total, cumul)
+        # could be cumulFeatures[1:], but never change a running system
+        for el in itertools.islice(cumulFeatures, 1, None):
             features.append(el)
 
         return features
