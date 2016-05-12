@@ -82,8 +82,18 @@ def to_libsvm(X, y, fname='libsvm_in'):
                 f.write('{}:{} '.format(no+1, val))
         f.write('\n')
 
-
+def remove_quantiles_panchenko_2(values):
+    '''remove if incomingSize < (q1-1.5 * (q3-q1))
+    or incomingSize > (q3+1.5 * (q3-q1)
+    >>> remove_quantiles_panchenko_2([0, 2, 2, 2, 2, 2, 2, 4])
+    [2, 2, 2, 2, 2, 2]
+    '''
+    
+    
+        
+### evaluation code
 def test(X, y, estimator, nj=2):
+
     '''tests estimator with X, y, prints type and result'''
     print estimator
     result = cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=nj)

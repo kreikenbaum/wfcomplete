@@ -15,6 +15,8 @@ var endObserver;
 var httpRequestObserver = {
     observe: function(subject, topic, data) {
         if (topic == "http-on-modify-request") {
+	    // console.log(subject);
+	    // console.log('data:' + JSON.stringify(data));
             var httpChannel = subject.QueryInterface(Ci.nsIHttpChannel);
             var uri = httpChannel.URI;
 
@@ -40,6 +42,7 @@ var httpRequestObserver = {
 
 /** start to watch traffic, callback to `user` object */
 function register(user) {
+    console.log('register');
     callback = user;
     endObserver = createPageMod();
     httpRequestObserver.register();
