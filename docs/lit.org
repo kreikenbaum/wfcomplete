@@ -1,6 +1,6 @@
 #+TODO: TODO | DONE
 [[./master.bib]]
-** TODO [#B] move MOVE sections
+** TODO [#A] move MOVE sections
 ** [#A] [[./HTTP Traffic Model_v1 1 white paper.pdf][Lee - A NEW TRAFFIC MODEL FOR CURRENT USER WEB BROWSING BEHAVIOR]]
 *** summary
     0) [@0] ABSTRACT
@@ -8472,7 +8472,7 @@
 	    - bei mehreren Beobachtern Schnittstelle erweitern:
               welches Subjekt hat Benachrichtigung ausgelöst
 
-	    - Auslöser: 
+	    - Auslöser:
 
 	      - Subjekt (nicht zu vergessen, allerdings evtl. zu viele), oder
 
@@ -8484,10 +8484,17 @@
 	    - bei Vererbung: wer löst Benachrichtigung aus? wann?
               (evtl. mit Schablonen lösbar)
 
-	    - Push vs Pull: nur benachrichtigen oder viele
-              Informationen mitschicken
+	    - Push vs Pull: nur benachrichtigen (pull) oder gleich viele
+              Informationen mitschicken (push)
 
-	    - 
+	    - welche Änderungen interessieren beobachter: Aspekte
+              (?oder messages?)
+
+	    - Aktualisierungsmanager bei verschachtelten Systemen:
+              z.b. einfach (aktualisiert alle) oder DAG (aktualisiert
+              in richtiger Reihenfolge)
+
+	  - Beispielcode:
 
        6) [@6] Memento
 
@@ -11099,7 +11106,51 @@
 *** ref
     [[file:master.bib::anonymous-connections][G. et al. 1998: Anonymous]]
 ** TODO [#C] [[./xxx-multihop-padding-primitives.txt][Multihop Padding Primitives]]
-** TODO [#C] [[./wfpadtools-spec.txt][WFPadTools Protocol Specification]]
+** TODO [#A] [[./wfpadtools-spec.txt][WFPadTools Protocol Specification]]
+*** summary
+    0) [@0] Preliminaries: KEYWORDS, MUST etc as in RFC 2119
+
+    1) Overview
+
+       - pluggable transport
+
+       - link padding-based wf countermeasure
+
+       - between OP and bridge, discarded
+
+    2) WFPadTools protocol
+
+       1) ...
+
+	  - between SOCKS and TCP/obfsproxy
+
+	  - wrapped into WFPadTools messages
+
+	  - types: data/dummy and control
+
+	    - data: |total_length |payload_length |flags [|payload]
+              [|padding] |
+
+	    - control: |header |opcode |args_length [|args]
+              [|payload] |
+
+	      - opcode signals padding, data, control op, last control
+
+       2) Primitives
+
+	  - send_padding: request n dummy messages after t second delay
+
+	  - app_hint: start of session
+
+	  - burst_histo: delay probability distribution after data
+
+	  - gap_histo: delay probability distribution after dummy
+
+	  - total_pad, payload_pad, batch_pad: parse, do (see [3] for details)
+
+       3) Histograms
+*** quotes
+    - [3] https://gitweb.torproject.org/user/mikeperry/torspec.git/blob/refs/heads/multihop-padding-primitives:/proposals/ideas/xxx-multihop-padding-primitives.txt
 ** TODO [#C] [[./ethical.html][Ethical Tor Research: Guidelines]]
 *** summary
 *** quotes
@@ -14916,7 +14967,7 @@
         tshark.exe -r dump.eth0.1059726000.pcap -R "ip.addr eq 12.129.71.102" -w defcon11_tshark_filtered.pcap
       #+END_SRC
 *** ref: [[file:master.bib::splitcap][2011: Split PCAP SplitCap NETRESEC Blog]]
-** PART [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Eloquent Javascript]]
+** [#B] PART [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Eloquent Javascript]]
 *** summary
     8. [@8] Object-oriented Programming
 
@@ -15183,34 +15234,43 @@
 
     13. Browser Events
 *** quotes
-    - (begins 4)
-    - The keyword `delete` cuts off properties. Trying to read a
-      non-existent property gives the value undefined.
-    - var now = new Date();
-    - (ends 4)
-    - Object-orientation's longevity can largely be explained by the
-      fact that the ideas at its core are very solid and useful. In
-      this chapter, we will discuss these ideas, along with
-      JavaScript's (rather eccentric) take on them.
-    - typing ={}= is equivalent to typing =new Object()=
-    - example object creation
-      #+BEGIN_SRC js
-        function Rabbit(adjective) {
-          this.adjective = adjective;
-        }
-        Rabbit.prototype.speak = function(line) {
-          print("The ", this.adjective, " rabbit says '", line, "'");
-        };
+    4. [@4] Data structures: Objects and Arrays
+       - The keyword `delete` cuts off properties. Trying to read a
+	 non-existent property gives the value undefined.
+       - var now = new Date();
+    8. [@8] Object-oriented Programming
+       - Object-orientation's longevity can largely be explained by the
+	 fact that the ideas at its core are very solid and useful. In
+	 this chapter, we will discuss these ideas, along with
+	 JavaScript's (rather eccentric) take on them.
+       - typing ={}= is equivalent to typing =new Object()=
+       - example object creation
+	 #+BEGIN_SRC js
+           function Rabbit(adjective) {
+             this.adjective = adjective;
+           }
+           Rabbit.prototype.speak = function(line) {
+             print("The ", this.adjective, " rabbit says '", line, "'");
+           };
 
-        var hazelRabbit = new Rabbit("hazel");
-        hazelRabbit.speak("Good Frith!");
-      #+END_SRC
-    - Personally, I treat writing documentation as a 'finishing touch'
-      to add to a system. When it feels ready, it is time to write
-      something about it, and to see if it sounds as good in English
-      (or whatever language) as it does in JavaScript (or whatever
-      programming language).
-    - (ends 8)
+           var hazelRabbit = new Rabbit("hazel");
+           hazelRabbit.speak("Good Frith!");
+	 #+END_SRC
+       - Personally, I treat writing documentation as a 'finishing touch'
+	 to add to a system. When it feels ready, it is time to write
+	 something about it, and to see if it sounds as good in English
+	 (or whatever language) as it does in JavaScript (or whatever
+	 programming language).
+    10. [@10] Regular Expressions
+	- If we have our word list as an array, we can build the
+          regular expression like this:
+	  #+BEGIN_SRC js
+            var badWords = ["ape", "monkey", "simian", "gorilla", "evolution"];
+            var pattern = new RegExp(badWords.join("|"), "i");
+	  #+END_SRC
+	- The first argument to the RegExp constructor is a string
+          containing the pattern, the second argument can be used to
+          add case-insensitivity or globalness.
 ** PART [[./sally/Example1.html]]
 *** summary
     - input files example1.cfg reuters.zip
@@ -16746,11 +16806,11 @@
 ** [[./PEP 257 -- Docstring Conventions.html]]
 ** [[./Masterthesis.pdf]]
 *** ref: [[file:master.bib::malte][Hübner 2014: Automatische Erkennung Android Anwendungen]]
-** TODO [[./10.1.1.20.2080.bloom_orig.pdf][Space/Time Trade-offs in Hash Coding with Allowable Errors]]
+** TODO [#C] MOVE [[./10.1.1.20.2080.bloom_orig.pdf][Space/Time Trade-offs in Hash Coding with Allowable Errors]]
 *** summary
 *** quotes
 *** ref [[file:master.bib::Bloom70space/timetrade-offs][Bloom 1970: Space Time Trade]]
-** [[./10.1.1.20.98.bloom-nw.pdf][Network Applications of Bloom Filters: A Survey]]
+** TODO [#B] MOVE [[./10.1.1.20.98.bloom-nw.pdf][Network Applications of Bloom Filters: A Survey]]
 *** summary
 *** quotes
 *** ref [[file:master.bib::Broder02networkapplications][Broder & Mitzenmacher 2002: Network Applications Bloom Filters]]
@@ -16786,9 +16846,7 @@
 *** summary
 *** quotes
 *** ref [[file:master.bib::web-is-doom][Cremin 2016: Doom]]
-** MOVE TODO [[./esa2006b.pdf][An Improved Construction for Counting Bloom Filters]]
-** MOVE TODO [#C] [[./ft_gateway.cfm.pdf][Space/Time Trade-offs in Hash Coding with Allowable Errors]]
-** MOVE TODO [#B] [[./im2005b.pdf][Network Applications of Bloom Filters: A Survey]]
+** TODO MOVE [[./esa2006b.pdf][An Improved Construction for Counting Bloom Filters]]
 ** MOVE [[./Add-ons_Extension Signing - MozillaWiki.html]]
 *** summary
     - all extensions need to be signed (no themes, dictionaries, etc)
@@ -16799,6 +16857,17 @@
 
     - or jpm: https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_sign
 *** ref [[file:master.bib::addon-signing][Mozilla 2016: Add Extension Signing]]
-** [B2001] 12. Breiman, “Random Forests”, Machine Learning, 45(1), 5-32, 2001.
-** [B1998] 12. Breiman, “Arcing Classifiers”, Annals of Statistics 1998.
-   - perturb-and-combine
+** MOVE [[./Tor Project: Pluggable Transports.html][Tor: Pluggable Transports]]
+*** summary
+    - random IPs by volunteers etc protect against filtering by IP/port
+    - DPI can filter for traffic patterns
+    - pluggable transports defend against that
+    - list of pluggable transports
+*** quotes
+*** ref: see .url
+** MOVE [[./Tor Project: obfsproxy.html]]
+*** summary
+    - transform traffic between client and bridge
+    - uses pluggable transports for transformation
+*** quotes
+*** ref: see .url
