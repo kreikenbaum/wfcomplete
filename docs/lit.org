@@ -1,6 +1,5 @@
 #+TODO: TODO | DONE
 [[./master.bib]]
-** TODO [#A] move MOVE sections
 ** [#A] [[./HTTP Traffic Model_v1 1 white paper.pdf][Lee - A NEW TRAFFIC MODEL FOR CURRENT USER WEB BROWSING BEHAVIOR]]
 *** summary
     0) [@0] ABSTRACT
@@ -2260,6 +2259,438 @@
       - it is very difficult to hide connection start and end times
         using dummy traffic because the mix network handles dummy and
         real packets differently
+** [#B] [[./oakland2012-peekaboo.pdf][Dyer - Peek-a-Boo, I Still See You: Why Efficient Traffic Analysis Countermeasures Fail]]
+*** summary
+    0) [@0] Abstract
+
+       - coarse features
+
+       - analysis of TA countermeasures
+
+	 - standardized in TLS, SSH, IPsec
+
+	 - wright
+
+    1) INTRODUCTION
+
+       - wf is a problem
+
+       - most defenders try to eliminate just one feature
+
+       - 9 defenses, 7 attacks, two datasets
+
+       - tested countermeasures ineffective
+
+       - hiding length is not sufficient
+
+       - Coarse information is unlikely to be hidden efficiently.
+
+       - Relevance to other settings: real-world attacks harder, yet
+         wf defenses should cover this
+
+       - did not try Camouflage and HTTPOS
+
+    2) EXPERIMENTAL METHODOLOGY
+
+       - herrmann and levine datasets
+
+       - each classifier, each defense
+
+       - select privacy set k \le n of websites
+
+       - for each websites, 20 traces, 16 of which training, 4 test
+
+       - many trials
+
+       - downloadable python code http://www.kpdyer.com/
+
+    3) TRAFFIC CLASSIFIERS
+
+       supervised learning, testing and training data
+
+       1) Liberatore and Levine Classifier
+
+	  - naive Bayes
+
+	  - direction and length of packets
+
+       2) Herrmann et al. Classifier
+
+	  - multinomial naive Bayes
+
+	  - normalized counts
+
+	  - tf + cosine
+
+       3) Panchenko et al. Classifier
+
+	  - SVM
+
+	  - panchenko's parameters C=2**17, \gamma=2**-19
+
+	  - remove ACKs
+
+	  - number of features
+
+    4) COUNTERMEASURES
+
+       three types: explicitly allowed in SSH/TLS/IPSEC, other
+       padding-based, and distribution-oriented
+
+       1) SSH/TLS/IPSec-Motivated Countermeasures
+
+          1) session padding: all packets with same fixed length
+
+          2) random padding: each packet with some other padding
+
+          in reality: *look at plaintext data*, here: assume all text
+          fits in 255 bytes \to more noise, overestimate efficacy
+
+       2) Other Padding-based Countermeasures
+
+          1) Linear: all increased to min(nearest multiple of 128, MTU)
+
+          2) all increased to min(nearest power of two, MTU)
+
+          3) mice-elephants length \le 128 ? 128 : MTU
+
+          4) all to MTU
+
+          5) random sampling of (MTU-length) and added
+
+       3) Distribution-based Countermeasures
+
+          wright: match other web page
+
+          1) Direct target sampling
+
+             - algo
+
+               1) sample target packet length l' from target distribution
+
+                  - if this length l <= l', pad to l'
+
+                  - else send l' bytes, set l=l-l', resample until done
+
+             - here: target distribution chosen randomly
+
+          2) Traffic morphing
+
+             similar to direct target sampling, but with convex
+             optimization to minimize overhead
+
+       4) Overhead
+
+          - "almost no correlation between overhead and level of
+            confidentiality provided"
+
+    5) EXISTING COUNTERMEASURES VERSUS EXISTING CLASSIFIERS
+
+       Liberatore, Herrmann, Panchenko each vs nine countermeasures
+
+       1) Comparing the Datasets
+
+	  - worst: no countermeasure
+
+	  - some bugs in Liberatore dataset (tiny traces)
+
+	    - lead to worse classifier accuracy
+
+       2) Comparison of Classifiers
+
+	  - P best for all most all
+
+	    - graphics with classifier groups, world size (x), accuracy (y)
+
+       3) Comparison of Countermeasures
+
+	  - here: single value per session random padding is better
+            than per-packet ( "averages out" )
+
+	  - pad-to-MTU works worse than some other (leaks direction info)
+
+	  - Session Random was better than pad-to-MTU
+
+	    - less overhead
+
+	  - DTS works best
+
+    6) EXPLORING COARSE FEATURES
+
+       0) [@0]
+
+	  3 coarse features
+
+	  - total transmission time (TIME),
+
+	  - total bandwidth (BW)
+
+	  - traffic "bustiness" (VNG)
+
+       1) Total Time
+
+	  - simplest measure
+
+	  - some accuracy
+
+	  - same as against no padding at all
+
+       2) Total Per-Direction Bandwidth
+
+	  - works, is "more robust" than LL and H
+
+	  - padding changes only little bit of bw
+
+       3) Variable n-gram
+
+	  - tuples (sum up, sum down, sum up, sum down, ...) for
+            bursts: how much data in the same direction
+
+	  - achieves P classifier's performance
+
+       4) Combining Coarse Features: the VNG++ Classifier
+
+	  - combines three above
+
+	  - P has more fine-grained features, and more complicated ML algo
+
+	  - P-NB: panchenko with naive Bayes ML: on par (slightly
+            better without padding), way worse for session 255
+
+       5) Discussion
+
+	  - bandwidth a problem
+
+	  - bursts (VNG, panchenko-style) too
+
+    7) BuFLO: BUFFERED FIXED -LENGTH OBFUSCATOR
+
+       0) [@0]
+
+	  - fixed data rate, fixed time length, fixed length packets
+
+	  - stops after fixed time even if website continues
+
+	  - setting this time lower leads to better classification
+
+       1) BuFLO Description
+
+	  - variables d: size of fixed-length packets,
+
+	    - \rho: rate at which to send packets (in milliseconds)
+
+	    - \tau: minimum amount of time for which to send packets
+
+	  - (this yields approximation of the webpage size :-( ---
+            while sending, keeps on, then finishes)
+
+       2) Experiments
+
+	  - assumptions: implementable, start detectable
+
+	  - several ranges: accuracy from 27.3% (1000, 40, 0) to 5.1%
+            (1500, 20, 10000) (each (d, \rho, \tau))
+
+       3) Observations about BuFLO
+
+	  - weaknesses:
+
+	    - yields some size and time data if at \tau
+
+	      - buffer is still full, or
+
+	      - website is still sending
+
+	    - enhances (!) timing-based classifier for low data rate
+
+    8) RELATED WORK
+
+       - Schneier et al citing Yee
+
+       - Cheng et al applied this
+
+       - Sun et al similar setting, more thorough (jaccard
+
+       - Hintz simple attack (safeweb)
+
+       - Bissias et al: weaker adversary could observe ssh tunnel,
+         length, direction, timing)
+
+       - Liberatore et al: HTTP via SSH inferred from lengths and
+         directions of unordered packets, countermeasures
+
+       - Herrmann: MNB, big datasets
+
+       - Panchenko: SVM
+
+       - Wright: traffic morphing
+
+       - Panchenko and LU: countermeasures
+
+    9) CONCLUDING DISCUSSION
+
+       - "several simplifying assumptions":
+
+	 - knows privacy set,
+
+	 - trains and tests on same traffic as generated
+
+	 - no effects like caching, parallel loading, etc
+
+       - does not need packet lengths
+
+       - engine does not matter that much
+
+       - privacy-set size does not matter much (quoth he)
+*** quotes
+    0) [@0] Abstract
+       - in the context of website identification, it is unlikely that
+	 bandwidth-efficient, general-purpose TA countermeasures can ever
+	 provide the type of security targeted in prior work.
+    1) INTRODUCTION
+       - This implies that any effective countermeasure must produce
+	 outputs that consume indistinguishable amounts of bandwidth.
+    5) [@5] EXISTING COUNTERMEASURES VERSUS EXISTING CLASSIFIERS
+       1) Comparing the Datasets
+	  - The fraction of traces that have short duration, particularly
+            ones that are clearly degenerate (≤ 10 packets)
+    6) [@7] BuFLO: BUFFERED FIXED -LENGTH OBFUSCATOR
+       - whether any measure can work, even prohibitively inefficient
+         ones.
+*** ref [[file:~/da/docs/master.bib::oakland2012-peekaboo][Dyer et al. 2012: Peek Boo I]]
+** [#B] [[./critique.html][A Critique of Website Traffic Fingerprinting Attacks]]
+*** summary
+    0) [@0] A Critique of Website Traffic Fingerprinting Attacks
+
+       - closed vs open world
+
+       - pages vs websites
+
+    1) Pinning Down the Adversary Model
+
+       - leave rest of traffic unmolested, only block specific traffic
+
+       - identifying users visiting small set
+
+       - recognizing every single web page
+
+    2) Theoretical Issues: Factors Affecting Classification Accuracy
+
+       factors
+
+       1) "size of the hypothesis space"
+
+       2) "accuracy of feature extraction and representation"
+
+       3) "size of the instance space"
+
+       4) "number of training examples"
+
+       huge world, which leads to problems
+
+    3) Practical Issues: False Positives Matter. A Lot.
+
+       - 100 pages per user with fpr=0.2 \to 18% probability (=18% of
+         userbase) will be accused
+
+         - 1000 pages: 86.5% of userbase
+
+       - P(Censored|Classified) = 0.10 vs P(~Censored|Classified) = 0.90
+
+       - IDS failed in reality
+
+    4) Practical Issues: Multipliers of World Size are Common
+
+       - even 1000000 pages are way too few
+
+       - caching/ js/ adblock each multiply different variations
+
+       - non-web vs web (f.ex. twitter query similar to xmpp/irc)
+
+    5) Literature Review: Andriy Panchenko et al
+
+       - good: see quote about good parts
+
+       - could be better:
+
+	 - false positives property of specific sites (multiple runs)
+
+	 - lacks realistic adversary model
+
+    6) Literature Review: Kevin P. Dyer et al
+
+       - good: source, good definitions, buflo
+
+       - improveable: small closed world,
+
+	 - little analysis of defenses (helped against which feature, etc)
+
+	 - lacked which sites suffer misclassification
+
+	 - lacked "standard ways of evaluating the contribution of
+           features to accuracy under various conditions"
+
+    7) Literature Review: Xiang Cai et al
+
+       - good:
+
+	 - low-resource congestion-sensitive tunable buflo variant
+
+	 - automatic feature detection
+
+       - improveable:
+
+	 - edit-distance well suited to closed-world, (also to open?)
+
+	 - defenses could be more mentioned and better-analyzed
+
+	 - HMMs are user-specific (?), f.ex. twitter usage varies widely
+
+    8) Literature Review: Tao Wang and Ian Goldberg
+
+       - improveable:
+
+	 - use current browser
+
+	 - bigger world size
+
+	 - have varying target sizes
+
+    9) Concluding Remarks: Suggestions for Future Work
+
+       - light-weight might suffice
+
+       - defenses need re-test, new defenses welcome
+
+       - attacks: please evaluate feature importances
+
+       - do contact them
+
+    10) Concluding Remarks: Dual Purpose Defenses
+
+	- might also help against end-to-end dragnet
+
+	  - especially if traffic to inside of Tor network
+
+	  - ?? but also if against different hosts (different circuits) ??
+*** quotes
+    0) [@0]
+       - defenses were "broken" and dismissed primarily by taking a
+         number of shortcuts that ignore basic properties of machine
+         learning theory and statistics in order to enable their claims
+         of success
+    4) [@4] Practical Issues: Multipliers of World Size are Common
+       - in Tor Browser, either restarting the browser or using the
+         "New Identity" button causes all of this caching state to be
+         reset.
+    5) [@5] Literature Review: Andriy Panchenko et al
+       - All of the other papers to date simply omit one or more of
+         the following: data on feature extraction, the contribution
+         of individual features to accuracy, the number of training
+         examples, the effect of target size on both the open and
+         closed world, the effect of target page types on accuracy,
+         and the effects of world size on accuracy.
+*** ref [[file:master.bib::critique][Critique Website Traffic Fingerprinting Attacks]]
 ** [#C] [[./torproject.orgSLASHaboutSLASHtorusers.html][Who uses Tor?]]
 *** summary
     1) Inception
@@ -7128,6 +7559,30 @@
         var bloom = new BloomFilter(array, 3);
       #+END_SRC
       - better: typed array for performance (=array= is used directly)
+** [[./Add-ons_Extension Signing - MozillaWiki.html]]
+*** summary
+    - all extensions need to be signed (no themes, dictionaries, etc)
+
+    - since Firefox 47
+
+    - via API: http://olympia.readthedocs.org/en/latest/topics/api/signing.html
+
+    - or jpm: https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_sign
+*** ref [[file:master.bib::addon-signing][Mozilla 2016: Add Extension Signing]]
+** [[./Tor Project: Pluggable Transports.html][Tor: Pluggable Transports]]
+*** summary
+    - random IPs by volunteers etc protect against filtering by IP/port
+    - DPI can filter for traffic patterns
+    - pluggable transports defend against that
+    - list of pluggable transports
+*** quotes
+*** [[file:master.bib::tor-pt][Tor 2016: Pluggable Transports]]
+** [[./Tor Project: obfsproxy.html][Tor Project: obfsproxy]]
+*** summary
+    - transform traffic between client and bridge
+    - uses pluggable transports for transformation
+*** quotes
+*** [[file:master.bib::tor-obfsp][Tor 2016]]
 ** TODO [#A] Entwurfsmuster
 *** TODO summary (weiter bei Implementierung.3. S. 281)
     0) [@0] Preface
@@ -8602,7 +9057,9 @@
     - (ends ...3.3)
     - *In C++* sind statische Member-Funktionen zudem niemals
       virtuell, so dass Unterklassen sie nicht polymorph
-      ueberschreiben koennen.
+      überschreiben können.
+*** TODO ref
+    - german with note?
 ** TODO [#A] PART -s 1,5,7 [[./McGrawHill_-_Machine_Learning_-Tom_Mitchell.pdf]]
 *** summary
     1) INTRODUCTION
@@ -9011,6 +9468,143 @@
 
 	       VS_{H, D} = {h \in H | (\exists s \in S, g \in G)(g \ge_{g} h \ge_{g} s)}
 *** ref [[file:master.bib::mitchell][Mitchell: Machine Learning]]
+** TODO [#A] [[./usersrouted-ccs13.pdf][Users Get Routed: Traffic Correlation on Tor by Realistic Adversaries]]
+*** summary
+    0) [@0] ABSTRACT
+
+       Tor is more vulnerable than previously thought.
+
+       - security evaluation based on
+
+         - different user models
+
+	 - ASes etc
+
+	 - paths
+
+    1) INTRODUCTION
+
+       - controlling ASes or Internet exchange points (IXP)s lets you
+         deanonymize easily after some time
+
+         - six months for 80% of all types of users
+
+         - single AS: 100% for users "in some common locations" in three months
+
+           - IXP: 95% in three months
+
+         - two AS: 1 day instead
+
+         - bittorrent worse (and they degrade)
+
+    2) BACKGROUND
+
+       - GUARD flag: uptime median of familiar relays
+         AND bandwidth \ge min(250kB, median_bw)
+
+       - STABLE flag: weighted MTBF \ge median(weighted MTBF for active relays)
+
+    3) RELATED WORK
+
+       - Metrics and Methods for Evaluating Anonymity.
+
+         - entropy
+
+         - bandwidth-limited adversary
+
+         - controls some relays
+
+       - Traffic Correlation Attacks.
+
+	 - Øverlier,Syverson: discover Tor Hidden Servers
+
+	 - Murdoch,Danezis: traffic correlation attacks against Tor
+
+	 - here more in depth: how long to deanonymize
+
+       - Network Adversaries
+
+	 - Feamster,Dingledine: diverse paths might be weaker
+
+	 - Edman,Syverson: AS-aware path selection
+
+	 - Akhoondi &al:geographic-based relay selection
+
+	 - Wacek &al: 18% of circuits may have same AS
+
+	 - Murdoch,Zielinski: IXPs vs ASs
+
+	 - Juen: AS and IXP diversity
+
+	 - here: fixed set of ASes and IXPs, correlation attacks
+
+    4) SECURITY MODEL AND METRICS
+*** quotes
+    0) [@0] Abstract
+       - Specific contributions of the paper include (1) a model of
+         various typical kinds of users, (2) an adversary model that
+         includes Tor network relays, autonomous systems (ASes), Internet
+         exchange points (IXPs), and groups of IXPs drawn from empirical
+         study, (3) metrics that indicate how secure users are over a
+         period of time, (4) the most accurate topological model to date
+         of ASes and IXPs as they relate to Tor usage and network
+         configuration, (5) a novel realistic Tor path simulator (TorPS),
+         and (6) analyses of security making use of all the above.
+    1) [@10] References
+       - [40] Tor Project, Inc. Tor Metrics Portal.
+         https://metrics.torproject.org/, 2013.
+*** ref: [[file:~/da/docs/master.bib::ccs2013-usersrouted][Johnson et al. 2013: Users Get Routed]]
+** MOVE [#A] [[./wfpadtools-spec.txt][WFPadTools Protocol Specification]]
+*** summary
+    0) [@0] Preliminaries: KEYWORDS, MUST etc as in RFC 2119
+
+    1) Overview
+
+       - pluggable transport
+
+       - link padding-based wf countermeasure
+
+       - between OP and bridge, discarded
+
+    2) WFPadTools protocol
+
+       1) ...
+
+	  - between SOCKS and TCP/obfsproxy
+
+	  - wrapped into WFPadTools messages
+
+	  - types: data/dummy and control
+
+	    - data: |total_length |payload_length |flags [|payload]
+              [|padding] |
+
+	    - control: |header |opcode |args_length [|args]
+              [|payload] |
+
+	      - opcode signals padding, data, control op, last control
+
+       2) Primitives
+
+	  - send_padding: request n dummy messages after t second delay
+
+	  - app_hint: start of session
+
+	  - burst_histo: delay probability distribution after data
+
+	  - gap_histo: delay probability distribution after dummy
+
+	  - total_pad, payload_pad, batch_pad: parse, do (see [3] for details)
+
+       3) Histograms
+
+	  - cover "interval values from 0 to infinity"
+
+       1) [@1] Handshaking
+
+	  - could send distributions in handshaking, then start-command, then pad
+*** quotes
+    - [3] https://gitweb.torproject.org/user/mikeperry/torspec.git/blob/refs/heads/multihop-padding-primitives:/proposals/ideas/xxx-multihop-padding-primitives.txt
 ** TODO [#B] [[./LZCLCP_NDSS11.pdf][HTTPOS: Sealing Information Leaks with Browser-side Obfuscation of Encrypted Flows]]
 *** summary
     0) [@0] Abstract
@@ -9114,305 +9708,6 @@
            web object size, and flow size.
       1) [@3] The diffusion strategy
          - we extract HTTP flows that have at least five packets
-** MOVE [#B] [[./oakland2012-peekaboo.pdf][Dyer - Peek-a-Boo, I Still See You: Why Efficient Traffic Analysis Countermeasures Fail]]
-*** summary
-    0) [@0] Abstract
-
-       - coarse features
-
-       - analysis of TA countermeasures
-
-	 - standardized in TLS, SSH, IPsec
-
-	 - wright
-
-    1) INTRODUCTION
-
-       - wf is a problem
-
-       - most defenders try to eliminate just one feature
-
-       - 9 defenses, 7 attacks, two datasets
-
-       - tested countermeasures ineffective
-
-       - hiding length is not sufficient
-
-       - Coarse information is unlikely to be hidden efficiently.
-
-       - Relevance to other settings: real-world attacks harder, yet
-         wf defenses should cover this
-
-       - did not try Camouflage and HTTPOS
-
-    2) EXPERIMENTAL METHODOLOGY
-
-       - herrmann and levine datasets
-
-       - each classifier, each defense
-
-       - select privacy set k \le n of websites
-
-       - for each websites, 20 traces, 16 of which training, 4 test
-
-       - many trials
-
-       - downloadable python code http://www.kpdyer.com/
-
-    3) TRAFFIC CLASSIFIERS
-
-       supervised learning, testing and training data
-
-       1) Liberatore and Levine Classifier
-
-	  - naive Bayes
-
-	  - direction and length of packets
-
-       2) Herrmann et al. Classifier
-
-	  - multinomial naive Bayes
-
-	  - normalized counts
-
-	  - tf + cosine
-
-       3) Panchenko et al. Classifier
-
-	  - SVM
-
-	  - panchenko's parameters C=2**17, \gamma=2**-19
-
-	  - remove ACKs
-
-	  - number of features
-
-    4) COUNTERMEASURES
-
-       three types: explicitly allowed in SSH/TLS/IPSEC, other
-       padding-based, and distribution-oriented
-
-       1) SSH/TLS/IPSec-Motivated Countermeasures
-
-          1) session padding: all packets with same fixed length
-
-          2) random padding: each packet with some other padding
-
-          in reality: *look at plaintext data*, here: assume all text
-          fits in 255 bytes \to more noise, overestimate efficacy
-
-       2) Other Padding-based Countermeasures
-
-          1) Linear: all increased to min(nearest multiple of 128, MTU)
-
-          2) all increased to min(nearest power of two, MTU)
-
-          3) mice-elephants length \le 128 ? 128 : MTU
-
-          4) all to MTU
-
-          5) random sampling of (MTU-length) and added
-
-       3) Distribution-based Countermeasures
-
-          wright: match other web page
-
-          1) Direct target sampling
-
-             - algo
-
-               1) sample target packet length l' from target distribution
-
-                  - if this length l <= l', pad to l'
-
-                  - else send l' bytes, set l=l-l', resample until done
-
-             - here: target distribution chosen randomly
-
-          2) Traffic morphing
-
-             similar to direct target sampling, but with convex
-             optimization to minimize overhead
-
-       4) Overhead
-
-          - "almost no correlation between overhead and level of
-            confidentiality provided"
-
-    5) EXISTING COUNTERMEASURES VERSUS EXISTING CLASSIFIERS
-
-       Liberatore, Herrmann, Panchenko each vs nine countermeasures
-
-       1) Comparing the Datasets
-
-	  - worst: no countermeasure
-
-	  - some bugs in Liberatore dataset (tiny traces)
-
-	    - lead to worse classifier accuracy
-
-       2) Comparison of Classifiers
-
-	  - P best for all most all
-
-	    - graphics with classifier groups, world size (x), accuracy (y)
-
-       3) Comparison of Countermeasures
-
-	  - here: single value per session random padding is better
-            than per-packet ( "averages out" )
-
-	  - pad-to-MTU works worse than some other (leaks direction info)
-
-	  - Session Random was better than pad-to-MTU
-
-	    - less overhead
-
-	  - DTS works best
-
-    6) EXPLORING COARSE FEATURES
-
-       0) [@0]
-
-	  3 coarse features
-
-	  - total transmission time (TIME),
-
-	  - total bandwidth (BW)
-
-	  - traffic "bustiness" (VNG)
-
-       1) Total Time
-
-	  - simplest measure
-
-	  - some accuracy
-
-	  - same as against no padding at all
-
-       2) Total Per-Direction Bandwidth
-
-	  - works, is "more robust" than LL and H
-
-	  - padding changes only little bit of bw
-
-       3) Variable n-gram
-
-	  - tuples (sum up, sum down, sum up, sum down, ...) for
-            bursts: how much data in the same direction
-
-	  - achieves P classifier's performance
-
-       4) Combining Coarse Features: the VNG++ Classifier
-
-	  - combines three above
-
-	  - P has more fine-grained features, and more complicated ML algo
-
-	  - P-NB: panchenko with naive Bayes ML: on par (slightly
-            better without padding), way worse for session 255
-
-       5) Discussion
-
-	  - bandwidth a problem
-
-	  - bursts (VNG, panchenko-style) too
-
-    7) BuFLO: BUFFERED FIXED -LENGTH OBFUSCATOR
-
-       0) [@0]
-
-	  - fixed data rate, fixed time length, fixed length packets
-
-	  - stops after fixed time even if website continues
-
-	  - setting this time lower leads to better classification
-
-       1) BuFLO Description
-
-	  - variables d: size of fixed-length packets,
-
-	    - \rho: rate at which to send packets (in milliseconds)
-
-	    - \tau: minimum amount of time for which to send packets
-
-	  - (this yields approximation of the webpage size :-( ---
-            while sending, keeps on, then finishes)
-
-       2) Experiments
-
-	  - assumptions: implementable, start detectable
-
-	  - several ranges: accuracy from 27.3% (1000, 40, 0) to 5.1%
-            (1500, 20, 10000) (each (d, \rho, \tau))
-
-       3) Observations about BuFLO
-
-	  - weaknesses:
-
-	    - yields some size and time data if at \tau
-
-	      - buffer is still full, or
-
-	      - website is still sending
-
-	    - enhances (!) timing-based classifier for low data rate
-
-    8) RELATED WORK
-
-       - Schneier et al citing Yee
-
-       - Cheng et al applied this
-
-       - Sun et al similar setting, more thorough (jaccard
-
-       - Hintz simple attack (safeweb)
-
-       - Bissias et al: weaker adversary could observe ssh tunnel,
-         length, direction, timing)
-
-       - Liberatore et al: HTTP via SSH inferred from lengths and
-         directions of unordered packets, countermeasures
-
-       - Herrmann: MNB, big datasets
-
-       - Panchenko: SVM
-
-       - Wright: traffic morphing
-
-       - Panchenko and LU: countermeasures
-
-    9) CONCLUDING DISCUSSION
-
-       - "several simplifying assumptions":
-
-	 - knows privacy set,
-
-	 - trains and tests on same traffic as generated
-
-	 - no effects like caching, parallel loading, etc
-
-       - does not need packet lengths
-
-       - engine does not matter that much
-
-       - privacy-set size does not matter much (quoth he)
-*** quotes
-    0) [@0] Abstract
-       - in the context of website identification, it is unlikely that
-	 bandwidth-efficient, general-purpose TA countermeasures can ever
-	 provide the type of security targeted in prior work.
-    1) INTRODUCTION
-       - This implies that any effective countermeasure must produce
-	 outputs that consume indistinguishable amounts of bandwidth.
-    5) [@5] EXISTING COUNTERMEASURES VERSUS EXISTING CLASSIFIERS
-       1) Comparing the Datasets
-	  - The fraction of traces that have short duration, particularly
-            ones that are clearly degenerate (≤ 10 packets)
-    6) [@7] BuFLO: BUFFERED FIXED -LENGTH OBFUSCATOR
-       - whether any measure can work, even prohibitively inefficient
-         ones.
-*** ref [[file:~/da/docs/master.bib::oakland2012-peekaboo][Dyer et al. 2012: Peek Boo I]]
 ** TODO [#B] [[./cacr2015-09.pdf][Wang - On Realistically Attacking Tor with Website Fingerprinting]]
 *** summary
     0) [@0] Abstract
@@ -9602,139 +9897,6 @@
     1) INTRODUCTION
       - generate a synthetic workload for benchmarking or simulation.
 ** TODO [#B] [[~/da/git/docs/timing-fc2004.pdf][Timing Attacks in Low-Latency Mix Systems]]
-** MOVE [#B] [[./critique.html][A Critique of Website Traffic Fingerprinting Attacks]]
-*** summary
-    0) [@0] A Critique of Website Traffic Fingerprinting Attacks
-
-       - closed vs open world
-
-       - pages vs websites
-
-    1) Pinning Down the Adversary Model
-
-       - leave rest of traffic unmolested, only block specific traffic
-
-       - identifying users visiting small set
-
-       - recognizing every single web page
-
-    2) Theoretical Issues: Factors Affecting Classification Accuracy
-
-       factors
-
-       1) "size of the hypothesis space"
-
-       2) "accuracy of feature extraction and representation"
-
-       3) "size of the instance space"
-
-       4) "number of training examples"
-
-       huge world, which leads to problems
-
-    3) Practical Issues: False Positives Matter. A Lot.
-
-       - 100 pages per user with fpr=0.2 \to 18% probability (=18% of
-         userbase) will be accused
-
-         - 1000 pages: 86.5% of userbase
-
-       - P(Censored|Classified) = 0.10 vs P(~Censored|Classified) = 0.90
-
-       - IDS failed in reality
-
-    4) Practical Issues: Multipliers of World Size are Common
-
-       - even 1000000 pages are way too few
-
-       - caching/ js/ adblock each multiply different variations
-
-       - non-web vs web (f.ex. twitter query similar to xmpp/irc)
-
-    5) Literature Review: Andriy Panchenko et al
-
-       - good: see quote about good parts
-
-       - could be better:
-
-	 - false positives property of specific sites (multiple runs)
-
-	 - lacks realistic adversary model
-
-    6) Literature Review: Kevin P. Dyer et al
-
-       - good: source, good definitions, buflo
-
-       - improveable: small closed world,
-
-	 - little analysis of defenses (helped against which feature, etc)
-
-	 - lacked which sites suffer misclassification
-
-	 - lacked "standard ways of evaluating the contribution of
-           features to accuracy under various conditions"
-
-    7) Literature Review: Xiang Cai et al
-
-       - good:
-
-	 - low-resource congestion-sensitive tunable buflo variant
-
-	 - automatic feature detection
-
-       - improveable:
-
-	 - edit-distance well suited to closed-world, (also to open?)
-
-	 - defenses could be more mentioned and better-analyzed
-
-	 - HMMs are user-specific (?), f.ex. twitter usage varies widely
-
-    8) Literature Review: Tao Wang and Ian Goldberg
-
-       - improveable:
-
-	 - use current browser
-
-	 - bigger world size
-
-	 - have varying target sizes
-
-    9) Concluding Remarks: Suggestions for Future Work
-
-       - light-weight might suffice
-
-       - defenses need re-test, new defenses welcome
-
-       - attacks: please evaluate feature importances
-
-       - do contact them
-
-    10) Concluding Remarks: Dual Purpose Defenses
-
-	- might also help against end-to-end dragnet
-
-	  - especially if traffic to inside of Tor network
-
-	  - ?? but also if against different hosts (different circuits) ??
-*** quotes
-    0) [@0]
-       - defenses were "broken" and dismissed primarily by taking a
-         number of shortcuts that ignore basic properties of machine
-         learning theory and statistics in order to enable their claims
-         of success
-    4) [@4] Practical Issues: Multipliers of World Size are Common
-       - in Tor Browser, either restarting the browser or using the
-         "New Identity" button causes all of this caching state to be
-         reset.
-    5) [@5] Literature Review: Andriy Panchenko et al
-       - All of the other papers to date simply omit one or more of
-         the following: data on feature extraction, the contribution
-         of individual features to accuracy, the number of training
-         examples, the effect of target size on both the open and
-         closed world, the effect of target page types on accuracy,
-         and the effects of world size on accuracy.
-*** ref [[file:master.bib::critique][Critique Website Traffic Fingerprinting Attacks]]
 ** TODO [#B] [[/home/chive/own/tor/doc/read/tor-spec.txt][Tor Protocol Specification]]
 *** [#B] read through to 3, see that correct
 *** summary
@@ -10689,238 +10851,141 @@
         #     score = cross_validation.cross_val_score(lasso, X, y, n_jobs=1)
         #     print '%f, %s' % (a, np.mean(score))
       #+END_SRC
-** MOVE [#B] PART [[~/da/git/docs/python-doc-reference.pdf][The Python Language Reference]]
+** TODO [#B] [[./Oya.pdf][Do dummies pay off ? Limits of dummy traffic protection in anonymous communications]]
 *** summary
-    1) INTRODUCTION
+    0) [@0] Abstract
 
-       not a tutorial, some mention of standard Python implementation,
-       see library reference for classes
+       Communication patterns recognizable
 
-       1) Alternate Implementations
+       Dummy evaluated
 
-	  - cpython as default and most used
+    1) Introduction
 
-	  - jython (java), ironpython (.net), python for .net language specific
+       - least squares approach
 
-	  - pypy written in python for experimenting
+       - model adversary error
 
-       2) Notation
+       - design guidelines
 
-    3) [@3] DATA MODEL
+    2) System and Adversary Model
 
-       1) Objects, values and types
+       - mix-based
 
-	  - everything is an object
+       - 4 stages
 
-	    - has a unique =id()=, compared via =is=
+	 1) discard dummies
 
-	    - has a =type= (the class)
+	 2) Pool: select the ones to send
 
-	  - mutable and immutable
+	 3) Mix: change from input
 
-	  - close your files (via =with=) or =try...finally=
+	 4) add new dummies
 
-       2) The standard type hierarchy
+       - Global passive adversary
 
-	  - None, NotImplemented, Ellipsis
+	 - goal: determine communication channel probabilities
 
-	    - false, true, true
-
-	  - Numbers: Integral, Real, Complex
-
-	  - Sequences:
-
-	    - Immutable: String, Unicode, Tuple
-
-	    - Mutable: List, bytearray
-
-	  - Set types: =set=, =frozenset= (latter is hashable)
-
-	  - Mappings: Dictionaries
-
-	  - Callable types: can be =call=-ed
-
-	    - User-defined functions, created by function definition
-
-	      - function attributes on User-defined functions, set/get via
-                dot-notation
-
-	    - User-defined methods
-	      <<user-defined methods>>
-
-	      - combines class, class instance and callable object
-                (often function)
-
-	      - also extra (read-only) attributes
-
-	      - somehow transformed with that
-
-	    - Generator functions: use =yield=, =return= creates
-              =StopIteration= exception
-
-	    - Built-in functions: wrapper for C
-
-	    - Built-in methods: also wrapper with first param =self= object
-
-	    - Class Types: "new-style" act as factories for further instances
-
-	    - Classic Classes: calls =__init__=
-
-	    - Class instances: callable if class has a =__call__= method
-
-	  - Modules: =import=-ed, have __name__, __doc__ and __file__
-            (path) and __dict__ dictionary for module members
-
-	  - Classes:
-
-	    - created by class definitions
-
-	    - members most often accessed via =__dict__=
-
-	    - name resolution by c3 method (for multi inheritance
-              paths) or depth-first search
-
-	    - also has =__name__=, =__module__=, =__bases__= (and =__doc__=)
-
-	  - Class instances:
-
-	    - "A class instance is created by calling a class object"
-
-	    - if =__setattr__= exists, it is called instead of
-              updating directly
-
-	      - same for =__delattr__=
-
-	    - can pretend to be built-in classes by implementing stuff (see 2.4)
-
-	    - =__class__= gives access to class object
-
-	  - Files: open file, =sys.stdin= f.ex., created by =open()= etc.
-
-	  - Internal types:
-
-	    - Code objects: bytecode, params etc are in the function object
-
-	      - has a bunch of internal read-only attributes:
-                =co_filename=, =co_name=, =co_code=, ...
-
-	    - Frame objects: like stack frames,
-
-	      - link to code objects =f_code=
-
-	      - and previous stack frames =f_back=
-
-	      - =f_trace= is called at the start of each line
-
-	    - Traceback objects
-
-	      - =sys.exc_traceback=,
-
-	        - also =sys.last_traceback= interactive
-
-	    - Slice objects: extended slice syntax =[start:stop:step]=
-
-	    - Static method objects
-
-	      - created by =staticmethod= constructor
-
-	      - belong to class, but less transformation
-
-	    - Class method objects
-
-	      - similar to static method, see above ([[user-defined methods]])
-
-       3) New-style and classic classes
-
-	  - old vs new style
-
-	  - =type()= vs =__class__=
-
-	  - motivation: unified object model for classes
-
-       4) Special method names
-
-	  extra functionality
-
-	  1) Basic customization
-
-	     - =__new__= create a new instance
-
-	       - often, super(currentclass, cls)..__new__ and then modify
-
-	     - =__init__=: between creation and returning the class instance
-
-	     - =__del__=: before instance is destroyed
-
-	       - =del= x does not call =__del__=, but only decrements
-                 reference count. calling is done upon GC (refcount == 0)
-
-	       - ignores exceptions thrown during execution
-
-	     - =__repr__=: '"official" string representation"'
-
-	     - =__str__=: user-readable for print statement
-
-	     - =__lt__= le, gt, ge, eq, ne: comparison
-
-	     - =__cmp__= if above not defined, return number <0 if self<other
-
-	     - =__hash__= return integer if eq then hash equal
-
-	       - rules for use:
-
-		 - if neither cmp nor eq, then not hash
-
-		 - if cmp or eq, but not hash, then unusable in hashed
-                   collections
-
-		 - if mutable and cmp or eq, should not implement hash
-
-	     - =__nonzero__= truth value testing, if not implemented,
-               __len__ is called
-
-	  2) Customizing attribute access
-
-	     - =__getattr__= called if member access failed
-
-	     - =__setattr__= set attribute, use self.__dict__[name] = value
-
-	       - new style, call base class
-		 #+BEGIN_SRC python
-                   object.__setattr__(self, name, value)
-		 #+END_SRC
-
-	     - =__delattr__= for deletion, only if =del obj.name= makes sense
-
-	     - =__getattribute__= new-style: always called, call
-               through to super
+    3) A Least Square Profile Estimator for Dummy-basedAnonymization
+       Systems
 *** quotes
-   5) [@5] EXPRESSIONS
-      2) [@2] Atoms
-       3) [@5] Displays for sets and dictionaries
-	 - For constructing a set or a dictionary Python provides
-           special syntax called “displays”, each of them in two
-           flavors:
+    - In practice, user behavior and latency constrain the composition
+      of anonymity sets
+    - Another shortcoming of previous works [5, 9, 10] is that the
+      proposed evaluation strategies cannot be used to guide the
+      design of effective dummy generation strategies, which is
+      recognized to be a hard problem [11]. This has lead the deployed
+      high latency anonymous communication systems to either implement
+      arbitrary dummy strategies [12] or no dummy traffic at all [11].
+    - (ends 1)
+    - capital letters to denote random variables andlower-case letters
+      to denote their realizations.
+    - high-latency mix-based anonymous communication channel
+    - (ends 2)
+*** ref
+    [[file:~/da/docs/master.bib::pets14-dummy-traffic][Simon & Perez-Gonzalez 2014: Do]]
+** TODO [#B] [[./10.1.1.20.98.bloom-nw.pdf][Network Applications of Bloom Filters: A Survey]]
+*** summary
+*** quotes
+*** ref [[file:master.bib::Broder02networkapplications][Broder & Mitzenmacher 2002: Network Applications Bloom Filters]]
+** TODO [#C] [[~/da/git/docs/onion.pdf][Anonymous Connections and Onion Routing]]
+*** summary
+    0) [@0] Abstract
 
-	   + either the container contents are listed explicitly, or
-	   + they are computed via a set of looping and filtering
-             instructions, called a comprehension.
+       - "Onion Routing is an infrastructure for private
+	 communication over a public network.
 
-	   Common syntax elements for comprehensions are:
+       - Eavesdropping and traffic analysis are hampered by /onion
+	 routing/.
 
-	   #+BEGIN_SRC python
-	   comprehension ::= expression comp_for
-	   comp_for      ::= “for” target_list “in” or_test [comp_iter]
-	   comp_iter     ::= comp_for | comp_if
-	   comp_if       ::= “if” expression_nocond [comp_iter]
-	   #+END_SRC
+    1) Introduction
 
-	   [...] evaluating the expression to produce an element each
-           time the innermost block is reached.
+       - traffic analysis extracts data from who talks to whom
+*** quotes
+    - web based shopping or browsing of public databases should not
+      require revealing one's identity
+    - our implementation of anonymous connections, onion routing,
+      provides protection against eavesdropping as a side effect
+*** ref
+    [[file:master.bib::anonymous-connections][G. et al. 1998: Anonymous]]
+** TODO [#C] [[./xxx-multihop-padding-primitives.txt][Multihop Padding Primitives]]
+*** summary
+    0. [@0] Overview and Direction
 
-	   Note that the comprehension is executed in a separate
-           scope, so names assigned to in the target list don’t “leak”
-           in the enclosing scope.
+       - reviewed tamaraw, adaptive padding, cs-buflo and supersequence
+
+       - created padding message primitives
+
+    1. Padding Message Primitives
+
+       high-level bidirectional or one-directional (important to avoid attacks)
+
+       1. Generic Messages (common to all defenses)
+
+	  - RELAY_DROP: CELL_SIZE padding cell (already existsn in Tor)
+
+	  - RELAY_SEND_PADDING(N, t): send N RELAY_DROP packets in t microseconds
+
+	  - RELAY_APP_HINT: app starts or stops (f.ex. hash of url bar domain)
+
+       2. Adaptive Padding Messages
+*** quotes
+    0. [@0] Overview and Direction
+       - In a world of very cheap and excessive middle and Guard node
+         bandwidth, we would run this padding to the middle node
+    1. Padding Message Primitives
+       - exploiting padding to create a side channel
+*** TODO ref
+** TODO [#C] [[./ronathan-heyning.pdf][Traffic Analysis of SSL Encrypted Web Browsing]]
+** TODO [#C] [[./ethical.html][Ethical Tor Research: Guidelines]]
+*** summary
+*** quotes
+*** ref
+    [[file:master.bib::ethical][Ethical Tor Research]]
+** TODO [#C] [[./Liberatore_2006.pdf][Inferring the Source of Encrypted HTTP Connections]]
+*** ref
+    [[file:master.bib::Liberatore:2006][Liberatore & Levine 2006: Inferring Source Encrypted HTTP Connections]]
+** TODO [#C] [[./pam2014-tor-nfattack.pdf][On the Effectiveness of Traffic Analysis Against Anonymity Networks Using Flow Records]]
+*** ref
+    [[file:master.bib::nfattackpam14][Chakravarty et al. 2014: Effectiveness Traffic Analysis]]
+** TODO [#C] [[./crov1297.pdf][Long-Lasting Transient Conditions in Simulations with Heavy-Tailed Workloads]]
+*** summary
+    0) [@0] ABSTRACT
+
+       - heavy tailed distributions = tail declines like a power law
+
+       - occur often
+
+       - slow convergence to steady state and high variability
+
+    1) INTRODUCTION
+*** quotes
+** TODO [#C] [[./PEP 3333 -- Python Web Server Gateway Interface v1.0.1 | Python.org.html]]
+*** summary
+*** quotes
+   3) [@3] Original Rationale and Goals (from PEP 333)
+      - WSGI must be easy to implement, so that an author's initial
+        investment in the interface can be reasonably low.
+*** ref [[file:master.bib::pep3333][Eby 2010: Python Web Server]]
 ** TODO [#C] [[./morphing09.pdf][Traffic Morphing: An Efficient Defense Against Statistical Traffic Analysis]]
 *** summary
     0. [@0] Abstract
@@ -11033,228 +11098,10 @@
     - (ends 1 + 2)
 *** ref
     [[file:~/da/docs/master.bib::morphing09][Wright et al. 2009: Traffic Morphing]]
-** TODO [#B] [[./Oya.pdf][Do dummies pay off ? Limits of dummy traffic protection in anonymous communications]]
-*** summary
-    0) [@0] Abstract
-
-       Communication patterns recognizable
-
-       Dummy evaluated
-
-    1) Introduction
-
-       - least squares approach
-
-       - model adversary error
-
-       - design guidelines
-
-    2) System and Adversary Model
-
-       - mix-based
-
-       - 4 stages
-
-	 1) discard dummies
-
-	 2) Pool: select the ones to send
-
-	 3) Mix: change from input
-
-	 4) add new dummies
-
-       - Global passive adversary
-
-	 - goal: determine communication channel probabilities
-
-    3) A Least Square Profile Estimator for Dummy-basedAnonymization
-       Systems
-*** quotes
-    - In practice, user behavior and latency constrain the composition
-      of anonymity sets
-    - Another shortcoming of previous works [5, 9, 10] is that the
-      proposed evaluation strategies cannot be used to guide the
-      design of effective dummy generation strategies, which is
-      recognized to be a hard problem [11]. This has lead the deployed
-      high latency anonymous communication systems to either implement
-      arbitrary dummy strategies [12] or no dummy traffic at all [11].
-    - (ends 1)
-    - capital letters to denote random variables andlower-case letters
-      to denote their realizations.
-    - high-latency mix-based anonymous communication channel
-    - (ends 2)
-*** ref
-    [[file:~/da/docs/master.bib::pets14-dummy-traffic][Simon & Perez-Gonzalez 2014: Do]]
-** TODO [#C] [[~/da/git/docs/onion.pdf][Anonymous Connections and Onion Routing]]
-*** summary
-    0) [@0] Abstract
-
-       - "Onion Routing is an infrastructure for private
-	 communication over a public network.
-
-       - Eavesdropping and traffic analysis are hampered by /onion
-	 routing/.
-
-    1) Introduction
-
-       - traffic analysis extracts data from who talks to whom
-*** quotes
-    - web based shopping or browsing of public databases should not
-      require revealing one's identity
-    - our implementation of anonymous connections, onion routing,
-      provides protection against eavesdropping as a side effect
-*** ref
-    [[file:master.bib::anonymous-connections][G. et al. 1998: Anonymous]]
-** TODO [#C] [[./xxx-multihop-padding-primitives.txt][Multihop Padding Primitives]]
-** TODO [#A] [[./wfpadtools-spec.txt][WFPadTools Protocol Specification]]
-*** summary
-    0) [@0] Preliminaries: KEYWORDS, MUST etc as in RFC 2119
-
-    1) Overview
-
-       - pluggable transport
-
-       - link padding-based wf countermeasure
-
-       - between OP and bridge, discarded
-
-    2) WFPadTools protocol
-
-       1) ...
-
-	  - between SOCKS and TCP/obfsproxy
-
-	  - wrapped into WFPadTools messages
-
-	  - types: data/dummy and control
-
-	    - data: |total_length |payload_length |flags [|payload]
-              [|padding] |
-
-	    - control: |header |opcode |args_length [|args]
-              [|payload] |
-
-	      - opcode signals padding, data, control op, last control
-
-       2) Primitives
-
-	  - send_padding: request n dummy messages after t second delay
-
-	  - app_hint: start of session
-
-	  - burst_histo: delay probability distribution after data
-
-	  - gap_histo: delay probability distribution after dummy
-
-	  - total_pad, payload_pad, batch_pad: parse, do (see [3] for details)
-
-       3) Histograms
-*** quotes
-    - [3] https://gitweb.torproject.org/user/mikeperry/torspec.git/blob/refs/heads/multihop-padding-primitives:/proposals/ideas/xxx-multihop-padding-primitives.txt
-** TODO [#C] [[./ethical.html][Ethical Tor Research: Guidelines]]
+** TODO [#C] [[./10.1.1.20.2080.bloom_orig.pdf][Space/Time Trade-offs in Hash Coding with Allowable Errors]]
 *** summary
 *** quotes
-*** ref
-    [[file:master.bib::ethical][Ethical Tor Research]]
-** TODO [#C] [[./Liberatore_2006.pdf][Inferring the Source of Encrypted HTTP Connections]]
-*** ref
-    [[file:master.bib::Liberatore:2006][Liberatore & Levine 2006: Inferring Source Encrypted HTTP Connections]]
-** TODO [#C] [[./pam2014-tor-nfattack.pdf][On the Effectiveness of Traffic Analysis Against Anonymity Networks Using Flow Records]]
-*** ref
-    [[file:master.bib::nfattackpam14][Chakravarty et al. 2014: Effectiveness Traffic Analysis]]
-** TODO MOVE [#A] [[./usersrouted-ccs13.pdf][Users Get Routed: Traffic Correlation on Tor by Realistic Adversaries]]
-*** summary
-    0) [@0] ABSTRACT
-
-       Tor is more vulnerable than previously thought.
-
-       - security evaluation based on
-
-         - different user models
-
-	 - ASes etc
-
-	 - paths
-
-    1) INTRODUCTION
-
-       - controlling ASes or Internet exchange points (IXP)s lets you
-         deanonymize easily after some time
-
-         - six months for 80% of all types of users
-
-         - single AS: 100% for users "in some common locations" in three months
-
-           - IXP: 95% in three months
-
-         - two AS: 1 day instead
-
-         - bittorrent worse (and they degrade)
-
-    2) BACKGROUND
-
-       - GUARD flag: uptime median of familiar relays
-         AND bandwidth \ge min(250kB, median_bw)
-
-       - STABLE flag: weighted MTBF \ge median(weighted MTBF for active relays)
-
-    3) RELATED WORK
-
-       - Metrics and Methods for Evaluating Anonymity.
-
-         - entropy
-
-         - bandwidth-limited adversary
-
-         - controls some relays
-
-       - Traffic Correlation Attacks.
-
-	 - Øverlier,Syverson: discover Tor Hidden Servers
-
-	 - Murdoch,Danezis: traffic correlation attacks against Tor
-
-	 - here more in depth: how long to deanonymize
-
-       - Network Adversaries
-
-	 - Feamster,Dingledine: diverse paths might be weaker
-
-	 - Edman,Syverson: AS-aware path selection
-
-	 - Akhoondi &al:geographic-based relay selection
-
-	 - Wacek &al: 18% of circuits may have same AS
-
-	 - Murdoch,Zielinski: IXPs vs ASs
-
-	 - Juen: AS and IXP diversity
-
-	 - here: fixed set of ASes and IXPs, correlation attacks
-
-    4) SECURITY MODEL AND METRICS
-*** quotes
-    0) [@0] Abstract
-       - Specific contributions of the paper include (1) a model of
-         various typical kinds of users, (2) an adversary model that
-         includes Tor network relays, autonomous systems (ASes), Internet
-         exchange points (IXPs), and groups of IXPs drawn from empirical
-         study, (3) metrics that indicate how secure users are over a
-         period of time, (4) the most accurate topological model to date
-         of ASes and IXPs as they relate to Tor usage and network
-         configuration, (5) a novel realistic Tor path simulator (TorPS),
-         and (6) analyses of security making use of all the above.
-    1) [@10] References
-       - [40] Tor Project, Inc. Tor Metrics Portal.
-         https://metrics.torproject.org/, 2013.
-*** ref: [[file:~/da/docs/master.bib::ccs2013-usersrouted][Johnson et al. 2013: Users Get Routed]]
-** [#C] TODO [[./PEP 3333 -- Python Web Server Gateway Interface v1.0.1 | Python.org.html]]
-*** summary
-*** quotes
-   3) [@3] Original Rationale and Goals (from PEP 333)
-      - WSGI must be easy to implement, so that an author's initial
-        investment in the interface can be reasonably low.
-*** ref [[file:master.bib::pep3333][Eby 2010: Python Web Server]]
+*** ref [[file:master.bib::Bloom70space/timetrade-offs][Bloom 1970: Space Time Trade]]
 ** TODO [[~/da/git/docs/onion-discex00.pdf][Onion Routing Access Configurations]]
 ** TODO [[./802163c-01_30r1.pdf][Traffic Model for 802.16 TG3 MAC/PHY Simulations]]
 *** summary
@@ -11448,7 +11295,6 @@
     - These shortcomings and fallback behaviors are the primary reason
       that Google developed SPDY as opposed to simply extending HTTP
       to improve pipelining.
-** TODO MOVE [#C] [[./ronathan-heyning.pdf][Traffic Analysis of SSL Encrypted Web Browsing]]
 ** TODO [[https://trac.torproject.org/projects/tor/ticket/8470#comment:7][#8470 Request randomization a lot less random in FF17]]
    local: [[file:///home/w00k/da/docs/lessrand.html]]
 *** quotes
@@ -12671,18 +12517,6 @@
       mentioned.
     - (ends 3.1)
 ** TODO [[~/da/git/docs/mlj12.pdf][Good edit similarity learning by loss minimization]]
-** MOVE TODO [#C] [[./crov1297.pdf][Long-Lasting Transient Conditions in Simulations with Heavy-Tailed Workloads]]
-*** summary
-    0) [@0] ABSTRACT
-
-       - heavy tailed distributions = tail declines like a power law
-
-       - occur often
-
-       - slow convergence to steady state and high variability
-
-    1) INTRODUCTION
-*** quotes
 ** TODO [[/home/chive/import/pakdoc/][Hypertext Transfer Protocol -- HTTP/1.0]]
 *** summary
 *** quotes
@@ -12741,6 +12575,7 @@
         };
       #+END_SRC
 *** TODO ref
+** TODO [[./top_ml_algo.pdf][Top 10 algorithms in data mining]]
 ** PART [#A] [[./random.pdf][Computer Generation of Statistical Distributions]]
 *** summary
     1) SUMMARY
@@ -12936,6 +12771,7 @@
                    return int( log( uniform( 0., 1. ) ) / log( 1. - p ) );
                  }
 	       #+END_SRC
+** TODO [[./esa2006b.pdf][An Improved Construction for Counting Bloom Filters]]
 ** [#A] PART [[./scipy-ref-0.17.0.pdf][SciPy Reference Guide]]
 *** summary
 1) Tutorial
@@ -14950,6 +14786,238 @@
 	  of training data and are more likely to make mistakes for small
 	  and noisy data sets.
 *** TODO ref
+** [#B] PART [[~/da/git/docs/python-doc-reference.pdf][The Python Language Reference]]
+*** summary
+    1) INTRODUCTION
+
+       not a tutorial, some mention of standard Python implementation,
+       see library reference for classes
+
+       1) Alternate Implementations
+
+	  - cpython as default and most used
+
+	  - jython (java), ironpython (.net), python for .net language specific
+
+	  - pypy written in python for experimenting
+
+       2) Notation
+
+    3) [@3] DATA MODEL
+
+       1) Objects, values and types
+
+	  - everything is an object
+
+	    - has a unique =id()=, compared via =is=
+
+	    - has a =type= (the class)
+
+	  - mutable and immutable
+
+	  - close your files (via =with=) or =try...finally=
+
+       2) The standard type hierarchy
+
+	  - None, NotImplemented, Ellipsis
+
+	    - false, true, true
+
+	  - Numbers: Integral, Real, Complex
+
+	  - Sequences:
+
+	    - Immutable: String, Unicode, Tuple
+
+	    - Mutable: List, bytearray
+
+	  - Set types: =set=, =frozenset= (latter is hashable)
+
+	  - Mappings: Dictionaries
+
+	  - Callable types: can be =call=-ed
+
+	    - User-defined functions, created by function definition
+
+	      - function attributes on User-defined functions, set/get via
+                dot-notation
+
+	    - User-defined methods
+	      <<user-defined methods>>
+
+	      - combines class, class instance and callable object
+                (often function)
+
+	      - also extra (read-only) attributes
+
+	      - somehow transformed with that
+
+	    - Generator functions: use =yield=, =return= creates
+              =StopIteration= exception
+
+	    - Built-in functions: wrapper for C
+
+	    - Built-in methods: also wrapper with first param =self= object
+
+	    - Class Types: "new-style" act as factories for further instances
+
+	    - Classic Classes: calls =__init__=
+
+	    - Class instances: callable if class has a =__call__= method
+
+	  - Modules: =import=-ed, have __name__, __doc__ and __file__
+            (path) and __dict__ dictionary for module members
+
+	  - Classes:
+
+	    - created by class definitions
+
+	    - members most often accessed via =__dict__=
+
+	    - name resolution by c3 method (for multi inheritance
+              paths) or depth-first search
+
+	    - also has =__name__=, =__module__=, =__bases__= (and =__doc__=)
+
+	  - Class instances:
+
+	    - "A class instance is created by calling a class object"
+
+	    - if =__setattr__= exists, it is called instead of
+              updating directly
+
+	      - same for =__delattr__=
+
+	    - can pretend to be built-in classes by implementing stuff (see 2.4)
+
+	    - =__class__= gives access to class object
+
+	  - Files: open file, =sys.stdin= f.ex., created by =open()= etc.
+
+	  - Internal types:
+
+	    - Code objects: bytecode, params etc are in the function object
+
+	      - has a bunch of internal read-only attributes:
+                =co_filename=, =co_name=, =co_code=, ...
+
+	    - Frame objects: like stack frames,
+
+	      - link to code objects =f_code=
+
+	      - and previous stack frames =f_back=
+
+	      - =f_trace= is called at the start of each line
+
+	    - Traceback objects
+
+	      - =sys.exc_traceback=,
+
+	        - also =sys.last_traceback= interactive
+
+	    - Slice objects: extended slice syntax =[start:stop:step]=
+
+	    - Static method objects
+
+	      - created by =staticmethod= constructor
+
+	      - belong to class, but less transformation
+
+	    - Class method objects
+
+	      - similar to static method, see above ([[user-defined methods]])
+
+       3) New-style and classic classes
+
+	  - old vs new style
+
+	  - =type()= vs =__class__=
+
+	  - motivation: unified object model for classes
+
+       4) Special method names
+
+	  extra functionality
+
+	  1) Basic customization
+
+	     - =__new__= create a new instance
+
+	       - often, super(currentclass, cls)..__new__ and then modify
+
+	     - =__init__=: between creation and returning the class instance
+
+	     - =__del__=: before instance is destroyed
+
+	       - =del= x does not call =__del__=, but only decrements
+                 reference count. calling is done upon GC (refcount == 0)
+
+	       - ignores exceptions thrown during execution
+
+	     - =__repr__=: '"official" string representation"'
+
+	     - =__str__=: user-readable for print statement
+
+	     - =__lt__= le, gt, ge, eq, ne: comparison
+
+	     - =__cmp__= if above not defined, return number <0 if self<other
+
+	     - =__hash__= return integer if eq then hash equal
+
+	       - rules for use:
+
+		 - if neither cmp nor eq, then not hash
+
+		 - if cmp or eq, but not hash, then unusable in hashed
+                   collections
+
+		 - if mutable and cmp or eq, should not implement hash
+
+	     - =__nonzero__= truth value testing, if not implemented,
+               __len__ is called
+
+	  2) Customizing attribute access
+
+	     - =__getattr__= called if member access failed
+
+	     - =__setattr__= set attribute, use self.__dict__[name] = value
+
+	       - new style, call base class
+		 #+BEGIN_SRC python
+                   object.__setattr__(self, name, value)
+		 #+END_SRC
+
+	     - =__delattr__= for deletion, only if =del obj.name= makes sense
+
+	     - =__getattribute__= new-style: always called, call
+               through to super
+*** quotes
+   5) [@5] EXPRESSIONS
+      2) [@2] Atoms
+       3) [@5] Displays for sets and dictionaries
+	 - For constructing a set or a dictionary Python provides
+           special syntax called “displays”, each of them in two
+           flavors:
+
+	   + either the container contents are listed explicitly, or
+	   + they are computed via a set of looping and filtering
+             instructions, called a comprehension.
+
+	   Common syntax elements for comprehensions are:
+
+	   #+BEGIN_SRC python
+	   comprehension ::= expression comp_for
+	   comp_for      ::= “for” target_list “in” or_test [comp_iter]
+	   comp_iter     ::= comp_for | comp_if
+	   comp_if       ::= “if” expression_nocond [comp_iter]
+	   #+END_SRC
+
+	   [...] evaluating the expression to produce an element each
+           time the innermost block is reached.
+
+	   Note that the comprehension is executed in a separate
+           scope, so names assigned to in the target list don’t “leak”
+           in the enclosing scope.
 ** PART [#C] [[./Split or filter your PCAP files with SplitCap - NETRESEC Blog.htm]]
 *** summary
     - fast splitter for files
@@ -16642,7 +16710,6 @@
     1) Introduction
 *** quotes
 *** ref: [[file:master.bib::rfc7159][Bray 2014: JavaScript Object Notation]]
-** TODO MOVE [[./top_ml_algo.pdf][Top 10 algorithms in data mining]]
 ** SO: Sklearn kNN usage with a user defined metric
 *** quotes
     - You pass a metric as metric param, and additional metric
@@ -16806,14 +16873,6 @@
 ** [[./PEP 257 -- Docstring Conventions.html]]
 ** [[./Masterthesis.pdf]]
 *** ref: [[file:master.bib::malte][Hübner 2014: Automatische Erkennung Android Anwendungen]]
-** TODO [#C] MOVE [[./10.1.1.20.2080.bloom_orig.pdf][Space/Time Trade-offs in Hash Coding with Allowable Errors]]
-*** summary
-*** quotes
-*** ref [[file:master.bib::Bloom70space/timetrade-offs][Bloom 1970: Space Time Trade]]
-** TODO [#B] MOVE [[./10.1.1.20.98.bloom-nw.pdf][Network Applications of Bloom Filters: A Survey]]
-*** summary
-*** quotes
-*** ref [[file:master.bib::Broder02networkapplications][Broder & Mitzenmacher 2002: Network Applications Bloom Filters]]
 ** [[./10.1.1.60.7300.measureanon.pdf][Towards measuring anonymity]]
 *** summary
 *** quotes
@@ -16846,28 +16905,3 @@
 *** summary
 *** quotes
 *** ref [[file:master.bib::web-is-doom][Cremin 2016: Doom]]
-** TODO MOVE [[./esa2006b.pdf][An Improved Construction for Counting Bloom Filters]]
-** MOVE [[./Add-ons_Extension Signing - MozillaWiki.html]]
-*** summary
-    - all extensions need to be signed (no themes, dictionaries, etc)
-
-    - since Firefox 47
-
-    - via API: http://olympia.readthedocs.org/en/latest/topics/api/signing.html
-
-    - or jpm: https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_sign
-*** ref [[file:master.bib::addon-signing][Mozilla 2016: Add Extension Signing]]
-** MOVE [[./Tor Project: Pluggable Transports.html][Tor: Pluggable Transports]]
-*** summary
-    - random IPs by volunteers etc protect against filtering by IP/port
-    - DPI can filter for traffic patterns
-    - pluggable transports defend against that
-    - list of pluggable transports
-*** quotes
-*** ref: see .url
-** MOVE [[./Tor Project: obfsproxy.html]]
-*** summary
-    - transform traffic between client and bridge
-    - uses pluggable transports for transformation
-*** quotes
-*** ref: see .url

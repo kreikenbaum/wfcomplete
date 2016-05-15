@@ -131,7 +131,7 @@
 ** Design
 ** Implementation
 ** Results and Evaluation
-* TODO topics [0/116]
+* TODO topics [0/117]
 ** TODO Website Fingerprinting [0/52]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
@@ -852,7 +852,7 @@
     multiplexing and fixed cell sizes.
 *** TODO sort subtopics
 *** TODO Tor overview
-** TODO Addon Design and Implementation [0/48]
+** TODO Addon Design and Implementation [0/49]
 *** Defenses
 **** [[*wf-specific%20defenses][wf-specific defenses]]
 **** [[*other%20defenses][other defenses]]
@@ -1066,7 +1066,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 ***** for each loaded url, maybe load something else
       - this generates the cover traffic over the loading of the website
       - yet only augments bursts, does not equalize them
-**** TODO modules [1/15]
+**** TODO modules [0/15]
 ***** TODO Watcher
       notifies when user loads sth
 ****** maybe change name
@@ -1121,6 +1121,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
       source for cover traffic
       fixed domain, size as parameter
 ***** TODO BloomSort
+      <<bloomsort>>
       sorts elements by size using Bloom Filters
       +add(id, value)
       +query(id): value
@@ -1130,15 +1131,15 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
       provides randomization methods
       +string(length:number) pseudo-random string
       +uniform01() secure random float in the range [0,1)
-***** TODO SizeCache
-      <<SizeCache>>
-      Lengths of elements if stored.
-      +htmlSize(url)
-      +numberEmbeddedObjects(url)
-      - if fails, exception
-      - html and num
-      - caches sizes (internally currently)
-	- hard coded
+***** CHECK SizeCache
+      <<SizeCache>> The SizeCache element stores approximations for
+      both the HTMLsizes (=htmlSize()=) and number of embedded objects
+      (=numberEmbeddedObject()=) per URL, using a [[bloomsort][BloomSort]] data
+      structure for each.
+
+      Exceptions from the BloomSort are passed on. This class is a
+      facade \cite{gof} that initializes the bloom filters and
+      simplifies access.
 ***** TODO User
       The User class handles user action. It is the main controller.
 
@@ -1374,6 +1375,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
     dummy packets chosen as response to real request (as in web traffic)
 - add evaluation values
 - similarities: no delay
+  - also has app_hint
 - currently uses exit nodes
 - this has no gap traffic, aims less at global adversary, more at ISP
 ****** TODO understand adaptive padding histogram
@@ -1645,27 +1647,27 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   2) bloom binning (I) with random sizes (B)
   3) one target distribution (II) with original size from bloom (A),
   4) one target distribution (II) with random sizes (B)
-* TODO which features work well
-  As noted by Perry in \cite{critique}, there has been little analysis
-  of which feature contribute the most towards
-  classification. Panchenko et al. \cite{panchenko} provided a
-  qualitative analysis. Hayes and Danezis \cite{kfingerprint} used
-  forests of randomized trees, which provide feature importance
-  estimation.
+* CHECK which features work well
+  As stressed by Perry in \cite{critique}, analysis of which feature
+  contribute the most towards classification is important. Panchenko
+  et al. \cite{panchenko} provided a qualitative analysis. Hayes and
+  Danezis \cite{kfingerprint} used forests of randomized trees, which
+  provide feature importance estimation.[fn::f.ex. in scikit-learn
+  \cite{scikit-learn} via the =_feature_importances= attribute]
 
-  As Dyer et al \cite{oakland2012-peekaboo} noted and our tries with
-  Panchenko et al's estimator \cite{panchenko} support, you can get
-  good accuracy with several classifiers, given the right features.
+  As Dyer et al \cite{oakland2012-peekaboo} noted and experiments with
+  Panchenko et al's \cite{panchenko} estimator support (see
+  [[different-classifiers]]), you can get good accuracy with several
+  classifiers, given the right features.
 
-  The top-five features as determined by Hayes and Danezis are the
-  number (both absolute and percentage of total) of both incoming and
-  outgoing packets. The standard deviation of the packet ordering list
-  proposed by Panchenko et al completes the top five.
+  As determined by Hayes and Danezis \cite{kfingerprint}, the top-five
+  features are the number (both absolute and percentage of total) of
+  both incoming and outgoing packets. The standard deviation of the
+  packet ordering list [fn::Panchenko et al \cite{panchenko} call
+  these features /Number Markers/] completes the top five. Each added
+  feature increases accuracy, yet with nearly the same accuracy for 30 as
+  for the total of 150 features.
 ** MOVE to wf
-** TODO second link to hayes.. and panchenko..? in same section?
-** TODO explain "standard deviation of the packet ordering list"
-   at least link to panchenko
-** TODO mention _feature_importances?
 * TODO does this hide bursts?
   - meta-bursts as described in walkie-talkie
   - are those hidden, too, or can the number of bursts be found out
@@ -1713,7 +1715,13 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - as critiqued in \cite{critique}
   - if protects against this, should also protect against worse
   - additional (?defense?) as proposed in critique
-* npm short installation/description
+* TODO npm short installation/description
+* TODO panchenko v1 different classifiers
+  <<different-classifiers>>
+  - experiment
+  - different classifiers, different results
+  - much easier to just use knn
+  - more work for svm parameter estimation
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
