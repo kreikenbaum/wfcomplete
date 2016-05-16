@@ -131,7 +131,7 @@
 ** Design
 ** Implementation
 ** Results and Evaluation
-* TODO topics [0/117]
+* TODO topics [0/112]
 ** TODO Website Fingerprinting [0/52]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
@@ -362,7 +362,7 @@
 
      export LD_LIBRARY_PATH=/lib:/usr/lib:/path/to/bundle/Browser/TorBrowser/Tor
 
-     The script [[*Script%20%5B%5B./bin/one_site.py%5D%5D:%20capture%20pcap%20traces][one_site.py]] uses this internally.
+     The script [[one_site][one_site.py]] uses this internally.
 ***** TODO where exactly is the torrc: directory
 ***** TODO is old, still use, or remove?
 **** Avoiding safe mode on restart
@@ -852,7 +852,7 @@
     multiplexing and fixed cell sizes.
 *** TODO sort subtopics
 *** TODO Tor overview
-** TODO Addon Design and Implementation [0/49]
+** TODO Addon Design and Implementation [0/44]
 *** Defenses
 **** [[*wf-specific%20defenses][wf-specific defenses]]
 **** [[*other%20defenses][other defenses]]
@@ -1066,7 +1066,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 ***** for each loaded url, maybe load something else
       - this generates the cover traffic over the loading of the website
       - yet only augments bursts, does not equalize them
-**** TODO modules [0/15]
+**** TODO modules [0/11]
 ***** TODO Watcher
       notifies when user loads sth
 ****** maybe change name
@@ -1137,14 +1137,14 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
       (=numberEmbeddedObject()=) per URL, using a [[bloomsort][BloomSort]] data
       structure for each.
 
-      Exceptions from the BloomSort are passed on. This class is a
+      Exceptions from the BloomSort are passed on. This module is a
       facade \cite{gof} that initializes the bloom filters and
       simplifies access.
-***** TODO User
-      The User class handles user action. It is the main controller.
+***** CHECK User
+      The [[user.js][User]] module handles user action. It is the main controller.
 
-      On each loading of an object, it receives a message from the
-      =Watcher= module via =loads()=, with the loaded URL as
+      On each loading of a object via HTTP(S), it receives a message
+      from the =Watcher= module via =loads()=, with the loaded URL as
       parameter.
 
       If it is a new request to the host, loading of an HTML page is
@@ -1159,17 +1159,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
       page (at =end=), or the end of a timeout of =User.TIMEOUT=
       seconds, the CoverTraffic-object is notified of the ending and
       removed from the internal host-to-CoverTraffic mapping.
-****** TODO see [[Further work]]
-****** TODO rename
-       to Control
-       or
-       - action
-       - user
-       - controller
-       - mediator
-       - flight control
-       - dispatcher
-****** TODO add to appendix
 **** TODO cover traffic distribution generation
      - each retrieval maybe triggers additional retrieval(s)
        - based on statistical model
@@ -1602,31 +1591,28 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
     truncated at 0.999918739 quantile
   - embeddedSize: ebd
   - numEmbeddedObjects: truncated gamma instead of gamma
-* CHECK Variations of Cover Traffic
-  To influence the generation of cover traffic, there are two
-  parameters which can be altered with a binary decision set, which
-  lead to four possible strategies.
+* TODO Variations of Cover Traffic
+  There are two variations how to generate Cover Traffic.
 
-  The first parameter is the size of the webpage. This includes the
-  size of the HTML-page (see [[#find%20sizes%20of%20HTML-documents][find sizes of HTML-documents]]) and the
-  number of embedded elements (see [[*find%20number%20of%20embedded%20elements][find number of embedded elements]]).
+  1. Does knowing [[#find sizes of HTML-documents][the size of the webpage]] and [[*find number of embedded elements][number of embedded
+     elements]] help in generating cover traffic? While it seems so at
+     first, it can be evaluated if [[HTML traffic model][educated guessing]] might work
+     better.
 
-  If the parameter is unknown, the [[HTML traffic model][HTML traffic model]] is used to
-  randomly guess [fn::The size of each embedded element is always
-  randomly guessed.].
+     In a closed world, it is possible to always know the size of both
+     beforehand. If the parameter is unknown, the [[HTML traffic model][HTML traffic model]]
+     is used to randomly guess [fn::The size of each embedded element
+     is always randomly guessed.].
 
-  If it is known, it can be either used or treated as unknown. A
-  priori, it seems as though exact knowledge of the site's size should
-  make cover traffic generation more effective, as neither too much
-  nor too little traffic is generated. Still, this is the first
-  parameter evaluated.
+  2. Given a webpage and its size, how much traffic should be generated?
 
-  The second parameter is the target size to pad to. One approach is
-  to group the webpages by their size into bins and to set the border
-  as the target size, as all webpages in the bin must have a size less
-  than or equal the border. This approach mimics that taken by Wang et
-  al. in \cite{effective} and Cai et al. in \cite{a-systematic}, with
-  the bins being equivalent to the anonymity sets / partitions.
+     The second parameter is the target size to pad to. One approach
+     is to group the webpages by their size into bins and to set the
+     border as the target size, as all webpages in the bin must have a
+     size less than or equal the border. This approach mimics that
+     taken by Wang et al. in \cite{effective} and Cai et al. in
+     \cite{a-systematic}, with the bins being equivalent to the
+     anonymity sets / partitions.
 
   The other approach is to have a single target distribution from
   which values are sampled each time, once again from the [[HTML traffic model][HTML traffic
@@ -1647,6 +1633,32 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   2) bloom binning (I) with random sizes (B)
   3) one target distribution (II) with original size from bloom (A),
   4) one target distribution (II) with random sizes (B)
+
+  | SIZES \ TARGETS | I: bloom binning | II: one distribution |
+  |-----------------+------------------+----------------------|
+  | A: known sizes  |                  |                      |
+  | B: random sizes |                  |                      |
+** TODO Varianten: (see that all mentioned)
+	 1) bloom filter
+	    - zielgroesse: maximum des jeweiligen buckets
+	    - was bei groesstem bucket?
+	    - z.zt: 99,9% quantil zurueck \to 0.1% aller Seiten mit
+              Minimalschutz
+	      - z.b. "http://163.com/" has 471 embedded elements and
+		html-size of 751070
+	      - still: for each element a 0.1% MIN_PROB chance of extra
+		element \to 47 extra pages retrieved
+	    - mention to daniel
+	    - currently, mismatch URL/href/host/href_no_params
+	      - needs sometimes host (cheap solution)
+	      - sizeCache needs href_no_params (better than full href)
+	 2) alternative: wuerfeln, padden bis maximum des passenden bloom
+            buckets
+	 3) so wie bisher mit originalgroesse aus bloom
+	 4) so wie bisher mit originalgroesse wuerfeln
+** TODO text less stilted
+   continue at 2.
+** TODO check that [[file:docs/lit.org::*%5B%5B./ccs14.pdf%5D%5BCai%202014%20-%20A%20Systematic%20Approach%20to%20Developing%20and%20Evaluating%20Website%20Fingerprinting%20Defenses%5D%5D][Cai et al]] pad to bins
 * CHECK which features work well
   As stressed by Perry in \cite{critique}, analysis of which feature
   contribute the most towards classification is important. Panchenko
@@ -1673,7 +1685,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - are those hidden, too, or can the number of bursts be found out
   - easy to implement, maybe do this
 ** maybe see cumul-graphics
-* LATER evaluation of [[*Variations%20of%20Cover%20Traffic][Variations of Cover Traffic]]
 * TODO mention tor browser bundle version etc
 * TODO why defense better
 * TODO which sites well-protected, which less
@@ -1722,6 +1733,17 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - different classifiers, different results
   - much easier to just use knn
   - more work for svm parameter estimation
+* TODO outlier removal
+  As described by \cite{panchenko2}, the CUMUL approach is greatly
+  enhanced by outlier removal. In his software, he uses both a
+  median-based as well as a 25%/75%-quantile-based approach.
+
+  - implemented in [[file:bin/extract_attribute.py::def%20remove_quantiles_panchenko_2(counter_list):][ex-att]]
+  - quantiles:
+    - numpy instead of his original code for code clarity
+    - just take quantiles, use his limits
+** TODO run test, include results
+** TODO link to panchenko's software
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
@@ -3764,7 +3786,7 @@ mean = 0.763238095238
 *** *duration* (git c435)
 **** no change in rbf
 **** +2 ca in Deci
-
+** TODO evaluation of [[*Variations%20of%20Cover%20Traffic][Variations of Cover Traffic]]
 * WAIT Discussion
   intel model: interdependences (html bigger \to more embedded) not mentioned
 * WAIT Acknowledgements
@@ -3773,7 +3795,7 @@ mean = 0.763238095238
   - Prof. Dr. Konrad Rieck
   - Tao Wang
   - ...
-* LATER Further work
+* TODO Further work
   - bigger world sizes
   - open world
   - source cover traffic: user gives domain as starting point
@@ -3855,7 +3877,14 @@ mean = 0.763238095238
    - assumption: can split traces
 ** TODO always also link in text
 *** TODO check with darp
-* TODO appendices [0/11]
+** Exactly distinguishing HTML and embedded requests
+   The current version of the [[user.js][User module]] should work adequately, yet
+   it separates CoverTraffic by DNS-domainname. As it often happens
+   that one HTML page has embedded elements from different domains,
+   this does not perfectly represent reality. It would be more exact
+   to analyse the HTML page and at least return the domains of all
+   embedded elements.
+* TODO appendices [0/12]
 \appendix
 ** Script [[./bin/one_site.py]]: capture pcap traces
    <<one_site>>
@@ -3912,6 +3941,10 @@ mean = 0.763238095238
 *** TODO download
 ** TODO Remove same-host cover traffic server from traces: [[./bin/7777.sh]]
    <<7777>>
+** Addon
+*** Control module User
+    <<user.js>>
+    #+INCLUDE: "./cover/js/user.js" src js
 * unused
 ** from [[*transform to panchenko-features]]
   The code to examine a single trace file is in =analyze_file()=

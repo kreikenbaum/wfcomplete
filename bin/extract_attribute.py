@@ -82,13 +82,22 @@ def to_libsvm(X, y, fname='libsvm_in'):
                 f.write('{}:{} '.format(no+1, val))
         f.write('\n')
 
-def remove_quantiles_panchenko_2(values):
+def remove_quantiles_panchenko_2(counter_list):
     '''remove if incomingSize < (q1-1.5 * (q3-q1))
     or incomingSize > (q3+1.5 * (q3-q1)
     >>> remove_quantiles_panchenko_2([0, 2, 2, 2, 2, 2, 2, 4])
     [2, 2, 2, 2, 2, 2]
     '''
-    
+    counter_total_in = [counter.get('total_in') for counter in counter_list]
+    q1 = np.percentile(counter_total_in, 25)
+    q3 = np.percentile(counter_total_in, 75)
+
+    out = []
+    for counter in counter_list:
+        if (counter.get('total_in') >= (q1 - 1.5 * (q3 - q1)) and
+            counter.get('total_in') <= (q3 + 1.5 * (q3 - q1))):
+            out.append(counter)
+    return out
     
         
 ### evaluation code

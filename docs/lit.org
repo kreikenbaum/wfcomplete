@@ -1,5 +1,6 @@
 #+TODO: TODO | DONE
 [[./master.bib]]
+** TODO [#A] move MOVE sections
 ** [#A] [[./HTTP Traffic Model_v1 1 white paper.pdf][Lee - A NEW TRAFFIC MODEL FOR CURRENT USER WEB BROWSING BEHAVIOR]]
 *** summary
     0) [@0] ABSTRACT
@@ -7584,7 +7585,7 @@
 *** quotes
 *** [[file:master.bib::tor-obfsp][Tor 2016]]
 ** TODO [#A] Entwurfsmuster
-*** TODO summary (weiter bei Implementierung.3. S. 281)
+*** TODO summary (weiter bei Besucher, S. 301)
     0) [@0] Preface
 
        1) Vorwort
@@ -8949,7 +8950,21 @@
               z.b. einfach (aktualisiert alle) oder DAG (aktualisiert
               in richtiger Reihenfolge)
 
-	  - Beispielcode:
+	  - Beispielcode: ZeitGeber als Subjekt, =Tick()= wird extern
+            aufgerufen, benachrichtigt Beobachter, diese fragen dann
+            Werte ab
+
+	  - Bekannte Verwendungen: MVC (Smalltalk), (?Android onClick?)
+
+	  - Verwandte Muster:
+
+	    - Vermittler: Änderungsmanager kapselt "komplexe
+              Aktualisierungssemantik"
+
+	    - Singleton: Änderungsmanager als Singleton um einmalig
+              und global zugreifbar zu sein
+
+       3) Besucher (Visitor)
 
        6) [@6] Memento
 
@@ -9408,6 +9423,23 @@
 	     - how correct is this estimate?
 
 	  1) Sample Error and True Error
+
+	     - sample error: misclassification rate on sample (see quotes)
+
+	     - true error: misclassification rate on whole
+               distribution (see quotes)
+
+	     - how good an approximation is the sample error?
+
+	  2) Confidence Intervals for Discrete-Valued Hypotheses
+
+	     - sample error and number of samples estimate true error
+               (see quotes)
+
+	     - this works well if error not to close to 0 or 1 and n
+               big enough (see quotes)
+
+       3) BASICS OF SAMPLING THEORY
 *** quotes
     1) INTRODUCTION
        1) WELL-POSED LEARNING PROBLEMS
@@ -9467,6 +9499,24 @@
                D such that S and G are well defined,
 
 	       VS_{H, D} = {h \in H | (\exists s \in S, g \in G)(g \ge_{g} h \ge_{g} s)}
+    5) [@5] EVALUATING HYPOTHESES
+       1) ESTIMATING HYPOTHESIS ACCURACY
+	  1) Sample Error and True Error
+	     - Definition: The *sample error* (denoted error_{S}(h)) of
+               hypothesis h with respect to target function f and data
+               sample S is
+
+	       error_{S}(h) \equiv 1/n \sum_{x \in S} \delta(f(x), h(x))
+	     - Definition: The *true error* (denoted error_{D}(h)) of
+               hypothesis h with respect to target function f and
+               distribution D, is the probability that h will
+               misclassify an instance drawn at random according to D.
+
+	       error_{S}(h) \equiv Pr_{x \in D}[f(x) \neq h(x)]
+	  2) Confidence Intervals for Discrete-Valued Hypotheses
+	     - [confidence interval z_N = 1.96 for 95% confidence interval]
+               error_{S} \pm z_{N} \sqrt(error_{S}(h)(1- error_{S}(h))/n) (5.1)
+	     - n \cdot error_{S}(h) (1-error_{S}(h)) \ge 5
 *** ref [[file:master.bib::mitchell][Mitchell: Machine Learning]]
 ** TODO [#A] [[./usersrouted-ccs13.pdf][Users Get Routed: Traffic Correlation on Tor by Realistic Adversaries]]
 *** summary
@@ -9539,6 +9589,11 @@
 	 - here: fixed set of ASes and IXPs, correlation attacks
 
     4) SECURITY MODEL AND METRICS
+
+       "types and amounts of adversary resources, as well as how he
+       may use them."
+
+       1) Adversary Model
 *** quotes
     0) [@0] Abstract
        - Specific contributions of the paper include (1) a model of
@@ -16454,7 +16509,7 @@
            property commands.
    9) [@9] Capture - Refile - Archive
       6) [@6] Archiving
-	 1) [@2] Internal archiving
+	 2) [@2] Internal archiving
 	    - Archived trees are not exported (see Chapter 12
               [Exporting], page 136), only the headline is. Configure
               the details using the variable
@@ -16491,6 +16546,9 @@
 
 	    Here is an example
 	      : Some example from a text file.
+	  - This is done with the ‘src’ block, where you also need to
+            specify the name of the major mode that should be used to
+            fontify the example
 	  - In literal examples, Org will interpret strings like ‘(ref:name)’
 	    as labels, and use them as targets for special hyperlinks like [[(name)]]
    12) Exporting
@@ -16528,10 +16586,9 @@
 	  - "Use from x import y as z if two modules named y are to be
             imported or if y is an inconveniently long name."
 
-       3) Packages
+       5) [@7] List Comprehensions
 
-       4) [@4] Exceptions
-
+	  use for simple cases: each part (x, for, if) fits on max one line
 *** quotes
     1) Avoid using the + and += operators to accumulate a string within
       a loop. Since strings are immutable, this creates unnecessary
@@ -16905,3 +16962,45 @@
 *** summary
 *** quotes
 *** ref [[file:master.bib::web-is-doom][Cremin 2016: Doom]]
+** PART MOVE [[./doc_meek – Tor Bug Tracker & Wiki.choose_pluggable_transport.html][doc/meek – Tor Bug Tracker & Wiki]]
+*** summary
+    0) [@0]
+       
+       - pluggable transport: hides traffic via http-domain fronting
+
+    7) [@7] How to run a meek-server (bridge)
+
+       - compile
+
+       - update torrc (see quotes)
+
+       - can test on client via (quotes)
+*** quotes
+    7. [@7] How to run a meek-server (bridge)
+       - sample on ​https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/torrc
+       - [multiple ports] use something like this:
+	 #+BEGIN_EXAMPLE
+           ServerTransportPlugin meek exec /usr/local/bin/meek-server --port 7002 --disable-tls --log /var/log/tor/meek-server.log
+	 #+END_EXAMPLE
+       - [test client]
+	 #+BEGIN_SRC sh
+           Bridge meek 0.0.2.0:3 url=http://my-bridge.example.com:7002/
+	 #+END_SRC
+*** ref [[file:master.bib::tor-meek][Tor 2016: Tor Bug Tracker Wiki]]
+** [[/home/chive/IT-gg/python/PEP 8 - Style Guide for Python Code | Python.org.non-public++.html]]
+*** summary
+    1. [@3] Code lay-out
+
+       1. Indentation
+
+	  - make it visually distinguishable, then quite a few
+            different options (see quotes f.ex.)
+*** quotes
+    3. [@3] Code lay-out
+     1. Indentation
+       - [if example]
+	 #+BEGIN_SRC python
+           if (this_is_one_thing and
+               that_is_another_thing):
+               do_something()
+	 #+END_SRC
