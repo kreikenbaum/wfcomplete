@@ -40,11 +40,11 @@ function CoverTraffic(targetURL, load=LOAD) {
     this.site.numEmbedded = this.numStrategyB(targetURL);
 
 //  I: BLOOM BIN MAX
-//    this.target.html = this.htmlStrategyI(targetURL);
-//    this.target.numEmbedded = this.numStrategyI(targetURL);
+    this.target.html = this.htmlStrategyI(targetURL);
+    this.target.numEmbedded = this.numStrategyI(targetURL);
 //  II: ONE TARGET DISTRIBUTION
-    this.target.html = this.htmlStrategyII(targetURL);
-    this.target.numEmbedded = this.numStrategyII(targetURL);
+//    this.target.html = this.htmlStrategyII(targetURL);
+//    this.target.numEmbedded = this.numStrategyII(targetURL);
 
     this.prob = Math.max(this.target.numEmbedded / this.site.numEmbedded,
 			 MIN_PROB); // td: maybe * Math.sqrt(site.numEmbedded)

@@ -82,10 +82,14 @@ def to_libsvm(X, y, fname='libsvm_in'):
                 f.write('{}:{} '.format(no+1, val))
         f.write('\n')
 
+def _ctest(insize):
+    '''returns counter with only `total_in` set for testing'''
+    return counter.Counter.from_json('{{"fixed": {{"total_in": {}}}}}'.format(insize))
+
 def remove_quantiles_panchenko_2(counter_list):
-    '''remove if incomingSize < (q1-1.5 * (q3-q1))
-    or incomingSize > (q3+1.5 * (q3-q1)
-    >>> remove_quantiles_panchenko_2([0, 2, 2, 2, 2, 2, 2, 4])
+    '''remove if total_in < (q1-1.5 * (q3-q1))
+    or total_in > (q3+1.5 * (q3-q1)
+    >>> [x.get('total_in') for x in remove_quantiles_panchenko_2(map(_ctest, [0, 2, 2, 2, 2, 2, 2, 4]))]
     [2, 2, 2, 2, 2, 2]
     '''
     counter_total_in = [counter.get('total_in') for counter in counter_list]
@@ -98,7 +102,6 @@ def remove_quantiles_panchenko_2(counter_list):
             counter.get('total_in') <= (q3 + 1.5 * (q3 - q1))):
             out.append(counter)
     return out
-    
         
 ### evaluation code
 def test(X, y, estimator, nj=2):
@@ -135,6 +138,7 @@ def my_grid(X, y, cs, gammas):
     print 'with estimator: {}'.format(clf.best_estimator_)
 
 if __name__ == "__main__":
+    doctest.testmod()
     logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
 
     # if by hand: change to the right directory before importing
