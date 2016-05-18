@@ -86,6 +86,11 @@ def _ctest(insize):
     '''returns counter with only `total_in` set for testing'''
     return counter.Counter.from_json('{{"fixed": {{"total_in": {}}}}}'.format(insize))
 
+def _ptest(num, val=600):
+    '''returns counter with num packets of size val set for testing'''
+    return counter.Counter.from_json('{{"packets": {}}}'.format([val]*num))
+
+# td: maybe test that enough instances remain...
 def remove_quantiles_panchenko_2(counter_list):
     '''remove if total_in < (q1-1.5 * (q3-q1))
     or total_in > (q3+1.5 * (q3-q1)
@@ -101,6 +106,15 @@ def remove_quantiles_panchenko_2(counter_list):
         if (counter.get('total_in') >= (q1 - 1.5 * (q3 - q1)) and
             counter.get('total_in') <= (q3 + 1.5 * (q3 - q1))):
             out.append(counter)
+    return out
+
+# td: also removal by median
+def panchenko_outlier_removal(counters):
+    '''apply outlier removal to input of form
+    {'domain1': [counter, ...], ... 'domainN': [..]}'''
+    out = {}
+    for (k, v) in counters.iteritems():
+        out[k] = remove_quantiles_panchenko_2(v)
     return out
         
 ### evaluation code

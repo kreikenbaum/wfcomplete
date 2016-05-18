@@ -7589,7 +7589,7 @@
 *** quotes
 *** [[file:master.bib::tor-obfsp][Tor 2016]]
 ** TODO [#A] Entwurfsmuster
-*** TODO summary (weiter bei Besucher.Motivation, S. 301)
+*** TODO summary (weiter bei Besucher.Struktur+Teilnehmer, S. 304)
     0) [@0] Preface
 
        1) Vorwort
@@ -8975,6 +8975,29 @@
 
 	  - Motivation:
 
+	    - z.B. Compiler
+
+	      - Syntaxbaum, jedes Element bietet unterschiedliche Operationen
+
+	      - aber eigentlich ist die Operation mehr oder weniger
+                unabhängig von den Elementen, sondern vom Elementtyp
+
+	      - also besser eine =NimmEntgegen(Besucher)=-Operation,
+                die den Besucher auf sich ausführt
+
+	  - Anwendbarkeit:
+
+	    - viele Klassen mit unterschiedlichen Schnittstellen
+
+	      - Objektoperationen darauf abhängig vom konkreten Typ
+
+	    - Klassen der Objektstruktur nicht "verschmutzen"
+
+	    - Klassen der Objektstruktur sind konstant, aber neue
+              Operationen sind häufiger
+
+	  - Struktur/Teilnehmer
+
        6) [@6] Memento
 
 	  1) Zweck: ohne Kapselung zu verletzen, speichere, so dass
@@ -9459,6 +9482,22 @@
 	       - for np(1-p) \ge 5, you can use normal distribution
 
 	  2) The Binomial Distribution
+
+	     - weird coin with probability p for heads.
+
+	       - How many heads r after n tosses
+
+	       - r/n estimates p
+
+	     - corresponds to estimation of error:
+
+	       - p to error_{D}(h)
+
+	       - r/n to error_{S}(h)
+
+	     - general: base experiment with binary outcome repeated n times
+
+	  3) Mean and Variance
 *** quotes
     1) INTRODUCTION
        1) WELL-POSED LEARNING PROBLEMS
@@ -9626,6 +9665,19 @@
 	     - Internet eXchange Points connect multiple
 
 	  2) Resource Endowment.
+
+	     - Institutions: ISP controls ASes
+
+	       - companies control one or multiple IXPs
+
+	     - might use number of compromised relays as metric, but
+               Tor weighs by bandwidth
+
+	       - bandwidth more accurate as measure [6]
+
+	       - better yet "guard and/org exit bandwidth"
+
+	  3) Adversary Goals.
 *** quotes
     0) [@0] Abstract
        - Specific contributions of the paper include (1) a model of
@@ -9994,8 +10046,8 @@
     1) INTRODUCTION
       - generate a synthetic workload for benchmarking or simulation.
 ** TODO [#B] [[~/da/git/docs/timing-fc2004.pdf][Timing Attacks in Low-Latency Mix Systems]]
-** TODO [#B] [[/home/chive/own/tor/doc/read/tor-spec.txt][Tor Protocol Specification]]
-*** [#B] read through to 3, see that correct
+** TODO [#B] [[./torspec/tor-spec.txt][Tor Protocol Specification]]
+*** [#B] 0.3 to 3 (see also spacing), see that correct
 *** summary
     0) [@0] Preliminaries:
 
@@ -10030,13 +10082,30 @@
 	  - CELL_LEN(v) length of tor cell for protocol version v
 
        3) Ciphers
+
 	  - stream: 128bit counter-mode AES with IV=0x0...0
-	  - pk: 1024 bit AES with exponent of 65537
-	    0aef-mgf1 padding, sha1 digest, label unset
+
+	  - pk: 1024 bit AES with exponent of 65537 with 0aef-mgf1
+            padding, sha1 digest, label unset
+
 	  - ntor: curve25519
+
 	  - dh generator 2, modulus from rfc2409
-	    SHOULD private keys of 320 bits, no reuse
-	  - hybrid encryption
+	    optimization: SHOULD private keys of 320 bits, MUST NOT reuse
+
+	  - hash: SHA-1
+
+	  - hybrid encryption:
+
+	    - if small (< PK_ENC_LEN-PK_PAD_LEN), encrypt with PK
+
+	    - else: generate KEY_LEN key, split M1 of len PK_ENC_LEN -
+              PK_PAD_LEN - KEY_LEN
+
+	      - first message: K|M1 with PK
+
+	      - rest M2 with stream cipher using K
+
     1) System overview: TOR low-latency tcp distributed overlay
        1) Keys and names
 	  - long-term *identity* key, signing only
@@ -12845,22 +12914,24 @@
 		2. When c = 2 for general b, it becomes the Rayleigh
                    distribution.
        2) Discrete Distributions
-
-	  3) [@3] Geometric
-
+	  2) [@2] Binomial
+	     - Density Function:
+	       - (^{n}_{k})p^{k} (1-p)^{n-k} [for k \in {0, 1, ..., n}]
+	       - 0 [otherwise]
+	     - where the binomial coefficient  (^{n}_{i}) = n! / (i!(n-1)!)
+	     - Notes:
+	       3. For large n, the binomial can be approximated by
+                  N(np,np), provided np > 5 and 0. 1 ≤ p ≤ 0. 9 — and
+                  for all values of p when np > 25.
+	  3) Geometric
 	     - "The geometric distribution represents the probability
                of obtaining k failures before the first success in
                independent Bernoulli trials, where the probability of
                success in a single trial is p."
-
 	     - Algorithm:
-
 	       1. Generate U ~ U(0, 1)
-
 	       2. Return X = int ( ln U/ ln (1 − p) )
-
 	     - Source Code:
-
 	       #+BEGIN_SRC c++
                  int geometric( double p )
                  {
@@ -14831,6 +14902,16 @@
 	  - legals / analysts want high recall
 
 	  - F-measure: harmonic mean of P and R (see quotes)
+
+    14. [@14] Vector space classification
+
+	6. [@6] The bias-variance tradeoff
+
+	   - why use "weaker" (f.ex. linear) classifiers?
+
+	   - "there is no universally optimal learning method"
+
+	   - here: linear/nonlinear as proxies for weak/strong
 *** quotes
   0. [@0] Preface
      - Chapter 10 considers information retrieval from documents that
@@ -15726,6 +15807,16 @@
                import pdb; pdb.set_trace()
              #+END_SRC
              at the location you want to break into the debugger.
+	   - pdb.post_mortem( [ traceback ] )
+
+             Enter post-mortem debugging of the given traceback
+             object. If no traceback is given, it uses the one of the
+             exception that is currently being handled (an exception
+             must be being handled if the default is to be used).
+	   - pdb.pm()
+
+             Enter post-mortem debugging of the traceback found in
+             sys.last_traceback.
     27) virtual environment
 
         A cooperatively isolated runtime environment that allows Python
@@ -17088,6 +17179,77 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
       path-to-binary using options as its command-line options, and
       expects to receive proxied client traffic from it.
 *** ref [[file:master.bib::tor-manual][Tor 2015: Linux Users Manual]]
-** TODO search feature vs classifier MOVE [[./2009-diss.pdf][Machine Learning for Application-Layer Intrusion Detection]]
+** TODO [#B] search feature vs classifier MOVE [[./2009-diss.pdf][Machine Learning for Application-Layer Intrusion Detection]]
+*** #B PART
 *** summary
+    1) Introduction
+       1) Intrusion Detection
+       2) Machine Learning
+       3) Thesis Contributions
+       4) Thesis Organization
+    2) Feature Extraction at Application Layer
+       1) Network Layers
+	  1) The TCP/IP Model
+	  2) The Application Layer
 *** quotes
+** MOVE PART [[shell:man tshark]]
+*** quotes
+    - -R  <Read filter>
+
+      Cause the specified filter (which uses the syntax of
+      read/display filters, rather than that of capture filters) to be
+      applied during the first pass of analysis. Packets not matching
+      the filter are not considered for future passes. Only makes
+      sense with multiple passes, see -2. For regular filtering on
+      single-pass dissect see -Y instead.
+*** ref [[file:master.bib::tshark][Developers 2015: Linux Users Manual]]
+** TODO [[./platform_xpcom - Mozilla | MDN.html][platform/xpcom]]
+*** summary
+    1) Usage
+
+       XPCOM interfaces, factories, services
+
+       1) Implementing XPCOM Interfaces
+
+	  - modules exports class =Unknown= which implements nsISupports
+
+	    - subclass Unknown to implement XPCOM interfaces
+	      #+BEGIN_SRC js
+                var { Class } = require('sdk/core/heritage');
+                var { Unknown } = require('sdk/platform/xpcom');
+
+                var StarObserver = Class({
+                    extends:  Unknown,
+                    interfaces: [ 'nsIObserver' ],
+
+                    // implement methods of nsIObserver
+                });
+	      #+END_SRC
+
+    3) [@3] Unknown
+
+       0) [@0]
+
+	  - base class for all XPCOM objects
+
+	  - subclass to create your own
+
+	    - list interfaces in =interfaces= property
+
+	    - nsISupports always included, no need to list
+
+       1) Methods
+
+	  1) QueryInterface(interface)
+
+*** quotes
+*** ref [[file:master.bib::moz-sdk-xpcom][wbamberg 2016]]
+** TODO MOVE [#A] [[./torspec/pt-spec.txt][Pluggable Transport Specification (Version 1)]]
+*** TODO #A at least part
+*** summary
+    0) [@0] Abstract
+
+       censorship circumvention using modular, traffic-transforming
+       sub-processes
+*** quotes
+*** ref [[file:master.bib::tor-spec-pt][Yawning 2015: Pluggable Transport Specification Version]]
