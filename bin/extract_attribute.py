@@ -82,29 +82,42 @@ def to_libsvm(X, y, fname='libsvm_in'):
                 f.write('{}:{} '.format(no+1, val))
         f.write('\n')
 
-def _ctest(insize):
-    '''returns counter with only `total_in` set for testing'''
-    return counter.Counter.from_json('{{"fixed": {{"total_in": {}}}}}'.format(insize))
-
+# td: to counter
 def _ptest(num, val=600):
     '''returns counter with num packets of size val set for testing'''
     return counter.Counter.from_json('{{"packets": {}}}'.format([val]*num))
 
+def p_or_tiny(counter_list):
+    '''removes if len(packets) < 2 or total_in < 2*512
+    >>> len(p_or_tiny([_ptest(1), _ptest(3)]))
+    1
+    >>> len(p_or_tiny([_ptest(2, val=-600), _ptest(3)]))
+    1
+    '''
+    return [x for x in counter_list
+            if len(x.packets) >= 2 and x.get_total_in() >= 2*512]
+
+def p_or_median(counter_list):
+    '''removes if total_in < 0.2 * median or > 1.8 * median'''
+    med = np.median([counter.get_total_in() for counter in counter_list])
+    return [x for x in counter_list
+            if x.get_total_in() >= 0.2 * med and x.get_total_in() <= 1.8 * med]
+
 # td: maybe test that enough instances remain...
-def remove_quantiles_panchenko_2(counter_list):
+def p_or_quantiles(counter_list):
     '''remove if total_in < (q1-1.5 * (q3-q1))
     or total_in > (q3+1.5 * (q3-q1)
-    >>> [x.get('total_in') for x in remove_quantiles_panchenko_2(map(_ctest, [0, 2, 2, 2, 2, 2, 2, 4]))]
+    >>> [x.get_total_in()/600 for x in p_or_quantiles(map(_ptest, [0, 2, 2, 2, 2, 2, 2, 4]))]
     [2, 2, 2, 2, 2, 2]
     '''
-    counter_total_in = [counter.get('total_in') for counter in counter_list]
+    counter_total_in = [counter.get_total_in() for counter in counter_list]
     q1 = np.percentile(counter_total_in, 25)
     q3 = np.percentile(counter_total_in, 75)
 
     out = []
     for counter in counter_list:
-        if (counter.get('total_in') >= (q1 - 1.5 * (q3 - q1)) and
-            counter.get('total_in') <= (q3 + 1.5 * (q3 - q1))):
+        if (counter.get_total_in() >= (q1 - 1.5 * (q3 - q1)) and
+            counter.get_total_in() <= (q3 + 1.5 * (q3 - q1))):
             out.append(counter)
     return out
 
@@ -114,7 +127,7 @@ def panchenko_outlier_removal(counters):
     {'domain1': [counter, ...], ... 'domainN': [..]}'''
     out = {}
     for (k, v) in counters.iteritems():
-        out[k] = remove_quantiles_panchenko_2(v)
+        out[k] = p_or_quantiles(p_or_median(p_or_tiny(v)))
     return out
         
 ### evaluation code
@@ -134,7 +147,7 @@ ALL = [ensemble.AdaBoostClassifier(),
        ensemble.ExtraTreesClassifier(n_estimators=250),
        ensemble.RandomForestClassifier(),
        neighbors.KNeighborsClassifier(),
-       svm.SVC(),
+       svm.SVC(gamma=2**-4),
        tree.DecisionTreeClassifier()]
 
 #    Cs = np.logspace(11, 17, 7, base=2)
@@ -158,9 +171,21 @@ if __name__ == "__main__":
     # if by hand: change to the right directory before importing
     # os.chdir('/mnt/data/2-top100dupremoved_cleaned/')
     # os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'sw', 'data', 'json', 'disabled'))
-    #(X, y, y_domains) = to_features(counter.Counter.from_(sys.argv))
+
     (X, y, y_domains) = to_features_cumul(counter.Counter.from_(sys.argv))
-    # os.chdir(os.path.join('..', 'variante3_v15.3'))
+    # compare outlier removal
+    cs = counter.Counter.from_(sys.argv)
+    (X, y, y_domains) = to_features_cumul(panchenko_outlier_removal(cs))
+    (X2, y2, y2_domains) = to_features_cumul(cs)
+    test(X, y, ALL[1])
+    test(X2, y2, ALL[1])
+    test(X, y, ALL[3])
+    test(X2, y2, ALL[3])
+    test(X, y, ALL[4])
+    test(X2, y2, ALL[4])
+    
+    # compare cumul and panchenko1
+    #(X, y, y_domains) = to_features(counter.Counter.from_(sys.argv))
     # (X2, y2, y2_domains) = to_features_cumul(counter.Counter.from_(sys.argv))
 
     for esti in ALL:

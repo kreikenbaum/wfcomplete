@@ -33,11 +33,11 @@ function CoverTraffic(targetURL, load=LOAD) {
     this.target = {};
 
 //  A: KNOWN SIZES IF KNOWN
-//    this.site.html = this.htmlStrategyA(targetURL);
-//    this.site.numEmbedded = this.numStrategyA(targetURL);
+    this.site.html = this.htmlStrategyA(targetURL);
+    this.site.numEmbedded = this.numStrategyA(targetURL);
 //  B: ONLY GUESSED SIZES
-    this.site.html = this.htmlStrategyB(targetURL);
-    this.site.numEmbedded = this.numStrategyB(targetURL);
+//    this.site.html = this.htmlStrategyB(targetURL);
+//    this.site.numEmbedded = this.numStrategyB(targetURL);
 
 //  I: BLOOM BIN MAX
     this.target.html = this.htmlStrategyI(targetURL);

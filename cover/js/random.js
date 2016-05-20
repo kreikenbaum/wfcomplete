@@ -3,7 +3,7 @@
 exports.DOC = 'random.string and crypto-secure randomness';
 
 const { Cu } = require("chrome");
-Cu.importGlobalProperties(["crypto"]);
+Cu.importGlobalProperties(["crypto"]); /* globals crypto */
 
 // courtesy of stackoverflow.com/questions/1349404
 // does not need strong randomness

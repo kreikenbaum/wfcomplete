@@ -42,7 +42,6 @@ var httpRequestObserver = {
 
 /** start to watch traffic, callback to `user` object */
 function register(user) {
-    console.log('register');
     callback = user;
     endObserver = createPageMod();
     httpRequestObserver.register();

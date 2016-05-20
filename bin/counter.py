@@ -215,6 +215,10 @@ class Counter(object):
             out[k] = len(feature)
         return out
 
+    def get_total_in(self):
+        '''returns total incoming bytes'''
+        return num_bytes(self.packets)[0]
+
     def get(self, feature_name):
         '''returns the (scalar) feature of feature_name'''
         self._postprocess()
@@ -342,7 +346,7 @@ class Counter(object):
         '''@return CUMUL feature vector'''
         total = []
         # cumulated packetsizes
-        cum = []
+        cumul = [] #td: good idea to have same name as method?
         inSize = 0
         outSize = 0
         inCount = 0
