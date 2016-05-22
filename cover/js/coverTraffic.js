@@ -10,7 +10,6 @@ const debug = require("./debug.js");
 const sizeCache = require("./size-cache.js");
 const stats = require("./stats.js");
 
-// td: auto-update on pref change
 // prefs allow only integers, no floats
 /** overhead of dummy traffic -1; 1.5 has overhead of 50% */
 const FACTOR = 1 + (Simple.prefs.factor / 100);
@@ -25,29 +24,30 @@ const LOAD = require('./load.js');
  * @param {module load.js} module which provides loading capabilities
  * @param {String targetURL} first request to site was this URL
  */
-// td: refactor: member variable for targetURL?
 function CoverTraffic(targetURL, load=LOAD) {
     this.load = load;
 
     this.site = {};
     this.target = {};
 
-//  A: KNOWN SIZES IF KNOWN
-    this.site.html = this.htmlStrategyA(targetURL);
-    this.site.numEmbedded = this.numStrategyA(targetURL);
-//  B: ONLY GUESSED SIZES
-//    this.site.html = this.htmlStrategyB(targetURL);
-//    this.site.numEmbedded = this.numStrategyB(targetURL);
+    if ( Simple.prefs.sizes ) { //  A: KNOWN SIZES IF KNOWN
+	this.site.html = this.htmlStrategyA(targetURL);
+	this.site.numEmbedded = this.numStrategyA(targetURL);
+    } else {                    //  B: ONLY GUESSED SIZES
+	this.site.html = this.htmlStrategyB(targetURL);
+	this.site.numEmbedded = this.numStrategyB(targetURL);
+    }
 
-//  I: BLOOM BIN MAX
-    this.target.html = this.htmlStrategyI(targetURL);
-    this.target.numEmbedded = this.numStrategyI(targetURL);
-//  II: ONE TARGET DISTRIBUTION
-//    this.target.html = this.htmlStrategyII(targetURL);
-//    this.target.numEmbedded = this.numStrategyII(targetURL);
+    if ( Simple.prefs.bins ) { //  I: BLOOM BIN MAX
+	this.target.html = this.htmlStrategyI(targetURL);
+	this.target.numEmbedded = this.numStrategyI(targetURL);
+    } else {                   //  II: ONE TARGET DISTRIBUTION
+	this.target.html = this.htmlStrategyII(targetURL);
+	this.target.numEmbedded = this.numStrategyII(targetURL);
+    }
 
     this.prob = Math.max(this.target.numEmbedded / this.site.numEmbedded,
-			 MIN_PROB); // td: maybe * Math.sqrt(site.numEmbedded)
+			 MIN_PROB);
 
     this.load.sized(this.target.html);
 }
@@ -65,11 +65,15 @@ CoverTraffic.prototype.loadNext = function() {
     }
 };
 
+
+// disabled for version 0.18+
 CoverTraffic.prototype.finish = function() {
     debug.log('ending traffic with ' + this.target.numEmbedded + ' to load');
-    while ( this.target.numEmbedded > 0 ) {
-	this.load.sized(stats.embeddedObjectSize());
-	this.target.numEmbedded -= 1;
+    if ( Simple.prefs.burst ) {
+	while ( this.target.numEmbedded > 0 ) {
+	    this.load.sized(stats.embeddedObjectSize());
+	    this.target.numEmbedded -= 1;
+	}
     }
 };
 

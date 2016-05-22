@@ -1,4 +1,6 @@
 "use strict";
+const Simple = require('sdk/simple-prefs');
+
 const coverTraffic = require("../js/coverTraffic.js");
 const mockLoad = require("./mock-load.js");
 
@@ -42,7 +44,9 @@ exports["test object only in htmlCache (strategy 1=IA)"] = function(assert) {
     assert.equal(mockLoad.getSum(), 266);
 };
 
-exports["test finish"] = function(assert) {
+exports["test burst on finish"] = function(assert) {
+    let burst = Simple.prefs.burst;
+    Simple.prefs.burst=true;
     mockLoad.reset();
     assert.equal(mockLoad.getCount(), 0, 'initialization error');
     let ct = new coverTraffic.CoverTraffic(HOSTNAME, mockLoad);
@@ -50,6 +54,7 @@ exports["test finish"] = function(assert) {
     let toLoad = ct.target.numEmbedded;
     ct.finish();
     assert.equal(mockLoad.getCount(), Math.max(Math.ceil(toLoad), 0) + 1);
+    Simple.prefs.burst=burst;
 };
 
 // exports["test failure without loader"] = function(assert) {
