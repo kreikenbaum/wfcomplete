@@ -17450,19 +17450,28 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
     - ClientTransportPlugin transport socks4|socks5 IP:PORT
       ClientTransportPlugin transport exec path-to-binary [options]
 
-      [...] In its second form, when set along with a corresponding
-      Bridge line, the Tor client launches the pluggable transport
-      proxy executable in path-to-binary using options as its
-      command-line options, and forwards its traffic to it. It’s the
-      duty of that proxy to properly forward the traffic to the
-      bridge.
+      In its first form, when set along with a corresponding Bridge
+      line, the Tor client forwards its traffic to a SOCKS-speaking
+      proxy on "IP:PORT". It’s the duty of that proxy to properly
+      forward the traffic to the bridge.
+
+      In its second form, when set along with a corresponding Bridge
+      line, the Tor client launches the pluggable transport proxy
+      executable in path-to-binary using options as its command-line
+      options, and forwards its traffic to it. It’s the duty of that
+      proxy to properly forward the traffic to the bridge.
     - ServerTransportPlugin transport exec path-to-binary [options]
 
       The Tor relay launches the pluggable transport proxy in
       path-to-binary using options as its command-line options, and
       expects to receive proxied client traffic from it.
+    - UseBridges 0|1
+
+      When set, Tor will fetch descriptors for each bridge listed in
+      the "Bridge" config lines, and use these relays as both entry
+      guards and directory guards. (Default: 0)
 *** ref [[file:master.bib::tor-manual][Tor 2015: Linux Users Manual]]
-** TODO [[./platform_xpcom - Mozilla | MDN.html][platform/xpcom]]
+** TODO MOVE [[./platform_xpcom - Mozilla | MDN.html][platform/xpcom]]
 *** summary
     1) Usage
 
@@ -17565,7 +17574,23 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
              Identifier "arguments" occurs as the Identifier of a
              strict mode FunctionDeclaration or FunctionExpression.
 *** ref [[file:master.bib::ecma][International 2011: ECMAScript Language Specification]]
-** [[./wtfpad-setup.pdf][Setup der Obfuscation-Tools]]
+** MOVE [[./wtfpad-setup.pdf][Setup der Obfuscation-Tools]]
 *** summary
+    3) [@3] Aufsetzen von Juarez’ WTFPAD-Tools
 *** quotes
-*** ref
+    3) [@3] Aufsetzen von Juarez’ WTFPAD-Tools
+       - torrc-default:
+	 - ClientTransportPlugin <DEFENSE> socks5 localhost:4999
+	 - bridge <DEFENSE> 134.76.96.77:443
+       - Clientseite:
+	 #+BEGIN_SRC sh
+           python /usr/lib/python2.7/dist-packages/obfsproxy/pyobfsproxy.py \
+           <DEFENSE> socks 127.0.0.1:4999`
+	 #+END_SRC
+       - Serverseite:
+	 #+BEGIN_SRC sh
+           python /usr/lib/python2.7/dist-packages/obfsproxy/pyobfsproxy.py \
+           --log-min-severity=debug --data-dir=/tmp/scramblesuit-server <DEFENSE> \
+           --dest 127.0.0.1:9001 server 134.76.96.77:42000
+	 #+END_SRC
+*** TODO ref
