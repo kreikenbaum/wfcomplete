@@ -1,26 +1,18 @@
 #! /usr/bin/env python
-'''extracts (panchenko's) features from pcap and analyses them'''
+'''Analyses (Panchenko's) features returned from Counter class'''
 
 import numpy as np
-from sklearn import svm, neighbors, cross_validation
-# classifiers
-from sklearn import ensemble
-from sklearn import tree
+from sklearn import svm, neighbors, cross_validation, ensemble, tree
 import doctest
 import logging
 import sys
 
-# if you import by hand, include the path for the counter-module via
-# import os
-# sys.path.append(os.path.join(os.path.expanduser('~'), 'da', 'git', 'bin'))
-# sys.path.append('/home/mkreik/bin')
 import counter
 
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
 #LOGLEVEL = logging.WARN
 TIME_SEPARATOR = '@'
-
 
 def to_features(counters):
     '''transforms counter data to panchenko.v1-feature vector pair (X,y)'''

@@ -14,8 +14,9 @@ var endObserver;
 /** all requests */
 var httpRequestObserver = {
     observe: function(subject, topic, data) {
-        if (topic == "http-on-modify-request") {
+        if ( topic == "http-on-modify-request" ) {
 	    // console.log(subject);
+	    // console.log(JSON.stringify(subject));
 	    // console.log('data:' + JSON.stringify(data));
             var httpChannel = subject.QueryInterface(Ci.nsIHttpChannel);
             var uri = httpChannel.URI;

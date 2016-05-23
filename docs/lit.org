@@ -10705,6 +10705,49 @@
 	     - sparse model like Lasso with regularization Ridge
 
 	     - correlated features
+	       #+BEGIN_SRC python
+                 from sklearn.linear_model import ElasticNet
+                 enet = ElasticNet(alpha=alpha, l1_ratio=0.7)
+                 y_pred_enet = enet.fit(X_train, y_train).predict(X_test)
+	       #+END_SRC
+
+	  5) Multi-task Lasso
+
+	     - simultaneously evaluate n lassos
+	       #+BEGIN_SRC python
+                 from sklearn.linear_model import MultiTaskLasso, Lasso
+                 rng = np.random.RandomState(42)
+                 # Generate some 2D coefficients with sine waves with random frequency and phase
+                 n_samples, n_features, n_tasks = 100, 30, 40
+                 n_relevant_features = 5
+                 coef = np.zeros((n_tasks, n_features))
+                 times = np.linspace(0, 2 * np.pi, n_tasks)
+                 for k in range(n_relevant_features):
+                     coef[:, k] = np.sin((1. + rng.randn(1)) * times + 3 * rng.randn(1))
+                 X = rng.randn(n_samples, n_features)
+                 Y = np.dot(X, coef.T) + rng.randn(n_samples, n_tasks)
+                 coef_lasso_ = np.array([Lasso(alpha=0.5).fit(X, y).coef_ for y in Y.T])
+                 coef_multi_task_lasso_ = MultiTaskLasso(alpha=1.).fit(X, Y).coef_
+	       #+END_SRC
+
+	  6) Least Angle Regression
+
+	     - high-dimensional data
+	       #+BEGIN_SRC python
+                 from sklearn import linear_model
+                 clf = linear_model.Lars(n_nonzero_coefs=1)
+                 clf.fit([[-1, 1], [0, 0], [1, 1]], [-1.1111, 0, -1.1111])
+	       #+END_SRC
+
+	  7) LARS Lasso
+
+	     point 6) with Lasso
+	     #+BEGIN_SRC python
+               clf = linear_model.LassoLars(alpha=.1)
+               clf.fit([[0, 0], [1, 1]], [0, 1])
+	     #+END_SRC
+
+	  8) Orthogonal Matching Pursuit (OMP)
 
        11) [@11] Ensemble methods
 
@@ -17106,29 +17149,29 @@
          });
        #+END_SRC
 *** LL apis/
-**** system/events
-     - Usage The system/events module provides core (low level) API
-       for working with the application observer service, also known
-       as nsIObserverService. You can find a list of events dispatched
-       by firefox codebase here.
-       #+BEGIN_SRC javascript
-         var events = require("sdk/system/events");
-         var { Ci } = require("chrome");
+** PART system/events
+   - Usage The system/events module provides core (low level) API
+     for working with the application observer service, also known
+     as nsIObserverService. You can find a list of events dispatched
+     by firefox codebase here.
+     #+BEGIN_SRC javascript
+       var events = require("sdk/system/events");
+       var { Ci } = require("chrome");
 
-         function listener(event) {
-           var channel = event.subject.QueryInterface(Ci.nsIHttpChannel);
-           channel.setRequestHeader("User-Agent", "MyBrowser/1.0", false);
-         }
+       function listener(event) {
+	 var channel = event.subject.QueryInterface(Ci.nsIHttpChannel);
+	 channel.setRequestHeader("User-Agent", "MyBrowser/1.0", false);
+       }
 
-         events.on("http-on-modify-request", listener);
-       #+END_SRC
-**** window/utils
-     - getWindowLoadingContext(window)
-       Returns the nsILoadContext.
-       - Parameters
-         window : nsIDOMWindow
-       - Returns
-	 nsILoadContext
+       events.on("http-on-modify-request", listener);
+     #+END_SRC
+*** window/utils
+    - getWindowLoadingContext(window)
+      Returns the nsILoadContext.
+      - Parameters
+	window : nsIDOMWindow
+      - Returns
+	nsILoadContext
 *** Tools
 **** [[developer.mozilla.org/en-US/Add-ons/SDK/Tools/console.html][console]] ([[file:///home/chive/IT-gg/js/Mozilla_Addon_SDK_doc/developer.mozilla.org/en-US/Add-ons/SDK/Tools/console.html][local link]])
      - When you run your add-on using jpm run or jpm test, the global
@@ -17504,7 +17547,7 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 
 	    - list interfaces in =interfaces= property
 
-	    - nsISupports always included, no need to list
+	      - nsISupports always included, no need to list
 
        1) Methods
 
