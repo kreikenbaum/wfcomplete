@@ -10331,7 +10331,7 @@
     better exact version
 ** TODO MOVE sections [#A] [[./torspec/pt-spec.txt][Pluggable Transport Specification (Version 1)]]
 *** TODO #A at least part
-*** summary
+*** summary (stopped at [[file:torspec/pt-spec.txt::"TOR_PT_SERVER_TRANSPORT_OPTIONS"][3.2.3]])
     0) [@0] Abstract
 
        censorship circumvention using modular, traffic-transforming
@@ -10355,7 +10355,50 @@
 
     3) Specification
 
-       1) [@0]
+       0) [@0] workflow
+
+	  1. env values, start pt as sub-process
+
+	  2. pt determines spec version
+
+	  3. pt parses env
+
+	  4. pt client validates upstream proxy
+
+	  5. pt initializes transports
+
+	  6. pt does job: forward/transform
+
+	  7. signal of termination, shut down ("gracefully")
+
+       1) Pluggable Transport Naming
+
+	  unique, C identifier
+
+       2) Pluggable Transport Configuration Environment Variables
+
+	  prefixed with "TOR_PT_"
+
+	  1) Common Environment Variables
+
+	     - TOR_PT_MANAGED_TRANSPORT_VER: comma-separated =1,1a,2b,valid_ver
+
+	     - TOR_PT_STATE_LOCATION: dir to store persistent state
+
+	     - TOR_PT_EXIT_ON_STDIN_CLOSE: 1\to close if stdin == EOF, 0\to NOT
+
+	  2) Pluggable Transport Client Environment Variables
+
+	     - TOR_PT_CLIENT_TRANSPORTS: list of transports =obfs2,wfpad
+
+	     - TOR_PT_PROXY: upstream proxy (optional)
+
+	  3) Pluggable Transport Server Environment Variables
+
+	     - TOR_PT_SERVER_TRANSPORTS: server list =obfs3,wfpad
+
+	     - TOR_PT_SERVER_TRANSPORT_OPTIONS: 
+	     
 *** quotes
 *** ref [[file:master.bib::tor-spec-pt][Yawning 2015: Pluggable Transport Specification Version]]
 ** TODO sections [#B] PART [[./user_guide_0.16.1.pdf][scikit-learn user guide]]
@@ -17521,6 +17564,12 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
       If "transport" is provided, and matches to a
       ClientTransportPlugin line, we use that pluggable transports
       proxy to transfer data to the bridge.
+    - BridgeRelay 0|1
+
+      Sets the relay to act as a "bridge" with respect to relaying
+      connections from bridge users to the Tor network. It mainly
+      causes Tor to publish a server descriptor to the bridge
+      database, rather than to the public directory authorities.
     - ClientTransportPlugin transport socks4|socks5 IP:PORT
       ClientTransportPlugin transport exec path-to-binary [options]
 
@@ -17534,11 +17583,25 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
       executable in path-to-binary using options as its command-line
       options, and forwards its traffic to it. It’s the duty of that
       proxy to properly forward the traffic to the bridge.
+    - ORPort [address:]PORT|auto [flags]
+
+      Advertise this port to listen for connections from Tor clients
+      and servers. This option is required to be a Tor server. Set it
+      to "auto" to have Tor pick a port for you. Set it to 0 to not
+      run an ORPort at all. This option can occur more than
+      once. (Default: 0)
     - ServerTransportPlugin transport exec path-to-binary [options]
 
       The Tor relay launches the pluggable transport proxy in
       path-to-binary using options as its command-line options, and
       expects to receive proxied client traffic from it.
+    - SOCKSPort [address:]port|unix:path|auto [flags] [isolation flags]
+
+      Open this port to listen for connections from SOCKS-speaking
+      applications. Set this to 0 if you don’t want to allow
+      application connections via SOCKS. Set it to "auto" to have Tor
+      pick a port for you. This directive can be specified multiple
+      times to bind to multiple addresses/ports. (Default: 9050)
     - UseBridges 0|1
 
       When set, Tor will fetch descriptors for each bridge listed in
