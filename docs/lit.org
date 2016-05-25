@@ -297,6 +297,26 @@
 	    - needs to control exit node, tcp level (not app)
 
     7) Conclusion
+** TODO [[./wtfpad-setup.pdf][Arp - Setup der Obfuscation-Tools]] [0/1]
+*** summary
+    3) [@3] Aufsetzen von Juarez’ WTFPAD-Tools
+*** quotes
+    3) [@3] Aufsetzen von Juarez’ WTFPAD-Tools
+       - torrc-default:
+	 - ClientTransportPlugin <DEFENSE> socks5 localhost:4999
+	 - bridge <DEFENSE> 134.76.96.77:443
+       - Clientseite:
+	 #+BEGIN_SRC sh
+           python /usr/lib/python2.7/dist-packages/obfsproxy/pyobfsproxy.py \
+           <DEFENSE> socks 127.0.0.1:4999`
+	 #+END_SRC
+       - Serverseite:
+	 #+BEGIN_SRC sh
+           python /usr/lib/python2.7/dist-packages/obfsproxy/pyobfsproxy.py \
+           --log-min-severity=debug --data-dir=/tmp/scramblesuit-server <DEFENSE> \
+           --dest 127.0.0.1:9001 server 134.76.96.77:42000
+	 #+END_SRC
+*** TODO ref
 ** [[./fp.pdf][Cai 2012 - Touching from a Distance: Website Fingerprinting Attacks and Defenses]]
 *** summary
     0) [@0] ABSTRACT
@@ -7639,7 +7659,7 @@
     - or jpm: https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_sign
 *** ref [[file:master.bib::addon-signing][Mozilla 2016: Add Extension Signing]]
 ** TODO [#A] Entwurfsmuster
-*** TODO summary (weiter bei Besucher.Struktur+Teilnehmer, S. 312)
+*** TODO summary (weiter bei Besucher, S. 317)
     0) [@0] Preface
 
        1) Vorwort
@@ -9095,7 +9115,10 @@
 
 	      - Besucher bei komplexer Traversierung
 
-	    - Beispielcode
+	  - Beispielcode: C++, GeraetBesucher, berechnet Preis,
+            anderer berechnet Stueckzahl
+
+	  - Bekannte Verwendungen:
 
        6) [@6] Memento
 
@@ -9204,7 +9227,7 @@
     - *In C++* sind statische Member-Funktionen zudem niemals
       virtuell, so dass Unterklassen sie nicht polymorph
       überschreiben können.
-*** TODO ref
+*** TODO ref [[file:master.bib::gof][Erich et al. 1994: Design Patterns]]
     - german with note?
 ** TODO [#A] PART -s 1,5,7 [[./McGrawHill_-_Machine_Learning_-Tom_Mitchell.pdf][Mitchell - Machine Learning]]
 *** summary
@@ -9882,6 +9905,79 @@
        - [40] Tor Project, Inc. Tor Metrics Portal.
          https://metrics.torproject.org/, 2013.
 *** ref: [[file:master.bib::ccs2013-usersrouted][Johnson et al. 2013: Users Get Routed]]
+** TODO sections [#A] [[./torspec/pt-spec.txt][Pluggable Transport Specification (Version 1)]]
+*** TODO #A at least part
+*** summary (stopped at [[file:torspec/pt-spec.txt::"TOR_PT_SERVER_TRANSPORT_OPTIONS"][3.2.3]])
+    0) [@0] Abstract
+
+       censorship circumvention using modular, traffic-transforming
+       sub-processes
+
+    1) Introduction
+
+       0) [@0]
+
+	  - decouple obfuscation from client-server code
+
+       1) Requirements Notation: MUST etc as usual (RFC2119)
+
+    2) Architecture Overview
+
+       - client app to[lo] pt-client to[inet] pt-server to[lo] server app
+
+       - pt client as SOCKS proxy to client app
+
+       - configured via environment variables, write output to stdout
+
+    3) Specification
+
+       0) [@0] workflow
+
+	  1. env values, start pt as sub-process
+
+	  2. pt determines spec version
+
+	  3. pt parses env
+
+	  4. pt client validates upstream proxy
+
+	  5. pt initializes transports
+
+	  6. pt does job: forward/transform
+
+	  7. signal of termination, shut down ("gracefully")
+
+       1) Pluggable Transport Naming
+
+	  unique, C identifier
+
+       2) Pluggable Transport Configuration Environment Variables
+
+	  prefixed with "TOR_PT_"
+
+	  1) Common Environment Variables
+
+	     - TOR_PT_MANAGED_TRANSPORT_VER: comma-separated =1,1a,2b,valid_ver
+
+	     - TOR_PT_STATE_LOCATION: dir to store persistent state
+
+	     - TOR_PT_EXIT_ON_STDIN_CLOSE: 1\to close if stdin == EOF, 0\to NOT
+
+	  2) Pluggable Transport Client Environment Variables
+
+	     - TOR_PT_CLIENT_TRANSPORTS: list of transports =obfs2,wfpad
+
+	     - TOR_PT_PROXY: upstream proxy (optional)
+
+	  3) Pluggable Transport Server Environment Variables
+
+	     - TOR_PT_SERVER_TRANSPORTS: server list =obfs3,wfpad
+
+	     - TOR_PT_SERVER_TRANSPORT_OPTIONS: 
+	     
+*** quotes
+*** ref [[file:master.bib::tor-spec-pt][Yawning 2015: Pluggable Transport Specification Version]]
+** TODO [#A] PART (for picture): [[./10_3-ndss2016-slides.pdf][Website Fingerprinting at Internet Scale Presentation]]
 ** TODO [#B] [[./LZCLCP_NDSS11.pdf][Luo - HTTPOS: Sealing Information Leaks with Browser-side Obfuscation of Encrypted Flows]]
 *** summary
     0) [@0] Abstract
@@ -10329,79 +10425,7 @@
      reads, one for writes) for the rate limiting.
 *** TODO [#A] ref [[file:master.bib::tor-spec][Dingledine & Mathewson 2014: Tor Protocol Specification]]
     better exact version
-** TODO MOVE sections [#A] [[./torspec/pt-spec.txt][Pluggable Transport Specification (Version 1)]]
-*** TODO #A at least part
-*** summary (stopped at [[file:torspec/pt-spec.txt::"TOR_PT_SERVER_TRANSPORT_OPTIONS"][3.2.3]])
-    0) [@0] Abstract
-
-       censorship circumvention using modular, traffic-transforming
-       sub-processes
-
-    1) Introduction
-
-       0) [@0]
-
-	  - decouple obfuscation from client-server code
-
-       1) Requirements Notation: MUST etc as usual (RFC2119)
-
-    2) Architecture Overview
-
-       - client app to[lo] pt-client to[inet] pt-server to[lo] server app
-
-       - pt client as SOCKS proxy to client app
-
-       - configured via environment variables, write output to stdout
-
-    3) Specification
-
-       0) [@0] workflow
-
-	  1. env values, start pt as sub-process
-
-	  2. pt determines spec version
-
-	  3. pt parses env
-
-	  4. pt client validates upstream proxy
-
-	  5. pt initializes transports
-
-	  6. pt does job: forward/transform
-
-	  7. signal of termination, shut down ("gracefully")
-
-       1) Pluggable Transport Naming
-
-	  unique, C identifier
-
-       2) Pluggable Transport Configuration Environment Variables
-
-	  prefixed with "TOR_PT_"
-
-	  1) Common Environment Variables
-
-	     - TOR_PT_MANAGED_TRANSPORT_VER: comma-separated =1,1a,2b,valid_ver
-
-	     - TOR_PT_STATE_LOCATION: dir to store persistent state
-
-	     - TOR_PT_EXIT_ON_STDIN_CLOSE: 1\to close if stdin == EOF, 0\to NOT
-
-	  2) Pluggable Transport Client Environment Variables
-
-	     - TOR_PT_CLIENT_TRANSPORTS: list of transports =obfs2,wfpad
-
-	     - TOR_PT_PROXY: upstream proxy (optional)
-
-	  3) Pluggable Transport Server Environment Variables
-
-	     - TOR_PT_SERVER_TRANSPORTS: server list =obfs3,wfpad
-
-	     - TOR_PT_SERVER_TRANSPORT_OPTIONS: 
-	     
-*** quotes
-*** ref [[file:master.bib::tor-spec-pt][Yawning 2015: Pluggable Transport Specification Version]]
-** TODO sections [#B] PART [[./user_guide_0.16.1.pdf][scikit-learn user guide]]
+** TODO sections [#A] PART [[./user_guide_0.16.1.pdf][scikit-learn user guide]]
 *** summary
     1) AN INTRODUCTION TO MACHINE LEARNING WITH SCIKIT-LEARN
 
@@ -10812,6 +10836,33 @@
 
 	  8) Orthogonal Matching Pursuit (OMP)
 
+	     #+BEGIN_SRC python
+               from sklearn.linear_model import OrthogonalMatchingPursuit
+               from sklearn.linear_model import OrthogonalMatchingPursuitCV
+               omp = OrthogonalMatchingPursuit(n_nonzero_coefs=n_nonzero_coefs)
+               omp.fit(X, y)
+               # plot the noisy reconstruction with number of non-zeros set by CV
+               omp_cv = OrthogonalMatchingPursuitCV()
+               omp_cv.fit(X, y_noisy)
+	     #+END_SRC
+
+	     - arg min ||y − Xγ||^{2}_{2} subject to ||γ||_{0} ≤ n_{nonzero_coefs}
+
+	  9) Bayesian Regression
+
+	     1) Bayesian Ridge Regression
+
+	       #+BEGIN_SRC python
+		 from sklearn import linear_model
+		 X = [[0., 0.], [1., 1.], [2., 2.], [3., 3.]]
+		 Y = [0., 1., 2., 3.]
+		 clf = linear_model.BayesianRidge()
+		 clf.fit(X, Y)
+	       #+END_SRC
+		- adapts, but costly (see quotes)
+
+	     2) Automatic Relevance Determination - ARD
+
        11) [@11] Ensemble methods
 
 	   0) [@0]
@@ -10936,6 +10987,13 @@
 	  3) [@3] Lasso
 	     - The alpha parameter controls the degree of sparsity of
                the coefficients estimated.
+	  9) [@9] Bayesian Regression
+	     - The advantages of Bayesian Regression are:
+	       - It adapts to the data at hand.
+	       - It can be used to include regularization parameters
+                 in the estimation procedure.
+	       The disadvantages of Bayesian regression include:
+	       - Inference of the model can be time consuming.
        4) [@4] Support Vector Machines
 	  1) Classification
 	     - SVC and NuSVC implement the “one-against-one” approach
@@ -11343,26 +11401,6 @@
 *** summary
 *** quotes
 *** ref [[file:master.bib::Broder02networkapplications][Broder & Mitzenmacher 2002: Network Applications Bloom Filters]]
-** TODO [#C] [[~/da/git/docs/onion.pdf][Anonymous Connections and Onion Routing]]
-*** summary
-    0) [@0] Abstract
-
-       - "Onion Routing is an infrastructure for private
-	 communication over a public network.
-
-       - Eavesdropping and traffic analysis are hampered by /onion
-	 routing/.
-
-    1) Introduction
-
-       - traffic analysis extracts data from who talks to whom
-*** quotes
-    - web based shopping or browsing of public databases should not
-      require revealing one's identity
-    - our implementation of anonymous connections, onion routing,
-      provides protection against eavesdropping as a side effect
-*** ref
-    [[file:master.bib::anonymous-connections][G. et al. 1998: Anonymous]]
 ** TODO [#B] search feature vs classifier [[./2009-diss.pdf][Machine Learning for Application-Layer Intrusion Detection]]
 *** #B PART
 *** summary
@@ -11452,6 +11490,767 @@
        1) Machine Learning and Intrusion Detection
 	  - Machine learning deals with automatically inferring and
             generalizing dependencies from data.
+** TODO sections maybe eval PART [#B] [[./thebook.pdf][INTRODUCTION TO MACHINE LEARNING]] [0/2]
+*** TODO summary
+    1) Introduction
+
+       often in background
+
+       1) A Taste of Machine Learning
+
+	  applications, formalize
+
+	  1) Applications
+
+	     - page rank
+
+	     - collaborative filtering: amazon recommendations
+
+	     - automatic translation
+
+	     - face recognition vs face verification
+
+	     - named entity recognition: from documents etc some named thing
+
+	     - speech recognition: annotate voice sample
+
+	       - and similarly: handwriting, etc
+
+	     classification: yes/no answer
+
+	  2) Data
+
+	     types of data
+
+	     - Lists
+
+	     - Sets
+
+	     - Matrices
+
+	     - Images
+
+	     - Videos
+
+	     - Trees and Graphs
+
+	     - Strings
+
+	     - Compound structures: combine these
+
+	  3) Problems
+
+	     1) Binary Classification:
+
+		- online learning: instantaneous determination of y for x
+
+		- batch learning: group of stuff
+
+		- transduction: know X' (testing data)
+
+		- active learning: choose X
+
+		- estimation with missing variables
+
+		- covariate shift correction: X and X' from different
+                  data sources
+
+		- co-training: related but different problems
+
+		- loss functions
+
+	     2) Multiclass Classification
+
+	     3) Structured Estimation
+
+	     4) Regression
+
+	     5) Novelty Detection: new and unusual observations
+
+       2) Probability Theory
+
+	  1) Random Variables
+
+	     X takes on values in f.ex. \cal X = {1,..., 6} \ni x
+
+	  2) Distributions
+
+	     - discrete values: probability mass function, PMF
+
+	     - continuous values: probability density function, PDF
+	       integral: CDF
+
+	     - Pr(a \le X \le b) = \int_{a}^{b} dp(x) = F(b) - F(a)
+
+	     - Quantile: value x' for which Pr(X < x') \le q, Pr(X > x') \le 1-q
+	       is /q-quantile/. q=0.5: /median/
+
+	  3) Mean and Variance
+
+	     - mean: E[x] = \sum_{x} xp(x) and \int x dp(x)
+	       E[f(x)] =  \int f(x) dp(x)
+
+	     - variance Var[X] = E[(X - E(X))^{2}]
+	       Var[f(x)] =  E[(f(X) - E(f(X)))^{2}]
+
+	  4) Marginalization, Independence, Conditioning, and Bayes Rule
+
+	     0) [@0]
+
+		- marginalization, independence, conditioning, iid, bayes
+		  rule: see quotes
+
+		- Bayes Rule holds because p(x,y) = p(x|y)p(y) = p(y|x)p(x)
+
+		- "The key consequence of (1.15) is that we may
+                  reverse the conditioning between a pair of random
+                  variables."
+
+	     1) An Example
+
+		HIV testing,
+
+		- p(T = HIV+ | X = HIV+) = 1
+
+		- p(T = HIV+ | X = HIV-) = 0.01
+
+		- p(X = HIV+) = 0.0015
+                  \to  p(X = HIV-) = 0.9985
+
+		- then p(X = HIV+ | T = HIV+) is (shorthand P(x+, t-) etc)
+		  = p(t+ | x+) p(x+) / p(t+)
+
+		- p(t+) = p(x+, t+) + p(x-, t+)
+		  = p(t+ | x+ ) p(x+) + p(t+ | x-) p(x-)
+		  = 1 * 0.0015 + 0.01 * 0.9985
+
+		- back to p(x+ | t+)
+		  = 1 * 0.0015 / (1 * 0.0015 + 0.01 * 0.9985)
+
+		- increase test accuracy by further information (f.ex. age)
+
+		- and further, conditionally independent, tests
+
+       3) Basic Algorithms
+
+	  0) [@0]
+
+	     - features X, labels y
+
+	     - /bag of words/: "Assume we have a list of all possible
+               words occurring in X, that is a dictionary, then we are
+               able to assign a unique number with each of those words
+               (e.g. the position in the dictionary). Now we may
+               simply count for each document x_{i} the number of times
+               a given word j is occurring. This is then used as the
+               value of the j-th coordinate of x_{i}."
+
+	  1) Naive Bayes
+
+	     use bayes formula with approximations
+
+	     - replace p(x) by likelihood ratio (adjusted)
+
+	     - replace p(x|y) by independent product of parts (spam: words)
+
+	  2) Nearest Neighbor Estimators
+
+	     - distance to (k-) nearest point(s).
+
+	     - whichever class is closest
+
+	     - distance-dependent
+
+	     - works well if work was put into distance
+
+	  3) A Simple Classifier
+
+	     1. use means of classes
+
+	     2. compute distance of point to means
+
+	     3. extension: line boundary \to geometric boundary
+
+	  4) Perceptron
+
+	     - online learning
+
+	     - "data points x t ∈ R d , and labels y t ∈ {±1}"
+
+	       - if wrong, updates w by x_{t}y_{t}
+
+	       - kernelizeable: x replaceable by \phi(x)
+
+	     - converges if convergeable
+
+	     - margin describes how thin the border is
+
+	     - novikoff's theorem gives perceptron's accuracy bounded
+               by margin (+ data set diameter)
+
+	     - proof by two limits per step, induction, cauchy-schwartz
+
+	     - perceptron was used in (a)nn
+
+	     - here, more complex feature maps and "associated kernel"s
+
+	  5) K-Means
+
+	     - cluster
+
+	     - start with k /prototype vector/s,
+
+	     - approximate classes
+
+	     - approximate vectors
+
+	     - repeat
+
+    2) Density Estimation
+
+       1) Limit Theorems
+
+	  0) [@0] Casino
+
+	     - example: 100 die (1w6) tosses at casino yields only 11 6es
+               (instead of 17, as expected)
+
+	     - (^{m}_{n}) = m! / n!(m-n)! different sequences with
+               proportions n="6" and m="not 6" respectively
+
+	     - only 11 '6'es for 100 die tosses: \sim 7.0%
+
+	       probability[X \le 11] = \sum_{i=0}^{11} (^{100}_{i}) (1/6)^{i}  (5/6)^{100-i}
+
+	  1) Fundamental Laws
+
+	     - weak law: irgendwann ist summe durch \epsilon beschraenkt
+
+	     - strong law: wkt der konvergenz ist 1
+
+	     - central limit theorem: id vars converge to (var-sth)
+               normal distribution (all - \mu)
+
+	     - slutsky: continuous functions can be pulled into E
+
+	     - delta method: see later
+
+	  2) The Characteristic Function
+
+	     - Fourier transform
+
+	     - Characteristic functions
+
+	     - Sum of random variables and convolutions
+
+	       - Proof via Y=z-x, joint distribution p(z, x)
+
+	     - proofs of 1)
+
+	     - moments \to function
+
+	  3) Tail Bounds
+
+	     - Gauss inequality: proof via
+
+	       - 1 \le x/\epsilon (auf [\epsilon, \infty))
+
+	       - 1/\epsilon herausziehen, auf [0, \infty) erweitern
+
+	       - auf dem Intervall ist x durschnittlich kleiner \mu
+
+	  4) An Example
+
+	     - assume that all production steps are iid, have the same \mu_{B}
+
+	     - X_{i} for wafer i
+
+	     - X̄_{m} the average of the yields of m wafers using process
+               ’B’
+
+	     - interested in is the accuracy \epsilon for which the
+               probability
+
+	       δ = Pr(| X̄_{m} − μ_{B} | > \epsilon) satisfies δ ≤ 0.05.
+
+	     - solve
+
+	       - chebyshev: 40000
+
+	       - hoeffding: 738
+
+	       - central limit theorem: 55
+
+       2) Parzen Windows
+
+	  1) Discrete Density Estimation
+
+	     estimate by actual occurrences in sample data
+
+	     problem: some numbers might not appear
+
+	     solution: laplace smoothing
+
+	  2) Smoothing Kernel
+
+	     - "proper density estimation."
+
+	     - parzen windows estimate (see quotes)
+
+	     - different kernels
+
+	  3) Parameter Estimation
+
+	     - width of kernel function is important, shape less
+
+	     - to maximize likelihood, sum over log-likelihood to
+               avoid float overflow
+
+	     - maximizing likelihood on all of data leads to
+               overfitting
+
+	     - avoid by using a Validation Set, n-fold
+               Cross-validation or a Leave-one-out Estimator
+
+	  4) Silverman’s Rule
+
+	     - locality-dependent kernel width
+
+	       r_{i} = c/k \sum_{x \in kNN(x_i)} ||x - x_{i}||
+
+	     - locality-dependent parzen rule
+
+	       p\circ(x) = 1/m \sum_{i=1}^{m} r^{-d}h(x - x_{i}/r_{i})
+
+	  5) Watson-Nadaraya Estimator
+
+	     - non-parametric data
+
+       3) Exponential Families
+
+	  0) [@0]
+
+	     - "Gaussians, Poisson, Gamma and Wishart distributions all
+               form part of the exponential family"
+
+	     - "lead to convex optimization problems"
+
+	  1) Basics
+
+	     - Defined by
+
+               p(x; θ) := p_{0}(x) exp (<φ(x), θ> − g(θ)) . (2.40)
+
+	     - with g(\theta) weighting term to get density function
+
+	     - \varphi map from parameters to statistics
+
+	  2) Examples
+
+	     Many distributions can be seen as member of the exponential family
+
+	     - Gaussian
+
+	     - Multinomial
+
+	     - Poisson
+
+	     - Beta
+*** TODO quotes
+    - much of the art of machine learning is to reduce a range of
+      fairly disparate problems to a set of fairly narrow
+      prototypes.
+    - A rather related application is collaborative
+      filtering. Internet book stores such as Amazon, or video rental
+      sites such as Netflix use this information extensively to entice
+      users to purchase additional goods (or rent more movies).
+    - Many security applications, e.g. for access control, use face
+      recognition as one of its components.
+    - The overarching theme of learning problems is that there exists
+      a nontrivial dependence between some observations, which we will
+      commonly refer to as x and a desired response, which we refer to
+      as y, for which a simple set of deterministic rules is not
+      known. By using learning we can infer such a dependency between
+      x and y in a systematic fashion.
+    - (ends 1.1.1)
+    - One of the challenges in dealing with vectors is that the scales
+      and units of different coordinates may vary widely.
+    - One way of dealing with those issues in an automatic fashion is
+      to normalize the data. We will discuss means of doing so in an
+      automatic fashion.
+    - In some cases the vectors we obtain may contain a variable
+      number of features.
+    - (ends 1.1.2)
+    - 3-class classification. Note that in the latter case we have
+      much more degree for ambiguity.
+    - a sequence of (x_{i} , y_{i} ) pairs for which y i needs to be
+      estimated in an instantaneous online fashion. This is commonly
+      referred to as online learning.
+    - know X 0 already at the time of constructing the model. This is
+      commonly referred to as transduction.
+    - (ends 1.1.3)
+    - For more details and a very gentle and detailed discussion see
+      the excellent book of [BT03].
+    - (ends 1.2.0)
+    - Formally, [...] 1 occurs with probability 1/6
+    - notational convention [...] use uppercase letters, e.g., X, Y
+      etc to denote random variables and lower case letters, e.g., x,
+      y etc to denote the values they take.
+    - (ends 1.2.1)
+    - If the random variable is discrete, i.e., it takes on a finite
+      number of values, then this assignment of probabilities is
+      called a /probability mass function/ or PMF for short.
+    - slightly informal notation p(x) := Pr(X = x)
+    - continuous random variable the assignment of probabilities
+      results in a probability density function or PDF for short.
+    - Closely associated with a PDF is the indefinite integral
+      over p. It is commonly referred to as the cumulative
+      distribution function (CDF).
+    - (ends 1.2.2)
+    - if f: R → R is a function, then f(X) is also a random
+      variable. Its mean is mean given by
+
+      E[f(X)] := \int f(x)dp(x).
+    - (ends 1.2.3)
+    - /joint density/ p(x, y).
+    - /marginalization/: recover p(x) by integrating out y:
+      p(x) = \int dp(x, y).
+    - /X and Y are independent/: p(x,y) = p(x) p(y)
+    - /iid random variables/: independently and identically distributed
+    - /conditional probabilities/:
+      p(x|y) := p(x, y) / p(y)
+    - /Bayes Rule/: p(y|x) = p(x|y)p(y) / p(x)
+    - (ends 1.2.4.0)
+    - The physician recommends a test which is guaranteed to detect
+      HIV-positive whenever a patient is infected.
+    - On the other hand, for healthy patients it has a 1% error
+      rate. That is, with probability 0.01 it diagnoses a patient as
+      HIV-positive even when he is, in fact, HIV-negative.
+    - Moreover, assume that 0.15% of the population is infected.
+    - Denote by X and T the random variables associated with the
+      health status of the patient and the outcome of the test
+      respectively.
+    - We are interested in p(X = HIV+|T = HIV+).
+    - Note that often our tests may not be conditionally independent
+      and we would need to take this into account.
+    - p(X = HIV+|T = HIV+) = p(T = HIV+|X = HIV+) p(X = HIV+) / p(T = HIV+)
+    - p(T = HIV+) = \sum p(T = HIV+, x) = \sum p(T = HIV+|x)p(x)
+    - The corresponding expression yields:
+
+      p(T = HIV+|X = HIV+, A)p(X = HIV+|A) / p(T = HIV+|A)
+
+      Here we simply conditioned all random variables on A in order to
+      take additional information into account.
+    - What we want is that the diagnosis of T_{2} is independent of that
+      of T_{2} given the health status X of the patient. This is
+      expressed as
+      p(t_{1} , t_{2} |x) = p(t_{1} |x)p(t_{2} |x). (1.16)
+    - Random variables satisfying the condition (1.16) are commonly
+      referred to as /conditionally independent/.
+    - (ends 1.2.4.1)
+    - assume that there is sufficiently strong dependence between x
+      and y that we will be able to estimate y given x and a set of
+      labeled instances X, Y.
+    - (ends 1.3.0)
+    - estimate of p(y), that is, the probability of receiving a spam
+      or ham mail.
+    - dispose of the requirement of knowing p(x) by settling for a
+      likelihood ratio
+      L(x) := p(spam|x) / p(ham|x) = p(x|spam)p(spam) / p(x|ham)p(ham)
+    - treat the occurrence of each word in a document as a separate
+      test and combine the outcomes in a naive fashion by assuming
+      that
+      p(x|y) = \Pi_{j=1}^{# of words in x} p(w^{j} |y)
+    - p(w|y) can be obtained, for instance, by simply counting the
+      frequency occurrence of the word within documents of a given
+      class.
+    - since we are computing a product over a large number of factors
+      the numbers might lead to numerical overflow or underflow. This
+      can be addressed by summing over the logarithm of terms rather
+      than computing products.
+    - need to address the issue of estimating p(w|y) for words w which
+      we might not have seen before. One way of dealing with this is
+      to increment all counts by 1.
+    - perform surprisingly well
+    - (ends 1.3.1)
+    - Note that nearest neighbor algorithms can yield excellent
+      performance when used with a good distance measure.
+    - lemma by Johnson and Lindenstrauss [DG03] asserts that a set of
+      m points in high dimensional Euclidean space can be projected
+      into a O(log m/\epsilon 2 ) dimensional Euclidean space such that the
+      distance between any two points changes only by a factor of (1 ±
+      \epsilon). [...] The surprising fact is that the projection relies on a
+      simple randomized algorithm.
+    - (ends 1.3.2)
+    - In general, we may pick *arbitrary maps* φ : X → H mapping the
+      space of observations into a feature space H, as long as the
+      latter is endowed with a dot product (see Figure 1.21). This
+      means that instead of dealing with <x, x'> we will be dealing
+      with <φ(x), φ(x')>.
+    - (ends 1.3.3)
+    - a user might want to have instant results whenever a new e-mail
+      arrives and he would like the system to learn immediately from
+      any corrections to mistakes the system makes.
+    - the Perceptron is a linear classifier
+    - if ŷ_{t} \neq y_{t} the weight vector is updated as
+      w ← w + y_{t} x_{t} and b ← b + y_{t}
+    - If the dataset (X, Y) is linearly separable, then the Perceptron
+      algorithm eventually converges and correctly classifies all the
+      points in X.
+    - Definition 1.6 (*Margin*) Let w ∈ R d be a weight vector and let
+      b ∈ R be an offset. The margin of an observation x ∈ R d with
+      associated label y is
+
+      \gamma(x, y) := y (<w, x> + b) (1.27)
+
+      Moreover, the margin of an entire set of observations X with
+      labels Y is
+
+      γ(X, Y) := min_{i} γ(x_{i} , y_{i}) (1.28)
+    - Geometrically speaking (see Figure 1.22) the margin measures the
+      distance of x from the hyperplane defined by {x| <w, x> + b = 0}.
+    - Theorem 1.7 (*Novikoff’s theorem*) Let (X, Y) be a dataset with
+      at least one example labeled +1 and one example labeled −1. Let
+      R := max_{t} ||x_{t}||, and assume that there exists (w^{∗}, b^{∗}) such
+      that ||w^{∗}|| = 1 and γ_{t} := y_{t} (<w^{∗}, x_{t}>) + b^{∗} ) ≥ γ for
+      all t. Then, the Perceptron will make at most (1+R^{2})(1+(b^{*})^2)/γ^{2}
+      mistakes.
+    - a similar bound can be shown for Support Vector Machines [Vap95]
+    - (ends 1.3.4)
+    - define prototype vectors μ_{1} , ... , μ_{k} and an indicator vector
+      r_{ij} which is 1 if, and only if, x_{i} is assigned to cluster j. To
+      cluster our dataset we will minimize the following *distortion
+      measure*, which minimizes the distance of each point from the
+      prototype vector:
+
+      J(r, μ) := 1/2 \sum_{i=1}^{m} \sum_{j=1}^{k} r_{ij} ||x_{i} - \mu_{j}||^{2}
+
+      where r = {r_{ij}}, μ = {μ_{j}}
+    - adapt a two stage strategy
+      - Stage 1 Keep the μ [prototype vectors] fixed and determine r.[...]
+	The solution for the i-th data point x_{i} can be found by setting:
+
+	r_{ij} = 1 if j = argmin_{j'} ||x_{i} − μ_{j'}||^{2} (1.30)
+
+        and 0 otherwise.
+      - Stage 2 Keep the r fixed and determine μ. [...]  [J] can be
+        minimized by setting the derivative with respect to μ_{j} to be
+        0:
+
+	\sum_{j=1}^{m} r_{ij} (x_{i} - \mu_{j}) = 0 for all j. (1.31)
+
+        Rearranging obtains \mu_{j} = \sum_{i} r_{ij}x_{i} / \sum_{i} r_{ij} (1.32)
+
+	Since \sum_{i} r_{ij} counts the number of points assigned to cluster
+        j, we are essentially setting μ_{j} to be the sample mean of the
+        points assigned to cluster j.
+      - Two issues [...]
+	1. sensitive to the choice of the initial cluster centers μ.
+	2. hard assignment of every point to a cluster center.
+      - (ends 1.5)
+      - Before crying foul you decide that some mathematical analysis
+        is in order.
+      - limit theorems [...] tell us by how much averages over a set
+        of observations may deviate from the corresponding
+        expectations and how many observations we need to draw to
+        estimate a number of probabilities reliably.
+      - (ends 2.0)
+      - Theorem 2.1 (Weak Law of Large Numbers) Denote by X_{1} , ... ,
+        X_{m} random variables drawn from p(x) with mean μ = E_{X_{i}} [x_{i}]
+        for all i. Moreover let
+
+        X̄_{m} := 1/m \sum_{i=1}^{m} X_{i} (2.2)
+
+        be the empirical average over the random variables X_{i} . Then
+        for any \epsilon > 0 the following holds
+
+        lim_{m \to \infty} Pr (|X̄_{m} − μ| ≤ \epsilon = 1). (2.3)
+      - Theorem 2.2 (Strong Law of Large Numbers) Under the conditions
+        of Theorem 2.1 we have Pr(lim_{m→∞} X̄_{m} = μ) = 1.
+      - Theorem 2.3 (Central Limit Theorem) Denote by X_{i} independent
+        random variables with means μ_{i} and standard deviation σ_{i}. Then
+
+	Z_{m} := m [ \sum_{i=1}^{m} \sigma_{i}^{2} ]^{- 1/2} [ \sum_{i=1}^{m} X_{}_{i} - \mu_{i}^{} ] (2.4)
+
+	converges to a Normal Distribution with zero mean and unit
+        variance.
+      - Theorem 2.4 (Slutsky’s Theorem) Denote by X_{i} , Y_{i} sequences of
+        random variables with X_{i} → X and Y_{i} → c for c ∈ R in
+        probability. Moreover, denote by g(x, y) a function which is
+        continuous for all (x, c). In this case the random variable
+        g(X_{i}, Y_{i}) converges in probability to g(X, c).
+      - Theorem 2.5 (Delta Method) Assume that X_{n} ∈ R^{d} is
+        asymptotically normal with a_{n}^{-2}(X_{n} - b) \to N(0, \Sigma) for a_{n}
+        → 0. Moreover, assume that g : R^{d} → R^{l} is a mapping which is
+        continuously differentiable at b. In this case the random
+        variable g(X_{n}) converges
+
+	a_{n}^{-2}(g(X_{n}) - g(b)) \to N(0, [∇_{x} g(b)]Σ[∇_{x} g(b)]^{T}) (2.5)
+      - The Fourier transform plays a crucial role [...] in
+        statistics. For historic reasons its applications to
+        distributions is called *the characteristic function*.
+      - Definition 2.6 (*Fourier Transform*) Denote by f : R^{n} → C a
+        function defined on a d-dimensional Euclidean space. Moreover,
+        let x, ω ∈ R^{n} . Then the Fourier transform F and its inverse
+        F^{-1} are given by
+
+        F [f](ω) := (2π)^{−d/2} \int_{R^{n}} f(x) exp(-i<\omega, x>)dx (2.7)
+
+        F^{-1} [g](ω) := (2π)^{−d/2} \int_{R^{n}} g(\omega) exp(i<\omega, x>)d\omega (2.8)
+      - Definition 2.7 (*Characteristic Function*) Denote by p(x) a
+        distribution of a random variable X ∈ R^{d}. Then the
+        characteristic function φ_{X} (ω) with ω ∈ R^{d} is given by
+
+        φ_{X} (ω) := (2π)^{d/2} F^{−1} [p(x)] = \int exp(i <ω, x>)dp(x). (2.9)
+      - Theorem 2.8 (*Sums of random variables and convolutions*)
+        Denote by X, Y ∈ R two independent random variables. Moreover,
+        denote by Z := X + Y the sum of both random variables. Then
+        the distribution over Z satisfies p(z) = p(x) ◦
+        p(y). Moreover, the characteristic function yields:
+
+        φ_{Z} (ω) = φ_{X}(ω)φ_{Y}(ω). (2.10)
+      - ∇^{n}_{ω} φ_{X}(0) = i^{−n} E_{X} [x^{n}]. (2.12)
+
+      - if we know the moments of a distribution we are able to
+        reconstruct it directly since it allows us to reconstruct its
+        characteristic function.
+      - (ends 2.1.2)
+      - Theorem 2.9 (*Gauss-Markov*) Denote by X ≥ 0 a random variable
+        and let μ be its mean. Then for any \epsilon > 0 we have
+
+	Pr(X ≥ \epsilon) ≤ \mu / \epsilon (2.13).
+
+	This means that for random variables with a small mean, the
+        proportion of samples with large value has to be small.
+      - Theorem 2.10 (*Chebyshev*) Denote by X a random variable with
+        mean μ and variance σ^{2} . Then the following holds for \epsilon > 0:
+
+        Pr(|x − μ| ≥ \epsilon) \le \sigma^{2} / \epsilon^{2} (2.14)
+      - Theorem 2.12 (*Hoeffding*) Denote by X_{i} iid random variables
+        with bounded range X_{i} ∈ [a, b] and mean μ. Let X̄_{m} := m^{−1}
+        \sum_{i=1}^{m} X_{i} be their average. Then the following bound holds:
+
+        Pr(|X̄_{m} − μ| > \epsilon) ≤ 2 exp(-2m\epsilon^{2} / (b-a)^{2}) (2.15)
+      - (ends 2.1.3)
+      - The convergence theorems discussed so far mean that we can use
+        empirical observations for the purpose of density estimation.
+      - Example 2.4 (Curse of Dimensionality) Assume that X = {0, 1} d
+        , i.e. x consists of binary bit vectors of
+        dimensionality d. As d increases the size of X increases
+        exponentially, requiring an exponential number of observations
+        to perform density estimation. For instance, if we work with
+        images, a 100 × 100 black and white picture would require in
+        the order of 10^{3010} observations to model such fairly
+        low-resolution images accurately. This is clearly utterly
+        infeasible — the number of particles in the known universe is
+        in the order of 10^{80} . Bellman [Bel61] was one of the first to
+        formalize this dilemma by coining the term ’curse of
+        dimensionality’.
+      - (ends 2.2.1)
+      - p\circ(x) = 1/m \sum_{i=1}^{m} r^{-d}h(x - x_{i}/r)
+
+	This expansion is commonly known as the /Parzen windows/ estimate.
+      - h(x) = (2π)^{−1/2} e^{−1/2 x^2} /Gaussian kernel/
+      - h(x) = 3/4 max(0, 1 − x^2) /Epanechnikov kernel/
+      - For practical purposes the Gaussian kernel (2.28) or the
+        Epanechnikov kernel (2.30) are most suitable.
+      - /compact support/ [...] for any given density estimate at
+        location x we will only need to evaluate terms h(x_{i} − x) for
+        which the distance ||x_{i} − x|| is less than r.
+      - (ends 2.2.2)
+      - choose r such that the /log-likelihood of the data/ is
+        maximized. It is given by
+
+	log \Pi_{j=0}^m p(x_{j}) = −m log m + \sum_{j=1}^m log (m \cdot p\circ(x_{j}))
+      - (ends 2.2.3)
+      - Provided that we are able to compute density estimates p(x)
+        given a set of observations X we could appeal to Bayes rule to
+        obtain
+
+	p(y|x) = p(x|y)p(y)/p(x)
+        = ((m_{y} / m) \cdot 1/m_{y} \sum_{i:y_i=y} r^{-d} h(x_{i}-x/r) / 1/m \sum_{i=1}^{m} r^{-d} h(x_{i}-x/r) ) (2.38)
+      - For binary classification (2.38) can be simplified [...] the function
+
+	f (x)
+        = \sum_{i} y_{i} h(x_{i}-x/r) / \sum_{i} h(x_{i}-x/r)
+	= \sum_{i} y_{i} (h(x_{i}-x/r) / \sum_{i} h(x_{i}-x/r))
+	=: \sum_{i} y_{i} w_{i}(x) (2.39)
+
+	can be used to achieve the same goal since
+
+        f (x) > 0 ⇐⇒ p(y = 1|x) > 0.5
+      - (ends 2.2.5)
+      - 
+      - The reason why many discrete processes follow the Poisson
+        distribution is that it can be seen as the limit over the
+        average of a large number of Bernoulli draws
+** TODO [#B] PART [[./Curose-Ross - Computer_Networking_-_A_Top-down_Approach_Featuring_the_Internet__Third_Edition.pdf]]
+*** summary (up to p.103)
+    2) [@2] Application Layer
+
+       2) [@2] The World Wide Web: HTTP
+
+	  0) [@0]
+
+	     - "killer application" of the internet
+
+	     - major societal impacts:
+
+	       - telephone 1870
+
+	       - broadcast radio/television 1920-30
+
+	       - web
+
+	  1) Overview of HTTP
+
+	     - client/server
+
+	     - web page with objects: HTML file, pictures, (stylesheets), etc
+
+	       - most: base HTML file and "referenced objects"
+
+	     - HTTP: client/server language
+
+	       - on top of TCP
+
+	       - stateless protocol
+
+	       - 1.0 to 1.1 (to 2.0)
+
+	  2) Non-Persistent and Persistent Connections
+
+	     - 1.0 is non-persistent by default, 1.1 the opposite
+
+	     - Non-Persistent Connections
+
+	       - example: TCP connection for each object
+
+	       - parallel or serial: depends on browser (standard)
+
+	     - Persistent Connections
+*** quotes
+*** ref [[file:master.bib::DBLP:books/daglib/0001977][Kurose & Ross 2001: Computer]]
+** TODO [#C] [[~/da/git/docs/onion.pdf][Anonymous Connections and Onion Routing]]
+*** summary
+    0) [@0] Abstract
+
+       - "Onion Routing is an infrastructure for private
+	 communication over a public network.
+
+       - Eavesdropping and traffic analysis are hampered by /onion
+	 routing/.
+
+    1) Introduction
+
+       - traffic analysis extracts data from who talks to whom
+*** quotes
+    - web based shopping or browsing of public databases should not
+      require revealing one's identity
+    - our implementation of anonymous connections, onion routing,
+      provides protection against eavesdropping as a side effect
+*** ref
+    [[file:master.bib::anonymous-connections][G. et al. 1998: Anonymous]]
 ** TODO [#C] [[./xxx-multihop-padding-primitives.txt][Multihop Padding Primitives]]
 *** summary
     0. [@0] Overview and Direction
@@ -11627,6 +12426,9 @@
 *** summary
 *** quotes
 *** ref [[file:master.bib::Bloom70space/timetrade-offs][Bloom 1970: Space Time Trade]]
+** TODO [#C] [[./oakland2013-parrot.pdf][The Parrot is Dead: Observing Unobservable Network Communications]]
+*** summary
+*** quotes
 ** TODO [[~/da/git/docs/onion-discex00.pdf][Onion Routing Access Configurations]]
 ** TODO [[./802163c-01_30r1.pdf][Traffic Model for 802.16 TG3 MAC/PHY Simulations]]
 *** summary
@@ -13101,6 +13903,48 @@
       #+END_SRC
 *** TODO ref
 ** TODO [[./top_ml_algo.pdf][Top 10 algorithms in data mining]]
+** TODO [[./platform_xpcom - Mozilla | MDN.html][platform/xpcom]]
+*** summary
+    1) Usage
+
+       XPCOM interfaces, factories, services
+
+       1) Implementing XPCOM Interfaces
+
+	  - modules exports class =Unknown= which implements nsISupports
+
+	    - subclass Unknown to implement XPCOM interfaces
+	      #+BEGIN_SRC js
+                var { Class } = require('sdk/core/heritage');
+                var { Unknown } = require('sdk/platform/xpcom');
+
+                var StarObserver = Class({
+                    extends:  Unknown,
+                    interfaces: [ 'nsIObserver' ],
+
+                    // implement methods of nsIObserver
+                });
+	      #+END_SRC
+
+    3) [@3] Unknown
+
+       0) [@0]
+
+	  - base class for all XPCOM objects
+
+	  - subclass to create your own
+
+	    - list interfaces in =interfaces= property
+
+	      - nsISupports always included, no need to list
+
+       1) Methods
+
+	  1) QueryInterface(interface)
+
+*** quotes
+*** ref [[file:master.bib::moz-sdk-xpcom][wbamberg 2016]]
+** TODO [[./esa2006b.pdf][An Improved Construction for Counting Bloom Filters]]
 ** PART [#A] [[./random.pdf][Computer Generation of Statistical Distributions]]
 *** summary
     1) SUMMARY
@@ -13298,7 +14142,6 @@
                    return int( log( uniform( 0., 1. ) ) / log( 1. - p ) );
                  }
 	       #+END_SRC
-** TODO [[./esa2006b.pdf][An Improved Construction for Counting Bloom Filters]]
 ** [#A] PART [[./scipy-ref-0.17.0.pdf][SciPy Reference Guide]]
 *** summary
 1) Tutorial
@@ -13860,700 +14703,6 @@
       N > p scenario, or entirely new procedures
     - (ends 2.6.0)
     - (ends 18.1)
-** TODO sections maybe eval PART [#B] [[./thebook.pdf][INTRODUCTION TO MACHINE LEARNING]] [0/2]
-*** TODO summary
-    1) Introduction
-
-       often in background
-
-       1) A Taste of Machine Learning
-
-	  applications, formalize
-
-	  1) Applications
-
-	     - page rank
-
-	     - collaborative filtering: amazon recommendations
-
-	     - automatic translation
-
-	     - face recognition vs face verification
-
-	     - named entity recognition: from documents etc some named thing
-
-	     - speech recognition: annotate voice sample
-
-	       - and similarly: handwriting, etc
-
-	     classification: yes/no answer
-
-	  2) Data
-
-	     types of data
-
-	     - Lists
-
-	     - Sets
-
-	     - Matrices
-
-	     - Images
-
-	     - Videos
-
-	     - Trees and Graphs
-
-	     - Strings
-
-	     - Compound structures: combine these
-
-	  3) Problems
-
-	     1) Binary Classification:
-
-		- online learning: instantaneous determination of y for x
-
-		- batch learning: group of stuff
-
-		- transduction: know X' (testing data)
-
-		- active learning: choose X
-
-		- estimation with missing variables
-
-		- covariate shift correction: X and X' from different
-                  data sources
-
-		- co-training: related but different problems
-
-		- loss functions
-
-	     2) Multiclass Classification
-
-	     3) Structured Estimation
-
-	     4) Regression
-
-	     5) Novelty Detection: new and unusual observations
-
-       2) Probability Theory
-
-	  1) Random Variables
-
-	     X takes on values in f.ex. \cal X = {1,..., 6} \ni x
-
-	  2) Distributions
-
-	     - discrete values: probability mass function, PMF
-
-	     - continuous values: probability density function, PDF
-	       integral: CDF
-
-	     - Pr(a \le X \le b) = \int_{a}^{b} dp(x) = F(b) - F(a)
-
-	     - Quantile: value x' for which Pr(X < x') \le q, Pr(X > x') \le 1-q
-	       is /q-quantile/. q=0.5: /median/
-
-	  3) Mean and Variance
-
-	     - mean: E[x] = \sum_{x} xp(x) and \int x dp(x)
-	       E[f(x)] =  \int f(x) dp(x)
-
-	     - variance Var[X] = E[(X - E(X))^{2}]
-	       Var[f(x)] =  E[(f(X) - E(f(X)))^{2}]
-
-	  4) Marginalization, Independence, Conditioning, and Bayes Rule
-
-	     0) [@0]
-
-		- marginalization, independence, conditioning, iid, bayes
-		  rule: see quotes
-
-		- Bayes Rule holds because p(x,y) = p(x|y)p(y) = p(y|x)p(x)
-
-		- "The key consequence of (1.15) is that we may
-                  reverse the conditioning between a pair of random
-                  variables."
-
-	     1) An Example
-
-		HIV testing,
-
-		- p(T = HIV+ | X = HIV+) = 1
-
-		- p(T = HIV+ | X = HIV-) = 0.01
-
-		- p(X = HIV+) = 0.0015
-                  \to  p(X = HIV-) = 0.9985
-
-		- then p(X = HIV+ | T = HIV+) is (shorthand P(x+, t-) etc)
-		  = p(t+ | x+) p(x+) / p(t+)
-
-		- p(t+) = p(x+, t+) + p(x-, t+)
-		  = p(t+ | x+ ) p(x+) + p(t+ | x-) p(x-)
-		  = 1 * 0.0015 + 0.01 * 0.9985
-
-		- back to p(x+ | t+)
-		  = 1 * 0.0015 / (1 * 0.0015 + 0.01 * 0.9985)
-
-		- increase test accuracy by further information (f.ex. age)
-
-		- and further, conditionally independent, tests
-
-       3) Basic Algorithms
-
-	  0) [@0]
-
-	     - features X, labels y
-
-	     - /bag of words/: "Assume we have a list of all possible
-               words occurring in X, that is a dictionary, then we are
-               able to assign a unique number with each of those words
-               (e.g. the position in the dictionary). Now we may
-               simply count for each document x_{i} the number of times
-               a given word j is occurring. This is then used as the
-               value of the j-th coordinate of x_{i}."
-
-	  1) Naive Bayes
-
-	     use bayes formula with approximations
-
-	     - replace p(x) by likelihood ratio (adjusted)
-
-	     - replace p(x|y) by independent product of parts (spam: words)
-
-	  2) Nearest Neighbor Estimators
-
-	     - distance to (k-) nearest point(s).
-
-	     - whichever class is closest
-
-	     - distance-dependent
-
-	     - works well if work was put into distance
-
-	  3) A Simple Classifier
-
-	     1. use means of classes
-
-	     2. compute distance of point to means
-
-	     3. extension: line boundary \to geometric boundary
-
-	  4) Perceptron
-
-	     - online learning
-
-	     - "data points x t ∈ R d , and labels y t ∈ {±1}"
-
-	       - if wrong, updates w by x_{t}y_{t}
-
-	       - kernelizeable: x replaceable by \phi(x)
-
-	     - converges if convergeable
-
-	     - margin describes how thin the border is
-
-	     - novikoff's theorem gives perceptron's accuracy bounded
-               by margin (+ data set diameter)
-
-	     - proof by two limits per step, induction, cauchy-schwartz
-
-	     - perceptron was used in (a)nn
-
-	     - here, more complex feature maps and "associated kernel"s
-
-	  5) K-Means
-
-	     - cluster
-
-	     - start with k /prototype vector/s,
-
-	     - approximate classes
-
-	     - approximate vectors
-
-	     - repeat
-
-    2) Density Estimation
-
-       1) Limit Theorems
-
-	  0) [@0] Casino
-
-	     - example: 100 die (1w6) tosses at casino yields only 11 6es
-               (instead of 17, as expected)
-
-	     - (^{m}_{n}) = m! / n!(m-n)! different sequences with
-               proportions n="6" and m="not 6" respectively
-
-	     - only 11 '6'es for 100 die tosses: \sim 7.0%
-
-	       probability[X \le 11] = \sum_{i=0}^{11} (^{100}_{i}) (1/6)^{i}  (5/6)^{100-i}
-
-	  1) Fundamental Laws
-
-	     - weak law: irgendwann ist summe durch \epsilon beschraenkt
-
-	     - strong law: wkt der konvergenz ist 1
-
-	     - central limit theorem: id vars converge to (var-sth)
-               normal distribution (all - \mu)
-
-	     - slutsky: continuous functions can be pulled into E
-
-	     - delta method: see later
-
-	  2) The Characteristic Function
-
-	     - Fourier transform
-
-	     - Characteristic functions
-
-	     - Sum of random variables and convolutions
-
-	       - Proof via Y=z-x, joint distribution p(z, x)
-
-	     - proofs of 1)
-
-	     - moments \to function
-
-	  3) Tail Bounds
-
-	     - Gauss inequality: proof via
-
-	       - 1 \le x/\epsilon (auf [\epsilon, \infty))
-
-	       - 1/\epsilon herausziehen, auf [0, \infty) erweitern
-
-	       - auf dem Intervall ist x durschnittlich kleiner \mu
-
-	  4) An Example
-
-	     - assume that all production steps are iid, have the same \mu_{B}
-
-	     - X_{i} for wafer i
-
-	     - X̄_{m} the average of the yields of m wafers using process
-               ’B’
-
-	     - interested in is the accuracy \epsilon for which the
-               probability
-
-	       δ = Pr(| X̄_{m} − μ_{B} | > \epsilon) satisfies δ ≤ 0.05.
-
-	     - solve
-
-	       - chebyshev: 40000
-
-	       - hoeffding: 738
-
-	       - central limit theorem: 55
-
-       2) Parzen Windows
-
-	  1) Discrete Density Estimation
-
-	     estimate by actual occurrences in sample data
-
-	     problem: some numbers might not appear
-
-	     solution: laplace smoothing
-
-	  2) Smoothing Kernel
-
-	     - "proper density estimation."
-
-	     - parzen windows estimate (see quotes)
-
-	     - different kernels
-
-	  3) Parameter Estimation
-
-	     - width of kernel function is important, shape less
-
-	     - to maximize likelihood, sum over log-likelihood to
-               avoid float overflow
-
-	     - maximizing likelihood on all of data leads to
-               overfitting
-
-	     - avoid by using a Validation Set, n-fold
-               Cross-validation or a Leave-one-out Estimator
-
-	  4) Silverman’s Rule
-
-	     - locality-dependent kernel width
-
-	       r_{i} = c/k \sum_{x \in kNN(x_i)} ||x - x_{i}||
-
-	     - locality-dependent parzen rule
-
-	       p\circ(x) = 1/m \sum_{i=1}^{m} r^{-d}h(x - x_{i}/r_{i})
-
-	  5) Watson-Nadaraya Estimator
-
-	     - non-parametric data
-
-       3) Exponential Families
-
-	  0) [@0]
-
-	     - "Gaussians, Poisson, Gamma and Wishart distributions all
-               form part of the exponential family"
-
-	     - "lead to convex optimization problems"
-
-	  1) Basics
-
-	     - Defined by
-
-               p(x; θ) := p_{0}(x) exp (<φ(x), θ> − g(θ)) . (2.40)
-
-	     - with g(\theta) weighting term to get density function
-
-	     - \varphi map from parameters to statistics
-
-	  2) Examples
-
-	     Many distributions can be seen as member of the exponential family
-
-	     - Gaussian
-
-	     - Multinomial
-
-	     - Poisson
-
-	     - Beta
-*** TODO quotes
-    - much of the art of machine learning is to reduce a range of
-      fairly disparate problems to a set of fairly narrow
-      prototypes.
-    - A rather related application is collaborative
-      filtering. Internet book stores such as Amazon, or video rental
-      sites such as Netflix use this information extensively to entice
-      users to purchase additional goods (or rent more movies).
-    - Many security applications, e.g. for access control, use face
-      recognition as one of its components.
-    - The overarching theme of learning problems is that there exists
-      a nontrivial dependence between some observations, which we will
-      commonly refer to as x and a desired response, which we refer to
-      as y, for which a simple set of deterministic rules is not
-      known. By using learning we can infer such a dependency between
-      x and y in a systematic fashion.
-    - (ends 1.1.1)
-    - One of the challenges in dealing with vectors is that the scales
-      and units of different coordinates may vary widely.
-    - One way of dealing with those issues in an automatic fashion is
-      to normalize the data. We will discuss means of doing so in an
-      automatic fashion.
-    - In some cases the vectors we obtain may contain a variable
-      number of features.
-    - (ends 1.1.2)
-    - 3-class classification. Note that in the latter case we have
-      much more degree for ambiguity.
-    - a sequence of (x_{i} , y_{i} ) pairs for which y i needs to be
-      estimated in an instantaneous online fashion. This is commonly
-      referred to as online learning.
-    - know X 0 already at the time of constructing the model. This is
-      commonly referred to as transduction.
-    - (ends 1.1.3)
-    - For more details and a very gentle and detailed discussion see
-      the excellent book of [BT03].
-    - (ends 1.2.0)
-    - Formally, [...] 1 occurs with probability 1/6
-    - notational convention [...] use uppercase letters, e.g., X, Y
-      etc to denote random variables and lower case letters, e.g., x,
-      y etc to denote the values they take.
-    - (ends 1.2.1)
-    - If the random variable is discrete, i.e., it takes on a finite
-      number of values, then this assignment of probabilities is
-      called a /probability mass function/ or PMF for short.
-    - slightly informal notation p(x) := Pr(X = x)
-    - continuous random variable the assignment of probabilities
-      results in a probability density function or PDF for short.
-    - Closely associated with a PDF is the indefinite integral
-      over p. It is commonly referred to as the cumulative
-      distribution function (CDF).
-    - (ends 1.2.2)
-    - if f: R → R is a function, then f(X) is also a random
-      variable. Its mean is mean given by
-
-      E[f(X)] := \int f(x)dp(x).
-    - (ends 1.2.3)
-    - /joint density/ p(x, y).
-    - /marginalization/: recover p(x) by integrating out y:
-      p(x) = \int dp(x, y).
-    - /X and Y are independent/: p(x,y) = p(x) p(y)
-    - /iid random variables/: independently and identically distributed
-    - /conditional probabilities/:
-      p(x|y) := p(x, y) / p(y)
-    - /Bayes Rule/: p(y|x) = p(x|y)p(y) / p(x)
-    - (ends 1.2.4.0)
-    - The physician recommends a test which is guaranteed to detect
-      HIV-positive whenever a patient is infected.
-    - On the other hand, for healthy patients it has a 1% error
-      rate. That is, with probability 0.01 it diagnoses a patient as
-      HIV-positive even when he is, in fact, HIV-negative.
-    - Moreover, assume that 0.15% of the population is infected.
-    - Denote by X and T the random variables associated with the
-      health status of the patient and the outcome of the test
-      respectively.
-    - We are interested in p(X = HIV+|T = HIV+).
-    - Note that often our tests may not be conditionally independent
-      and we would need to take this into account.
-    - p(X = HIV+|T = HIV+) = p(T = HIV+|X = HIV+) p(X = HIV+) / p(T = HIV+)
-    - p(T = HIV+) = \sum p(T = HIV+, x) = \sum p(T = HIV+|x)p(x)
-    - The corresponding expression yields:
-
-      p(T = HIV+|X = HIV+, A)p(X = HIV+|A) / p(T = HIV+|A)
-
-      Here we simply conditioned all random variables on A in order to
-      take additional information into account.
-    - What we want is that the diagnosis of T_{2} is independent of that
-      of T_{2} given the health status X of the patient. This is
-      expressed as
-      p(t_{1} , t_{2} |x) = p(t_{1} |x)p(t_{2} |x). (1.16)
-    - Random variables satisfying the condition (1.16) are commonly
-      referred to as /conditionally independent/.
-    - (ends 1.2.4.1)
-    - assume that there is sufficiently strong dependence between x
-      and y that we will be able to estimate y given x and a set of
-      labeled instances X, Y.
-    - (ends 1.3.0)
-    - estimate of p(y), that is, the probability of receiving a spam
-      or ham mail.
-    - dispose of the requirement of knowing p(x) by settling for a
-      likelihood ratio
-      L(x) := p(spam|x) / p(ham|x) = p(x|spam)p(spam) / p(x|ham)p(ham)
-    - treat the occurrence of each word in a document as a separate
-      test and combine the outcomes in a naive fashion by assuming
-      that
-      p(x|y) = \Pi_{j=1}^{# of words in x} p(w^{j} |y)
-    - p(w|y) can be obtained, for instance, by simply counting the
-      frequency occurrence of the word within documents of a given
-      class.
-    - since we are computing a product over a large number of factors
-      the numbers might lead to numerical overflow or underflow. This
-      can be addressed by summing over the logarithm of terms rather
-      than computing products.
-    - need to address the issue of estimating p(w|y) for words w which
-      we might not have seen before. One way of dealing with this is
-      to increment all counts by 1.
-    - perform surprisingly well
-    - (ends 1.3.1)
-    - Note that nearest neighbor algorithms can yield excellent
-      performance when used with a good distance measure.
-    - lemma by Johnson and Lindenstrauss [DG03] asserts that a set of
-      m points in high dimensional Euclidean space can be projected
-      into a O(log m/\epsilon 2 ) dimensional Euclidean space such that the
-      distance between any two points changes only by a factor of (1 ±
-      \epsilon). [...] The surprising fact is that the projection relies on a
-      simple randomized algorithm.
-    - (ends 1.3.2)
-    - In general, we may pick *arbitrary maps* φ : X → H mapping the
-      space of observations into a feature space H, as long as the
-      latter is endowed with a dot product (see Figure 1.21). This
-      means that instead of dealing with <x, x'> we will be dealing
-      with <φ(x), φ(x')>.
-    - (ends 1.3.3)
-    - a user might want to have instant results whenever a new e-mail
-      arrives and he would like the system to learn immediately from
-      any corrections to mistakes the system makes.
-    - the Perceptron is a linear classifier
-    - if ŷ_{t} \neq y_{t} the weight vector is updated as
-      w ← w + y_{t} x_{t} and b ← b + y_{t}
-    - If the dataset (X, Y) is linearly separable, then the Perceptron
-      algorithm eventually converges and correctly classifies all the
-      points in X.
-    - Definition 1.6 (*Margin*) Let w ∈ R d be a weight vector and let
-      b ∈ R be an offset. The margin of an observation x ∈ R d with
-      associated label y is
-
-      \gamma(x, y) := y (<w, x> + b) (1.27)
-
-      Moreover, the margin of an entire set of observations X with
-      labels Y is
-
-      γ(X, Y) := min_{i} γ(x_{i} , y_{i}) (1.28)
-    - Geometrically speaking (see Figure 1.22) the margin measures the
-      distance of x from the hyperplane defined by {x| <w, x> + b = 0}.
-    - Theorem 1.7 (*Novikoff’s theorem*) Let (X, Y) be a dataset with
-      at least one example labeled +1 and one example labeled −1. Let
-      R := max_{t} ||x_{t}||, and assume that there exists (w^{∗}, b^{∗}) such
-      that ||w^{∗}|| = 1 and γ_{t} := y_{t} (<w^{∗}, x_{t}>) + b^{∗} ) ≥ γ for
-      all t. Then, the Perceptron will make at most (1+R^{2})(1+(b^{*})^2)/γ^{2}
-      mistakes.
-    - a similar bound can be shown for Support Vector Machines [Vap95]
-    - (ends 1.3.4)
-    - define prototype vectors μ_{1} , ... , μ_{k} and an indicator vector
-      r_{ij} which is 1 if, and only if, x_{i} is assigned to cluster j. To
-      cluster our dataset we will minimize the following *distortion
-      measure*, which minimizes the distance of each point from the
-      prototype vector:
-
-      J(r, μ) := 1/2 \sum_{i=1}^{m} \sum_{j=1}^{k} r_{ij} ||x_{i} - \mu_{j}||^{2}
-
-      where r = {r_{ij}}, μ = {μ_{j}}
-    - adapt a two stage strategy
-      - Stage 1 Keep the μ [prototype vectors] fixed and determine r.[...]
-	The solution for the i-th data point x_{i} can be found by setting:
-
-	r_{ij} = 1 if j = argmin_{j'} ||x_{i} − μ_{j'}||^{2} (1.30)
-
-        and 0 otherwise.
-      - Stage 2 Keep the r fixed and determine μ. [...]  [J] can be
-        minimized by setting the derivative with respect to μ_{j} to be
-        0:
-
-	\sum_{j=1}^{m} r_{ij} (x_{i} - \mu_{j}) = 0 for all j. (1.31)
-
-        Rearranging obtains \mu_{j} = \sum_{i} r_{ij}x_{i} / \sum_{i} r_{ij} (1.32)
-
-	Since \sum_{i} r_{ij} counts the number of points assigned to cluster
-        j, we are essentially setting μ_{j} to be the sample mean of the
-        points assigned to cluster j.
-      - Two issues [...]
-	1. sensitive to the choice of the initial cluster centers μ.
-	2. hard assignment of every point to a cluster center.
-      - (ends 1.5)
-      - Before crying foul you decide that some mathematical analysis
-        is in order.
-      - limit theorems [...] tell us by how much averages over a set
-        of observations may deviate from the corresponding
-        expectations and how many observations we need to draw to
-        estimate a number of probabilities reliably.
-      - (ends 2.0)
-      - Theorem 2.1 (Weak Law of Large Numbers) Denote by X_{1} , ... ,
-        X_{m} random variables drawn from p(x) with mean μ = E_{X_{i}} [x_{i}]
-        for all i. Moreover let
-
-        X̄_{m} := 1/m \sum_{i=1}^{m} X_{i} (2.2)
-
-        be the empirical average over the random variables X_{i} . Then
-        for any \epsilon > 0 the following holds
-
-        lim_{m \to \infty} Pr (|X̄_{m} − μ| ≤ \epsilon = 1). (2.3)
-      - Theorem 2.2 (Strong Law of Large Numbers) Under the conditions
-        of Theorem 2.1 we have Pr(lim_{m→∞} X̄_{m} = μ) = 1.
-      - Theorem 2.3 (Central Limit Theorem) Denote by X_{i} independent
-        random variables with means μ_{i} and standard deviation σ_{i}. Then
-
-	Z_{m} := m [ \sum_{i=1}^{m} \sigma_{i}^{2} ]^{- 1/2} [ \sum_{i=1}^{m} X_{}_{i} - \mu_{i}^{} ] (2.4)
-
-	converges to a Normal Distribution with zero mean and unit
-        variance.
-      - Theorem 2.4 (Slutsky’s Theorem) Denote by X_{i} , Y_{i} sequences of
-        random variables with X_{i} → X and Y_{i} → c for c ∈ R in
-        probability. Moreover, denote by g(x, y) a function which is
-        continuous for all (x, c). In this case the random variable
-        g(X_{i}, Y_{i}) converges in probability to g(X, c).
-      - Theorem 2.5 (Delta Method) Assume that X_{n} ∈ R^{d} is
-        asymptotically normal with a_{n}^{-2}(X_{n} - b) \to N(0, \Sigma) for a_{n}
-        → 0. Moreover, assume that g : R^{d} → R^{l} is a mapping which is
-        continuously differentiable at b. In this case the random
-        variable g(X_{n}) converges
-
-	a_{n}^{-2}(g(X_{n}) - g(b)) \to N(0, [∇_{x} g(b)]Σ[∇_{x} g(b)]^{T}) (2.5)
-      - The Fourier transform plays a crucial role [...] in
-        statistics. For historic reasons its applications to
-        distributions is called *the characteristic function*.
-      - Definition 2.6 (*Fourier Transform*) Denote by f : R^{n} → C a
-        function defined on a d-dimensional Euclidean space. Moreover,
-        let x, ω ∈ R^{n} . Then the Fourier transform F and its inverse
-        F^{-1} are given by
-
-        F [f](ω) := (2π)^{−d/2} \int_{R^{n}} f(x) exp(-i<\omega, x>)dx (2.7)
-
-        F^{-1} [g](ω) := (2π)^{−d/2} \int_{R^{n}} g(\omega) exp(i<\omega, x>)d\omega (2.8)
-      - Definition 2.7 (*Characteristic Function*) Denote by p(x) a
-        distribution of a random variable X ∈ R^{d}. Then the
-        characteristic function φ_{X} (ω) with ω ∈ R^{d} is given by
-
-        φ_{X} (ω) := (2π)^{d/2} F^{−1} [p(x)] = \int exp(i <ω, x>)dp(x). (2.9)
-      - Theorem 2.8 (*Sums of random variables and convolutions*)
-        Denote by X, Y ∈ R two independent random variables. Moreover,
-        denote by Z := X + Y the sum of both random variables. Then
-        the distribution over Z satisfies p(z) = p(x) ◦
-        p(y). Moreover, the characteristic function yields:
-
-        φ_{Z} (ω) = φ_{X}(ω)φ_{Y}(ω). (2.10)
-      - ∇^{n}_{ω} φ_{X}(0) = i^{−n} E_{X} [x^{n}]. (2.12)
-
-      - if we know the moments of a distribution we are able to
-        reconstruct it directly since it allows us to reconstruct its
-        characteristic function.
-      - (ends 2.1.2)
-      - Theorem 2.9 (*Gauss-Markov*) Denote by X ≥ 0 a random variable
-        and let μ be its mean. Then for any \epsilon > 0 we have
-
-	Pr(X ≥ \epsilon) ≤ \mu / \epsilon (2.13).
-
-	This means that for random variables with a small mean, the
-        proportion of samples with large value has to be small.
-      - Theorem 2.10 (*Chebyshev*) Denote by X a random variable with
-        mean μ and variance σ^{2} . Then the following holds for \epsilon > 0:
-
-        Pr(|x − μ| ≥ \epsilon) \le \sigma^{2} / \epsilon^{2} (2.14)
-      - Theorem 2.12 (*Hoeffding*) Denote by X_{i} iid random variables
-        with bounded range X_{i} ∈ [a, b] and mean μ. Let X̄_{m} := m^{−1}
-        \sum_{i=1}^{m} X_{i} be their average. Then the following bound holds:
-
-        Pr(|X̄_{m} − μ| > \epsilon) ≤ 2 exp(-2m\epsilon^{2} / (b-a)^{2}) (2.15)
-      - (ends 2.1.3)
-      - The convergence theorems discussed so far mean that we can use
-        empirical observations for the purpose of density estimation.
-      - Example 2.4 (Curse of Dimensionality) Assume that X = {0, 1} d
-        , i.e. x consists of binary bit vectors of
-        dimensionality d. As d increases the size of X increases
-        exponentially, requiring an exponential number of observations
-        to perform density estimation. For instance, if we work with
-        images, a 100 × 100 black and white picture would require in
-        the order of 10^{3010} observations to model such fairly
-        low-resolution images accurately. This is clearly utterly
-        infeasible — the number of particles in the known universe is
-        in the order of 10^{80} . Bellman [Bel61] was one of the first to
-        formalize this dilemma by coining the term ’curse of
-        dimensionality’.
-      - (ends 2.2.1)
-      - p\circ(x) = 1/m \sum_{i=1}^{m} r^{-d}h(x - x_{i}/r)
-
-	This expansion is commonly known as the /Parzen windows/ estimate.
-      - h(x) = (2π)^{−1/2} e^{−1/2 x^2} /Gaussian kernel/
-      - h(x) = 3/4 max(0, 1 − x^2) /Epanechnikov kernel/
-      - For practical purposes the Gaussian kernel (2.28) or the
-        Epanechnikov kernel (2.30) are most suitable.
-      - /compact support/ [...] for any given density estimate at
-        location x we will only need to evaluate terms h(x_{i} − x) for
-        which the distance ||x_{i} − x|| is less than r.
-      - (ends 2.2.2)
-      - choose r such that the /log-likelihood of the data/ is
-        maximized. It is given by
-
-	log \Pi_{j=0}^m p(x_{j}) = −m log m + \sum_{j=1}^m log (m \cdot p\circ(x_{j}))
-      - (ends 2.2.3)
-      - Provided that we are able to compute density estimates p(x)
-        given a set of observations X we could appeal to Bayes rule to
-        obtain
-
-	p(y|x) = p(x|y)p(y)/p(x)
-        = ((m_{y} / m) \cdot 1/m_{y} \sum_{i:y_i=y} r^{-d} h(x_{i}-x/r) / 1/m \sum_{i=1}^{m} r^{-d} h(x_{i}-x/r) ) (2.38)
-      - For binary classification (2.38) can be simplified [...] the function
-
-	f (x)
-        = \sum_{i} y_{i} h(x_{i}-x/r) / \sum_{i} h(x_{i}-x/r)
-	= \sum_{i} y_{i} (h(x_{i}-x/r) / \sum_{i} h(x_{i}-x/r))
-	=: \sum_{i} y_{i} w_{i}(x) (2.39)
-
-	can be used to achieve the same goal since
-
-        f (x) > 0 ⇐⇒ p(y = 1|x) > 0.5
-      - (ends 2.2.5)
-      - 
-      - The reason why many discrete processes follow the Poisson
-        distribution is that it can be seen as the limit over the
-        average of a large number of Bernoulli draws
 ** [#B] PART [[./javascript_the_good_parts.pdf][JavaScript: The Good Parts]]
 *** summary
     1. Good parts
@@ -17294,6 +17443,63 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
       sense with multiple passes, see -2. For regular filtering on
       single-pass dissect see -Y instead.
 *** ref [[file:master.bib::tshark][Developers 2015: Linux Users Manual]]
+** PART [[./@font-face - CSS | MDN.html][@font-face]]
+*** summary
+    use fonts from local or remote sources in document
+*** quotes
+    #+BEGIN_SRC css
+      @font-face {
+        font-family: MyHelvetica;
+        src: local("Helvetica Neue Bold"),
+        local("HelveticaNeue-Bold"),
+        url(MgOpenModernaBold.ttf);
+        font-weight: bold;
+      }
+    #+END_SRC
+*** ref [[file:master.bib::moz-fontface][fscholz 2016]]
+** PART [[/home/chive/IT-gg/js/Ecma-262.pdf][ECMAScript Language Specification]]
+*** summary
+    19) [@19] The Strict Mode of ECMAScript
+	- =arguments= unassignable, callee and caller not accessible
+	- reserved tokens, f.ex. =let=, =yield=, ...
+	- =with=, octal numbers not allowed
+	- assignment to undeclared, unresolvable or unwritable forbidden,
+	- =eval= unassignable
+	- =this= not type-coerced
+	- =delete= strongly restricted
+*** quotes
+    13) [@13] asdf
+	1) Strict Mode Restrictions
+	   - It is a SyntaxError if any Identifier value occurs more
+             than once within a FormalParameterList of a strict mode
+             FunctionDeclaration or FunctionExpression.
+
+             It is a SyntaxError if the Identifier "eval" or the
+             Identifier "arguments" occurs within a
+             FormalParameterList of a strict mode FunctionDeclaration
+             or FunctionExpression.
+
+             It is a SyntaxError if the Identifier "eval" or the
+             Identifier "arguments" occurs as the Identifier of a
+             strict mode FunctionDeclaration or FunctionExpression.
+*** ref [[file:master.bib::ecma][International 2011: ECMAScript Language Specification]]
+** PART [[./reftex.pdf][RefTEX User Manual]]
+*** summary
+*** quotes
+    1) Introduction
+       1) Installation
+	  1) [@3] Entering RefTEX Mode
+	     - To turn RefTEX Mode on and off in a particular buffer,
+               use M-x reftex-mode RET. To turn on RefTEX Mode for all
+               LaTeX files, add the following lines to your ‘.emacs’
+               file: =(add-hook ’LaTeX-mode-hook ’turn-on-reftex)=
+       2) [@2] RefTEX in a Nutshell
+	  3) [@3] Citations
+	     - Typing =C-c [= (=reftex-citation=) will let you specify
+               a regular expression to search in current BibTEX
+               database files (as specified in the \bibliography
+               command)
+*** TODO ref
 ** onion routing project
 *** [[~/da/git/docs/onion-routing_pet2000.pdf][Towards an Analysis of Onion Routing Security]]
 **** ref: [[file:master.bib::onion-routing:pet2000][Syverson et al. 2000: Towards Analysis Onion Routing Security]]
@@ -17440,9 +17646,6 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        · https://github.com/hakobera/nvmw
        · https://github.com/nanjingboy/nvmw
 ** [[./reftex.pdf][RefTeX Manual]]
-** TODO [#C] [[./oakland2013-parrot.pdf][The Parrot is Dead: Observing Unobservable Network Communications]]
-*** summary
-*** quotes
 ** [[./Wang_Tao.pdf][Wang - Website Fingerprinting: Attacks and Defenses]]
 ** [[./Huhta14-UCL-Msc.pdf][LINKING TOR CIRCUITS]]
 ** [[./rfc2068.txt][Hypertext Transfer Protocol -- HTTP/1.1]]
@@ -17485,7 +17688,6 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 *** quotes
     | tcp.srcport | Source Port      | Unsigned integer, 2 bytes |
     | tcp.dstport | Destination Port | Unsigned integer, 2 bytes |
-** (for picture): [[./10_3-ndss2016-slides.pdf][Website Fingerprinting at Internet Scale Presentation]]
 ** [[./PEP 257 -- Docstring Conventions.html]]
 ** [[./Masterthesis.pdf]]
 *** ref: [[file:master.bib::malte][Hübner 2014: Automatische Erkennung Android Anwendungen]]
@@ -17608,47 +17810,6 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
       the "Bridge" config lines, and use these relays as both entry
       guards and directory guards. (Default: 0)
 *** ref [[file:master.bib::tor-manual][Tor 2015: Linux Users Manual]]
-** TODO MOVE [[./platform_xpcom - Mozilla | MDN.html][platform/xpcom]]
-*** summary
-    1) Usage
-
-       XPCOM interfaces, factories, services
-
-       1) Implementing XPCOM Interfaces
-
-	  - modules exports class =Unknown= which implements nsISupports
-
-	    - subclass Unknown to implement XPCOM interfaces
-	      #+BEGIN_SRC js
-                var { Class } = require('sdk/core/heritage');
-                var { Unknown } = require('sdk/platform/xpcom');
-
-                var StarObserver = Class({
-                    extends:  Unknown,
-                    interfaces: [ 'nsIObserver' ],
-
-                    // implement methods of nsIObserver
-                });
-	      #+END_SRC
-
-    3) [@3] Unknown
-
-       0) [@0]
-
-	  - base class for all XPCOM objects
-
-	  - subclass to create your own
-
-	    - list interfaces in =interfaces= property
-
-	      - nsISupports always included, no need to list
-
-       1) Methods
-
-	  1) QueryInterface(interface)
-
-*** quotes
-*** ref [[file:master.bib::moz-sdk-xpcom][wbamberg 2016]]
 ** [[./How may I run multiple Tor relay instances in a single Linux machine.html]]
 *** summary
     1) How may I run multiple Tor relay instances in a single Linux
@@ -17671,127 +17832,3 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 ** [[./OverlierSyverson2006b.pdf][Locating Hidden Servers]]
 ** [[./randomforest2001.pdf][RANDOM FORESTS]]
 ** [[./arc97.pdf][ARCING CLASSIFIERS]]
-** PART MOVE [[./@font-face - CSS | MDN.html][@font-face]]
-*** summary
-    use fonts from local or remote sources in document
-*** quotes
-    #+BEGIN_SRC css
-      @font-face {
-        font-family: MyHelvetica;
-        src: local("Helvetica Neue Bold"),
-        local("HelveticaNeue-Bold"),
-        url(MgOpenModernaBold.ttf);
-        font-weight: bold;
-      }
-    #+END_SRC
-*** ref [[file:master.bib::moz-fontface][fscholz 2016]]
-** PART MOVE [[/home/chive/IT-gg/js/Ecma-262.pdf][ECMAScript Language Specification]]
-*** summary
-    19) [@19] The Strict Mode of ECMAScript
-	- =arguments= unassignable, callee and caller not accessible
-	- reserved tokens, f.ex. =let=, =yield=, ...
-	- =with=, octal numbers not allowed
-	- assignment to undeclared, unresolvable or unwritable forbidden,
-	- =eval= unassignable
-	- =this= not type-coerced
-	- =delete= strongly restricted
-*** quotes
-    13) [@13] asdf
-	1) Strict Mode Restrictions
-	   - It is a SyntaxError if any Identifier value occurs more
-             than once within a FormalParameterList of a strict mode
-             FunctionDeclaration or FunctionExpression.
-
-             It is a SyntaxError if the Identifier "eval" or the
-             Identifier "arguments" occurs within a
-             FormalParameterList of a strict mode FunctionDeclaration
-             or FunctionExpression.
-
-             It is a SyntaxError if the Identifier "eval" or the
-             Identifier "arguments" occurs as the Identifier of a
-             strict mode FunctionDeclaration or FunctionExpression.
-*** ref [[file:master.bib::ecma][International 2011: ECMAScript Language Specification]]
-** MOVE [[./wtfpad-setup.pdf][Setup der Obfuscation-Tools]]
-*** summary
-    3) [@3] Aufsetzen von Juarez’ WTFPAD-Tools
-*** quotes
-    3) [@3] Aufsetzen von Juarez’ WTFPAD-Tools
-       - torrc-default:
-	 - ClientTransportPlugin <DEFENSE> socks5 localhost:4999
-	 - bridge <DEFENSE> 134.76.96.77:443
-       - Clientseite:
-	 #+BEGIN_SRC sh
-           python /usr/lib/python2.7/dist-packages/obfsproxy/pyobfsproxy.py \
-           <DEFENSE> socks 127.0.0.1:4999`
-	 #+END_SRC
-       - Serverseite:
-	 #+BEGIN_SRC sh
-           python /usr/lib/python2.7/dist-packages/obfsproxy/pyobfsproxy.py \
-           --log-min-severity=debug --data-dir=/tmp/scramblesuit-server <DEFENSE> \
-           --dest 127.0.0.1:9001 server 134.76.96.77:42000
-	 #+END_SRC
-*** TODO ref
-** [[./Curose-Ross - Computer_Networking_-_A_Top-down_Approach_Featuring_the_Internet__Third_Edition.pdf]]
-*** summary (up to p.103)
-    2) [@2] Application Layer
-
-       2) [@2] The World Wide Web: HTTP
-
-	  0) [@0]
-
-	     - "killer application" of the internet
-
-	     - major societal impacts:
-
-	       - telephone 1870
-
-	       - broadcast radio/television 1920-30
-
-	       - web
-
-	  1) Overview of HTTP
-
-	     - client/server
-
-	     - web page with objects: HTML file, pictures, (stylesheets), etc
-
-	       - most: base HTML file and "referenced objects"
-
-	     - HTTP: client/server language
-
-	       - on top of TCP
-
-	       - stateless protocol
-
-	       - 1.0 to 1.1 (to 2.0)
-
-	  2) Non-Persistent and Persistent Connections
-
-	     - 1.0 is non-persistent by default, 1.1 the opposite
-
-	     - Non-Persistent Connections
-
-	       - example: TCP connection for each object
-
-	       - parallel or serial: depends on browser (standard)
-
-	     - Persistent Connections
-*** quotes
-*** ref [[file:master.bib::DBLP:books/daglib/0001977][Kurose & Ross 2001: Computer]]
-** [[./reftex.pdf][RefTEX User Manual]]
-*** summary
-*** quotes
-    1) Introduction
-       1) Installation
-	  1) [@3] Entering RefTEX Mode
-	     - To turn RefTEX Mode on and off in a particular buffer,
-               use M-x reftex-mode RET. To turn on RefTEX Mode for all
-               LaTeX files, add the following lines to your ‘.emacs’
-               file: =(add-hook ’LaTeX-mode-hook ’turn-on-reftex)=
-       2) [@2] RefTEX in a Nutshell
-	  3) [@3] Citations
-	     - Typing =C-c [= (=reftex-citation=) will let you specify
-               a regular expression to search in current BibTEX
-               database files (as specified in the \bibliography
-               command)
-*** TODO ref
