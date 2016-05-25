@@ -44,7 +44,7 @@ exports["test object only in htmlCache (strategy 1=IA)"] = function(assert) {
     assert.equal(mockLoad.getSum(), 266);
 };
 
-exports["test burst on finish"] = function(assert) {
+exports["test burst on finish (config)"] = function(assert) {
     let burst = Simple.prefs.burst;
     Simple.prefs.burst=true;
     mockLoad.reset();
@@ -54,6 +54,18 @@ exports["test burst on finish"] = function(assert) {
     let toLoad = ct.target.numEmbedded;
     ct.finish();
     assert.equal(mockLoad.getCount(), Math.max(Math.ceil(toLoad), 0) + 1);
+    Simple.prefs.burst=burst;
+};
+
+exports["test no burst on finish (config)"] = function(assert) {
+    let burst = Simple.prefs.burst;
+    Simple.prefs.burst=false;
+    mockLoad.reset();
+    assert.equal(mockLoad.getCount(), 0, 'initialization error');
+    let ct = new coverTraffic.CoverTraffic(HOSTNAME, mockLoad);
+    assert.equal(mockLoad.getCount(), 1);
+    ct.finish();
+    assert.equal(mockLoad.getCount(), 1);
     Simple.prefs.burst=burst;
 };
 

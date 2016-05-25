@@ -1321,7 +1321,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      values, choosing the lower one. This increases traffic, but the
      opposite might be too little traffic, thus easier website
      fingerprinting, which should be avoided.
-**** TODO find number of embedded elements
+**** TODO find number of embedded objects
      The second important feature that is used in generating cover
      traffic is the number of embedded objects per HTML-page.
 
@@ -1696,42 +1696,52 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
     truncated at 0.999918739 quantile
   - embeddedSize: ebd
   - numEmbeddedObjects: truncated gamma instead of gamma
-* TODO Variations of Cover Traffic
+* CHECK Variations of Cover Traffic
   There are two variations how to generate Cover Traffic.
 
-  1. Does knowing [[#find sizes of HTML-documents][the size of the webpage]] and [[*find number of embedded elements][number of embedded
-     elements]] help in generating cover traffic? While it seems so at
-     first, it can be evaluated if [[HTML traffic model][educated guessing]] might work
-     better.
+  1. Does knowing web page characteristics, such as [[#find sizes of HTML-documents][the size of the
+     HTML-webpage]] and [[*find number of embedded elements][number of embedded objects]] help in generating
+     cover traffic? While it seems so at first, it can be evaluated if
+     [[HTML traffic
+      model][educated guessing]] might work better.
 
-     In a closed world, it is possible to always know the size of both
-     beforehand. If the parameter is unknown, the [[HTML traffic model][HTML traffic model]]
-     is used to randomly guess [fn::The size of each embedded element
-     is always randomly guessed.].
+     In a closed world, it is possible to always know these sizes
+     beforehand. If unknown, the random variates from the [[HTML traffic model][HTML traffic
+     model]] are used. [fn::The size of each embedded element is always
+     drawn from the HTML traffic model.].
 
   2. Given a webpage and its size, how much traffic should be generated?
 
-     The second parameter is the target size to pad to. One approach
-     is to group the webpages by their size into bins and to set the
-     border as the target size, as all webpages in the bin must have a
-     size less than or equal the border. This approach mimics that
-     taken by Wang et al. in \cite{effective} and Cai et al. in
-     \cite{a-systematic}, with the bins being equivalent to the
-     anonymity sets / partitions.
+     While just adding random traffic to each page might enhance
+     anonymity, always adding from the same distribution would
+     probably be wasteful, as site-specific values might prove to
+     obfuscate better.  A target size and number of objects has to be
+     determined. How to choose this is the second parameter.
 
-  The other approach is to have a single target distribution from
-  which values are sampled each time, once again from the [[HTML traffic model][HTML traffic
-  model]]. For each webpage, a target number of elements and target size
-  of its HTML-page is randomly determined (and multiplied with the
-  overhead). From this, the webpage's html-size and number of elements
-  is subtracted. At the same time of the HTML-query, another query for
-  the remaining HTML-size (or a token amount if too small) is
-  sent. Concerning the embedded elements, the ratio of
-  (target-site)/site is computed. For each element, this ratio
-  determines the number of requests for embedded elements (these are
-  always of random sizes, once again from the [[HTML traffic model][HTML traffic model]]. See
-  [[*cover%20traffic%20distribution%20generation][cover traffic distribution generation]] for the algorithms.
+     One approach is to group the webpages by their size into bins and
+     to set the bin border as the target size, as all webpages in the
+     bin must have a size less than or equal the border. This approach
+     mimics that taken by Wang et al. in \cite{effective} with the
+     bins being equivalent to the anonymity sets / partitions. For the
+     biggest bin, its median size is currently chosen.[fn::The optimal
+     size for the biggest bin is a parameter that should be evaluated
+     as well.]
 
+     The other approach is to have a single target distribution from
+     which values are sampled each time, once again from the [[HTML traffic model][HTML
+     traffic model]].
+** TODO move this f.ex. to coverTraffic, maybe move this section below
+  From the target values, the webpage's html-size and number of
+  elements (variation A/B) is subtracted.
+
+  At the same time of the HTML-query, another query for the remaining
+  HTML-size (or a token amount if too small) is sent. Concerning the
+  embedded elements, the ratio of (target-site)/site is computed. For
+  each element, this ratio determines the number of requests for
+  embedded elements (these are always of random sizes, once again from
+  the [[HTML traffic model][HTML traffic model]]. See [[*cover%20traffic%20distribution%20generation][cover traffic distribution generation]]
+  for the algorithms.
+** TODO end move section
   This leads to the following variations:
 
   1) bloom binning (I) with known sizes (A)
@@ -1743,27 +1753,6 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   |-----------------+------------------+----------------------|
   | A: known sizes  |                  |                      |
   | B: random sizes |                  |                      |
-** TODO Varianten: (see that all mentioned)
-	 1) bloom filter
-	    - zielgroesse: maximum des jeweiligen buckets
-	    - was bei groesstem bucket?
-	    - z.zt: 99,9% quantil zurueck \to 0.1% aller Seiten mit
-              Minimalschutz
-	      - z.b. "http://163.com/" has 471 embedded elements and
-		html-size of 751070
-	      - still: for each element a 0.1% MIN_PROB chance of extra
-		element \to 47 extra pages retrieved
-	    - mention to daniel
-	    - currently, mismatch URL/href/host/href_no_params
-	      - needs sometimes host (cheap solution)
-	      - sizeCache needs href_no_params (better than full href)
-	 2) alternative: wuerfeln, padden bis maximum des passenden bloom
-            buckets
-	 3) so wie bisher mit originalgroesse aus bloom
-	 4) so wie bisher mit originalgroesse wuerfeln
-** TODO text less stilted
-   continue at 2.
-** TODO check that [[file:docs/lit.org::*%5B%5B./ccs14.pdf%5D%5BCai%202014%20-%20A%20Systematic%20Approach%20to%20Developing%20and%20Evaluating%20Website%20Fingerprinting%20Defenses%5D%5D][Cai et al]] pad to bins
 * CHECK which features work well
   As stressed by Perry in \cite{critique}, analysis of which feature
   contribute the most towards classification is important. Panchenko
