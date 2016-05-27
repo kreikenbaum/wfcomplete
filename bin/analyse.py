@@ -123,7 +123,7 @@ def panchenko_outlier_removal(counters):
     return out
         
 ### evaluation code
-def test(X, y, estimator, nj=2):
+def _test(X, y, estimator, nj=2):
 
     '''tests estimator with X, y, prints type and result'''
     print estimator
@@ -134,13 +134,6 @@ def xtest(X_train, y_train, X_test, y_test, esti):
     '''cross_tests with all known estimators'''
     esti.fit(X_train, y_train)
     print 'estimator: {}, score: {}'.format(esti, esti.score(X_test, y_test))
-
-ALL = [ensemble.AdaBoostClassifier(),
-       ensemble.ExtraTreesClassifier(n_estimators=250),
-       ensemble.RandomForestClassifier(),
-       neighbors.KNeighborsClassifier(),
-       svm.SVC(gamma=2**-4),
-       tree.DecisionTreeClassifier()]
 
 #    Cs = np.logspace(11, 17, 7, base=2)
 #    Gs = np.logspace(-3, 3, 7, base=2)
@@ -156,6 +149,32 @@ def my_grid(X, y, cs, gammas):
     print 'best score: {}'.format(clf.best_score_)
     print 'with estimator: {}'.format(clf.best_estimator_)
 
+def outlier_removal():
+    cs = counter.Counter.from_(sys.argv)
+    (X, y, y_domains) = to_features_cumul(panchenko_outlier_removal(cs))
+    (X2, y2, y2_domains) = to_features_cumul(cs)
+    _compare(X, y, X2, y2)
+
+def cumul_vs_panchenko():
+    cs = panchenko_outlier_removal(counter.Counter.from_(sys.argv))
+    (X, y, y_domains) = to_features(cs)
+    (X2, y2, y2_domains) = to_features_cumul(cs)
+    _compare(X, y, X2, y2)
+
+def _compare(X, y, X2, y2):
+    for esti in GOOD:
+        _test(X, y, esti)
+        _test(X2, y2, esti)
+
+GOOD = [ensemble.ExtraTreesClassifier(n_estimators=250),
+        ensemble.RandomForestClassifier(),
+        neighbors.KNeighborsClassifier(),
+        tree.DecisionTreeClassifier()]
+
+ALL = GOOD[:]
+ALL.extend([ensemble.AdaBoostClassifier(),
+            svm.SVC(gamma=2**-4)])
+
 if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
@@ -165,26 +184,18 @@ if __name__ == "__main__":
     # os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'sw', 'data', 'json', 'disabled'))
 
     (X, y, y_domains) = to_features_cumul(counter.Counter.from_(sys.argv))
-    # compare outlier removal
-    cs = counter.Counter.from_(sys.argv)
-    (X, y, y_domains) = to_features_cumul(panchenko_outlier_removal(cs))
-    (X2, y2, y2_domains) = to_features_cumul(cs)
-    test(X, y, ALL[1])
-    test(X2, y2, ALL[1])
-    test(X, y, ALL[3])
-    test(X2, y2, ALL[3])
-    test(X, y, ALL[4])
-    test(X2, y2, ALL[4])
+    # compare_outlier_removal()
+    # cumul_vs_panchenko()
     
     # compare cumul and panchenko1
     #(X, y, y_domains) = to_features(counter.Counter.from_(sys.argv))
     # (X2, y2, y2_domains) = to_features_cumul(counter.Counter.from_(sys.argv))
 
     for esti in ALL:
-        test(X, y, esti)
+        _test(X, y, esti)
 
-    test(X, y, svm.SVC(C=10**-20, gamma=4.175318936560409e-10))
-    #test(X, y, svm.SVC(kernel='linear')) #problematic, but best
+    _test(X, y, svm.SVC(C=10**-20, gamma=4.175318936560409e-10))
+    #_test(X, y, svm.SVC(kernel='linear')) #problematic, but best
     #grid rbf
 #     cstart, cstop = -45, -35
 #     Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
@@ -192,7 +203,7 @@ if __name__ == "__main__":
 #     gamma = 4.175318936560409e-10
 #     for c in Cs:
 # #        for gamma in Gs:
-#         test(X, y, svm.SVC(C=c, gamma=gamma))
+#         _test(X, y, svm.SVC(C=c, gamma=gamma))
     ### random forest
     ## feature importance
     # forest = ensemble.ExtraTreesClassifier(n_estimators=250)
@@ -200,18 +211,18 @@ if __name__ == "__main__":
     # forest.feature_importances_
     ### extratree param
     # for num in range(50, 400, 50):
-    #     test(X, y, ensemble.ExtraTreesClassifier(n_estimators=num))
+    #     _test(X, y, ensemble.ExtraTreesClassifier(n_estimators=num))
     ### linear params
     # cstart, cstop = -5, 5
     # Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
     # for c in Cs:
-    #     test(X, y, svm.SVC(C=c, kernel='linear'))
+    #     _test(X, y, svm.SVC(C=c, kernel='linear'))
     ### metrics (single)
     # from scipy.spatial import distance
     # for dist in [distance.braycurtis, distance.canberra,
     #              distance.chebyshev, distance.cityblock, distance.correlation,
     #              distance.cosine, distance.euclidean, distance.sqeuclidean]:
-    #     test(X, y, neighbors.KNeighborsClassifier(metric='pyfunc', func=dist))3
+    #     _test(X, y, neighbors.KNeighborsClassifier(metric='pyfunc', func=dist))3
     ### td: knn + levenshtein
     # import math
     # def mydist(x, y):
@@ -225,3 +236,4 @@ if __name__ == "__main__":
     #     variable2 = gdl.metric(x[xbounds2[0]:xbounds2[1]],
     #                            y[ybounds2[0]:ybounds2[1]])
     #     return math.sqrt(fixedm + variable1 + variable2)
+

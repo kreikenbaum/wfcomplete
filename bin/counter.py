@@ -30,23 +30,14 @@ def _append_features(keys, filename):
     else:
         logging.warn('%s discarded', counter.name)
 
-def _normalize(array):
-    '''normalizes array so that its maximum absolute value is +- 1.0
-
-    >>> _normalize([3,4,5])
-    [0.6, 0.8, 1.0]
-    >>> _normalize([-4, 2, -10])
-    [-0.4, 0.2, -1.0]
-    '''
-    maxabs = float(max([abs(x) for x in array]))
-    return [x / maxabs for x in array]
-
-def discretize(number, step):
-    '''discretizes number by increment, rounding up
-    >>> discretize(15, 3)
+def _discretize(number, step):
+    '''discretizes(=round) number by increment, rounding up
+    >>> _discretize(15, 3)
     15
-    >>> discretize(14, 3)
+    >>> _discretize(14, 3)
     15
+    >>> _discretize(-3, 2)
+    -2
     '''
     return int(math.ceil(float(number) / step) * step)
 
@@ -57,29 +48,47 @@ def _get_domain(filename):
     '''
     return os.path.basename(filename).split(TIME_SEPARATOR)[0]
 
-def pad(row, upto=300):
-    '''enlarges row to have upto entries (padded with 0)
-    >>> pad([2], 20)
-    [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    '''
-    row.extend([0] * (upto - len(row)))
-    return row
+def _normalize(array):
+    '''normalizes array so that its maximum absolute value is +- 1.0
 
-def num_bytes(packets):
+    >>> _normalize([3,4,5])
+    [0.6, 0.8, 1.0]
+    >>> _normalize([-4, 2, -10])
+    [-0.4, 0.2, -1.0]
+    '''
+    maxabs = float(max((abs(x) for x in array)))
+    return [x / maxabs for x in array]
+
+def _num_bytes(packets):
     '''number of (incoming, outgoing) bytes
-    >>> num_bytes([-3,1,-4,4])
+    >>> _num_bytes([-3,1,-4,4])
     (5, 7)
     '''
     return((sum((x for x in packets if x > 0)),
             abs(sum((x for x in packets if x < 0)))))
 
-def num_packets(packets):
+def _num_packets(packets):
     '''number of (incoming, outgoing) packets
-    >>> num_packets([3,4,-1,-4, 1])
+    >>> _num_packets([3,4,-1,-4, 1])
     (3, 2)
     '''
     return((sum((1 for x in packets if x > 0)),
             sum((1 for x in packets if x < 0))))
+
+def _sum_numbers(packets):
+    '''sums number of adjacent packets in the same direction, discretized
+    by 1,2,3-5,6-8,9-13,14
+
+    >>> _sum_numbers([10, -1, -2, 4])
+    [1, 2, 1]
+    '''
+    counts = _sum_stream([math.copysign(1, x) for x in packets])
+    # extended as counts had 16, 21
+    dictionary = {1: 1, 2: 2, 3: 3, 4: 3, 5: 3, 6: 4, 7: 4, 8:4,
+                  9:5, 10:5, 11:5, 12:5, 13:5, 14:6}
+    return [dictionary[min(14, abs(x))] for x in counts]
+    #return counts
+    #return [math.log(abs(x), 2.4) for x in counts]
 
 def _sum_stream(packets):
     '''sums adjacent packets in the same direction
@@ -97,20 +106,13 @@ def _sum_stream(packets):
     out.append(tmp)
     return out
 
-def _sum_numbers(packets):
-    '''sums number of adjacent packets in the same direction, discretized
-    by 1,2,3-5,6-8,9-13,14
-
-    >>> _sum_numbers([10, -1, -2, 4])
-    [1, 2, 1]
+def pad(row, upto=300):
+    '''enlarges row to have upto entries (padded with 0)
+    >>> pad([2], 20)
+    [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     '''
-    counts = _sum_stream([math.copysign(1, x) for x in packets])
-    # extended as counts had 16, 21
-    dictionary = {1: 1, 2: 2, 3: 3, 4: 3, 5: 3, 6: 4, 7: 4, 8:4,
-                  9:5, 10:5, 11:5, 12:5, 13:5, 14:6}
-    return [dictionary[min(14, abs(x))] for x in counts]
-    #return counts
-    #return [math.log(abs(x), 2.4) for x in counts]
+    row.extend([0] * (upto - len(row)))
+    return row
 
 class Counter(object):
     '''single trace file'''
@@ -181,6 +183,24 @@ class Counter(object):
 
         return out
 
+    @staticmethod
+    def from_(*args):
+        '''helper method to handle empty argument'''
+        logging.info('args: %s, length: %d', args, len(args))
+        if len(args) == 2:
+            try:
+                os.chdir(args[1])
+                out = Counter.all_from_dir('.')
+            except OSError:
+                pass # ok, was a filename
+        elif len(args) > 1:
+            out = {}
+            for filename in args[1:]:
+                _append_features(out, filename)
+        else:
+            out = Counter.all_from_dir('.')
+        return out
+
     @classmethod
     def from_pcap(cls, filename):
         '''creates Counter from pcap file'''
@@ -217,7 +237,7 @@ class Counter(object):
 
     def get_total_in(self):
         '''returns total incoming bytes'''
-        return num_bytes(self.packets)[0]
+        return _num_bytes(self.packets)[0]
 
     def get(self, feature_name):
         '''returns the (scalar) feature of feature_name'''
@@ -276,7 +296,7 @@ class Counter(object):
         self.fixed = {}
         self.variable = {}
 
-        self.variable['size_markers'] = [discretize(size, 600) for
+        self.variable['size_markers'] = [_discretize(size, 600) for
                                          size in _sum_stream(self.packets)]
         # normalize size markers to remove redundant incoming at start
         # as the first chunk needs to be the html request, the second
@@ -289,27 +309,27 @@ class Counter(object):
         logging.debug('fixed: %s', self.fixed)
         # size_incoming size_outgoing
         (self.fixed['total_in'], self.fixed['total_out']) = (
-            [discretize(x, 10000) for x in num_bytes(self.packets)])
+            [_discretize(x, 10000) for x in _num_bytes(self.packets)])
         logging.debug('fixed: %s', self.fixed)
         # number markers
         self.variable['number_markers'] = _sum_numbers(self.packets)
         # occurring packet sizes in + out
-        self.fixed['num_sizes_out'] = (discretize(len(set(
+        self.fixed['num_sizes_out'] = (_discretize(len(set(
             [x for x in self.packets if x > 0])), 2))
-        self.fixed['num_sizes_in'] = (discretize(len(set(
+        self.fixed['num_sizes_in'] = (_discretize(len(set(
             [x for x in self.packets if x < 0])), 2))
         logging.debug('fixed: %s', self.fixed)
         # helper
-        (packets_in, packets_out) = num_packets(self.packets)
+        (packets_in, packets_out) = _num_packets(self.packets)
         # percentage incoming packets
         self.fixed['percentage_in'] = (
-            discretize(100 * packets_in /(packets_in + packets_out), 5))
+            _discretize(100 * packets_in /(packets_in + packets_out), 5))
         logging.debug('fixed: %s', self.fixed)
         # number incoming
-        self.fixed['count_in'] = discretize(packets_in, 15)
+        self.fixed['count_in'] = _discretize(packets_in, 15)
         logging.debug('fixed: %s', self.fixed)
         # number outgoing
-        self.fixed['count_out'] = discretize(packets_out, 15)
+        self.fixed['count_out'] = _discretize(packets_out, 15)
         logging.debug('fixed: %s', self.fixed)
         # duration
         self.fixed['duration'] = self.timing[-1][0]
@@ -324,29 +344,11 @@ class Counter(object):
         '''prints packet trace to json, for reimport'''
         return json.dumps(self.__dict__)
 
-    @staticmethod
-    def from_(*args):
-        '''helper method to handle empty argument'''
-        logging.info('args: %s, length: %d', args, len(args))
-        if len(args) == 2:
-            try:
-                os.chdir(args[1])
-                out = Counter.all_from_dir('.')
-            except OSError:
-                pass # ok, was a filename
-        elif len(args) > 1:
-            out = {}
-            for filename in args[1:]:
-                _append_features(out, filename)
-        else:
-            out = Counter.all_from_dir('.')
-        return out
-
     def cumul(self, num_features=100):
         '''@return CUMUL feature vector'''
-        total = []
+        c_abs = []
         # cumulated packetsizes
-        cumul = [] #td: good idea to have same name as method?
+        c_rel = [] #td: good idea to have same name as method?
         inSize = 0
         outSize = 0
         inCount = 0
@@ -357,34 +359,36 @@ class Counter(object):
             if packetsize > 0:
                 inSize += packetsize
                 inCount += 1
-                if len(cumul) == 0:
-                    cumul.append(packetsize)
-                    total.append(packetsize)
+                if len(c_rel) == 0:
+                    c_rel.append(packetsize)
+                    c_abs.append(packetsize)
                 else:
-                    cumul.append(cumul[-1] + packetsize)
-                    total.append(total[-1] + abs(packetsize))
+                    c_rel.append(c_rel[-1] + packetsize)
+                    c_abs.append(c_abs[-1] + abs(packetsize))
             elif packetsize < 0:
                 outSize += abs(packetsize)
                 outCount += 1
-                if len(cumul) == 0:
-                    cumul.append(packetsize)
-                    total.append(abs(packetsize))
+                if len(c_rel) == 0:
+                    c_rel.append(packetsize)
+                    c_abs.append(abs(packetsize))
                 else:
-                    cumul.append(cumul[-1] + packetsize)
-                    total.append(total[-1] + abs(packetsize))
+                    c_rel.append(c_rel[-1] + packetsize)
+                    c_abs.append(c_abs[-1] + abs(packetsize))
             else:
                 logging.warn('packetsize == 0 in cumul')
 
         features = [inCount, outCount, outSize, inSize]
-        cumulFeatures = numpy.interp(numpy.linspace(total[0], total[-1],
-                                                  num_features+1),
-                                   total, cumul)
+        cumulFeatures = numpy.interp(numpy.linspace(c_abs[0],
+                                                    c_abs[-1],
+                                                    num_features+1),
+                                     c_abs,
+                                     c_rel)
         # could be cumulFeatures[1:], but never change a running system
         for el in itertools.islice(cumulFeatures, 1, None):
             features.append(el)
 
         return features
-        
+
 
 if __name__ == "__main__":
     doctest.testmod()
@@ -392,7 +396,7 @@ if __name__ == "__main__":
 
     COUNTERS = Counter.from_(*sys.argv)
     Counter.save(COUNTERS)
-    print 'counters saved to domain.json files'
+    print 'counters saved to DOMAIN.json files'
     ## if non-interactive, print timing data
     from ctypes import pythonapi
     if not os.environ.get('PYTHONINSPECT') and not pythonapi.Py_InspectFlag > 0:

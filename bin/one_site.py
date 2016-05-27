@@ -107,7 +107,7 @@ def _normalize_url(url='google.com'):
     return (url, urlparse.urlparse(url).netloc)
 
 def _open_packet_dump(page):
-    '''returns a tshark instance which writes to /mnt/data/'page' '''
+    '''@returns a (tshark_subprocess_instance, filename) tuple'''
     loc = os.path.join('/mnt/data', page + '@' + str(time.time()).split('.')[0]);
     return (subprocess.Popen(['tshark', '-w' + loc]), loc);
 

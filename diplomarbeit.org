@@ -156,6 +156,8 @@
      - luo
      - panchenko decoy
      - padding (sslv2\to3)
+     - requestpolicy
+     - text-only browsing
 *** Algorithms
 **** brainstorm
      - SVM
@@ -213,9 +215,9 @@
 *** mitigation
 **** state of the art
 ** Results and Evaluation
-* TODO topics [0/114]
+* TODO topics [0/117]
 ** TODO MOVE [[*Teaser][Teaser]] here
-** TODO Website Fingerprinting [0/52]
+** TODO Website Fingerprinting [0/53]
 *** What is Website Fingerprinting
     Website fingerprinting\cite{hintz02} can be used to discover which
     webpages or websites a user visits via an anonymizing proxy. It is a
@@ -653,7 +655,6 @@
      `to_libsvm(X, y, fname='libsvm_in')`, which can be called with the
      output of `to_features`. It writes lines in X with labels in y to the
      file 'libsvm_in' (by default).
-***** TODO maybe rename analyse.py? To analyse.py?
 ***** TODO ref stackoverflow why 0 padding
 ***** TODO see also to_features_cumul
 **** LATER effect of panchenko's weighting schema
@@ -681,25 +682,35 @@
     Hintz in 2002. A successful attack against single-hop proxies was
     carried out by Herrmann et al. in 2009.
 **** MERGE MAYBE [[history of website fingerprinting in Tor]]
-*** TODO wf-specific defenses
+*** TODO defenses
     - walkie-talkie
     - wtfpad
     - supersequence
     - tamaraw
     - buflo
-*** TODO other defenses
+
     There are other methods of defense, which might help mitigate
-    website fingerprinting. One is based on reducing the fingerprint by
-    browser plugins and text-only browsing, another on rate limiting.
-**** TODO Plugins: noscript and requestpolicy
-     A second Add-On with a different set of protective measures is
-     RequestPolicy: This add-on controls which third-party content to
+    website fingerprinting. A certain browser extension and text-only
+    browsing might reduce the fingerprint.
+**** CHECK Additional Plugin: requestpolicy
+     In addition to the security-centric addons deployed with the
+     Tor-Browser-Bundle, there is an additional addon with orthogonal
+     protection: RequestPolicy controls which third-party content to
      load on a given page. Every query to the original domain is
-     passed, while requests to other domains must be temporarily or
+     allowed, while requests to other domains must be temporarily or
      permanently approved. It comes with a restrictive set of
      pre-defined rules (for example google pages are allowed to access
      gstatic). Both a blacklist and a whitelist mode exist.
+
+     This could easily (and individually) alter the request/response
+     characteristic of a website. More study might shed some light.
+
+     RequestPolicy hindered early versions of the Addon, as it blocked
+     [[page-worker]]s. If both are deployed alongside, it should be
+     carefully checked.
 ***** TODO link Requestpolicy
+***** TODO move below tbb
+***** TODO cite requestpolicy (orthogonal)
 **** CHECK write new plugins
      Instead of inserting dummy traffic into the connection, one could
      throttle the "data rate" of request and responses (or only
@@ -712,9 +723,22 @@
      - it might be hard to implement in a plug-in, and
      - randomized defenses seem offer adequate defense at reduced
        latency and bandwith
-**** TODO link tor browser bundle
-***** or writeup something
+***** TODO move to description of other defenses
+**** TODO tor browser bundle defense
+     - randomized pipelining \cite{experimental}
+       - how it works
+       - _experimental_
+     - broken by \cite{ccs2012-fingerprinting}
+       - higher accuracy than without
+     - addons
+       - noscript
+       - https everywhere
+       - more?
 **** TODO running an OR
+     - hinted by ...
+     - extra traffic
+     - depends on data rate: if all is easily decorrelatable, maybe no
+       extra protection
 **** CHECK text-only
      As the sizes and interconnection of HTML and embedded content is
      what makes a webpage easily identifyable, using a text-only
@@ -846,11 +870,27 @@
     Tor sends data traffic in 512-byte cells.
 **** TODO pictures with attribution
 *** TODO Tor's Cryptography
-    In Tor, each Onion Router has three distinct keys. One is an
+    While Tor's anonymity depends on cryptography, website
+    fingerprinting gains information despite the cryptography. Thus,
+    this section will provide only a high-level overview.
+
+    Cryptography in Tor provides confidentiality and integrity
+    \cite{applied96} of the passed messages and authenticates
+    \cite{applied96} the intermediaries.
+
+    - identity keys
+    - onion key / signing
+    - short-term connection
+
+    - previous versions \cite{tor-design} used only RSA, now also
+      ed25519 \cite{tor-spec} for long- and medium term keys
+
+
+    In Tor, each Onion Router has  types of keys. One is an
     /identity key/ of the onion router, a long-term key used for
-    signing only. This signs a (medium\cite{tor-spec} to
-    short\cite{tor-design})-term /onion key/, which is kept at least
-    one week after advertising.
+    signing (=authentication) only. This signs a
+    (medium\cite{tor-spec} to short\cite{tor-design})-term /onion
+    key/, which is kept at least one week after advertising.
 
     - fixed minimum messages size of 512 Byte
       - extensions allow other sizes
@@ -943,7 +983,7 @@
     multiplexing and fixed cell sizes.
 *** TODO sort subtopics
 *** TODO Tor overview
-** TODO Addon Design and Implementation [0/44]
+** TODO Addon Design and Implementation [0/46]
 *** Defenses
 **** [[*wf-specific%20defenses][wf-specific defenses]]
 **** [[*other%20defenses][other defenses]]
@@ -1024,6 +1064,7 @@
      initialized via the =onAttach= parameter of f.ex. the page-mod.
 **** TODO collect/list all addon sections
 **** CHECK page-worker
+     <<page-worker>>
      A =page-worker= creates "a permanent, invisible page and access[es]
      its
      DOM."[fn::\url{developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html}]
@@ -1279,7 +1320,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      - browsers cache
      - only helps in cover traffic, (unless warm/cold site model is used)
 ***** LATER where to put this?
-**** TODO find sizes of HTML-documents
+**** TODO Parameter: Sizes of HTML-Documents
      :PROPERTIES:
      :CUSTOM_ID: find sizes of HTML-documents
      :END:
@@ -1310,16 +1351,16 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      values, choosing the lower one. This increases traffic, but the
      opposite might be too little traffic, thus easier website
      fingerprinting, which should be avoided.
-**** TODO find number of embedded objects
-     The second important feature that is used in generating cover
-     traffic is the number of embedded objects per HTML-page.
+**** TODO Estimate Parameter: Number of Embedded Objects
+     The second parameter for generating cover traffic is the number
+     of embedded objects per HTML-page.
 
-     These are extracted via the python script
-     [[file:bin/htmlToNumEmbedded.py]] (see appendix) which is called by
-     [[./bin/retrieve_100_embedded.sh]].
+     These are extracted via the python script [[#htmlToNumEmbedded][htmlToNumEmbedded.py]]
+     which is called for each of the top-100's main web pages by
+     [[#retrieve_100_embedded.sh][retrieve_100_embedded.sh].
 
-     It uses python's lxml module to parse the HTML's
-     DOM[fn::\url{https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Introduction}],
+     To extract, python's lxml module to parse the HTML's
+     DOM 
      extracts the URLs of embedded files from the attributes of
      several tags, f.ex. the =src= element of =img= tags.
 
@@ -1330,6 +1371,8 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      might generate more traffic than strictly necessary, but here,
      safe seems better than sorry. Extracting just the right URLs is a
      matter of [[*Further%20work][further research]].
+***** TODO read dom reference
+***** TODO link to lxml website
 **** TODO bloom-sort usage
      It is impractical to store the sizes of all URLs. Another
      possibility is to use Bloom Filters to aggregate groups of URLs
@@ -1827,11 +1870,13 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
     - just take quantiles, use his limits
 ** TODO run test, include results
 ** TODO link to panchenko's software
+* TODO how to set up wfpad
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
 * UPTO HERE +BIB, TEXING WORKS -------------------------------------------
-* WAIT Results
+* TODO [#A] Results [0/2]
+** TODO write panchenko 1
 ** classifiers (ordered by accuracy)
 *** 20 classes (~78%)
 **** scikit-learn *knn* (~78%)
@@ -3968,7 +4013,7 @@ mean = 0.763238095238
    this does not perfectly represent reality. It would be more exact
    to analyse the HTML page and at least return the domains of all
    embedded elements.
-* TODO appendices [0/12]
+* TODO appendices [0/9]
 \appendix
 ** Script [[./bin/one_site.py]]: capture pcap traces
    <<one_site>>
@@ -4002,7 +4047,9 @@ mean = 0.763238095238
          cover traffic
      - maybe further work: test that really works worse
 **** TODO include file [[../bin/unused/TrafficHTTPServer.py]]
-** TODO include [[file:bin/htmlToNumEmbedded.py]]
+** Script [[./bin/htmlToNumEmbedded.py]]: extract embedded objects
+   <<htmlToNumEmbedded.py>>
+   #+INCLUDE: "./bin/htmlToNumEmbedded.py" src python
 ** TODO Script [[./bin/html_top_100.sh]] to retrieve html pages via squid
    #+INCLUDE: "./bin/html_top_100.sh" src sh
 ** html_top_100.sh
@@ -4020,7 +4067,9 @@ mean = 0.763238095238
            cd ..
        done
      #+END_SRC
-** TODO [[./bin/retrieve_100_embedded.sh]].
+** Script [[./bin/retrieve_100_embedded.sh]]: run htmlToNumEmbedded
+   <<retrieve_100_embedded.sh>>
+   #+INCLUDE: "./bin/retrieve_100_embedded.sh" src python
 ** TODO modified top-100
 *** TODO download
 ** TODO Remove same-host cover traffic server from traces: [[./bin/7777.sh]]
