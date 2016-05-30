@@ -58,7 +58,7 @@
 #+LATEX_HEADER:   \end{tabular}
 #+LATEX_HEADER: }}
 * TODO organize [[*Mozilla%20Add-On%20Sdk][addon]] sections
-* TODO [#A] look through [[file:docs/lit.org][lit.org]], see which should be cited
+* TODO move bloom filter parts to topics
 * Final as proposed
 ** basics
 *** Tor
@@ -77,7 +77,7 @@
 **** sota: wtfpad
 **** sota: walkie-talkie
 **** (maybe) optimal
-* MY Final Sections
+* TODO [#A] MY Final Sections
 ** LATER Abstract
 *** Teaser
     #+BEGIN_QUOTE
@@ -198,6 +198,22 @@
        - classes
      - server
        - later: .onion (link to related work)
+*** Bloom Filters
+**** brainstorm
+     - stochastic fixed-width data structure
+     - works flawlessly if element is inside
+       - might fail if not
+     - based on this: bloomsort: combine filters
+       - sort into bins
+	 - based on target distribution
+	 - one bloom filter per bin
+       - check size: check all filters
+	 - if one returns: fine
+	 - if none returns: ok: clear that not inserted, default value
+	 - if two return: error, fall back to default value
+       - error estimation?
+       - +: fixed size
+       - -: error both ways, and difference bin-size to real size
 ** Related Work
    - see dyer for good example
    - schneier quoting ...
@@ -210,12 +226,13 @@
    - cheng
    - wang
    - dts-approach
+*** move this to [[*Website%20Fingerprinting][Website Fingerprinting]] (related work as subsec of each part)
 *** classifiers
 **** state of the art
 *** mitigation
 **** state of the art
-** Results and Evaluation
-* TODO topics [0/117]
+** TODO Results and Evaluation
+* TODO topics [0/119]
 ** TODO MOVE [[*Teaser][Teaser]] here
 ** TODO Website Fingerprinting [0/53]
 *** What is Website Fingerprinting
@@ -260,11 +277,6 @@
     website allows the government to limit its search to, say three,
     subjects. This gives the whistleblower away.[fn::Such has not been
     observed.]
-*** Panchenko's Attack via Website Fingerprinting
-    For a long time, traffic analysis attacks against Tor had not
-    yielded results. Prior to Panchenko et al\cite{panchenko}, it was
-    assumed that Tor introduced multiplexing, enough padding and
-    latency into website retrieval that this attack was inapplicable.
 *** TODO visual inspection of data [0/3]
     To exemplify the task of a websitefingerprinter, consider the
     following pictures which represent complete (considered to contain
@@ -426,7 +438,7 @@
 
      Once the Browser Bundle is working, as it runs when starting
      manually, webpages can be retrieved automatically. This is done
-     via the [[one_site][one_site.py]] script.
+     via the [[one_site.py][one_site.py]] script.
 
      The script
 
@@ -627,35 +639,35 @@
      class of the data, then a colon, finally all the data for an
      instance, separated by whitespace.
 ***** TODO link to code to generate
-**** CHECK transform features to vector
-     Once the `Counter`s are obtained, they need to be modified to fit as
-     input for scikit-learn's\cite{scikit-learn} classifiers.
+**** TODO transform features to vector
+     Once the =Counter=s data is obtained, it needs to be transformed
+     to input for scikit-learn's\cite{scikit-learn} classifiers.
 
      The code to convert these features to classification input can be
-     found in `analyse.py` (see
-     [[*%5B%5Bfile:../bin/extract_attribute.py%5D%5Bextract_attribute.py%5D%5D][{{file:../bin/analyse.py}{appendix}}]]). This determines
-     the maximum length of all variable-length features, pads
-     Panchenko's features appropriately, and converts them to an array
-     fit for input into scikit-learn's classifiers. When called from
-     the command line, as
+     found in `analyse.py` (see [[analyse.py][appendix]]). This determines the maximum
+     length of all variable-length features, 0-pads Panchenko's features
+     with zeroes to the same length, and converts them to an array fit
+     for input into scikit-learn's classifiers. When called from the
+     command line, as
 
      python -i /path/to/analyse.py
 
-     , it will extract the feature vectors from JSON or pcap files in the
-     current directory, and run some (5-fold) cross-validated classifiers
+     , it will extract the feature vectors from JSON or pcap files in
+     the current directory, and run 5-fold cross-validated classifiers
      against the data.
 
      =Counter= input features are transformed into scikit-learn input
-     in the `to_features()` function, which normalizes all vectors to
+     in the =to_features()= function, which normalizes all vectors to
      have the same size (padding with 0s), and creates the feature
-     matrix `X` with numeric class labels `y` (and class names in
-     `y_domain`).
+     matrix =X= with numeric class labels =y= (and class names in
+     =y_domain=).
 
      If you wish to run LibSVM on the command-line, there is also
-     `to_libsvm(X, y, fname='libsvm_in')`, which can be called with the
-     output of `to_features`. It writes lines in X with labels in y to the
+     =to_libsvm(X, y, fname='libsvm_in')=, which can be called with the
+     output of =to_features=. It writes lines in X with labels in y to the
      file 'libsvm_in' (by default).
 ***** TODO ref stackoverflow why 0 padding
+****** TODO or better, some statistics text
 ***** TODO see also to_features_cumul
 **** LATER effect of panchenko's weighting schema
      Currently, fixed attributes are weighted heavily in favor of total
@@ -827,12 +839,17 @@
     As website fingerprinting requires very litte resources, a specific
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
     state.
-*** TODO what did panchenko do (wf)?
-    Panchenko\cite{panchenko} first published a successful website
-    fingerprinting attack on Tor. He extracted HTTP-specific features
-    from the packet trace and used those in a hand-tuned support
-    vector machine with a radial basis function kernel.
-**** maybe merge with [[Panchenko's Attack via Website Fingerprinting]]
+*** CHECK Panchenko et al.'s Attack via Website Fingerprinting
+    The first website fingerprinting
+    attack\cite{ccsw09-fingerprinting} against Tor had yielded little
+    accuracy: This was due\cite{experimental} to Tor's multiplexing
+    and fixed cell-size.
+
+    Panchenko et al\cite{panchenko} were the first to publish a
+    successful website fingerprinting attack on Tor. They extracted
+    HTTP-specific features from the packet trace and used those in a
+    hand-tuned support vector machine with a radial basis function
+    kernel.
 **** practical wf: Capturing traces
 ** TODO Tor [0/15]
 *** How to use Tor
@@ -999,7 +1016,7 @@
      XUL[fn::\url{https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XUL}],
      the XML User-interface Language.
 
-     The addon execution entry point (like `main` in C and Java) can be
+     The addon execution entry point (like =main= in C and Java) can be
      configured via the =preferences.json= file. By default, the main
      addon-script is called =index.js=.
 
@@ -1118,7 +1135,7 @@
 
      , which is run on every page, applies the =getLinks.js= script and
      listens for its feedback, which is then used via
-     `addToCandidates()`.
+     =addToCandidates()=.
 
      The page-mod has a =contentScriptWhen= parameter, which specifies
      when to attach the script to the page. Valid values are =start=,
@@ -1176,7 +1193,7 @@
      functionality.
 ***** Interacting with page scripts
 developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_page_scripts.html
-**** TODO [#C] DOM
+**** TODO [#C] <<<DOM>>>
      domain-object-model
 **** TODO unit tests jpm
      JPM also offers the ability to write unit-tests.
@@ -1360,8 +1377,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      [[#retrieve_100_embedded.sh][retrieve_100_embedded.sh].
 
      To extract, python's lxml module to parse the HTML's
-     DOM 
-     extracts the URLs of embedded files from the attributes of
+     DOM extracts the URLs of embedded files from the attributes of
      several tags, f.ex. the =src= element of =img= tags.
 
      This implementation currently omits some possibly embedded
@@ -1410,7 +1426,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
         - "add" the error rates of the filters? (times population density?)
 ***** maybe graphics?
 ***** LATER check "see previous section"
-*** TODO Implementation [1/6]
+*** TODO Implementation [0/5]
 **** TODO js coding best practices
      JavaScript\cite{ecma} is arguably a language with some great
      parts, but also several bad ones\cite{javascript}. Approaches to
@@ -1471,7 +1487,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
        - numembedded
      - td describe best algo only?
 ***** TODO move to [[*Design][Design]]?
-**** CHECK Apache mod_wsgi
+**** TODO Apache mod_wsgi
      =mod_wsgi= is a module for the Apache web
      server[fn::\url{https://httpd.apache.org/}]. It executes python
      scripts which implement the WSGI standard\cite{pep3333}. An
@@ -1489,6 +1505,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
      - ~/.local/bin/mod_wsgi-express start-server wsgi.py
 
      (here, also --port 7777), as for the script wsgi.py see [[#wsgi.py][appendix]].
+**** [[*python%20web%20server%20nichol.as][python web server nichol.as]]
 *** Evaluation
 **** add-on
 ***** TODO differences to adaptive padding/wtfpad
@@ -1514,6 +1531,10 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
       - when this started, walkie-talkie and juarez had not yet published
       - harder to break
         - more effort: one classifier for each cover scheme
+** TODO Bloom Filters
+*** [[*what%20is%20a%20bloom%20filter][what is a bloom filter]]
+*** [[*bloom%20usage%20and%20implementation][bloom usage and implementation]]
+*** [[*bloom-sort][bloom-sort]]
 * MAYBE_AND_MOVE How to not use Tor
 * MAYBE_AND_MOVE what sets Tor apart / other anonymity networks
   There are other anonymity networks, such as JonDonym, I2P, MixNet
@@ -1575,13 +1596,13 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
 * TODO extract dom tags python
   - diveintopython
   - see code
-* TODO modified top-100
-  - originally alexa-top-1m, from September 30, 2015 condensed
-  - take out duplicates: google, amazon, bbc, ...
-  - take out non-responding (to urllib) sites:
-    - list of taken out
-      - googleusercontent.com
-      - youku.com
+* CHECK modified top-100
+  The files for retrieval were from the alexa-top-1m[fn::Available
+  at \url{ http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}],
+  from September 30, 2015. Similar to \cite{wpes13-fingerprinting},
+  similar sites were removed. Also removed were those sites which
+  failed to respond to python's =urllib=. The list of sites with their
+  Alexa index can be found in appendix [[top-100]].
 ** TODO complete list in appendix
 * TODO what is a bloom filter
   A Bloom Filter is a data structure to test membership in a set. It
@@ -1852,6 +1873,7 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
   - as critiqued in \cite{critique}
   - if protects against this, should also protect against worse
   - additional (?defense?) as proposed in critique
+** TODO follow critique at all?
 * TODO npm short installation/description
 * TODO panchenko v1 different classifiers
   <<different-classifiers>>
@@ -1880,6 +1902,15 @@ developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_
     - localhost (=-i lo=)
     - =port Y=
   - start capture
+  - bug on multiple uses:
+    #+BEGIN_EXAMPLE
+    exceptions.IOError: [Errno 24] Too many open files: '/proc/23634/stat'
+    #+END_EXAMPLE
+    - try temporary fix: increase number of file descriptors
+      #+BEGIN_SRC sh
+        ulimit -n 20000
+      #+END_SRC
+    - bug report in appendix, needs some code to mitigate
 ** TODO scripts
 * misc: tex bibliography
 \bibliography{docs/master}
@@ -4023,13 +4054,14 @@ mean = 0.763238095238
    this does not perfectly represent reality. It would be more exact
    to analyse the HTML page and at least return the domains of all
    embedded elements.
-* TODO appendices [0/9]
+* TODO appendices [0/6]
 \appendix
 ** Script [[./bin/one_site.py]]: capture pcap traces
-   <<one_site>>
+   <<one_site.py>>
    #+INCLUDE: "./bin/one_site.py" src python
-** TODO Script to classify the data [[file:./bin/analyse.py]]
-   insert file here
+** Script [[./bin/analyse.py]]: classify the data
+   <<analyse.py>>
+   #+INCLUDE: "./bin/analyse.py" src python
 ** TODO Script to parse pcap files: [[./bin/counter.py]]
 ** TODO Cover Traffic Server [[file:../bin/wsgi.py]]
    <<wsgi.py>>
@@ -4080,8 +4112,9 @@ mean = 0.763238095238
 ** Script [[./bin/retrieve_100_embedded.sh]]: run htmlToNumEmbedded
    <<retrieve_100_embedded.sh>>
    #+INCLUDE: "./bin/retrieve_100_embedded.sh" src python
-** TODO modified top-100
-*** TODO download
+** modified top-100
+   <<top-100>>
+   #+INCLUDE: "./sw/data/top-100-modofied.csv" example
 ** TODO Remove same-host cover traffic server from traces: [[./bin/7777.sh]]
    <<7777>>
 ** Addon

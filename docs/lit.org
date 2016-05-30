@@ -3046,70 +3046,84 @@
        - "increased performance is mainly due to the normalisation of
          the packet size frequency vectors"
 *** quotes
-    - influence of the browser cache on accuracy.
-    - The attack consists of two phases: in the training phase the
-      attacker creates traffic fingerprints for a large number of
-      sites (or for a small set of interesting sites) and stores them
-      together with the site URLs in a database. In the testing phase
-      the attacker records the encrypted traffic of the user, creates
-      fingerprints of small traffic chunks and tries to match them
-      with records in the database.
-    - the browser cache has only a moderate impact on the accuracy in
-      our sample
-    - Note that our instances closely resemble the typical document
-      representation in the domain of text mining, where instances are
-      represented by term frequency vectors.
-    - (ends 4.3)
-    - Jaccard’s coefficient is a similarity metric for sets [31],
-      which is often used for unsupervised learning tasks.
-    - (ends 4.4.1)
-    - [The Naive Bayes Classifier] naïvely assumes independence of
-      attributes, which is often not the case for real-world problems.
-    - operates directly on multiset instances,
-    - (ends 4.4.2)
-    - biased towards classes which contain many packets and/or packets
-      with high frequencies [...] problem is addressed by a sublinear
-      transformation of the frequencies: 
+   0) [@0] Abstract
+      - influence of the browser cache on accuracy.
+   2) [@2] SCENARIO
+      - The attack consists of two phases: in the training phase the
+	attacker creates traffic fingerprints for a large number of
+	sites (or for a small set of interesting sites) and stores them
+	together with the site URLs in a database. In the testing phase
+	the attacker records the encrypted traffic of the user, creates
+	fingerprints of small traffic chunks and tries to match them
+	with records in the database.
+   4) [@4] METHODOLOGY
+      1) Analysed Systems
+	 - Tor is based on the idea of Onion Routing [10], i. e. the Tor
+	   clientwraps the data packets in multiple layers of encryption,
+	   which are “peeled off” as packets are relayed over multiple
+	   onion routers.
+      2) Research Assumptions
+	 - the browser cache has only a moderate impact on the accuracy in
+	   our sample
+      3) Modelling the Classification Problem
+	 - Note that our instances closely resemble the typical document
+	   representation in the domain of text mining, where instances are
+	   represented by term frequency vectors.
+      4) Known Website Fingerprinting Techniques
+	 1) Jaccard’s Classifier
+	    - Jaccard’s coefficient is a similarity metric for sets [31],
+	      which is often used for unsupervised learning tasks.
+	 2) Naïve Bayes Classifier with Kernel Density Estimation
+	    - [The Naive Bayes Classifier] naïvely assumes independence of
+	      attributes, which is often not the case for real-world problems.
+	    - operates directly on multiset instances,
+   5) Our Novel Website Fingerprinting Method
+      2) [@2] Application of Text Mining Transformations
+	 - biased towards classes which contain many packets and/or packets
+	   with high frequencies [...] problem is addressed by a sublinear
+	   transformation of the frequencies:
 
-      f^{∗}_{x_{j}} = log(1 + f_{x_{j}}). 
+	   f^{∗}_{x_{j}} = log(1 + f_{x_{j}}).
 
-      This is referred to as *term frequency (TF) transformation*.
-    - some packet sizes (e. g. with the size of the MTU) are part of
-      every instance and do not confer much information [...] is
-      alleviated using the *inverse document frequency (IDF)
-      transformation* [...] 
+	   This is referred to as *term frequency (TF) transformation*.
+	 - some packet sizes (e. g. with the size of the MTU) are part of
+	   every instance and do not confer much information [...] is
+	   alleviated using the *inverse document frequency (IDF)
+	   transformation* [...]
 
-      f^{*}_{x_{j}} = f_{x_{j}} · log (n / df_{x_{j}})
-    - normalising the lengths [...] by applying cosine normalisation
-      to the attribute vectors, i. e. the transformed frequencies are
-      divided by the Euclidean length of the raw vectors: 
+	   f^{*}_{x_{j}} = f_{x_{j}} · log (n / df_{x_{j}})
+	 - normalising the lengths [...] by applying cosine normalisation
+	   to the attribute vectors, i. e. the transformed frequencies are
+	   divided by the Euclidean length of the raw vectors:
 
-      f^{norm}_{x_{j}}= (f^{* }_{x_{j}} / ||(f^{* }_{x_{1}}, ... f^{*}_{x_{n}})|| )
-    - (ends 4.5.2)
-    - From an information-theoretic viewpoint, even the multi-hop
-      systems do not protect perfectly, though: the accuracies found
-      for them are well above the accuracy achievable by randomly
-      guessing the class without any context knowledge (1/775 ≈
-      0.13%).
-    - top k classes from the list of predicted classes (sorted in
-      descending order by class membership probability). If the actual
-      class was among the list of predicted classes, the test instance
-      was counted as correctlyclassified, otherwise as incorrectly
-      classified. For k = 3 and k = 10 the accuracy values for Tor
-      increase to 16.69 % and 22.13 %, respectively, for JonDonym they
-      increase to 31.70 % and 47.53 %.
-    - (ends 5)
-    - dependent to some degree on the operating system, the type of
-      the Internet connection and the browser and its
-      configuration. We therefore expect that the accuracy of website
-      fingerprinting attacks is degraded in case training and testing
-      instances are not recorded in the same environment.
-    - footnote to /false alarms/: Please note that the term /false
-      positives/ is intentionally not used here, as it is used to
-      convey another meaning in classical data mining.
-    - (ends 6)
-    - the development and implementation of efficient countermeasures
-      becomes an important task for the PET community.
+	   f^{norm}_{x_{j}}= (f^{* }_{x_{j}} / ||(f^{* }_{x_{1}}, ... f^{*}_{x_{n}})|| )
+      4) [@4] Attacking Popular PETs Using the MNB Classifier
+	 - From an information-theoretic viewpoint, even the multi-hop
+	   systems do not protect perfectly, though: the accuracies found
+	   for them are well above the accuracy achievable by randomly
+	   guessing the class without any context knowledge (1/775 ≈
+	   0.13%).
+	 - top k classes from the list of predicted classes (sorted in
+	   descending order by class membership probability). If the actual
+	   class was among the list of predicted classes, the test instance
+	   was counted as correctlyclassified, otherwise as incorrectly
+	   classified. For k = 3 and k = 10 the accuracy values for Tor
+	   increase to 16.69 % and 22.13 %, respectively, for JonDonym they
+	   increase to 31.70 % and 47.53 %.
+   6) DISCUSSION
+      - dependent to some degree on the operating system, the type
+        of the Internet connection and the browser and its
+        configuration. We therefore expect that the accuracy of
+        website fingerprinting attacks is degraded in case training
+        and testing instances are not recorded in the same
+        environment.
+      - footnote to /false alarms/: Please note that the term /false
+        positives/ is intentionally not used here, as it is used to
+        convey another meaning in classical data mining.
+   7) CONCLUSION
+      - the development and implementation of efficient
+        countermeasures becomes an important task for the PET
+        community.
 *** vocabulary
     - website fingerprinting: learn the identity, i. e. the URLs, of
       websites that are downloaded over an encrypted tunnel by
@@ -5131,6 +5145,13 @@
          examples, the effect of target size on both the open and
          closed world, the effect of target page types on accuracy,
          and the effects of world size on accuracy.
+    6) [@11] Comments
+       - Tor browser could have option for users that an image has a
+         50% probability of being downloaded automatically and the
+         rest can be downloaded by clicking. This is a hybrid option
+         between allowing and not allowing images. Or the probability
+         is user adjustable between 10% and 90% but always same for
+         one website in one session.
 *** ref [[file:master.bib::critique][Critique Website Traffic Fingerprinting Attacks]]
 ** [[./experimental.html][Perry - Experimental Defense for Website Traffic Fingerprinting]]
 *** summary
@@ -6235,7 +6256,7 @@
 
 		- try to get localized sites (yahoo.de)
 
-		- remove trace if size is  less than 20% of median
+		- remove trace if size is less than 20% of median
 
 		- disable cacheing
 
@@ -6458,8 +6479,7 @@
        1) Training set size and selection
           - the attacker can increase their open-world success rate by
             training on more non-monitored sites.
-*** ref
-    [[file:master.bib::wpes13-fingerprinting][Wang & Goldberg 2013: Improved Website Fingerprinting Tor]]
+*** ref [[file:master.bib::wpes13-fingerprinting][Wang & Goldberg 2013: Improved Website Fingerprinting Tor]]
 ** [[./notes][Wang - notes]]
 *** quotes
     - While we did some editing and customization to Firefox to enable
@@ -7657,8 +7677,8 @@
 
     - or jpm: https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_sign
 *** ref [[file:master.bib::addon-signing][Mozilla 2016: Add Extension Signing]]
-** TODO [#A] Entwurfsmuster
-*** TODO summary (weiter bei Besucher, S. 317)
+** PART MOVE Entwurfsmuster
+*** summary (weiter bei Besucher, S. 317)
     0) [@0] Preface
 
        1) Vorwort
@@ -9117,7 +9137,35 @@
 	  - Beispielcode: C++, GeraetBesucher, berechnet Preis,
             anderer berechnet Stueckzahl
 
-	  - Bekannte Verwendungen:
+	  - Verwandte Muster:
+
+	    - Besucher wirkt auf Kompositionsmuster-Baum
+
+	    - Interpreter als Besucher umgesetzt
+
+       4) Interpreter
+
+	  - Zweck: Sprache gegeben, definiere in Grammatik und Inerpreter
+            um zu interpretieren
+
+	  - Motivation:
+
+	    - häufiges Problem, dann Sprache zur Beschreibung
+
+	      - z.B. regex
+
+	      - einzelne Klassen für einzelne Teile der Grammatik
+
+	  - Struktur/Teilnehmer:
+
+	    - *Klient* ruft *AbstrakterAusdruck.interpretiere(Kontext)*
+
+	    - *AbstrakterAusdruck* hat Kindklassen *TerminalAusdruck*
+              und *NichtTerminalAusdruck* und Methode *interpretiere*
+
+	    - *Kontext* enthält globale Informationen.
+
+	  - ENDE erst einmal
 
        6) [@6] Memento
 
@@ -9666,6 +9714,10 @@
                100(1-a/2)% one-sided c.i. (symmetry of N)
 
        4) A GENERAL APPROACH FOR DERIVING CONFIDENCE INTERVALS
+
+	  (which param, esti, pdf, interval bounds) see quotes
+
+	  1) Central Limit Theorem
 *** quotes
     1) INTRODUCTION
        1) WELL-POSED LEARNING PROBLEMS
@@ -9771,6 +9823,18 @@
                interval N% of the time
 
 	       y \pm z_{N} \sigma
+       4) A GENERAL APPROACH FOR DERIVING CONFIDENCE INTERVALS
+	  0) [@0]
+	     1. Identify the underlying population parameter p to
+                be estimated, for example, error_{D}(h).
+	     2. Define the estimator Y (e.g., error_{S}(h)). It is
+                desirable to choose a minimum-variance, unbiased
+                estimator.
+	     3. Determine the probability distribution D_{Y} that governs
+                the estimator Y, including its mean and variance.
+	     4. Determine the N% confidence interval by finding
+                thresholds L and U such that N% of the mass in the
+                probability distribution D_{Y} falls between L and U.
 *** ref [[file:master.bib::mitchell][Mitchell: Machine Learning]]
 ** TODO [#A] [[./usersrouted-ccs13.pdf][Johnson - Users Get Routed: Traffic Correlation on Tor by Realistic Adversaries]]
 *** summary
@@ -11424,7 +11488,35 @@
     [[file:~/da/docs/master.bib::pets14-dummy-traffic][Simon & Perez-Gonzalez 2014: Do]]
 ** TODO [#B] [[./10.1.1.20.98.bloom-nw.pdf][Network Applications of Bloom Filters: A Survey]]
 *** summary
+    0) [@0] Abstract
+
+       - "space efficient"
+
+       - "small probability of false positives"
+
+    1) Introduction
+
+       - various uses: peer-to-peer, packet routing, locating
+         resources, measurement
+
+       - can replace lists and sets
+
+       - design: weigh false positives
+
+    2) Bloom filters: Mathematical preliminaries
+
+       1) Standard Bloom filters
 *** quotes
+    1) Introduction
+       - A Bloom filter is a simple space-efficient randomized data
+         structure for representing a set in order to support
+         membership queries.
+       - If false positives do not cause significant problems, the
+         Bloom filter may provide improved performance.
+       - The Bloom filter principle: Wherever a list or set is used,
+         and space is a consideration, a Bloom filter should be
+         considered. When using a Bloom filter, consider the potential
+         effects of false positives.
 *** ref [[file:master.bib::Broder02networkapplications][Broder & Mitzenmacher 2002: Network Applications Bloom Filters]]
 ** TODO [#B] search feature vs classifier [[./2009-diss.pdf][Machine Learning for Application-Layer Intrusion Detection]]
 *** #B PART
@@ -12447,8 +12539,15 @@
     - (ends 1 + 2)
 *** ref
     [[file:~/da/docs/master.bib::morphing09][Wright et al. 2009: Traffic Morphing]]
-** TODO [#C] [[./10.1.1.20.2080.bloom_orig.pdf][Space/Time Trade-offs in Hash Coding with Allowable Errors]]
+** TODO MOVE [#B] [[./10.1.1.20.2080.bloom_orig.pdf][Space/Time Trade-offs in Hash Coding with Allowable Errors]]
 *** summary
+    0) [@0] Abstract
+
+       - set membership hash-coding
+
+       - reduce amount of space by allowing some errors
+
+    1) Introduction
 *** quotes
 *** ref [[file:master.bib::Bloom70space/timetrade-offs][Bloom 1970: Space Time Trade]]
 ** TODO [#C] [[./oakland2013-parrot.pdf][The Parrot is Dead: Observing Unobservable Network Communications]]
@@ -16880,6 +16979,27 @@
 
           2) Keybindings and commands
 
+    4) [@4] Hyperlinks
+
+       2) [@2] Internal links
+
+	  0) [@0]
+
+	     - use either Property =CUSTOM_ID= and reference with
+               #CUSTOM_ID,
+
+	       - or <<target>>
+
+	     - refer to it via [ [target][link name] ]
+
+	       - or [ [target] ] which is turned into the object's number
+                 (item, section, whatever)
+
+	  1) Radio targets
+
+	     use =<<<target>>>= to automatically highlight & link target
+             anywhere in the document
+
     6) [@6] Tags
 
        labels, use :tag_name: "at the end of the headline"
@@ -17121,7 +17241,10 @@
              ,#+INCLUDE: "~/.emacs" src emacs-lisp
 	   #+END_EXAMPLE
 
-	   - can also have =:minlevel n= to adjust levels to that and
+	   - instead of src, f.ex. quote, example, etc
+
+	   - can also have =:minlevel n= to adjust levels to that (with
+             org-include)
 
 	   - =:lines "5-10"= to only include certain lines
 
