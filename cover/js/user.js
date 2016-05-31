@@ -2,7 +2,6 @@
 /**
 * @fileoverview what to do on traffic by the user
 */
-const _ = require('../lib/underscore-min.js');
 const { setTimeout } = require("sdk/timers");
 
 const coverTraffic = require('./coverTraffic.js');

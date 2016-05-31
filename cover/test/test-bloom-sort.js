@@ -71,8 +71,7 @@ exports["test save/restore"] = function(assert) {
     try {
         assert.equal(t.query('hi'), 5, 'wrong result: ' + t.query('hi'));
     } catch (e) {
-        console.log(e);
-        assert.ok(false, 'failed with exception: ' + t);
+        assert.ok(false, 'failed with exception (' + e + '): ' + t);
     }
 };
 
