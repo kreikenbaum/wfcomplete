@@ -66,7 +66,7 @@ CoverTraffic.prototype.loadNext = function() {
 };
 
 
-// disabled for version 0.18+
+// disabled by default for version 0.18+
 CoverTraffic.prototype.finish = function() {
     debug.log('ending traffic with ' + this.target.numEmbedded + ' to load');
     if ( Simple.prefs.burst ) {
