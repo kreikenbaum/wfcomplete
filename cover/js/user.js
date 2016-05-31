@@ -1,11 +1,9 @@
 "use strict";
-
-const NAME = 'user';
-exports.DOC = 'what to do on traffic by the user';
-
-const { setTimeout } = require("sdk/timers");
-
+/**
+* @fileoverview what to do on traffic by the user
+*/
 const _ = require('../lib/underscore-min.js');
+const { setTimeout } = require("sdk/timers");
 
 const coverTraffic = require('./coverTraffic.js');
 const debug = require('./debug.js');
@@ -14,48 +12,40 @@ const TIMEOUT = 110 * 1000;
 
 let activeHosts = {};
 
-// td: 
 /** user starts loading url */
 function loads(url) {
     debug.log("user: loads(" + url.spec + ")");
-    if ( _.contains(activeHosts, url.host) ) { // has already started
+    if ( url.host in activeHosts ) { // has already started
+	//	console.log(url + ' exists in dict: ' + JSON.stringify(activeHosts));
 	activeHosts[url.host].loadNext();
+	return true;
     } else {
+	//	console.log(url + ' is new in dict: ' + JSON.stringify(activeHosts));
 	activeHosts[url.host] = new coverTraffic.CoverTraffic(url.spec);
-	// td: removal code: better also watch endsload
 	setTimeout(function() {
 	    finish(url);
 	}, TIMEOUT);
+	return false;
     }
 }
 exports.loads = url => loads(url);
 
 function endsLoading(url) {
-    finish(url);
+    return finish(url);
 }
 exports.endsLoading = url => endsLoading(url);
 
-/** tells covertraffic for {@code url.host} to {@code finish} up, deletes it */
+/** tells covertraffic for {@code url.host} to {@code finish} up, deletes it,
+ * @returns if action was taken */
 function finish(url) {
     if ( activeHosts.hasOwnProperty(url.host) ) {
 	activeHosts[url.host].finish();
 	delete activeHosts[url.host];
+	return true;
+    } else {
+	return false;
     }
 }
-// // unused
-// /** user ends loading url */
-// function endsLoading(url) {
-//     debug.traceLog(NAME + ': end user load ' + url.host);
-//     if ( _.contains(activeHosts, url.host) ) {
-// 	activeHosts = _.without(activeHosts, url.host);
-//     }
-//     if ( isIdle() ) {
-// 	coverTraffic.stop();
-//     }
-//     debug.traceLog(activeHosts);
-//     // td: if no sites are loading, switch mode
-// };
-// exports.endsLoading = url => endsLoading(url);
 
 // // unused
 // /** currently loading? */
