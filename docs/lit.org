@@ -1,6 +1,6 @@
 #+TODO: TODO | DONE
 [[./master.bib]]
-** TODO move MOVE sections
+** TODO name PART entries (etc?)
 ** [[./2015-asiaccs.pdf][Arp - Torben: A Practical Side-Channel Attack for Deanonymizing Tor Communication]]
 *** quotes
     - (a) web pages can be easily manipulated to load content from
@@ -297,7 +297,7 @@
 	    - needs to control exit node, tcp level (not app)
 
     7) Conclusion
-** PART MOVE [[./wtfpad-setup.pdf][Arp - Setup der Obfuscation-Tools]]
+** TODO [[./wtfpad-setup.pdf][Arp - Setup der Obfuscation-Tools]]
 *** summary
 *** quotes
     3) [@3] Aufsetzen von Juarez’ WTFPAD-Tools
@@ -7677,7 +7677,812 @@
 
     - or jpm: https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_sign
 *** ref [[file:master.bib::addon-signing][Mozilla 2016: Add Extension Signing]]
-** PART MOVE Entwurfsmuster
+** TODO [#A] PART -s 1,5,7 [[./McGrawHill_-_Machine_Learning_-Tom_Mitchell.pdf][Mitchell - Machine Learning]]
+*** summary
+    1) INTRODUCTION
+
+       0) [@0]
+
+          - programming computers to learn
+
+       1) WELL-POSED LEARNING PROBLEMS
+
+          - definition: see quotes
+
+          - fits many examples from simple (db query optimizer) to
+            complex (robot car driver, checkers play algorithm)
+
+       2) DESIGNING A LEARNING SYSTEM
+
+          0) [@0]
+
+             - checkers
+
+               - performance measure: percent of games won in world tournament
+
+          1) Choosing the Training Experience
+
+             - direct feedback vs indirect feedback
+
+               - best moves, vs
+
+               - sequence of game moves
+
+             - learner control over learning sequence
+
+               - teacher selects, vs learner asks, vs learner explores
+
+             - examples vs reality
+
+               - training set complete enough?
+
+             Decision: plays against itself (+: no trainer, as much
+             data as time permits)
+
+             - Example
+               A checkers learning problem:
+               - Task T: playing checkers
+               - Performance measure P: percent of games won in the world tournament
+               - Training experience E: games played against itself
+               In order to complete the design of the learning system, we must now choose
+               1. the exact type of knowledge to be,learned
+               2. a representation for this target knowledge
+               3. a learning mechanism
+          2) Choosing the Target Function
+
+             - 1st idea: maps state to next move
+
+             - 2nd idea (better to compute): maps board state B to real number
+
+               - won\to 100, lost \to -100, tie \to 0
+
+               - compute back from every state, assuming optimal
+                 strategy of both
+
+               - nonoperational: hard to compute
+
+               - operational approximation V^{\tilde} : B \to {real numbers}
+
+          3) Choosing a Representation for the Target Function
+
+             - possibilities: table with values, neural network,
+               polynomial based on board state, ...
+
+             - here, simple choice: linear function with weights
+
+               d(x) = w0 + w1 x1 + ... + w6 x6
+
+               with weights as number of b/w pieces/kings/threatened by other
+
+          4) Choosing a Function Approximation Algorithm
+
+             training data, f.ex ((0, 1, 0, 0, 0, 0), -100) (black won)
+
+             1) Estimating training values
+
+                - simple approach: assign value of successor (next
+                  state that can be played by this side)
+
+		  #+BEGIN_EXAMPLE
+		  V_train(b) = V^{\tilde}(successor(b)) (ref:1.1)
+		  #+END_EXAMPLE
+
+             2) Estimating the Weights
+
+                - minimize the squared error \sum (V_train - V^{\tilde})^2
+
+                - method: least mean squares, for each instance (b, V_train(b))
+
+                  w_i = w_i + \eta (V_train(b) -v^{\tilde}(b)) x_i
+
+          5) The Final Design
+
+	     four parts
+
+	     1) Performance System: must solve task (f.ex. playing checkers)
+
+		- input: new problem (new game)
+
+		- output: solution (game trace)
+
+	     2) Critic:
+
+		- input solution (game trace)
+
+		- output: training examples of target function (similar to [[(1.1)]])
+
+	     3) Generalizer
+
+		- input: training examples
+
+		- output: estimate of target function (f.ex. via LMS)
+
+	     4) Experiment Generator: practice problems that maximize learning
+
+		- input: hypothesis/target function
+
+		- output: game start state
+
+	     summary
+
+	     - for good performance the solution should be modelable
+               similar to the linear approach
+
+	     - and depend mostly on the six features used for learning
+
+       3) PERSPECTIVES AND ISSUES IN MACHINE LEARNING
+
+	  learning as searching the hypothesis space
+
+	  1) Issues in Machine Learning
+
+	     - which algorithms to use?
+
+	     - "how much training data is sufficient"?
+
+	     - how much can prior knowledge help? (perfect and approximate)
+
+	     - how to choose next training experience?
+
+	     - what functions to learn? (automatable?)
+
+	     - automatically change representation to better
+               learn target ufnction?
+
+       4) HOW TO READ THIS BOOK
+
+	  - any sequence
+
+	  - best first read chapters 1 and 2
+
+	  - (interesting to me)
+
+	    2. [@2] inductive bias, ordering of hypotheses
+
+	    5. [@5] estimation theory, central limit theorem
+
+	    6. bayesian
+
+	    7. weighted majority: combine multiple methods
+
+       5) SUMMARY AND FURTHER READING
+
+	  - ml useful in
+
+	    - data mining (large dbs)
+
+	    - domains poorly understood by humans (face recognition)
+
+	    - adapt to changing conditions (stock, "adapt to changing reading
+              interests of individuals")
+
+	  - many domains
+
+	  - well-defined: task, performance metric, source of training
+            experience
+
+	  - learning as searching the hypothesis space
+
+    2) CONCEPT LEARNING AND THE GENERAL-TO-SPECIFIC ORDERING
+
+       concept learning: "acquiring the definition of a general
+       category given a sample of positive and negative training
+       examples of the category."
+
+       search a predifined set of hypotheses for those that fit best
+
+       1) INTRODUCTION
+
+	  - "Concept learning. Inferring a boolean-valued function from
+            training examples of its input and output."
+
+       2) A CONCEPT LEARNING TASK
+
+	  0) [@0]
+
+	     - enjoysports: given sky, airtemp, humidity, wind, water,
+               forecast, predict if aldo enjoys water sports that day
+
+	     - simple representation: conjuction of constraints
+
+	  1) Notation
+
+	     - set of Instances X
+
+	     - target concept c: X \to {0, 1}
+
+	     - training example (x \in X, c(x))
+
+	       - positive if c(x) = 1, negative if c(x) = 0
+
+	     - hypothesis h \in H, h: X \to {0, 1}
+
+	       - aim: h = c for x \in X
+
+	  2) The Inductive Learning Hypothesis
+
+	     "Any hypothesis found to approximate the target function
+             well over a sufficiently large set of training examples
+             will also approximate the target function well over other
+             unobserved examples." (?stupid?)
+
+       3) CONCEPT LEARNING AS SEARCH
+
+	  0) [@0]
+
+	     - distinct instances: possible combinations
+
+	     - syntactically different instances: possible
+               combinations with \emptyset and ? on each place
+
+	     - semantically different instances: \emptyset always classifies
+               as false, thus 1+ possible combinations with ? on each place
+
+	  1) General-to-Specific Ordering of Hypotheses
+
+	     - order hypotheses by moregeneral-than-or-equal-to
+
+	       - superset of hypotheses (see quotes)
+
+	       - is a partial ordering
+
+	       - algorithm based on this (see quotes)
+
+       4) FIND-S: FINDING A MAXIMALLY SPECIFIC HYPOTHESIS
+
+	  - start with (\empty, ..., \empty)
+
+	  - first example as new hypothesis
+
+	  - generalises to h \to (Sunny, Warm, ?, Strong, Warm, Same)
+
+	  - ignores all negative examples as they should not match
+
+	    - assumption: H contains correct hypothesis and no
+              contradictions
+
+	  - gives (one) most specific hypothesis that fits all
+
+       5) VERSION SPACES AND THE CANDIDATE-ELIMINATION ALGORITHM
+
+	  0) [@0]
+
+	     - candidate-elimination gives all fitting results
+
+	       - as with find-s: problem with noisy data
+
+	  1) Representation
+
+	     - consistent hypothesis: fits all examples (def see quotes)
+
+	     - version space: all hypotheses in H consistent with
+               training examples D (def see quotes)
+
+	  2) The LIST-THEN-ELIMINATE Algorithm
+
+	     - list all, eliminate non-fitting
+
+	     - guaranteed to terminate (on finite H), simple
+
+	     - takes too long
+
+	  3) A More Compact Representation for Version Spaces
+
+	     - save only the most general and most specific consistent
+               hypotheses (see defs quotes, and
+               moregeneral-than-or-equal-to)
+
+	     - all instances in between are equal to the version space
+               (theorem see quotes)
+
+	  4) CANDIDATE-ELIMINATION Learning Algorithm
+
+       7) [@7] INDUCTIVE BIAS
+
+	  1) A Biased Hypothesis Space
+
+	     hypothesis space might be limited in advance, precluding
+             perfect solution
+
+	  2) An Unbiased Learner
+
+	     - if the full hypothesis space is allowed, it gets very big
+
+	     - ...
+
+    5) [@5] EVALUATING HYPOTHESES
+
+       0) [@0]
+
+	  - dealing with limited training data
+
+	    - generalize accuracy to all data
+
+	    - one outperforming other on training, does it also
+              outperform on whole data
+
+	    - how to best learn hypothesis and estimate its accuracy
+
+       1) MOTIVATION
+
+	  problems with limited data
+
+	  - bias in the estimate: tends to some non-optimal solution,
+            especially for a "very rich hypothesis space,"
+
+	  - variance in the estimate: even if unbiased, the less data,
+            the higher the variance of results
+
+       2) ESTIMATING HYPOTHESIS ACCURACY
+
+	  0) [@0]
+
+	     - setting: n elements drawn with probability given by D from
+               population X
+
+	     - estimate accuracy of hypothesis h given accuracy over n elements
+
+	     - how correct is this estimate?
+
+	  1) Sample Error and True Error
+
+	     - sample error: misclassification rate on sample (see quotes)
+
+	     - true error: misclassification rate on whole
+               distribution (see quotes)
+
+	     - how good an approximation is the sample error?
+
+	  2) Confidence Intervals for Discrete-Valued Hypotheses
+
+	     - sample error and number of samples estimate true error
+               (see quotes)
+
+	     - this works well if error not to close to 0 or 1 and n
+               big enough (see quotes)
+
+       3) BASICS OF SAMPLING THEORY
+
+	  1) Error Estimation and Estimating Binomial Proportions
+
+	     - measure sample error \to experiment with random outcome
+
+	     - follows Binomial distribution
+
+	       - for np(1-p) \ge 5, you can use normal distribution
+
+	  2) The Binomial Distribution
+
+	     - weird coin with probability p for heads.
+
+	       - How many heads r after n tosses
+
+	       - r/n estimates p
+
+	     - corresponds to estimation of error:
+
+	       - p to error_{D}(h)
+
+	       - r/n to error_{S}(h)
+
+	     - general: base experiment with binary outcome repeated n times
+
+	  3) Mean and Variance
+
+	     - mean
+
+	     - variance, standard distribution
+
+	  4) Estimators, Bias, and Variance
+
+	     - error_{S}(h) is an estimator for error_{D}(h): random
+               variable to estimate "underlying population"
+
+	     - estimation bias is how much an estimator is wrong on
+               average
+
+	       - with bias = 0, it is called an /unbiased estimator/ for p
+
+	       - hypothesis h and sample S must be chosen independently
+
+	       - /estimation bias/ is a number, vs /inductive bias/ a
+                 set of estimations
+
+	     - if several unbiased estimators exist, best choose that
+               with the smallest variance
+
+	     - error standard deviation grows with p, shrinks with
+               \sqrt(n) (see quote)
+
+	  5) Confidence Intervals
+
+	     - confidence interval: contains param p with prob N% (see
+               quotes)
+
+	     - approximate error_{D} with error_{S}
+
+	     - approximate binomial with normal distribution
+
+	     - z-tables for normal distribution: z_{N} is "half the width
+               of the interval measured in standard deviations"
+
+	     - use normal-binomial approximation for n \ge 30 or np(1-p)\ge5
+
+	  6) Two-sided and One-sided Bounds
+
+	     - with error, one-sided bound is often sufficient:
+
+	     - 100(1-a)% two-sided confidence interval implies
+               100(1-a/2)% one-sided c.i. (symmetry of N)
+
+       4) A GENERAL APPROACH FOR DERIVING CONFIDENCE INTERVALS
+
+	  (which param, esti, pdf, interval bounds) see quotes
+
+	  1) Central Limit Theorem
+*** quotes
+    1) INTRODUCTION
+       1) WELL-POSED LEARNING PROBLEMS
+          - Definition: A computer program is said to learn from
+            experience E with respect to some class of tasks T and
+            performance measure P, if its performance at tasks in T,
+            as measured by P, improves with experience E.
+    2) CONCEPT LEARNING AND THE GENERAL-TO-SPECIFIC ORDERING
+       3) [@3] CONCEPT LEARNING AS SEARCH
+	  - Definition: Let hj and hk be boolean-valued functions
+            defined over X. Then hj is *moregeneral-than-or-equal-to* hk
+            (written h_{j} \ge_{g} h_{k} ) if and only if
+
+	    (\forall x \in X)[(hk(x) = 1) \to (hj(x) = 1)]
+	  - FIND-S Algorithm.
+	    1. Initialize h to the most specific hypothesis in H
+	    2. For each positive training instance x
+	       - For each attribute constraint a_i in h
+		 - If the constraint a_i is satisfied by x
+		   - Then do nothing
+		   - Else replace a_i in h by the next more general
+                     constraint that is satisfied by x
+	    3. Output hypothesis h
+       5) [@5] VERSION SPACES AND THE CANDIDATE-ELIMINATION ALGORITHM
+	  1) Representation
+	     - A hypothesis h is *consistent* with a set of training
+               examples D if and only if h(x) = c(x) for each example
+               (x, c(x)) in D.
+
+	       Consistent(h, D) \equiv (\forall(x, c(x)) \in D) h(x) = c(x)
+	     - The *version space*, denoted VS_{H, D} with respect to
+               hypothesis space H and training examples D, is the
+               subset of hypotheses from H consistent with the
+               training examples in D.
+
+	       VS_{H, D} \equiv {h \in H | Consistent(h, D)}
+	  3) [@3] A More Compact Representation for Version Spaces
+	     - Definition: The *general boundary* G, with respect to
+               hypothesis space H and training data D, is the set of
+               maximally general members of H consistent with D.
+
+	       G = {g \in H | Consistent(g, D)
+                    \wedge (\not\exists g' \in H) [(g' >_{g} g) \wedge Consistent(g', D)]]
+	     - Definition: The *specific boundary* S, with respect to
+               hypothesis space H and training data D, is the set of
+               minimally general (i.e., maximally specific) members of
+               H consistent with D.
+
+	       S = {s \in H | Consistent(s, D)
+                    \wedge (\not\exists s' \in H) [(s >_{g} s') \wedge Consistent(s', D)]]
+	     - Theorem 2.1. *Version space representation
+               theorem*. Let X be an arbitrary set of instances and
+               let H be a set of boolean-valued hypotheses defined
+               over X. Let c : X \to {O, 1) be an arbitrary target
+               concept defined over X, and let D be an arbitrary set
+               of training examples {<x, c(x)>). For all X, H, c, and
+               D such that S and G are well defined,
+
+	       VS_{H, D} = {h \in H | (\exists s \in S, g \in G)(g \ge_{g} h \ge_{g} s)}
+    5) [@5] EVALUATING HYPOTHESES
+       1) ESTIMATING HYPOTHESIS ACCURACY
+	  1) Sample Error and True Error
+	     - Definition: The *sample error* (denoted error_{S}(h)) of
+               hypothesis h with respect to target function f and data
+               sample S is
+
+	       error_{S}(h) \equiv 1/n \sum_{x \in S} \delta(f(x), h(x))
+	     - Definition: The *true error* (denoted error_{D}(h)) of
+               hypothesis h with respect to target function f and
+               distribution D, is the probability that h will
+               misclassify an instance drawn at random according to D.
+
+	       error_{S}(h) \equiv Pr_{x \in D}[f(x) \neq h(x)]
+	  2) Confidence Intervals for Discrete-Valued Hypotheses
+	     - [confidence interval z_N = 1.96 for 95% confidence interval]
+               error_{S} \pm z_{N} \sqrt(error_{S}(h)(1- error_{S}(h))/n) (5.1)
+	     - n \cdot error_{S}(h) (1-error_{S}(h)) \ge 5
+       3) [@3] BASICS OF SAMPLING THEORY
+	  4) [@4] Estimators, Bias, and Variance
+	     - The estimation bias of an estimator Y for an arbitrary
+               parameter p is
+
+	       E[Y] - p
+	     - In general, given r errors in a sample of n
+               independently drawn test examples, the standard
+               deviation for errors(h) is given by
+
+	       \sigma_{errors_{S}(h)} = \sigma_{r} / n = \sqrt{p(1-p) / n} (5.8)
+	     - which can be approximated by substituting r/n =
+               errors_{S}(h) for p
+	  5) Confidence Intervals
+	     - An N% *confidence interval* for some parameter p is an
+               interval that is expected with probability N% to
+               contain p .
+	     - if a random variable Y obeys a Normal distribution with
+               mean \mu and standard deviation \sigma , then the measured
+               random value y of Y will fall into the following
+               interval N% of the time
+
+	       \mu \pm z_{N }\sigma
+
+	       Equivalently, the mean \mu will fall into the following
+               interval N% of the time
+
+	       y \pm z_{N} \sigma
+       4) A GENERAL APPROACH FOR DERIVING CONFIDENCE INTERVALS
+	  0) [@0]
+	     1. Identify the underlying population parameter p to
+                be estimated, for example, error_{D}(h).
+	     2. Define the estimator Y (e.g., error_{S}(h)). It is
+                desirable to choose a minimum-variance, unbiased
+                estimator.
+	     3. Determine the probability distribution D_{Y} that governs
+                the estimator Y, including its mean and variance.
+	     4. Determine the N% confidence interval by finding
+                thresholds L and U such that N% of the mass in the
+                probability distribution D_{Y} falls between L and U.
+*** ref [[file:master.bib::mitchell][Mitchell: Machine Learning]]
+** TODO [#A] [[./usersrouted-ccs13.pdf][Johnson - Users Get Routed: Traffic Correlation on Tor by Realistic Adversaries]]
+*** summary
+    0) [@0] ABSTRACT
+
+       Tor is more vulnerable than previously thought.
+
+       - security evaluation based on
+
+         - different user models
+
+	 - ASes etc
+
+	 - paths
+
+    1) INTRODUCTION
+
+       - controlling ASes or Internet exchange points (IXP)s lets you
+         deanonymize easily after some time
+
+         - six months for 80% of all types of users
+
+         - single AS: 100% for users "in some common locations" in three months
+
+           - IXP: 95% in three months
+
+         - two AS: 1 day instead
+
+         - bittorrent worse (and they degrade)
+
+    2) BACKGROUND
+
+       - GUARD flag: uptime median of familiar relays
+         AND bandwidth \ge min(250kB, median_bw)
+
+       - STABLE flag: weighted MTBF \ge median(weighted MTBF for active relays)
+
+    3) RELATED WORK
+
+       - Metrics and Methods for Evaluating Anonymity.
+
+         - entropy
+
+         - bandwidth-limited adversary
+
+         - controls some relays
+
+       - Traffic Correlation Attacks.
+
+	 - Øverlier,Syverson: discover Tor Hidden Servers
+
+	 - Murdoch,Danezis: traffic correlation attacks against Tor
+
+	 - here more in depth: how long to deanonymize
+
+       - Network Adversaries
+
+	 - Feamster,Dingledine: diverse paths might be weaker
+
+	 - Edman,Syverson: AS-aware path selection
+
+	 - Akhoondi &al:geographic-based relay selection
+
+	 - Wacek &al: 18% of circuits may have same AS
+
+	 - Murdoch,Zielinski: IXPs vs ASs
+
+	 - Juen: AS and IXP diversity
+
+	 - here: fixed set of ASes and IXPs, correlation attacks
+
+    4) SECURITY MODEL AND METRICS
+
+       "types and amounts of adversary resources, as well as how he
+       may use them."
+
+       1) Adversary Model
+
+	  passive observer who can additionally add and "corrupt"
+          existing resources
+
+	  1) Adversary Resources.
+
+	     - bandwidth view vs onion router view
+
+	     - Autonomous Systems route IP-traffic
+
+	     - Internet eXchange Points connect multiple
+
+	  2) Resource Endowment.
+
+	     - Institutions: ISP controls ASes
+
+	       - companies control one or multiple IXPs
+
+	     - might use number of compromised relays as metric, but
+               Tor weighs by bandwidth
+
+	       - bandwidth more accurate as measure [6]
+
+	       - better yet "guard and/org exit bandwidth"
+
+	  3) Adversary Goals.
+
+	     - broad: deanonymize
+
+	     - more specific
+
+	       - certain user [class]
+
+	       - certain destinations
+
+	       - ever connect at all [during specific time]
+
+       2) Security Metrics
+
+	  user-relevant metrics:
+
+	  1) "probability distribution for number of path compromises"
+             (for user)
+
+	  2) probability distribution "until first path compromise"
+
+    5) METHODOLOGY
+
+       "Monte Carlo method"
+
+       1) Path Simulator
+*** quotes
+    0) [@0] Abstract
+       - Specific contributions of the paper include (1) a model of
+         various typical kinds of users, (2) an adversary model that
+         includes Tor network relays, autonomous systems (ASes), Internet
+         exchange points (IXPs), and groups of IXPs drawn from empirical
+         study, (3) metrics that indicate how secure users are over a
+         period of time, (4) the most accurate topological model to date
+         of ASes and IXPs as they relate to Tor usage and network
+         configuration, (5) a novel realistic Tor path simulator (TorPS),
+         and (6) analyses of security making use of all the above.
+    1) [@10] References
+       - [40] Tor Project, Inc. Tor Metrics Portal.
+         https://metrics.torproject.org/, 2013.
+*** ref: [[file:master.bib::ccs2013-usersrouted][Johnson et al. 2013: Users Get Routed]]
+** TODO [#A] PART (for picture): [[./10_3-ndss2016-slides.pdf][Website Fingerprinting at Internet Scale Presentation]]
+** TODO [#B] PART [[./Applied_Cryptography.pdf][Applied Cryptography]]
+*** summary
+    1) Foundations
+
+       1) Terminology
+
+	  - sender writes plaintext, encrypts to ciphertext, sends
+            (secure) message to receiver, decrypts to plaintext
+
+	  - cryptology is cryptography for writing and crypanalysis for
+            checking if secure
+
+	  - Authentication, Integrity, and Nonrepudiation: additional
+            to confidentiality: as in face-to-face communication
+
+	  - Algorithms and Keys:
+
+    2) Protocol Building Blocks
+
+       1) Introduction to Protocols
+
+	  0) [@0]
+
+	     - "cryptography solves problems [of...] secrecy,
+               authentication, integrity, and dishonest people."
+
+	     - protocol: "series of steps, involving two or more parties,
+               designed to accomplish a task"
+
+	       - must be
+
+		 - well-known by all parties,
+
+		 - agreed to
+
+		 - unambiguous === well-defined
+
+		 - complete: specific action for every possible situation
+
+	     - cryptographic protocol
+
+	       - prevent or detect eavesdropping or cheating via cryptography
+
+	       - should not be possible to learn or do more than
+		 specified in the protocol
+
+	  1) The Purpose of Protocols
+
+	     - how computers talk to each other (people do it
+               informally all the time)
+
+	  2) The Players
+
+	     - Alice, Bob, Carol, Dave
+
+	     - Eve: Eavesdropper
+
+	     - Mallory: Malicious active attaker
+
+	     - Trent: Trusted arbitrator
+
+	     - Walter: Warden; guards Alice, Bob, ...
+
+	  3) Arbitrated Protocols
+
+	     - truthful entity with no vested interest
+
+	       - like lawyer as escrow agent, or stock exchange, or banker
+
+	     - trusted party old institution,
+
+	     - problems with computers:
+
+	       - cannot see,
+
+	       - network must bear the cost,
+
+	       - delay,
+
+	       - arbitrator is bottleneck
+
+	       - vulnerable point for subverter
+
+	  4) Adjudicated Protocols
+
+	     - (only) detect cheating, do not prevent
+
+	       - this should discourage cheating, though
+
+	     - adjudicator: external authority, called on only in conflict
+
+	     - like judge in real life
+
+	  5) Self-Enforcing Protocols
+*** quotes
+    2) [@2]
+       1)
+	  1) The Purpose of Protocols
+	     - It is naïve to assume that [people on, the managers of,
+               the designers of] computer networks are honest. Most
+               are, but the dishonest few can do a lot of damage.
+** TODO [#B] Entwurfsmuster
 *** summary (weiter bei Besucher, S. 317)
     0) [@0] Preface
 
@@ -9275,798 +10080,6 @@
       virtuell, so dass Unterklassen sie nicht polymorph
       überschreiben können.
 *** ref [[file:master.bib::gof][Erich et al. 1994: Design Patterns]]
-** TODO [#A] PART -s 1,5,7 [[./McGrawHill_-_Machine_Learning_-Tom_Mitchell.pdf][Mitchell - Machine Learning]]
-*** summary
-    1) INTRODUCTION
-
-       0) [@0]
-
-          - programming computers to learn
-
-       1) WELL-POSED LEARNING PROBLEMS
-
-          - definition: see quotes
-
-          - fits many examples from simple (db query optimizer) to
-            complex (robot car driver, checkers play algorithm)
-
-       2) DESIGNING A LEARNING SYSTEM
-
-          0) [@0]
-
-             - checkers
-
-               - performance measure: percent of games won in world tournament
-
-          1) Choosing the Training Experience
-
-             - direct feedback vs indirect feedback
-
-               - best moves, vs
-
-               - sequence of game moves
-
-             - learner control over learning sequence
-
-               - teacher selects, vs learner asks, vs learner explores
-
-             - examples vs reality
-
-               - training set complete enough?
-
-             Decision: plays against itself (+: no trainer, as much
-             data as time permits)
-
-             - Example
-               A checkers learning problem:
-               - Task T: playing checkers
-               - Performance measure P: percent of games won in the world tournament
-               - Training experience E: games played against itself
-               In order to complete the design of the learning system, we must now choose
-               1. the exact type of knowledge to be,learned
-               2. a representation for this target knowledge
-               3. a learning mechanism
-          2) Choosing the Target Function
-
-             - 1st idea: maps state to next move
-
-             - 2nd idea (better to compute): maps board state B to real number
-
-               - won\to 100, lost \to -100, tie \to 0
-
-               - compute back from every state, assuming optimal
-                 strategy of both
-
-               - nonoperational: hard to compute
-
-               - operational approximation V^{\tilde} : B \to {real numbers}
-
-          3) Choosing a Representation for the Target Function
-
-             - possibilities: table with values, neural network,
-               polynomial based on board state, ...
-
-             - here, simple choice: linear function with weights
-
-               d(x) = w0 + w1 x1 + ... + w6 x6
-
-               with weights as number of b/w pieces/kings/threatened by other
-
-          4) Choosing a Function Approximation Algorithm
-
-             training data, f.ex ((0, 1, 0, 0, 0, 0), -100) (black won)
-
-             1) Estimating training values
-
-                - simple approach: assign value of successor (next
-                  state that can be played by this side)
-
-		  #+BEGIN_EXAMPLE
-		  V_train(b) = V^{\tilde}(successor(b)) (ref:1.1)
-		  #+END_EXAMPLE
-
-             2) Estimating the Weights
-
-                - minimize the squared error \sum (V_train - V^{\tilde})^2
-
-                - method: least mean squares, for each instance (b, V_train(b))
-
-                  w_i = w_i + \eta (V_train(b) -v^{\tilde}(b)) x_i
-
-          5) The Final Design
-
-	     four parts
-
-	     1) Performance System: must solve task (f.ex. playing checkers)
-
-		- input: new problem (new game)
-
-		- output: solution (game trace)
-
-	     2) Critic:
-
-		- input solution (game trace)
-
-		- output: training examples of target function (similar to [[(1.1)]])
-
-	     3) Generalizer
-
-		- input: training examples
-
-		- output: estimate of target function (f.ex. via LMS)
-
-	     4) Experiment Generator: practice problems that maximize learning
-
-		- input: hypothesis/target function
-
-		- output: game start state
-
-	     summary
-
-	     - for good performance the solution should be modelable
-               similar to the linear approach
-
-	     - and depend mostly on the six features used for learning
-
-       3) PERSPECTIVES AND ISSUES IN MACHINE LEARNING
-
-	  learning as searching the hypothesis space
-
-	  1) Issues in Machine Learning
-
-	     - which algorithms to use?
-
-	     - "how much training data is sufficient"?
-
-	     - how much can prior knowledge help? (perfect and approximate)
-
-	     - how to choose next training experience?
-
-	     - what functions to learn? (automatable?)
-
-	     - automatically change representation to better
-               learn target ufnction?
-
-       4) HOW TO READ THIS BOOK
-
-	  - any sequence
-
-	  - best first read chapters 1 and 2
-
-	  - (interesting to me)
-
-	    2. [@2] inductive bias, ordering of hypotheses
-
-	    5. [@5] estimation theory, central limit theorem
-
-	    6. bayesian
-
-	    7. weighted majority: combine multiple methods
-
-       5) SUMMARY AND FURTHER READING
-
-	  - ml useful in
-
-	    - data mining (large dbs)
-
-	    - domains poorly understood by humans (face recognition)
-
-	    - adapt to changing conditions (stock, "adapt to changing reading
-              interests of individuals")
-
-	  - many domains
-
-	  - well-defined: task, performance metric, source of training
-            experience
-
-	  - learning as searching the hypothesis space
-
-    2) CONCEPT LEARNING AND THE GENERAL-TO-SPECIFIC ORDERING
-
-       concept learning: "acquiring the definition of a general
-       category given a sample of positive and negative training
-       examples of the category."
-
-       search a predifined set of hypotheses for those that fit best
-
-       1) INTRODUCTION
-
-	  - "Concept learning. Inferring a boolean-valued function from
-            training examples of its input and output."
-
-       2) A CONCEPT LEARNING TASK
-
-	  0) [@0]
-
-	     - enjoysports: given sky, airtemp, humidity, wind, water,
-               forecast, predict if aldo enjoys water sports that day
-
-	     - simple representation: conjuction of constraints
-
-	  1) Notation
-
-	     - set of Instances X
-
-	     - target concept c: X \to {0, 1}
-
-	     - training example (x \in X, c(x))
-
-	       - positive if c(x) = 1, negative if c(x) = 0
-
-	     - hypothesis h \in H, h: X \to {0, 1}
-
-	       - aim: h = c for x \in X
-
-	  2) The Inductive Learning Hypothesis
-
-	     "Any hypothesis found to approximate the target function
-             well over a sufficiently large set of training examples
-             will also approximate the target function well over other
-             unobserved examples." (?stupid?)
-
-       3) CONCEPT LEARNING AS SEARCH
-
-	  0) [@0]
-
-	     - distinct instances: possible combinations
-
-	     - syntactically different instances: possible
-               combinations with \emptyset and ? on each place
-
-	     - semantically different instances: \emptyset always classifies
-               as false, thus 1+ possible combinations with ? on each place
-
-	  1) General-to-Specific Ordering of Hypotheses
-
-	     - order hypotheses by moregeneral-than-or-equal-to
-
-	       - superset of hypotheses (see quotes)
-
-	       - is a partial ordering
-
-	       - algorithm based on this (see quotes)
-
-       4) FIND-S: FINDING A MAXIMALLY SPECIFIC HYPOTHESIS
-
-	  - start with (\empty, ..., \empty)
-
-	  - first example as new hypothesis
-
-	  - generalises to h \to (Sunny, Warm, ?, Strong, Warm, Same)
-
-	  - ignores all negative examples as they should not match
-
-	    - assumption: H contains correct hypothesis and no
-              contradictions
-
-	  - gives (one) most specific hypothesis that fits all
-
-       5) VERSION SPACES AND THE CANDIDATE-ELIMINATION ALGORITHM
-
-	  0) [@0]
-
-	     - candidate-elimination gives all fitting results
-
-	       - as with find-s: problem with noisy data
-
-	  1) Representation
-
-	     - consistent hypothesis: fits all examples (def see quotes)
-
-	     - version space: all hypotheses in H consistent with
-               training examples D (def see quotes)
-
-	  2) The LIST-THEN-ELIMINATE Algorithm
-
-	     - list all, eliminate non-fitting
-
-	     - guaranteed to terminate (on finite H), simple
-
-	     - takes too long
-
-	  3) A More Compact Representation for Version Spaces
-
-	     - save only the most general and most specific consistent
-               hypotheses (see defs quotes, and
-               moregeneral-than-or-equal-to)
-
-	     - all instances in between are equal to the version space
-               (theorem see quotes)
-
-	  4) CANDIDATE-ELIMINATION Learning Algorithm
-
-       7) [@7] INDUCTIVE BIAS
-
-	  1) A Biased Hypothesis Space
-
-	     hypothesis space might be limited in advance, precluding
-             perfect solution
-
-	  2) An Unbiased Learner
-
-	     - if the full hypothesis space is allowed, it gets very big
-
-	     - ...
-
-    5) [@5] EVALUATING HYPOTHESES
-
-       0) [@0]
-
-	  - dealing with limited training data
-
-	    - generalize accuracy to all data
-
-	    - one outperforming other on training, does it also
-              outperform on whole data
-
-	    - how to best learn hypothesis and estimate its accuracy
-
-       1) MOTIVATION
-
-	  problems with limited data
-
-	  - bias in the estimate: tends to some non-optimal solution,
-            especially for a "very rich hypothesis space,"
-
-	  - variance in the estimate: even if unbiased, the less data,
-            the higher the variance of results
-
-       2) ESTIMATING HYPOTHESIS ACCURACY
-
-	  0) [@0]
-
-	     - setting: n elements drawn with probability given by D from
-               population X
-
-	     - estimate accuracy of hypothesis h given accuracy over n elements
-
-	     - how correct is this estimate?
-
-	  1) Sample Error and True Error
-
-	     - sample error: misclassification rate on sample (see quotes)
-
-	     - true error: misclassification rate on whole
-               distribution (see quotes)
-
-	     - how good an approximation is the sample error?
-
-	  2) Confidence Intervals for Discrete-Valued Hypotheses
-
-	     - sample error and number of samples estimate true error
-               (see quotes)
-
-	     - this works well if error not to close to 0 or 1 and n
-               big enough (see quotes)
-
-       3) BASICS OF SAMPLING THEORY
-
-	  1) Error Estimation and Estimating Binomial Proportions
-
-	     - measure sample error \to experiment with random outcome
-
-	     - follows Binomial distribution
-
-	       - for np(1-p) \ge 5, you can use normal distribution
-
-	  2) The Binomial Distribution
-
-	     - weird coin with probability p for heads.
-
-	       - How many heads r after n tosses
-
-	       - r/n estimates p
-
-	     - corresponds to estimation of error:
-
-	       - p to error_{D}(h)
-
-	       - r/n to error_{S}(h)
-
-	     - general: base experiment with binary outcome repeated n times
-
-	  3) Mean and Variance
-
-	     - mean
-
-	     - variance, standard distribution
-
-	  4) Estimators, Bias, and Variance
-
-	     - error_{S}(h) is an estimator for error_{D}(h): random
-               variable to estimate "underlying population"
-
-	     - estimation bias is how much an estimator is wrong on
-               average
-
-	       - with bias = 0, it is called an /unbiased estimator/ for p
-
-	       - hypothesis h and sample S must be chosen independently
-
-	       - /estimation bias/ is a number, vs /inductive bias/ a
-                 set of estimations
-
-	     - if several unbiased estimators exist, best choose that
-               with the smallest variance
-
-	     - error standard deviation grows with p, shrinks with
-               \sqrt(n) (see quote)
-
-	  5) Confidence Intervals
-
-	     - confidence interval: contains param p with prob N% (see
-               quotes)
-
-	     - approximate error_{D} with error_{S}
-
-	     - approximate binomial with normal distribution
-
-	     - z-tables for normal distribution: z_{N} is "half the width
-               of the interval measured in standard deviations"
-
-	     - use normal-binomial approximation for n \ge 30 or np(1-p)\ge5
-
-	  6) Two-sided and One-sided Bounds
-
-	     - with error, one-sided bound is often sufficient:
-
-	     - 100(1-a)% two-sided confidence interval implies
-               100(1-a/2)% one-sided c.i. (symmetry of N)
-
-       4) A GENERAL APPROACH FOR DERIVING CONFIDENCE INTERVALS
-
-	  (which param, esti, pdf, interval bounds) see quotes
-
-	  1) Central Limit Theorem
-*** quotes
-    1) INTRODUCTION
-       1) WELL-POSED LEARNING PROBLEMS
-          - Definition: A computer program is said to learn from
-            experience E with respect to some class of tasks T and
-            performance measure P, if its performance at tasks in T,
-            as measured by P, improves with experience E.
-    2) CONCEPT LEARNING AND THE GENERAL-TO-SPECIFIC ORDERING
-       3) [@3] CONCEPT LEARNING AS SEARCH
-	  - Definition: Let hj and hk be boolean-valued functions
-            defined over X. Then hj is *moregeneral-than-or-equal-to* hk
-            (written h_{j} \ge_{g} h_{k} ) if and only if
-
-	    (\forall x \in X)[(hk(x) = 1) \to (hj(x) = 1)]
-	  - FIND-S Algorithm.
-	    1. Initialize h to the most specific hypothesis in H
-	    2. For each positive training instance x
-	       - For each attribute constraint a_i in h
-		 - If the constraint a_i is satisfied by x
-		   - Then do nothing
-		   - Else replace a_i in h by the next more general
-                     constraint that is satisfied by x
-	    3. Output hypothesis h
-       5) [@5] VERSION SPACES AND THE CANDIDATE-ELIMINATION ALGORITHM
-	  1) Representation
-	     - A hypothesis h is *consistent* with a set of training
-               examples D if and only if h(x) = c(x) for each example
-               (x, c(x)) in D.
-
-	       Consistent(h, D) \equiv (\forall(x, c(x)) \in D) h(x) = c(x)
-	     - The *version space*, denoted VS_{H, D} with respect to
-               hypothesis space H and training examples D, is the
-               subset of hypotheses from H consistent with the
-               training examples in D.
-
-	       VS_{H, D} \equiv {h \in H | Consistent(h, D)}
-	  3) [@3] A More Compact Representation for Version Spaces
-	     - Definition: The *general boundary* G, with respect to
-               hypothesis space H and training data D, is the set of
-               maximally general members of H consistent with D.
-
-	       G = {g \in H | Consistent(g, D)
-                    \wedge (\not\exists g' \in H) [(g' >_{g} g) \wedge Consistent(g', D)]]
-	     - Definition: The *specific boundary* S, with respect to
-               hypothesis space H and training data D, is the set of
-               minimally general (i.e., maximally specific) members of
-               H consistent with D.
-
-	       S = {s \in H | Consistent(s, D)
-                    \wedge (\not\exists s' \in H) [(s >_{g} s') \wedge Consistent(s', D)]]
-	     - Theorem 2.1. *Version space representation
-               theorem*. Let X be an arbitrary set of instances and
-               let H be a set of boolean-valued hypotheses defined
-               over X. Let c : X \to {O, 1) be an arbitrary target
-               concept defined over X, and let D be an arbitrary set
-               of training examples {<x, c(x)>). For all X, H, c, and
-               D such that S and G are well defined,
-
-	       VS_{H, D} = {h \in H | (\exists s \in S, g \in G)(g \ge_{g} h \ge_{g} s)}
-    5) [@5] EVALUATING HYPOTHESES
-       1) ESTIMATING HYPOTHESIS ACCURACY
-	  1) Sample Error and True Error
-	     - Definition: The *sample error* (denoted error_{S}(h)) of
-               hypothesis h with respect to target function f and data
-               sample S is
-
-	       error_{S}(h) \equiv 1/n \sum_{x \in S} \delta(f(x), h(x))
-	     - Definition: The *true error* (denoted error_{D}(h)) of
-               hypothesis h with respect to target function f and
-               distribution D, is the probability that h will
-               misclassify an instance drawn at random according to D.
-
-	       error_{S}(h) \equiv Pr_{x \in D}[f(x) \neq h(x)]
-	  2) Confidence Intervals for Discrete-Valued Hypotheses
-	     - [confidence interval z_N = 1.96 for 95% confidence interval]
-               error_{S} \pm z_{N} \sqrt(error_{S}(h)(1- error_{S}(h))/n) (5.1)
-	     - n \cdot error_{S}(h) (1-error_{S}(h)) \ge 5
-       3) [@3] BASICS OF SAMPLING THEORY
-	  4) [@4] Estimators, Bias, and Variance
-	     - The estimation bias of an estimator Y for an arbitrary
-               parameter p is
-
-	       E[Y] - p
-	     - In general, given r errors in a sample of n
-               independently drawn test examples, the standard
-               deviation for errors(h) is given by
-
-	       \sigma_{errors_{S}(h)} = \sigma_{r} / n = \sqrt{p(1-p) / n} (5.8)
-	     - which can be approximated by substituting r/n =
-               errors_{S}(h) for p
-	  5) Confidence Intervals
-	     - An N% *confidence interval* for some parameter p is an
-               interval that is expected with probability N% to
-               contain p .
-	     - if a random variable Y obeys a Normal distribution with
-               mean \mu and standard deviation \sigma , then the measured
-               random value y of Y will fall into the following
-               interval N% of the time
-
-	       \mu \pm z_{N }\sigma
-
-	       Equivalently, the mean \mu will fall into the following
-               interval N% of the time
-
-	       y \pm z_{N} \sigma
-       4) A GENERAL APPROACH FOR DERIVING CONFIDENCE INTERVALS
-	  0) [@0]
-	     1. Identify the underlying population parameter p to
-                be estimated, for example, error_{D}(h).
-	     2. Define the estimator Y (e.g., error_{S}(h)). It is
-                desirable to choose a minimum-variance, unbiased
-                estimator.
-	     3. Determine the probability distribution D_{Y} that governs
-                the estimator Y, including its mean and variance.
-	     4. Determine the N% confidence interval by finding
-                thresholds L and U such that N% of the mass in the
-                probability distribution D_{Y} falls between L and U.
-*** ref [[file:master.bib::mitchell][Mitchell: Machine Learning]]
-** TODO [#A] [[./usersrouted-ccs13.pdf][Johnson - Users Get Routed: Traffic Correlation on Tor by Realistic Adversaries]]
-*** summary
-    0) [@0] ABSTRACT
-
-       Tor is more vulnerable than previously thought.
-
-       - security evaluation based on
-
-         - different user models
-
-	 - ASes etc
-
-	 - paths
-
-    1) INTRODUCTION
-
-       - controlling ASes or Internet exchange points (IXP)s lets you
-         deanonymize easily after some time
-
-         - six months for 80% of all types of users
-
-         - single AS: 100% for users "in some common locations" in three months
-
-           - IXP: 95% in three months
-
-         - two AS: 1 day instead
-
-         - bittorrent worse (and they degrade)
-
-    2) BACKGROUND
-
-       - GUARD flag: uptime median of familiar relays
-         AND bandwidth \ge min(250kB, median_bw)
-
-       - STABLE flag: weighted MTBF \ge median(weighted MTBF for active relays)
-
-    3) RELATED WORK
-
-       - Metrics and Methods for Evaluating Anonymity.
-
-         - entropy
-
-         - bandwidth-limited adversary
-
-         - controls some relays
-
-       - Traffic Correlation Attacks.
-
-	 - Øverlier,Syverson: discover Tor Hidden Servers
-
-	 - Murdoch,Danezis: traffic correlation attacks against Tor
-
-	 - here more in depth: how long to deanonymize
-
-       - Network Adversaries
-
-	 - Feamster,Dingledine: diverse paths might be weaker
-
-	 - Edman,Syverson: AS-aware path selection
-
-	 - Akhoondi &al:geographic-based relay selection
-
-	 - Wacek &al: 18% of circuits may have same AS
-
-	 - Murdoch,Zielinski: IXPs vs ASs
-
-	 - Juen: AS and IXP diversity
-
-	 - here: fixed set of ASes and IXPs, correlation attacks
-
-    4) SECURITY MODEL AND METRICS
-
-       "types and amounts of adversary resources, as well as how he
-       may use them."
-
-       1) Adversary Model
-
-	  passive observer who can additionally add and "corrupt"
-          existing resources
-
-	  1) Adversary Resources.
-
-	     - bandwidth view vs onion router view
-
-	     - Autonomous Systems route IP-traffic
-
-	     - Internet eXchange Points connect multiple
-
-	  2) Resource Endowment.
-
-	     - Institutions: ISP controls ASes
-
-	       - companies control one or multiple IXPs
-
-	     - might use number of compromised relays as metric, but
-               Tor weighs by bandwidth
-
-	       - bandwidth more accurate as measure [6]
-
-	       - better yet "guard and/org exit bandwidth"
-
-	  3) Adversary Goals.
-
-	     - broad: deanonymize
-
-	     - more specific
-
-	       - certain user [class]
-
-	       - certain destinations
-
-	       - ever connect at all [during specific time]
-
-       2) Security Metrics
-
-	  user-relevant metrics:
-
-	  1) "probability distribution for number of path compromises"
-             (for user)
-
-	  2) probability distribution "until first path compromise"
-
-    5) METHODOLOGY
-
-       "Monte Carlo method"
-
-       1) Path Simulator
-*** quotes
-    0) [@0] Abstract
-       - Specific contributions of the paper include (1) a model of
-         various typical kinds of users, (2) an adversary model that
-         includes Tor network relays, autonomous systems (ASes), Internet
-         exchange points (IXPs), and groups of IXPs drawn from empirical
-         study, (3) metrics that indicate how secure users are over a
-         period of time, (4) the most accurate topological model to date
-         of ASes and IXPs as they relate to Tor usage and network
-         configuration, (5) a novel realistic Tor path simulator (TorPS),
-         and (6) analyses of security making use of all the above.
-    1) [@10] References
-       - [40] Tor Project, Inc. Tor Metrics Portal.
-         https://metrics.torproject.org/, 2013.
-*** ref: [[file:master.bib::ccs2013-usersrouted][Johnson et al. 2013: Users Get Routed]]
-** PART MOVE [[./torspec/pt-spec.txt][Pluggable Transport Specification (Version 1)]]
-*** TODO #A at least part
-*** summary (stopped at [[file:torspec/pt-spec.txt::"TOR_PT_SERVER_TRANSPORT_OPTIONS"][3.2.3]])
-    0) [@0] Abstract
-
-       censorship circumvention using modular, traffic-transforming
-       sub-processes
-
-    1) Introduction
-
-       0) [@0]
-
-	  - decouple obfuscation from client-server code
-
-       1) Requirements Notation: MUST etc as usual (RFC2119)
-
-    2) Architecture Overview
-
-       - client app to[lo] pt-client to[inet] pt-server to[lo] server app
-
-       - pt client as SOCKS proxy to client app
-
-       - configured via environment variables, write output to stdout
-
-    3) Specification
-
-       0) [@0] workflow
-
-	  1. env values, start pt as sub-process
-
-	  2. pt determines spec version
-
-	  3. pt parses env
-
-	  4. pt client validates upstream proxy
-
-	  5. pt initializes transports
-
-	  6. pt does job: forward/transform
-
-	  7. signal of termination, shut down ("gracefully")
-
-       1) Pluggable Transport Naming
-
-	  unique, C identifier
-
-       2) Pluggable Transport Configuration Environment Variables
-
-	  prefixed with "TOR_PT_"
-
-	  1) Common Environment Variables
-
-	     - TOR_PT_MANAGED_TRANSPORT_VER: comma-separated =1,1a,2b,valid_ver
-
-	     - TOR_PT_STATE_LOCATION: dir to store persistent state
-
-	     - TOR_PT_EXIT_ON_STDIN_CLOSE: 1\to close if stdin == EOF, 0\to NOT
-
-	  2) Pluggable Transport Client Environment Variables
-
-	     - TOR_PT_CLIENT_TRANSPORTS: list of transports =obfs2,wfpad
-
-	     - TOR_PT_PROXY: upstream proxy (optional)
-
-	  3) Pluggable Transport Server Environment Variables
-
-	     - TOR_PT_SERVER_TRANSPORTS: server list =obfs3,wfpad
-
-	     - TOR_PT_SERVER_TRANSPORT_OPTIONS:
-
-	       - list of transport:arg=value pairs, f.ex.
-		 #+BEGIN_EXAMPLE
-                   scramblesuit:key=banana;automata:rule=110;automata:depth=3
-		 #+END_EXAMPLE
-
-	     - TOR_PT_SERVER_BINDADDR: transport-host:port,t2-h2:p2,...
-
-	     - TOR_PT_ORPORT: forward to after transformation: =host:port=
-
-	     - TOR_PT_EXTENDED_SERVER_PORT: use instead of ORPORT, also
-               metadata, set to empty string if not supported, =host:port=
-
-	     - TOR_PT_AUTH_COOKIE_FILE: Extended ORPort autho cookie =/path/to=
-
-       3) Pluggable Transport To Parent Process Communication
-	     
-*** quotes
-*** ref [[file:master.bib::tor-spec-pt][Yawning 2015: Pluggable Transport Specification Version]]
-** TODO [#A] PART (for picture): [[./10_3-ndss2016-slides.pdf][Website Fingerprinting at Internet Scale Presentation]]
 ** TODO [#B] [[./LZCLCP_NDSS11.pdf][Luo - HTTPOS: Sealing Information Leaks with Browser-side Obfuscation of Encrypted Flows]]
 *** summary
     0) [@0] Abstract
@@ -10514,926 +10527,12 @@
      reads, one for writes) for the rate limiting.
 *** TODO [#A] ref [[file:master.bib::tor-spec][Dingledine & Mathewson 2014: Tor Protocol Specification]]
     better exact version
-** PART MOVE [[./user_guide_0.16.1.pdf][scikit-learn user guide]]
+** TODO [#B] PART [[./DOM3-Core.pdf][Document Object Model (DOM) Level 3 Core Specification]]
+*** part: read some to quote for [[file:~/da/git/diplomarbeit.org::*Estimate%20Parameter:%20Number%20of%20Embedded%20Objects][Estimate Parameter: Number of Embedded Objects]]
 *** summary
-    1) AN INTRODUCTION TO MACHINE LEARNING WITH SCIKIT-LEARN
-
-       1) Machine learning: the problem setting
-
-          - supervised learning
-
-            - classification: classes
-
-            - regression: continuous variables
-
-          - unsupervised learning:
-
-            - clustering: similar examples within the data
-
-            - distribution of data: density estimation
-
-          - training set and testing set:
-
-            - training: learn properties
-
-            - testing: test properties
-
-       2) Loading an example dataset
-
-          - from sklearn import datasets
-
-          - digits = datasets.load_digits()
-
-          - digits.data: features
-
-          - digits.target: class
-
-          - digits.images[0] (here)
-
-       3) Learning and predicting
-
-          - =estimator= offers =fit(X, y)= and =predict(T)=
-
-          - from sklearn import svm
-
-          - clf = svm.SVC(gamma=0.001, C=100.)
-
-          - clf.fit(digits.data[:-1], digits.target[:-1])
-
-          - clf.predict(digits.data[-1])
-
-       4) Model persistence
-
-          - from sklearn.externals import joblib
-
-          - joblib.dump(clf, 'filename.pkl')
-
-          - clf2 = joblib.load('filename.pkl')
-
-	    followed by clf2.predict(...)
-
-    2) A TUTORIAL ON STATISTICAL-LEARNING FOR SCIENTIFIC DATA
-       PROCESSING
-
-       1) Statistical learning: the setting and the estimator object
-          in scikit-learn
-
-          data: often 2d-array
-          estimator: estimates (fit, ..., params at object creation)
-
-       2) Supervised learning: predicting an output variable from
-          high-dimensional observations
-
-          1) Nearest neighbor and the curse of dimensionality
-
-	     toy problem: classifying irises
-
-             - import numpy as np
-             - from sklearn import datasets
-             - iris = datasets.load_iris()
-             - iris_X = iris.data
-             - iris_y = iris.target
-             - np.unique(iris_y)
-
-             - k-Nearest neighbors classifier
-
-               - simplest classifier
-
-             - The curse of dimensionality
-
-	       the number of points needed scales exponentially with the
-               dimension
-
-          2) Linear model: from regression to sparsity
-
-             1) linear regression
-
-	        fit line X \beta + \epsilon to data points
-
-             2) Shrinkage
-
-	        problem with few data points per dimension, solve via
-                Ridge (uses l_{2}-Norm)
-
-             3) Sparsity
-
-	        it helps to reduce non-informative variables. Ridge
-                reduces, Lasso sets to 0 (good on large datasets), as
-                does LassoLARS (few observations)
-
-             4) Classification
-
-	        for classification-regression, better use sigmoid instead
-                of linear (LogisticRegression)
-
-          3) Support vector machines (SVMs)
-
-             1) Linear SVMs
-
-	        C is regularization parameter:
-
-	        "a small value for C means the margin is calculated using
-                many or all of the observations around the separating line
-                (more regularization); a large value for C means the
-                margin is calculated on observations close to the
-                separating line (less regularization)."
-
-	        thus: bigger C, less values considered (always those
-                close to separating line)
-
-	        "For many estimators, including the SVMs, having datasets
-                with *unit standard deviation* for each feature is
-                important to get good prediction."
-
-             2) Using kernels
-
-	        different fitting functions: linear, poly, rbf
-
-       3) Model selection: choosing estimators and their parameters
-
-          1) Score, and cross-validated scores
-
-             - score: bigger is better
-
-             - k-fold cross-validation:
-
-               - import numpy as np
-               - X_folds = np.array_split(X_digits, 3)
-               - y_folds = np.array_split(y_digits, 3)
-               - scores = list()
-               - for k in range(3):
-                 - X_train = list(X_folds)
-                 - X_test  = X_train.pop(k)
-                 - X_train = np.concatenate(X_train)
-                 - y_train = list(y_folds)
-                 - y_test  = y_train.pop(k)
-                 - y_train = np.concatenate(y_train)
-                 - scores.append(svc.fit(X_train, y_train).score(X_test, y_test))
-
-          2) Cross-validation generators
-
-	     X-validation (Kfold, Loo, etc) are available via
-
-	     =sklearn.cross_validation=
-
-             - "To compute the score method of an estimator, the sklearn
-               exposes a helper function:
-
-	       #+BEGIN_SRC python
-                 cross_validation.cross_val_score(svc, X_digits, y_digits, cv=kfold, n_jobs=-1)
-	       #+END_SRC
-
-          3) Grid-search and cross-validated estimators
-
-             1) Grid-search
-
-	        automatic parameter search
-
-	        #+BEGIN_SRC python
-                  # previously created a SVM named svc
-                  from sklearn.grid_search import GridSearchCV
-                  Cs = np.logspace(-6, -1, 10)
-                  clf = GridSearchCV(estimator=svc, param_grid=dict(C=Cs), n_jobs=-1)
-                  clf.fit(X_digits[:1000], y_digits[:1000])
-                  clf.best_score_
-                  clf.best_estimator_.C
-	        #+END_SRC
-
-             2) Cross-validated estimators
-
-	        with CV added to name: search automatically
-
-	        (but not svm)
-
-       4) Unsupervised learning: seeking representations of the data
-
-          1) Clustering: grouping observations together
-
-	     when categorization data not at hand
-
-             1) K-means clustering
-	        #+BEGIN_SRC python
-                  from sklearn import cluster, datasets
-                  iris = datasets.load_iris()
-                  X_iris = iris.data
-                  y_iris = iris.target
-                  k_means = cluster.KMeans(n_clusters=3)
-                  k_means.fit(X_iris)
-                  print(k_means.labels_[::10])
-	        #+END_SRC
-
-	        iris: almost correct with 8 clusters, off on border with 3
-
-             2) Hierarchical agglomerative clustering: Ward
-
-	        hierarchy of clusters
-
-                - agglomerative (bottom-up)
-
-	          "This approach is particularly interesting when the
-                  clusters of interest are made of only a few
-                  observations. When the number of clusters is large, it
-                  is much more computationally efficient than k-means."
-
-                - divisive (top-down)
-
-	          "For estimating large numbers of clusters, this
-                  approach is both slow (due to all observations starting
-                  as one cluster, which it splits recursively) and
-                  statistically ill-posed."
-
-             3) Connectivity-constrained clustering
-
-                - cluster depending on adjacency
-
-                - f.ex. used to find separating lines in lena picture
-
-             4) Feature agglomeration
-
-                - defeat curse of dimensionality by merging "similar
-                  features"
-
-          2) Decompositions: from a signal to components and loadings
-
-             decompose signal X into components C and loadings C
-
-             1) Principal component analysis: PCA
-
-                - extracts combinations which explain "maximum
-                  variance" (see quotes)
-
-             2) Independent Component Analysis: ICA
-
-                - might work better for analysis of non-gaussian data
-                  comparison (example see quotes)
-
-       5) Putting it all together
-
-          1) Pipelining
-
-             - combined estimators
-               #+BEGIN_SRC python
-                 from sklearn import linear_model, decomposition, datasets
-                 from sklearn.pipeline import Pipeline
-                 #...
-                 pca = decomposition.PCA()
-                 pipe = Pipeline(steps=[('pca', pca), ('logistic', logistic)])
-                 # prediction
-                 n_components = [20, 40, 64]
-                 Cs = np.logspace(-4, 4, 3)
-                 estimator = GridSearchCV(pipe,
-                 dict(pca__n_components=n_components,
-                 logistic__C=Cs))
-                 estimator.fit(X_digits, y_digits)
-               #+END_SRC
-
-          2) Face recognition with eigenfaces
-
-	     0) [@0] imports
-		#+BEGIN_SRC python
-                  from sklearn.cross_validation import train_test_split
-                  from sklearn.metrics import classification_report
-                  from sklearn.metrics import confusion_matrix
-		#+END_SRC
-
-	     1) get and prepare data
-		#+BEGIN_SRC python
-                  X_train, X_test, y_train, y_test = train_test_split(
-                      X, y, test_size=0.25)
-		#+END_SRC
-
-	     2) do PCA
-
-	     3) apply PCA to data
-
-	     4) train svm
-		#+BEGIN_SRC python
-                  clf = GridSearchCV(SVC(kernel='rbf', class_weight='auto'), param_grid)
-                  clf = clf.fit(X_train_pca, y_train)
-		#+END_SRC
-
-	     5) evaluate
-		#+BEGIN_SRC python
-                  y_pred = clf.predict(X_test_pca)
-                  print(classification_report(y_test, y_pred, target_names=target_names))
-                  print(confusion_matrix(y_test, y_pred, labels=range(n_classes)))
-		#+END_SRC
-
-	  3) Open problem: Stock Market Structure
-
-	     predict variation in Google stock price
-
-       6) Finding help
-
-	  1) The project mailing list
-
-	     "If you encounter a bug with scikit-learn or something
-             that needs clarification in the docstring or the online
-             documentation, please feel free to ask on [[http://scikit-learn.sourceforge.net/support.html][the Mailing
-             List]]"
-
-	  2) Q&A communities with Machine Learning practitioners
-
-	     - http://metaoptimize.com/qa
-
-    4) [@4] SUPERVISED LEARNING
-
-       1) Generalized Linear Models
-
-	  y ˆ (w, x) = w 0 + w 1 x 1 + ... + w p x p
-
-	  1) Ordinary Least Squares
-	     #+BEGIN_SRC python
-               from sklearn import linear_model
-               clf = linear_model.LinearRegression()
-               clf.fit ([[0, 0], [1, 1], [2, 2]], [0, 1, 2])
-	     #+END_SRC
-
-	  2) Ridge Regression
-
-	     penalty term for size of parameters: min ||Xw − y||^2 + α||w||^2
-
-	     #+BEGIN_SRC python
-               clf = linear_model.Ridge (alpha = .5)
-	     #+END_SRC
-
-	     evaluate alpha:
-	     #+BEGIN_SRC python
-               clf = linear_model.RidgeCV(alphas=[0.1, 1.0, 10.0])
-               clf.fit([[0, 0], [0, 0], [1, 1]], [0, .1, 1])
-               clf.alpha_
-	     #+END_SRC
-
-	     also has CV method
-
-	  3) Lasso
-
-	     for sparse parameters
-
-	     #+BEGIN_SRC python
-               clf = linear_model.Lasso(alpha = 0.1)
-               clf.fit([[0, 0], [1, 1]], [0, 1])
-               clf.predict([[1, 1]])
-	     #+END_SRC
-
-	  4) Elastic Net
-
-	     - sparse model like Lasso with regularization Ridge
-
-	     - correlated features
-	       #+BEGIN_SRC python
-                 from sklearn.linear_model import ElasticNet
-                 enet = ElasticNet(alpha=alpha, l1_ratio=0.7)
-                 y_pred_enet = enet.fit(X_train, y_train).predict(X_test)
-	       #+END_SRC
-
-	  5) Multi-task Lasso
-
-	     - simultaneously evaluate n lassos
-	       #+BEGIN_SRC python
-                 from sklearn.linear_model import MultiTaskLasso, Lasso
-                 rng = np.random.RandomState(42)
-                 # Generate some 2D coefficients with sine waves with random frequency and phase
-                 n_samples, n_features, n_tasks = 100, 30, 40
-                 n_relevant_features = 5
-                 coef = np.zeros((n_tasks, n_features))
-                 times = np.linspace(0, 2 * np.pi, n_tasks)
-                 for k in range(n_relevant_features):
-                     coef[:, k] = np.sin((1. + rng.randn(1)) * times + 3 * rng.randn(1))
-                 X = rng.randn(n_samples, n_features)
-                 Y = np.dot(X, coef.T) + rng.randn(n_samples, n_tasks)
-                 coef_lasso_ = np.array([Lasso(alpha=0.5).fit(X, y).coef_ for y in Y.T])
-                 coef_multi_task_lasso_ = MultiTaskLasso(alpha=1.).fit(X, Y).coef_
-	       #+END_SRC
-
-	  6) Least Angle Regression
-
-	     - high-dimensional data
-	       #+BEGIN_SRC python
-                 from sklearn import linear_model
-                 clf = linear_model.Lars(n_nonzero_coefs=1)
-                 clf.fit([[-1, 1], [0, 0], [1, 1]], [-1.1111, 0, -1.1111])
-	       #+END_SRC
-
-	  7) LARS Lasso
-
-	     point 6) with Lasso
-	     #+BEGIN_SRC python
-               clf = linear_model.LassoLars(alpha=.1)
-               clf.fit([[0, 0], [1, 1]], [0, 1])
-	     #+END_SRC
-
-	  8) Orthogonal Matching Pursuit (OMP)
-
-	     #+BEGIN_SRC python
-               from sklearn.linear_model import OrthogonalMatchingPursuit
-               from sklearn.linear_model import OrthogonalMatchingPursuitCV
-               omp = OrthogonalMatchingPursuit(n_nonzero_coefs=n_nonzero_coefs)
-               omp.fit(X, y)
-               # plot the noisy reconstruction with number of non-zeros set by CV
-               omp_cv = OrthogonalMatchingPursuitCV()
-               omp_cv.fit(X, y_noisy)
-	     #+END_SRC
-
-	     - arg min ||y − Xγ||^{2}_{2} subject to ||γ||_{0} ≤ n_{nonzero_coefs}
-
-	  9) Bayesian Regression
-
-	     1) Bayesian Ridge Regression
-
-	       #+BEGIN_SRC python
-		 from sklearn import linear_model
-		 X = [[0., 0.], [1., 1.], [2., 2.], [3., 3.]]
-		 Y = [0., 1., 2., 3.]
-		 clf = linear_model.BayesianRidge()
-		 clf.fit(X, Y)
-	       #+END_SRC
-		- adapts, but costly (see quotes)
-
-	     2) Automatic Relevance Determination - ARD
-
-       11) [@11] Ensemble methods
-
-	   0) [@0]
-
-	      - combine estimators
-
-	      - averaging methods: concurrently: bagging methods,
-                forests of randomized trees
-
-	      - boosting methods: subsequently
-
-	   1) Bagging meta-estimator
-
-	      - several instances on subsets of data (and features)
-
-	        - combine those
-
-	      - method to reduce variance
-
-	      - difference of drawing subsets: just so, with
-                replacement, subsets of features, both features and
-                samples
-	      #+BEGIN_SRC python
-              from sklearn.ensemble import BaggingClassifier
-              from sklearn.neighbors import KNeighborsClassifier
-              bagging = BaggingClassifier(KNeighborsClassifier(),
-              max_samples=0.5, max_features=0.5)
-	      #+END_SRC
-
-	   2) Forests of randomized trees
-
-	      based on decision trees, perturb-and-combine, multi-output
-
-	      1) Random Forests
-
-		 - sample drawn with replacement
-
-		 - each node chooses best of a random subset of features
-
-		 - this implementation averages probabilitic
-                   prediction of trees, instead of adding the votes
-
-	      2) Extremely Randomized Trees
-
-		 - difference: randomly draw threshholds for each
-                   feature and use the best of these
-
-		   - use whole dataset to bootstrap
-
-	      3) Parameters
-
-		 - best to cross-validate parameters
-
-		   - n_estimators, max_features, max_depth, min_samples_split
-
-	      4) Parallelization
-
-		 possible, but might not give linear speedup
-
-	      5) Feature importance evaluation
-
-		 - depth of feature relates to rank
-
-		 - averaging over several trees reduces variance
-
-	      6) Totally Random Trees Embedding
-
-		 - encodes the leaves
-
-		 - maybe used by k-forest
-
-		 - example see 11.11.8 "Hashing feature transformation
-                   using Totally Random Trees"
-
-	   3) AdaBoost
+    0) [@0] Abstract
 *** quotes
-    2) [@2] A tutorial on statistical-learning for scientific data processing
-       1) Statistical learning: the setting and the estimator object
-          in scikit-learn
-	  - import pylab as pl
-            pl.imshow
-       4) [@4] Unsupervised learning: seeking representations of the data
-	  2) [@2] Decompositions: from a signal to components and loadings
-	     - Create a signal with only 2 useful dimensions, analyse
-               #+BEGIN_SRC python
-		 x1 = np.random.normal(size=100)
-		 x2 = np.random.normal(size=100)
-		 x3 = x1 + x2
-		 X = np.c_[x1, x2, x3]
-		 from sklearn import decomposition
-		 pca = decomposition.PCA()
-		 pca.fit(X)
-		 PCA(copy=True, n_components=None, whiten=False)
-		 print(pca.explained_variance_)
-		 pca.n_components = 2
-		 X_reduced = pca.fit_transform(X)
-		 X_reduced
-               #+END_SRC
-	     - Combine signals
-               #+BEGIN_SRC python
-		 time = np.linspace(0, 10, 2000)
-		 s1 = np.sin(2 * time) # Signal 1 : sinusoidal signal
-		 s2 = np.sign(np.sin(3 * time)) # Signal 2 : square signal
-		 S = np.c_[s1, s2]
-		 S += 0.2 * np.random.normal(size=S.shape) # Add noise
-		 S /= S.std(axis=0) # Standardize data
-		 # Mix data
-		 A = np.array([[1, 1], [0.5, 2]]) # Mixing matrix
-		 X = np.dot(S, A.T) # Generate observations
-		 ica = decomposition.FastICA() # Compute ICA
-		 S_ = ica.fit_transform(X) # Get the estimated sources
-		 A_ = ica.mixing_.T
-		 np.allclose(X, np.dot(S_, A_) + ica.mean_)
-               #+END_SRC
-    4) [@4] Supervised learning
-       1) Generalized Linear Models
-	  2) [@2] Ridge Regression
-	     - Here, α ≥ 0 is a complexity parameter that controls the
-               amount of shrinkage: the larger the value of α, the
-               greater the amount of shrinkage and thus the
-               coefficients become more robust to collinearity.
-	  3) [@3] Lasso
-	     - The alpha parameter controls the degree of sparsity of
-               the coefficients estimated.
-	  9) [@9] Bayesian Regression
-	     - The advantages of Bayesian Regression are:
-	       - It adapts to the data at hand.
-	       - It can be used to include regularization parameters
-                 in the estimation procedure.
-	       The disadvantages of Bayesian regression include:
-	       - Inference of the model can be time consuming.
-       4) [@4] Support Vector Machines
-	  1) Classification
-	     - SVC and NuSVC implement the “one-against-one” approach
-               (Knerr et al., 1990) for multi- class classification. If
-               n_class is the number of classes, then n_class *
-               (n_class - 1) / 2 classifiers are constructed and each
-               one trains data from two classes
-	     - Note that the LinearSVC also implements an alternative
-               multi-class strategy, the so-called multi-class SVM
-               formulated by Crammer and Singer, by using the option
-               multi_class=’crammer_singer’. This method is consistent,
-               which is not true for one-vs-rest classification. In
-               practice, one-vs-rest classification is usually
-               preferred, since the results are mostly similar, but the
-               runtime is significantly less.
-       6) [@6] Nearest Neighbors
-	  0) [@0]
-	     - Despite its simplicity, nearest neighbors has been successful in
-               a large number of classification and regression problems
-	  2) [@2] Nearest Neighbors Classification
-	     - RadiusNeighborsClassifier [...] For high-dimensional parameter
-               spaces, this method becomes less effective due to the so-called
-               “curse of dimensionality”.
-	  4) [@4] Nearest Neighbor Algorithms
-	     - Currently, algorithm = ’auto’ selects ’kd_tree’ if k < N/2 and
-               the ’effective_metric_’ is in the ’VALID_METRICS’ list of
-               ’kd_tree’. It selects ’ball_tree’ if k < N/2 and the
-               ’effective_metric_’ is not in the ’VALID_METRICS’ list of
-               ’kd_tree’. It selects ’brute’ if k >= N/2. This choice is based
-               on the assumption that the number of query points is at least
-               the same order as the number of training points, and that
-               leaf_size is close to its default value of 30.
-	  6) [@6] Approximate Nearest Neighbors
-	     - There are many efficient exact nearest neighbor search
-               algorithms for low dimensions d (approximately 50). However
-               these algorithms perform poorly with respect to space and query
-               time when d increases. These algorithms are not any better than
-               comparing query point to each point from the database in a high
-               dimension (see Brute Force). This is a well-known consequence of
-               the phenomenon called “The Curse of Dimensionality”. There are
-               certain applications where we do not need the exact nearest
-               neighbors but having a “good guess” would suffice. When answers
-               do not have to be exact, the LSHForest class implements an
-               approximate nearest neighbor search.
-       10) [@10] Decision Trees
-	   - DecisionTreeClassifier [...]
-             #+BEGIN_SRC python
-               from sklearn import tree
-               X = [[0, 0], [1, 1]]
-               Y = [0, 1]
-               clf = tree.DecisionTreeClassifier()
-               clf = clf.fit(X, Y)
-             #+END_SRC
-       11) Ensemble methods
-	   2) [@2] Forests of randomized trees
-	      - As other classifiers, forest classifiers have to be fitted with
-		two arrays: a sparse or dense array X of size [n_samples,
-		n_features] holding the training samples, and an array Y of size
-		[n_samples] holding the target values (class labels) for the
-		training samples:
-		#+BEGIN_SRC python
-                  from sklearn.ensemble import RandomForestClassifier
-                  X = [[0, 0], [1, 1]]
-                  Y = [0, 1]
-                  clf = RandomForestClassifier(n_estimators=10)
-                  clf = clf.fit(X, Y)
-		#+END_SRC
-	      - The best parameter values should always be
-                cross-validated.
-    5) Unsupervised learning
-       3) [@3] Clustering
-	  2) [@2] K-means
-	     - The KMeans algorithm clusters data by trying to separate
-               samples in n groups of equal variance, minimizing a
-               criterion known as the inertia <inertia> or
-               within-cluster sum-of-squares. This algorithm requires
-               the number of clusters to be specified.
-    12) [@12] Frequently Asked Questions
-	12) [@12] How do I deal with string data (or trees, graphs...)?
-	    - Firstly, many estimators take precomputed
-              distance/similarity matrices, so if the dataset is not too
-              large, you can compute distances for all pairs of
-              inputs. If the dataset is large, you can use feature
-              vectors with only one “feature”, which is an index into a
-              separate data structure, and supply a custom metric
-              function that looks up the actual data in this data
-              structure. E.g., to use DBSCAN with Levenshtein distances:
-              #+BEGIN_SRC python
-		>>> from leven import levenshtein
-		>>> import numpy as np
-		>>> from sklearn.cluster import dbscan
-		>>> data = ["ACCTCCTAGAAG", "ACCTACTAGAAGTT", "GAATATTAGGCCGA"]
-		>>> def lev_metric(x, y):
-		...
-		i, j = int(x[0]), int(y[0])
-		# extract indices
-		...
-		return levenshtein(data[i], data[j])
-		...
-		>>> X = np.arange(len(data)).reshape(-1, 1)
-		>>> X
-		array([[0],
-		[1],
-		[2]])
-		>>> dbscan(X, metric=lev_metric, eps=5, min_samples=2)
-		([0, 1], array([ 0, 0, -1]))
-              #+END_SRC
-              (This uses the third-party edit distance package leven.)
-              Similar tricks can be used, with some care, for tree
-              kernels, graph kernels, etc.
-    42) [@42] Reference
-	9) [@9] sklearn.ensemble: Ensemble Methods
-	   9) [@9] sklearn.ensemble.RandomForestClassifier
-	      - apply(X)
-
-		Apply trees in the forest to X, return leaf indices.
-		- Parameters X : array-like or sparse matrix, shape =
-                  [n_samples, n_features]
-
-                  The input samples. Internally, it will be converted to
-                  dtype=np.float32 and if a sparse matrix is provided to
-                  a sparse csr_matrix.
-		- Returns X_leaves : array_like, shape = [n_samples,
-                  n_estimators]
-
-                  For each datapoint x in X and for each tree in the
-                  forest, return the index of the leaf x ends up in.
-	13) [@13] sklearn.grid_search: Grid Search
-	    0. [@0]
-	       - User guide: See the Grid Search: Searching for
-                 estimator parameters section for further details.
-	    1. sklearn.grid_search.GridSearchCV
-	       - class sklearn.grid_search.GridSearchCV(estimator,
-                 param_grid, scoring=None, loss_func=None,
-                 score_func=None, fit_params=None, n_jobs=1, iid=True,
-                 refit=True, cv=None, verbose=0,
-                 pre_dispatch=‘2*n_jobs’, error_score=’raise’)
-	       - Parameters:
-		 - verbose : integer
-		   - Controls the verbosity: the higher, the more messages.
-	25) [@25] sklearn.neighbors: Nearest Neighbors
-	    2) [@2] sklearn.neighbors.KNeighborsClassifier
-	       - class
-		 sklearn.neighbors.KNeighborsClassifier(n_neighbors=5,
-		 weights=’uniform’, algorithm=’auto’,
-		 leaf_size=30, p=2, metric=’minkowski’,
-		 metric_params=None, **kwargs) [...]
-
-		 metric : string or DistanceMetric object
-		 (default = ‘minkowski’) the distance metric to
-		 use for the tree. The default metric is
-		 minkowski, and with p=2 is equivalent to the
-		 standard Euclidean metric. See the documentation
-		 of the Distance-Metric class for a list of
-		 available metrics.
-	    10) [@10] sklearn.neighbors.DistanceMetric
-		- “braycurtis” | BrayCurtisDistance | sum(|x - y|)
-                  / (sum(|x|) + sum(|y|))
-	29) [@29] sklearn.pipeline: Pipeline
-	    1) sklearn.pipeline.Pipeline
-	       - class sklearn.pipeline.Pipeline(steps) Pipeline
-		 of transforms with a final
-		 estimator. Sequentially apply a list of
-		 transforms and a final estimator. Intermediate
-		 steps of the pipeline must be ‘transforms’, that
-		 is, they must implement fit and transform
-		 methods. The final estimator only needs to
-		 implement fit. The purpose of the pipeline is to
-		 assemble several steps that can be
-		 cross-validated together while setting different
-		 parameters. For this, it enables setting
-		 parameters of the various steps using their
-		 names and the parameter name separated by a
-		 ‘__’, as in the example below.
-
-		 Parameterssteps: list :List of (name, transform)
-		 tuples (implementing fit/transform) that are
-		 chained, in the order in which they are chained,
-		 with the last object an estimator.
-
-		 Examples
-		 #+BEGIN_SRC python
-                   >>> from sklearn import svm
-                   >>> from sklearn.datasets import samples_generator
-                   >>> from sklearn.feature_selection import SelectKBest
-                   >>> from sklearn.feature_selection import f_regression
-                   >>> from sklearn.pipeline import Pipeline
-                   >>> # generate some data to play with
-                   >>> X, y = samples_generator.make_classification(
-                   ...
-                   n_informative=5, n_redundant=0, random_state=42)
-                   >>> # ANOVA SVM-C
-                   >>> anova_filter = SelectKBest(f_regression, k=5)
-                   >>> clf = svm.SVC(kernel='linear')
-                   >>> anova_svm = Pipeline([('anova', anova_filter), ('svc', clf)])
-                   >>> # You can set the parameters using the names issued
-                   >>> # For instance, fit using a k of 10 in the SelectKBest
-                   >>> # and a parameter 'C' of the svm
-                   >>> anova_svm.set_params(anova__k=10, svc__C=.1).fit(X, y)
-                   ...
-                   Pipeline(steps=[...])
-                   >>> prediction = anova_svm.predict(X)
-                   >>> anova_svm.score(X, y)
-                   0.77...
-		 #+END_SRC
-	35) [@35] sklearn.tree: Decision Trees
-	    - class sklearn.tree.DecisionTreeClassifier[...]
-
-              feature_importances_ : array of shape = [n_features]
-
-              The feature importances.
-    47) [@47] Chapter 47. How to optimize for speed
-	3) [@3] Profiling Python code
-	   - It is however still interesting to check what’s happening
-             inside the _nls_subproblem function which is the hotspot if
-             we only consider Python code: it takes around 100% of the
-             cumulated time of the module. In order to better understand
-             the profile of this specific function, let us install
-             line-prof and wire it to IPython:
-             #+BEGIN_SRC sh
-               pip install line-profiler
-             #+END_SRC
-
-    48) somewhere
-		#+BEGIN_SRC python
-                  from sklearn.ensemble import ExtraTreesClassifier
-                  [...]
-                  # Build a forest and compute the feature importances
-                  forest = ExtraTreesClassifier(n_estimators=250,
-                  random_state=0)
-                  forest.fit(X, y)
-                  importances = forest.feature_importances_
-		#+END_SRC
-*** ref [[file:master.bib::scikit-learn][Pedregosa et al. 2011: Scikit]]
-*** exercises
-**** Exercise digits-knn-linear
-     Try classifying the digits dataset with nearest neighbors and a
-     linear model. Leave out the last 10% and test prediction
-     performance on these observations.
-
-     from sklearn import datasets, neighbors, linear_model
-
-     digits = datasets.load_digits()
-     X_digits = digits.data
-     y_digits = digits.target
-***** Solution
-      #+BEGIN_SRC python
-        from sklearn import datasets, neighbors, linear_model
-        import numpy as np
-
-        digits = datasets.load_digits()
-        X_digits = digits.data
-        y_digits = digits.target
-
-        np.random.seed(0)
-        indices = np.random.permutation(len(y_digits))
-        percent = int(len(y_digits) * 0.9)
-
-        digits_X_train = X_digits[indices[:percent]]
-        digits_X_test = X_digits[indices[percent:]]
-        digits_y_train = y_digits[indices[:percent]]
-        digits_y_test = y_digits[indices[percent:]]
-
-        knn = neighbors.KNeighborsClassifier()
-        knn.fit(digits_X_train, digits_y_train)
-        knn.score(digits_X_test, digits_y_test)
-
-        lin = linear_model.LogisticRegression()
-        lin.fit(digits_X_train, digits_y_train)
-        lin.score(digits_X_test, digits_y_test)
-      #+END_SRC
-**** Exercise iris-svm
-     Try classifying classes 1 and 2 from the iris dataset with SVMs,
-     with the 2 first features. Leave out 10% of each class and test
-     prediction performance on these observations.
-***** Solution
-      #+BEGIN_SRC python
-        from sklearn import datasets, svm
-        import numpy as np
-
-        iris = datasets.load_iris()
-        X = iris.data
-        y = iris.target
-
-        # normalize std
-        s = np.std(X, 0)
-        for i in range(4):
-            X[:,i] /= s[i]
-
-        np.random.seed(0)
-        indices = np.random.permutation(len(y))
-        percent = int(len(y) * 0.9)
-
-        X_train = X[indices[:percent]]
-        X_test = X[indices[percent:]]
-        y_train = y[indices[:percent]]
-        y_test = y[indices[percent:]]
-
-        svc = svm.SVC(kernel='linear')
-        svc.fit(X_train, y_train)
-        print svc.score(X_test, y_test)
-
-        svcr = svm.SVC()
-        svcr.fit(X_train, y_train)
-        print svcr.score(X_test, y_test)
-      #+END_SRC
-**** Exercise kfold
-     On the digits dataset, plot the cross-validation score of a SVC
-     estimator with an linear kernel as a function of parameter C (use
-     a logarithmic grid of points, from 1 to 10).
-***** Solution
-      #+BEGIN_SRC python
-        import numpy as np
-        from sklearn import cross_validation, datasets, svm
-
-        C_s = np.logspace(-10, 0, 50)
-
-        digits = datasets.load_digits()
-        X = digits.data
-        y = digits.target
-
-        for C in C_s:
-            svc.C = C
-            score = cross_validation.cross_val_score(svc, X, y, n_jobs=1)
-            print '%f, %f, %f' % (C, np.mean(score), np.std(score))
-      #+END_SRC
-**** Exercise grid-optimal
-     On the diabetes dataset, find the optimal regularization
-     parameter alpha.
-***** Solution
-      #+BEGIN_SRC python
-        from sklearn import cross_validation, datasets, linear_model
-        import numpy as np
-
-        diabetes = datasets.load_diabetes()
-        X = diabetes.data[:150]
-        y = diabetes.target[:150]
-
-        lasso = linear_model.Lasso()
-        alphas = np.logspace(-4, -.5, 30)
-
-        from sklearn.grid_search import GridSearchCV
-        clf = GridSearchCV(estimator=lasso, param_grid=dict(alpha=alphas), n_jobs=-1)
-        clf.fit(X, y)
-        print clf.score(diabetes.data[150:], diabetes.target[150:])
-
-        # for a in alphas:
-        #     lasso.alpha = a
-        #     score = cross_validation.cross_val_score(lasso, X, y, n_jobs=1)
-        #     print '%f, %s' % (a, np.mean(score))
-      #+END_SRC
+*** TODO ref
 ** TODO [#B] [[./Oya.pdf][Do dummies pay off ? Limits of dummy traffic protection in anonymous communications]]
 *** summary
     0) [@0] Abstract
@@ -11607,7 +10706,7 @@
        1) Machine Learning and Intrusion Detection
 	  - Machine learning deals with automatically inferring and
             generalizing dependencies from data.
-** TODO sections maybe eval PART [#B] [[./thebook.pdf][INTRODUCTION TO MACHINE LEARNING]] [0/2]
+** TODO [#B] [[./thebook.pdf][INTRODUCTION TO MACHINE LEARNING]] [0/2]
 *** TODO summary
     1) Introduction
 
@@ -12302,6 +11401,7 @@
         distribution is that it can be seen as the limit over the
         average of a large number of Bernoulli draws
 ** TODO [#B] PART [[./Curose-Ross - Computer_Networking_-_A_Top-down_Approach_Featuring_the_Internet__Third_Edition.pdf]]
+*** TODO http
 *** summary (up to p.103)
     2) [@2] Application Layer
 
@@ -12348,6 +11448,105 @@
 	     - Persistent Connections
 *** quotes
 *** ref [[file:master.bib::DBLP:books/daglib/0001977][Kurose & Ross 2001: Computer]]
+** TODO [#B] [[./10.1.1.20.2080.bloom_orig.pdf][Space/Time Trade-offs in Hash Coding with Allowable Errors]]
+*** summary
+    0) [@0] Abstract
+
+       - set membership hash-coding
+
+       - reduce amount of space by allowing some errors
+
+    1) Introduction
+*** quotes
+*** ref [[file:master.bib::Bloom70space/timetrade-offs][Bloom 1970: Space Time Trade]]
+** TODO [#C] [[./torspec/pt-spec.txt][Pluggable Transport Specification (Version 1)]]
+*** TODO #A at least part
+*** summary (stopped at [[file:torspec/pt-spec.txt::"TOR_PT_SERVER_TRANSPORT_OPTIONS"][3.2.3]])
+    0) [@0] Abstract
+
+       censorship circumvention using modular, traffic-transforming
+       sub-processes
+
+    1) Introduction
+
+       0) [@0]
+
+	  - decouple obfuscation from client-server code
+
+       1) Requirements Notation: MUST etc as usual (RFC2119)
+
+    2) Architecture Overview
+
+       - client app to[lo] pt-client to[inet] pt-server to[lo] server app
+
+       - pt client as SOCKS proxy to client app
+
+       - configured via environment variables, write output to stdout
+
+    3) Specification
+
+       0) [@0] workflow
+
+	  1. env values, start pt as sub-process
+
+	  2. pt determines spec version
+
+	  3. pt parses env
+
+	  4. pt client validates upstream proxy
+
+	  5. pt initializes transports
+
+	  6. pt does job: forward/transform
+
+	  7. signal of termination, shut down ("gracefully")
+
+       1) Pluggable Transport Naming
+
+	  unique, C identifier
+
+       2) Pluggable Transport Configuration Environment Variables
+
+	  prefixed with "TOR_PT_"
+
+	  1) Common Environment Variables
+
+	     - TOR_PT_MANAGED_TRANSPORT_VER: comma-separated =1,1a,2b,valid_ver
+
+	     - TOR_PT_STATE_LOCATION: dir to store persistent state
+
+	     - TOR_PT_EXIT_ON_STDIN_CLOSE: 1\to close if stdin == EOF, 0\to NOT
+
+	  2) Pluggable Transport Client Environment Variables
+
+	     - TOR_PT_CLIENT_TRANSPORTS: list of transports =obfs2,wfpad
+
+	     - TOR_PT_PROXY: upstream proxy (optional)
+
+	  3) Pluggable Transport Server Environment Variables
+
+	     - TOR_PT_SERVER_TRANSPORTS: server list =obfs3,wfpad
+
+	     - TOR_PT_SERVER_TRANSPORT_OPTIONS:
+
+	       - list of transport:arg=value pairs, f.ex.
+		 #+BEGIN_EXAMPLE
+                   scramblesuit:key=banana;automata:rule=110;automata:depth=3
+		 #+END_EXAMPLE
+
+	     - TOR_PT_SERVER_BINDADDR: transport-host:port,t2-h2:p2,...
+
+	     - TOR_PT_ORPORT: forward to after transformation: =host:port=
+
+	     - TOR_PT_EXTENDED_SERVER_PORT: use instead of ORPORT, also
+               metadata, set to empty string if not supported, =host:port=
+
+	     - TOR_PT_AUTH_COOKIE_FILE: Extended ORPort autho cookie =/path/to=
+
+       3) Pluggable Transport To Parent Process Communication
+	     
+*** quotes
+*** ref [[file:master.bib::tor-spec-pt][Yawning 2015: Pluggable Transport Specification Version]]
 ** TODO [#C] [[~/da/git/docs/onion.pdf][Anonymous Connections and Onion Routing]]
 *** summary
     0) [@0] Abstract
@@ -12539,17 +11738,6 @@
     - (ends 1 + 2)
 *** ref
     [[file:~/da/docs/master.bib::morphing09][Wright et al. 2009: Traffic Morphing]]
-** TODO MOVE [#B] [[./10.1.1.20.2080.bloom_orig.pdf][Space/Time Trade-offs in Hash Coding with Allowable Errors]]
-*** summary
-    0) [@0] Abstract
-
-       - set membership hash-coding
-
-       - reduce amount of space by allowing some errors
-
-    1) Introduction
-*** quotes
-*** ref [[file:master.bib::Bloom70space/timetrade-offs][Bloom 1970: Space Time Trade]]
 ** TODO [#C] [[./oakland2013-parrot.pdf][The Parrot is Dead: Observing Unobservable Network Communications]]
 *** summary
 *** quotes
@@ -14069,7 +13257,927 @@
 *** quotes
 *** ref [[file:master.bib::moz-sdk-xpcom][wbamberg 2016]]
 ** TODO [[./esa2006b.pdf][An Improved Construction for Counting Bloom Filters]]
-** PART [#A] [[./random.pdf][Computer Generation of Statistical Distributions]]
+** PART [[./user_guide_0.16.1.pdf][scikit-learn user guide]]
+*** summary
+    1) AN INTRODUCTION TO MACHINE LEARNING WITH SCIKIT-LEARN
+
+       1) Machine learning: the problem setting
+
+          - supervised learning
+
+            - classification: classes
+
+            - regression: continuous variables
+
+          - unsupervised learning:
+
+            - clustering: similar examples within the data
+
+            - distribution of data: density estimation
+
+          - training set and testing set:
+
+            - training: learn properties
+
+            - testing: test properties
+
+       2) Loading an example dataset
+
+          - from sklearn import datasets
+
+          - digits = datasets.load_digits()
+
+          - digits.data: features
+
+          - digits.target: class
+
+          - digits.images[0] (here)
+
+       3) Learning and predicting
+
+          - =estimator= offers =fit(X, y)= and =predict(T)=
+
+          - from sklearn import svm
+
+          - clf = svm.SVC(gamma=0.001, C=100.)
+
+          - clf.fit(digits.data[:-1], digits.target[:-1])
+
+          - clf.predict(digits.data[-1])
+
+       4) Model persistence
+
+          - from sklearn.externals import joblib
+
+          - joblib.dump(clf, 'filename.pkl')
+
+          - clf2 = joblib.load('filename.pkl')
+
+	    followed by clf2.predict(...)
+
+    2) A TUTORIAL ON STATISTICAL-LEARNING FOR SCIENTIFIC DATA
+       PROCESSING
+
+       1) Statistical learning: the setting and the estimator object
+          in scikit-learn
+
+          data: often 2d-array
+          estimator: estimates (fit, ..., params at object creation)
+
+       2) Supervised learning: predicting an output variable from
+          high-dimensional observations
+
+          1) Nearest neighbor and the curse of dimensionality
+
+	     toy problem: classifying irises
+
+             - import numpy as np
+             - from sklearn import datasets
+             - iris = datasets.load_iris()
+             - iris_X = iris.data
+             - iris_y = iris.target
+             - np.unique(iris_y)
+
+             - k-Nearest neighbors classifier
+
+               - simplest classifier
+
+             - The curse of dimensionality
+
+	       the number of points needed scales exponentially with the
+               dimension
+
+          2) Linear model: from regression to sparsity
+
+             1) linear regression
+
+	        fit line X \beta + \epsilon to data points
+
+             2) Shrinkage
+
+	        problem with few data points per dimension, solve via
+                Ridge (uses l_{2}-Norm)
+
+             3) Sparsity
+
+	        it helps to reduce non-informative variables. Ridge
+                reduces, Lasso sets to 0 (good on large datasets), as
+                does LassoLARS (few observations)
+
+             4) Classification
+
+	        for classification-regression, better use sigmoid instead
+                of linear (LogisticRegression)
+
+          3) Support vector machines (SVMs)
+
+             1) Linear SVMs
+
+	        C is regularization parameter:
+
+	        "a small value for C means the margin is calculated using
+                many or all of the observations around the separating line
+                (more regularization); a large value for C means the
+                margin is calculated on observations close to the
+                separating line (less regularization)."
+
+	        thus: bigger C, less values considered (always those
+                close to separating line)
+
+	        "For many estimators, including the SVMs, having datasets
+                with *unit standard deviation* for each feature is
+                important to get good prediction."
+
+             2) Using kernels
+
+	        different fitting functions: linear, poly, rbf
+
+       3) Model selection: choosing estimators and their parameters
+
+          1) Score, and cross-validated scores
+
+             - score: bigger is better
+
+             - k-fold cross-validation:
+
+               - import numpy as np
+               - X_folds = np.array_split(X_digits, 3)
+               - y_folds = np.array_split(y_digits, 3)
+               - scores = list()
+               - for k in range(3):
+                 - X_train = list(X_folds)
+                 - X_test  = X_train.pop(k)
+                 - X_train = np.concatenate(X_train)
+                 - y_train = list(y_folds)
+                 - y_test  = y_train.pop(k)
+                 - y_train = np.concatenate(y_train)
+                 - scores.append(svc.fit(X_train, y_train).score(X_test, y_test))
+
+          2) Cross-validation generators
+
+	     X-validation (Kfold, Loo, etc) are available via
+
+	     =sklearn.cross_validation=
+
+             - "To compute the score method of an estimator, the sklearn
+               exposes a helper function:
+
+	       #+BEGIN_SRC python
+                 cross_validation.cross_val_score(svc, X_digits, y_digits, cv=kfold, n_jobs=-1)
+	       #+END_SRC
+
+          3) Grid-search and cross-validated estimators
+
+             1) Grid-search
+
+	        automatic parameter search
+
+	        #+BEGIN_SRC python
+                  # previously created a SVM named svc
+                  from sklearn.grid_search import GridSearchCV
+                  Cs = np.logspace(-6, -1, 10)
+                  clf = GridSearchCV(estimator=svc, param_grid=dict(C=Cs), n_jobs=-1)
+                  clf.fit(X_digits[:1000], y_digits[:1000])
+                  clf.best_score_
+                  clf.best_estimator_.C
+	        #+END_SRC
+
+             2) Cross-validated estimators
+
+	        with CV added to name: search automatically
+
+	        (but not svm)
+
+       4) Unsupervised learning: seeking representations of the data
+
+          1) Clustering: grouping observations together
+
+	     when categorization data not at hand
+
+             1) K-means clustering
+	        #+BEGIN_SRC python
+                  from sklearn import cluster, datasets
+                  iris = datasets.load_iris()
+                  X_iris = iris.data
+                  y_iris = iris.target
+                  k_means = cluster.KMeans(n_clusters=3)
+                  k_means.fit(X_iris)
+                  print(k_means.labels_[::10])
+	        #+END_SRC
+
+	        iris: almost correct with 8 clusters, off on border with 3
+
+             2) Hierarchical agglomerative clustering: Ward
+
+	        hierarchy of clusters
+
+                - agglomerative (bottom-up)
+
+	          "This approach is particularly interesting when the
+                  clusters of interest are made of only a few
+                  observations. When the number of clusters is large, it
+                  is much more computationally efficient than k-means."
+
+                - divisive (top-down)
+
+	          "For estimating large numbers of clusters, this
+                  approach is both slow (due to all observations starting
+                  as one cluster, which it splits recursively) and
+                  statistically ill-posed."
+
+             3) Connectivity-constrained clustering
+
+                - cluster depending on adjacency
+
+                - f.ex. used to find separating lines in lena picture
+
+             4) Feature agglomeration
+
+                - defeat curse of dimensionality by merging "similar
+                  features"
+
+          2) Decompositions: from a signal to components and loadings
+
+             decompose signal X into components C and loadings C
+
+             1) Principal component analysis: PCA
+
+                - extracts combinations which explain "maximum
+                  variance" (see quotes)
+
+             2) Independent Component Analysis: ICA
+
+                - might work better for analysis of non-gaussian data
+                  comparison (example see quotes)
+
+       5) Putting it all together
+
+          1) Pipelining
+
+             - combined estimators
+               #+BEGIN_SRC python
+                 from sklearn import linear_model, decomposition, datasets
+                 from sklearn.pipeline import Pipeline
+                 #...
+                 pca = decomposition.PCA()
+                 pipe = Pipeline(steps=[('pca', pca), ('logistic', logistic)])
+                 # prediction
+                 n_components = [20, 40, 64]
+                 Cs = np.logspace(-4, 4, 3)
+                 estimator = GridSearchCV(pipe,
+                 dict(pca__n_components=n_components,
+                 logistic__C=Cs))
+                 estimator.fit(X_digits, y_digits)
+               #+END_SRC
+
+          2) Face recognition with eigenfaces
+
+	     0) [@0] imports
+		#+BEGIN_SRC python
+                  from sklearn.cross_validation import train_test_split
+                  from sklearn.metrics import classification_report
+                  from sklearn.metrics import confusion_matrix
+		#+END_SRC
+
+	     1) get and prepare data
+		#+BEGIN_SRC python
+                  X_train, X_test, y_train, y_test = train_test_split(
+                      X, y, test_size=0.25)
+		#+END_SRC
+
+	     2) do PCA
+
+	     3) apply PCA to data
+
+	     4) train svm
+		#+BEGIN_SRC python
+                  clf = GridSearchCV(SVC(kernel='rbf', class_weight='auto'), param_grid)
+                  clf = clf.fit(X_train_pca, y_train)
+		#+END_SRC
+
+	     5) evaluate
+		#+BEGIN_SRC python
+                  y_pred = clf.predict(X_test_pca)
+                  print(classification_report(y_test, y_pred, target_names=target_names))
+                  print(confusion_matrix(y_test, y_pred, labels=range(n_classes)))
+		#+END_SRC
+
+	  3) Open problem: Stock Market Structure
+
+	     predict variation in Google stock price
+
+       6) Finding help
+
+	  1) The project mailing list
+
+	     "If you encounter a bug with scikit-learn or something
+             that needs clarification in the docstring or the online
+             documentation, please feel free to ask on [[http://scikit-learn.sourceforge.net/support.html][the Mailing
+             List]]"
+
+	  2) Q&A communities with Machine Learning practitioners
+
+	     - http://metaoptimize.com/qa
+
+    4) [@4] SUPERVISED LEARNING
+
+       1) Generalized Linear Models
+
+	  y ˆ (w, x) = w 0 + w 1 x 1 + ... + w p x p
+
+	  1) Ordinary Least Squares
+	     #+BEGIN_SRC python
+               from sklearn import linear_model
+               clf = linear_model.LinearRegression()
+               clf.fit ([[0, 0], [1, 1], [2, 2]], [0, 1, 2])
+	     #+END_SRC
+
+	  2) Ridge Regression
+
+	     penalty term for size of parameters: min ||Xw − y||^2 + α||w||^2
+
+	     #+BEGIN_SRC python
+               clf = linear_model.Ridge (alpha = .5)
+	     #+END_SRC
+
+	     evaluate alpha:
+	     #+BEGIN_SRC python
+               clf = linear_model.RidgeCV(alphas=[0.1, 1.0, 10.0])
+               clf.fit([[0, 0], [0, 0], [1, 1]], [0, .1, 1])
+               clf.alpha_
+	     #+END_SRC
+
+	     also has CV method
+
+	  3) Lasso
+
+	     for sparse parameters
+
+	     #+BEGIN_SRC python
+               clf = linear_model.Lasso(alpha = 0.1)
+               clf.fit([[0, 0], [1, 1]], [0, 1])
+               clf.predict([[1, 1]])
+	     #+END_SRC
+
+	  4) Elastic Net
+
+	     - sparse model like Lasso with regularization Ridge
+
+	     - correlated features
+	       #+BEGIN_SRC python
+                 from sklearn.linear_model import ElasticNet
+                 enet = ElasticNet(alpha=alpha, l1_ratio=0.7)
+                 y_pred_enet = enet.fit(X_train, y_train).predict(X_test)
+	       #+END_SRC
+
+	  5) Multi-task Lasso
+
+	     - simultaneously evaluate n lassos
+	       #+BEGIN_SRC python
+                 from sklearn.linear_model import MultiTaskLasso, Lasso
+                 rng = np.random.RandomState(42)
+                 # Generate some 2D coefficients with sine waves with random frequency and phase
+                 n_samples, n_features, n_tasks = 100, 30, 40
+                 n_relevant_features = 5
+                 coef = np.zeros((n_tasks, n_features))
+                 times = np.linspace(0, 2 * np.pi, n_tasks)
+                 for k in range(n_relevant_features):
+                     coef[:, k] = np.sin((1. + rng.randn(1)) * times + 3 * rng.randn(1))
+                 X = rng.randn(n_samples, n_features)
+                 Y = np.dot(X, coef.T) + rng.randn(n_samples, n_tasks)
+                 coef_lasso_ = np.array([Lasso(alpha=0.5).fit(X, y).coef_ for y in Y.T])
+                 coef_multi_task_lasso_ = MultiTaskLasso(alpha=1.).fit(X, Y).coef_
+	       #+END_SRC
+
+	  6) Least Angle Regression
+
+	     - high-dimensional data
+	       #+BEGIN_SRC python
+                 from sklearn import linear_model
+                 clf = linear_model.Lars(n_nonzero_coefs=1)
+                 clf.fit([[-1, 1], [0, 0], [1, 1]], [-1.1111, 0, -1.1111])
+	       #+END_SRC
+
+	  7) LARS Lasso
+
+	     point 6) with Lasso
+	     #+BEGIN_SRC python
+               clf = linear_model.LassoLars(alpha=.1)
+               clf.fit([[0, 0], [1, 1]], [0, 1])
+	     #+END_SRC
+
+	  8) Orthogonal Matching Pursuit (OMP)
+
+	     #+BEGIN_SRC python
+               from sklearn.linear_model import OrthogonalMatchingPursuit
+               from sklearn.linear_model import OrthogonalMatchingPursuitCV
+               omp = OrthogonalMatchingPursuit(n_nonzero_coefs=n_nonzero_coefs)
+               omp.fit(X, y)
+               # plot the noisy reconstruction with number of non-zeros set by CV
+               omp_cv = OrthogonalMatchingPursuitCV()
+               omp_cv.fit(X, y_noisy)
+	     #+END_SRC
+
+	     - arg min ||y − Xγ||^{2}_{2} subject to ||γ||_{0} ≤ n_{nonzero_coefs}
+
+	  9) Bayesian Regression
+
+	     1) Bayesian Ridge Regression
+
+	       #+BEGIN_SRC python
+		 from sklearn import linear_model
+		 X = [[0., 0.], [1., 1.], [2., 2.], [3., 3.]]
+		 Y = [0., 1., 2., 3.]
+		 clf = linear_model.BayesianRidge()
+		 clf.fit(X, Y)
+	       #+END_SRC
+		- adapts, but costly (see quotes)
+
+	     2) Automatic Relevance Determination - ARD
+
+       11) [@11] Ensemble methods
+
+	   0) [@0]
+
+	      - combine estimators
+
+	      - averaging methods: concurrently: bagging methods,
+                forests of randomized trees
+
+	      - boosting methods: subsequently
+
+	   1) Bagging meta-estimator
+
+	      - several instances on subsets of data (and features)
+
+	        - combine those
+
+	      - method to reduce variance
+
+	      - difference of drawing subsets: just so, with
+                replacement, subsets of features, both features and
+                samples
+	      #+BEGIN_SRC python
+              from sklearn.ensemble import BaggingClassifier
+              from sklearn.neighbors import KNeighborsClassifier
+              bagging = BaggingClassifier(KNeighborsClassifier(),
+              max_samples=0.5, max_features=0.5)
+	      #+END_SRC
+
+	   2) Forests of randomized trees
+
+	      based on decision trees, perturb-and-combine, multi-output
+
+	      1) Random Forests
+
+		 - sample drawn with replacement
+
+		 - each node chooses best of a random subset of features
+
+		 - this implementation averages probabilitic
+                   prediction of trees, instead of adding the votes
+
+	      2) Extremely Randomized Trees
+
+		 - difference: randomly draw threshholds for each
+                   feature and use the best of these
+
+		   - use whole dataset to bootstrap
+
+	      3) Parameters
+
+		 - best to cross-validate parameters
+
+		   - n_estimators, max_features, max_depth, min_samples_split
+
+	      4) Parallelization
+
+		 possible, but might not give linear speedup
+
+	      5) Feature importance evaluation
+
+		 - depth of feature relates to rank
+
+		 - averaging over several trees reduces variance
+
+	      6) Totally Random Trees Embedding
+
+		 - encodes the leaves
+
+		 - maybe used by k-forest
+
+		 - example see 11.11.8 "Hashing feature transformation
+                   using Totally Random Trees"
+
+	   3) AdaBoost
+*** quotes
+    2) [@2] A tutorial on statistical-learning for scientific data processing
+       1) Statistical learning: the setting and the estimator object
+          in scikit-learn
+	  - import pylab as pl
+            pl.imshow
+       4) [@4] Unsupervised learning: seeking representations of the data
+	  2) [@2] Decompositions: from a signal to components and loadings
+	     - Create a signal with only 2 useful dimensions, analyse
+               #+BEGIN_SRC python
+		 x1 = np.random.normal(size=100)
+		 x2 = np.random.normal(size=100)
+		 x3 = x1 + x2
+		 X = np.c_[x1, x2, x3]
+		 from sklearn import decomposition
+		 pca = decomposition.PCA()
+		 pca.fit(X)
+		 PCA(copy=True, n_components=None, whiten=False)
+		 print(pca.explained_variance_)
+		 pca.n_components = 2
+		 X_reduced = pca.fit_transform(X)
+		 X_reduced
+               #+END_SRC
+	     - Combine signals
+               #+BEGIN_SRC python
+		 time = np.linspace(0, 10, 2000)
+		 s1 = np.sin(2 * time) # Signal 1 : sinusoidal signal
+		 s2 = np.sign(np.sin(3 * time)) # Signal 2 : square signal
+		 S = np.c_[s1, s2]
+		 S += 0.2 * np.random.normal(size=S.shape) # Add noise
+		 S /= S.std(axis=0) # Standardize data
+		 # Mix data
+		 A = np.array([[1, 1], [0.5, 2]]) # Mixing matrix
+		 X = np.dot(S, A.T) # Generate observations
+		 ica = decomposition.FastICA() # Compute ICA
+		 S_ = ica.fit_transform(X) # Get the estimated sources
+		 A_ = ica.mixing_.T
+		 np.allclose(X, np.dot(S_, A_) + ica.mean_)
+               #+END_SRC
+    4) [@4] Supervised learning
+       1) Generalized Linear Models
+	  2) [@2] Ridge Regression
+	     - Here, α ≥ 0 is a complexity parameter that controls the
+               amount of shrinkage: the larger the value of α, the
+               greater the amount of shrinkage and thus the
+               coefficients become more robust to collinearity.
+	  3) [@3] Lasso
+	     - The alpha parameter controls the degree of sparsity of
+               the coefficients estimated.
+	  9) [@9] Bayesian Regression
+	     - The advantages of Bayesian Regression are:
+	       - It adapts to the data at hand.
+	       - It can be used to include regularization parameters
+                 in the estimation procedure.
+	       The disadvantages of Bayesian regression include:
+	       - Inference of the model can be time consuming.
+       4) [@4] Support Vector Machines
+	  1) Classification
+	     - SVC and NuSVC implement the “one-against-one” approach
+               (Knerr et al., 1990) for multi- class classification. If
+               n_class is the number of classes, then n_class *
+               (n_class - 1) / 2 classifiers are constructed and each
+               one trains data from two classes
+	     - Note that the LinearSVC also implements an alternative
+               multi-class strategy, the so-called multi-class SVM
+               formulated by Crammer and Singer, by using the option
+               multi_class=’crammer_singer’. This method is consistent,
+               which is not true for one-vs-rest classification. In
+               practice, one-vs-rest classification is usually
+               preferred, since the results are mostly similar, but the
+               runtime is significantly less.
+       6) [@6] Nearest Neighbors
+	  0) [@0]
+	     - Despite its simplicity, nearest neighbors has been successful in
+               a large number of classification and regression problems
+	  2) [@2] Nearest Neighbors Classification
+	     - RadiusNeighborsClassifier [...] For high-dimensional parameter
+               spaces, this method becomes less effective due to the so-called
+               “curse of dimensionality”.
+	  4) [@4] Nearest Neighbor Algorithms
+	     - Currently, algorithm = ’auto’ selects ’kd_tree’ if k < N/2 and
+               the ’effective_metric_’ is in the ’VALID_METRICS’ list of
+               ’kd_tree’. It selects ’ball_tree’ if k < N/2 and the
+               ’effective_metric_’ is not in the ’VALID_METRICS’ list of
+               ’kd_tree’. It selects ’brute’ if k >= N/2. This choice is based
+               on the assumption that the number of query points is at least
+               the same order as the number of training points, and that
+               leaf_size is close to its default value of 30.
+	  6) [@6] Approximate Nearest Neighbors
+	     - There are many efficient exact nearest neighbor search
+               algorithms for low dimensions d (approximately 50). However
+               these algorithms perform poorly with respect to space and query
+               time when d increases. These algorithms are not any better than
+               comparing query point to each point from the database in a high
+               dimension (see Brute Force). This is a well-known consequence of
+               the phenomenon called “The Curse of Dimensionality”. There are
+               certain applications where we do not need the exact nearest
+               neighbors but having a “good guess” would suffice. When answers
+               do not have to be exact, the LSHForest class implements an
+               approximate nearest neighbor search.
+       10) [@10] Decision Trees
+	   - DecisionTreeClassifier [...]
+             #+BEGIN_SRC python
+               from sklearn import tree
+               X = [[0, 0], [1, 1]]
+               Y = [0, 1]
+               clf = tree.DecisionTreeClassifier()
+               clf = clf.fit(X, Y)
+             #+END_SRC
+       11) Ensemble methods
+	   2) [@2] Forests of randomized trees
+	      - As other classifiers, forest classifiers have to be fitted with
+		two arrays: a sparse or dense array X of size [n_samples,
+		n_features] holding the training samples, and an array Y of size
+		[n_samples] holding the target values (class labels) for the
+		training samples:
+		#+BEGIN_SRC python
+                  from sklearn.ensemble import RandomForestClassifier
+                  X = [[0, 0], [1, 1]]
+                  Y = [0, 1]
+                  clf = RandomForestClassifier(n_estimators=10)
+                  clf = clf.fit(X, Y)
+		#+END_SRC
+	      - The best parameter values should always be
+                cross-validated.
+    5) Unsupervised learning
+       3) [@3] Clustering
+	  2) [@2] K-means
+	     - The KMeans algorithm clusters data by trying to separate
+               samples in n groups of equal variance, minimizing a
+               criterion known as the inertia <inertia> or
+               within-cluster sum-of-squares. This algorithm requires
+               the number of clusters to be specified.
+    12) [@12] Frequently Asked Questions
+	12) [@12] How do I deal with string data (or trees, graphs...)?
+	    - Firstly, many estimators take precomputed
+              distance/similarity matrices, so if the dataset is not too
+              large, you can compute distances for all pairs of
+              inputs. If the dataset is large, you can use feature
+              vectors with only one “feature”, which is an index into a
+              separate data structure, and supply a custom metric
+              function that looks up the actual data in this data
+              structure. E.g., to use DBSCAN with Levenshtein distances:
+              #+BEGIN_SRC python
+		>>> from leven import levenshtein
+		>>> import numpy as np
+		>>> from sklearn.cluster import dbscan
+		>>> data = ["ACCTCCTAGAAG", "ACCTACTAGAAGTT", "GAATATTAGGCCGA"]
+		>>> def lev_metric(x, y):
+		...
+		i, j = int(x[0]), int(y[0])
+		# extract indices
+		...
+		return levenshtein(data[i], data[j])
+		...
+		>>> X = np.arange(len(data)).reshape(-1, 1)
+		>>> X
+		array([[0],
+		[1],
+		[2]])
+		>>> dbscan(X, metric=lev_metric, eps=5, min_samples=2)
+		([0, 1], array([ 0, 0, -1]))
+              #+END_SRC
+              (This uses the third-party edit distance package leven.)
+              Similar tricks can be used, with some care, for tree
+              kernels, graph kernels, etc.
+    42) [@42] Reference
+	9) [@9] sklearn.ensemble: Ensemble Methods
+	   9) [@9] sklearn.ensemble.RandomForestClassifier
+	      - apply(X)
+
+		Apply trees in the forest to X, return leaf indices.
+		- Parameters X : array-like or sparse matrix, shape =
+                  [n_samples, n_features]
+
+                  The input samples. Internally, it will be converted to
+                  dtype=np.float32 and if a sparse matrix is provided to
+                  a sparse csr_matrix.
+		- Returns X_leaves : array_like, shape = [n_samples,
+                  n_estimators]
+
+                  For each datapoint x in X and for each tree in the
+                  forest, return the index of the leaf x ends up in.
+	13) [@13] sklearn.grid_search: Grid Search
+	    0. [@0]
+	       - User guide: See the Grid Search: Searching for
+                 estimator parameters section for further details.
+	    1. sklearn.grid_search.GridSearchCV
+	       - class sklearn.grid_search.GridSearchCV(estimator,
+                 param_grid, scoring=None, loss_func=None,
+                 score_func=None, fit_params=None, n_jobs=1, iid=True,
+                 refit=True, cv=None, verbose=0,
+                 pre_dispatch=‘2*n_jobs’, error_score=’raise’)
+	       - Parameters:
+		 - verbose : integer
+		   - Controls the verbosity: the higher, the more messages.
+	25) [@25] sklearn.neighbors: Nearest Neighbors
+	    2) [@2] sklearn.neighbors.KNeighborsClassifier
+	       - class
+		 sklearn.neighbors.KNeighborsClassifier(n_neighbors=5,
+		 weights=’uniform’, algorithm=’auto’,
+		 leaf_size=30, p=2, metric=’minkowski’,
+		 metric_params=None, **kwargs) [...]
+
+		 metric : string or DistanceMetric object
+		 (default = ‘minkowski’) the distance metric to
+		 use for the tree. The default metric is
+		 minkowski, and with p=2 is equivalent to the
+		 standard Euclidean metric. See the documentation
+		 of the Distance-Metric class for a list of
+		 available metrics.
+	    10) [@10] sklearn.neighbors.DistanceMetric
+		- “braycurtis” | BrayCurtisDistance | sum(|x - y|)
+                  / (sum(|x|) + sum(|y|))
+	29) [@29] sklearn.pipeline: Pipeline
+	    1) sklearn.pipeline.Pipeline
+	       - class sklearn.pipeline.Pipeline(steps) Pipeline
+		 of transforms with a final
+		 estimator. Sequentially apply a list of
+		 transforms and a final estimator. Intermediate
+		 steps of the pipeline must be ‘transforms’, that
+		 is, they must implement fit and transform
+		 methods. The final estimator only needs to
+		 implement fit. The purpose of the pipeline is to
+		 assemble several steps that can be
+		 cross-validated together while setting different
+		 parameters. For this, it enables setting
+		 parameters of the various steps using their
+		 names and the parameter name separated by a
+		 ‘__’, as in the example below.
+
+		 Parameterssteps: list :List of (name, transform)
+		 tuples (implementing fit/transform) that are
+		 chained, in the order in which they are chained,
+		 with the last object an estimator.
+
+		 Examples
+		 #+BEGIN_SRC python
+                   >>> from sklearn import svm
+                   >>> from sklearn.datasets import samples_generator
+                   >>> from sklearn.feature_selection import SelectKBest
+                   >>> from sklearn.feature_selection import f_regression
+                   >>> from sklearn.pipeline import Pipeline
+                   >>> # generate some data to play with
+                   >>> X, y = samples_generator.make_classification(
+                   ...
+                   n_informative=5, n_redundant=0, random_state=42)
+                   >>> # ANOVA SVM-C
+                   >>> anova_filter = SelectKBest(f_regression, k=5)
+                   >>> clf = svm.SVC(kernel='linear')
+                   >>> anova_svm = Pipeline([('anova', anova_filter), ('svc', clf)])
+                   >>> # You can set the parameters using the names issued
+                   >>> # For instance, fit using a k of 10 in the SelectKBest
+                   >>> # and a parameter 'C' of the svm
+                   >>> anova_svm.set_params(anova__k=10, svc__C=.1).fit(X, y)
+                   ...
+                   Pipeline(steps=[...])
+                   >>> prediction = anova_svm.predict(X)
+                   >>> anova_svm.score(X, y)
+                   0.77...
+		 #+END_SRC
+	35) [@35] sklearn.tree: Decision Trees
+	    - class sklearn.tree.DecisionTreeClassifier[...]
+
+              feature_importances_ : array of shape = [n_features]
+
+              The feature importances.
+    47) [@47] Chapter 47. How to optimize for speed
+	3) [@3] Profiling Python code
+	   - It is however still interesting to check what’s happening
+             inside the _nls_subproblem function which is the hotspot if
+             we only consider Python code: it takes around 100% of the
+             cumulated time of the module. In order to better understand
+             the profile of this specific function, let us install
+             line-prof and wire it to IPython:
+             #+BEGIN_SRC sh
+               pip install line-profiler
+             #+END_SRC
+
+    48) somewhere
+		#+BEGIN_SRC python
+                  from sklearn.ensemble import ExtraTreesClassifier
+                  [...]
+                  # Build a forest and compute the feature importances
+                  forest = ExtraTreesClassifier(n_estimators=250,
+                  random_state=0)
+                  forest.fit(X, y)
+                  importances = forest.feature_importances_
+		#+END_SRC
+*** ref [[file:master.bib::scikit-learn][Pedregosa et al. 2011: Scikit]]
+*** exercises
+**** Exercise digits-knn-linear
+     Try classifying the digits dataset with nearest neighbors and a
+     linear model. Leave out the last 10% and test prediction
+     performance on these observations.
+
+     from sklearn import datasets, neighbors, linear_model
+
+     digits = datasets.load_digits()
+     X_digits = digits.data
+     y_digits = digits.target
+***** Solution
+      #+BEGIN_SRC python
+        from sklearn import datasets, neighbors, linear_model
+        import numpy as np
+
+        digits = datasets.load_digits()
+        X_digits = digits.data
+        y_digits = digits.target
+
+        np.random.seed(0)
+        indices = np.random.permutation(len(y_digits))
+        percent = int(len(y_digits) * 0.9)
+
+        digits_X_train = X_digits[indices[:percent]]
+        digits_X_test = X_digits[indices[percent:]]
+        digits_y_train = y_digits[indices[:percent]]
+        digits_y_test = y_digits[indices[percent:]]
+
+        knn = neighbors.KNeighborsClassifier()
+        knn.fit(digits_X_train, digits_y_train)
+        knn.score(digits_X_test, digits_y_test)
+
+        lin = linear_model.LogisticRegression()
+        lin.fit(digits_X_train, digits_y_train)
+        lin.score(digits_X_test, digits_y_test)
+      #+END_SRC
+**** Exercise iris-svm
+     Try classifying classes 1 and 2 from the iris dataset with SVMs,
+     with the 2 first features. Leave out 10% of each class and test
+     prediction performance on these observations.
+***** Solution
+      #+BEGIN_SRC python
+        from sklearn import datasets, svm
+        import numpy as np
+
+        iris = datasets.load_iris()
+        X = iris.data
+        y = iris.target
+
+        # normalize std
+        s = np.std(X, 0)
+        for i in range(4):
+            X[:,i] /= s[i]
+
+        np.random.seed(0)
+        indices = np.random.permutation(len(y))
+        percent = int(len(y) * 0.9)
+
+        X_train = X[indices[:percent]]
+        X_test = X[indices[percent:]]
+        y_train = y[indices[:percent]]
+        y_test = y[indices[percent:]]
+
+        svc = svm.SVC(kernel='linear')
+        svc.fit(X_train, y_train)
+        print svc.score(X_test, y_test)
+
+        svcr = svm.SVC()
+        svcr.fit(X_train, y_train)
+        print svcr.score(X_test, y_test)
+      #+END_SRC
+**** Exercise kfold
+     On the digits dataset, plot the cross-validation score of a SVC
+     estimator with an linear kernel as a function of parameter C (use
+     a logarithmic grid of points, from 1 to 10).
+***** Solution
+      #+BEGIN_SRC python
+        import numpy as np
+        from sklearn import cross_validation, datasets, svm
+
+        C_s = np.logspace(-10, 0, 50)
+
+        digits = datasets.load_digits()
+        X = digits.data
+        y = digits.target
+
+        for C in C_s:
+            svc.C = C
+            score = cross_validation.cross_val_score(svc, X, y, n_jobs=1)
+            print '%f, %f, %f' % (C, np.mean(score), np.std(score))
+      #+END_SRC
+**** Exercise grid-optimal
+     On the diabetes dataset, find the optimal regularization
+     parameter alpha.
+***** Solution
+      #+BEGIN_SRC python
+        from sklearn import cross_validation, datasets, linear_model
+        import numpy as np
+
+        diabetes = datasets.load_diabetes()
+        X = diabetes.data[:150]
+        y = diabetes.target[:150]
+
+        lasso = linear_model.Lasso()
+        alphas = np.logspace(-4, -.5, 30)
+
+        from sklearn.grid_search import GridSearchCV
+        clf = GridSearchCV(estimator=lasso, param_grid=dict(alpha=alphas), n_jobs=-1)
+        clf.fit(X, y)
+        print clf.score(diabetes.data[150:], diabetes.target[150:])
+
+        # for a in alphas:
+        #     lasso.alpha = a
+        #     score = cross_validation.cross_val_score(lasso, X, y, n_jobs=1)
+        #     print '%f, %s' % (a, np.mean(score))
+      #+END_SRC
+** PART [[./random.pdf][Computer Generation of Statistical Distributions]]
 *** summary
     1) SUMMARY
 
@@ -14266,7 +14374,7 @@
                    return int( log( uniform( 0., 1. ) ) / log( 1. - p ) );
                  }
 	       #+END_SRC
-** [#A] PART [[./scipy-ref-0.17.0.pdf][SciPy Reference Guide]]
+** PART [[./scipy-ref-0.17.0.pdf][SciPy Reference Guide]]
 *** summary
 1) Tutorial
 
@@ -14522,7 +14630,7 @@
              #+END_SRC
     6) whereever
        - help(scipy.stats.lognorm)
-** [#A] PART [[./Truncated distribution - Wikipedia, the free encyclopedia.html]]
+** PART [[./Truncated distribution - Wikipedia, the free encyclopedia.html]]
 *** quotes
     1) Definition
        - CDF: \frac{\int_a^x g(t) dt}{F(b)-F(a)}
@@ -14536,108 +14644,7 @@
 
          f(x|X \leq y) = \frac{g(x)}{F(y)}
 *** ref [[file:master.bib::wiki:truncated][Wikipedia 2015: Truncated]]
-** TODO MOVE [#B] PART [[./Applied_Cryptography.pdf][Applied Cryptography]]
-*** summary
-    1) Foundations
-
-       1) Terminology
-
-	  - sender writes plaintext, encrypts to ciphertext, sends
-            (secure) message to receiver, decrypts to plaintext
-
-	  - cryptology is cryptography for writing and crypanalysis for
-            checking if secure
-
-	  - Authentication, Integrity, and Nonrepudiation: additional
-            to confidentiality: as in face-to-face communication
-
-	  - Algorithms and Keys:
-
-    2) Protocol Building Blocks
-
-       1) Introduction to Protocols
-
-	  0) [@0]
-
-	     - "cryptography solves problems [of...] secrecy,
-               authentication, integrity, and dishonest people."
-
-	     - protocol: "series of steps, involving two or more parties,
-               designed to accomplish a task"
-
-	       - must be
-
-		 - well-known by all parties,
-
-		 - agreed to
-
-		 - unambiguous === well-defined
-
-		 - complete: specific action for every possible situation
-
-	     - cryptographic protocol
-
-	       - prevent or detect eavesdropping or cheating via cryptography
-
-	       - should not be possible to learn or do more than
-		 specified in the protocol
-
-	  1) The Purpose of Protocols
-
-	     - how computers talk to each other (people do it
-               informally all the time)
-
-	  2) The Players
-
-	     - Alice, Bob, Carol, Dave
-
-	     - Eve: Eavesdropper
-
-	     - Mallory: Malicious active attaker
-
-	     - Trent: Trusted arbitrator
-
-	     - Walter: Warden; guards Alice, Bob, ...
-
-	  3) Arbitrated Protocols
-
-	     - truthful entity with no vested interest
-
-	       - like lawyer as escrow agent, or stock exchange, or banker
-
-	     - trusted party old institution,
-
-	     - problems with computers:
-
-	       - cannot see,
-
-	       - network must bear the cost,
-
-	       - delay,
-
-	       - arbitrator is bottleneck
-
-	       - vulnerable point for subverter
-
-	  4) Adjudicated Protocols
-
-	     - (only) detect cheating, do not prevent
-
-	       - this should discourage cheating, though
-
-	     - adjudicator: external authority, called on only in conflict
-
-	     - like judge in real life
-
-	  5) Self-Enforcing Protocols
-*** quotes
-    2) [@2]
-       1)
-	  1) The Purpose of Protocols
-	     - It is naïve to assume that [people on, the managers of,
-               the designers of] computer networks are honest. Most
-               are, but the dishonest few can do a lot of damage.
-** PART [#B] [[./ESLII_print4.pdf][The Elements of Statistical Learning]]
+** PART [[./ESLII_print4.pdf][The Elements of Statistical Learning]]
 *** summary
     1) Introduction
 
@@ -14842,7 +14849,7 @@
       N > p scenario, or entirely new procedures
     - (ends 2.6.0)
     - (ends 18.1)
-** [#B] PART [[./javascript_the_good_parts.pdf][JavaScript: The Good Parts]]
+** PART [[./javascript_the_good_parts.pdf][Crockford - JavaScript: The Good Parts]]
 *** summary
     1. Good parts
 
@@ -15503,7 +15510,7 @@
       refactoring it to remove the continue statement.
     - (ends bp)
 *** ref [[file:master.bib::javascript][Crockford 2008: JavaScript]]
-** PART [#B] [[./irbookonlinereading.pdf][An Introduction to Information Retrieval]]
+** PART  [[./irbookonlinereading.pdf][An Introduction to Information Retrieval]]
 *** summary
     0. [@0] Preface
 
@@ -15611,7 +15618,7 @@
 	  of training data and are more likely to make mistakes for small
 	  and noisy data sets.
 *** TODO ref
-** [#B] PART [[~/da/git/docs/python-doc-reference.pdf][The Python Language Reference]]
+** PART [[~/da/git/docs/python-doc-reference.pdf][The Python Language Reference]]
 *** summary
     1) INTRODUCTION
 
@@ -15843,7 +15850,7 @@
 	   Note that the comprehension is executed in a separate
            scope, so names assigned to in the target list don’t “leak”
            in the enclosing scope.
-** PART [#C] [[./Split or filter your PCAP files with SplitCap - NETRESEC Blog.htm]]
+** PART [[./Split or filter your PCAP files with SplitCap - NETRESEC Blog.htm]]
 *** summary
     - fast splitter for files
     - split by
@@ -15860,7 +15867,7 @@
         tshark.exe -r dump.eth0.1059726000.pcap -R "ip.addr eq 12.129.71.102" -w defcon11_tshark_filtered.pcap
       #+END_SRC
 *** ref: [[file:master.bib::splitcap][2011: Split PCAP SplitCap NETRESEC Blog]]
-** [#B] PART [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Eloquent Javascript]]
+** PART [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Eloquent Javascript]]
 *** summary
     8. [@8] Object-oriented Programming
 
@@ -18009,9 +18016,3 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        2) HTML Application of Core DOM
 *** quotes
 *** ref
-** TODO MOVE [#A] PART [[./DOM3-Core.pdf][Document Object Model (DOM) Level 3 Core Specification]]
-*** part: read some to quote for [[file:~/da/git/diplomarbeit.org::*Estimate%20Parameter:%20Number%20of%20Embedded%20Objects][Estimate Parameter: Number of Embedded Objects]]
-*** summary
-    0) [@0] Abstract
-*** quotes
-*** TODO ref
