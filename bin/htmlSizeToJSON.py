@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+'''@returns the (max) lengths of each html file'''
 import fileinput
 import json
 

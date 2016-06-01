@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+'''gen quantiles of html-lognormal distribution (params given by traffic model'''
 import math
 from scipy import stats
 

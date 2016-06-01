@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+'''test lognormal_trunc (extension to scipy if there is time)'''
 import unittest
 
 import lognormal_truncated

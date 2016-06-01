@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+'''retrieves url, looks for for number of embedded elements'''
 import logging
 import urllib2
 

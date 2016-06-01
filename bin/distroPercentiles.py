@@ -1,5 +1,6 @@
 #! /usr/bin/env python
-'''computes percentiles of json file with data [['url', value], ...]'''
+'''computes percentiles of json file with data [['url', value], ...]
+given by first argument'''
 import numpy as np
 import json
 import sys

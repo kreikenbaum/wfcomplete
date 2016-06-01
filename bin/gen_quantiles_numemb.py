@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+'''gen quantiles of number-of-embedded-gamma distribution (params
+given by traffic model'''
 import math
 from scipy import stats
 
