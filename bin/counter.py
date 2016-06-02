@@ -17,6 +17,8 @@ LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 
 TIME_SEPARATOR = '@'
 
+json_only = True
+
 def _append_features(keys, filename):
     '''appends features in trace file of name "filename" to keys.
 
@@ -161,14 +163,17 @@ class Counter(object):
     def all_from_dir(dirname):
         '''all packets traces in subdirectories of the name domain@tstamp are
         parsed to Counters. If there are JSON files created by
-        save, use those instead of the pcap files for their domains'''
+        =save()=, use those instead of the pcap files for their
+        domains
+        '''
         out = {}
 
         for (dirpath, _, filenames) in os.walk(dirname):
             for jfile in [x for x in filenames if '.json' in x]:
                 domain = jfile.replace('.json', '')
                 logging.info('traces for %s from JSON %s', domain, jfile)
-                out[domain] = Counter.all_from_json(jfile)
+                out[domain] = Counter.all_from_json(os.path.join(dirname,
+                                                                 jfile))
                 filenames.remove(jfile)
                 for trace in [x for x in filenames if domain + '@' in x]:
                     filenames.remove(trace)
@@ -179,6 +184,7 @@ class Counter(object):
                 if TIME_SEPARATOR in fullname: # file like google.com@1445350513
                     logging.info('processing (%d/%d) %s ',
                                  i+1, length, fullname)
+                    json_only = False
                     _append_features(out, fullname)
 
         return out
@@ -394,9 +400,15 @@ if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 
-    COUNTERS = Counter.from_(*sys.argv)
-    Counter.save(COUNTERS)
-    print 'counters saved to DOMAIN.json files'
+    try:
+        COUNTERS = Counter.from_(*sys.argv)
+    except OSError:
+        print 'needs a directory with pcap files named domain@timestamp (google.com@1234234234) or json files name domain.json (google.com.json)'
+        sys.exit(1)
+
+    if not json_only:
+        Counter.save(COUNTERS)
+        print 'counters saved to DOMAIN.json files'
     ## if non-interactive, print timing data
     from ctypes import pythonapi
     if not os.environ.get('PYTHONINSPECT') and not pythonapi.Py_InspectFlag > 0:

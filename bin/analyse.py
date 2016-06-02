@@ -9,6 +9,7 @@ import sys
 
 import counter
 
+JOBS_NUM = 4
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
 #LOGLEVEL = logging.WARN
@@ -74,11 +75,19 @@ def to_libsvm(X, y, fname='libsvm_in'):
                 f.write('{}:{} '.format(no+1, val))
         f.write('\n')
 
-# td: to counter
+def to_X_y_dom(place):
+    '''@return (X,y,y_domains) tuple for Counters in =place= after cumul
+    and outlier removal'''
+    return to_features_cumul(panchenko_outlier_removal(
+        counter.Counter.all_from_dir(place)))
+
+# td: move this to counter
 def _ptest(num, val=600):
+
     '''returns counter with num packets of size val set for testing'''
     return counter.Counter.from_json('{{"packets": {}}}'.format([val]*num))
 
+### outlier removal
 def p_or_tiny(counter_list):
     '''removes if len(packets) < 2 or total_in < 2*512
     >>> len(p_or_tiny([_ptest(1), _ptest(3)]))
@@ -113,7 +122,6 @@ def p_or_quantiles(counter_list):
             out.append(counter)
     return out
 
-# td: also removal by median
 def panchenko_outlier_removal(counters):
     '''apply outlier removal to input of form
     {'domain1': [counter, ...], ... 'domainN': [..]}'''
@@ -123,21 +131,28 @@ def panchenko_outlier_removal(counters):
     return out
         
 ### evaluation code
-def _test(X, y, estimator, nj=2):
+GOOD = [ensemble.ExtraTreesClassifier(n_estimators=250),
+        ensemble.RandomForestClassifier(),
+        neighbors.KNeighborsClassifier(),
+        tree.DecisionTreeClassifier()]
+ALL = GOOD[:]
+ALL.extend([ensemble.AdaBoostClassifier(),
+            svm.SVC(gamma=2**-4)])
+
+def _test(X, y, estimator, nj=JOBS_NUM):
 
     '''tests estimator with X, y, prints type and result'''
     print estimator
     result = cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=nj)
     print '{}, mean = {}'.format(result, result.mean())
 
-def xtest(X_train, y_train, X_test, y_test, esti):
-    '''cross_tests with all known estimators'''
+def _xtest(X_train, y_train, X_test, y_test, esti):
+    '''cross_tests with estimator'''
     esti.fit(X_train, y_train)
-    print 'estimator: {}, score: {}'.format(esti, esti.score(X_test, y_test))
+    return esti.score(X_test, y_test)
 
-#    Cs = np.logspace(11, 17, 7, base=2)
-#    Gs = np.logspace(-3, 3, 7, base=2)
-def my_grid(X, y, cs, gammas):
+def my_grid(X, y, cs=np.logspace(11, 17, 7, base=2),
+            gammas=np.logspace(-3, 3, 7, base=2)):
     '''grid-search on fixed params'''
     from sklearn.grid_search import GridSearchCV
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(
@@ -149,52 +164,22 @@ def my_grid(X, y, cs, gammas):
     print 'best score: {}'.format(clf.best_score_)
     print 'with estimator: {}'.format(clf.best_estimator_)
 
-def outlier_removal():
-    cs = counter.Counter.from_(sys.argv)
-    (X, y, y_domains) = to_features_cumul(panchenko_outlier_removal(cs))
-    (X2, y2, y2_domains) = to_features_cumul(cs)
+def outlier_removal_vs_without(counters):
+    (X, y, y_domains) = to_features_cumul(panchenko_outlier_removal(counters))
+    (X2, y2, y2_domains) = to_features_cumul(counters)
     _compare(X, y, X2, y2)
 
-def cumul_vs_panchenko():
-    cs = panchenko_outlier_removal(counter.Counter.from_(sys.argv))
-    (X, y, y_domains) = to_features(cs)
-    (X2, y2, y2_domains) = to_features_cumul(cs)
+def cumul_vs_panchenko(counters):
+    (X, y, y_domains) = to_features(counters)
+    (X2, y2, y2_domains) = to_features_cumul(counters)
     _compare(X, y, X2, y2)
 
-def _compare(X, y, X2, y2):
-    for esti in GOOD:
+def _compare(X, y, X2, y2, estimators=GOOD):
+    for esti in estimators:
         _test(X, y, esti)
         _test(X2, y2, esti)
 
-GOOD = [ensemble.ExtraTreesClassifier(n_estimators=250),
-        ensemble.RandomForestClassifier(),
-        neighbors.KNeighborsClassifier(),
-        tree.DecisionTreeClassifier()]
-
-ALL = GOOD[:]
-ALL.extend([ensemble.AdaBoostClassifier(),
-            svm.SVC(gamma=2**-4)])
-
-if __name__ == "__main__":
-    doctest.testmod()
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
-
-    # if by hand: change to the right directory before importing
-    # os.chdir('/mnt/data/2-top100dupremoved_cleaned/')
-    # os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'sw', 'data', 'json', 'disabled'))
-
-    (X, y, y_domains) = to_features_cumul(counter.Counter.from_(sys.argv))
-    # compare_outlier_removal()
-    # cumul_vs_panchenko()
-    
-    # compare cumul and panchenko1
-    #(X, y, y_domains) = to_features(counter.Counter.from_(sys.argv))
-    # (X2, y2, y2_domains) = to_features_cumul(counter.Counter.from_(sys.argv))
-
-    for esti in ALL:
-        _test(X, y, esti)
-
-    _test(X, y, svm.SVC(C=10**-20, gamma=4.175318936560409e-10))
+    #_test(X, y, svm.SVC(C=10**-20, gamma=4.175318936560409e-10))
     #_test(X, y, svm.SVC(kernel='linear')) #problematic, but best
     #grid rbf
 #     cstart, cstop = -45, -35
@@ -237,3 +222,30 @@ if __name__ == "__main__":
     #                            y[ybounds2[0]:ybounds2[1]])
     #     return math.sqrt(fixedm + variable1 + variable2)
 
+if __name__ == "__main__":
+    doctest.testmod()
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
+
+    # if by hand: change to the right directory before importing
+    # PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'data', 'json')
+    # import os; os.chdir(os.path.join(PATH, 'disabled'))
+
+    # counters = counter.Counter.all_from_dir(sys.argv))
+    # test_outlier_removal(counters)
+    # cumul_vs_panchenko(counters)
+
+    # call with 1: x-validate test that
+    # call with 2+: train 1 (whole), test 2,3,4,...
+    if len(sys.argv) < 2:
+        (X, y, y_domains) = to_X_y_dom('.')
+    else:
+        (X, y, y_domains) = to_X_y_dom(sys.argv[1])
+
+    if len(sys.argv) > 2:
+        test = {}
+        for place in sys.argv[2:]:
+            test[place] = to_X_y_dom(place)
+
+    _test(X, y, GOOD[0])
+    for (place, (X2, y2, _)) in test.iteritems():
+        print '{}: {}'.format(place, _xtest(X, y, X2, y2, GOOD[0]))
