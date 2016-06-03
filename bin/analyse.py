@@ -75,24 +75,20 @@ def to_libsvm(X, y, fname='libsvm_in'):
                 f.write('{}:{} '.format(no+1, val))
         f.write('\n')
 
-def to_X_y_dom(place):
+def to_X_y_dom(place, outlier_removal=True):
     '''@return (X,y,y_domains) tuple for Counters in =place= after cumul
-    and outlier removal'''
-    return to_features_cumul(panchenko_outlier_removal(
-        counter.Counter.all_from_dir(place)))
-
-# td: move this to counter
-def _ptest(num, val=600):
-
-    '''returns counter with num packets of size val set for testing'''
-    return counter.Counter.from_json('{{"packets": {}}}'.format([val]*num))
+    and outlier removal if {@code True}'''
+    cs = counter.Counter.all_from_dir(place)
+    if outlier_removal:
+        cs = panchenko_outlier_removal(cs)
+    return to_features_cumul(cs)
 
 ### outlier removal
 def p_or_tiny(counter_list):
     '''removes if len(packets) < 2 or total_in < 2*512
-    >>> len(p_or_tiny([_ptest(1), _ptest(3)]))
+    >>> len(p_or_tiny([counter._ptest(1), counter._ptest(3)]))
     1
-    >>> len(p_or_tiny([_ptest(2, val=-600), _ptest(3)]))
+    >>> len(p_or_tiny([counter._ptest(2, val=-600), counter._ptest(3)]))
     1
     '''
     return [x for x in counter_list
@@ -108,7 +104,7 @@ def p_or_median(counter_list):
 def p_or_quantiles(counter_list):
     '''remove if total_in < (q1-1.5 * (q3-q1))
     or total_in > (q3+1.5 * (q3-q1)
-    >>> [x.get_total_in()/600 for x in p_or_quantiles(map(_ptest, [0, 2, 2, 2, 2, 2, 2, 4]))]
+    >>> [x.get_total_in()/600 for x in p_or_quantiles(map(counter._ptest, [0, 2, 2, 2, 2, 2, 2, 4]))]
     [2, 2, 2, 2, 2, 2]
     '''
     counter_total_in = [counter.get_total_in() for counter in counter_list]
@@ -139,12 +135,15 @@ ALL = GOOD[:]
 ALL.extend([ensemble.AdaBoostClassifier(),
             svm.SVC(gamma=2**-4)])
 
-def _test(X, y, estimator, nj=JOBS_NUM):
+def esti_name(estimator):
+    '''@return name of estimator class'''
+    return str(estimator.__class__).split('.')[-1].split("'")[0]
+
+def _test(X, y, estimator, nj=JOBS_NUM, verbose=True):
 
     '''tests estimator with X, y, prints type and result'''
-    print estimator
     result = cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=nj)
-    print '{}, mean = {}'.format(result, result.mean())
+    return result
 
 def _xtest(X_train, y_train, X_test, y_test, esti):
     '''cross_tests with estimator'''
@@ -229,6 +228,7 @@ if __name__ == "__main__":
     # if by hand: change to the right directory before importing
     # PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'data', 'json')
     # import os; os.chdir(os.path.join(PATH, 'disabled'))
+    # sys.argv = ['', 'disabled', 'a_i_noburst', 'a_ii_noburst']
 
     # counters = counter.Counter.all_from_dir(sys.argv))
     # test_outlier_removal(counters)
@@ -237,15 +237,21 @@ if __name__ == "__main__":
     # call with 1: x-validate test that
     # call with 2+: train 1 (whole), test 2,3,4,...
     if len(sys.argv) < 2:
-        (X, y, y_domains) = to_X_y_dom('.')
+        (X, y, y_domains) = to_X_y_dom('.', False)
     else:
-        (X, y, y_domains) = to_X_y_dom(sys.argv[1])
+        (X, y, y_domains) = to_X_y_dom(sys.argv[1], True)
 
     if len(sys.argv) > 2:
         test = {}
         for place in sys.argv[2:]:
             test[place] = to_X_y_dom(place)
 
-    _test(X, y, GOOD[0])
+    print 'cross-validation'
+    for esti in GOOD:
+        print esti_name(esti),
+        res = _test(X, y, esti)
+        print '{}, {}'.format(res.mean(), res)
     for (place, (X2, y2, _)) in test.iteritems():
-        print '{}: {}'.format(place, _xtest(X, y, X2, y2, GOOD[0]))
+        print 'train on: {} VS test on: {}'.format(sys.argv[1], place)
+        for esti in GOOD:
+            print '{}: {}'.format(esti_name(esti), _xtest(X, y, X2, y2, esti))

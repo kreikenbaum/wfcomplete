@@ -77,6 +77,11 @@ def _num_packets(packets):
     return((sum((1 for x in packets if x > 0)),
             sum((1 for x in packets if x < 0))))
 
+# td: move this to counter
+def _ptest(num, val=600):
+    '''returns counter with num packets of size val set for testing'''
+    return counter.Counter.from_json('{{"packets": {}}}'.format([val]*num))
+
 def _sum_numbers(packets):
     '''sums number of adjacent packets in the same direction, discretized
     by 1,2,3-5,6-8,9-13,14
@@ -106,6 +111,13 @@ def _sum_stream(packets):
         else:
             tmp += size
     out.append(tmp)
+    return out
+
+def total_bytes(counter_dict):
+    '''@return the total bytes of all objects combined'''
+    out = 0
+    for c_domain in counter_dict.values():
+        out += sum((x.get_size() for x in c_domain))
     return out
 
 def pad(row, upto=300):
@@ -245,6 +257,11 @@ class Counter(object):
     def get_total_in(self):
         '''returns total incoming bytes'''
         return _num_bytes(self.packets)[0]
+
+    def get_size(self):
+        '''@returns total bytes transferred in this trace'''
+        (bin, bout) = _num_bytes(self.packets)
+        return bin + bout
 
     def get(self, feature_name):
         '''returns the (scalar) feature of feature_name'''
