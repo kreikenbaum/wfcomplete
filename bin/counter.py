@@ -166,6 +166,7 @@ class Counter(object):
         =save()=, use those instead of the pcap files for their
         domains
         '''
+        global json_only
         out = {}
 
         for (dirpath, _, filenames) in os.walk(dirname):

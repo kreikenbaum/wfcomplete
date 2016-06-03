@@ -7,6 +7,6 @@ cd filtered
 for i in $(find . -name 'filtered_*'); do
     mv $i $(echo $i | sed 's/filtered_//g');
 done;
-xmessage "removing 7777 done at $(date)"
+xmessage "removing 7777 done at $(date)" &
 
 
