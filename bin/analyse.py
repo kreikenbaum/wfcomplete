@@ -9,7 +9,8 @@ import sys
 
 import counter
 
-JOBS_NUM = 4
+JOBS_NUM = 1
+#JOBS_NUM = 4 #maybe at duckstein, but for panchenko problematic
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
 #LOGLEVEL = logging.WARN
@@ -139,7 +140,7 @@ def esti_name(estimator):
     '''@return name of estimator class'''
     return str(estimator.__class__).split('.')[-1].split("'")[0]
 
-def _test(X, y, estimator, nj=JOBS_NUM, verbose=True):
+def _test(X, y, esti=GOOD[0], nj=JOBS_NUM, verbose=True):
 
     '''tests estimator with X, y, prints type and result'''
     result = cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=nj)
@@ -221,29 +222,18 @@ def _compare(X, y, X2, y2, estimators=GOOD):
     #                            y[ybounds2[0]:ybounds2[1]])
     #     return math.sqrt(fixedm + variable1 + variable2)
 
-if __name__ == "__main__":
-    doctest.testmod()
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
-
-    # if by hand: change to the right directory before importing
-    # PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'data', 'json')
-    # import os; os.chdir(os.path.join(PATH, 'disabled'))
-    # sys.argv = ['', 'disabled', 'a_i_noburst', 'a_ii_noburst']
-
-    # counters = counter.Counter.all_from_dir(sys.argv))
-    # test_outlier_removal(counters)
-    # cumul_vs_panchenko(counters)
-
+def cross_test(argv):
+    '''cross test on dir: 1st has training data, rest have test'''
     # call with 1: x-validate test that
     # call with 2+: train 1 (whole), test 2,3,4,...
-    if len(sys.argv) < 2:
+    if len(argv) < 1:
         (X, y, y_domains) = to_X_y_dom('.', False)
     else:
-        (X, y, y_domains) = to_X_y_dom(sys.argv[1], True)
+        (X, y, y_domains) = to_X_y_dom(argv[1], True)
 
-    if len(sys.argv) > 2:
+    if len(argv) > 1:
         test = {}
-        for place in sys.argv[2:]:
+        for place in argv[1:]:
             test[place] = to_X_y_dom(place)
 
     print 'cross-validation'
@@ -252,6 +242,28 @@ if __name__ == "__main__":
         res = _test(X, y, esti)
         print '{}, {}'.format(res.mean(), res)
     for (place, (X2, y2, _)) in test.iteritems():
-        print 'train on: {} VS test on: {}'.format(sys.argv[1], place)
+        print 'train on: {} VS test on: {}'.format(argv[0], place)
         for esti in GOOD:
             print '{}: {}'.format(esti_name(esti), _xtest(X, y, X2, y2, esti))
+
+if __name__ == "__main__":
+    doctest.testmod()
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
+
+    # if by hand: change to the right directory before importing
+    # PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'data', 'json')
+    # import os; os.chdir(os.path.join(PATH, 'disabled'))
+
+    # counters = counter.Counter.all_from_dir(sys.argv))
+    # test_outlier_removal(counters)
+    # cumul_vs_panchenko(counters)
+
+    # sys.argv = ['', 'disabled', 'a_i_noburst', 'a_ii_noburst']
+    # cross_test(sys.argv)
+
+    import os
+    PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'sw', 'p',
+                        'foreground-data', 'output-tcp')
+    counters = counter.Counter.all_from_panchenko(PATH)
+    (X, y ,y_dom) = to_features_cumul(counters)
+    _test(X, y, nj=1)

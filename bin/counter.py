@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''aggregates trace data, extracts features'''
 import doctest
+import glob
 import itertools
 import json
 import logging
@@ -43,6 +44,7 @@ def _discretize(number, step):
     '''
     return int(math.ceil(float(number) / step) * step)
 
+#td: rename to _get_url
 def _get_domain(filename):
     '''extracts domain part from filename:
     >>> _get_domain('/tmp/google.com@12412')
@@ -77,10 +79,10 @@ def _num_packets(packets):
     return((sum((1 for x in packets if x > 0)),
             sum((1 for x in packets if x < 0))))
 
-# td: move this to counter
+# td: move this back to analyse
 def _ptest(num, val=600):
     '''returns counter with num packets of size val set for testing'''
-    return counter.Counter.from_json('{{"packets": {}}}'.format([val]*num))
+    return Counter.from_json('{{"packets": {}}}'.format([val]*num))
 
 def _sum_numbers(packets):
     '''sums number of adjacent packets in the same direction, discretized
@@ -141,14 +143,42 @@ class Counter(object):
     def __str__(self):
         return 'p: {}'.format(self.panchenko())
 
-    @classmethod
-    def from_json(cls, jsonstring):
+    @staticmethod
+    def from_json(jsonstring):
         '''creates Counter from self.to_json-output'''
         tmp = Counter()
 
         for key, value in json.loads(jsonstring).iteritems():
             setattr(tmp, key, value)
         return tmp
+
+    @staticmethod
+    def from_panchenko_data(line):
+        '''creates Counter from panchenko's test data
+        >>> Counter.from_panchenko_data('c.com 1234 1235:300').get_size()
+        300
+        '''
+        tmp = Counter()
+
+        elements = line.split()
+        Counter.name = elements[0]
+        for element in elements[2:]:
+            (time, value) = element.split(':')
+            tmp.packets.append(int(value))
+            # could also append timing, but not used
+        return tmp
+
+    @staticmethod
+    def all_from_panchenko(dirname='.'):
+        '''creates list of Counters from filename, calling from_panchenko_data()'''
+        out = {}
+        os.chdir(dirname)
+        for filename in glob.glob('*'):
+            with open(filename) as f:
+                out[filename] = []
+                for line in f:
+                    out[filename].append(Counter.from_panchenko_data(line))
+        return out
 
     @staticmethod
     def save(counter_dict):
@@ -171,6 +201,7 @@ class Counter(object):
         return out
 
     # td: separate json parsing and pcap-parsing
+    # td: use glob.iglob? instead of os.walk?
     @staticmethod
     def all_from_dir(dirname):
         '''all packets traces in subdirectories of the name domain@tstamp are
@@ -260,8 +291,8 @@ class Counter(object):
 
     def get_size(self):
         '''@returns total bytes transferred in this trace'''
-        (bin, bout) = _num_bytes(self.packets)
-        return bin + bout
+        (incoming, outgoing) = _num_bytes(self.packets)
+        return incoming + outgoing
 
     def get(self, feature_name):
         '''returns the (scalar) feature of feature_name'''
