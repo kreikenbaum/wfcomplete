@@ -89,19 +89,15 @@
      #+CAPTION: example 1 of craigslist.org traffic
      #+ATTR_LATEX: :float nil :width 0.45\textwidth
      [[./pictures/craigslist_org@1445352269.png]]
-     #+CAPTION: example 1 of facebook.com traffic
-     #+ATTR_LATEX:  :float nil :width 0.45\textwidth
-     [[./pictures/facebook_com@1445350531.png]]
      #+CAPTION: example 2 of craigslist.org traffic
-     #+ATTR_LATEX:  :float nil :width 0.45\textwidth
+     #+ATTR_LATEX: :float nil :width 0.45\textwidth
      [[./pictures/craigslist_org@1445585277.png]]
-     #+CAPTION: example 2 of facebook.com traffic
-     #+ATTR_LATEX:  :float nil :width 0.45\textwidth
-     [[./pictures/facebook_com@1445698262.png]]
 
      - kind of traffic analysis
        - without seeing content, deduce information
-     - wf: without seeing sender/receiver, deduce which website is being visited
+     - wf: without seeing sender/receiver, deduce which website is
+       being visited
+     - machine learning
 **** web site, HTTP transactions
      - main html, embedded objects
      - multiplexing, pipelining
@@ -124,25 +120,28 @@
        - machine learning
        - features
 **** Related Work
-     - origin: ssl-schneier-personal comm
+     - origin traffic analysis: ssl-schneier-personal comm
        - berkeley
        - term
      - hintz: safeweb, wf-term
      - herrmann, ..., liberatore: lengths
+     - dyer: most important are the features, similar results for naive
      - on feature importances:
        - panchenko
        - k-forest
        - wang implicit
 *** Algorithms
-**** general
-     - features to classes: classifiers
-     - KNN
+    - features to classes: classifiers
+**** KNN
        - simple
        - often effective
-     - svm
-       - multi-class strategies
-     - extremely randomized trees
-**** brainstorm
+       - how works
+**** SVM
+     - how works
+     - multi-class strategies
+**** extremely randomized trees
+     - how works
+**** brainstorm							    :ARCHIVE:
      - SVM
      - knn
      - ?extratrees?
@@ -150,10 +149,10 @@
      - no classifier fits all
      - maps features to classes (or probabilities)
      - classifier
-**** related work
+**** Related Work
      - mitchell
      - sklearn
-     - herrmann: breakable naive bayes
+     - herrmann: breakable shown via naive bayes
      - panchenko: svm
      - dyer: most important are the features, similar results for naive
        bayes and svm
@@ -164,7 +163,15 @@
        hadamard-distance on leaves
      - panchenko1 and 2: (ovr?) svm
 *** Defenses
-**** brainstorm
+**** How to defend against this
+     - make wf/ml harder, fudge features
+**** specific features
+     - list some features
+**** general defense
+     - map to one or add additional
+**** deterministic vs stochastic
+**** shaping vs adding
+**** brainstorm							    :ARCHIVE:
      - obfuscate features
      - specific features
        - morphing
@@ -173,16 +180,45 @@
          - fixed data rate
 	 - supersequence if known
        - stochastic
-**** related work
-     - wright
-     - luo
-     - panchenko decoy
+**** Related Work
+     - hintz: 3 ways to do it
+     - wright: morph
+     - luo: also morph (HTTPOS)
+     - panchenko decoy (add)
      - padding (sslv2 \to 3)
-     - requestpolicy
-     - text-only browsing
+     - requestpolicy (hintz 2nd way)
+     - text-only browsing (hintz 2nd way)
 ** ... (=methods)
 *** Motivation
-**** brainstorm
+**** Why to hide
+   #+BEGIN_QUOTE
+   "They who can give up essential liberty to obtain a little temporary
+   safety, deserve neither liberty nor safety" - Benjamin
+   Franklin\cite{franklin}
+   #+END_QUOTE
+
+   In Germany, the basis of all laws is the "Grundgesetz", which
+   ensures free speech (Art. 5 GG) and protects private communication
+   (Art. 10 GG).
+
+   The Fourth Amendmend to the United States Constitution is
+   interpreted as providing similar protections to Art. 10 GG, as of
+   \cite{katz}.
+
+   The Federal Republic of Germany had similar rights in their
+   constitution, yet few dared to exercise free speech due to
+   surveillance and the subsequent fear of reprisal.
+
+   With new technologies for communication and information emerge new
+   challenges to secure these rights.
+
+   The internet has offered many new ways to communicate and,
+   conversely, wiretap, of which website fingerprinting and page-marker
+   detection are examples.
+
+   Yet, there could exist user-friendly ways to hamper, or even to deter,
+   this surveillance.
+**** brainstorm							    :ARCHIVE:
      - privacy anecdotes
      - offline argument
      - online arguments pro/con
@@ -190,8 +226,28 @@
      - if decided for extra traffic, what is a good approach
        - *website* fingerprinting: HTTP/HTML-specific features are exploited
 	 - application-level problem, application-level defense
+     - maybe here: franklin quote and DDR
 *** Design and Implementation (=Implementation)
-**** brainstorm
+**** How to hide: addon
+     - deployable
+     - module that is separateable
+       - easier to use and test
+       - some things harder (f.ex. shaping)
+**** Aim: selective cover traffic
+     - based on target web site
+     - simultaneous to real traffic
+**** Good Code
+     - less wtf
+     - unit tests
+     - js garden
+     - style guide
+     - version control
+     - unit tests
+     - "use strict"
+**** Algorithm
+**** Modules
+**** Server
+**** brainstorm							    :ARCHIVE:
      - aim: selective cover traffic
        - select based on web site
        - and target
@@ -213,7 +269,21 @@
      - server
        - later: .onion (link to related work)
 *** Bloom Filters
-**** brainstorm
+**** General Idea
+     - stochastic fixed-width data structure
+     - works flawlessly if element is inside
+       - might fail if not
+**** Application: Bloom Sort
+     - sort into bins
+       - based on target distribution
+       - one bloom filter per bin
+     - check size: check all filters
+       - if one returns: fine
+       - if none returns: ok: clear that not inserted, default value
+       - if two return: error, fall back to default value
+**** Error estimation of Bloom Sort
+     - error both ways, and difference bin-size to real size
+**** brainstorm							    :ARCHIVE:
      - stochastic fixed-width data structure
      - works flawlessly if element is inside
        - might fail if not
@@ -228,7 +298,9 @@
        - error estimation?
        - +: fixed size
        - -: error both ways, and difference bin-size to real size
-**** TODO related work
+**** TODO Related Work
+     - bloom paper
+     - network applications
 **** TODO maybe move to intro (talk to daniel again)
 ** TODO Results and Evaluation
 *** panchenko v1 vs cumul
@@ -2061,23 +2133,23 @@
    HTML page and at least return the domains of all embedded elements.
 * TODO appendices [0/3]
 \appendix
-** 1Script =one-site.py=: capture pcap traces
+** Script =one-site.py=: capture pcap traces
    <<one-site.py>>
    #+INCLUDE: "./bin/one_site.py" src python
-** 2Script =analyse.py=: classify the data
+** Script =analyse.py=: classify the data
    <<analyse.py>>
    #+INCLUDE: "./bin/analyse.py" src python
-** 3Script =counter.py=: parse pcap files
+** Script =counter.py=: parse pcap files
    #+INCLUDE: "./bin/counter.py" src python
 ** Cover Traffic Server: =wsgi.py=
    <<wsgi.py>>
    #+INCLUDE: "./bin/wsgi.py" src python
-** 4Script =htmlToNumEmbedded.py=: extract embedded objects
+** Script =htmlToNumEmbedded.py=: extract embedded objects
    <<htmlToNumEmbedded.py>>
    #+INCLUDE: "./bin/htmlToNumEmbedded.py" src python
-** 5Script =html-top-100.sh= to retrieve html pages via squid
+** Script =html-top-100.sh= to retrieve html pages via squid
    #+INCLUDE: "./bin/html_top_100.sh" src sh
-** 6Script retrieve-100-embedded.sh run htmlToNumEmbedded
+** Script retrieve-100-embedded.sh run htmlToNumEmbedded
    <<retrieve-100-embedded.sh>>
    #+INCLUDE: "./bin/retrieve_100_embedded.sh" src python
 ** modified top-100
