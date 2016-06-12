@@ -124,7 +124,10 @@ def panchenko_outlier_removal(counters):
     {'domain1': [counter, ...], ... 'domainN': [..]}'''
     out = {}
     for (k, v) in counters.iteritems():
-        out[k] = p_or_quantiles(p_or_median(p_or_tiny(v)))
+        try:
+            out[k] = p_or_quantiles(p_or_median(p_or_tiny(v)))
+        except ValueError: ## somewhere, list got to []
+            logging.warn('%s discarded in outlier removal', k)
     return out
         
 ### evaluation code
