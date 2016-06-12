@@ -242,7 +242,7 @@ def cross_test(argv):
         res = _test(X, y, esti)
         print '{}, {}'.format(res.mean(), res)
     for (place, (X2, y2, _)) in test.iteritems():
-        print 'train on: {} VS test on: {}'.format(argv[0], place)
+        print '\ntrain on: {} VS test on: {}'.format(argv[0], place)
         for esti in GOOD:
             print '{}: {}'.format(esti_name(esti), _xtest(X, y, X2, y2, esti))
 
@@ -251,7 +251,7 @@ if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
 
     # if by hand: change to the right directory before importing
-    # PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'data', 'json')
+    # PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')
     # import os; os.chdir(os.path.join(PATH, 'disabled'))
 
     # counters = counter.Counter.all_from_dir(sys.argv))
