@@ -140,7 +140,7 @@ def esti_name(estimator):
     '''@return name of estimator class'''
     return str(estimator.__class__).split('.')[-1].split("'")[0]
 
-def _test(X, y, esti=GOOD[0], nj=JOBS_NUM, verbose=True):
+def _test(X, y, estimator=GOOD[0], nj=JOBS_NUM, verbose=True):
 
     '''tests estimator with X, y, prints type and result'''
     result = cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=nj)
