@@ -1,6 +1,6 @@
 #+TITLE: Selective Cover Traffic
 #+TODO: KEYWORDS WRITE CHECK EVA DANIEL | FINISHED
-#+TODO: TODO | DONE
+#+TODO: TODO | WAIT DONE
 * Configuration							    :ARCHIVE:
 #+LATEX_CLASS_OPTIONS: [a4paper,10pt]
 #+LATEX_HEADER: \usepackage{adjustbox}
@@ -58,282 +58,311 @@
 #+LATEX_HEADER:                                     % verteidigen muessen.
 #+LATEX_HEADER:   \end{tabular}
 #+LATEX_HEADER: }}
-* KEYWORDS organize [[*Mozilla%20Add-On%20Sdk][addon]] sections
-* TODO [#A] Final Sections [0/41]
-** [[file:~/da/da.org::*skype%2013.5.16][proposal]]							    :ARCHIVE:
-** LATER Abstract
-** Introduction (=basics)
-*** Tor [0/4]
-**** WRITE [#A] What is Tor
-     - \cite{tor-design}
-     - anonymity system
-     - normally: sees from whom to whom, even with encryption
-     - here: hides this
-       - plus: hs
-       - plus: censorship avoidance
-     - traffic analysis
-       - hardens
-**** KEYWORDS Who uses Tor
-**** KEYWORDS How does Tor Work
-**** brainstorm							    :ARCHIVE:
-     - origin
-     - usage
-       - socks
-       - web browsing
-       - hs
-     - internals
-       - relevant
-       - has crypto, but not much more
-***** depend [[*Website%20Fingerprinting][Website Fingerprinting]]
-     - effect on traffic/wf
-       - delay
-       - padding
-**** WRITE Related Work
-     - tor design (maybe +2014 draft)
-     - tor spec
-     - onion routing paper
-*** Website Fingerprinting [0/4]
-**** WRITE What is website fingerprinting
+* WAIT Abstract
+* TODO Introduction (=basics) [0%]
+** EVA Tor [0/7]
+   The Onion Router\cite{tor-design} --- Tor --- is an anonymity
+   system: While encryption hides the /content of communication/, Tor
+   also attempts to hide /metadata/: Who communicates with whom, for
+   how long, when, how frequent, ...?
 
-     #+CAPTION: example 1 of craigslist.org traffic
-     #+ATTR_LATEX: :float nil :width 0.45\textwidth
-     [[./pictures/craigslist_org@1445352269.png]]
-     #+CAPTION: example 2 of craigslist.org traffic
-     #+ATTR_LATEX: :float nil :width 0.45\textwidth
-     [[./pictures/craigslist_org@1445585277.png]]
+   In recent years, Tor has also provided censorship circumvention to
+   people in oppressive regimes.\cite{tor-spec-pt}.
+*** CHECK Who uses Tor
+    One of Tor's main design goals was usability, as more users mean
+    higher security \cite[sec. 3]{tor-design}.  Today, it is an
+    anonymization network with a diverse user base. It has over 6'000
+    nodes and is accessed by more than 3 million clients daily.
 
-     - kind of traffic analysis
-       - without seeing content, deduce information
-     - wf: without seeing sender/receiver, deduce which website is
-       being visited
-     - machine learning
-**** WRITE web site, HTTP transactions
-     - main html, embedded objects
-     - multiplexing, pipelining
-     - http traffic distribution
-**** WRITE features
-     - patterns to features
-     - why features
-     - sizes, sizes, sizes
-     - total_size
-     - top-five
-     - CUMUL
-       #+CAPTION: from presentation at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
-       [[./pictures/cumul_resized_aus_paper.png]]
-**** brainstorm							    :ARCHIVE:
-     - see traffic
-       - http
-	 - today
-     - induce pattern
-       - naive
-       - machine learning
-       - features
-**** WRITE Related Work
-     - origin traffic analysis: ssl-schneier-personal comm
-       - berkeley
-       - term
-     - hintz: safeweb, wf-term
-     - herrmann, ..., liberatore: lengths
-     - dyer: most important are the features, similar results for naive
-     - on feature importances:
-       - panchenko
-       - k-forest
-       - wang implicit
-*** Algorithms [0/4]
-    - features to classes: classifiers
-**** WRITE KNN
-       - simple
-       - often effective
-       - how works
-**** WRITE SVM
-     - how works
-     - multi-class strategies
-**** KEYWORDS extremely randomized trees
-     - how works
-**** brainstorm							    :ARCHIVE:
-     - SVM
-     - knn
-     - ?extratrees?
-     - features important or also classifier
-     - no classifier fits all
-     - maps features to classes (or probabilities)
-     - classifier
-**** WRITE Related Work
-     - mitchell
-     - sklearn
-     - herrmann: breakable shown via naive bayes
-     - panchenko: svm
-     - dyer: most important are the features, similar results for naive
-       bayes and svm
-     - cheng:?
-     - wang: knn
-     - dts-approach (?)
-     - k-forest: specific classifier based on randomized trees with
-       hadamard-distance on leaves
-     - panchenko1 and 2: (ovr?) svm
-*** Defenses [0/6]
-**** WRITE How to defend against this
-     - make wf/ml harder, fudge features
-**** WRITE specific features
-     - list some features
-**** WRITE general defense
-     - map to one or add additional
-**** KEYWORDS deterministic vs stochastic
-**** KEYWORDS shaping vs adding
-**** brainstorm							    :ARCHIVE:
-     - obfuscate features
-     - specific features
-       - morphing
-     - general obfuscation
-       - deterministic
-         - fixed data rate
-	 - supersequence if known
-       - stochastic
-**** WRITE Related Work
-     - hintz: 3 ways to do it
-     - wright: morph
-     - luo: also morph (HTTPOS)
-     - panchenko decoy (add)
-     - padding (sslv2 \to 3)
-     - requestpolicy (hintz 2nd way)
-     - text-only browsing (hintz 2nd way)
-** ... (=methods)
-*** TODO Motivation [0/2]
-**** CHECK Why to hide
-   #+BEGIN_QUOTE
-   "They who can give up essential liberty to obtain a little temporary
-   safety, deserve neither liberty nor safety" - Benjamin
-   Franklin\cite{franklin}
-   #+END_QUOTE
+    The main user groups as listed by the Tor Project
+    \cite{who-uses-tor}, in order, are normal people, journalists and
+    their audience, military, law enforcement officers, activists &
+    whistleblwers, high & low profile people, business executives,
+    bloggers, and IT professionals.
 
-   In Germany, the basis of all laws is the "Grundgesetz", which
-   ensures free speech (Art. 5 GG) and protects private communication
-   (Art. 10 GG).
+    They use it for diverse purposes, such as privacy, censorship
+    avoidance, covert ops, publishing, safety, online surveillance,
+    anonymous tip lines, whistleblowing, blogging private opinions,
+    evaluating competition, and troubleshooting IT systems.\cite{who-uses-tor}
+**** TODO update client numbers with footnote: metrics.torproject.org
+**** TODO maybe ref to anonymity loves company
+**** TODO move below onion routers etc
+*** CHECK History of Tor
+    Tor is a development of the Onion Routing Project
+    \cite{anonymous-connections}. It was originally developed by the
+    Naval Research Laboratory of the US Navy with the primary purpose
+    to protect government communication.\cite{who-uses-tor}
+*** WRITE How does Tor Work
+    - group of volunteer OR
+    - 3 hops
+    - each can see only previous and next
+    - message looks different each hop
+    - onion routing \cite{anonymous-connections}
+    - cryptography
+      - traffic analysis
+      - traffic-flow security (a.c.)
+    - encrypted each hop
+    - location-hidden services
+*** brainstorm                                                      :ARCHIVE:
+    - origin
+    - usage
+      - socks
+      - web browsing
+      - hs
+    - internals
+      - relevant
+      - has crypto, but not much more
+**** depend [[*Website%20Fingerprinting][Website Fingerprinting]]
+    - effect on traffic/wf
+      - delay
+      - padding
+*** WRITE Related Work
+    - tor design (maybe +2014 draft)
+    - tor spec
+    - onion routing paper
+** Website Fingerprinting [0/4]
+*** WRITE What is website fingerprinting
 
-   The Fourth Amendmend to the United States Constitution is
-   interpreted as providing similar protections to Art. 10 GG, as of
-   \cite{katz}.
+    #+CAPTION: example 1 of craigslist.org traffic
+    #+ATTR_LATEX: :float nil :width 0.45\textwidth
+    [[./pictures/craigslist_org@1445352269.png]]
+    #+CAPTION: example 2 of craigslist.org traffic
+    #+ATTR_LATEX: :float nil :width 0.45\textwidth
+    [[./pictures/craigslist_org@1445585277.png]]
 
-   The Federal Republic of Germany had similar rights in their
-   constitution, yet few dared to exercise free speech due to
-   surveillance and the subsequent fear of reprisal.
+    - kind of traffic analysis
+      - without seeing content, deduce information
+    - wf: without seeing sender/receiver, deduce which website is
+      being visited
+    - machine learning
+*** WRITE web site, HTTP transactions
+    - main html, embedded objects
+    - multiplexing, pipelining
+    - http traffic distribution
+*** WRITE features
+    - patterns to features
+    - why features
+    - sizes, sizes, sizes
+    - total_size
+    - top-five
+    - CUMUL
+      #+CAPTION: from presentation at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
+      [[./pictures/cumul_resized_aus_paper.png]]
+*** brainstorm                                                      :ARCHIVE:
+    - see traffic
+      - http
+        - today
+    - induce pattern
+      - naive
+      - machine learning
+      - features
+*** WRITE Related Work
+    - origin traffic analysis: ssl-schneier-personal comm
+      - berkeley
+      - term
+    - hintz: safeweb, wf-term
+    - herrmann, ..., liberatore: lengths
+    - dyer: most important are the features, similar results for naive
+    - on feature importances:
+      - panchenko
+      - k-forest
+      - wang implicit
+** Algorithms [0/4]
+   - features to classes: classifiers
+*** WRITE KNN
+      - simple
+      - often effective
+      - how works
+*** WRITE SVM
+    - how works
+    - multi-class strategies
+*** KEYWORDS extremely randomized trees
+    - how works
+*** brainstorm                                                      :ARCHIVE:
+    - SVM
+    - knn
+    - ?extratrees?
+    - features important or also classifier
+    - no classifier fits all
+    - maps features to classes (or probabilities)
+    - classifier
+*** WRITE Related Work
+    - mitchell
+    - sklearn
+    - herrmann: breakable shown via naive bayes
+    - panchenko: svm
+    - dyer: most important are the features, similar results for naive
+      bayes and svm
+    - cheng:?
+    - wang: knn
+    - dts-approach (?)
+    - k-forest: specific classifier based on randomized trees with
+      hadamard-distance on leaves
+    - panchenko1 and 2: (ovr?) svm
+** Defenses [0/6]
+*** WRITE How to defend against this
+    - make wf/ml harder, fudge features
+*** WRITE specific features
+    - list some features
+*** WRITE general defense
+    - map to one or add additional
+*** KEYWORDS deterministic vs stochastic
+*** KEYWORDS shaping vs adding
+*** brainstorm                                                      :ARCHIVE:
+    - obfuscate features
+    - specific features
+      - morphing
+    - general obfuscation
+      - deterministic
+        - fixed data rate
+        - supersequence if known
+      - stochastic
+*** WRITE Related Work
+    - hintz: 3 ways to do it
+    - wright: morph
+    - luo: also morph (HTTPOS)
+    - panchenko decoy (add)
+    - padding (sslv2 \to 3)
+    - requestpolicy (hintz 2nd way)
+    - text-only browsing (hintz 2nd way)
+* ... (=methods)
+** TODO Motivation [0/3]
+*** CHECK Why to hide
+    #+BEGIN_QUOTE
+    "They who can give up essential liberty to obtain a little
+    temporary safety, deserve neither liberty nor safety" - Benjamin
+    Franklin\cite{franklin}
+    #+END_QUOTE
 
-   With new technologies for communication and information emerge new
-   challenges to secure these rights.
+    In Germany, the basis of all laws is the "Grundgesetz", which
+    ensures free speech (Art. 5 GG) and protects private communication
+    (Art. 10 GG).
 
-   The internet has offered many new ways to communicate and,
-   conversely, wiretap, of which website fingerprinting and page-marker
-   detection are examples.
+    The Fourth Amendmend to the United States Constitution is
+    interpreted as providing similar protections to Art. 10 GG, as of
+    \cite{katz}.
 
-   Yet, there could exist user-friendly ways to hamper, or even to deter,
-   this surveillance.
-***** TODO bib ddr-verfassung+link
-**** brainstorm							    :ARCHIVE:
-     - privacy anecdotes
-     - offline argument
-     - online arguments pro/con
-     - little cost, big benefit
-     - if decided for extra traffic, what is a good approach
-       - *website* fingerprinting: HTTP/HTML-specific features are exploited
-	 - application-level problem, application-level defense
-     - maybe here: franklin quote and DDR
-*** TODO Design and Implementation (=Implementation) [0/6]
-**** WRITE How to hide: addon
-     - deployable
-     - module that is separateable
-       - easier to use and test
-       - some things harder (f.ex. shaping)
-**** WRITE Aim: selective cover traffic
-     - based on target web site
-     - simultaneous to real traffic
-**** WRITE Good Code
-     - less wtf
-     - unit tests
-     - js garden
-     - style guide
-     - version control
-     - unit tests
-     - "use strict"
-**** KEYWORDS Algorithm
-**** KEYWORDS Modules
-**** KEYWORDS Server
-**** brainstorm							    :ARCHIVE:
-     - aim: selective cover traffic
-       - select based on web site
-       - and target
-       - simultaneous to real traffic
-     - firefox browser extension / addon
-       - addon sdk
-       - maybe mention next generation
-     - good code
-       - tests
-	 - unit tests
-	 - by hand
-       - good parts
-       - js garden
-       - style guide
-       - version control
-     - algorithm
-     - implementation
-       - classes
-     - server
-       - later: .onion (link to related work)
-*** TODO Bloom Filters
-**** WRITE General Idea
-     - stochastic fixed-width data structure
-     - works flawlessly if element is inside
-       - might fail if not
-**** WRITE Application: Bloom Sort
-     - sort into bins
-       - based on target distribution
-       - one bloom filter per bin
-     - check size: check all filters
-       - if one returns: fine
-       - if none returns: ok: clear that not inserted, default value
-       - if two return: error, fall back to default value
-**** TODO Error estimation of Bloom Sort
-     - error both ways, and difference bin-size to real size
-**** brainstorm							    :ARCHIVE:
-     - stochastic fixed-width data structure
-     - works flawlessly if element is inside
-       - might fail if not
-     - based on this: bloomsort: combine filters
-       - sort into bins
-	 - based on target distribution
-	 - one bloom filter per bin
-       - check size: check all filters
-	 - if one returns: fine
-	 - if none returns: ok: clear that not inserted, default value
-	 - if two return: error, fall back to default value
-       - error estimation?
-       - +: fixed size
-       - -: error both ways, and difference bin-size to real size
-**** KEYWORDS Related Work
-     - bloom paper
-     - network applications
-** TODO Results and Evaluation [0/7]
-*** KEYWORDS panchenko v1
-    - similar results for different classifiers
-**** brainstorm
-    - panchenko1: effectiveness (+ added)
-      - different classifiers
-    - panchenko2:
-      - better
-      - or results
-      - panchenko's dataset
-*** KEYWORDS Evaluation of Addon
-    - different versions
-    - different factors
-*** TODO Evaluation of Defenses [0/3]
-**** KEYWORDS sota (practical): wtfpad
-**** KEYWORDS sota (theoretical): walkie-talkie
-**** KEYWORDS (maybe) vs optimal attacker
-**** brainstorm
-     - addon
-       - different versions
-       - different factors
-*** KEYWORDS Conclusion
-* TODO topics [0/129]
+    The Federal Republic of Germany had similar rights in their
+    constitution, yet few dared to exercise free speech due to
+    surveillance and the subsequent fear of reprisal.
+
+    With new technologies for communication and information emerge new
+    challenges to secure these rights.
+
+    The internet has offered many new ways to communicate and,
+    conversely, wiretap, of which website fingerprinting and
+    page-marker detection are examples.
+
+    Yet, there could exist user-friendly ways to hamper, or even to
+    deter, this surveillance.
+**** TODO ref ddr-verfassung how to do
+**** TODO link wf & page-marker detection
+*** brainstorm                                                      :ARCHIVE:
+    - privacy anecdotes
+    - offline argument
+    - online arguments pro/con
+    - little cost, big benefit
+    - if decided for extra traffic, what is a good approach
+      - *website* fingerprinting: HTTP/HTML-specific features are exploited
+        - application-level problem, application-level defense
+    - maybe here: franklin quote and DDR
+** TODO Design and Implementation (=Implementation) [0/6]
+*** WRITE How to hide: addon
+    - deployable
+    - module that is separateable
+      - easier to use and test
+      - some things harder (f.ex. shaping)
+*** WRITE Aim: selective cover traffic
+    - based on target web site
+    - simultaneous to real traffic
+*** WRITE Good Code
+    - less wtf
+    - unit tests
+    - js garden
+    - style guide
+    - version control
+    - unit tests
+    - "use strict"
+*** KEYWORDS Algorithm
+*** KEYWORDS Modules
+*** KEYWORDS Server
+*** brainstorm                                                      :ARCHIVE:
+    - aim: selective cover traffic
+      - select based on web site
+      - and target
+      - simultaneous to real traffic
+    - firefox browser extension / addon
+      - addon sdk
+      - maybe mention next generation
+    - good code
+      - tests
+        - unit tests
+        - by hand
+      - good parts
+      - js garden
+      - style guide
+      - version control
+    - algorithm
+    - implementation
+      - classes
+    - server
+      - later: .onion (link to related work)
+** TODO Bloom Filters
+*** WRITE General Idea
+    - stochastic fixed-width data structure
+    - works flawlessly if element is inside
+      - might fail if not
+*** WRITE Application: Bloom Sort
+    - sort into bins
+      - based on target distribution
+      - one bloom filter per bin
+    - check size: check all filters
+      - if one returns: fine
+      - if none returns: ok: clear that not inserted, default value
+      - if two return: error, fall back to default value
+*** TODO Error estimation of Bloom Sort
+    - error both ways, and difference bin-size to real size
+*** brainstorm                                                      :ARCHIVE:
+    - stochastic fixed-width data structure
+    - works flawlessly if element is inside
+      - might fail if not
+    - based on this: bloomsort: combine filters
+      - sort into bins
+        - based on target distribution
+        - one bloom filter per bin
+      - check size: check all filters
+        - if one returns: fine
+        - if none returns: ok: clear that not inserted, default value
+        - if two return: error, fall back to default value
+      - error estimation?
+      - +: fixed size
+      - -: error both ways, and difference bin-size to real size
+*** KEYWORDS Related Work
+    - bloom paper
+    - network applications
+* TODO Results and Evaluation [0/7]
+** KEYWORDS panchenko v1
+   - similar results for different classifiers
+*** brainstorm
+   - panchenko1: effectiveness (+ added)
+     - different classifiers
+   - panchenko2:
+     - better
+     - or results
+     - panchenko's dataset
+** KEYWORDS Evaluation of Addon
+   - different versions
+   - different factors
+** TODO Evaluation of Defenses [0/3]
+*** KEYWORDS sota (practical): wtfpad
+*** KEYWORDS sota (theoretical): walkie-talkie
+*** KEYWORDS (maybe) vs optimal attacker
+*** brainstorm
+    - addon
+      - different versions
+      - different factors
+** KEYWORDS Conclusion
+* TODO topics [0/127]
 ** Teaser
    #+BEGIN_QUOTE
    "They who can give up essential liberty to obtain a little temporary
@@ -767,7 +796,7 @@
      not been normalized further. The default padding (300 per
      feature) might not be large enough for some traces.
 ***** TODO maybe rename counter.py to trace.py
-**** LATER and MAYBE how to get wang/goldberg to work
+**** WAIT and MAYBE how to get wang/goldberg to work
      As the =notes= file says:
 
      "svm-train and svm-predict come from the libSVM package."
@@ -812,7 +841,7 @@
 ***** TODO ref stackoverflow why 0 padding
 ****** TODO or better, some statistics text
 ***** TODO see also =to_features_cumul=
-**** LATER effect of panchenko's weighting schema
+**** WAIT effect of panchenko's weighting schema
      Currently, fixed attributes are weighted heavily in favor of total
      incoming/outgoing bytes.
 ***** maybe
@@ -1002,7 +1031,7 @@
     kernel.
 **** practical wf: Capturing traces
 **** TODO move to subsection related work
-** TODO Tor [0/15]
+** TODO Tor [0/14]
 *** How to use Tor
     Tor offers a SOCKS5\cite{rfc1928}-(TCP\cite{rfc793}-)proxy for
     users. (If an application has no proxy settings, the
@@ -1072,45 +1101,6 @@
      for the purpose of website fingerprinting, a high-level overview
      of Tor's cryptography should suffice
 **** TODO ref for data in same-size cells
-*** TODO Who uses Tor
-    From the beginning, the Tor Project envisoned a broad user base.
-
-    Tor is a development of the Onion Routing Project
-    \cite{anonymous-connections}. It was originally developed by the
-    Naval Research Laboratory of the US Navy with the primary purpose
-    to protect government communication.\cite{who-uses-tor}
-
-    Today, it is an anonymization network with a diverse user
-    base. It has 6'000 nodes and is accessed by more than 3 million
-    daily clients.
-
-    The main user groups as listed by the Tor Project
-    \cite{who-uses-tor}, in order, are:
-
-    - normal people,
-    - military,
-    - journalists and their audience,
-    - law enforcement officers,
-    - activists & whistleblwers,
-    - high & low profile people,
-    - business executives,
-    - bloggers, and
-    - IT professionals.
-
-    They use it for diverse purposes, such as
-
-    - privacy,
-    - censorship avoidance,
-    - covert ops,
-    - publishing,
-    - safety,
-    - online surveillance,
-    - anonymous tip lines,
-    - whistleblowing,
-    - blogging private opinions,
-    - evaluating competition, and
-    - troubleshooting IT systems.
-**** TODO client numbers with link (footnote?)
 *** TODO Tor Threat Model [0/3]
     Tor does not attempt to protect against a global passive adversary,
     who can observe all connections. A Tor adversary can\cite{tor-design}
@@ -1143,7 +1133,6 @@
     - pipelining enabled
     - request order randomization
 *** TODO sort subtopics
-*** TODO Tor overview
 ** TODO Addon Design and Implementation [0/50]
 *** [[*description of add-on][description of add-on]]
 *** Defenses
@@ -1205,7 +1194,7 @@
 
      Bridging this separation, f.ex. accessing page scripts (and vice
      versa) is possible, but needs some extra work.
-***** LATER index: page scripts, content scripts, add-on scripts
+***** WAIT index: page scripts, content scripts, add-on scripts
 **** CHECK message-passing
      There is a mechanism to pass content from the add-on to the
      content scripts, as shown in the example.
@@ -1340,7 +1329,7 @@
      domain-object-model
 **** TODO unit tests jpm
      JPM also offers the ability to write unit-tests.
-*** LATER [#B] Design
+*** WAIT [#B] Design
     #+BEGIN_LATEX
     \begin{adjustbox}{max width=\textwidth}
     \input{pictures/model.tex}
@@ -1403,7 +1392,7 @@
       After the page has finished loading, the =CoverTraffic='s
       =finish()= method is called. If the number of embedded elements
       requests has been to low, the remainder are then dispatched.
-****** LATER check if still two strategies
+****** WAIT check if still two strategies
 ****** TODO link to number of embedded elements and HTML request
 ****** TODO link to sizecache
 ***** TODO Loader(Source=default2)
@@ -1480,7 +1469,7 @@
 **** TODO browser caching
      - browsers cache
      - only helps in cover traffic, (unless warm/cold site model is used)
-***** LATER where to put this?
+***** WAIT where to put this?
 **** TODO Parameter: Sizes of HTML-Documents
      :PROPERTIES:
      :CUSTOM_ID: find sizes of HTML-documents
@@ -1570,7 +1559,7 @@
       - rates of error
         - "add" the error rates of the filters? (times population density?)
 ***** maybe graphics?
-***** LATER check "see previous section"
+***** WAIT check "see previous section"
 *** TODO Implementation [0/5]
 **** TODO js coding best practices
      JavaScript\cite{ecma} is arguably a language with some great
@@ -1585,7 +1574,7 @@
      - jshint
 ***** mention bad parts?
 **** Unit Testing
-**** LATER Cover add-on
+**** WAIT Cover add-on
      Defends against website fingerprinting by injecting artificial
      cover traffic into the communication.
 ***** when stable
@@ -1786,7 +1775,7 @@
     then adding elements via =htmlSizes.add("http://google.com/", 613)=
     and querying via =htmlSizes.query("http://google.com/")=, which
     would yield =400=. (see usage in [[file:cover/js/size-cache.js::let%20numEmbeddeds%20%3D%20new%20BloomSort.BloomSort(NUM_EMBEDDED_SIZES,][size-cache]])
-* MAYBE-then-LATER torben
+* MAYBE-then-WAIT torben
   Torben is a deanonymization attack based on injected website content
   in combination with Pattern Recognition. The authors show that when
   the user's browser sends requests of certain sizes for responses of
@@ -1809,7 +1798,7 @@
   after 30 or 120 ms (tor latency bigger)
   detect via svm (how)
   setzt auf tcp an statt auf ip, (weil tor ja tcp ! yeah!)
-** LATER talk to daniel whether mention or not
+** WAIT talk to daniel whether mention or not
 * MAYBE why privacy
   - fundamental human need
   - concentration camp:
@@ -2046,7 +2035,6 @@
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
-* UPTO HERE +BIB, TEXING WORKS -------------------------------------------     
 * WAIT Discussion
   intel model: interdependences (html bigger \to more embedded) not mentioned
 * WAIT Acknowledgements
