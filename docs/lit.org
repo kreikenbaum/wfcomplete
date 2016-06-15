@@ -1,6 +1,5 @@
 #+TODO: TODO | DONE
 [[./master.bib]]
-** TODO move MOVE sections
 ** [[./2015-asiaccs.pdf][Arp - Torben: A Practical Side-Channel Attack for Deanonymizing Tor Communication]]
 *** quotes
     - (a) web pages can be easily manipulated to load content from
@@ -5197,159 +5196,6 @@
       these measures without further feedback from and study by the
       research community.
 *** ref: [[file:master.bib::experimental][Perry 2011: Experimental Defense Website Traffic Fingerprinting]]
-** MOVE [[./paper-ssl-revised.pdf][Wagner - Analysis of the SSL 3.0 protocol]]
-*** summary
-    0) [@0] Abstract
-
-       some minor flaws, yet easily corrected, good stuff
-
-    1) Introduction
-
-       cryptographic security of SSL 3.0
-
-       background, possible attacks, cryptographic protection, high-level view
-
-    2) Background
-
-       SSL consists of record layer and (connection) layer
-
-       SSLv2 had key weaknesses, end deletion, and protocol
-       degradation
-
-    3) The record layer
-
-       standard crypto problems, ok
-
-       1) Confidentiality: eavesdropping
-
-	  lots of known plaintext, but should be ok
-
-       2) Confidentiality: traffic analysis
-
-	  possible to determine request length, response lengths,
-          determine which URL was visited
-
-	  supports random padding for block ciphers, but not stream
-          ciphers (more common)
-
-       3) Confidentiality: active attacks
-
-	  cut-and-pasted exchanges blocks of ciphertext, trying to
-          leak the plaintext
-
-	  short-block-attacks determine the last plaintext block: see
-          when the ack is returned
-
-       4) Message authentication
-
-	  uses (old) HMAC, but still HMAC
-
-       5) Replay attacks
-
-	  includes sequence number in MACed data
-
-       6) The Horton principle
-
-	  is all the meaning validated?
-
-	  (SSLCiphertext.ProtocolVersion is not), but in general, yes
-
-       7) Summary
-
-	  ok, minor concerns
-
-    4) The key-exchange protocol
-
-       better, but some scars
-
-       1) Overview of the handshake flow
-
-	  exchange data, compute secret, authenticate sent messages
-
-       2) Ciphersuite rollback attacks
-
-	  negotiation, change cipher spec, finished
-
-       3) Dropping the change cipher spec message
-
-	  in authentication-only mode, the change cipher spec-message
-          can be untransmitted by the adversary, which allows her to
-          always strip the authentication part
-
-	  if weak encryption is used, this might allow for a online
-          key search, with 4-12 (stream - block) bytes of known
-          plaintext
-
-       4) Key-exchange algorithm rollback
-
-	  middleman tells each different ciphersuites, as this is not
-          protected by hash
-
-	  (horton principle violated)
-
-       5) Anonymous key-exchange
-
-	  specification unclear in what should be signed in anonymous
-          mode
-
-       6) Version rollback attacks
-
-	  Mallory might exchange version 3 for version 2 session
-          initiation to exploit the weaknesses of SSLv2. There is a
-          proposed defense, which sets some padding bytes to fixed
-          values.
-
-	  There might be the danger of session resumption leading to
-          use of v2. (room for further examination)
-
-       7) Safeguarding the master secret
-
-	  A nonce is hashed with the master secret on every session
-          resume. Mallory can get a bit number of data thus hashed.
-
-	  Replay attacks might work for that, too.
-
-       8) Diffie-Hellman key-exchange
-
-	  good idea, watch out to avoid server trapdooring
-
-       9) The alert protocol
-
-	  signify problems, mostly tear down the connection
-
-       10) MAC usage
-
-	   should consistently use HMACs
-
-       11) Summary
-
-	   some weaknesses in implementations possible
-
-    5) Conclusion
-
-       passive only recommendation: padding to avoid get request
-       length analysis
-
-       active: change cipher spec dropping and
-       KeyExchangeAlgorithm-spoofing
-
-       good step, minor patches recommended
-*** quotes
-    - We conclude that, while there are still a few technical wrinkles
-      to iron out, on the whole SSL 3.0 is a valuable contribution
-      towards practical communications security.
-    - The SSL record layer provides confidentiality, authenticity, and
-      replay protection over a connection-oriented reliable transport
-      protocol such as TCP.
-    - The only change to SSL’s protection against passive attacks
-      worth recommending is support for padding to stop traffic
-      analysis of GET (v5)
-    - Diffie-Hellman is the only public key algorithm known which can
-      efficiently provide perfect forward secrecy
-    - To avoid server-generated trapdoors, the client should be careful
-      to check that the modulus and generator are from a fixed public
-      list of safe values.
-*** ref [[file:master.bib::SSL][Wagner & Schneier 1997: Analysis SSL]]
 ** [[./ShWa-Timing06.pdf][Shmatikov - Timing analysis in low-latency mix networks: attacks and defenses]]
 *** summary
     0) [@0] Abstract
@@ -5711,6 +5557,159 @@
 	- send stories
 *** ref
     [[file:master.bib::who-uses-tor][Project td: Who Tor]]
+** [[./paper-ssl-revised.pdf][Wagner - Analysis of the SSL 3.0 protocol]]
+*** summary
+    0) [@0] Abstract
+
+       some minor flaws, yet easily corrected, good stuff
+
+    1) Introduction
+
+       cryptographic security of SSL 3.0
+
+       background, possible attacks, cryptographic protection, high-level view
+
+    2) Background
+
+       SSL consists of record layer and (connection) layer
+
+       SSLv2 had key weaknesses, end deletion, and protocol
+       degradation
+
+    3) The record layer
+
+       standard crypto problems, ok
+
+       1) Confidentiality: eavesdropping
+
+	  lots of known plaintext, but should be ok
+
+       2) Confidentiality: traffic analysis
+
+	  possible to determine request length, response lengths,
+          determine which URL was visited
+
+	  supports random padding for block ciphers, but not stream
+          ciphers (more common)
+
+       3) Confidentiality: active attacks
+
+	  cut-and-pasted exchanges blocks of ciphertext, trying to
+          leak the plaintext
+
+	  short-block-attacks determine the last plaintext block: see
+          when the ack is returned
+
+       4) Message authentication
+
+	  uses (old) HMAC, but still HMAC
+
+       5) Replay attacks
+
+	  includes sequence number in MACed data
+
+       6) The Horton principle
+
+	  is all the meaning validated?
+
+	  (SSLCiphertext.ProtocolVersion is not), but in general, yes
+
+       7) Summary
+
+	  ok, minor concerns
+
+    4) The key-exchange protocol
+
+       better, but some scars
+
+       1) Overview of the handshake flow
+
+	  exchange data, compute secret, authenticate sent messages
+
+       2) Ciphersuite rollback attacks
+
+	  negotiation, change cipher spec, finished
+
+       3) Dropping the change cipher spec message
+
+	  in authentication-only mode, the change cipher spec-message
+          can be untransmitted by the adversary, which allows her to
+          always strip the authentication part
+
+	  if weak encryption is used, this might allow for a online
+          key search, with 4-12 (stream - block) bytes of known
+          plaintext
+
+       4) Key-exchange algorithm rollback
+
+	  middleman tells each different ciphersuites, as this is not
+          protected by hash
+
+	  (horton principle violated)
+
+       5) Anonymous key-exchange
+
+	  specification unclear in what should be signed in anonymous
+          mode
+
+       6) Version rollback attacks
+
+	  Mallory might exchange version 3 for version 2 session
+          initiation to exploit the weaknesses of SSLv2. There is a
+          proposed defense, which sets some padding bytes to fixed
+          values.
+
+	  There might be the danger of session resumption leading to
+          use of v2. (room for further examination)
+
+       7) Safeguarding the master secret
+
+	  A nonce is hashed with the master secret on every session
+          resume. Mallory can get a bit number of data thus hashed.
+
+	  Replay attacks might work for that, too.
+
+       8) Diffie-Hellman key-exchange
+
+	  good idea, watch out to avoid server trapdooring
+
+       9) The alert protocol
+
+	  signify problems, mostly tear down the connection
+
+       10) MAC usage
+
+	   should consistently use HMACs
+
+       11) Summary
+
+	   some weaknesses in implementations possible
+
+    5) Conclusion
+
+       passive only recommendation: padding to avoid get request
+       length analysis
+
+       active: change cipher spec dropping and
+       KeyExchangeAlgorithm-spoofing
+
+       good step, minor patches recommended
+*** quotes
+    - We conclude that, while there are still a few technical wrinkles
+      to iron out, on the whole SSL 3.0 is a valuable contribution
+      towards practical communications security.
+    - The SSL record layer provides confidentiality, authenticity, and
+      replay protection over a connection-oriented reliable transport
+      protocol such as TCP.
+    - The only change to SSL’s protection against passive attacks
+      worth recommending is support for padding to stop traffic
+      analysis of GET (v5)
+    - Diffie-Hellman is the only public key algorithm known which can
+      efficiently provide perfect forward secrecy
+    - To avoid server-generated trapdoors, the client should be careful
+      to check that the modulus and generator are from a fixed public
+      list of safe values.
+*** ref [[file:master.bib::SSL][Wagner & Schneier 1997: Analysis SSL]]
 ** [[./cacr2014-05.pdf][Wang - Effective Attacks and Provable Defenses for Website Fingerprinting]]
 *** summary
     0) [@0] Abstract
@@ -8451,6 +8450,89 @@
     1) Document Object Model Core
 *** quotes
 *** TODO ref [[file:master.bib::dom3][W3C 2004: Document Object Model]]
+** TODO [#A] [[~/da/git/docs/onion.pdf][Anonymous Connections and Onion Routing]]
+*** summary
+    0) [@0] Abstract
+
+       - "Onion Routing is an infrastructure for private
+	 communication over a public network.
+
+       - Eavesdropping and traffic analysis are hampered by /onion
+	 routing/.
+
+    1) Introduction
+
+       - traffic analysis extracts data from who talks to whom
+
+       - side effect of onion routing: protect against this
+
+       - offer connection akin to TCP streams (and ATM AAL5)
+
+    2) Onion Routing Overview
+
+       0) [@0]
+
+          - instead of direct socket connection, connect through onion routers
+
+          - hides connection details
+
+            - hide identifying information from stream yourself to
+              hide from recipient
+
+            - data looks different from hop to hop
+
+            - each onion router can only identify previous and next
+              router on connection
+
+       1) Operational Overview
+
+          - /application proxy/ sends formatted messages to /onion proxy/ (=OP)
+
+          - OP constructs /onion/ and passes it to /entry funnel/
+
+          - passed on via /onion router/ s (OR), until it reaches
+            /exit funnel/, then to responder
+
+          - /onion/ contains route and key seed material at each layer
+
+          - data looks different at each layer
+
+          - each OR keeps track of non-expired
+
+          - routing on top of TCP/IP
+
+       2) Configurations
+*** quotes
+    1) Introduction
+       - Web based shopping or browsing of public databases should not
+         require revealing one's identity.
+       - Our implementation of anonymous connections, onion routing,
+         provides protection against eavesdropping as a side effect.
+    2) Onion Routing Overview
+       1) Operational Overview
+          - Therefore, an anonymous connection is as strong as its
+            strongest link, and even one honest node is enough to
+            maintain the privacy of the route.
+
+*** ref [[file:master.bib::anonymous-connections][G. et al. 1998: Anonymous]]
+** TODO [#A] [[./geurtz.pdf][Extremely randomized trees]]
+*** summary
+    0) [@0] Abstract
+
+       - method randomized ensemble method based on decision trees
+
+       - "randomizing strongly both attribute and cut-point choice
+         while splitting a tree node"
+
+       - evaluation: default parameters, strength (efficiency),
+         bias/variance, geometrical + kernel characterization
+
+    1) Introduction
+*** quotes
+*** ref [[file:master.bib::DBLP:journals/ml/GeurtsEW06][Geurts et al. 2006: Extremely]]
+** TODO [#A] Anonymity Loves Company
+*** TODO copy summary and quotes
+*** ref [[file:master.bib::usability:weis2006][Dingledine & Mathewson 2006: Anonymity Loves Company]]
 ** TODO [#B] PART [[./Applied_Cryptography.pdf][Schneier - Applied Cryptography]]
 *** TODO parts: maybe 10 (see quote t.a.)
 *** summary
@@ -11608,6 +11690,212 @@
     1) Introduction
 *** quotes
 *** ref [[file:master.bib::Bloom70space/timetrade-offs][Bloom 1970: Space Time Trade]]
+** TODO [#C] PART [[./ESLII_print4.pdf][Hastie - The Elements of Statistical Learning]]
+*** summary
+    1) Introduction
+
+       examples
+
+    2) Overview of Supervised Learning
+
+       1) inputs
+
+          == predictors (statistics)
+
+          == independent variables (statistics)
+
+	  == features (pattern recognition)
+
+	  outputs
+
+	  == responses (statistics)
+
+	  == dependent variables (statistics)
+
+       2) Variable Types and Terminology
+
+	  - qualitative aka discrete aka categorical variables aka factors
+
+	    example: handwritten digits, fisher's irises
+
+	  - regression for quantitative outputs Y, classification for
+            qualitative outputs G
+
+       3) Two Simple Approaches to Prediction: Least Squares and
+          Nearest Neighbors
+
+	  0) [@0]
+
+	     - linear model
+
+	       - "stable but possibly inaccurate predictions"
+
+	     - k-nearest neighbors
+
+	       - "often accurate but can be unstable"
+
+	  1) Linear Models and Least Squares
+
+	     "solve" the quadratic equation in quotes by finding a
+             minimum
+
+	  2) Nearest-Neighbor Methods
+
+	     - majority of the closest (by specific metric) k neigbors
+               are of the class
+
+	     - k=1 - might lead to overfitting
+
+	  3) From Least Squares to Nearest Neighbors
+
+	     - defined later
+
+	       - variance: ca schwankung
+
+	       - bias: ca vorannahmen
+
+	     - ls: high bias, low variance
+
+	     - nn: low bias, high variance
+
+	     - knn - degrees of freedom: N / k
+
+	     - many models today are variations of knn and the linear
+               model
+
+       4) Statistical Decision Theory
+
+	  - minimize expected loss
+
+	    - knn: localized minimization
+
+	    - linear model: assume linearity
+
+	    - expected loss (for regression):
+
+	      - squared (L2) most often,
+
+	      - L1 has discontinuties in derivative (=nicht stetig diffbar)
+
+	    - expected loss for classification:
+
+	      - often zero-one loss function
+
+	      - results in Bayes classifiers
+
+	    - classification similar to regression
+
+	      - knn: localized conditional probability, estimated by
+                training sample proportions
+
+	      - linear: map to dummy variable
+
+       5) Local Methods in High Dimensions
+
+	  - unbiased methods like problematic supposedly more
+            problematic, as dimension rises
+
+       6) Statistical Models, Supervised Learning and Function
+          Approximation
+
+	  0) [@0]
+
+	     Try to approximate the I/O relationship f(x) via f\circ(x)
+
+	     1) A Statistical Model for the Joint Distribution Pr(X, Y )
+*** quotes
+    - Chapter 18 explores the “p ≫ N ” problem, which is learning in
+      high-dimensional feature spaces. These problems arise in many
+      areas, including genomic and proteomic studies, and document
+      classification.
+    - (Ends preface to the Second Edition)
+    - 7 Model Assessment and Selection
+    - 7.10.2 The Wrong and Right Way to Do Cross-validation
+    - 15 Random Forests
+    - 18 High-Dimensional Problems: p ≫ N
+    - 18.3.3 The Support Vector Classifier
+    - (ends Contents)
+    - Average percentage of words or characters in an email message
+      equal to the indicated word or character. We have chosen the
+      words and characters showing the largest difference between spam
+      and email.
+      |       | george |  you | your |   hp | free |  hpl |    ! |  our |   re |  edu | remove |
+      |-------+--------+------+------+------+------+------+------+------+------+------+--------|
+      | spam  |   0.00 | 2.26 | 1.38 | 0.02 | 0.52 | 0.01 | 0.51 | 0.51 | 0.13 | 0.01 |   0.28 |
+      | email |   1.27 | 1.27 | 0.44 | 0.90 | 0.07 | 0.43 | 0.11 | 0.18 | 0.42 | 0.29 |   0.01 |
+    - This is a classification problem for which the error rate needs
+      to be kept very low [...] In order to achieve this low error
+      rate, some objects can be assignedto a “don’t know” category,
+      and sorted instead by hand.
+    - splines, wavelets and regularization/penalization methods for a
+      single predictor, [...] kernel methods and local
+      regression. Both of these sets of methods are important building
+      blocks for high-dimensional learning techniques.
+    - At the end of each chapter we discuss computational considerations
+    - Chapters 1–4 be first read in sequence. Chapter 7 should also be
+      considered mandatory, as it covers central concepts that pertain
+      to all learning methods.
+    - (ends 1)
+    - predict the output Y via the model
+
+      Ŷ = β̂_{0} + \sum_{j=1}^{p} X_{j} β̂_{j} . (2.1)
+    - in vector form as an inner product
+
+      Ŷ = X^{T} β̂, (2.2)
+    - least squares. In this approach, we pick the coefficients β to
+      minimize the residual sum of squares
+
+      RSS(β) = \sum_{i=1}^{N} (y_{i} − x^{T}_{i} β)^{2}. (2.3)
+    - in matrix notation. We can write
+
+      RSS(β) = (y − Xβ)^{T} (y − Xβ), (2.4)
+    - the unique solution is given by
+
+      β̂ = (X^{T} X)^{−1} X^{T} y, (2.6)
+    - In the case of one Gaussian per class, we will see in Chapter 4
+      that a linear decision boundary is the best one can do, and that
+      our estimate is almost optimal. The region of overlap is
+      inevitable, and future data to be predicted will be plagued by
+      this overlap as well.
+    - (ends 2.3.1)
+    - linear decision boundary [...] has low variance and potentially
+      high bias.
+    - k-nearest-neighbor [...] high variance and low bias.
+    - 1-nearest-neighbor, the simplest of all, captures a large
+      percentage of the market for low-dimensional problems.
+    - Kernel methods use weights that decrease smoothly to zero with
+      distance from the target point, rather than the effective 0/1
+      weights used by k-nearest neighbors.
+    - Projection pursuit and neural network models consist of sums of
+      nonlinearly transformed linear models.
+    - (ends 2.3.3)
+    - X ∈ R^{p} input
+    - Y ∈ R output
+    - function f(X) for predicting Y
+    - /squared error loss/: L(Y, f(X)) = (Y − f (X))^{2} .
+    - EPE(f) = E(Y − f (X))^{2} (2.9)
+
+      = \int [y − f (x)]^{2} Pr(dx, dy) (2.10)
+
+      the /expected (squared) prediction error/
+    - The solution is
+
+      f (x) = E(Y |X = x), (2.13)
+
+      the conditional expectation, also known as the regression
+      function. Thus the best prediction of Y at any point X = x is
+      the conditional mean, when best is measured by average squared
+      error.
+    - (ends 2.4)
+    - In ten dimensions we need to cover 80% of the range of each
+      coordinate to capture 10% of the data.
+    - (ends 2.5)
+    - Thus it is not surprising that the analysis of high-dimensional
+      data requires either modification of procedures designed for the
+      N > p scenario, or entirely new procedures
+    - (ends 2.6.0)
+    - (ends 18.1)
+*** ref [[file:master.bib::elemstatlearn][Hastie et al. 2008: Elements Statistical Learning]]
 ** TODO [#C] [[./torspec/pt-spec.txt][Pluggable Transport Specification (Version 1)]]
 *** summary (stopped at [[file:torspec/pt-spec.txt::"TOR_PT_SERVER_TRANSPORT_OPTIONS"][3.2.3]])
     0) [@0] Abstract
@@ -11695,71 +11983,6 @@
 	     
 *** quotes
 *** ref [[file:master.bib::tor-spec-pt][Yawning 2015: Pluggable Transport Specification Version]]
-** TODO MOVE [#A] [[~/da/git/docs/onion.pdf][Anonymous Connections and Onion Routing]]
-*** summary
-    0) [@0] Abstract
-
-       - "Onion Routing is an infrastructure for private
-	 communication over a public network.
-
-       - Eavesdropping and traffic analysis are hampered by /onion
-	 routing/.
-
-    1) Introduction
-
-       - traffic analysis extracts data from who talks to whom
-
-       - side effect of onion routing: protect against this
-
-       - offer connection akin to TCP streams (and ATM AAL5)
-
-    2) Onion Routing Overview
-
-       0) [@0]
-
-          - instead of direct socket connection, connect through onion routers
-
-          - hides connection details
-
-            - hide identifying information from stream yourself to
-              hide from recipient
-
-            - data looks different from hop to hop
-
-            - each onion router can only identify previous and next
-              router on connection
-
-       1) Operational Overview
-
-          - /application proxy/ sends formatted messages to /onion proxy/ (=OP)
-
-          - OP constructs /onion/ and passes it to /entry funnel/
-
-          - passed on via /onion router/ s (OR), until it reaches
-            /exit funnel/, then to responder
-
-          - /onion/ contains route and key seed material at each layer
-
-          - data looks different at each layer
-
-          - each OR keeps track of non-expired
-
-          - routing on top of TCP/IP
-
-       2) Configurations
-*** quotes
-    1) Introduction
-       - Web based shopping or browsing of public databases should not
-         require revealing one's identity.
-       - Our implementation of anonymous connections, onion routing,
-         provides protection against eavesdropping as a side effect.
-    2) Onion Routing Overview
-       1) Operational Overview
-          - Therefore, an anonymous connection is as strong as its
-            strongest link, and even one honest node is enough to
-            maintain the privacy of the route.
-
-*** ref [[file:master.bib::anonymous-connections][G. et al. 1998: Anonymous]]
 ** TODO [#C] [[./xxx-multihop-padding-primitives.txt][Multihop Padding Primitives]]
 *** summary
     0. [@0] Overview and Direction
@@ -14348,212 +14571,6 @@
       refactoring it to remove the continue statement.
     - (ends bp)
 *** ref [[file:master.bib::javascript][Crockford 2008: JavaScript]]
-** TODO [#C] MOVE PART [[./ESLII_print4.pdf][Hastie - The Elements of Statistical Learning]]
-*** summary
-    1) Introduction
-
-       examples
-
-    2) Overview of Supervised Learning
-
-       1) inputs
-
-          == predictors (statistics)
-
-          == independent variables (statistics)
-
-	  == features (pattern recognition)
-
-	  outputs
-
-	  == responses (statistics)
-
-	  == dependent variables (statistics)
-
-       2) Variable Types and Terminology
-
-	  - qualitative aka discrete aka categorical variables aka factors
-
-	    example: handwritten digits, fisher's irises
-
-	  - regression for quantitative outputs Y, classification for
-            qualitative outputs G
-
-       3) Two Simple Approaches to Prediction: Least Squares and
-          Nearest Neighbors
-
-	  0) [@0]
-
-	     - linear model
-
-	       - "stable but possibly inaccurate predictions"
-
-	     - k-nearest neighbors
-
-	       - "often accurate but can be unstable"
-
-	  1) Linear Models and Least Squares
-
-	     "solve" the quadratic equation in quotes by finding a
-             minimum
-
-	  2) Nearest-Neighbor Methods
-
-	     - majority of the closest (by specific metric) k neigbors
-               are of the class
-
-	     - k=1 - might lead to overfitting
-
-	  3) From Least Squares to Nearest Neighbors
-
-	     - defined later
-
-	       - variance: ca schwankung
-
-	       - bias: ca vorannahmen
-
-	     - ls: high bias, low variance
-
-	     - nn: low bias, high variance
-
-	     - knn - degrees of freedom: N / k
-
-	     - many models today are variations of knn and the linear
-               model
-
-       4) Statistical Decision Theory
-
-	  - minimize expected loss
-
-	    - knn: localized minimization
-
-	    - linear model: assume linearity
-
-	    - expected loss (for regression):
-
-	      - squared (L2) most often,
-
-	      - L1 has discontinuties in derivative (=nicht stetig diffbar)
-
-	    - expected loss for classification:
-
-	      - often zero-one loss function
-
-	      - results in Bayes classifiers
-
-	    - classification similar to regression
-
-	      - knn: localized conditional probability, estimated by
-                training sample proportions
-
-	      - linear: map to dummy variable
-
-       5) Local Methods in High Dimensions
-
-	  - unbiased methods like problematic supposedly more
-            problematic, as dimension rises
-
-       6) Statistical Models, Supervised Learning and Function
-          Approximation
-
-	  0) [@0]
-
-	     Try to approximate the I/O relationship f(x) via f\circ(x)
-
-	     1) A Statistical Model for the Joint Distribution Pr(X, Y )
-*** quotes
-    - Chapter 18 explores the “p ≫ N ” problem, which is learning in
-      high-dimensional feature spaces. These problems arise in many
-      areas, including genomic and proteomic studies, and document
-      classification.
-    - (Ends preface to the Second Edition)
-    - 7 Model Assessment and Selection
-    - 7.10.2 The Wrong and Right Way to Do Cross-validation
-    - 15 Random Forests
-    - 18 High-Dimensional Problems: p ≫ N
-    - 18.3.3 The Support Vector Classifier
-    - (ends Contents)
-    - Average percentage of words or characters in an email message
-      equal to the indicated word or character. We have chosen the
-      words and characters showing the largest difference between spam
-      and email.
-      |       | george |  you | your |   hp | free |  hpl |    ! |  our |   re |  edu | remove |
-      |-------+--------+------+------+------+------+------+------+------+------+------+--------|
-      | spam  |   0.00 | 2.26 | 1.38 | 0.02 | 0.52 | 0.01 | 0.51 | 0.51 | 0.13 | 0.01 |   0.28 |
-      | email |   1.27 | 1.27 | 0.44 | 0.90 | 0.07 | 0.43 | 0.11 | 0.18 | 0.42 | 0.29 |   0.01 |
-    - This is a classification problem for which the error rate needs
-      to be kept very low [...] In order to achieve this low error
-      rate, some objects can be assignedto a “don’t know” category,
-      and sorted instead by hand.
-    - splines, wavelets and regularization/penalization methods for a
-      single predictor, [...] kernel methods and local
-      regression. Both of these sets of methods are important building
-      blocks for high-dimensional learning techniques.
-    - At the end of each chapter we discuss computational considerations
-    - Chapters 1–4 be first read in sequence. Chapter 7 should also be
-      considered mandatory, as it covers central concepts that pertain
-      to all learning methods.
-    - (ends 1)
-    - predict the output Y via the model
-
-      Ŷ = β̂_{0} + \sum_{j=1}^{p} X_{j} β̂_{j} . (2.1)
-    - in vector form as an inner product
-
-      Ŷ = X^{T} β̂, (2.2)
-    - least squares. In this approach, we pick the coefficients β to
-      minimize the residual sum of squares
-
-      RSS(β) = \sum_{i=1}^{N} (y_{i} − x^{T}_{i} β)^{2}. (2.3)
-    - in matrix notation. We can write
-
-      RSS(β) = (y − Xβ)^{T} (y − Xβ), (2.4)
-    - the unique solution is given by
-
-      β̂ = (X^{T} X)^{−1} X^{T} y, (2.6)
-    - In the case of one Gaussian per class, we will see in Chapter 4
-      that a linear decision boundary is the best one can do, and that
-      our estimate is almost optimal. The region of overlap is
-      inevitable, and future data to be predicted will be plagued by
-      this overlap as well.
-    - (ends 2.3.1)
-    - linear decision boundary [...] has low variance and potentially
-      high bias.
-    - k-nearest-neighbor [...] high variance and low bias.
-    - 1-nearest-neighbor, the simplest of all, captures a large
-      percentage of the market for low-dimensional problems.
-    - Kernel methods use weights that decrease smoothly to zero with
-      distance from the target point, rather than the effective 0/1
-      weights used by k-nearest neighbors.
-    - Projection pursuit and neural network models consist of sums of
-      nonlinearly transformed linear models.
-    - (ends 2.3.3)
-    - X ∈ R^{p} input
-    - Y ∈ R output
-    - function f(X) for predicting Y
-    - /squared error loss/: L(Y, f(X)) = (Y − f (X))^{2} .
-    - EPE(f) = E(Y − f (X))^{2} (2.9)
-
-      = \int [y − f (x)]^{2} Pr(dx, dy) (2.10)
-
-      the /expected (squared) prediction error/
-    - The solution is
-
-      f (x) = E(Y |X = x), (2.13)
-
-      the conditional expectation, also known as the regression
-      function. Thus the best prediction of Y at any point X = x is
-      the conditional mean, when best is measured by average squared
-      error.
-    - (ends 2.4)
-    - In ten dimensions we need to cover 80% of the range of each
-      coordinate to capture 10% of the data.
-    - (ends 2.5)
-    - Thus it is not surprising that the analysis of high-dimensional
-      data requires either modification of procedures designed for the
-      N > p scenario, or entirely new procedures
-    - (ends 2.6.0)
-    - (ends 18.1)
-*** ref [[file:master.bib::elemstatlearn][Hastie et al. 2008: Elements Statistical Learning]]
 ** PART [[file:///home/chive/IT-gg/js/Eloquent%20JavaScript/contents.html][Haverbeke - Eloquent Javascript]]
 *** summary
     8. [@8] Object-oriented Programming
@@ -18199,6 +18216,18 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
                database files (as specified in the \bibliography
                command)
 *** TODO ref
+** PART [[./Coefficient of determination - Wikipedia, the free encyclopedia.html]]
+*** summary
+    0) [@0] Summary
+
+       - coefficient of determination
+
+       - R^2 or r^2
+
+       - can be negative in some cases
+
+       - "proportion of the variance in the dependent variable that is
+         predictable from the independent variable"
 ** onion routing project
 *** [[~/da/git/docs/onion-routing_pet2000.pdf][Towards an Analysis of Onion Routing Security]]
 **** ref: [[file:master.bib::onion-routing:pet2000][Syverson et al. 2000: Towards Analysis Onion Routing Security]]
@@ -18544,33 +18573,6 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        2) HTML Application of Core DOM
 *** quotes
 *** ref
-** TODO MOVE [#A] [[./geurtz.pdf][Extremely randomized trees]]
-*** summary
-    0) [@0] Abstract
-
-       - method randomized ensemble method based on decision trees
-
-       - "randomizing strongly both attribute and cut-point choice
-         while splitting a tree node"
-
-       - evaluation: default parameters, strength (efficiency),
-         bias/variance, geometrical + kernel characterization
-
-    1) Introduction
-*** quotes
-*** ref [[file:master.bib::DBLP:journals/ml/GeurtsEW06][Geurts et al. 2006: Extremely]]
-** PART MOVE [[./Coefficient of determination - Wikipedia, the free encyclopedia.html]]
-*** summary
-    0) [@0] Summary
-
-       - coefficient of determination
-
-       - R^2 or r^2
-
-       - can be negative in some cases
-
-       - "proportion of the variance in the dependent variable that is
-         predictable from the independent variable"
 ** Beck - extreme Programming explained                               :hobby:
 *** summary
 *** quotes
@@ -18592,6 +18594,3 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
           newcent, palatino, helvet zur Verfügung. Binden Sie eines der
           Pakete mit =\usepackage= in Ihr Dokument ein, so wird für das
           gesamte Dokument die ausgewählte Schrift verwendet.
-** TODO MOVE Anonymity Loves Company
-*** TODO copy summary and quotes
-*** ref [[file:master.bib::usability:weis2006][Dingledine & Mathewson 2006: Anonymity Loves Company]]
