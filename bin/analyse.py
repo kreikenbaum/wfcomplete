@@ -239,13 +239,13 @@ def cross_test(argv):
         for place in argv[1:]:
             test[place] = to_X_y_dom(place)
 
-    print 'cross-validation'
+    print 'cross-validation on X,y'
     for esti in GOOD:
         print esti_name(esti),
         res = _test(X, y, esti)
         print '{}, {}'.format(res.mean(), res)
     for (place, (X2, y2, _)) in test.iteritems():
-        print '\ntrain on: {} VS test on: {}'.format(argv[0], place)
+        print '\ntrain on: {} VS test on: {}'.format(argv[1], place)
         for esti in GOOD:
             print '{}: {}'.format(esti_name(esti), _xtest(X, y, X2, y2, esti))
 
@@ -261,12 +261,12 @@ if __name__ == "__main__":
     # test_outlier_removal(counters)
     # cumul_vs_panchenko(counters)
 
-    # sys.argv = ['', 'disabled', 'a_i_noburst', 'a_ii_noburst']
-    # cross_test(sys.argv)
+    # sys.argv = ['', 'disabled/06-09@10/', '0.18.2/json-10/a_i_noburst/', '0.18.2/json-10/a_ii_noburst/', '0.15.3/json-10]
+    cross_test(sys.argv)
 
-    import os
-    PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'sw', 'p',
-                        'foreground-data', 'output-tcp')
-    counters = counter.Counter.all_from_panchenko(PATH)
-    (X, y ,y_dom) = to_features_cumul(counters)
-    _test(X, y, nj=1)
+#    import os
+#    PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'sw', 'p',
+#                        'foreground-data', 'output-tcp')
+#    counters = counter.Counter.all_from_panchenko(PATH)
+#    (X, y ,y_dom) = to_features_cumul(counters)
+#_test(X, y, nj=1)
