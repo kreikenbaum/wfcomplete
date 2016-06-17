@@ -144,8 +144,7 @@ def esti_name(estimator):
     return str(estimator.__class__).split('.')[-1].split("'")[0]
 
 def _test(X, y, estimator=GOOD[0], nj=JOBS_NUM, verbose=True):
-
-    '''tests estimator with X, y, prints type and result'''
+    '''tests estimator with X, y, @return result (ndarray)'''
     result = cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=nj)
     return result
 
@@ -154,18 +153,21 @@ def _xtest(X_train, y_train, X_test, y_test, esti):
     esti.fit(X_train, y_train)
     return esti.score(X_test, y_test)
 
-def my_grid(X, y, cs=np.logspace(11, 17, 7, base=2),
-            gammas=np.logspace(-3, 3, 7, base=2)):
+def my_grid(X, y, 
+            cs=np.logspace(-5, 15, 20, base=2),
+            gammas=np.logspace(-15, 3, 19, base=2)):
     '''grid-search on fixed params'''
-    from sklearn.grid_search import GridSearchCV
-    X_train, X_test, y_train, y_test = cross_validation.train_test_split(
-        X, y, test_size=0.25)
-    svc = svm.SVC()
-    clf = GridSearchCV(estimator=svc, verbose=2, n_jobs=-1,
-                       param_grid=dict(C=cs, gamma=gammas))
-    clf.fit(X_train, y_train)
-    print 'best score: {}'.format(clf.best_score_)
-    print 'with estimator: {}'.format(clf.best_estimator_)
+    best = None
+    bestres = 0
+    for c in cs:
+        for g in gammas:
+            clf = multiclass.OneVsRestClassifier(svm.SVC(gamma=g, C=c))
+            res = _test(X, y, clf)
+            if not best or bestres.mean() < res.mean():
+                best = clf
+                bestres = res
+    print 'best score: {}'.format(bestres.mean())
+    print 'with estimator: {}'.format(best)
 
 def outlier_removal_vs_without(counters):
     (X, y, y_domains) = to_features_cumul(panchenko_outlier_removal(counters))
@@ -261,7 +263,7 @@ if __name__ == "__main__":
     # test_outlier_removal(counters)
     # cumul_vs_panchenko(counters)
 
-    # sys.argv = ['', 'disabled/06-09@10/', '0.18.2/json-10/a_i_noburst/', '0.18.2/json-10/a_ii_noburst/', '0.15.3/json-10]
+    # sys.argv = ['', 'disabled/06-09@10/', '0.18.2/json-10/a_i_noburst/', '0.18.2/json-10/a_ii_noburst/', '0.15.3/json-10']
     cross_test(sys.argv)
 
 #    import os
