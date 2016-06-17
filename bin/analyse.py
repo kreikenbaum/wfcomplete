@@ -2,7 +2,7 @@
 '''Analyses (Panchenko's) features returned from Counter class'''
 
 import numpy as np
-from sklearn import svm, neighbors, cross_validation, ensemble, tree
+from sklearn import cross_validation, ensemble, multiclass, neighbors, svm, tree
 import doctest
 import logging
 import sys
@@ -143,15 +143,22 @@ def esti_name(estimator):
     '''@return name of estimator class'''
     return str(estimator.__class__).split('.')[-1].split("'")[0]
 
-def _test(X, y, estimator=GOOD[0], nj=JOBS_NUM, verbose=True):
+def _test(X, y, estimator=GOOD[0], nj=JOBS_NUM, verbose=True, scale=False):
     '''tests estimator with X, y, @return result (ndarray)'''
-    result = cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=nj)
-    return result
+    if scale:
+        X = np.copy(X)
+        X /= np.max(np.abs(X), axis=0)
+    return cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=nj)
 
-def _xtest(X_train, y_train, X_test, y_test, esti):
+def _xtest(X_train, y_train, X_test, y_test, estimator, scale=False):
     '''cross_tests with estimator'''
-    esti.fit(X_train, y_train)
-    return esti.score(X_test, y_test)
+    if scale:
+        X_train = np.copy(X_train)
+        X_test = np.copy(X_test)
+        X_train /= np.max(np.abs(X_train), axis=0)
+        X_test /= np.max(np.abs(X_test), axis=0)
+    estimator.fit(X_train, y_train)
+    return estimator.score(X_test, y_test)
 
 def my_grid(X, y,
             cs=np.logspace(-5, 15, 20, base=2),
@@ -161,13 +168,15 @@ def my_grid(X, y,
     bestres = 0
     for c in cs:
         for g in gammas:
-            clf = multiclass.OneVsRestClassifier(svm.SVC(gamma=g, C=c))
+            clf = multiclass.OneVsRestClassifier(svm.SVC(gamma=g, C=c),
+                                                 n_jobs=JOBS_NUM)
             res = _test(X, y, clf)
             if not best or bestres.mean() < res.mean():
                 best = clf
                 bestres = res
     print 'best score: {}'.format(bestres.mean())
     print 'with estimator: {}'.format(best)
+    return best
 
 def outlier_removal_vs_without(counters):
     (X, y, y_domains) = to_features_cumul(panchenko_outlier_removal(counters))
@@ -183,6 +192,34 @@ def _compare(X, y, X2, y2, estimators=GOOD):
     for esti in estimators:
         _test(X, y, esti)
         _test(X2, y2, esti)
+
+def cross_test(argv):
+    '''cross test on dir: 1st has training data, rest have test'''
+    # call with 1: x-validate test that
+    # call with 2+: train 1 (whole), test 2,3,4,...
+    if len(argv) < 1:
+        (X, y, y_domains) = to_X_y_dom('.', False)
+    else:
+        (X, y, y_domains) = to_X_y_dom(argv[1], True)
+
+    if len(argv) > 1:
+        test = {}
+        for place in argv[1:]:
+            test[place] = to_X_y_dom(place)
+
+    print 'cross-validation on X,y'
+    for esti in GOOD:
+        scale = True if 'SVC' in str(esti) else False
+        print esti_name(esti),
+        res = _test(X, y, esti, scale=scale)
+        print '{}, {}'.format(res.mean(), res)
+    for (place, (X2, y2, _)) in test.iteritems():
+        print '\ntrain on: {} VS test on: {}'.format(argv[1], place)
+        for esti in GOOD:
+            scale = True if 'SVC' in str(esti) else False
+            print '{}: {}'.format(esti_name(esti),
+                                  _xtest(X, y, X2, y2, esti, scale=scale))
+
 
     #_test(X, y, svm.SVC(C=10**-20, gamma=4.175318936560409e-10))
     #_test(X, y, svm.SVC(kernel='linear')) #problematic, but best
@@ -227,43 +264,19 @@ def _compare(X, y, X2, y2, estimators=GOOD):
     #                            y[ybounds2[0]:ybounds2[1]])
     #     return math.sqrt(fixedm + variable1 + variable2)
 
-def cross_test(argv):
-    '''cross test on dir: 1st has training data, rest have test'''
-    # call with 1: x-validate test that
-    # call with 2+: train 1 (whole), test 2,3,4,...
-    if len(argv) < 1:
-        (X, y, y_domains) = to_X_y_dom('.', False)
-    else:
-        (X, y, y_domains) = to_X_y_dom(argv[1], True)
-
-    if len(argv) > 1:
-        test = {}
-        for place in argv[1:]:
-            test[place] = to_X_y_dom(place)
-
-    print 'cross-validation on X,y'
-    for esti in GOOD:
-        print esti_name(esti),
-        res = _test(X, y, esti)
-        print '{}, {}'.format(res.mean(), res)
-    for (place, (X2, y2, _)) in test.iteritems():
-        print '\ntrain on: {} VS test on: {}'.format(argv[1], place)
-        for esti in GOOD:
-            print '{}: {}'.format(esti_name(esti), _xtest(X, y, X2, y2, esti))
-
 if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
-
-    # if by hand: change to the right directory before importing
-    # PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')
-    # import os; os.chdir(os.path.join(PATH, 'disabled'))
 
     # counters = counter.Counter.all_from_dir(sys.argv))
     # test_outlier_removal(counters)
     # cumul_vs_panchenko(counters)
 
-    # sys.argv = ['', 'disabled/06-09@10/', '0.18.2/json-10/a_i_noburst/', '0.18.2/json-10/a_ii_noburst/', '0.15.3/json-10']
+    # if by hand: change to the right directory before importing
+    # import os
+    # PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')
+    # os.chdir(PATH)
+    # sys.argv = ['', 'disabled/06-09@10/', '0.18.2/json-10/a_i_noburst/', '0.18.2/json-10/a_ii_noburst/', '0.18.2/json-10/b_i_from_100', '0.15.3/json-10/cache', '0.15.3/json-10/nocache']
     cross_test(sys.argv)
 
 #    import os
