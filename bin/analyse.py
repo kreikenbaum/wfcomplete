@@ -153,7 +153,7 @@ def _xtest(X_train, y_train, X_test, y_test, esti):
     esti.fit(X_train, y_train)
     return esti.score(X_test, y_test)
 
-def my_grid(X, y, 
+def my_grid(X, y,
             cs=np.logspace(-5, 15, 20, base=2),
             gammas=np.logspace(-15, 3, 19, base=2)):
     '''grid-search on fixed params'''
