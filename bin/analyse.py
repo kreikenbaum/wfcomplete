@@ -9,7 +9,7 @@ import sys
 
 import counter
 
-JOBS_NUM = 1
+JOBS_NUM = 3
 #JOBS_NUM = 4 #maybe at duckstein, but for panchenko problematic
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
@@ -147,7 +147,9 @@ def _test(X, y, estimator=GOOD[0], nj=JOBS_NUM, verbose=True, scale=False):
     '''tests estimator with X, y, @return result (ndarray)'''
     if scale:
         X = np.copy(X)
-        X /= np.max(np.abs(X), axis=0)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            X /= np.max(np.abs(X), axis=0)
+        X = np.nan_to_num(X)
     return cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=nj)
 
 def _xtest(X_train, y_train, X_test, y_test, estimator, scale=False):
@@ -155,27 +157,27 @@ def _xtest(X_train, y_train, X_test, y_test, estimator, scale=False):
     if scale:
         X_train = np.copy(X_train)
         X_test = np.copy(X_test)
-        X_train /= np.max(np.abs(X_train), axis=0)
-        X_test /= np.max(np.abs(X_test), axis=0)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            X_train /= np.max(np.abs(X_train), axis=0)
+            X_test /= np.max(np.abs(X_test), axis=0)
+        X_train = np.nan_to_num(X_train)
+        X_test = np.nan_to_num(X_test)
     estimator.fit(X_train, y_train)
     return estimator.score(X_test, y_test)
 
 def my_grid(X, y,
-            cs=np.logspace(-5, 15, 20, base=2),
-            gammas=np.logspace(-15, 3, 19, base=2)):
+            cs=np.logspace(5, 15, 10, base=2),
+            gammas=np.logspace(-6, 3, 10, base=2)):
     '''grid-search on fixed params'''
     best = None
     bestres = 0
     for c in cs:
         for g in gammas:
-            clf = multiclass.OneVsRestClassifier(svm.SVC(gamma=g, C=c),
-                                                 n_jobs=JOBS_NUM)
+            clf =multiclass.OneVsRestClassifier(svm.SVC(gamma=g, C=c))
             res = _test(X, y, clf)
             if not best or bestres.mean() < res.mean():
                 best = clf
                 bestres = res
-    print 'best score: {}'.format(bestres.mean())
-    print 'with estimator: {}'.format(best)
     return best
 
 def outlier_removal_vs_without(counters):
@@ -207,6 +209,8 @@ def cross_test(argv):
         for place in argv[1:]:
             test[place] = to_X_y_dom(place)
 
+    svm = my_grid(X, y)
+    GOOD.append(svm)
     print 'cross-validation on X,y'
     for esti in GOOD:
         scale = True if 'SVC' in str(esti) else False
