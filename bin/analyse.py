@@ -16,6 +16,26 @@ LOGLEVEL = logging.INFO
 #LOGLEVEL = logging.WARN
 TIME_SEPARATOR = '@'
 
+def average_bytes(counter_dict):
+    '''@return the average size over all traces'''
+    count = 0
+    total = 0
+    for c_domain in counter_dict.values():
+        for counter in c_domain:
+            count += 1
+            total += counter.get_total_both()
+    return float(total) / count
+
+def average_duration(counter_dict):
+    '''@return the average duration over all traces'''
+    count = 0
+    total = 0
+    for c_domain in counter_dict.values():
+        for counter in c_domain:
+            count += 1
+            total += counter.timing[-1][0]
+    return float(total) / count
+
 def to_features(counters):
     '''transforms counter data to panchenko.v1-feature vector pair (X,y)'''
     max_lengths = counters.values()[0][0].variable_lengths()
@@ -76,13 +96,18 @@ def to_libsvm(X, y, fname='libsvm_in'):
                 f.write('{}:{} '.format(no+1, val))
         f.write('\n')
 
-def to_X_y_dom(place, outlier_removal=True):
-    '''@return (X,y,y_domains) tuple for Counters in =place= after cumul
-    and outlier removal if {@code True}'''
+def to_X_y_dom_size_d(place, outlier_removal=True):
+    '''@return (X,y,y_domains, avg_size, avg_duration)
+
+    tuple for Counters in =place= after cumul (and outlier removal if
+    {@code True})
+    '''
     cs = counter.Counter.all_from_dir(place)
     if outlier_removal:
         cs = panchenko_outlier_removal(cs)
-    return to_features_cumul(cs)
+    size = average_bytes(cs)
+    duration = average_duration(cs)
+    return to_features_cumul(cs) + (size, duration)
 
 ### outlier removal
 def p_or_tiny(counter_list):
@@ -195,30 +220,33 @@ def _compare(X, y, X2, y2, estimators=GOOD):
         _test(X, y, esti)
         _test(X2, y2, esti)
 
-def cross_test(argv):
+def cross_test(argv, with_svm=False):
     '''cross test on dir: 1st has training data, rest have test'''
     # call with 1: x-validate test that
     # call with 2+: train 1 (whole), test 2,3,4,...
     if len(argv) < 1:
-        (X, y, y_domains) = to_X_y_dom('.', False)
+        (X, y, y_domains, size, d) = to_X_y_dom_size_d('.', False)
     else:
-        (X, y, y_domains) = to_X_y_dom(argv[1], True)
+        (X, y, y_domains, size, d) = to_X_y_dom_size_d(argv[1], True)
 
     if len(argv) > 1:
         test = {}
         for place in argv[1:]:
-            test[place] = to_X_y_dom(place)
+            test[place] = to_X_y_dom_size_d(place)
 
-    svm = my_grid(X, y)
-    GOOD.append(svm)
+    if with_svm:
+        svm = my_grid(X, y)
+        GOOD.append(svm)
+
     print 'cross-validation on X,y'
     for esti in GOOD:
         scale = True if 'SVC' in str(esti) else False
         print esti_name(esti),
         res = _test(X, y, esti, scale=scale)
         print '{}, {}'.format(res.mean(), res)
-    for (place, (X2, y2, _)) in test.iteritems():
-        print '\ntrain on: {} VS test on: {}'.format(argv[1], place)
+    for (place, (X2, y2, _, size2, d2)) in test.iteritems():
+        print '\ntrain on: {} VS test on: {} (overhead {}%)'.format(
+            argv[1], place, 100.0*(size2/size -1))
         for esti in GOOD:
             scale = True if 'SVC' in str(esti) else False
             print '{}: {}'.format(esti_name(esti),

@@ -115,13 +115,6 @@ def _sum_stream(packets):
     out.append(tmp)
     return out
 
-def total_bytes(counter_dict):
-    '''@return the total bytes of all objects combined'''
-    out = 0
-    for c_domain in counter_dict.values():
-        out += sum((x.get_size() for x in c_domain))
-    return out
-
 def pad(row, upto=300):
     '''enlarges row to have upto entries (padded with 0)
     >>> pad([2], 20)
@@ -155,7 +148,7 @@ class Counter(object):
     @staticmethod
     def from_panchenko_data(line):
         '''creates Counter from panchenko's test data
-        >>> Counter.from_panchenko_data('c.com 1234 1235:300').get_size()
+        >>> Counter.from_panchenko_data('c.com 1234 1235:300').get_total_both()
         300
         '''
         tmp = Counter()
@@ -289,8 +282,8 @@ class Counter(object):
         '''returns total incoming bytes'''
         return _num_bytes(self.packets)[0]
 
-    def get_size(self):
-        '''@returns total bytes transferred in this trace'''
+    def get_total_both(self):
+        '''@returns sum of incoming and outgoing bytes transferred in this'''
         (incoming, outgoing) = _num_bytes(self.packets)
         return incoming + outgoing
 
