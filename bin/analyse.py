@@ -11,8 +11,8 @@ import counter
 
 JOBS_NUM = 3
 #JOBS_NUM = 4 #maybe at duckstein, but for panchenko problematic
-#LOGLEVEL = logging.DEBUG
-LOGLEVEL = logging.INFO
+LOGLEVEL = logging.DEBUG
+#LOGLEVEL = logging.INFO
 #LOGLEVEL = logging.WARN
 TIME_SEPARATOR = '@'
 
@@ -191,19 +191,27 @@ def _xtest(X_train, y_train, X_test, y_test, estimator, scale=False):
     return estimator.score(X_test, y_test)
 
 def my_grid(X, y,
-            cs=np.logspace(5, 15, 10, base=2),
-            gammas=np.logspace(-6, 3, 10, base=2)):
+            cs=np.logspace(10, 20, 11, base=2),
+            gammas=np.logspace(3, 8, 6, base=2)):
     '''grid-search on fixed params'''
     best = None
     bestres = 0
     for c in cs:
         for g in gammas:
-            clf =multiclass.OneVsRestClassifier(svm.SVC(gamma=g, C=c))
-            res = _test(X, y, clf)
+            clf = multiclass.OneVsRestClassifier(svm.SVC(gamma=g, C=c))
+            res = _test(X, y, clf, scale=True)
             if not best or bestres.mean() < res.mean():
                 best = clf
                 bestres = res
+            logging.debug('c: {:8} g: {:10} acc: {}'.format(c, g, res.mean()))
+    print 'optimal svm: ' + str(best)
+    if best.classifier.c in (cs[0], cs[-1])
+    or best.classifier.g in (gammas[0], gammas[-1]):
+        logging.warn('optimal parameters found at the border')
     return best
+
+#def smart_grid(X, y, c_low=2**0, c_high=2**40, g_low=2**-10, g_high=2**30):
+#    '''gradient-descent grid-search'''
 
 def outlier_removal_vs_without(counters):
     (X, y, y_domains) = to_features_cumul(panchenko_outlier_removal(counters))
@@ -309,7 +317,8 @@ if __name__ == "__main__":
     # PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')
     # os.chdir(PATH)
     # sys.argv = ['', 'disabled/06-09@10/', '0.18.2/json-10/a_i_noburst/', '0.18.2/json-10/a_ii_noburst/', '0.18.2/json-10/b_i_from_100', '0.15.3/json-10/cache', '0.15.3/json-10/nocache']
-    cross_test(sys.argv)
+    # sys.argv = ['', 'disabled/wfpad', 'wfpad']
+    cross_test(sys.argv, with_svm=True)
 
 #    import os
 #    PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'sw', 'p',

@@ -62,14 +62,14 @@
 * WAIT Abstract
 * TODO Introduction (=basics) [0%]
 ** KEYWORDS Website Fingerprinting [0/10]
-*** TODO integrate: [[*visual%20inspection%20of%20data][visual inspection of data {0/5}]]
     Website fingerprinting\cite{hintz02} aims to deduce which webpage
     a user is visiting via an anonymizing proxy. It does so based on
     order, size, and timing of data packets.
 
     To illustrate the task of a website fingerprinter, consider these
     graphical traces of the same web page, where box height signifies
-    amount of data and width the duration until the next packet:
+    amount of data[fn::positive values are for sent data, negative for
+    received] and width the duration until the next packet:
 
     #+CAPTION: example 1 of craigslist.org traffic
     #+ATTR_LATEX: :float nil :width 0.45\textwidth
@@ -77,6 +77,24 @@
     #+CAPTION: example 2 of craigslist.org traffic
     #+ATTR_LATEX: :float nil :width 0.45\textwidth
     [[./pictures/craigslist_org@1445585277.png]]
+
+    #+CAPTION: example 3 of craigslist.org traffic
+    #+ATTR_LATEX: :float nil :width 0.45\textwidth
+    [[./pictures/craigslist_org@1445486337.png]]
+    #+CAPTION: example 4 of craigslist.org traffic
+    #+ATTR_LATEX: :float nil :width 0.45\textwidth
+    [[./pictures/craigslist_org@1445527033.png]]
+
+    According to Cai et al. \cite{a-systematic}, the tuples (delay,
+    packet size) above contain all relevant information of a trace.
+
+    To make sense of this very noisy data, the first website
+    fingerprinters used packet sizes. As protocols
+    evolved\cite{rfc2616} and anonymization systems such as
+    Tor\cite{tor-design} were used, this approach became
+    infeasible.
+
+
 
     - kind of traffic analysis
       - without seeing content, deduce information
@@ -87,18 +105,14 @@
     - analyse order
     - machine learning
     - classification
+*** TODO integrate: [[*visual%20inspection%20of%20data][visual inspection of data {0/5}]]
 *** CHECK traffic analysis
     Website fingerprinting is a type of traffic
-    analysis\cite[10.3]{applied96}. As mentioned by
-    Schneier\cite{applied96}, metadata such as:
-
-    - who talking to whom
-    - when
-    - how often
-    - for how long
-    - coincidence with outside events
-
-    allows an attacker to "learn much" about the communication itself.
+    analysis\cite[10.3]{applied96}. According to
+    Schneier\cite{applied96}, metadata such as: who is talking to
+    whom, when, how often, for how long, coincidence with outside
+    events, etc.  allows an attacker to "learn much" about the
+    communication itself.
 **** TODO [#C] codebreakers book look for traffic analysis
 *** WRITE web site, HTTP transactions
     - main html, embedded objects
@@ -122,6 +136,30 @@
       - machine learning
       - features
 *** WRITE Related Work
+    /Traffic analysis/ was mentioned by Schneier's seminal book
+    \cite{applied96} /Applied Cryptography/.  The first mention of
+    applying it against encrypted internet communication
+    dates to Wagner and Schneier's analysis of the SSL 3.0
+    protocol\cite{SSL}, where they attribute it to Bennet Yee.
+
+    Against SSL, which reveals the site being browsed to but hides the
+    pages accessed, a first successful attack[fn::cryptographers talk
+    of attempts to circumvent a protocol as /attack/\cite{applied96}]
+    was carried out by both Mistry and Raman \cite{quantifying} and
+    Cheng and Avnur\cite{ssl-traffic-analysis} at Berkeley in 1998.
+
+    The term /website fingerprinting/ was coined in Hintz's analysis
+    of the SafeWeb anonymizing proxy\cite{hintz02}, where he
+    qualitatively classified which site was being visited (and proposed
+    the first defenses).
+
+    As the above attacks, both Herrmann et
+    al\cite{ccsw09-fingerprinting} and Liberatore and
+    Levine\cite{Liberatore:2006} used only packet lenghts, but
+    employed machine learning techniques.
+
+    - made harder by protocol changes and tor
+
     - origin traffic analysis: ssl-schneier-personal comm
       - berkeley
       - term
@@ -193,21 +231,21 @@
 * Methods (=methods) [0%]
 ** TODO Motivation [0/2]
 *** WRITE Why
-    - problems per solution
-      - wfpad: modify all of tor,
-        - yet problem is browser traffic
-          - and traffic is app-dependent
-        - deployability: all/nothing
-        - modify firefox codebase, when addon suffices
-        - maybe also efficiency
-          - histograms
-            - not fitting: no need to hide that traffic occurs, just where to
-              - compare to real fingerprints
-            - less efficient
-      - walkie-talkie: also modify all
-        - bit slower
-        - not preferred method
-        - TD: compare to wfpad accuracy/efficiency
+    - (started before both were published)
+    - problems wfpad: modify all of tor,
+      - yet problem is browser traffic
+        - and traffic is app-dependent
+      - deployability: all/nothing
+      - modify firefox codebase, when addon suffices
+      - maybe also efficiency
+        - histograms
+          - not fitting: no need to hide *that* traffic occurs, just where to,
+          - compare to real fingerprints
+          - less efficient
+    - problems walkie-talkie: also modify all
+      - bit slower
+      - not preferred method
+      - TD: compare to wfpad accuracy/efficiency
     - conversely:
       - addon: easier to modify/implement/test
         - *easy to use* if not default (currently needs server, but
@@ -284,7 +322,10 @@
     - network applications
 * TODO Results and Evaluation [0%]
 ** KEYWORDS panchenko v1 vs cumul
-   - similar results for different classifiers
+   - both: similar results for different classifiers
+   - accuracy hit of about 20%?
+   - best parameters a bit outside of panchenko's range
+   - same classifier
 *** brainstorm
    - panchenko1: effectiveness (+ added)
      - different classifiers
@@ -303,7 +344,7 @@
     - addon
       - different versions
       - different factors
-** KEYWORDS Conclusion
+* KEYWORDS Conclusion
 * TODO topics [0/127]
 ** Teaser
    #+BEGIN_QUOTE
@@ -380,9 +421,8 @@
     observed.]
 *** TODO visual inspection of data [0/5]
     To exemplify the task of a websitefingerprinter, consider the
-    following pictures which represent complete (considered to contain
-    all relevant information \cite{a-systematic} packet trace data in
-    the form of (delay, packet size), which is
+    following pictures which represent complete ( packet trace data in
+    the form of , which is
 **** facebook.com
      #+CAPTION: facebook.com example 1
      #+ATTR_LATEX: :width 0.3\linewidth
@@ -797,13 +837,13 @@
     The idea of using traffic analysis to gather information about
     encrypted traffic was mentioned in \cite[10.3]{applied96} and
     applied in the analysis of SSL 3.0 by Wagner and
-    Schneier\cite{SSL}, where it was attributed to Bennet Yee.
+    Schneier\cite{SSL}
 
     - quantifying etc
 
-    The term /website fingerprinting/ was coined by
-    Hintz in 2002. A successful attack against single-hop proxies was
-    carried out by Herrmann et al. in 2009.
+    The term /website fingerprinting/ was coined by Hintz in 2002. A
+    successful attack against single-hop proxies was carried out by
+    Herrmann et al. in 2009.
 
     The website fingerprinting attack scenario is already described in
     the original Tor design paper\cite{tor-design}. Previous to
