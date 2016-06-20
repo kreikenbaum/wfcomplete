@@ -36,21 +36,37 @@ def average_duration(counter_dict):
             total += counter.timing[-1][0]
     return float(total) / count
 
-def to_features(counters):
-    '''transforms counter data to panchenko.v1-feature vector pair (X,y)'''
+def find_max_lengths(counters):
+    '''determines maximum lengths of variable-length features'''
     max_lengths = counters.values()[0][0].variable_lengths()
     all_lengths = []
     for domain, domain_values in counters.iteritems():
-        logging.info('domain %s to feature array', domain)
+        logging.debug('domain %s to feature array', domain)
         for trace in domain_values:
             all_lengths.append(trace.variable_lengths())
-#    for lengths in [x.variable_lengths()
-#                    for dv in counters.values() for x in dv]:
-        # faster would be to flatten
     for lengths in all_lengths:
         for key in lengths.keys():
             if max_lengths[key] < lengths[key]:
                 max_lengths[key] = lengths[key]
+    return max_lengths
+
+def max_dict(d1, d2):
+    '''@return biggest elements in both dicts (deep max). They need to
+have the same members (with possibly different values)
+    >>> a = {3: 4, 4: 7}; b = {3: 5, 4: 6}; max_dict(a, b)
+    {3: 5, 4: 7}
+    '''
+    out = {}
+    for (k, v) in d1.iteritems():
+        out[k] = max(v, d2[k])
+    return out
+
+def to_features(counters, max_lengths=None):
+    '''transforms counter data to panchenko.v1-feature vector pair (X,y)
+
+    if max_lengths is given, use that instead of trying to determine'''
+    if not max_lengths:
+        max_lengths = find_max_lengths(counters)
 
     X_in = []
     out_y = []
@@ -96,14 +112,14 @@ def to_libsvm(X, y, fname='libsvm_in'):
                 f.write('{}:{} '.format(no+1, val))
         f.write('\n')
 
-def to_X_y_dom_size_d(place, outlier_removal=True):
+def to_X_y_dom_size_d(place, out_rm=True):
     '''@return (X,y,y_domains, avg_size, avg_duration)
 
     tuple for Counters in =place= after cumul (and outlier removal if
-    {@code True})
+    out_rm == {@code True})
     '''
     cs = counter.Counter.all_from_dir(place)
-    if outlier_removal:
+    if out_rm:
         cs = panchenko_outlier_removal(cs)
     size = average_bytes(cs)
     duration = average_duration(cs)
@@ -191,7 +207,8 @@ def _xtest(X_train, y_train, X_test, y_test, estimator, scale=False):
     return estimator.score(X_test, y_test)
 
 def my_grid(X, y,
-            cs=np.logspace(10, 20, 11, base=2),
+#            cs=np.logspace(0, 10, 11, base=2),
+            cs=[256, 512, 1024],
             gammas=np.logspace(3, 8, 6, base=2)):
     '''grid-search on fixed params'''
     best = None
@@ -205,13 +222,37 @@ def my_grid(X, y,
                 bestres = res
             logging.debug('c: {:8} g: {:10} acc: {}'.format(c, g, res.mean()))
     print 'optimal svm: ' + str(best)
-    if best.classifier.c in (cs[0], cs[-1])
-    or best.classifier.g in (gammas[0], gammas[-1]):
-        logging.warn('optimal parameters found at the border')
+    if best.estimator.C in (cs[0], cs[-1]) or best.estimator.gamma in (gammas[0], gammas[-1]):
+        logging.warn('optimal parameters found at the border. c:%f, g:%f',
+                     best.estimator.C, best.estimator.gamma)
     return best
 
-#def smart_grid(X, y, c_low=2**0, c_high=2**40, g_low=2**-10, g_high=2**30):
-#    '''gradient-descent grid-search'''
+# def smart_grid(X, y):
+#     '''gradient-descent grid-search'''
+#     from scipy import optimize
+#     fun = lambda (c,g): -_testcg(X, y, c, g)
+#     optimize.minimize(fun, (1, 1), jac=False, 
+
+def _testcg(X, y, c, gamma):
+    '''cross-evaluates ovr.svc with parameters c,gamma on X, y'''
+    clf = multiclass.OneVsRestClassifier(svm.SVC(C=c, gamma=gamma))
+    return _test(X, y, clf, scale=True, nj=1).mean()
+
+# def smart_grid(X, y, stepmin = 2**3,
+#                c_low=float(2**0), c_high=float(2**40), 
+#                g_low=float(2**-10), g_high=float(2**30)):
+#     '''gradient-descent grid-search'''
+#     # init
+#     results = {}
+#     c_step = (c_high - c_low) / 2
+#     g_step = (g_high - g_low) / 2
+#     for c in (c_low, c_low + c_step, c_high):
+#         for g in (g_low, g_low + g_step, g_high):
+#             results[(c, g)] = _testcg(X, y, c, g)
+#     while c_step > stepmin and g_step > stepmin:
+#         # find max value
+#
+# 
 
 def outlier_removal_vs_without(counters):
     (X, y, y_domains) = to_features_cumul(panchenko_outlier_removal(counters))
@@ -228,20 +269,50 @@ def _compare(X, y, X2, y2, estimators=GOOD):
         _test(X, y, esti)
         _test(X2, y2, esti)
 
-def cross_test(argv, with_svm=False):
+def counter_get(place, outlier_removal=True):
+    '''helper to get counters w/o outlier_removal'''
+    if outlier_removal:
+        return panchenko_outlier_removal(counter.Counter.all_from_dir('.'))
+    else:
+        return counter.Counter.all_from_dir('.')
+
+def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
     '''cross test on dir: 1st has training data, rest have test'''
     # call with 1: x-validate test that
     # call with 2+: train 1 (whole), test 2,3,4,...
-    if len(argv) < 1:
-        (X, y, y_domains, size, d) = to_X_y_dom_size_d('.', False)
-    else:
-        (X, y, y_domains, size, d) = to_X_y_dom_size_d(argv[1], True)
+    # generate
+    # cs = counter.Counter.all_from_dir(place)
+    # if out_rm:
+    #     cs = panchenko_outlier_removal(cs)
+    # size = average_bytes(cs)
+    # duration = average_duration(cs)
+    # return to_features_cumul(cs) + (size, duration)
 
-    if len(argv) > 1:
+    # if len(argv) < 2:
+    #     c = counter_get('.', outlier_rm)
+    # else:
+    #     c = counter_get(argv[1], outlier_rm)
+
+    # if len(argv) > 2:
+    #     test = {}
+    #     for place in argv[2:]:
+    #         test[place] = counter_get(place, outlier_rm)
+
+    # if cumul:
+        
+    
+
+    if len(argv) < 2:
+        (X, y, y_domains, size, d) = to_X_y_dom_size_d('.')
+    else:
+        (X, y, y_domains, size, d) = to_X_y_dom_size_d(argv[1])
+
+    if len(argv) > 2:
         test = {}
-        for place in argv[1:]:
+        for place in argv[2:]:
             test[place] = to_X_y_dom_size_d(place)
 
+    #evaluate
     if with_svm:
         svm = my_grid(X, y)
         GOOD.append(svm)

@@ -336,7 +336,6 @@ class Counter(object):
         '''sums up etc collected features'''
         if self.name is None:
             self.name = self.packets
-        logging.debug("_postprocess for %s", self.name)
 
         if self.fixed is not None:
             return
@@ -354,11 +353,9 @@ class Counter(object):
 
         # html response marker, (request must have been sent before)
         self.fixed['html_marker'] = self.variable['size_markers'][1]
-        logging.debug('fixed: %s', self.fixed)
         # size_incoming size_outgoing
         (self.fixed['total_in'], self.fixed['total_out']) = (
             [_discretize(x, 10000) for x in _num_bytes(self.packets)])
-        logging.debug('fixed: %s', self.fixed)
         # number markers
         self.variable['number_markers'] = _sum_numbers(self.packets)
         # occurring packet sizes in + out
@@ -366,19 +363,15 @@ class Counter(object):
             [x for x in self.packets if x > 0])), 2))
         self.fixed['num_sizes_in'] = (_discretize(len(set(
             [x for x in self.packets if x < 0])), 2))
-        logging.debug('fixed: %s', self.fixed)
         # helper
         (packets_in, packets_out) = _num_packets(self.packets)
         # percentage incoming packets
         self.fixed['percentage_in'] = (
             _discretize(100 * packets_in /(packets_in + packets_out), 5))
-        logging.debug('fixed: %s', self.fixed)
         # number incoming
         self.fixed['count_in'] = _discretize(packets_in, 15)
-        logging.debug('fixed: %s', self.fixed)
         # number outgoing
         self.fixed['count_out'] = _discretize(packets_out, 15)
-        logging.debug('fixed: %s', self.fixed)
         # duration
         self.fixed['duration'] = self.timing[-1][0]
         # variable lengths test
