@@ -61,13 +61,14 @@
 #+LATEX_HEADER: }}
 * WAIT Abstract
 * TODO Introduction (=basics) [0%]
-** KEYWORDS Website Fingerprinting [0/10]
-    Website fingerprinting\cite{hintz02} aims to deduce which webpage
-    a user is visiting via an anonymizing proxy. It does so based on
-    order, size, and timing of data packets.
-
+** TODO Website Fingerprinting [0/10]
+   Website fingerprinting\cite{hintz02} aims to deduce which web page
+   a user is visiting via an anonymizing proxy. It does so based on
+   order, size, and timing of data packets.
+*** KEYWORDS Introduction
     To illustrate the task of a website fingerprinter, consider these
-    graphical traces of the same web page, where box height signifies
+    graphical traces[fn::see appendix [[#wf-pictures]] for the creation of
+    these pictures] of the same web page, where box height signifies
     amount of data[fn::positive values are for sent data, negative for
     received] and width the duration until the next packet:
 
@@ -136,11 +137,12 @@
       - machine learning
       - features
 *** WRITE Related Work
-    /Traffic analysis/ was mentioned by Schneier's seminal book
-    \cite{applied96} /Applied Cryptography/.  The first mention of
-    applying it against encrypted internet communication
+    Schneier's seminal book \cite{applied96} /Applied Cryptography/
+    deals briefly with /Traffic analysis/, as does /Practical
+    Cryptography/ by Ferguson and Schneier\cite{practical}. The first
+    mention of applying it against encrypted internet communication
     dates to Wagner and Schneier's analysis of the SSL 3.0
-    protocol\cite{SSL}, where they attribute it to Bennet Yee.
+    protocol\cite{SSL}, attributed to Bennet Yee.
 
     Against SSL, which reveals the site being browsed to but hides the
     pages accessed, a first successful attack[fn::cryptographers talk
@@ -323,19 +325,18 @@
 * TODO Results and Evaluation [0%]
 ** KEYWORDS panchenko v1 vs cumul
    - both: similar results for different classifiers
+   - panchenko v1:
+     - takes longer
+     - is less accurate
+     - is more work: vector length normalisation [for cross-test]
    - accuracy hit of about 20%?
-   - best parameters a bit outside of panchenko's range
+   - best parameters sometimes outside of panchenko's range
    - same classifier
-*** brainstorm
-   - panchenko1: effectiveness (+ added)
-     - different classifiers
-   - panchenko2:
-     - better
-     - or results
-     - panchenko's dataset
 ** TODO Evaluation of Defenses [0/3]
 *** KEYWORDS Evaluation of Addon
     - different versions
+      - 0.18 over-engineered?
+      - scenarios
     - different factors
 *** KEYWORDS sota (practical): wtfpad
 *** KEYWORDS sota (theoretical): walkie-talkie
@@ -376,12 +377,6 @@
     Repressalien zu groß war. (td: quote)
 *** WAIT may to (ohne) (falls richtig)
 ** TODO Website Fingerprinting [0/60]
-*** TODO What is Website Fingerprinting
-    Website fingerprinting\cite{hintz02} can be used to discover which
-    webpages or websites a user visits via an anonymizing proxy. It is
-    a type of traffic analysis, where characteristics
-    of (encrypted) traffic are used to infer conjectures about metadata
-    and content.
 *** TODO What happens during a website request
     When a browser such as Mozilla Firefox[fn:: \url{mozilla.org}]
     retrieves a website, it does many things under-the-hood.
@@ -449,26 +444,6 @@
      #+CAPTION: craigslist.org example 4
      #+ATTR_LATEX: :width 0.3  \linewidth
      [[./pictures/craigslist_org@1445442917.png]]
-**** creation of pictures
-     The pictures were created by the commands
-
-     #+BEGIN_EXAMPLE
-      for fb in $(ls | grep facebook); do
-        python ~/da/bin/counter.py ./$fb  | tail -1 | sed 's/),/\n/g' | \
-            tr -d "'()][" > /tmp/times;
-        gnuplot -e "set terminal png size 1024,680; \
-                set output \"/tmp/${fb}.png\"; plot '/tmp/times' with boxes;";
-      done
-     #+END_EXAMPLE
-
-     and respectively for craigslist, in the directories containing the
-     pcap files.
-
-     These commands first extract the timing attributes (at git commit
-     791af76 the last line of the output of counter.py), format it for
-     gnuplot (inserting appropriate newlines via =sed= and removing
-     extra characters via =tr=), and =gnuplot= s it to a png file with
-     the name of the trace file as prefix.
 **** TODO when done, format in LaTeX (if not here) to two-column layout
 **** TODO visual representation of CUMUL
      - Panchenko et al.'s recent approach allows for the visual
@@ -2041,6 +2016,29 @@
 *** Control module User
     <<user.js>>
     #+INCLUDE: "./cover/js/user.js" src js
+** WF-Trace Pictures
+   :PROPERTIES:
+   :CUSTOM_ID: wf-pictures
+   :END:
+   The pictures were created by the commands
+
+   #+BEGIN_EXAMPLE
+    for fb in $(ls | grep facebook); do
+      python ~/da/bin/counter.py ./$fb  | tail -1 | sed 's/),/\n/g' | \
+          tr -d "'()][" > /tmp/times;
+      gnuplot -e "set terminal png size 1024,680; \
+              set output \"/tmp/${fb}.png\"; plot '/tmp/times' with boxes;";
+    done
+   #+END_EXAMPLE
+
+   and respectively for craigslist, in the directories containing the
+   pcap files.
+
+   These commands first extract the timing attributes (at git commit
+   791af76 the last line of the output of counter.py), format it for
+   gnuplot (inserting appropriate newlines via =sed= and removing
+   extra characters via =tr=), and =gnuplot= s it to a png file with
+   the name of the trace file as prefix.
 * unused
 ** from [[*transform to panchenko-features]]
   The code to examine a single trace file is in =analyze_file()=

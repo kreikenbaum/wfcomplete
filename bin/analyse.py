@@ -11,8 +11,8 @@ import counter
 
 JOBS_NUM = 3
 #JOBS_NUM = 4 #maybe at duckstein, but for panchenko problematic
-LOGLEVEL = logging.DEBUG
-#LOGLEVEL = logging.INFO
+#LOGLEVEL = logging.DEBUG
+LOGLEVEL = logging.INFO
 #LOGLEVEL = logging.WARN
 TIME_SEPARATOR = '@'
 
@@ -41,7 +41,6 @@ def find_max_lengths(counters):
     max_lengths = counters.values()[0][0].variable_lengths()
     all_lengths = []
     for domain, domain_values in counters.iteritems():
-        logging.debug('domain %s to feature array', domain)
         for trace in domain_values:
             all_lengths.append(trace.variable_lengths())
     for lengths in all_lengths:
@@ -207,9 +206,8 @@ def _xtest(X_train, y_train, X_test, y_test, estimator, scale=False):
     return estimator.score(X_test, y_test)
 
 def my_grid(X, y,
-#            cs=np.logspace(0, 10, 11, base=2),
-            cs=[256, 512, 1024],
-            gammas=np.logspace(3, 8, 6, base=2)):
+            cs=np.logspace(-1, 9, 6, base=2),
+            gammas=np.logspace(-8, 6, 6, base=2)):
     '''grid-search on fixed params'''
     best = None
     bestres = 0
@@ -238,21 +236,38 @@ def _testcg(X, y, c, gamma):
     clf = multiclass.OneVsRestClassifier(svm.SVC(C=c, gamma=gamma))
     return _test(X, y, clf, scale=True, nj=1).mean()
 
-# def smart_grid(X, y, stepmin = 2**3,
-#                c_low=float(2**0), c_high=float(2**40), 
-#                g_low=float(2**-10), g_high=float(2**30)):
-#     '''gradient-descent grid-search'''
-#     # init
-#     results = {}
-#     c_step = (c_high - c_low) / 2
-#     g_step = (g_high - g_low) / 2
-#     for c in (c_low, c_low + c_step, c_high):
-#         for g in (g_low, g_low + g_step, g_high):
-#             results[(c, g)] = _testcg(X, y, c, g)
-#     while c_step > stepmin and g_step > stepmin:
-#         # find max value
-#
-# 
+def smart_grid(X, y, stepmin = 2, c_low=-2, c_high=18, g_low=-12, g_high=8):
+    ''' ''smarter'' grid-search, params are exponents of 2'''
+    import math
+    # init
+    results = {}
+    c_bound = (c_low, c_high)
+    g_bound = (g_low, g_high)
+    while c_bound[1] - c_bound[0] > stepmin and g_bound[1] - g_bound[0] > stepmin:
+        print 'iteration with bounds: {}, {}'.format(c_bound, g_bound)
+        for c in np.logspace(c_bound[0], c_bound[1], 4, base=2):
+            for g in np.logspace(g_bound[0], g_bound[1], 4, base=2):
+                if (c,g) not in results:
+                    results[(c,g)] = _testcg(X, y, c, g)
+        # find max, reset bounds, continue
+        best = None
+        maxval = 0
+        for ((c,g), v) in results.iteritems():
+            if v > maxval:
+                best = (math.log(c), math.log(g))
+                maxval = v
+        print 'best: {} with {}'.format(best, maxval)
+        if best[0] in c_bound:
+            c_plus = 0.5* (c_bound[1] - c_bound[0])
+        else:
+            c_plus = 0.25* (c_bound[1] - c_bound[0])
+        if best[1] in g_bound:
+            g_plus = 0.5* (g_bound[1] - g_bound[0])
+        else:
+            g_plus = 0.25* (g_bound[1] - g_bound[0])
+        c_bound = (best[0] - c_plus, best[0] + c_plus)
+        g_bound = (best[1] - g_plus, best[1] + g_plus)
+    return multiclass.OneVsRestClassifier(svm.SVC(C=2**best[0], gamma=2**best[1]))
 
 def outlier_removal_vs_without(counters):
     (X, y, y_domains) = to_features_cumul(panchenko_outlier_removal(counters))
@@ -272,60 +287,65 @@ def _compare(X, y, X2, y2, estimators=GOOD):
 def counter_get(place, outlier_removal=True):
     '''helper to get counters w/o outlier_removal'''
     if outlier_removal:
-        return panchenko_outlier_removal(counter.Counter.all_from_dir('.'))
+        return panchenko_outlier_removal(counter.Counter.all_from_dir(place))
     else:
-        return counter.Counter.all_from_dir('.')
+        return counter.Counter.all_from_dir(place)
+
+def _gen_counters(places, outlier_removal=True):
+    '''@return dict of {counters for directories} in {@code places}'''
+    out = {}
+    if len(places) == 0:
+        out['.'] = counter_get('.', outlier_removal)
+
+    for p in places:
+        out[p] = counter_get(p, outlier_removal)
+
+    return out
 
 def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
-    '''cross test on dir: 1st has training data, rest have test'''
+    '''cross test on dirs: 1st has training data, rest have test
+
+    argv is like sys.argv, cumul triggers CUMUL. if false: panchenko 1'''
     # call with 1: x-validate test that
     # call with 2+: train 1 (whole), test 2,3,4,...
-    # generate
-    # cs = counter.Counter.all_from_dir(place)
-    # if out_rm:
-    #     cs = panchenko_outlier_removal(cs)
-    # size = average_bytes(cs)
-    # duration = average_duration(cs)
-    # return to_features_cumul(cs) + (size, duration)
+    places = _gen_counters(argv[1:], outlier_rm)
+    sizes = {k: average_bytes(v) for (k,v) in places.iteritems()}
+    durations = {k: average_duration(v) for (k,v) in places.iteritems()}
 
-    # if len(argv) < 2:
-    #     c = counter_get('.', outlier_rm)
-    # else:
-    #     c = counter_get(argv[1], outlier_rm)
+    place0 = argv[1] if len(argv) > 1 else '.'
 
-    # if len(argv) > 2:
-    #     test = {}
-    #     for place in argv[2:]:
-    #         test[place] = counter_get(place, outlier_rm)
-
-    # if cumul:
-        
-    
-
-    if len(argv) < 2:
-        (X, y, y_domains, size, d) = to_X_y_dom_size_d('.')
+    # X,y for training set
+    if cumul:
+        (X, y, y_dom) = to_features_cumul(places[place0])
     else:
-        (X, y, y_domains, size, d) = to_X_y_dom_size_d(argv[1])
+        (X, y, y_dom) = to_features(places[place0])
 
-    if len(argv) > 2:
-        test = {}
-        for place in argv[2:]:
-            test[place] = to_X_y_dom_size_d(place)
-
-    #evaluate
     if with_svm:
         svm = my_grid(X, y)
         GOOD.append(svm)
 
+    # evaluate accuracy on training set
     print 'cross-validation on X,y'
     for esti in GOOD:
         scale = True if 'SVC' in str(esti) else False
         print esti_name(esti),
         res = _test(X, y, esti, scale=scale)
         print '{}, {}'.format(res.mean(), res)
-    for (place, (X2, y2, _, size2, d2)) in test.iteritems():
+
+    # vs test sets
+    for (place, its_counters) in places.iteritems():
+        if place == place0:
+            continue
         print '\ntrain on: {} VS test on: {} (overhead {}%)'.format(
-            argv[1], place, 100.0*(size2/size -1))
+            place0, place, 100.0*(sizes[place]/sizes[place0] -1))
+        if cumul:
+            (X2, y2, _) = to_features_cumul(its_counters)
+        else:
+            l = max_dict(find_max_lengths(places[place0]),
+                         find_max_lengths(its_counters))
+            (X, y, y_dom) = to_features(places[place0], l)
+            (X2, y2, y_dom2) = to_features(its_counters, l)
+
         for esti in GOOD:
             scale = True if 'SVC' in str(esti) else False
             print '{}: {}'.format(esti_name(esti),
@@ -384,12 +404,10 @@ if __name__ == "__main__":
     # cumul_vs_panchenko(counters)
 
     # if by hand: change to the right directory before importing
-    # import os
-    # PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')
-    # os.chdir(PATH)
-    # sys.argv = ['', 'disabled/06-09@10/', '0.18.2/json-10/a_i_noburst/', '0.18.2/json-10/a_ii_noburst/', '0.18.2/json-10/b_i_from_100', '0.15.3/json-10/cache', '0.15.3/json-10/nocache']
+    # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
+    # sys.argv = ['', 'disabled/06-09@10/', '0.18.2/json-10/a_i_noburst/', '0.18.2/json-10/a_ii_noburst/', '0.15.3/json-10/cache', '0.15.3/json-10/nocache']
     # sys.argv = ['', 'disabled/wfpad', 'wfpad']
-    cross_test(sys.argv, with_svm=True)
+    cross_test(sys.argv, with_svm=True, cumul=False)
 
 #    import os
 #    PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'sw', 'p',
