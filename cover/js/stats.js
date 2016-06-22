@@ -64,7 +64,7 @@ exports.numberEmbeddedObjects = (factor) => numberEmbeddedObjects(factor);
 // exports.parsingTime = parsingTime;
 
 function requestLength() {
-    return uniform_(0, REQUEST_LENGTH_MAX);
+    return uniform(0, REQUEST_LENGTH_MAX);
 }
 exports.requestLength = requestLength;
 
@@ -74,6 +74,12 @@ function withProbability(chance) {
     return random.uniform01() < chance;
 }
 exports.withProbability = withProbability;
+
+/** sample from uniform distribution*/
+function uniform(min=0, max=1) {
+    return random.uniform01() * (max - min) + min;
+}
+exports.uniform = uniform;
 
 // TESTING
 /** mean of lognormal_(HTML_MU, HTML_SIGMA) */
@@ -115,16 +121,11 @@ function normal_(mu, sigma) {
     var p1, p2;
     var p = 2;
     while ( p > 1.0 ) {
-	p1 = uniform_(-1, 1);
-	p2 = uniform_(-1, 1);
+	p1 = uniform(-1, 1);
+	p2 = uniform(-1, 1);
         p = p1 * p1 + p2 * p2;
     }
     return mu + sigma * p1 * Math.sqrt(-2 * Math.log(p) / p);
-}
-
-/** sample from uniform distribution*/
-function uniform_(min, max) {
-    return random.uniform01() * (max - min) + min;
 }
 
 // code courtesy of "Computer Generation of Statistical Distributions"

@@ -219,7 +219,6 @@ def my_grid(X, y,
                 best = clf
                 bestres = res
             logging.debug('c: {:8} g: {:10} acc: {}'.format(c, g, res.mean()))
-    print 'optimal svm: ' + str(best)
     if best.estimator.C in (cs[0], cs[-1]) or best.estimator.gamma in (gammas[0], gammas[-1]):
         logging.warn('optimal parameters found at the border. c:%f, g:%f',
                      best.estimator.C, best.estimator.gamma)
@@ -245,8 +244,8 @@ def smart_grid(X, y, stepmin = 2, c_low=-2, c_high=18, g_low=-12, g_high=8):
     g_bound = (g_low, g_high)
     while c_bound[1] - c_bound[0] > stepmin and g_bound[1] - g_bound[0] > stepmin:
         print 'iteration with bounds: {}, {}'.format(c_bound, g_bound)
-        for c in np.logspace(c_bound[0], c_bound[1], 4, base=2):
-            for g in np.logspace(g_bound[0], g_bound[1], 4, base=2):
+        for c in np.logspace(c_bound[0], c_bound[1], 5, base=2):
+            for g in np.logspace(g_bound[0], g_bound[1], 5, base=2):
                 if (c,g) not in results:
                     results[(c,g)] = _testcg(X, y, c, g)
         # find max, reset bounds, continue
@@ -256,7 +255,6 @@ def smart_grid(X, y, stepmin = 2, c_low=-2, c_high=18, g_low=-12, g_high=8):
             if v > maxval:
                 best = (math.log(c), math.log(g))
                 maxval = v
-        print 'best: {} with {}'.format(best, maxval)
         if best[0] in c_bound:
             c_plus = 0.5* (c_bound[1] - c_bound[0])
         else:
@@ -322,6 +320,8 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
 
     if with_svm:
         svm = my_grid(X, y)
+#        svm = smart_grid(X, y) #enabled if ranges are not clear
+        logging.info('grid result: %s', svm)
         GOOD.append(svm)
 
     # evaluate accuracy on training set
@@ -336,7 +336,7 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
     for (place, its_counters) in places.iteritems():
         if place == place0:
             continue
-        print '\ntrain on: {} VS test on: {} (overhead {}%)'.format(
+        print '\ntrain: {} VS {} (overhead {}%)'.format(
             place0, place, 100.0*(sizes[place]/sizes[place0] -1))
         if cumul:
             (X2, y2, _) = to_features_cumul(its_counters)
@@ -407,7 +407,7 @@ if __name__ == "__main__":
     # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
     # sys.argv = ['', 'disabled/06-09@10/', '0.18.2/json-10/a_i_noburst/', '0.18.2/json-10/a_ii_noburst/', '0.15.3/json-10/cache', '0.15.3/json-10/nocache']
     # sys.argv = ['', 'disabled/wfpad', 'wfpad']
-    cross_test(sys.argv, with_svm=True, cumul=False)
+    cross_test(sys.argv, with_svm=True) #, cumul=False)
 
 #    import os
 #    PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'sw', 'p',

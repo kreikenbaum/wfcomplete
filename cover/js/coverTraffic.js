@@ -16,7 +16,8 @@ const FACTOR = 1 + (Simple.prefs.factor / 100);
 /** minimum probability of also requesting a cover element per embedded */
 const MIN_PROB = 0.1; // td: test and think through
 
-const LOAD = require('./load.js');
+//const LOAD = require('./load.js');
+const LOAD = require('./proxy_sum_load.js');
 
 /**
  * Creates cover traffic. Once on creation, then on {@code loadNext()}.
@@ -29,6 +30,7 @@ function CoverTraffic(targetURL, load=LOAD) {
 
     this.site = {};
     this.target = {};
+    this.url = targetURL; // testing
 
     if ( Simple.prefs.sizes ) { //  A: KNOWN SIZES IF KNOWN
 	this.site.html = this.htmlStrategyA(targetURL);
@@ -48,6 +50,7 @@ function CoverTraffic(targetURL, load=LOAD) {
 
     this.prob = Math.max(this.target.numEmbedded / this.site.numEmbedded,
 			 MIN_PROB);
+    console.log(this);
 
     this.load.sized(this.target.html);
 }
@@ -136,3 +139,4 @@ CoverTraffic.prototype.numStrategyB = function(targetURL) {
 };
 
 exports.CoverTraffic = CoverTraffic;
+

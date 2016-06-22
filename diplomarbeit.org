@@ -1,6 +1,6 @@
 #+TITLE: Selective Cover Traffic
 #+TODO: KEYWORDS WRITE CHECK EVA DANIEL | FINAL
-#+TODO: TODO | WAIT DONE
+#+TODO: TODO WAIT | DONE
 * Configuration							    :ARCHIVE:
 #+LATEX_CLASS_OPTIONS: [a4paper,10pt]
 #+LATEX_HEADER: \usepackage{adjustbox}
@@ -61,16 +61,16 @@
 #+LATEX_HEADER: }}
 * WAIT Abstract
 * TODO Introduction (=basics) [0%]
-** TODO Website Fingerprinting [0/10]
+** TODO Website Fingerprinting [0/17]
    Website fingerprinting\cite{hintz02} aims to deduce which web page
    a user is visiting via an anonymizing proxy. It does so based on
    order, size, and timing of data packets.
-*** KEYWORDS Introduction
+*** CHECK Visual representation of traces
     To illustrate the task of a website fingerprinter, consider these
     graphical traces[fn::see appendix [[#wf-pictures]] for the creation of
-    these pictures] of the same web page, where box height signifies
-    amount of data[fn::positive values are for sent data, negative for
-    received] and width the duration until the next packet:
+    these pictures] of two web pages, where box height signifies
+    amount of data[fn::positive values are for received data, negative
+    for sent] and width the duration until the next packet:
 
     #+CAPTION: example 1 of craigslist.org traffic
     #+ATTR_LATEX: :float nil :width 0.45\textwidth
@@ -86,39 +86,35 @@
     #+ATTR_LATEX: :float nil :width 0.45\textwidth
     [[./pictures/craigslist_org@1445527033.png]]
 
+
+    #+CAPTION: facebook.com example 1
+    #+ATTR_LATEX: :float nil :width 0.45\textwidth
+    [[./pictures/facebook_com@1445350531.png]]
+    #+CAPTION: facebook.com example 2
+    #+ATTR_LATEX: :float nil :width 0.45\textwidth
+    [[file:pictures/facebook_com@1445422155.png]]
+
+    #+CAPTION: facebook.com example 3
+    #+ATTR_LATEX: :float nil :width 0.45\textwidth
+    [[file:pictures/facebook_com@1445425799.png]]
+    #+CAPTION: facebook.com example 4
+    #+ATTR_LATEX: :float nil :width 0.45\textwidth
+    [[file:pictures/facebook_com@1445429729.png]]
+
     According to Cai et al. \cite{a-systematic}, the tuples (delay,
     packet size) above contain all relevant information of a trace.
 
-    To make sense of this very noisy data, the first website
-    fingerprinters used packet sizes. As protocols
-    evolved\cite{rfc2616} and anonymization systems such as
-    Tor\cite{tor-design} were used, this approach became
-    infeasible.
-
-
-
-    - kind of traffic analysis
-      - without seeing content, deduce information
-    - wf: without seeing sender/receiver, deduce which website is
-      being visited
-    - see bits and bytes,
-    - see requests and responses
-    - analyse order
-    - machine learning
-    - classification
-*** TODO integrate: [[*visual%20inspection%20of%20data][visual inspection of data {0/5}]]
-*** CHECK traffic analysis
-    Website fingerprinting is a type of traffic
-    analysis\cite[10.3]{applied96}. According to
-    Schneier\cite{applied96}, metadata such as: who is talking to
-    whom, when, how often, for how long, coincidence with outside
-    events, etc.  allows an attacker to "learn much" about the
-    communication itself.
-**** TODO [#C] codebreakers book look for traffic analysis
+    To make sense of this noisy data, the first website fingerprinters
+    considered only packet sizes. As protocols evolved\cite{rfc2616}
+    and anonymization systems such as Tor\cite{tor-design} were used,
+    this approach became infeasible.
+**** WAIT when done, format in LaTeX (if not here) to two-column layout
 *** WRITE web site, HTTP transactions
     - main html, embedded objects
     - multiplexing, pipelining
     - http traffic distribution
+**** TODO move below here
+**** TODO include [[*What%20happens%20during%20a%20website%20request][What happens during a website request]]
 *** WRITE features
     - patterns to features
     - why features
@@ -126,8 +122,24 @@
     - total_size
     - top-five
     - CUMUL
+    - dyer: features count
       #+CAPTION: from presentation at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
       [[./pictures/cumul_resized_aus_paper.png]]
+**** TODO visual representation of CUMUL
+     - Panchenko et al.'s recent approach allows for the visual
+       comparison of website traces.
+     - see images etc
+     - see how it's done
+     - example
+       #+CAPTION: CUMUL example from {\url https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
+       #+ATTR_LATEX: :width \linewidth
+       #+BEGIN_EXAMPLE
+       [[./pictures/cumul_resized_aus_paper.jpg]]
+       #+END_EXAMPLE
+***** TODO or just link here to CUMUL
+***** TODO think about order of this (at cumul, at visual, mention other...)
+      then formulate correctly
+***** TODO get picture to work
 *** brainstorm                                                      :ARCHIVE:
     - see traffic
       - http
@@ -136,13 +148,27 @@
       - naive
       - machine learning
       - features
+    - kind of traffic analysis
+      - without seeing content, deduce information
+    - see bits and bytes,
+    - see requests and responses
+    - analyse order
+    - machine learning
+    - classification
+    - made harder by protocol changes and tor
+*** WRITE attacks
+    - hintz
+    - herrmann (bayes)
+    - panchenko (svm)
+    - cumul + k-forest + wang-knn
+**** TODO include [[*Algorithms][Algorithms {0/4}]]
 *** WRITE Related Work
-    Schneier's seminal book \cite{applied96} /Applied Cryptography/
-    deals briefly with /Traffic analysis/, as does /Practical
-    Cryptography/ by Ferguson and Schneier\cite{practical}. The first
-    mention of applying it against encrypted internet communication
-    dates to Wagner and Schneier's analysis of the SSL 3.0
-    protocol\cite{SSL}, attributed to Bennet Yee.
+    Schneier's seminal books /Applied Cryptography/\cite{applied96}
+    and (with Ferguson) /Practical Cryptography/\cite{practical} deal
+    briefly with /Traffic analysis/, of which website fingerprinting
+    is a subtask. The first mention of applying it against encrypted
+    internet communication dates to Wagner and Schneier's analysis of
+    the SSL 3.0 protocol\cite{SSL}, and is attributed to Bennet Yee.
 
     Against SSL, which reveals the site being browsed to but hides the
     pages accessed, a first successful attack[fn::cryptographers talk
@@ -157,16 +183,9 @@
 
     As the above attacks, both Herrmann et
     al\cite{ccsw09-fingerprinting} and Liberatore and
-    Levine\cite{Liberatore:2006} used only packet lenghts, but
+    Levine\cite{Liberatore:2006} used only packet lenghts, but they
     employed machine learning techniques.
 
-    - made harder by protocol changes and tor
-
-    - origin traffic analysis: ssl-schneier-personal comm
-      - berkeley
-      - term
-    - hintz: safeweb, wf-term
-    - herrmann, ..., liberatore: lengths
     - dyer: most important are the features, similar results for naive
     - on feature importances:
       - panchenko
@@ -181,7 +200,7 @@
 **** WRITE SVM
      - how works
      - multi-class strategies
-**** KEYWORDS extremely randomized trees
+**** KEYWORDS forests of random trees
      - how works
 **** brainstorm                                                     :ARCHIVE:
      - SVM
@@ -381,15 +400,13 @@
     When a browser such as Mozilla Firefox[fn:: \url{mozilla.org}]
     retrieves a website, it does many things under-the-hood.
 
-    First, it retrieves the main object
-
-    When a user visits a webpage, the browser first sends a request
-    for the HTML page. The webserver answers with that HTML page. The
-    browser requests the objects embedded into that page, such as
-    stylesheets (\verb|<link rel="stylesheet">|), fonts
-    (=@font-face=\cite{moz-fontface}), images (=<img>=),
-    scripts(=<script>=), etc.  Each of these files has a specific
-    size, which might be detected in the TCP-flow.
+    First, it retrieves the main object: the browser first sends a
+    request for the HTML page. The webserver answers with that HTML
+    page. The browser the reads the page and requests the objects
+    embedded into that page, such as stylesheets (\verb|<link
+    rel="stylesheet">|), fonts (=@font-face=\cite{moz-fontface}),
+    images (=<img>=), scripts(=<script>=), etc.  Each of these files
+    has a specific size, which might be detected in the TCP-flow.
 
     Thus, the objects embedded within a page could allow a local
     passive observer to infer which web page from a set of pages the
@@ -414,52 +431,6 @@
     website allows the government to limit its search to, say three,
     subjects. This gives the whistleblower away.[fn:: Such has not been
     observed.]
-*** TODO visual inspection of data [0/5]
-    To exemplify the task of a websitefingerprinter, consider the
-    following pictures which represent complete ( packet trace data in
-    the form of , which is
-**** facebook.com
-     #+CAPTION: facebook.com example 1
-     #+ATTR_LATEX: :width 0.3\linewidth
-     [[./pictures/facebook_com@1445350531.png]]
-     #+CAPTION: facebook.com example 2
-     #+ATTR_LATEX: :width 0.3\linewidth
-     [[file:pictures/facebook_com@1445422155.png]]
-     #+CAPTION: facebook.com example 3
-     #+ATTR_LATEX: :width 0.3  \linewidth
-     [[file:pictures/facebook_com@1445425799.png]]
-     #+CAPTION: facebook.com example 4
-     #+ATTR_LATEX: :width 0.3  \linewidth
-     [[file:pictures/facebook_com@1445429729.png]]
-**** craigslist.org
-     #+CAPTION: craigslist.org example 1
-     #+ATTR_LATEX: :width 0.3  \linewidth
-     [[./pictures/craigslist_org@1445352269.png]]
-     #+CAPTION: craigslist.org example 2
-     #+ATTR_LATEX: :width 0.3  \linewidth
-     [[./pictures/craigslist_org@1445428146.png]]
-     #+CAPTION: craigslist.org example 3
-     #+ATTR_LATEX: :width 0.3  \linewidth
-     [[./pictures/craigslist_org@1445435476.png]]
-     #+CAPTION: craigslist.org example 4
-     #+ATTR_LATEX: :width 0.3  \linewidth
-     [[./pictures/craigslist_org@1445442917.png]]
-**** TODO when done, format in LaTeX (if not here) to two-column layout
-**** TODO visual representation of CUMUL
-     - Panchenko et al.'s recent approach allows for the visual
-       comparison of website traces.
-     - see images etc
-     - see how it's done
-     - example
-       #+CAPTION: CUMUL example from {\url https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
-       #+ATTR_LATEX: :width \linewidth
-       #+BEGIN_EXAMPLE
-       [[./pictures/cumul_resized_aus_paper.jpg]]
-       #+END_EXAMPLE
-***** TODO or just link here to CUMUL
-***** TODO think about order of this (at cumul, at visual, mention other...)
-      then formulate correctly
-***** TODO get picture to work
 *** tools
 **** TODO capture alternatives [0/1]
      Several applications can capture network traffic to files. The most
@@ -985,9 +956,86 @@
     kernel.
 **** practical wf: Capturing traces
 **** TODO move to subsection related work
+*** CHECK which features work well
+    As stressed by Perry in \cite{critique}, analysis of which feature
+    contribute the most towards classification is important. Panchenko
+    et al. \cite{panchenko} provided a qualitative analysis. Hayes and
+    Danezis \cite{kfingerprint} used forests of randomized trees, which
+    provide feature importance estimation.[fn:: f.ex. in scikit-learn
+    \cite{scikit-learn} via the =_feature_importances= attribute]
+
+    As Dyer et al \cite{oakland2012-peekaboo} noted and experiments with
+    Panchenko et al's \cite{panchenko} estimator support (see
+    [[different-classifiers]]), you can get good accuracy with several
+    classifiers, given the right features.
+
+    As determined by Hayes and Danezis \cite{kfingerprint}, the top-five
+    features are the number (both absolute and percentage of total) of
+    both incoming and outgoing packets. The standard deviation of the
+    packet ordering list [fn:: Panchenko et al \cite{panchenko} call
+    these features /Number Markers/] completes the top five. Each added
+    feature increases accuracy, yet with nearly the same accuracy for 30 as
+    for the total of 150 features.
 ** TODO Addon Design and Implementation [0/50]
 *** [[*description of add-on][description of add-on]]
 *** Defenses
+*** CHECK Variations of Cover Traffic
+    There are two variations how to generate Cover Traffic.
+
+    1. Does knowing web page characteristics, such as [[#find sizes of HTML-documents][the size of the
+       HTML-webpage]] and [[number_embedded][number of embedded objects]] help in generating
+       cover traffic? While it seems so at first, it can be evaluated if
+       [[HTML traffic
+        model][educated guessing]] might work better.
+
+       In a closed world, it is possible to always know these sizes
+       beforehand. If unknown, the random variates from the [[HTML traffic model][HTML traffic
+       model]] are used. [fn:: The size of each embedded element is always
+       drawn from the HTML traffic model.].
+
+    2. Given a webpage and its size, how much traffic should be generated?
+
+       While just adding random traffic to each page might enhance
+       anonymity, always adding from the same distribution would
+       probably be wasteful, as site-specific values might prove to
+       obfuscate better.  A target size and number of objects has to be
+       determined. How to choose this is the second parameter.
+
+       One approach is to group the webpages by their size into bins and
+       to set the bin border as the target size, as all webpages in the
+       bin must have a size less than or equal the border. This approach
+       mimics that taken by Wang et al. in \cite{effective} with the
+       bins being equivalent to the anonymity sets / partitions. For the
+       biggest bin, its median size is currently chosen.[fn:: The optimal
+       size for the biggest bin is a parameter that should be evaluated
+       as well.]
+
+       The other approach is to have a single target distribution from
+       which values are sampled each time, once again from the [[HTML traffic model][HTML
+       traffic model]].
+**** TODO move this f.ex. to coverTraffic, maybe move this section below
+    From the target values, the webpage's html-size and number of
+    elements (variation A/B) is subtracted.
+
+    At the same time of the HTML-query, another query for the remaining
+    HTML-size (or a token amount if too small) is sent. Concerning the
+    embedded elements, the ratio of (target-site)/site is computed. For
+    each element, this ratio determines the number of requests for
+    embedded elements (these are always of random sizes, once again from
+    the [[HTML traffic model][HTML traffic model]]. See [[*cover%20traffic%20distribution%20generation][cover traffic distribution generation]]
+    for the algorithms.
+**** TODO end move section
+    This leads to the following variations:
+
+    1) bloom binning (I) with known sizes (A)
+    2) bloom binning (I) with random sizes (B)
+    3) one target distribution (II) with original size from bloom (A),
+    4) one target distribution (II) with random sizes (B)
+
+    | SIZES \ TARGETS | I: bloom binning | II: one distribution |
+    |-----------------+------------------+----------------------|
+    | A: known sizes  |                  |                      |
+    | B: random sizes |                  |                      |
 *** TODO Mozilla Add-On Sdk [0/12]
 **** CHECK Introduction to the Mozilla Add-On Sdk
      #INDEX: XUL
@@ -1717,84 +1765,6 @@
     truncated at 0.999918739 quantile
   - embeddedSize: ebd
   - numEmbeddedObjects: truncated gamma instead of gamma
-* CHECK Variations of Cover Traffic
-  There are two variations how to generate Cover Traffic.
-
-  1. Does knowing web page characteristics, such as [[#find sizes of HTML-documents][the size of the
-     HTML-webpage]] and [[number_embedded][number of embedded objects]] help in generating
-     cover traffic? While it seems so at first, it can be evaluated if
-     [[HTML traffic
-      model][educated guessing]] might work better.
-
-     In a closed world, it is possible to always know these sizes
-     beforehand. If unknown, the random variates from the [[HTML traffic model][HTML traffic
-     model]] are used. [fn:: The size of each embedded element is always
-     drawn from the HTML traffic model.].
-
-  2. Given a webpage and its size, how much traffic should be generated?
-
-     While just adding random traffic to each page might enhance
-     anonymity, always adding from the same distribution would
-     probably be wasteful, as site-specific values might prove to
-     obfuscate better.  A target size and number of objects has to be
-     determined. How to choose this is the second parameter.
-
-     One approach is to group the webpages by their size into bins and
-     to set the bin border as the target size, as all webpages in the
-     bin must have a size less than or equal the border. This approach
-     mimics that taken by Wang et al. in \cite{effective} with the
-     bins being equivalent to the anonymity sets / partitions. For the
-     biggest bin, its median size is currently chosen.[fn:: The optimal
-     size for the biggest bin is a parameter that should be evaluated
-     as well.]
-
-     The other approach is to have a single target distribution from
-     which values are sampled each time, once again from the [[HTML traffic model][HTML
-     traffic model]].
-** TODO move this f.ex. to coverTraffic, maybe move this section below
-  From the target values, the webpage's html-size and number of
-  elements (variation A/B) is subtracted.
-
-  At the same time of the HTML-query, another query for the remaining
-  HTML-size (or a token amount if too small) is sent. Concerning the
-  embedded elements, the ratio of (target-site)/site is computed. For
-  each element, this ratio determines the number of requests for
-  embedded elements (these are always of random sizes, once again from
-  the [[HTML traffic model][HTML traffic model]]. See [[*cover%20traffic%20distribution%20generation][cover traffic distribution generation]]
-  for the algorithms.
-** TODO end move section
-  This leads to the following variations:
-
-  1) bloom binning (I) with known sizes (A)
-  2) bloom binning (I) with random sizes (B)
-  3) one target distribution (II) with original size from bloom (A),
-  4) one target distribution (II) with random sizes (B)
-
-  | SIZES \ TARGETS | I: bloom binning | II: one distribution |
-  |-----------------+------------------+----------------------|
-  | A: known sizes  |                  |                      |
-  | B: random sizes |                  |                      |
-* CHECK which features work well
-  As stressed by Perry in \cite{critique}, analysis of which feature
-  contribute the most towards classification is important. Panchenko
-  et al. \cite{panchenko} provided a qualitative analysis. Hayes and
-  Danezis \cite{kfingerprint} used forests of randomized trees, which
-  provide feature importance estimation.[fn:: f.ex. in scikit-learn
-  \cite{scikit-learn} via the =_feature_importances= attribute]
-
-  As Dyer et al \cite{oakland2012-peekaboo} noted and experiments with
-  Panchenko et al's \cite{panchenko} estimator support (see
-  [[different-classifiers]]), you can get good accuracy with several
-  classifiers, given the right features.
-
-  As determined by Hayes and Danezis \cite{kfingerprint}, the top-five
-  features are the number (both absolute and percentage of total) of
-  both incoming and outgoing packets. The standard deviation of the
-  packet ordering list [fn:: Panchenko et al \cite{panchenko} call
-  these features /Number Markers/] completes the top five. Each added
-  feature increases accuracy, yet with nearly the same accuracy for 30 as
-  for the total of 150 features.
-** MOVE to wf
 * TODO does this hide bursts?
   - meta-bursts as described in walkie-talkie
   - are those hidden, too, or can the number of bursts be found out
