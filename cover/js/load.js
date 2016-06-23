@@ -6,7 +6,7 @@ const xhr = require("sdk/net/xhr");
 
 /** @param toLoad load this url as cover (discarded afterwards) */
 function http(toLoad) {
-    console.log("load: http(" + toLoad + ")");
+//    console.log("load: http(" + toLoad + ")");
     let x = new xhr.XMLHttpRequest();
 //    x.addEventListener("load", reqListener);
     x.open("GET", toLoad);

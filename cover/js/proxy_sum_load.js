@@ -13,7 +13,7 @@ let MIN_SIZE = 160;
 
 /** @param {size int} loads resource of size {@code size} */
 function sized(size) {
-    console.log('call to proxy_sum.sized(' + size + ') with overflow: ' + overflow);
+    console.log('proxy.sized(' + Math.round(size) + ')'); // | previous: '+overflow);
     if ( size <= MIN_SIZE ) {
         overflow += (MIN_SIZE - size);
     } else { // randomize how much to take from overflow

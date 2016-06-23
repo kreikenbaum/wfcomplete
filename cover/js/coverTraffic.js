@@ -14,7 +14,6 @@ const stats = require("./stats.js");
 /** overhead of dummy traffic -1; 1.5 has overhead of 50% */
 const FACTOR = 1 + (Simple.prefs.factor / 100);
 /** minimum probability of also requesting a cover element per embedded */
-const MIN_PROB = 0.1; // td: test and think through
 
 //const LOAD = require('./load.js');
 const LOAD = require('./proxy_sum_load.js');
@@ -49,11 +48,11 @@ function CoverTraffic(targetURL, load=LOAD) {
     }
 
     // try: min <= ratio <= average_request_num (*extra* requests)
-    this.prob = Math.max(MIN_PROB,
+    this.prob = Math.max(minProb_(this.site.numEmbedded),
                          Math.min(
                              this.target.numEmbedded / this.site.numEmbedded,
                              stats.numberEmbeddedObjectsMean()));
-    console.log(this);
+    //    console.log(this);
 
     this.load.sized(this.target.html);
 }
@@ -66,8 +65,10 @@ CoverTraffic.prototype.loadNext = function() {
 		   : Math.floor(this.prob)) ;
 	  i >= 0 ;
 	  i -= 1 ) {
+// v21        if ( this.target.numEmbedded > 0 ) {
 	this.load.sized(stats.embeddedObjectSize());
         this.target.numEmbedded -= 1;
+// end v21        }
     }
 };
 
@@ -143,4 +144,12 @@ CoverTraffic.prototype.numStrategyGuess = function(targetURL) {
 };
 
 exports.CoverTraffic = CoverTraffic;
+
+/** @return minimum probability of embedded retrieval:
+
+Computes as sqrt(n) / n where n is the site's number of embedded
+objects */
+function minProb_(numEmbeddedSite) {
+    return Math.sqrt(numEmbeddedSite) / numEmbeddedSite;
+}
 
