@@ -41,10 +41,12 @@
   | enabled    |  0.875 | 0.908088235294 | 0.886029411765 | 0.922794117647 | 0.9375 | 0.220331273228 |   93.75 |
   #+TBLFM: $8=100*reduce(max, $2..$6)
 * table addon@100
-  |            | ExtraTrees | RandomForest | KNeighbors | DecisionTree | SVC(scale) |
-  |            | <8>      | <8>      | <8>      | <8>      | <8>      |
-  |------------+----------+----------+----------+----------+----------|
-  | x-validate | 0.857974370143 | 0.820121042617 | 0.772865515845 | 0.787230538808 | 0.915999556788 |
+  |                 | ExtraTrees | RandomForest | KNeighbors | DecisionTree | SVC(scale) |     % |    max |
+  | <15>            |   <5> |   <5> |   <5> |   <5> |   <5> |   <5> |    <6> |
+  |-----------------+-------+-------+-------+-------+-------+-------+--------|
+  | x-validate      | 0.857974370143 | 0.820121042617 | 0.772865515845 | 0.787230538808 | 0.915999556788 |     0 | 91.599956 |
+  | 0.18.2/b_i_noburst | 0.195513708114 | 0.181944059817 | 0.198836887289 | 0.12628080864 | 0.111326502354 | 24.2101478249 | 19.883689 |
+  #+TBLFM: $8=100*reduce(max, $2..$6)
 
 * table addon with panchenko v1
   |                     | ExtraTrees | RandomForest | KNeighbors | DecisionTree | SVC(scale) |     % |
@@ -71,6 +73,38 @@
   | 0.18.2/a_ii_noburst | 0.187739463602 | 0.195402298851 | 0.195402298851 | 0.183908045977 |     |
   | 0.15.3/nocache | 0.265454545455 | 0.247272727273 | 0.261818181818 | 0.261818181818 |   |
   | 0.15.3/cache        | 0.259124087591 | 0.251824817518 | 0.251824817518 | 0.251824817518 |     |
+* ========== END TABLES ===================
+* addon-100 with b-i
+** data
+*** grid result
+OneVsRestClassifier(estimator=SVC(C=512.0, cache_size=200, class_weight=None, coef0=0.0, degree=3,
+  gamma=9.18958683998, kernel=rbf, max_iter=-1, probability=False,
+  random_state=None, shrinking=True, tol=0.001, verbose=False),
+          estimator__C=512.0, estimator__cache_size=200,
+          estimator__class_weight=None, estimator__coef0=0.0,
+          estimator__degree=3, estimator__gamma=9.18958683998,
+          estimator__kernel=rbf, estimator__max_iter=-1,
+          estimator__probability=False, estimator__random_state=None,
+          estimator__shrinking=True, estimator__tol=0.001,
+          estimator__verbose=False, n_jobs=1)
+*** cross-validation on X,y
+ExtraTreesClassifier 0.859080488755, [ 0.87430939  0.83701657  0.8480663   0.86464088  0.87136929]
+RandomForestClassifier 0.824264689026, [ 0.83149171  0.81077348  0.8038674   0.83701657  0.83817427]
+KNeighborsClassifier 0.772865515845, [ 0.76381215  0.75966851  0.77486188  0.79281768  0.77316736]
+DecisionTreeClassifier 0.783362753414, [ 0.81077348  0.76933702  0.77071823  0.79281768  0.77316736]
+OneVsRestClassifier 0.909645965628, [ 0.92127072  0.91160221  0.89226519  0.90469613  0.91839557]
+*** train: disabled/06-17@100/ VS 0.18.2/json-100/b_i_noburst (overhead 24.2101478249%)
+ExtraTreesClassifier: 0.195513708114
+RandomForestClassifier: 0.181944059817
+KNeighborsClassifier: 0.198836887289
+DecisionTreeClassifier: 0.12628080864
+OneVsRestClassifier: 0.111326502354
+** summary
+   - very good accuracy-obfuscation and low bandwidth
+   - top-10 maybe due to top-10 not following normal patterns
+   - bit better in RandomForestClassifier, first values (?) for b-i
+     - but not changed (?better to take all, max is svc?)
+
 * retrofixed 0-30
 ** data
 *** grid result:

@@ -61,17 +61,27 @@
 #+LATEX_HEADER: }}
 * WAIT Abstract
 * TODO Introduction (=basics) [0%]
-** TODO Website Fingerprinting [0/20]
+** TODO Website Fingerprinting [0/21]
 *** EVA Intro (remove this headline when reviewed)
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
     order, size, and timing of data packets.
-*** CHECK Visual Representation of Traces
+
+    This chapter contains first [[#visual][a visual introduction to the subject]],
+    then a short review of [[#http][what happens during website
+    retrieval]]. Afterwards, [[#wf1.0][early methods of website fingerprinting]]
+    will be presented. The next section explains [[Hurdles][why these early
+    techniques no longer work]], especially on anonymity networks like Tor.
+
+    Finally, [[#wf2.0][current attacks]] will be explored.
+*** EVA Visual Representation of Traces
+    :PROPERTIES:
+    :CUSTOM_ID: visual
+    :END:
     To illustrate the task of a website fingerprinter, consider these
     graphical traces[fn::see appendix [[#wf-pictures]] for the creation of
     these pictures] of two web pages, where box height signifies
-    amount of data[fn::positive values are for received data, negative
-    for sent] and width the duration until the next packet:
+    amount of data and width the duration until the next packet:
 
     craigslist.org
 
@@ -105,11 +115,23 @@
 
     According to Cai et al. \cite{a-systematic}, the tuples (delay,
     packet size) visualized above contain all relevant information of a trace.
-
 **** WAIT when done, format in LaTeX: caption to group of images
-*** KEYWORDS website fingerprinting 1.0
+*** WRITE website fingerprinting 1.0
+    :PROPERTIES:
+    :CUSTOM_ID: wf1.0
+    :END:
+    
     To make sense of this noisy data, the first website fingerprinters
-    considered only packet sizes. 
+    considered only object sizes. These were clearly visible, as the
+    first version of HTTP\cite{rfc1945} transmitted each object over a
+    separate TCP/IP connection: they could be found by
+    splitting traffic by port number, as documented by
+    \cite{quantifying}, \cite{hintz02}, and
+    \cite{ssl-traffic-analysis}.
+
+    These approaches determined which page was visited via look-up of
+    sizes. \cite{ssl-traffic-analysis} proposed a hidden markov model
+    for page /transitions/.
 
     - how done
     - assume crypto is perfect
@@ -117,7 +139,7 @@
     As protocols evolved\cite{rfc2616} and anonymization systems such
     as Tor\cite{tor-design} were used, this approach became
     infeasible.
-*** WRITE Related Work
+
     Schneier's seminal books /Applied Cryptography/\cite{applied96}
     and (with Ferguson) /Practical Cryptography/\cite{practical} deal
     briefly with /Traffic analysis/, of which website fingerprinting
@@ -146,76 +168,68 @@
       - panchenko
       - k-forest
       - wang implicit
-*** WRITE What happens during a website request
+**** MOVE between [[*What%20happens%20during%20a%20website%20request][below]] and [[*Hurdles%20to%20website%20fingerprinting][Hurdles to website fingerprinting]]
+*** CHECK What happens during a (HTTP) website request
+    :PROPERTIES:
+    :CUSTOM_ID: http
+    :END:
     When a browser such as Mozilla Firefox[fn:: \url{mozilla.org}]
     retrieves a website, it does many things under-the-hood.
 
-    First, it retrieves the main object: the browser sends a request
-    for the HTML page. The webserver answers with that HTML page. The
-    browser then requests the objects embedded into that page, such as
-    stylesheets (\verb|<link rel="stylesheet">|), fonts
-    (=@font-face=\cite{moz-fontface}), images (=<img>=),
-    scripts(=<script>=), etc.  Each of these files has a specific
-    size, which might be detected in the TCP-flow.
+    #+CAPTION: HTTP/1.0\cite{rfc1945} example from \cite{ssl-traffic-analysis}: page with 2 images, ACKs omitted
+    #+ATTR_LATEX: :float wrap
+    [[./pictures/cheng-http-request.pdf]]
 
-    Thus, the objects embedded within a page could allow a local
-    passive observer to infer which web page from a set of pages the
-    user requested.
+    First, it retrieves the main object: the browser sends a HTTP
+    request over the TCP/IP\cite{rfc793} protocol stack for the HTML
+    page, which contains the main page information. The webserver
+    answers with that HTML page. The browser then requests objects
+    embedded into that page, such as images, stylesheets, fonts,
+    scripts, etc. Each of these files has a specific size.
+*** WRITE Hurdles to website fingerprinting
+    <<Hurdles>>
+    The refinement of web protocols made website fingerprinting
+    harder. In the original HTTP/1.0\cite{rfc1945} protocol, each
+    request used a separate TCP-connection. This facilitated the
+    original attacks against HTTPS browsing\cite{quantifying} and the
+    anonymizing web proxy SafeWeb\cite{hintz02}, which both extracted
+    the exact file size of each embedded object.
 
-    - browser
-    - first html
-    - then referenced objects
-      - if not in cache
-    - 1.0: one connection for each as default
-    - 1.1: persistent as default: queue
-**** TODO maybe picture
-**** say that biggest part images
-**** join with [[Hurdles][file:~/da/git/diplomarbeit.org::Hurdles]]
-    - main html, embedded objects
-    - multiplexing, pipelining
-    - http traffic distribution
-**** Hurdles to website fingerprinting
-     <<Hurdles>>
-     The progress of web protocols made website fingerprinting
-     harder. In the original HTTP/1.0\cite{rfc1945} protocol, each
-     request used a separate TCP-connection. This facilitated the
-     original attacks against HTTPS browsing\cite{quantifying} and the
-     anonymizing web proxy SafeWeb\cite{hintz02}, which both extracted
-     the exact file size of each embedded object.
+    Building a new connection for each transferred object is
+    inefficient\cite[sec.2.2.2]{DBLP:books/daglib/0001977}. Thus, some
+    early HTTP implementations \cite{rfc2068} used persistent
+    connections. These were standardized HTTP/1.1 \cite{rfc2616}. Due
+    to this, it was no longer trivial to extract the files' sizes. You
+    had to determine the start and end of each request. (which was
+    still possible by seeing when the client sent a new request).
 
-     Building a new connection for each transferred object proved to be
-     inefficient. Some HTTP implementations \cite{rfc2068} used
-     persistent connections. These were included HTTP/1.1
-     \cite{rfc2616}. Due to this, it was no longer trivial to extract
-     the files' sizes. You had to determine the start and end of each
-     request. (which was still possible by seeing when the client sent
-     a new request).
+    [[./pictures/HTTP_persistent_connection.png]]
 
-     [[./pictures/HTTP_persistent_connection.png]]
+    In addition to persistent connections, HTTP/1.1 allowed pipelining
+    several HTTP requests in a single connection without waiting for
+    the files to arrive in between.
 
-     In addition to persistent connections, HTTP/1.1 allowed pipelining
-     several HTTP requests in a single connection without waiting for
-     the files to arrive in between.
+    [[./pictures/HTTP_pipelining2.png]]
 
-     [[./pictures/HTTP_pipelining2.png]]
+    As this created problems with some servers, pipelining was
+    disabled by default in
+    Firefox[fn::\url{https://bugzilla.mozilla.org/show_bug.cgi?id=264354}}
+    and Google
+    Chrome[fn::\url{https://www.chromium.org/developers/design-documents/network-stack/http-pipelining}}
+    and not implemented in Internet
+    Explorer[fn::\url{http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp/expertzone/chats/transcripts/08_0814_ez_ie8.mspx}].
 
-     As this created problems with some servers, pipelining was disabled
-     by default in Firefox \cite{firefox-pipelining} and Chrome
-     \cite{chromium-pipelining}, and not implemented in Internet
-     Explorer \cite{ie-pipelining}.
-
-     After the Panchenko paper\cite{panchenko} an additional no-cost
-     defense prototype was implemented in the Tor-Browser-Bundle
-     \cite{experimental}: Firefox's built-in request pipelining was
-     enabled with added request order randomization.  Cai et al. found
-     fingerprinting to be easier with this defense enabled than
-     without. \cite{ccs2012-fingerprinting}
-
-     Originally, a browser should open at most two connections per host
-     \cite{rfc2616} to retrieve the files one-by-one. An update
-     \cite{rfc7230} removed this fixed limit, but encouraged clients
-     "to be conservative when opening multiple connections".
+    After Panchenko et al.'s successful attack\cite{panchenko},
+    Firefox's built-in request pipelining was enabled with added
+    request order randomization as an additional no-cost defense
+    prototype in the Tor-Browser-Bundle \cite{experimental}. Yet, Cai
+    et al.\cite{ccs2012-fingerprinting} found fingerprinting to be
+    easier with this defense enabled than without.
+**** Tor
 *** (wf 2.0)
+    :PROPERTIES:
+    :CUSTOM_ID: wf2.0
+    :END:
 **** WRITE features
     - patterns to features
     - why features
@@ -224,8 +238,8 @@
     - top-five
     - CUMUL
     - dyer: features count
-      #+CAPTION: from presentation at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
-      [[./pictures/cumul_resized_aus_paper.png]]
+      #+CAPTION: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
+      [[./pictures/cumul_aus_paper.pdf]]
 ***** TODO visual representation of CUMUL
      - Panchenko et al.'s recent approach allows for the visual
        comparison of website traces.
@@ -241,6 +255,10 @@
 ****** TODO think about order of this (at cumul, at visual, mention other...)
       then formulate correctly
 ***** TODO get picture to work
+**** KEYWORDS panchenko v1
+**** KEYWORDS wang
+**** KEYWORDS cumul
+**** KEYWORDS k-forest
 *** brainstorm                                                      :ARCHIVE:
     - see traffic
       - http
@@ -257,6 +275,17 @@
     - machine learning
     - classification
     - made harder by protocol changes and tor
+      - hope that spdy makes it harder again
+        - ref mike perry
+          - which one?
+    - no cacheing
+    - current tbb (auto-update)
+    - scripts etc
+    - xpra for slow network connection
+    - xvfb for local display
+    - marionette
+    - others, other tools
+    - bit on tor in [[Hurdles]]
 **** WRITE attacks
     - hintz
     - herrmann (bayes)
@@ -295,6 +324,16 @@
      - k-forest: specific classifier based on randomized trees with
        hadamard-distance on leaves
      - panchenko1 and 2: (ovr?) svm
+*** unused
+**** from [[*What%20happens%20during%20a%20website%20request][What happens during a website request]]
+    Thus, the objects embedded within a page could allow a local
+    passive observer to infer which web page from a set of pages the
+    user requested.
+**** from [[*Hurdles%20to%20website%20fingerprinting][Hurdles to website fingerprinting]]
+    Originally, a browser should open at most two connections per host
+    \cite{rfc2616} to retrieve the files one-by-one. An update
+    \cite{rfc7230} removed this fixed limit, but encouraged clients
+    "to be conservative when opening multiple connections".
 ** TODO Defenses [0/6]
 *** WRITE How to defend against this
     - make wf/ml harder, fudge features
@@ -322,7 +361,7 @@
     - padding (sslv2 \to 3)
     - requestpolicy (hintz 2nd way)
     - text-only browsing (hintz 2nd way)
-* Methods (=methods) [0%]
+* TODO Methods (=methods) [0%]
 ** TODO Motivation [0/2]
 *** WRITE Why
     - (started before both were published)
@@ -380,6 +419,7 @@
       - classes
     - server
       - later: .onion (link to related work)
+    - http traffic distribution
 *** TODO Bloom Filters
     rewrite this as a subidea
 **** WRITE General Idea
@@ -415,15 +455,27 @@
     - bloom paper
     - network applications
 * TODO Results and Evaluation [0%]
-** KEYWORDS panchenko v1 vs cumul
+** WRITE panchenko v1 vs cumul
    - both: similar results for different classifiers
    - panchenko v1:
      - takes longer
      - is less accurate
      - is more work: vector length normalisation [for cross-test]
+     - first to really work
    - accuracy hit of about 20%?
    - best parameters sometimes outside of panchenko's range
    - same classifier
+   - state of the art:
+     - wang-knn
+       - knn with parameter weighting step
+       - first to 92% accuracy (current limit)
+     - cumul:
+       - faster
+       - easier to see
+       - bigger dataset
+     - k-fingerprinting
+       - accuracy
+     - all similar accuracies (as of k-fingerprinting)
 ** TODO Evaluation of Defenses [0/3]
 *** KEYWORDS Evaluation of Addon
     - different versions
@@ -442,12 +494,12 @@
 *** KEYWORDS sota (practical): wtfpad
 *** KEYWORDS sota (theoretical): walkie-talkie
 *** KEYWORDS (maybe) vs optimal attacker
-*** brainstorm
-    - addon
-      - different versions
-      - different factors
+** brainstorm                                                       :ARCHIVE:
+   - addon
+     - different versions
+     - different factors
 * KEYWORDS Conclusion
-* TODO topics [0/119]
+* TODO topics [0/118]
 ** Teaser
    #+BEGIN_QUOTE
    "They who can give up essential liberty to obtain a little temporary
@@ -488,6 +540,7 @@
     website allows the government to limit its search to, say three,
     subjects. This gives the whistleblower away.[fn:: Such has not been
     observed.]
+**** MOVE to unused
 *** tools
 **** TODO capture alternatives [0/1]
      Several applications can capture network traffic to files. The most
@@ -993,7 +1046,7 @@
     these features /Number Markers/] completes the top five. Each added
     feature increases accuracy, yet with nearly the same accuracy for 30 as
     for the total of 150 features.
-** TODO Addon Design and Implementation [0/50]
+** TODO Addon Design and Implementation [0/58]
 *** [[*description of add-on][description of add-on]]
 *** Defenses
 *** CHECK Variations of Cover Traffic
@@ -1477,6 +1530,14 @@
         - "add" the error rates of the filters? (times population density?)
 ***** maybe graphics?
 ***** WAIT check "see previous section"
+**** KEYWORDS negative values in distribution
+     - occur with real size > target size
+     - solution
+       - if small /negative request value:
+         - save value (min size is 160, thus =160 - requested_size=)
+       - else:
+         - get value at random up to min(request size, saved values)
+         - subtract from request size, and from saved value
 *** TODO Implementation [0/5]
 **** TODO js coding best practices
      JavaScript\cite{ecma} is arguably a language with some great
