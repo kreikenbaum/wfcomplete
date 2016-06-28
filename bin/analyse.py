@@ -41,6 +41,28 @@ def mean_std(counter_dict):
         out[domain] = (np.mean(total), np.std(total))
     return out
 
+def mean(counter_dict):
+    '''@return a dict of {domain1: mean1, ... domainN: meanN}
+    >>> mean_std({'yahoo.com': [counter._ptest(3)]})
+    {'yahoo.com': 1800.0}
+    '''
+    out = {}
+    for (domain, counter_list) in counter_dict.iteritems():
+        total = [counter.get_total_both() for counter in counter_list]
+        out[domain] = np.mean(total)
+    return out
+
+def std(counter_dict):
+    '''@return a dict of {domain1: std1, ... domainN: stdN}
+    >>> mean_std({'yahoo.com': [counter._ptest(3)]})
+    {'yahoo.com': 0.0}
+    '''
+    out = {}
+    for (domain, counter_list) in counter_dict.iteritems():
+        total = [counter.get_total_both() for counter in counter_list]
+        out[domain] = np.std(total)
+    return out
+
 def find_max_lengths(counters):
     '''determines maximum lengths of variable-length features'''
     max_lengths = counters.values()[0][0].variable_lengths()
