@@ -7,36 +7,47 @@ const pageMod = require("sdk/page-mod");
 
 const coverUrl = require("./coverUrl.js");
 
-var callback;
+let callback;
 
 /** page has finished loading */
-var endObserver;
+let endObserver;
 /** all requests */
-var httpRequestObserver = {
+// td: rename to httpObserver (also responses)
+let httpRequestObserver = {
     observe: function(subject, topic, data) {
         if ( topic == "http-on-modify-request" ) {
 	    // console.log(subject);
 	    // console.log(JSON.stringify(subject));
 	    // console.log('data:' + JSON.stringify(data));
-            var httpChannel = subject.QueryInterface(Ci.nsIHttpChannel);
-            var uri = httpChannel.URI;
+            let httpChannel = subject.QueryInterface(Ci.nsIHttpChannel);
+            let uri = httpChannel.URI;
 
 	    if ( !coverUrl.contains(uri.spec) ) {
 		callback.loads(uri);
 	    }
-        }// else if ( topic == "http-on-modify-request" )
+        } else if ( topic == "http-on-examine-response" ) {
+            let httpChannel = subject.QueryInterface(Ci.nsIHttpChannel);
+            let uri = httpChannel.URI;
+
+            if ( httpChannel.responseStatus !== 200 ) {
+                console.log(' http Status: ' + httpChannel.responseStatus);
+                callback.redirected(uri);
+            }
+        }
     },
 
     register: function() {
-        var observerService = Cc["@mozilla.org/observer-service;1"]
+        let observerService = Cc["@mozilla.org/observer-service;1"]
             .getService(Ci.nsIObserverService);
         observerService.addObserver(this, "http-on-modify-request", false);
+        observerService.addObserver(this, "http-on-examine-response", false);
     },
 
     unregister: function() {
-        var observerService = Cc["@mozilla.org/observer-service;1"]
+        let observerService = Cc["@mozilla.org/observer-service;1"]
             .getService(Ci.nsIObserverService);
         observerService.removeObserver(this, "http-on-modify-request");
+        observerService.removeObserver(this, "http-on-examine-response");
     }
 };
 
