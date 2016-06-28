@@ -1,7 +1,11 @@
+SRC=$(shell ls | grep -vE '(png|all|Makefile|plot|p1)')
+
 plot:
 	gnuplot plot.gnuplot
 
-all:
-	rm all
-	cat a_i* b_i* cache nocache disabled v0.19_all  >> all
+all: clean
+	cat ${SRC} > all
+
+clean:
+	rm all || true
 

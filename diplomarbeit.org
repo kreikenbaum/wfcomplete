@@ -61,7 +61,7 @@
 #+LATEX_HEADER: }}
 * WAIT Abstract
 * TODO Introduction (=basics) [0%]
-** TODO Website Fingerprinting [0/21]
+** TODO Website Fingerprinting [0/22]
 *** EVA Intro (remove this headline when reviewed)
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -116,6 +116,29 @@
     According to Cai et al. \cite{a-systematic}, the tuples (delay,
     packet size) visualized above contain all relevant information of a trace.
 **** WAIT when done, format in LaTeX: caption to group of images
+*** CHECK What happens during a (HTTP) website request
+    :PROPERTIES:
+    :CUSTOM_ID: http
+    :END:
+    #+CAPTION: HTTP/1.0\cite{rfc1945} example from \cite{ssl-traffic-analysis}: page with 2 images, ACKs omitted
+    #+ATTR_LATEX: :float wrap :width 0.4\textwidth
+    [[./pictures/cheng-http-request.pdf]]
+
+    When a browser such as Mozilla Firefox[fn:: \url{mozilla.org}]
+    retrieves a web page, it does many things under-the-hood.
+
+    First, it retrieves the main object: the browser sends a HTTP
+    request over the TCP/IP\cite{rfc793} protocol stack for the HTML
+    page, which contains the main page information. The webserver
+    answers with that HTML page.
+
+    The browser then parses the HTML and requests all objects embedded
+    into the page, such as images, stylesheets, fonts, scripts,
+    videos, etc.
+
+    Each of these files has a specific size and is transferrend in one
+    or several (IP) packets.
+**** TODO maybe move above [[#visual][Visual Representation of Traces]]: fits better into flow
 *** WRITE website fingerprinting 1.0
     :PROPERTIES:
     :CUSTOM_ID: wf1.0
@@ -168,24 +191,6 @@
       - panchenko
       - k-forest
       - wang implicit
-**** MOVE between [[*What%20happens%20during%20a%20website%20request][below]] and [[*Hurdles%20to%20website%20fingerprinting][Hurdles to website fingerprinting]]
-*** CHECK What happens during a (HTTP) website request
-    :PROPERTIES:
-    :CUSTOM_ID: http
-    :END:
-    When a browser such as Mozilla Firefox[fn:: \url{mozilla.org}]
-    retrieves a website, it does many things under-the-hood.
-
-    #+CAPTION: HTTP/1.0\cite{rfc1945} example from \cite{ssl-traffic-analysis}: page with 2 images, ACKs omitted
-    #+ATTR_LATEX: :float wrap
-    [[./pictures/cheng-http-request.pdf]]
-
-    First, it retrieves the main object: the browser sends a HTTP
-    request over the TCP/IP\cite{rfc793} protocol stack for the HTML
-    page, which contains the main page information. The webserver
-    answers with that HTML page. The browser then requests objects
-    embedded into that page, such as images, stylesheets, fonts,
-    scripts, etc. Each of these files has a specific size.
 *** WRITE Hurdles to website fingerprinting
     <<Hurdles>>
     The refinement of web protocols made website fingerprinting
@@ -286,6 +291,8 @@
     - marionette
     - others, other tools
     - bit on tor in [[Hurdles]]
+      - also that use tor to avoid wf, then tracked again (if it works)
+      - maybe also on ta
 **** WRITE attacks
     - hintz
     - herrmann (bayes)
@@ -498,6 +505,9 @@
    - addon
      - different versions
      - different factors
+   - does it work?
+   - does it work better?
+   - which variant works?
 * KEYWORDS Conclusion
 * TODO topics [0/118]
 ** Teaser
@@ -530,17 +540,6 @@
     Repressalien zu groß war. (td: quote)
 *** WAIT may to (ohne) (falls richtig)
 ** TODO Website Fingerprinting [0/55]
-*** CHECK Why could website fingerprinting be a problem
-    As a typical scenario, consider the government of some state. A
-    whistleblower posts something very critical of the regime on a
-    well-known critical website. The whistleblower uses Tor or some
-    other anonymity service to protect his identity. The government
-    monitors and records all Tor connections. Even though Tor
-    obfuscates the user's traffic, the specific data-pattern of the
-    website allows the government to limit its search to, say three,
-    subjects. This gives the whistleblower away.[fn:: Such has not been
-    observed.]
-**** MOVE to unused
 *** tools
 **** TODO capture alternatives [0/1]
      Several applications can capture network traffic to files. The most
@@ -2224,3 +2223,14 @@
     - maybe further work: test that really works worse
 *** Script
     #+INCLUDE: "./bin/unused/TrafficHTTPServer.py" src python
+** CHECK Why could website fingerprinting be a problem
+   As a typical scenario, consider the government of some state. A
+   whistleblower posts something very critical of the regime on a
+   well-known critical website. The whistleblower uses Tor or some
+   other anonymity service to protect his identity. The government
+   monitors and records all Tor connections. Even though Tor
+   obfuscates the user's traffic, the specific data-pattern of the
+   website allows the government to limit its search to, say three,
+   subjects. This gives the whistleblower away.[fn:: Such has not been
+   observed.]
+*** MOVE to unused

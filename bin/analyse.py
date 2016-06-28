@@ -16,15 +16,9 @@ LOGLEVEL = logging.INFO
 #LOGLEVEL = logging.WARN
 TIME_SEPARATOR = '@'
 
-def average_bytes(counter_dict):
+def average_bytes(stats_dict):
     '''@return the average size over all traces'''
-    count = 0
-    total = 0
-    for c_domain in counter_dict.values():
-        for counter in c_domain:
-            count += 1
-            total += counter.get_total_both()
-    return float(total) / count
+    return np.mean([x[0] for x in stats_dict.values()])
 
 def average_duration(counter_dict):
     '''@return the average duration over all traces'''
@@ -35,6 +29,17 @@ def average_duration(counter_dict):
             count += 1
             total += counter.timing[-1][0]
     return float(total) / count
+
+def mean_std(counter_dict):
+    '''@return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
+    >>> mean_std({'yahoo.com': [counter._ptest(3)]})
+    {'yahoo.com': (1800.0, 0.0)}
+    '''
+    out = {}
+    for (domain, counter_list) in counter_dict.iteritems():
+        total = [counter.get_total_both() for counter in counter_list]
+        out[domain] = (np.mean(total), np.std(total))
+    return out
 
 def find_max_lengths(counters):
     '''determines maximum lengths of variable-length features'''
@@ -49,16 +54,9 @@ def find_max_lengths(counters):
                 max_lengths[key] = lengths[key]
     return max_lengths
 
-def max_dict(d1, d2):
-    '''@return biggest elements in both dicts (deep max). They need to
-have the same members (with possibly different values)
-    >>> a = {3: 4, 4: 7}; b = {3: 5, 4: 6}; max_dict(a, b)
-    {3: 5, 4: 7}
-    '''
-    out = {}
-    for (k, v) in d1.iteritems():
-        out[k] = max(v, d2[k])
-    return out
+# courtesy of http://stackoverflow.com/a/38060351
+def dict_elementwise(func, d1, d2):
+    return {k: func(d1[k], d2[k]) for k in d1}
 
 def to_features(counters, max_lengths=None):
     '''transforms counter data to panchenko.v1-feature vector pair (X,y)
@@ -224,12 +222,6 @@ def my_grid(X, y,
                      best.estimator.C, best.estimator.gamma)
     return best
 
-# def smart_grid(X, y):
-#     '''gradient-descent grid-search'''
-#     from scipy import optimize
-#     fun = lambda (c,g): -_testcg(X, y, c, g)
-#     optimize.minimize(fun, (1, 1), jac=False, 
-
 def _testcg(X, y, c, gamma):
     '''cross-evaluates ovr.svc with parameters c,gamma on X, y'''
     clf = multiclass.OneVsRestClassifier(svm.SVC(C=c, gamma=gamma))
@@ -290,7 +282,9 @@ def counter_get(place, outlier_removal=True):
         return counter.Counter.all_from_dir(place)
 
 def _gen_counters(places, outlier_removal=True):
-    '''@return dict of {counters for directories} in {@code places}'''
+    '''@return dict: {place1: {domain1: counters1_1, ...  domainN: countersN_1},
+    ..., placeM: {domain1: counters1_M, ...  domainN: countersN_M}}
+    for directories} in {@code places}'''
     out = {}
     if len(places) == 0:
         out['.'] = counter_get('.', outlier_removal)
@@ -300,6 +294,13 @@ def _gen_counters(places, outlier_removal=True):
 
     return out
 
+def verbose_test_11(X, y, estimator):
+    '''cross-test (1) estimator on (1) X, y, print results and estimator name'''
+    scale = True if 'SVC' in str(estimator) else False
+    print esti_name(estimator),
+    res = _test(X, y, estimator, scale=scale)
+    print '{}, {}'.format(res.mean(), res)
+
 def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
     '''cross test on dirs: 1st has training data, rest have test
 
@@ -307,8 +308,10 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
     # call with 1: x-validate test that
     # call with 2+: train 1 (whole), test 2,3,4,...
     places = _gen_counters(argv[1:], outlier_rm)
-    sizes = {k: average_bytes(v) for (k,v) in places.iteritems()}
-    durations = {k: average_duration(v) for (k,v) in places.iteritems()}
+    stats = {k: mean_std(v) for (k,v) in places.iteritems()}
+    sizes = {k: average_bytes(v) for (k,v) in stats.iteritems()}
+    # td: continue here, recompute duration (was not averaged per domain), compare
+    # durations = {k: average_duration(v) for (k,v) in places.iteritems()}
 
     place0 = argv[1] if len(argv) > 1 else '.'
 
@@ -319,18 +322,15 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
         (X, y, y_dom) = to_features(places[place0])
 
     if with_svm:
-        svm = my_grid(X, y)
+        clf = my_grid(X, y)
 #        svm = smart_grid(X, y) #enabled if ranges are not clear
-        logging.info('grid result: %s', svm)
-        GOOD.append(svm)
+        logging.info('grid result: %s', clf)
+        GOOD.append(clf)
 
     # evaluate accuracy on training set
     print 'cross-validation on X,y'
     for esti in GOOD:
-        scale = True if 'SVC' in str(esti) else False
-        print esti_name(esti),
-        res = _test(X, y, esti, scale=scale)
-        print '{}, {}'.format(res.mean(), res)
+        verbose_test_11(X, y, esti)
 
     # vs test sets
     for (place, its_counters) in places.iteritems():
@@ -341,8 +341,9 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
         if cumul:
             (X2, y2, _) = to_features_cumul(its_counters)
         else:
-            l = max_dict(find_max_lengths(places[place0]),
-                         find_max_lengths(its_counters))
+            l = dict_elementwise(max,
+                                 find_max_lengths(places[place0]),
+                                 find_max_lengths(its_counters))
             (X, y, y_dom) = to_features(places[place0], l)
             (X2, y2, y_dom2) = to_features(its_counters, l)
 
@@ -352,7 +353,6 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
                                   _xtest(X, y, X2, y2, esti, scale=scale))
 
 
-    #_test(X, y, svm.SVC(C=10**-20, gamma=4.175318936560409e-10))
     #_test(X, y, svm.SVC(kernel='linear')) #problematic, but best
     #grid rbf
 #     cstart, cstop = -45, -35
@@ -405,7 +405,8 @@ if __name__ == "__main__":
 
     # if by hand: change to the right directory before importing
     # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
-    # sys.argv = ['', 'disabled/06-09@10/', '0.18.2/json-10/a_i_noburst/', '0.18.2/json-10/a_ii_noburst/', '0.15.3/json-10/cache', '0.15.3/json-10/nocache']
+    # sys.argv = ['', 'disabled/06-09@10', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
+    # sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
     # sys.argv = ['', 'disabled/wfpad', 'wfpad']
     cross_test(sys.argv, with_svm=True) #, cumul=False)
 

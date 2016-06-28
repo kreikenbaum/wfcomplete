@@ -24,7 +24,7 @@ var httpRequestObserver = {
 	    if ( !coverUrl.contains(uri.spec) ) {
 		callback.loads(uri);
 	    }
-        }
+        }// else if ( topic == "http-on-modify-request" )
     },
 
     register: function() {
