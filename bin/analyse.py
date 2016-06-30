@@ -43,7 +43,7 @@ def mean_std(counter_dict):
 
 def mean(counter_dict):
     '''@return a dict of {domain1: mean1, ... domainN: meanN}
-    >>> mean_std({'yahoo.com': [counter._ptest(3)]})
+    >>> mean({'yahoo.com': [counter._ptest(3)]})
     {'yahoo.com': 1800.0}
     '''
     out = {}
@@ -54,7 +54,7 @@ def mean(counter_dict):
 
 def std(counter_dict):
     '''@return a dict of {domain1: std1, ... domainN: stdN}
-    >>> mean_std({'yahoo.com': [counter._ptest(3)]})
+    >>> std({'yahoo.com': [counter._ptest(3)]})
     {'yahoo.com': 0.0}
     '''
     out = {}
@@ -417,6 +417,25 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
     #                            y[ybounds2[0]:ybounds2[1]])
     #     return math.sqrt(fixedm + variable1 + variable2)
 
+def compare_stats(dirs):
+    '''@return a dict {dir1: {domain1: {...}, ..., domainN: {...}}, dir2:...} with domain mean, standard distribution and labels'''
+    places = _gen_counters(dirs)
+    means = {k: mean(v) for (k,v) in places.iteritems()}
+    stds = {k: std(v) for (k,v) in places.iteritems()}
+    out = []
+    for d in dirs:
+        logging.info('version: %s', d)
+        el = {"plugin-version": d,
+              "plugin-enabled": False if 'disabled' in d else True}
+        for site in places[d]:
+            tmp = dict(el)
+            tmp['website'] = site
+            tmp['mean'] = means[d][site]
+            tmp['std'] = stds[d][site]
+            out.append(tmp)
+    return out
+
+
 if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
@@ -428,13 +447,12 @@ if __name__ == "__main__":
     # if by hand: change to the right directory before importing
     # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
     # sys.argv = ['', 'disabled/06-09@10', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
+    # sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
     # sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
     # sys.argv = ['', 'disabled/wfpad', 'wfpad']
+    # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
+    # counters = counter.Counter.all_from_panchenko(PATH)
     cross_test(sys.argv, with_svm=True) #, cumul=False)
 
-#    import os
-#    PATH = os.path.join(os.path.expanduser('~') , 'da', 'git', 'sw', 'p',
-#                        'foreground-data', 'output-tcp')
-#    counters = counter.Counter.all_from_panchenko(PATH)
 #    (X, y ,y_dom) = to_features_cumul(counters)
 #_test(X, y, nj=1)

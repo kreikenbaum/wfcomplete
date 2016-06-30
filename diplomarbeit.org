@@ -61,7 +61,7 @@
 #+LATEX_HEADER: }}
 * WAIT Abstract
 * TODO Introduction (=basics) [0%]
-** TODO Website Fingerprinting [0/22]
+** TODO Website Fingerprinting [0/23]
 *** EVA Intro (remove this headline when reviewed)
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -116,7 +116,7 @@
     According to Cai et al. \cite{a-systematic}, the tuples (delay,
     packet size) visualized above contain all relevant information of a trace.
 **** WAIT when done, format in LaTeX: caption to group of images
-*** CHECK What happens during a (HTTP) website request
+*** EVA What happens during a (HTTP) website request
     :PROPERTIES:
     :CUSTOM_ID: http
     :END:
@@ -124,89 +124,81 @@
     #+ATTR_LATEX: :float wrap :width 0.4\textwidth
     [[./pictures/cheng-http-request.pdf]]
 
-    When a browser such as Mozilla Firefox[fn:: \url{mozilla.org}]
-    retrieves a web page, it does many things under-the-hood.
+    When a browser such as Mozilla
+    Firefox[fn::\url{https://www.mozilla.org/firefox/}] retrieves a
+    web page, it does many things under-the-hood.
 
-    First, it retrieves the main object: the browser sends a HTTP
-    request over the TCP/IP\cite{rfc793} protocol stack for the HTML
-    page, which contains the main page information. The webserver
-    answers with that HTML page.
+    First, it retrieves the main object: the browser sends a
+    HTTP\cite{rfc2616} request over the TCP/IP\cite{rfc793} protocol
+    stack for the HTML page, which contains the main page
+    information. The webserver answers with the requested HTML page,
+    or redirects the browser to another address, which it continues
+    until the HTML is loaded.
 
-    The browser then parses the HTML and requests all objects embedded
-    into the page, such as images, stylesheets, fonts, scripts,
-    videos, etc.
-
-    Each of these files has a specific size and is transferrend in one
-    or several (IP) packets.
-**** TODO maybe move above [[#visual][Visual Representation of Traces]]: fits better into flow
-*** WRITE website fingerprinting 1.0
+    Afterwards, the browser parses the HTML page and requests all
+    objects embedded into the page, such as images, fonts, scripts,
+    videos, stylesheets, etc. These can be identified using the
+    HTML-tags =<img>=, ~<link rel="stylesheet">~, =<script>=, and
+    =<video>=, the CSS-property =@font-face=, etc.
+**** TODO [#C] if time: link to mozilla-docs
+*** CHECK Website Fingerprinting 1.0
     :PROPERTIES:
     :CUSTOM_ID: wf1.0
     :END:
     
-    To make sense of this noisy data, the first website fingerprinters
-    considered only object sizes. These were clearly visible, as the
-    first version of HTTP\cite{rfc1945} transmitted each object over a
-    separate TCP/IP connection: they could be found by
-    splitting traffic by port number, as documented by
-    \cite{quantifying}, \cite{hintz02}, and
-    \cite{ssl-traffic-analysis}.
+    To make sense of the noisy data retrieved via traffic sniffing,
+    the first fingerprinters distinguished by object sizes. Each
+    requested file has a specific size[fn::except for
+    dynamically-generated objects] and is transferrend in one or
+    several (IP) packets. In the first versions[fn::up to/including
+    1.0] of HTTP\cite{rfc1945}, these sizes were clearly visible, as
+    each HTTP request-response pair was transmitted over a separate
+    TCP connection. They could be found by splitting traffic by the
+    connection's port numbers, as of \cite{quantifying},
+    \cite{hintz02}, and \cite{ssl-traffic-analysis}.
 
-    These approaches determined which page was visited via look-up of
-    sizes. \cite{ssl-traffic-analysis} proposed a hidden markov model
-    for page /transitions/.
+    Against SSL, which reveals the site being browsed to but hides the
+    pages accessed, successful attacks to determine the web
+    page[fn::cryptographers talk of attempts to circumvent a protocol
+    as /attack/\cite{applied96}] were carried out by both Mistry and
+    Raman \cite{quantifying} and Cheng and
+    Avnur\cite{ssl-traffic-analysis} at Berkeley in 1998.
 
-    - how done
-    - assume crypto is perfect
+    The term /website fingerprinting/ was coined in Hintz's analysis
+    of the SafeWeb anonymizing proxy\cite{hintz02}, where he
+    qualitatively classified which web site was being visited.
 
-    As protocols evolved\cite{rfc2616} and anonymization systems such
-    as Tor\cite{tor-design} were used, this approach became
-    infeasible.
+    All of these approaches determined which page was visited via
+    object sizes. Cheng and Avnur \cite{ssl-traffic-analysis}
+    additionally proposed a hidden markov model for page
+    /transitions/, for hard-to-identify pages.
 
+    As the above attacks, Herrmann et al\cite{ccsw09-fingerprinting}
+    used only packet sizes, but employed machine learning
+    techniques. They applied a Naïve Bayes
+    Classifier\cite[ch.1.3.1]{intro2ir} which gave them good results
+    against one-hop anonymizing proxies, yet yielded only 3% accuracy
+    against 775 distinct pages when retrieved via Tor\cite{tor-design}.
+**** MOVE to related work
     Schneier's seminal books /Applied Cryptography/\cite{applied96}
     and (with Ferguson) /Practical Cryptography/\cite{practical} deal
     briefly with /Traffic analysis/, of which website fingerprinting
     is a subtask. The first mention of applying it against encrypted
     internet communication dates to Wagner and Schneier's analysis of
     the SSL 3.0 protocol\cite{SSL}, and is attributed to Bennet Yee.
-
-    Against SSL, which reveals the site being browsed to but hides the
-    pages accessed, a first successful attack[fn::cryptographers talk
-    of attempts to circumvent a protocol as /attack/\cite{applied96}]
-    was carried out by both Mistry and Raman \cite{quantifying} and
-    Cheng and Avnur\cite{ssl-traffic-analysis} at Berkeley in 1998.
-
-    The term /website fingerprinting/ was coined in Hintz's analysis
-    of the SafeWeb anonymizing proxy\cite{hintz02}, where he
-    qualitatively classified which site was being visited (and proposed
-    the first defenses).
-
-    As the above attacks, both Herrmann et
-    al\cite{ccsw09-fingerprinting} and Liberatore and
-    Levine\cite{Liberatore:2006} used only packet lenghts, but they
-    employed machine learning techniques.
-
-    - dyer: most important are the features, similar results for naive
-    - on feature importances:
-      - panchenko
-      - k-forest
-      - wang implicit
-*** WRITE Hurdles to website fingerprinting
-    <<Hurdles>>
-    The refinement of web protocols made website fingerprinting
-    harder. In the original HTTP/1.0\cite{rfc1945} protocol, each
-    request used a separate TCP-connection. This facilitated the
-    original attacks against HTTPS browsing\cite{quantifying} and the
-    anonymizing web proxy SafeWeb\cite{hintz02}, which both extracted
-    the exact file size of each embedded object.
+*** CHECK Hurdles to website fingerprinting
+    <<Hurdles>> The refinement of web protocols and anonymization
+    systems such as Tor\cite{tor-design} made website fingerprinting
+    harder. 
 
     Building a new connection for each transferred object is
     inefficient\cite[sec.2.2.2]{DBLP:books/daglib/0001977}. Thus, some
-    early HTTP implementations \cite{rfc2068} used persistent
-    connections. These were standardized HTTP/1.1 \cite{rfc2616}. Due
-    to this, it was no longer trivial to extract the files' sizes. You
-    had to determine the start and end of each request. (which was
-    still possible by seeing when the client sent a new request).
+    early HTTP/1.0 implementations used persistent
+    connections\cite{rfc2068}. These were standardized in HTTP/1.1
+    \cite{rfc2616}. It was no longer trivial to extract the files'
+    sizes. You had to determine the start and end of each
+    request. (which was still possible by seeing when the client sent
+    a new request).
 
     [[./pictures/HTTP_persistent_connection.png]]
 
@@ -217,20 +209,21 @@
     [[./pictures/HTTP_pipelining2.png]]
 
     As this created problems with some servers, pipelining was
-    disabled by default in
+    disabled in
     Firefox[fn::\url{https://bugzilla.mozilla.org/show_bug.cgi?id=264354}}
     and Google
     Chrome[fn::\url{https://www.chromium.org/developers/design-documents/network-stack/http-pipelining}}
     and not implemented in Internet
     Explorer[fn::\url{http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp/expertzone/chats/transcripts/08_0814_ez_ie8.mspx}].
 
-    After Panchenko et al.'s successful attack\cite{panchenko},
+    After Panchenko et al.'s first successful attack\cite{panchenko},
     Firefox's built-in request pipelining was enabled with added
     request order randomization as an additional no-cost defense
     prototype in the Tor-Browser-Bundle \cite{experimental}. Yet, Cai
     et al.\cite{ccs2012-fingerprinting} found fingerprinting to be
     easier with this defense enabled than without.
-**** Tor
+**** KEYWORDS Tor
+***** MOVE [[file:geloescht.org::*EVA%20Tor][EVA Tor {0/5}]] here up to [[file:geloescht.org::*WRITE%20How%20does%20Tor%20Work][WRITE How does Tor Work]] (including)
 *** (wf 2.0)
     :PROPERTIES:
     :CUSTOM_ID: wf2.0
@@ -293,6 +286,15 @@
     - bit on tor in [[Hurdles]]
       - also that use tor to avoid wf, then tracked again (if it works)
       - maybe also on ta
+    - dyer: most important are the features, similar results for naive
+    - on feature importances:
+      - panchenko
+      - k-forest
+      - wang implicit
+    - not mentioned/omitted in related work?
+      - schneier
+      - liberatore
+      - microsoft hintz-successor(?)
 **** WRITE attacks
     - hintz
     - herrmann (bayes)
@@ -679,7 +681,8 @@
      export LD_LIBRARY_PATH=/lib:/usr/lib:/path/to/bundle/Browser/TorBrowser/Tor
      #+END_SRC
      The script [[one-site.py][one-site.py]] uses this internally.
-***** TODO where exactly is the torrc: directory
+
+     - install xpra
 ***** TODO is old, still use, or remove?
 **** Avoiding safe mode on restart
      If Firefox was killed via a signal (as opposed to closing the
