@@ -1,4 +1,4 @@
-SRC=$(shell ls | grep -vE '(png|all|Makefile|plot|p1)')
+SRC=$(shell ls | grep -vE '(png|all|Makefile|plot|p1|log)')
 
 plot:
 	gnuplot plot.gnuplot
