@@ -194,6 +194,7 @@ def panchenko_outlier_removal(counters):
 GOOD = [ensemble.ExtraTreesClassifier(n_estimators=250),
         ensemble.RandomForestClassifier(),
         neighbors.KNeighborsClassifier(),
+#        naive_bayes.
         tree.DecisionTreeClassifier()]
 ALL = GOOD[:]
 ALL.extend([ensemble.AdaBoostClassifier(),
@@ -374,7 +375,6 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
             print '{}: {}'.format(esti_name(esti),
                                   _xtest(X, y, X2, y2, esti, scale=scale))
 
-
     #_test(X, y, svm.SVC(kernel='linear')) #problematic, but best
     #grid rbf
 #     cstart, cstop = -45, -35
@@ -435,6 +435,8 @@ def compare_stats(dirs):
             out.append(tmp)
     return out
 
+#means = {k: mean(v) for (k,v) in places.iteritems()}
+#stds = {k: std(v) for (k,v) in places.iteritems()}
 
 if __name__ == "__main__":
     doctest.testmod()
