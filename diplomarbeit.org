@@ -61,7 +61,7 @@
 #+LATEX_HEADER: }}
 * WAIT Abstract
 * TODO Introduction (=basics) [0%]
-** TODO Website Fingerprinting [0/23]
+** TODO Website Fingerprinting [0/24]
 *** EVA Intro (remove this headline when reviewed)
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -216,6 +216,7 @@
     prototype in the Tor-Browser-Bundle \cite{experimental}. Yet, Cai
     et al.\cite{ccs2012-fingerprinting} found fingerprinting to be
     easier with this defense enabled than without.
+**** TODO caption for pictures
 **** EVA Tor [0/3]
      The Onion Router\cite{tor-design} (short: /Tor/) is an anonymity
      system: While encryption hides the /content of communication/, Tor
@@ -395,7 +396,7 @@
     \cite{rfc2616} to retrieve the files one-by-one. An update
     \cite{rfc7230} removed this fixed limit, but encouraged clients
     "to be conservative when opening multiple connections".
-** TODO Defenses [0/7]
+** TODO Defenses [0/6]
 *** WRITE How to defend against this
     Hintz\cite{hintz02} was the first to suggest defenses against
     website fingerprinting. He lists three ways to do so: adding noise
@@ -427,12 +428,31 @@
     different ways of altering the data were evaluated by several
     researchers (\cite{oakland2012-peekaboo}
     \cite{ccs2012-fingerprinting}, \cite{a-systematic},
-**** CONTINUE HERE
-*** WRITE general defense
-    - map to one or add additional
-*** KEYWORDS deterministic vs stochastic
-    -
-*** KEYWORDS shaping vs adding
+    \cite{morphing09}, \cite{httpos}.
+*** CHECK general defense
+    To stop the arms race between attacks and defenses - the attacks
+    finding new feature combinations to use, the defenses obfuscating
+    these - the idea of a /general defense/ was presented first by
+    Dyer et al.\cite{oakland2012-peekaboo}. They proposed what had
+    been the mainstain of traffic-flow
+    security\cite[ch.10.3]{applied96}: fixed-rate transmission of
+    data, modified here to be only for the estimated duration of the
+    download.
+
+    This idea was improved on by Cai et al\cite{a-systematic} while
+    Wang et al\cite{effective} proposed the (offline) defense of
+    morphing all traffic to supersequences of traffic patterns.
+*** CHECK deterministic vs stochastic
+    The latest defenses were proposed by Juarez et al\cite{wtfpad} and
+    Wang et al\cite{wang2015walkie}: These both used a stochastic
+    approach to generate additional traffic, with Wang et al
+    additionally modifying the browser to send "half-duplex" only,
+    either only sending or only receiving data at the same
+    time. Juarez et al adapted the ideas from Shmatikov and
+    Wang\cite{ShWa-Timing06} to distinguish active and non-active
+    periods, having a certain probability of sending dummy packets in
+    each, omitting the sending when the browser generated packets
+    itself.
 *** brainstorm                                                      :ARCHIVE:
     - obfuscate features
     - specific features
@@ -442,7 +462,7 @@
         - fixed data rate
         - supersequence if known
       - stochastic
-    - traffic analysis assumes crypto is perfect
+    - [ ] traffic analysis assumes crypto is perfect
 *** WRITE Related Work
     - hintz: 3 ways to do it
     - wright: morph
@@ -452,20 +472,8 @@
     - requestpolicy (hintz 2nd way)
     - text-only browsing (hintz 2nd way)
 * TODO Methods (=methods) [0%]
-** TODO Motivation [0/2]
-*** WRITE Why
-    To defend against website fingerprinting, the features need to be
-    cloaked, in order to harden website fingerprinting.
-
-    As detailed in section [[#features]], there are certain key features
-    that are hard to change except by extra traffic, for example total
-    bytes up-/ and downstream.
-
-    Given that, the next question is how to shape traffic in order to
-    effectively cloak the fingerprint.
-
-    - make wf/ml harder, fudge features
-    - (started before both were published)
+** brainstorm                                                       :ARCHIVE:
+  - make wf/ml harder, fudge features
     - problems wfpad: modify all of tor,
       - yet problem is browser traffic
         - and traffic is app-dependent
@@ -486,8 +494,35 @@
           others need too, does not need by default)
         - HTTP traffic properties used
         - "general defense": not trying to modify specific settings
-*** KEYWORDS implementierung, wie implementiert
+** TODO Motivation [0/3]
+   When this thesis was started, there existed mostly deterministic
+   defenses, with both Walkie-Talkie\cite{wang2015walkie} and
+   wtf-pad\cite{wtfpad} not having been published yet.
+
+   The deterministic approaches had the major shortcoming of
+   introducing additional delay into the traffic, which conflicted
+   with Tor's design goal of usability\cite{tor-design}, increasing
+   f.ex. the sometimes bothersome delay of using Tor for browsing the
+   web. For the positive side higher latency, see
+   \cite[sec.4.2]{challenges}.
+
+   While also providing this functionality through an easy-to-add
+   browser extension, keeping the Tor Browser code as-is, this
+   thesis's approach uses properties of web traffic to determine when
+   and how much traffic to send. This stands in contrast to both Wang
+   et al.'s Walkie-Talkie\cite{wang2015walkie}, which offers sampling
+   from both uniform and normal distributions, and Juarez et al.'s
+   Wtfpad\cite{wtfpad}, which creates histogram-based traffic, but
+   does not specify the size of packets to retrieve, and, critically,
+   adapts a method that tries to do more (hiding from a global
+   adversary), instead of hiding which site was browsed to.
 ** TODO Design and Implementation (=Implementation) [0/6]
+   As detailed in section [[#features]], there are key features that are
+   hard to cloak except by extra traffic, f.ex. total bytes up-/ and
+   downstream.
+
+   Given that, the next question is how to shape traffic in order to
+   effectively cloak the fingerprint.
 *** WRITE How to hide: addon
     - deployable
     - module that is separateable
@@ -2092,6 +2127,7 @@
       ... (link to SO))
   - bursts maybe less hidden (number of)
   - time not hidden (no delays of single files)
+  - firefox e10n multiprocess
 ** TODO also helps against global observer if .onion generator is used
    - murdoch/danezis: correlation
    - this creates additional traffic which might hinder correlation attacks
@@ -2324,4 +2360,4 @@
    website allows the government to limit its search to, say three,
    subjects. This gives the whistleblower away.[fn:: Such has not been
    observed.]
-*** MOVE to unused
+
