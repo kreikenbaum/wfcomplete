@@ -397,6 +397,7 @@
     \cite{rfc7230} removed this fixed limit, but encouraged clients
     "to be conservative when opening multiple connections".
 ** TODO Defenses [0/6]
+   siehe [[file:~/da/da.org::*2.%20Teil:%20Verteidigungen%20gegen%20Website-Fingerprinting%20(Welche%20Methoden%20existieren?%20Welche%20Problem%20existieren%20derzeit?%20-->%20%C3%9Cberleitung%20zum%20Hauptteil)][2. Teil: Verteidigungen gegen Website-Fingerprinting (Welche        Methoden existieren? Welche Problem existieren derzeit? -->        Überleitung zum Hauptteil)]]
 *** WRITE How to defend against this
     Hintz\cite{hintz02} was the first to suggest defenses against
     website fingerprinting. He lists three ways to do so: adding noise
@@ -516,21 +517,110 @@
    does not specify the size of packets to retrieve, and, critically,
    adapts a method that tries to do more (hiding from a global
    adversary), instead of hiding which site was browsed to.
-** TODO Design and Implementation (=Implementation) [0/6]
-   As detailed in section [[#features]], there are key features that are
-   hard to cloak except by extra traffic, f.ex. total bytes up-/ and
-   downstream.
 
-   Given that, the next question is how to shape traffic in order to
-   effectively cloak the fingerprint.
 *** WRITE How to hide: addon
     - deployable
     - module that is separateable
       - easier to use and test
       - some things harder (f.ex. shaping)
 *** WRITE Aim: selective cover traffic
+   As detailed in section [[#features]], there are key features that are
+   hard to cloak except by extra traffic, f.ex. total bytes up-/ and
+   downstream.
+
+   Given that, the next question is how to shape traffic in order to
+   effectively cloak the fingerprint.
+
     - based on target web site
     - simultaneous to real traffic
+
+    - make wf harder such that it is impossible
+** TODO Design and Implementation (=Implementation) [0/18]
+*** WRITE description of add-on
+    The add-on tries to defend against website fingerprinting by
+    adding HTTP-distributed extra traffic.
+
+    To do so, it detects the start of each web request.[fn::for code
+    details, see appendix].
+
+    Concurrently with the start of the web request, it sends a dummy
+    request. Of which size and how it continues depends on the version
+    of the add-on.
+**** MOVE to 0.18
+    If the request is determined to be for an embedded
+    object[fn:: currently, the first page from a domain is the HTML,
+    all others within a certain time window are considered embedded],
+    an additional embedded object-size page is requested with a
+    certain probability.
+
+    Both the sizes of the extra HTML and the extra number of embedded
+    objects are determined based on the [[HTML traffic model][HTML traffic model]].
+**** end MOVE
+    - detect start of transmission
+      - request extra HTML doc to obfuscate that
+      - maybe do something to IPP-model (trigger off/on-state on some)
+    - always send dummy traffic
+      - on each request
+      - better: leave some out
+    - detect end of page load
+      - maybe do something to IPP-model (trigger on/off-state on some)
+    - request size uniform [0, 300)
+      - except if request.len > 300
+    - source: cover traffic server
+    - size distributions
+      - html
+      - numembedded
+    - td describe best algo only?
+**** TODO appendix for addon
+*** TODO cover traffic distribution generation
+    - each retrieval maybe triggers additional retrieval(s)
+      - based on statistical model
+    - for each page being retrieved
+      - either size can be estimated or it must be guessed
+      - either number of embedded elements can be estimated or must
+        be guessed
+      - determine target size and number of embedded elements
+      - fill up HTML traffic with another request with content size
+        page.size - target.size
+      - for each embedded element
+        - generate request for additional embedded element(s) with
+          probability (target.number_embedded - page.number_embedded)
+          /page.number_embedded
+          - if probability > 1, generate those certainly and iterate
+            with probability -1, until probability < 0
+*** TODO HTML traffic model
+    <<HTML traffic model>>
+    - intel
+      - html object lognormal with params \mu = 7.90272, \sigma = 1.7643
+      - embedded objects
+    - test
+      - download html top 10000
+      - analysis
+    - link to
+*** KEYWORDS Addon-Versions
+**** WRITE 0.15: deployable, base version
+     This is the base version which was tested. Despite its
+     inaccuracte distinguishing of HTML/embedded objects, it achieves
+     an accuracy of ...
+
+      - each request triggers some cover traffic
+      - due to bug, no embedded, just HTML
+      - strategy 1/2: size cache vs guessing
+***** TODO accuracy
+**** WRITE 0.18: different strategies for target site
+      - strategy a/b: bloom bucket size vs one target distribution
+**** WRITE 0.19 and retro: negative values in distribution
+     - negative values for requests are saved and randomly subtracted
+     - occur with real size > target size
+     - solution
+       - if small /negative request value:
+         - save value (min size is 160, thus =160 - requested_size=)
+       - else:
+         - get value at random up to min(request size, saved values)
+         - subtract from request size, and from saved value
+**** WRITE 0.21
+      - stricter bounds on retrieval of embedded objects
+      - and end when limit reached
 *** KEYWORDS Algorithm
 *** KEYWORDS Modules
 *** KEYWORDS Server
@@ -1176,7 +1266,7 @@
 *** Defenses
 *** CHECK Variations of Cover Traffic
     There are two variations how to generate Cover Traffic.
-
+**** move from here to [[*0.15:%20deployable,%20base%20version][0.15: deployable, base version]]
     1. Does knowing web page characteristics, such as [[#find sizes of HTML-documents][the size of the
        HTML-webpage]] and [[number_embedded][number of embedded objects]] help in generating
        cover traffic? While it seems so at first, it can be evaluated if
@@ -1187,9 +1277,9 @@
        beforehand. If unknown, the random variates from the [[HTML traffic model][HTML traffic
        model]] are used. [fn:: The size of each embedded element is always
        drawn from the HTML traffic model.].
-
+**** move up to here
     2. Given a webpage and its size, how much traffic should be generated?
-
+**** MOVE from here to [[*0.18:%20different%20strategies%20for%20target%20site][0.18: different strategies for target site]]
        While just adding random traffic to each page might enhance
        anonymity, always adding from the same distribution would
        probably be wasteful, as site-specific values might prove to
@@ -1208,6 +1298,7 @@
        The other approach is to have a single target distribution from
        which values are sampled each time, once again from the [[HTML traffic model][HTML
        traffic model]].
+**** move up to here
 **** TODO move this f.ex. to coverTraffic, maybe move this section below
     From the target values, the webpage's html-size and number of
     elements (variation A/B) is subtracted.
@@ -1430,17 +1521,10 @@
     \input{pictures/model.tex}
     \end{adjustbox}
     #+END_LATEX
-**** needs to do
-     - make wf harder such that it is impossible
 **** by
      - generating cover traffic
-**** procedural
-***** check which urls user loads
-****** aggregate by domain
-***** for each loaded url, maybe load something else
-      - this generates the cover traffic over the loading of the website
-      - yet only augments bursts, does not equalize them
 **** TODO modules [0/14]
+***** MOVE to appendix (with model.tex above)
 ***** TODO replace with pic [[shell:dia pictures/model.dia &]]
 ***** TODO how to show (singleton)-module in jUML
 ***** TODO Watcher
@@ -1536,31 +1620,6 @@
       page (at =end=), or the end of a timeout of =User.TIMEOUT=
       seconds, the CoverTraffic-object is notified of the ending and
       removed from the internal host-to-CoverTraffic mapping.
-**** TODO cover traffic distribution generation
-     - each retrieval maybe triggers additional retrieval(s)
-       - based on statistical model
-     - for each page being retrieved
-       - either size can be estimated or it must be guessed
-       - either number of embedded elements can be estimated or must
-         be guessed
-       - determine target size and number of embedded elements
-       - fill up HTML traffic with another request with content size
-         page.size - target.size
-       - for each embedded element
-         - generate request for additional embedded element(s) with
-           probability (target.number_embedded - page.number_embedded)
-           /page.number_embedded
-           - if probability > 1, generate those certainly and iterate
-             with probability -1, until probability < 0
-**** TODO HTML traffic model
-     <<HTML traffic model>>
-     - intel
-       - html object lognormal with params \mu = 7.90272, \sigma = 1.7643
-       - embedded objects
-     - test
-       - download html top 10000
-       - analysis
-     - link to
 **** TODO browser caching
      - browsers cache
      - only helps in cover traffic, (unless warm/cold site model is used)
@@ -1655,14 +1714,6 @@
         - "add" the error rates of the filters? (times population density?)
 ***** maybe graphics?
 ***** WAIT check "see previous section"
-**** KEYWORDS negative values in distribution
-     - occur with real size > target size
-     - solution
-       - if small /negative request value:
-         - save value (min size is 160, thus =160 - requested_size=)
-       - else:
-         - get value at random up to min(request size, saved values)
-         - subtract from request size, and from saved value
 *** TODO Implementation [0/5]
 **** TODO js coding best practices
      JavaScript\cite{ecma} is arguably a language with some great
@@ -1691,38 +1742,6 @@
       this deanonymization problem at the application layer, where its
       origins are. (Separation of Concerns)
 **** TODO http server for testing
-**** TODO description of add-on
-     The add-on tries to defend against website fingerprinting by
-     adding HTTP-distributed extra traffic.
-
-     To do so, it detects the start of each web request. If it is a
-     request for a HTML page, an additional HTML page is requested.
-
-     If the request is determined to be for an embedded
-     object[fn:: currently, the first page from a domain is the HTML,
-     all others within a certain time window are considered embedded],
-     an additional embedded object-size page is requested with a
-     certain probability.
-
-     Both the sizes of the extra HTML and the extra number of embedded
-     objects are determined based on the [[HTML traffic model][HTML traffic model]].
-
-     - detect start of transmission
-       - request extra HTML doc to obfuscate that
-       - maybe do something to IPP-model (trigger off/on-state on some)
-     - always send dummy traffic
-       - on each request
-       - better: leave some out
-     - better: delay some requests (f.ex. images)
-     - detect end of page load
-       - maybe do something to IPP-model (trigger on/off-state on some)
-     - request size uniform [0, 300)
-       - except if request.len > 300
-     - source: cover traffic server
-     - size distributions
-       - html
-       - numembedded
-     - td describe best algo only?
 **** TODO Apache mod_wsgi
      =mod_wsgi= is a module for the Apache web
      server[fn:: \url{https://httpd.apache.org/}]. It executes python
@@ -2060,6 +2079,33 @@
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
+* host install list
+  - apt update
+  - apt upgrade
+  - apt install emacs tmux
+  - download tbb
+    1. apt install firefox
+    2. starting failed with error
+    3. apt install xpra
+       - installs needed x-libraries
+       - and is faster
+    4. test via (local)
+       #+BEGIN_SRC sh
+         xpra start ssh:mkreik@duckstein:37 --start=firefox
+       #+END_SRC
+       and kill by hand (on duckstein) via
+       #+BEGIN_SRC sh
+         xpra stop
+       #+END_SRC
+    5. download tbb, gpg check, cp to hosts, test
+    6. apt install python-pip
+    7. pip install marionette_client
+    8. apt install xvfb
+    9. apt install tshark
+       - add user to wireshark group in /etc/group
+       - log out, log back in
+    10. mkdir mnt/data, chown to current user/group
+    11. mod_wsgi: see [[*Apache%20mod_wsgi][Apache mod_wsgi]]
 * WAIT Discussion
   intel model: interdependences (html bigger \to more embedded) not mentioned
 * WAIT Acknowledgements
@@ -2070,8 +2116,11 @@
   - ...
   - Elena
 * TODO Further work
+** eval
   - bigger world sizes
   - open world
+  - more elaborate tests with different world sizes / open world / etc
+** addon
   - source cover traffic: user gives domain as starting point
   - how to generate
     - how often, which parameters
@@ -2113,9 +2162,7 @@
     - or only rely on quantiles of observed data
       - but these are hard to gather
 	- use networkmanager code to do that
-
     - cite web-doom
-  - more elaborate tests with different world sizes / open world / etc
   - User class: should aggregate smarter, not by-host, but by-page
     with every page-embedded element as just that.
     - indexed by host as workaround, can do better later
@@ -2128,6 +2175,7 @@
   - bursts maybe less hidden (number of)
   - time not hidden (no delays of single files)
   - firefox e10n multiprocess
+  - delay some requests (f.ex. images)
 ** TODO also helps against global observer if .onion generator is used
    - murdoch/danezis: correlation
    - this creates additional traffic which might hinder correlation attacks

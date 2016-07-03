@@ -194,7 +194,6 @@ def panchenko_outlier_removal(counters):
 GOOD = [ensemble.ExtraTreesClassifier(n_estimators=250),
         ensemble.RandomForestClassifier(),
         neighbors.KNeighborsClassifier(),
-#        naive_bayes.
         tree.DecisionTreeClassifier()]
 ALL = GOOD[:]
 ALL.extend([ensemble.AdaBoostClassifier(),
@@ -435,6 +434,12 @@ def compare_stats(dirs):
             out.append(tmp)
     return out
 
+def top_30(mean_per_dir):
+    vals = []
+    for (place, p_means) in mean_per_dir.items():
+        vals.extend(p_means.values())
+        # np.percentile(vals, np.linspace(0, 100, 21), interpolation='lower')
+        
 #means = {k: mean(v) for (k,v) in places.iteritems()}
 #stds = {k: std(v) for (k,v) in places.iteritems()}
 
