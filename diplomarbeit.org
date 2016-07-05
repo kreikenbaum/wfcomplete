@@ -560,16 +560,6 @@
     With the start of the web request, a dummy request is sent. Of
     which size and how it continues depends on the version of the
     add-on.
-**** MOVE to 0.18
-    If the request is determined to be for an embedded
-    object[fn:: currently, the first page from a domain is the HTML,
-    all others within a certain time window are considered embedded],
-    an additional embedded object-size page is requested with a
-    certain probability.
-
-    Both the sizes of the extra HTML and the extra number of embedded
-    objects are determined based on the [[HTML traffic model][HTML traffic model]].
-**** end MOVE
     - detect start of transmission
       - request extra HTML doc to obfuscate that
       - maybe do something to IPP-model (trigger off/on-state on some)
@@ -602,7 +592,11 @@
           /page.number_embedded
           - if probability > 1, generate those certainly and iterate
             with probability -1, until probability < 0
-*** TODO HTML traffic model
+*** KEYWORDS HTML traffic model
+    :PROPERTIES:
+    :CUSTOM_ID: HTML traffic model
+    :END:
+
     <<HTML traffic model>>
     - intel
       - analysed squid logs
@@ -615,16 +609,49 @@
       - analysis
     - link to
 *** KEYWORDS Addon-Versions
-**** WRITE 0.15: deployable, base version
-     This is the base version which was tested. Despite its
-     inaccuracte distinguishing of HTML/embedded objects, it achieves
-     an accuracy of ...
+**** CHECK 0.15: base version
+     This is the base version which was tested. Despite its alpha
+     status, it achieved an accuracy drop from 99.2% to 54.0--44.0%
+     (depending on flavor) when tested on the top-10 sites. This drop
+     came an a bandwidth overhead of 49%--85%.
 
-      - each request triggers some cover traffic
-      - due to bug, no embedded, just HTML
-      - strategy 1/2: size cache vs guessing
-***** TODO accuracy
+     In a closed world, it is possible to always know these sizes
+     beforehand. If unknown, the random variates from the [[#HTML traffic model][HTML traffic model]] are used. [fn:: The size of each embedded element is always
+     drawn from the HTML traffic model.] In the nocache flavor, sizes
+     are always guessed.
+
+     This version has several bugs in distinguishing between
+     seen/unseen sites and HTML/embedded objects.
+***** KEYWORDS move footnote
 **** WRITE 0.18: different strategies for target site
+     While just adding random traffic to each page might enhance
+     anonymity, always adding from the same distribution would
+     probably be wasteful, as site-specific values might prove to
+     obfuscate better.  A target size and number of objects has to be
+     determined. How to choose this is the second parameter.
+
+       One approach is to group the webpages by their size into bins and
+       to set the bin border as the target size, as all webpages in the
+       bin must have a size less than or equal the border. This approach
+       mimics that taken by Wang et al. in \cite{effective} with the
+       bins being equivalent to the anonymity sets / partitions. For the
+       biggest bin, its median size is currently chosen.[fn:: The optimal
+       size for the biggest bin is a parameter that should be evaluated
+       as well.]
+
+       The other approach is to have a single target distribution from
+       which values are sampled each time, once again from the [[HTML traffic model][HTML
+       traffic model]].
+
+    If the request is determined to be for an embedded
+    object[fn:: currently, the first page from a domain is the HTML,
+    all others within a certain time window are considered embedded],
+    an additional embedded object-size page is requested with a
+    certain probability.
+
+    Both the sizes of the extra HTML and the extra number of embedded
+    objects are determined based on the [[#HTML traffic model][HTML traffic model]].
+
       - strategy a/b: bloom bucket size vs one target distribution
 **** WRITE 0.19 and retro: negative values in distribution
      - negative values for requests are saved and randomly subtracted
@@ -755,7 +782,7 @@
    - does it work better?
    - which variant works?
 * KEYWORDS Conclusion
-* TODO topics [0/118]
+* TODO topics [0/113]
 ** Teaser
    #+BEGIN_QUOTE
    "They who can give up essential liberty to obtain a little temporary
@@ -1288,45 +1315,14 @@
     these features /Number Markers/] completes the top five. Each added
     feature increases accuracy, yet with nearly the same accuracy for 30 as
     for the total of 150 features.
-** TODO Addon Design and Implementation [0/58]
+** TODO Addon Design and Implementation [0/55]
 *** [[*description of add-on][description of add-on]]
 *** Defenses
-*** CHECK Variations of Cover Traffic
+*** TODO Variations of Cover Traffic
     There are two variations how to generate Cover Traffic.
-**** move from here to [[*0.15:%20deployable,%20base%20version][0.15: deployable, base version]]
-    1. Does knowing web page characteristics, such as [[#find sizes of HTML-documents][the size of the
-       HTML-webpage]] and [[number_embedded][number of embedded objects]] help in generating
-       cover traffic? While it seems so at first, it can be evaluated if
-       [[HTML traffic
-        model][educated guessing]] might work better.
-
-       In a closed world, it is possible to always know these sizes
-       beforehand. If unknown, the random variates from the [[HTML traffic model][HTML traffic
-       model]] are used. [fn:: The size of each embedded element is always
-       drawn from the HTML traffic model.].
-**** move up to here
     2. Given a webpage and its size, how much traffic should be generated?
-**** MOVE from here to [[*0.18:%20different%20strategies%20for%20target%20site][0.18: different strategies for target site]]
-       While just adding random traffic to each page might enhance
-       anonymity, always adding from the same distribution would
-       probably be wasteful, as site-specific values might prove to
-       obfuscate better.  A target size and number of objects has to be
-       determined. How to choose this is the second parameter.
 
-       One approach is to group the webpages by their size into bins and
-       to set the bin border as the target size, as all webpages in the
-       bin must have a size less than or equal the border. This approach
-       mimics that taken by Wang et al. in \cite{effective} with the
-       bins being equivalent to the anonymity sets / partitions. For the
-       biggest bin, its median size is currently chosen.[fn:: The optimal
-       size for the biggest bin is a parameter that should be evaluated
-       as well.]
-
-       The other approach is to have a single target distribution from
-       which values are sampled each time, once again from the [[HTML traffic model][HTML
-       traffic model]].
-**** move up to here
-**** TODO move this f.ex. to coverTraffic, maybe move this section below
+**** TODO MOVE somewhere
     From the target values, the webpage's html-size and number of
     elements (variation A/B) is subtracted.
 
@@ -1335,9 +1331,9 @@
     embedded elements, the ratio of (target-site)/site is computed. For
     each element, this ratio determines the number of requests for
     embedded elements (these are always of random sizes, once again from
-    the [[HTML traffic model][HTML traffic model]]. See [[*cover%20traffic%20distribution%20generation][cover traffic distribution generation]]
+    the [[#HTML traffic model][HTML traffic model]]. See [[*cover%20traffic%20distribution%20generation][cover traffic distribution generation]]
     for the algorithms.
-**** TODO end move section
+**** TODO end MOVE section
     This leads to the following variations:
 
     1) bloom binning (I) with known sizes (A)
@@ -1566,8 +1562,8 @@
       single host contacted. This is the only module used with a
       constructor, as it requires several instances, one for each host.
 
-      The cover traffic provided tries to mimic the [[HTML traffic
-      model]]s parameters.
+      The cover traffic provided tries to mimic the [[#HTML traffic model][HTML traffic
+      models]] parameters.
 
       There are two strategies implemented which have to be set by
       modifying the source code.
@@ -1682,6 +1678,8 @@
      values, choosing the lower one. This increases traffic, but the
      opposite might be too little traffic, thus easier website
      fingerprinting, which should be avoided.
+***** MOVE to appendix
+***** TODO mention somewhere (cache)
 **** TODO Estimate Parameter: Number of Embedded Objects
      <<number_embedded>>
      The second parameter for generating cover traffic is the number
@@ -2108,12 +2106,14 @@
     #+END_EXAMPLE
     - try temporary fix: increase number of file descriptors, set
       #+BEGIN_SRC sh
-        username        hard    nofile  10000
+        username        -    nofile  10000
       #+END_SRC
-      in =/etc/security/limits.conf=
+      in =/etc/security/limits.conf=. (Alter 10000 to something else
+      if you retrieve more than 4000 at once. It seems to be about
+      1 per domain-request).
     - bug report in appendix, needs some code to mitigate
 ** TODO scripts
-** TODO move to appendix
+** TODO MOVE to appendix
 ** TODO below [[*host install list][host install list]]
 * misc: tex bibliography
 \bibliography{docs/master}
