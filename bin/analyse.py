@@ -345,7 +345,7 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
 
     if with_svm:
         clf = my_grid(X, y)
-#        svm = smart_grid(X, y) #enabled if ranges are not clear
+#        clf = smart_grid(X, y) #enabled if ranges are not clear
         logging.info('grid result: %s', clf)
         GOOD.append(clf)
 
@@ -435,14 +435,33 @@ def compare_stats(dirs):
     return out
 
 def top_30(mean_per_dir):
-    vals = []
+    '''@return 30 domains with well-interspersed trace means sizes
+
+    @param is f.ex. means from compare_stats above.'''
+    all_means = []
     for (place, p_means) in mean_per_dir.items():
-        vals.extend(p_means.values())
-        # np.percentile(vals, np.linspace(0, 100, 21), interpolation='lower')
+        all_means.extend(p_means.values())
+    percentiles = np.percentile(vals,
+                                np.linspace(0, 100, 31),
+                                interpolation='lower')
+    out = set()
+    for mean in percentiles:
+        out.add(find_domain(mean_per_dir, mean))
+    return out
         
+        # np.percentile(vals, np.linspace(0, 100, 21), interpolation='lower')
+
+def find_domain(mean_per_dir, mean):
+    '''@return (first) domain name with mean'''
+    for place_means in mean_per_dir.values():
+        for (domain, domain_mean) in place_means.items():
+            if domain_mean == mean:
+                return domain
+
+# places = _gen_counters(sys.argv[1:])
 #means = {k: mean(v) for (k,v) in places.iteritems()}
 #stds = {k: std(v) for (k,v) in places.iteritems()}
-
+# some_30 = top_30(means)
 if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
@@ -457,7 +476,7 @@ if __name__ == "__main__":
     # sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
     # sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
     # sys.argv = ['', 'disabled/wfpad', 'wfpad']
-    # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
+    # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp'); os.chdir(PANCHENKO_PATH)
     # counters = counter.Counter.all_from_panchenko(PATH)
     cross_test(sys.argv, with_svm=True) #, cumul=False)
 

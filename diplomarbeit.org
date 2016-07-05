@@ -62,7 +62,7 @@
 * WAIT Abstract
 * TODO Introduction (=basics) [0%]
 ** TODO Website Fingerprinting [0/24]
-*** EVA Intro (remove this headline when reviewed)
+*** DANIEL Intro (remove this headline when reviewed)
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
     order, size, and timing of data packets.
@@ -74,7 +74,7 @@
     techniques no longer work]], especially on anonymity networks like Tor.
 
     Finally, [[#wf2.0][current attacks]] will be explored.
-*** EVA Visual Representation of Traces
+*** DANIEL Visual Representation of Traces
     :PROPERTIES:
     :CUSTOM_ID: visual
     :END:
@@ -117,7 +117,7 @@
     packet size) visualized above contain all relevant information of
     a trace.
 **** WAIT when done, format in LaTeX: caption to group of images
-*** EVA What happens during a (HTTP) website request
+*** DANIEL What happens during a (HTTP) website request
     :PROPERTIES:
     :CUSTOM_ID: http
     :END:
@@ -270,8 +270,11 @@
     :CUSTOM_ID: wf2.0
     :END:
 **** WRITE panchenko v1
-     - first to work
-     - limited world size
+     Panchenko et al.'s \cite{panchenko} attack was the first that
+     successfully classifed traces retrieved via Tor\cite{critique}.
+     It treated a huge world size and carefully evaluated possible
+     features.
+
      - svm
      - hand-tuned features
        - several evaluated
@@ -291,6 +294,9 @@
      - how works
        - for point, determine (f.ex. k=5) closest neighbors by metric
        - majority decision (or only if all agree), put in that group
+     - as seen in table in appendix: similar results to extratrees,
+       randomforest, decisiontrees
+       - one or the other slightly better
 **** WRITE cumul
      - better features
      - svm
@@ -327,6 +333,12 @@
       then formulate correctly
 ***** TODO get picture to work
     - features to classes: classifiers
+*** Related Work
+    - schneier
+    - liberatore
+    - microsoft hintz-successor(?)
+    - bissias
+    - wright
 *** brainstorm                                                      :ARCHIVE:
     - induce pattern
       - naive
@@ -356,6 +368,8 @@
       - schneier
       - liberatore
       - microsoft hintz-successor(?)
+      - bissias
+      - wright
     - classifiers
       - features important or also classifier
       - no classifier fits all
@@ -535,17 +549,17 @@
     - simultaneous to real traffic
 
     - make wf harder such that it is impossible
-** TODO Design and Implementation (=Implementation) [0/18]
+** TODO Design and Implementation (=Implementation) [0/20]
 *** WRITE description of add-on
     The add-on tries to defend against website fingerprinting by
     adding HTTP-distributed extra traffic.
 
-    To do so, it detects the start of each web request.[fn::for code
+    To do so, it detects the start of each web request [fn::for code
     details, see appendix].
 
-    Concurrently with the start of the web request, it sends a dummy
-    request. Of which size and how it continues depends on the version
-    of the add-on.
+    With the start of the web request, a dummy request is sent. Of
+    which size and how it continues depends on the version of the
+    add-on.
 **** MOVE to 0.18
     If the request is determined to be for an embedded
     object[fn:: currently, the first page from a domain is the HTML,
@@ -572,7 +586,7 @@
       - numembedded
     - td describe best algo only?
 **** TODO appendix for addon
-*** TODO cover traffic distribution generation
+*** KEYWORDS cover traffic distribution generation
     - each retrieval maybe triggers additional retrieval(s)
       - based on statistical model
     - for each page being retrieved
@@ -591,6 +605,9 @@
 *** TODO HTML traffic model
     <<HTML traffic model>>
     - intel
+      - analysed squid logs
+      - evaluated several distributions for parameters
+      - matched logs
       - html object lognormal with params \mu = 7.90272, \sigma = 1.7643
       - embedded objects
     - test
@@ -621,6 +638,16 @@
 **** WRITE 0.21
       - stricter bounds on retrieval of embedded objects
       - and end when limit reached
+**** WRITE simple
+     - had become complex
+     - simplest thing that could possibly work\cite{xp}
+     - on first request to domain (modulo timeout/page.endsLoad)
+       - retrieve (factor / 100)-sized HTML dummy
+     - on each subsequent request
+       - retrieve embedded dummy with probability (factor / 100)
+         - if > 1, retrieve until < 1, then with factor
+     - that's it (proxy-sum-load still used, but should not be necessary)
+***** TODO maybe remove proxy-sum-load from simple-addon (see if ever negative)
 *** KEYWORDS Algorithm
 *** KEYWORDS Modules
 *** KEYWORDS Server
@@ -2055,15 +2082,25 @@
     - just take quantiles, use his limits
 ** TODO run test, include results
 ** TODO link to panchenko's software
-* TODO how to set up wfpad
-  - tor server: listen on ORPort X
-  - wfpad server script: send to X, listen on Y
-  - wfpad client script: send to Y, listen on Z
-  - in tbb/on 2nd tor (a.k.a. client): send traffic to bridge
-    =Bridge 127.0.0.1 Z=
-  - modify capture
-    - localhost (=-i lo=)
+* WRITE how to set up wfpad
+  - helpful notes at scramblesuit
+  - modify for wfpad
+  - failed to work if called from Tor
+  - thus 3/4 separate parts
+    - tor server: listen on ORPort X
+    - wfpad server script: send to X, listen on Y
+    - wfpad client script: send to Y, listen on Z
+    - in tbb/on 2nd tor (a.k.a. client): send traffic to bridge
+      =Bridge 127.0.0.1 Z=
+  - modify capture: localhost
+    - =-i lo=
     - =port Y=
+  - alternative: client/server on separate hosts
+    - because localhost did not yield much
+      - because histogram based on arrival times, which are small on
+        the same host (loopback interface)
+    - ohne =-i=
+    - =host server_host=
   - start capture
   - bug on multiple uses:
     #+BEGIN_EXAMPLE
@@ -2076,36 +2113,41 @@
       in =/etc/security/limits.conf=
     - bug report in appendix, needs some code to mitigate
 ** TODO scripts
+** TODO move to appendix
+** TODO below [[*host install list][host install list]]
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
-* host install list
-  - apt update
-  - apt upgrade
-  - apt install emacs tmux
-  - download tbb
-    1. apt install firefox
-    2. starting failed with error
-    3. apt install xpra
-       - installs needed x-libraries
-       - and is faster
-    4. test via (local)
-       #+BEGIN_SRC sh
-         xpra start ssh:mkreik@duckstein:37 --start=firefox
-       #+END_SRC
-       and kill by hand (on duckstein) via
-       #+BEGIN_SRC sh
-         xpra stop
-       #+END_SRC
-    5. download tbb, gpg check, cp to hosts, test
-    6. apt install python-pip
-    7. pip install marionette_client
-    8. apt install xvfb
-    9. apt install tshark
-       - add user to wireshark group in /etc/group
-       - log out, log back in
-    10. mkdir mnt/data, chown to current user/group
-    11. mod_wsgi: see [[*Apache%20mod_wsgi][Apache mod_wsgi]]
+* TODO host install list
+  1. apt update
+  2. apt upgrade
+  3. apt install emacs tmux unison
+  4. download tbb
+     1. apt install firefox
+     2. starting failed with error
+     3. apt install xpra
+        - installs needed x-libraries
+        - and is faster
+     4. test via (local)
+        #+BEGIN_SRC sh
+          xpra start ssh:mkreik@duckstein:37 --start=firefox
+        #+END_SRC
+        and kill by hand (on duckstein) via
+        #+BEGIN_SRC sh
+          xpra stop
+        #+END_SRC
+     5. download tbb, gpg check, cp to hosts, test
+  5. apt install python-pip; pip install --upgrade pip
+  6. pip install marionette_client
+  7. apt install xvfb
+  8. apt install tshark
+     - add user to wireshark group in /etc/group
+     - log out, log back in
+  9. mkdir mnt/data, chown to current user/group
+  10. mod_wsgi: see [[*Apache%20mod_wsgi][Apache mod_wsgi]]
+  11. apt install tor
+  12. apt install python-pyptlib python-crypto python-yaml
+      python-psutil
 * WAIT Discussion
   intel model: interdependences (html bigger \to more embedded) not mentioned
 * WAIT Acknowledgements

@@ -1,6 +1,8 @@
 "use strict";
 
-const user = require("../js/user.js");
+const User = require("../js/user.js");
+
+let user = new User.User();
 
 const mock = require("./mock.js");
 
@@ -24,5 +26,15 @@ exports["test load twice"] = function(assert) {
     assert.ok(user.loads(TESTURL3));
     assert.ok(user.endsLoading(TESTURL3));
 };
+
+exports["test contains"] = function(assert) {
+    let a = [3,4];
+    assert.ok(User.contains(a, 3));
+    assert.ok(! User.contains(a, 5));
+};
+
+// test that given factor is approximated (do 100 mock loads, test that works)
+// - html, and
+// - embedded
 
 require("sdk/test").run(exports);

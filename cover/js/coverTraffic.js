@@ -80,9 +80,9 @@ CoverTraffic.prototype.loadNext = function() {
         if ( this.target.numEmbedded > 0 ) {
 	    this.load.sized(stats.embeddedObjectSize());
             this.target.numEmbedded -= 1;
-        } else {
-            console.log('reached numEmbedded: ' + JSON.stringify(this));
-        }
+        } // else {
+          //  console.log('reached numEmbedded: ' + JSON.stringify(this));
+        // }
     }
 };
 
