@@ -477,7 +477,7 @@ if __name__ == "__main__":
     # sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
     # sys.argv = ['', 'disabled/wfpad', 'wfpad']
     # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp'); os.chdir(PANCHENKO_PATH)
-    # counters = counter.Counter.all_from_panchenko(PATH)
+    # counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
     cross_test(sys.argv, with_svm=True) #, cumul=False)
 
 #    (X, y ,y_dom) = to_features_cumul(counters)

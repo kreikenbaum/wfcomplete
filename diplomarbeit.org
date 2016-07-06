@@ -549,7 +549,7 @@
     - simultaneous to real traffic
 
     - make wf harder such that it is impossible
-** TODO Design and Implementation (=Implementation) [0/20]
+** TODO Design and Implementation (=Implementation) [0/21]
 *** WRITE description of add-on
     The add-on tries to defend against website fingerprinting by
     adding HTTP-distributed extra traffic.
@@ -560,6 +560,7 @@
     With the start of the web request, a dummy request is sent. Of
     which size and how it continues depends on the version of the
     add-on.
+
     - detect start of transmission
       - request extra HTML doc to obfuscate that
       - maybe do something to IPP-model (trigger off/on-state on some)
@@ -576,7 +577,7 @@
       - numembedded
     - td describe best algo only?
 **** TODO appendix for addon
-*** KEYWORDS cover traffic distribution generation
+*** WRITE cover traffic distribution generation
     - each retrieval maybe triggers additional retrieval(s)
       - based on statistical model
     - for each page being retrieved
@@ -584,7 +585,7 @@
       - either number of embedded elements can be estimated or must
         be guessed
       - determine target size and number of embedded elements
-      - fill up HTML traffic with another request with content size
+      - fill up HTTP traffic with another request with content size
         page.size - target.size
       - for each embedded element
         - generate request for additional embedded element(s) with
@@ -592,12 +593,12 @@
           /page.number_embedded
           - if probability > 1, generate those certainly and iterate
             with probability -1, until probability < 0
-*** KEYWORDS HTML traffic model
+**** TODO move below [[#HTTP traffic model][HTTP traffic model]]
+*** WRITE HTTP traffic model
     :PROPERTIES:
-    :CUSTOM_ID: HTML traffic model
+    :CUSTOM_ID: HTTP traffic model
     :END:
 
-    <<HTML traffic model>>
     - intel
       - analysed squid logs
       - evaluated several distributions for parameters
@@ -613,35 +614,36 @@
      This is the base version which was tested. Despite its alpha
      status, it achieved an accuracy drop from 99.2% to 54.0--44.0%
      (depending on flavor) when tested on the top-10 sites. This drop
-     came an a bandwidth overhead of 49%--85%.
+     came an a bandwidth overhead of 49--85%.
 
      In a closed world, it is possible to always know these sizes
-     beforehand. If unknown, the random variates from the [[#HTML traffic model][HTML traffic model]] are used. [fn:: The size of each embedded element is always
-     drawn from the HTML traffic model.] In the nocache flavor, sizes
-     are always guessed.
+     beforehand. If unknown, the random variates from the [[#HTTP traffic model][HTTP traffic
+     model]] are used. [fn:: The size of each embedded element is always
+     drawn from the HTTP traffic model.] This approach is called the
+     /cache/ flavor. In the /nocache/ flavor, sizes are always guessed.
 
      This version has several bugs in distinguishing between
      seen/unseen sites and HTML/embedded objects.
-***** KEYWORDS move footnote
+***** TODO maybe move footnote
 **** WRITE 0.18: different strategies for target site
      While just adding random traffic to each page might enhance
      anonymity, always adding from the same distribution would
      probably be wasteful, as site-specific values might prove to
-     obfuscate better.  A target size and number of objects has to be
+     obfuscate better. A target size and number of objects has to be
      determined. How to choose this is the second parameter.
 
-       One approach is to group the webpages by their size into bins and
-       to set the bin border as the target size, as all webpages in the
-       bin must have a size less than or equal the border. This approach
-       mimics that taken by Wang et al. in \cite{effective} with the
-       bins being equivalent to the anonymity sets / partitions. For the
-       biggest bin, its median size is currently chosen.[fn:: The optimal
-       size for the biggest bin is a parameter that should be evaluated
-       as well.]
+     One approach is to group the webpages by their size into bins and
+     to set the bin border as the target size, as all webpages in the
+     bin must have a size less than or equal the border. This approach
+     mimics that taken by Wang et al. in \cite{effective} with the
+     bins being equivalent to the anonymity sets / partitions. For the
+     biggest bin, its median size is currently chosen.[fn:: The
+     optimal size for the biggest bin is a parameter that should be
+     evaluated as well.]
 
-       The other approach is to have a single target distribution from
-       which values are sampled each time, once again from the [[HTML traffic model][HTML
-       traffic model]].
+     The other approach is to have a single target distribution from
+     which values are sampled each time, once again from the [[#HTTP traffic model][HTTP
+     traffic model]].
 
     If the request is determined to be for an embedded
     object[fn:: currently, the first page from a domain is the HTML,
@@ -650,7 +652,7 @@
     certain probability.
 
     Both the sizes of the extra HTML and the extra number of embedded
-    objects are determined based on the [[#HTML traffic model][HTML traffic model]].
+    objects are determined based on the [[#HTTP traffic model][HTTP traffic model]].
 
       - strategy a/b: bloom bucket size vs one target distribution
 **** WRITE 0.19 and retro: negative values in distribution
@@ -1331,7 +1333,7 @@
     embedded elements, the ratio of (target-site)/site is computed. For
     each element, this ratio determines the number of requests for
     embedded elements (these are always of random sizes, once again from
-    the [[#HTML traffic model][HTML traffic model]]. See [[*cover%20traffic%20distribution%20generation][cover traffic distribution generation]]
+    the [[#HTTP traffic model][HTTP traffic model]]. See [[*cover%20traffic%20distribution%20generation][cover traffic distribution generation]]
     for the algorithms.
 **** TODO end MOVE section
     This leads to the following variations:
@@ -1562,7 +1564,7 @@
       single host contacted. This is the only module used with a
       constructor, as it requires several instances, one for each host.
 
-      The cover traffic provided tries to mimic the [[#HTML traffic model][HTML traffic
+      The cover traffic provided tries to mimic the [[#HTTP traffic model][HTTP traffic
       models]] parameters.
 
       There are two strategies implemented which have to be set by
@@ -1572,7 +1574,7 @@
       of its HTML request and the number of embedded elements are
       stored in a statistic data structure depending on bloom filters,
       called [[SizeCache]]. If the size is known, it can be used or
-      randomly guessed from the HTML traffic model.
+      randomly guessed from the HTTP traffic model.
 
       Another strategy deals with target sizes. The size-cache stores
       approximate sizes, due to binning of values. One strategy is to
@@ -1589,7 +1591,7 @@
       requests, on each such request[fn:: signaled by the =loadNext=
       call], a probability is sampled, potentially resulting in a
       request for a cover embedded element. The cover element sizes
-      are once again drawn from the HTML traffic model.
+      are once again drawn from the HTTP traffic model.
 
       After the page has finished loading, the =CoverTraffic='s
       =finish()= method is called. If the number of embedded elements
@@ -1652,7 +1654,7 @@
      :CUSTOM_ID: find sizes of HTML-documents
      :END:
      The statistical size generation works with application-level
-     sizes on the network, as the authors of the HTML traffic
+     sizes on the network, as the authors of the HTTP traffic
      model\cite{newtrafficmodel} analysed logfiles of the Squid
      proxy[fn:: \url{http://www.squid-cache.org}].
 
@@ -1712,7 +1714,7 @@
 
      Determining the optimal number of groups, splits and sizes is a
      topic of [[*Further%20work][Further work]]. Here, initially the quantiles of the
-     HTML-model (see [[*HTML%20traffic%20model][HTML traffic model]]) were used. When the data were
+     HTTP-model (see [[#HTTP traffic model][HTTP traffic model]]) were used. When the data were
      to be inserted, it turned out that especially the numbers of
      embedded elements did not match the theoretically proposed groups:
 
@@ -1970,7 +1972,7 @@
   content-headers. To decrease this again, the length (which in turn
   depends on the required length) needs to be calculated and
   subtracted from the body-length. Some uncertainty arises because the
-  =Proxy-Connection: keep-alive= header is headed in some
+  =Proxy-Connection: keep-alive= header is added in some
   circumstances. The implementation errs on the side of returning too
   much data.
 
@@ -2112,9 +2114,23 @@
       if you retrieve more than 4000 at once. It seems to be about
       1 per domain-request).
     - bug report in appendix, needs some code to mitigate
+  - without wfpad
+    - at bridge
+      tor -f torrc.no_wfpad.server (just orport)
+    - at client
+      configure tbb with
+      #+BEGIN_EXAMPLE
+        Bridge bridge.ip:40200
+      #+END_EXAMPLE
 ** TODO scripts
 ** TODO MOVE to appendix
 ** TODO below [[*host install list][host install list]]
+* KEYWORDS sampling web sites
+  - top 10 found wanting: different results from top-100
+  - top-100 represented all as of ...
+  - needed: representation with fewer classes
+  - solutions: percentiles of both addon and non-addon sizes joined
+  - link to code
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
