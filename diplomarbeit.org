@@ -400,16 +400,6 @@
     is a subtask. The first mention of applying it against encrypted
     internet communication dates to Wagner and Schneier's analysis of
     the SSL 3.0 protocol\cite{SSL}, and is attributed to Bennet Yee.
-*** MOVE to unused
-**** from [[#http][What happens during a (HTTP) website request]]
-    Thus, the objects embedded within a page could allow a local
-    passive observer to infer which web page from a set of pages the
-    user requested.
-**** from [[*Hurdles%20to%20website%20fingerprinting][Hurdles to website fingerprinting]]
-    Originally, a browser should open at most two connections per host
-    \cite{rfc2616} to retrieve the files one-by-one. An update
-    \cite{rfc7230} removed this fixed limit, but encouraged clients
-    "to be conservative when opening multiple connections".
 ** TODO Defenses [0/6]
    siehe [[file:~/da/da.org::*2.%20Teil:%20Verteidigungen%20gegen%20Website-Fingerprinting%20(Welche%20Methoden%20existieren?%20Welche%20Problem%20existieren%20derzeit?%20-->%20%C3%9Cberleitung%20zum%20Hauptteil)][2. Teil: Verteidigungen gegen Website-Fingerprinting (Welche        Methoden existieren? Welche Problem existieren derzeit? -->        Überleitung zum Hauptteil)]]
 *** WRITE How to defend against this
@@ -560,6 +550,12 @@
     which size and how it continues depends on the version of the
     add-on.
 
+      After the first request, the host is known. At completion of the
+      page load, indicated either by a [[page-mod]]'s integration into the
+      page (at =end=), or the end of a timeout of =User.TIMEOUT=
+      seconds, the CoverTraffic-object is notified of the ending and
+      removed from the internal host-to-CoverTraffic mapping.
+
     - detect end of page load
       - maybe do something to IPP-model (trigger on/off-state on some)
     - request size uniform [0, 300)
@@ -570,23 +566,6 @@
       - numembedded
     - td describe best algo only?
 **** TODO appendix for addon
-*** WRITE cover traffic distribution generation
-    - each retrieval maybe triggers additional retrieval(s)
-      - based on statistical model
-    - for each page being retrieved
-      - either size can be estimated or it must be guessed
-      - either number of embedded elements can be estimated or must
-        be guessed
-      - determine target size and number of embedded elements
-      - fill up HTTP traffic with another request with content size
-        page.size - target.size
-      - for each embedded element
-        - generate request for additional embedded element(s) with
-          probability (target.number_embedded - page.number_embedded)
-          /page.number_embedded
-          - if probability > 1, generate those certainly and iterate
-            with probability -1, until probability < 0
-**** TODO MOVE below [[#HTTP traffic model][HTTP traffic model]]
 *** WRITE HTTP traffic model
     :PROPERTIES:
     :CUSTOM_ID: HTTP traffic model
@@ -607,6 +586,22 @@
       - analysis
     - link to
 **** TODO some distribution pictures
+*** WRITE cover traffic distribution generation
+    - each retrieval maybe triggers additional retrieval(s)
+      - based on statistical model
+    - for each page being retrieved
+      - either size can be estimated or it must be guessed
+      - either number of embedded elements can be estimated or must
+        be guessed
+      - determine target size and number of embedded elements
+      - fill up HTTP traffic with another request with content size
+        page.size - target.size
+      - for each embedded element
+        - generate request for additional embedded element(s) with
+          probability (target.number_embedded - page.number_embedded)
+          /page.number_embedded
+          - if probability > 1, generate those certainly and iterate
+            with probability -1, until probability < 0
 *** KEYWORDS Addon-Versions
 **** CHECK 0.15: base version
      This is the base version which was tested. Despite its alpha
@@ -1648,13 +1643,6 @@
       If the host is known (as defined below), an embedded page is
       assumed and the (existant) related =CoverTraffic=-Object is told
       that an embedded element was loaded.
-****** TODO MOVE to [[*description of add-on][description of add-on]]
-      After the first request, the host is known. At completion of the
-      page load, indicated either by a [[page-mod]]'s integration into the
-      page (at =end=), or the end of a timeout of =User.TIMEOUT=
-      seconds, the CoverTraffic-object is notified of the ending and
-      removed from the internal host-to-CoverTraffic mapping.
-****** end MOVE
 **** TODO browser caching
      - browsers cache
      - only helps in cover traffic, (unless warm/cold site model is used)
@@ -2477,3 +2465,12 @@
    subjects. This gives the whistleblower away.[fn:: Such has not been
    observed.]
 
+** from [[#http][What happens during a (HTTP) website request]]
+  Thus, the objects embedded within a page could allow a local
+  passive observer to infer which web page from a set of pages the
+  user requested.
+** from [[*Hurdles%20to%20website%20fingerprinting][Hurdles to website fingerprinting]]
+  Originally, a browser should open at most two connections per host
+  \cite{rfc2616} to retrieve the files one-by-one. An update
+  \cite{rfc7230} removed this fixed limit, but encouraged clients
+  "to be conservative when opening multiple connections".
