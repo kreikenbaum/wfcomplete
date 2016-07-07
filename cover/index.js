@@ -1,9 +1,9 @@
 "use strict";
 
-const User = require("js/user.js");
-const Watcher = require("js/watcher.js");
+const user = require("js/user.js");
+const watcher = require("js/watcher.js");
 
-let watcher = new Watcher.Watcher(new User.User());
+watcher.register(user);
 
 exports.onUnload = function(reason) {
     watcher.unregister();

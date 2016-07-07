@@ -11,7 +11,8 @@ import os
 import subprocess
 import sys
 
-HOME_IP = '134.76.96.47' #td: get ips
+#HOME_IP = '134.76.96.47' #td: get ips
+HOME_IP = '134.169.109.25'
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
 LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'

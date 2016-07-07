@@ -627,34 +627,47 @@
 ***** TODO maybe move footnote
 **** WRITE 0.18: different strategies for target site
      While just adding random traffic to each page might enhance
-     anonymity, always adding from the same distribution would
-     probably be wasteful, as site-specific values might prove to
-     obfuscate better. A target size and number of objects has to be
-     determined. How to choose this is the second parameter.
+     anonymity, always adding from the same distribution might be
+     wasteful, as site-specific values could provide better cover. If
+     so, a target size and target number of embedded objects has to be
+     determined. How to choose this?
 
-     One approach is to group the webpages by their size into bins and
-     to set the bin border as the target size, as all webpages in the
-     bin must have a size less than or equal the border. This approach
-     mimics that taken by Wang et al. in \cite{effective} with the
-     bins being equivalent to the anonymity sets / partitions. For the
-     biggest bin, its median size is currently chosen.[fn:: The
-     optimal size for the biggest bin is a parameter that should be
-     evaluated as well.]
+     One approach is to group the webpages by their sizes into bins
+     and to set the bin border as the target size, as all webpages in
+     the bin must have a size less than or equal the border. This
+     approach mimics that taken by Wang et al. in \cite{effective}
+     with the bins being equivalent to the anonymity sets /
+     partitions. As the biggest bin does not have a maximum size, its
+     median is currently chosen.[fn:: The optimal size for the biggest
+     bin is a parameter that should be evaluated as well.]
 
      The other approach is to have a single target distribution from
      which values are sampled each time, once again from the [[#HTTP traffic model][HTTP
      traffic model]].
 
-    If the request is determined to be for an embedded
-    object[fn:: currently, the first page from a domain is the HTML,
-    all others within a certain time window are considered embedded],
-    an additional embedded object-size page is requested with a
-    certain probability.
+     Given that the web page's own characteristics are already known
+     or guessed, as described above, they are subtracted from the
+     target values.
+
+     If a request is determined to be for an embedded object, an
+     additional embedded object-size page is requested with a certain
+     probability.
 
     Both the sizes of the extra HTML and the extra number of embedded
     objects are determined based on the [[#HTTP traffic model][HTTP traffic model]].
 
       - strategy a/b: bloom bucket size vs one target distribution
+    From the target values, the webpage's html-size and number of
+    elements (variation A/B) is subtracted.
+
+    At the same time of the HTML-query, another query for the remaining
+    HTML-size (or a token amount if too small) is sent. Concerning the
+    embedded elements, the ratio of (target-site)/site is computed. For
+    each element, this ratio determines the number of requests for
+    embedded elements (these are always of random sizes, once again from
+    the [[#HTTP traffic model][HTTP traffic model]]. See [[*cover%20traffic%20distribution%20generation][cover traffic distribution generation]]
+    for the algorithms.
+***** TODO unify until 0.21
 **** WRITE 0.19 and retro: negative values in distribution
      - negative values for requests are saved and randomly subtracted
      - occur with real size > target size
@@ -667,16 +680,15 @@
 **** WRITE 0.21
       - stricter bounds on retrieval of embedded objects
       - and end when limit reached
-**** WRITE simple
-     - had become complex
-     - simplest thing that could possibly work\cite{xp}
-     - on first request to domain (modulo timeout/page.endsLoad)
-       - retrieve (factor / 100)-sized HTML dummy
-     - on each subsequent request
-       - retrieve embedded dummy with probability (factor / 100)
-         - if > 1, retrieve until < 1, then with factor
-     - that's it (proxy-sum-load still used, but should not be necessary)
-***** TODO maybe remove proxy-sum-load from simple-addon (see if ever negative)
+**** CHECK simple 1.1
+     The previous versions had become quite complex for a Firefox
+     extension with more than 500 lines of code. To simplify\cite{xp},
+     the algorithm triggers a FACTOR-sized HTML-sized request at the
+     beginning and an embedded-sized request with probability FACTOR
+     for each embedded object.
+
+     This halved the number of lines of code, allowing for better
+     refactoring.
 *** KEYWORDS Algorithm
 *** KEYWORDS Modules
 *** KEYWORDS Server
@@ -1026,6 +1038,9 @@
      - then move all files to a common directory
 ****** TODO include script from duckstein
 ***** TODO link to man tshark
+**** overview
+     - for the sake of comparability, also bridge for addon tests
+       - and easier to filter
 *** TODO example: single files of a website
     The complete data of google.com can be retrieved via
 
@@ -1324,18 +1339,6 @@
     There are two variations how to generate Cover Traffic.
     2. Given a webpage and its size, how much traffic should be generated?
 
-**** TODO MOVE somewhere
-    From the target values, the webpage's html-size and number of
-    elements (variation A/B) is subtracted.
-
-    At the same time of the HTML-query, another query for the remaining
-    HTML-size (or a token amount if too small) is sent. Concerning the
-    embedded elements, the ratio of (target-site)/site is computed. For
-    each element, this ratio determines the number of requests for
-    embedded elements (these are always of random sizes, once again from
-    the [[#HTTP traffic model][HTTP traffic model]]. See [[*cover%20traffic%20distribution%20generation][cover traffic distribution generation]]
-    for the algorithms.
-**** TODO end MOVE section
     This leads to the following variations:
 
     1) bloom binning (I) with known sizes (A)
@@ -1548,8 +1551,7 @@
     #+END_LATEX
 **** by
      - generating cover traffic
-**** TODO modules [0/14]
-***** MOVE to appendix (with model.tex above)
+**** TODO modules [0/17]                                           :appendix:
 ***** TODO replace with pic [[shell:dia pictures/model.dia &]]
 ***** TODO how to show (singleton)-module in jUML
 ***** TODO Watcher
@@ -1639,17 +1641,18 @@
       If the host is known (as defined below), an embedded page is
       assumed and the (existant) related =CoverTraffic=-Object is told
       that an embedded element was loaded.
-
+****** TODO MOVE to [[*description of add-on][description of add-on]]
       After the first request, the host is known. At completion of the
       page load, indicated either by a [[page-mod]]'s integration into the
       page (at =end=), or the end of a timeout of =User.TIMEOUT=
       seconds, the CoverTraffic-object is notified of the ending and
       removed from the internal host-to-CoverTraffic mapping.
+****** end MOVE
 **** TODO browser caching
      - browsers cache
      - only helps in cover traffic, (unless warm/cold site model is used)
 ***** WAIT where to put this?
-**** TODO Parameter: Sizes of HTML-Documents
+**** TODO Parameter: Sizes of HTML-Documents                       :appendix:
      :PROPERTIES:
      :CUSTOM_ID: find sizes of HTML-documents
      :END:
@@ -1680,7 +1683,6 @@
      values, choosing the lower one. This increases traffic, but the
      opposite might be too little traffic, thus easier website
      fingerprinting, which should be avoided.
-***** MOVE to appendix
 ***** TODO mention somewhere (cache)
 **** TODO Estimate Parameter: Number of Embedded Objects
      <<number_embedded>>
@@ -2064,14 +2066,14 @@
   - if protects against this, should also protect against worse
   - additional (?defense?) as proposed in critique
 ** TODO follow critique at all?
-* TODO npm short installation/description
-* TODO panchenko v1 different classifiers
+* TODO npm short installation/description                          :appendix:
+* TODO panchenko v1 different classifiers                        :intro:eval:
   <<different-classifiers>>
   - experiment
   - different classifiers, different results
   - much easier to just use knn
   - more work for svm parameter estimation
-* TODO outlier removal
+* TODO outlier removal                                           :intro:eval:
   As described by \cite{panchenko2}, the CUMUL approach is greatly
   enhanced by outlier removal. In his software, he uses both a
   median-based as well as a 25%/75%-quantile-based approach.
@@ -2082,7 +2084,7 @@
     - just take quantiles, use his limits
 ** TODO run test, include results
 ** TODO link to panchenko's software
-* WRITE how to set up wfpad
+* WRITE how to set up wfpad                                        :appendix:
   - helpful notes at scramblesuit
   - modify for wfpad
   - failed to work if called from Tor
@@ -2123,9 +2125,8 @@
         Bridge bridge.ip:40200
       #+END_EXAMPLE
 ** TODO scripts
-** TODO MOVE to appendix
 ** TODO below [[*host install list][host install list]]
-* KEYWORDS sampling web sites
+* KEYWORDS sampling web sites                                          :eval:
   - top 10 found wanting: different results from top-100
   - top-100 represented all as of ...
   - needed: representation with fewer classes
@@ -2164,6 +2165,8 @@
   11. apt install tor
   12. apt install python-pyptlib python-crypto python-yaml
       python-psutil
+  13. apt install unison
+** TODO mention unison (in bib)
 * WAIT Discussion
   intel model: interdependences (html bigger \to more embedded) not mentioned
 * WAIT Acknowledgements
