@@ -8,15 +8,15 @@ const Storage = require("sdk/simple-storage").storage;
 
 const debug = require("./debug.js");
 
-// td later (in thesis):choose parameters 
+// td later (in thesis):choose parameters
 const NUM_BITS = 32 * 256; // number of bits to allocate.
-const NUM_HASH = 3; 
+const NUM_HASH = 3;
 
 // td: typeerror if sizes.length !== splits.length + 1
 // td: maybe test if sizes and splits are sorted and arrayed correctly
 // td: generate splits if empty
 
-/** 
+/**
  * sorts elements into bins limited by splits, assigns values in sizes
  * @constructor
  * @param {sizes Array} array of values for each bin, must be sorted
@@ -27,7 +27,7 @@ function BloomSort(sizes, splits) {
     this.splits = splits; // || determine_splits(sizes);
     this.filters = [];
     for ( let i = 0; i < sizes.length; i++ ) {
-	this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH); 
+	this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH);
     }
 }
 /** adds element of size {@code size} */

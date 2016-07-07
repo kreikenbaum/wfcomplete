@@ -16,7 +16,7 @@ exports.http = (toLoad) => http(toLoad);
 
 /** @param {size int} loads resource of size {@code size} */
 function sized(size) {
-    // console.log("load: sized(" + size + ")");
+    console.log("load: sized(" + size + ")");
     http(require("./coverUrl.js").sized(size));
 }
 exports.sized = (size) => sized(size);

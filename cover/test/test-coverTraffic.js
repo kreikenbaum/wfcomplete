@@ -14,7 +14,7 @@ exports["test object"] = function(assert) {
     for ( var i = 20; i > 0; i -= 1 ) {
 	ct.loadNext();
     }
-    assert.ok(mockLoad.getCount() >= 2, 
+    assert.ok(mockLoad.getCount() >= 2,
 	      'no calls to mock on ct.loadNext(): ' + mockLoad.getCount());
 };
 
@@ -31,7 +31,7 @@ exports["test two objects"] = function(assert) {
     for ( let i = 10; i > 0; i -= 1 ) {
 	c2.loadNext();
     }
-    assert.ok(mockLoad.getCount() >= 4, 
+    assert.ok(mockLoad.getCount() >= 4,
 	      'no calls to mock on ct.loadNext() or c2.loadNext(): ' +
 	      mockLoad.getCount());
 };

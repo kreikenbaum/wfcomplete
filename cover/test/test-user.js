@@ -1,6 +1,8 @@
 "use strict";
 
-const user = require("../js/user.js");
+const User = require("../js/user.js");
+
+let user = new User.User();
 
 const mock = require("./mock.js");
 

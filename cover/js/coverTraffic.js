@@ -28,19 +28,19 @@ function CoverTraffic(targetURLSpec, load=LOAD) {
     this.redirects = 0;
 
     if ( Simple.prefs.sizes ) { //  A: KNOWN SIZES IF KNOWN
-	this.site.html = this.htmlStrategyKnown(targetURLSpec);
-	this.site.numEmbedded = this.numStrategyKnown(targetURLSpec);
+        this.site.html = this.htmlStrategyKnown(targetURLSpec);
+        this.site.numEmbedded = this.numStrategyKnown(targetURLSpec);
     } else {                    //  B: ONLY GUESSED SIZES
-	this.site.html = this.htmlStrategyGuess(targetURLSpec);
-	this.site.numEmbedded = this.numStrategyGuess(targetURLSpec);
+        this.site.html = this.htmlStrategyGuess(targetURLSpec);
+        this.site.numEmbedded = this.numStrategyGuess(targetURLSpec);
     }
 
     if ( Simple.prefs.bins ) { //  I: BLOOM BIN MAX
-	this.target.html = this.htmlStrategyBins(targetURLSpec);
-	this.target.numEmbedded = this.numStrategyBins(targetURLSpec);
+        this.target.html = this.htmlStrategyBins(targetURLSpec);
+        this.target.numEmbedded = this.numStrategyBins(targetURLSpec);
     } else {                   //  II: ONE TARGET DISTRIBUTION
-	this.target.html = this.htmlStrategyDist(targetURLSpec);
-	this.target.numEmbedded = this.numStrategyDist(targetURLSpec);
+        this.target.html = this.htmlStrategyDist(targetURLSpec);
+        this.target.numEmbedded = this.numStrategyDist(targetURLSpec);
     }
 
     this.prob = Math.max(minProb_(this.site.numEmbedded),
@@ -57,10 +57,10 @@ CoverTraffic.prototype.finish = function() {
     console.log('finish() traffic to ' + this.url +
                 ' with ' + this.target.numEmbedded + ' to load');
     if ( Simple.prefs.burst ) {
-	while ( this.target.numEmbedded > 0 ) {
-	    this.load.sized(stats.embeddedObjectSize());
-	    this.target.numEmbedded -= 1;
-	}
+        while ( this.target.numEmbedded > 0 ) {
+            this.load.sized(stats.embeddedObjectSize());
+            this.target.numEmbedded -= 1;
+        }
     }
 };
 
@@ -74,11 +74,11 @@ CoverTraffic.prototype.loadNext = function() {
 
     // do once for each 1-integer part and maybe for the fraction
     for ( let i = (stats.withProbability( this.prob % 1 ) ? Math.ceil(this.prob)
-		   : Math.floor(this.prob)) ;
-	  i >= 0 ;
-	  i -= 1 ) {
+                   : Math.floor(this.prob)) ;
+          i >= 1 ;
+          i -= 1 ) {
         if ( this.target.numEmbedded > 0 ) {
-	    this.load.sized(stats.embeddedObjectSize());
+            this.load.sized(stats.embeddedObjectSize());
             this.target.numEmbedded -= 1;
         } else {
             console.log('reached numEmbedded: ' + JSON.stringify(this));
@@ -98,9 +98,9 @@ CoverTraffic.prototype.redirected = function() {
 CoverTraffic.prototype.htmlStrategyBins = function(targetURLSpec) {
     let targetHtmlSize;
     try {
-	targetHtmlSize = sizeCache.htmlSizeMax(targetURLSpec);
+        targetHtmlSize = sizeCache.htmlSizeMax(targetURLSpec);
     } catch (e) {
-	targetHtmlSize = stats.htmlSize(FACTOR);
+        targetHtmlSize = stats.htmlSize(FACTOR);
     }
     return targetHtmlSize - this.site.html;
 };
@@ -108,9 +108,9 @@ CoverTraffic.prototype.htmlStrategyBins = function(targetURLSpec) {
 CoverTraffic.prototype.numStrategyBins = function(targetURLSpec) {
     let targetPadSize;
     try {
-	targetPadSize = sizeCache.numberEmbeddedObjectsMax(targetURLSpec);
+        targetPadSize = sizeCache.numberEmbeddedObjectsMax(targetURLSpec);
     } catch (e) {
-	targetPadSize = stats.numberEmbeddedObjects(FACTOR);
+        targetPadSize = stats.numberEmbeddedObjects(FACTOR);
     }
     return targetPadSize - this.site.numEmbedded;
 };
@@ -127,18 +127,18 @@ CoverTraffic.prototype.numStrategyDist = function(targetURLSpec) {
 /** partial Strategy A: @return known sizes for sites */
 CoverTraffic.prototype.htmlStrategyKnown = function(targetURLSpec) {
     try {
-	return sizeCache.htmlSize(targetURLSpec);
-	//console.log('site size hit for ' + targetURLSpec + ": " + this.site.html);
+        return sizeCache.htmlSize(targetURLSpec);
+        //console.log('site size hit for ' + targetURLSpec + ": " + this.site.html);
     } catch (e) { // guess sizes
-	return stats.htmlSize();
-	//console.log('site size miss for ' + targetURLSpec + ": " +JSON.stringify(e));
+        return stats.htmlSize();
+        //console.log('site size miss for ' + targetURLSpec + ": " +JSON.stringify(e));
     }
 };
 CoverTraffic.prototype.numStrategyKnown = function(targetURLSpec) {
     try {
-	return sizeCache.numberEmbeddedObjects(targetURLSpec);
+        return sizeCache.numberEmbeddedObjects(targetURLSpec);
     } catch (e) { // guess sizes
-	return stats.numberEmbeddedObjects();
+        return stats.numberEmbeddedObjects();
     }
 };
 /** partial Strategy B: @return random sizes for sites */

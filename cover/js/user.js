@@ -8,52 +8,47 @@ const coverTraffic = require('./coverTraffic.js');
 
 const TIMEOUT = 110 * 1000;
 
-let activeHosts = {};
+function User() {
+    this.activeHosts = {};
+}
 
 /** user starts loading url, @return true if host has already had traffic */
-function loads(url) {
+User.prototype.loads = function(url) {
     console.log("user: loads(" + url.spec + ")");
-    if ( url.host in activeHosts ) { // has already started
-	// console.log(url.host + ' exists in dict: ' + JSON.stringify(activeHosts));
-	activeHosts[url.host].loadNext();
-	return true;
+    if ( url.host in this.activeHosts ) { // has already started
+        // console.log(url.host + ' exists in dict: ' + JSON.stringify(activeHosts));
+        this.activeHosts[url.host].loadNext();
+        return true;
     } else {
-	// console.log(url.host + ' is new in dict: ' + JSON.stringify(activeHosts));
-	activeHosts[url.host] = new coverTraffic.CoverTraffic(url.spec);
-	setTimeout(function() {
-	    finish(url);
-	}, TIMEOUT);
-	return false;
+        // console.log(url.host + ' is new in dict: ' + JSON.stringify(activeHosts));
+        this.activeHosts[url.host] = new coverTraffic.CoverTraffic(url.spec);
+        let that = this;
+        setTimeout(function() {
+            that.finish(url);
+        }, TIMEOUT);
+        return false;
     }
-}
-exports.loads = url => loads(url);
+};
 
-function endsLoading(url) {
-    return finish(url);
-}
-exports.endsLoading = url => endsLoading(url);
+User.prototype.endsLoading = function(url) {
+    return this.finish(url);
+};
 
-function redirected(url) {
+User.prototype.redirected = function(url) {
     // should be in activeHosts, otherwise fail loudly
-    activeHosts[url.host].redirected();
-}
-exports.redirected = () => redirected();
+    this.activeHosts[url.host].redirected();
+};
 
 /** tells covertraffic for {@code url.host} to {@code finish} up, deletes it,
  * @returns if action was taken */
-function finish(url) {
-    if ( activeHosts.hasOwnProperty(url.host) ) {
-	activeHosts[url.host].finish();
-	delete activeHosts[url.host];
-	return true;
+User.prototype.finish = function(url) {
+    if ( this.activeHosts.hasOwnProperty(url.host) ) {
+        this.activeHosts[url.host].finish();
+        delete this.activeHosts[url.host];
+        return true;
     } else {
-	return false;
+        return false;
     }
-}
+};
 
-// // unused
-// /** currently loading? */
-// function isIdle() {
-//     return _.isEmpty(activeHosts);
-// };
-// exports.isIdle = () => isIdle();
+exports.User = User;
