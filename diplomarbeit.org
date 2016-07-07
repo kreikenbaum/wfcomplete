@@ -11,7 +11,7 @@
 #+LATEX_HEADER: \hspace{20cm}
 #+LATEX_HEADER: \vspace{-2cm}
 #+LATEX_HEADER:
-#+LATEX_HEADER: \begin{figure}[H] \hspace{11cm}
+#+LATEX_HEADER: \begin{figure} \hspace{11cm}
 #+LATEX_HEADER: \includegraphics[width=3.2 cm]{pictures/HU_Logo}
 #+LATEX_HEADER: \end{figure}
 #+LATEX_HEADER:
@@ -400,8 +400,8 @@
     is a subtask. The first mention of applying it against encrypted
     internet communication dates to Wagner and Schneier's analysis of
     the SSL 3.0 protocol\cite{SSL}, and is attributed to Bennet Yee.
-*** unused
-**** from [[*What%20happens%20during%20a%20website%20request][What happens during a website request]]
+*** MOVE to unused
+**** from [[#http][What happens during a (HTTP) website request]]
     Thus, the objects embedded within a page could allow a local
     passive observer to infer which web page from a set of pages the
     user requested.
@@ -531,7 +531,6 @@
    does not specify the size of packets to retrieve, and, critically,
    adapts a method that tries to do more (hiding from a global
    adversary), instead of hiding which site was browsed to.
-
 *** WRITE How to hide: addon
     - deployable
     - module that is separateable
@@ -549,24 +548,18 @@
     - simultaneous to real traffic
 
     - make wf harder such that it is impossible
-** TODO Design and Implementation (=Implementation) [0/21]
+** TODO Design and Implementation (=Implementation) [0/22]
 *** WRITE description of add-on
     The add-on tries to defend against website fingerprinting by
     adding HTTP-distributed extra traffic.
 
-    To do so, it detects the start of each web request [fn::for code
-    details, see appendix].
+    To do so, it detects the start of each web site request [fn::for
+    code details, see appendix].
 
-    With the start of the web request, a dummy request is sent. Of
+    With the start of the HTML-request, a dummy request is sent. Of
     which size and how it continues depends on the version of the
     add-on.
 
-    - detect start of transmission
-      - request extra HTML doc to obfuscate that
-      - maybe do something to IPP-model (trigger off/on-state on some)
-    - always send dummy traffic
-      - on each request
-      - better: leave some out
     - detect end of page load
       - maybe do something to IPP-model (trigger on/off-state on some)
     - request size uniform [0, 300)
@@ -593,11 +586,15 @@
           /page.number_embedded
           - if probability > 1, generate those certainly and iterate
             with probability -1, until probability < 0
-**** TODO move below [[#HTTP traffic model][HTTP traffic model]]
+**** TODO MOVE below [[#HTTP traffic model][HTTP traffic model]]
 *** WRITE HTTP traffic model
     :PROPERTIES:
     :CUSTOM_ID: HTTP traffic model
     :END:
+
+    This little gem has not been cited in later work by Ihm and Pai
+    \cite{tumwt}. It provides statistical distributions of certain
+    characteristics of web traffic, which match our own observed sizes.
 
     - intel
       - analysed squid logs
@@ -609,6 +606,7 @@
       - download html top 10000
       - analysis
     - link to
+**** TODO some distribution pictures
 *** KEYWORDS Addon-Versions
 **** CHECK 0.15: base version
      This is the base version which was tested. Despite its alpha
@@ -750,6 +748,15 @@
     - network applications
 * TODO Results and Evaluation [0%]
 ** WRITE panchenko v1 vs cumul
+   Panchenko et al proposed two methods for analysing traces.
+
+   They both use support vector machines as classifier, but differ in
+   the features they select.
+
+   Since CUMUL\cite{panchenko2} is an evolution of Panchenko et
+   al.'s\cite{panchenko} first classifier (called /version 1/ from now
+   on), better accuracy of the former is to expected.
+
    - both: similar results for different classifiers
    - panchenko v1:
      - takes longer
@@ -2291,7 +2298,7 @@
    #+INCLUDE: "./bin/retrieve_100_embedded.sh" src python
 ** modified top-100
    <<top-100>>
-   #+INCLUDE: "./data/top-100-modified.csv" example
+   #+INCLUDE: "./sw/top-100-modified.csv" example
 ** TODO Remove same-host cover traffic server from traces: =7777.sh=
    <<7777>>
    #+INCLUDE: "./bin/7777.sh" src sh
