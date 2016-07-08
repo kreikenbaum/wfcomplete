@@ -388,7 +388,7 @@ class Counter(object):
         return json.dumps(self.__dict__)
 
     def cumul(self, num_features=100):
-        '''@return CUMUL feature vector'''
+        '''@return CUMUL feature vector: inCount, outCount, outSize, inSize++'''
         c_abs = []
         # cumulated packetsizes
         c_rel = [] #td: good idea to have same name as method?

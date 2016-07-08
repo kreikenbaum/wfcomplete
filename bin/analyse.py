@@ -9,36 +9,81 @@ import sys
 
 import counter
 
-JOBS_NUM = 3
+JOBS_NUM = -3
 #JOBS_NUM = 4 #maybe at duckstein, but for panchenko problematic
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
 #LOGLEVEL = logging.WARN
 TIME_SEPARATOR = '@'
 
-def average_bytes(stats_dict):
+def average_bytes(mean_std_dict):
     '''@return the average size over all traces'''
-    return np.mean([x[0] for x in stats_dict.values()])
+    return np.mean([x[0] for x in mean_std_dict.values()])
 
 def average_duration(counter_dict):
     '''@return the average duration over all traces'''
-    count = 0
-    total = 0
-    for c_domain in counter_dict.values():
-        for counter in c_domain:
-            count += 1
-            total += counter.timing[-1][0]
-    return float(total) / count
+    ms = times_mean_std(counter_dict)
+    return np.mean([x[0] for x in ms.values()])
 
-def mean_std(counter_dict):
+def bytes_mean_std(counter_dict):
     '''@return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
-    >>> mean_std({'yahoo.com': [counter._ptest(3)]})
+    >>> bytes_mean_std({'yahoo.com': [counter._ptest(3)]})
     {'yahoo.com': (1800.0, 0.0)}
     '''
     out = {}
     for (domain, counter_list) in counter_dict.iteritems():
         total = [counter.get_total_both() for counter in counter_list]
         out[domain] = (np.mean(total), np.std(total))
+    return out
+
+def compare_stats(dirs):
+    '''@return a dict {dir1: {domain1: {...}, ..., domainN: {...}}, dir2:...} with domain mean, standard distribution and labels'''
+    places = _gen_counters(dirs)
+    means = {k: mean(v) for (k,v) in places.iteritems()}
+    stds = {k: std(v) for (k,v) in places.iteritems()}
+    out = []
+    for d in dirs:
+        logging.info('version: %s', d)
+        el = {"plugin-version": d,
+              "plugin-enabled": False if 'disabled' in d else True}
+        for site in places[d]:
+            tmp = dict(el)
+            tmp['website'] = site
+            tmp['mean'] = means[d][site]
+            tmp['std'] = stds[d][site]
+            out.append(tmp)
+    return out
+
+def find_domain(mean_per_dir, mean):
+    '''@return (first) domain name with mean'''
+    for place_means in mean_per_dir.values():
+        for (domain, domain_mean) in place_means.items():
+            if domain_mean == mean:
+                return domain
+
+def times_mean_std(counter_dict):
+    '''@return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
+    with mean and standard of timing data
+    '''
+    out = {}
+    for (domain, counter_list) in counter_dict.iteritems():
+        total = [counter.timing[-1][0] for counter in counter_list]
+        out[domain] = (np.mean(total), np.std(total))
+    return out
+
+def top_30(mean_per_dir):
+    '''@return 30 domains with well-interspersed trace means sizes
+
+    @param is f.ex. means from compare_stats above.'''
+    all_means = []
+    for (place, p_means) in mean_per_dir.items():
+        all_means.extend(p_means.values())
+    percentiles = np.percentile(vals,
+                                np.linspace(0, 100, 31),
+                                interpolation='lower')
+    out = set()
+    for mean in percentiles:
+        out.add(find_domain(mean_per_dir, mean))
     return out
 
 def mean(counter_dict):
@@ -226,7 +271,9 @@ def _xtest(X_train, y_train, X_test, y_test, estimator, scale=False):
     return estimator.score(X_test, y_test)
 
 def my_grid(X, y,
-            cs=np.logspace(-1, 9, 6, base=2),
+#            cs=np.logspace(-1, 9, 6, base=2),
+#            gammas=np.logspace(-8, 6, 6, base=2)):
+            cs=np.logspace(3, 13, 6, base=2),
             gammas=np.logspace(-8, 6, 6, base=2)):
     '''grid-search on fixed params'''
     best = None
@@ -249,7 +296,7 @@ def _testcg(X, y, c, gamma):
     clf = multiclass.OneVsRestClassifier(svm.SVC(C=c, gamma=gamma))
     return _test(X, y, clf, scale=True, nj=1).mean()
 
-def smart_grid(X, y, stepmin = 2, c_low=-2, c_high=18, g_low=-12, g_high=8):
+def smart_grid(X, y, stepmin=1, c_low=-2, c_high=18, g_low=-12, g_high=8):
     ''' ''smarter'' grid-search, params are exponents of 2'''
     import math
     # init
@@ -296,6 +343,7 @@ def _compare(X, y, X2, y2, estimators=GOOD):
         _test(X, y, esti)
         _test(X2, y2, esti)
 
+# td: remove this, or happens later
 def counter_get(place, outlier_removal=True):
     '''helper to get counters w/o outlier_removal'''
     if outlier_removal:
@@ -329,8 +377,8 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
     argv is like sys.argv, cumul triggers CUMUL. if false: panchenko 1'''
     # call with 1: x-validate test that
     # call with 2+: train 1 (whole), test 2,3,4,...
-    places = _gen_counters(argv[1:], outlier_rm)
-    stats = {k: mean_std(v) for (k,v) in places.iteritems()}
+    places = _gen_counters(argv[1:], False)
+    stats = {k: bytes_mean_std(v) for (k,v) in places.iteritems()}
     sizes = {k: average_bytes(v) for (k,v) in stats.iteritems()}
     # td: continue here, recompute duration (was not averaged per domain), compare
     # durations = {k: average_duration(v) for (k,v) in places.iteritems()}
@@ -344,8 +392,8 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
         (X, y, y_dom) = to_features(places[place0])
 
     if with_svm:
-        clf = my_grid(X, y)
-#        clf = smart_grid(X, y) #enabled if ranges are not clear
+#        clf = my_grid(X, y)
+        clf = smart_grid(X, y) #enabled if ranges are not clear
         logging.info('grid result: %s', clf)
         GOOD.append(clf)
 
@@ -415,53 +463,42 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
     #     variable2 = gdl.metric(x[xbounds2[0]:xbounds2[1]],
     #                            y[ybounds2[0]:ybounds2[1]])
     #     return math.sqrt(fixedm + variable1 + variable2)
-
-def compare_stats(dirs):
-    '''@return a dict {dir1: {domain1: {...}, ..., domainN: {...}}, dir2:...} with domain mean, standard distribution and labels'''
-    places = _gen_counters(dirs)
-    means = {k: mean(v) for (k,v) in places.iteritems()}
-    stds = {k: std(v) for (k,v) in places.iteritems()}
-    out = []
-    for d in dirs:
-        logging.info('version: %s', d)
-        el = {"plugin-version": d,
-              "plugin-enabled": False if 'disabled' in d else True}
-        for site in places[d]:
-            tmp = dict(el)
-            tmp['website'] = site
-            tmp['mean'] = means[d][site]
-            tmp['std'] = stds[d][site]
-            out.append(tmp)
-    return out
-
-def top_30(mean_per_dir):
-    '''@return 30 domains with well-interspersed trace means sizes
-
-    @param is f.ex. means from compare_stats above.'''
-    all_means = []
-    for (place, p_means) in mean_per_dir.items():
-        all_means.extend(p_means.values())
-    percentiles = np.percentile(vals,
-                                np.linspace(0, 100, 31),
-                                interpolation='lower')
-    out = set()
-    for mean in percentiles:
-        out.add(find_domain(mean_per_dir, mean))
-    return out
-        
-        # np.percentile(vals, np.linspace(0, 100, 21), interpolation='lower')
-
-def find_domain(mean_per_dir, mean):
-    '''@return (first) domain name with mean'''
-    for place_means in mean_per_dir.values():
-        for (domain, domain_mean) in place_means.items():
-            if domain_mean == mean:
-                return domain
+    # sys.argv = ['', 'disabled/06-09@10', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
+    # sys.argv = ['', 'disabled/wfpad', 'wfpad']
 
 # places = _gen_counters(sys.argv[1:])
-#means = {k: mean(v) for (k,v) in places.iteritems()}
-#stds = {k: std(v) for (k,v) in places.iteritems()}
 # some_30 = top_30(means)
+# timing = {k: average_duration(v) for (k,v) in places.iteritems()}
+
+def tts(counter_dict, test_size=1.0/3):
+    '''splits counter_dict in train_dict and test_dict
+
+    test_size = deep_len(test)/deep_len(train)
+    uses cross_validation.train_test_split
+    @return (train_dict, test_dict) which together yield counter_dict
+    >>> len(tts({'yahoo.com': map(counter._ptest, [3,3,3])})[0]['yahoo.com'])
+    2
+    >>> len(tts({'yahoo.com': map(counter._ptest, [3,3,3])})[1]['yahoo.com'])
+    1
+    '''
+    ids = []
+    for url in counter_dict:
+        for i in range(len(counter_dict[url])):
+            ids.append((url, i))
+    (train_ids, test_ids) = cross_validation.train_test_split(
+        ids, test_size=test_size)
+    train = {}
+    for (url, index) in train_ids:
+        if url not in train:
+            train[url] = []
+        train[url].append(counter_dict[url][index])
+    test = {}
+    for (url, index) in test_ids:
+        if url not in test:
+            test[url] = []
+        test[url].append(counter_dict[url][index])
+    return (train, test)
+
 if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
@@ -472,10 +509,9 @@ if __name__ == "__main__":
 
     # if by hand: change to the right directory before importing
     # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
-    # sys.argv = ['', 'disabled/06-09@10', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
     # sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
     # sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
-    # sys.argv = ['', 'disabled/wfpad', 'wfpad']
+    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', '22.0/10aI/', 'simple/factor=10/', 'simple/factor=50/']
     # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp'); os.chdir(PANCHENKO_PATH)
     # counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
     cross_test(sys.argv, with_svm=True) #, cumul=False)

@@ -539,71 +539,64 @@
 
     - make wf harder such that it is impossible
 ** TODO Design and Implementation (=Implementation) [0/22]
-*** WRITE description of add-on
+*** CHECK description of add-on
     The add-on tries to defend against website fingerprinting by
     adding HTTP-distributed extra traffic.
 
-    To do so, it detects the start of each web site request [fn::for
-    code details, see appendix].
+    To do so, it detects the start of each web site request. With the
+    start of the /HTML-request/, a dummy request is sent. Of which
+    size and how it continues depends on the version of the add-on.
 
-    With the start of the HTML-request, a dummy request is sent. Of
-    which size and how it continues depends on the version of the
-    add-on.
+    With this first request, the host becomes active. At the end of the
+    page load, indicated either by a load
+    event\cite[ch.1.6.5]{dom2-events}, or the end of a timeout, the
+    host goes back to inactive status.
 
-      After the first request, the host is known. At completion of the
-      page load, indicated either by a [[page-mod]]'s integration into the
-      page (at =end=), or the end of a timeout of =User.TIMEOUT=
-      seconds, the CoverTraffic-object is notified of the ending and
-      removed from the internal host-to-CoverTraffic mapping.
-
-    - detect end of page load
-      - maybe do something to IPP-model (trigger on/off-state on some)
-    - request size uniform [0, 300)
-      - except if request.len > 300
-    - source: cover traffic server
-    - size distributions
-      - html
-      - numembedded
-    - td describe best algo only?
+    For code details, see appendix ... .
 **** TODO appendix for addon
-*** WRITE HTTP traffic model
+*** CHECK HTTP traffic model
     :PROPERTIES:
     :CUSTOM_ID: HTTP traffic model
     :END:
 
-    This little gem has not been cited in later work by Ihm and Pai
-    \cite{tumwt}. It provides statistical distributions of certain
-    characteristics of web traffic, which match our own observed sizes.
+    The work by Lee and Gupta\cite{newtrafficmodel} has not been cited
+    in a later paper by Ihm and Pai \cite{tumwt}. It matches web
+    traffic to statistical distributions.
 
-    - intel
-      - analysed squid logs
-      - evaluated several distributions for parameters
-      - matched logs
-      - html object lognormal with params \mu = 7.90272, \sigma = 1.7643
-      - embedded objects
-    - test
-      - download html top 10000
-      - analysis
-    - link to
+    The size of HTML documents is characterized by a lognormal
+    distribution with parameters \mu = 7.90272, \sigma = 1.7643, truncated to
+    the maximum of 2 MB. This yields a mean size of 11872.
+
+    The size of objects embedded in a HTML document is also
+    characterized by a lognormal distribution with parameters
+    \mu = 7.51384, and \sigma = 2.17454, truncated to the maximum of 6 MB. This
+    yields a mean of 12460.
+
+    The number of embedded objects is characterized by a gamma
+    function with parameters \kappa = 0.141385, and \theta = 40.3257. It is
+    truncated to the maximum of 300, which yields a mean of 5.07
+    embedded objects per page.
+
+    They offer further parameters to fully model web browsing, which
+    do not apply to the problem at hand.
+
+    There are two problems with the distributions given
+    above. Firstly, web traffic has evolved since 2007, when the paper
+    was written, as documented for total web page size in
+    \cite{web-is-doom}. Secondly, as mentioned in
+    \cite{newtrafficmodel}, the number of embedded objects are
+    computed per each HTML page, including frames, and possibly
+    including redirects. This lowers this number artificially.
+
+    Providing an accurate estimate of embedded objects /per web page/
+    is further work.
 **** TODO some distribution pictures
-*** WRITE cover traffic distribution generation
-    - each retrieval maybe triggers additional retrieval(s)
-      - based on statistical model
-    - for each page being retrieved
-      - either size can be estimated or it must be guessed
-      - either number of embedded elements can be estimated or must
-        be guessed
-      - determine target size and number of embedded elements
-      - fill up HTTP traffic with another request with content size
-        page.size - target.size
-      - for each embedded element
-        - generate request for additional embedded element(s) with
-          probability (target.number_embedded - page.number_embedded)
-          /page.number_embedded
-          - if probability > 1, generate those certainly and iterate
-            with probability -1, until probability < 0
-*** KEYWORDS Addon-Versions
+**** TODO further work link + mention
+*** TODO Addon-Versions
 **** CHECK 0.15: base version
+     :PROPERTIES:
+     :CUSTOM_ID: addon0.15
+     :END:
      This is the base version which was tested. Despite its alpha
      status, it achieved an accuracy drop from 99.2% to 54.0--44.0%
      (depending on flavor) when tested on the top-10 sites. This drop
@@ -617,51 +610,50 @@
 
      This version has several bugs in distinguishing between
      seen/unseen sites and HTML/embedded objects.
+
+     The improvements described in section [[#addon0.19]] were backported
+     to this version, with version name 0.15.3-retrofixed.
 ***** TODO maybe move footnote
 **** WRITE 0.18: different strategies for target site
      While just adding random traffic to each page might enhance
      anonymity, always adding from the same distribution might be
-     wasteful, as site-specific values could provide better cover. If
-     so, a target size and target number of embedded objects has to be
-     determined. How to choose this?
+     wasteful and easier to detect. Per-page values could provide
+     better cover.
 
-     One approach is to group the webpages by their sizes into bins
-     and to set the bin border as the target size, as all webpages in
-     the bin must have a size less than or equal the border. This
-     approach mimics that taken by Wang et al. in \cite{effective}
-     with the bins being equivalent to the anonymity sets /
-     partitions. As the biggest bin does not have a maximum size, its
-     median is currently chosen.[fn:: The optimal size for the biggest
-     bin is a parameter that should be evaluated as well.]
+     A simulated webpage is specified by its HTML size and its number
+     of embedded objects. If the page's values are known, there are
+     two tactics on how to set these:
+
+     One tactic is to group the webpages by their sizes into bins and
+     to set the bin border as the target size, as all webpages in the
+     bin must have a size less than or equal the border. This approach
+     mimics that taken by Wang et al. in \cite{effective} with the
+     bins being equivalent to the anonymity sets / partitions. As the
+     biggest bin does not have a maximum size, its median value is
+     currently chosen.[fn:: The optimal size for the biggest bin is a
+     parameter that should be evaluated as well.]
 
      The other approach is to have a single target distribution from
      which values are sampled each time, once again from the [[#HTTP traffic model][HTTP
-     traffic model]].
+     traffic model]]. This is also the fallback approach if the web
+     page's values are not known.
 
-     Given that the web page's own characteristics are already known
-     or guessed, as described above, they are subtracted from the
-     target values.
+     The web page's own values --- known or guessed, as described
+     [[#addon0.15][above]] --- are subtracted from the target values.
 
-     If a request is determined to be for an embedded object, an
-     additional embedded object-size page is requested with a certain
-     probability.
 
-    Both the sizes of the extra HTML and the extra number of embedded
-    objects are determined based on the [[#HTTP traffic model][HTTP traffic model]].
+     At the same time as the HTML-query, another query for the
+     remaining HTML-size (or a token amount if too small) is
+     sent. Concerning the embedded objects, the ratio of
+     (target-site)/site is computed. For each embedded object
+     retrieved, this ratio determines the number of embedded-sized
+     requests, once again from the [[#HTTP traffic model][HTTP traffic model]].
+**** WRITE improvement (0.19): negative values in distribution
+     :PROPERTIES:
+     :CUSTOM_ID: addon0.19
+     :END:
+     With both
 
-      - strategy a/b: bloom bucket size vs one target distribution
-    From the target values, the webpage's html-size and number of
-    elements (variation A/B) is subtracted.
-
-    At the same time of the HTML-query, another query for the remaining
-    HTML-size (or a token amount if too small) is sent. Concerning the
-    embedded elements, the ratio of (target-site)/site is computed. For
-    each element, this ratio determines the number of requests for
-    embedded elements (these are always of random sizes, once again from
-    the [[#HTTP traffic model][HTTP traffic model]]. See [[*cover%20traffic%20distribution%20generation][cover traffic distribution generation]]
-    for the algorithms.
-***** TODO unify until 0.21
-**** WRITE 0.19 and retro: negative values in distribution
      - negative values for requests are saved and randomly subtracted
      - occur with real size > target size
      - solution
@@ -2121,12 +2113,17 @@
       #+END_EXAMPLE
 ** TODO scripts
 ** TODO below [[*host install list][host install list]]
-* KEYWORDS sampling web sites                                          :eval:
+* WRITE sampling web sites                                             :eval:
   - top 10 found wanting: different results from top-100
   - top-100 represented all as of ...
   - needed: representation with fewer classes
   - solutions: percentiles of both addon and non-addon sizes joined
   - link to code
+* KEYWORDS outlier removal
+  - after cross-validation split
+  - but can do that before features
+    - list of (url, list-id) tuples, one for each counter
+    - randomly choose subset
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
@@ -2177,6 +2174,8 @@
   - open world
   - more elaborate tests with different world sizes / open world / etc
 ** addon
+  - how to distinguish HTML/embedded
+  - redirects + iframes included in model's number of embedded objects
   - source cover traffic: user gives domain as starting point
   - how to generate
     - how often, which parameters
