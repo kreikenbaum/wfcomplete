@@ -538,7 +538,7 @@
     - simultaneous to real traffic
 
     - make wf harder such that it is impossible
-** TODO Design and Implementation (=Implementation) [0/22]
+** TODO Design and Implementation (=Implementation) [0/21]
 *** CHECK description of add-on
     The add-on tries to defend against website fingerprinting by
     adding HTTP-distributed extra traffic.
@@ -593,6 +593,9 @@
 **** TODO some distribution pictures
 **** TODO further work link + mention
 *** TODO Addon-Versions
+     While just adding random traffic to each page might enhance
+     anonymity, always adding in the same way might be wasteful and
+     easier to detect. Per-page values could provide better cover.
 **** CHECK 0.15: base version
      :PROPERTIES:
      :CUSTOM_ID: addon0.15
@@ -602,81 +605,91 @@
      (depending on flavor) when tested on the top-10 sites. This drop
      came an a bandwidth overhead of 49--85%.
 
-     In a closed world, it is possible to always know these sizes
-     beforehand. If unknown, the random variates from the [[#HTTP traffic model][HTTP traffic
-     model]] are used. [fn:: The size of each embedded element is always
-     drawn from the HTTP traffic model.] This approach is called the
-     /cache/ flavor. In the /nocache/ flavor, sizes are always guessed.
-
-     This version has several bugs in distinguishing between
-     seen/unseen sites and HTML/embedded objects.
-
-     The improvements described in section [[#addon0.19]] were backported
-     to this version, with version name 0.15.3-retrofixed.
-***** TODO maybe move footnote
-**** WRITE 0.18: different strategies for target site
-     While just adding random traffic to each page might enhance
-     anonymity, always adding from the same distribution might be
-     wasteful and easier to detect. Per-page values could provide
-     better cover.
-
      A simulated webpage is specified by its HTML size and its number
-     of embedded objects. If the page's values are known, there are
-     two tactics on how to set these:
+     of embedded objects. In a closed world, it is possible to always
+     know the page sizes beforehand. If unknown, the random variates
+     from the [[#HTTP traffic model][HTTP traffic model]] are used. [fn:: The size of each
+     embedded element is always drawn from the HTTP traffic model.]
+     Using known sizes is called the /cache/ flavor. In the /nocache/
+     flavor, sizes are always guessed.
 
-     One tactic is to group the webpages by their sizes into bins and
-     to set the bin border as the target size, as all webpages in the
+     Once the /page's values/ are thus set, there are two tactics on
+     how to set /target/ values.
+
+     One tactic is to group the webpages by their values into bins and
+     to set the bin border as the target value, as all webpages in the
      bin must have a size less than or equal the border. This approach
-     mimics that taken by Wang et al. in \cite{effective} with the
-     bins being equivalent to the anonymity sets / partitions. As the
-     biggest bin does not have a maximum size, its median value is
-     currently chosen.[fn:: The optimal size for the biggest bin is a
-     parameter that should be evaluated as well.]
+     approximates that taken by Wang et al. in \cite{effective} with
+     the bins being equivalent to the anonymity sets / partitions. As
+     the biggest bin does not have a maximum size, its median value is
+     chosen.[fn:: The optimal size for the biggest bin is a parameter
+     that should be evaluated as well.]
 
-     The other approach is to have a single target distribution from
-     which values are sampled each time, once again from the [[#HTTP traffic model][HTTP
-     traffic model]]. This is also the fallback approach if the web
+     The other tactic is to have a single target distribution from
+     which values are sampled each time, once again the [[#HTTP traffic model][HTTP traffic
+     model]]. This is, again, also the fallback approach if the web
      page's values are not known.
 
      The web page's own values --- known or guessed, as described
      [[#addon0.15][above]] --- are subtracted from the target values.
 
+     At the same time as the HTML-query, another query for the target
+     HTML-size (or a token amount if too small) is sent. Concerning
+     the embedded objects, the ratio of
+     (target-embedded)/(site-embedded) is computed. For each embedded
+     object retrieved, this ratio determines the number of
+     embedded-sized requests, once again from the [[#HTTP traffic model][HTTP traffic model]].
+**** TODO improvements
+***** WRITE 0.17 bursts at end
+      - wang: burst distinguishing feature left with
+        w/t\cite{wang2015walkie}
+      - solution: count how many embedded, add those as bursts at the
+        end
+***** WRITE 0.18: configurability
+      - options choosing which tactic:
+        - known/guess sizes
+        - bins/target
+        - bursts
+***** WRITE 0.19: negative values in distribution
+      :PROPERTIES:
+      :CUSTOM_ID: addon0.19
+      :END:
+      - negative values for requests are saved and randomly subtracted
+      - occur with real size > target size
+      - solution
+        - if small /negative request value:
+          - save value (min size is 160, thus =160 - requested_size=)
+        - else:
+          - get value at random up to min(request size, saved values)
+          - subtract from request size, and from saved value
 
-     At the same time as the HTML-query, another query for the
-     remaining HTML-size (or a token amount if too small) is
-     sent. Concerning the embedded objects, the ratio of
-     (target-site)/site is computed. For each embedded object
-     retrieved, this ratio determines the number of embedded-sized
-     requests, once again from the [[#HTTP traffic model][HTTP traffic model]].
-**** WRITE improvement (0.19): negative values in distribution
-     :PROPERTIES:
-     :CUSTOM_ID: addon0.19
-     :END:
-     With both
-
-     - negative values for requests are saved and randomly subtracted
-     - occur with real size > target size
-     - solution
-       - if small /negative request value:
-         - save value (min size is 160, thus =160 - requested_size=)
-       - else:
-         - get value at random up to min(request size, saved values)
-         - subtract from request size, and from saved value
-**** WRITE 0.21
-      - stricter bounds on retrieval of embedded objects
-      - and end when limit reached
+      The improvements described in this sectionwere backported to
+      this version, with version name 0.15.3-retrofixed.
+***** WRITE 0.20: bounds for probability
+      - buggy html model: counts many more URLs as HTML than expected
+        - fix would be: use only absolute numbers, not probabilities,
+          detect HTML (by suffix as approximation, and by content-type
+          when found), increase counter when found
+        - workaround: bound probability
+***** WRITE 0.21 bounds absolute number of retrieved objects
+       - better workaround
+         - stricter bounds on retrieval of embedded objects
+         - and stop when limit reached
 **** CHECK simple 1.1
      The previous versions had become quite complex for a Firefox
-     extension with more than 500 lines of code. To simplify\cite{xp},
-     the algorithm triggers a FACTOR-sized HTML-sized request at the
-     beginning and an embedded-sized request with probability FACTOR
-     for each embedded object.
+     extension: they had more than 500 lines of code. A
+     simplified[ch.7.2]\cite{xp} algorithm triggers a FACTOR-sized
+     HTML-sized request at the beginning and an embedded-sized request
+     with probability FACTOR for each embedded object.
 
      This halved the number of lines of code, allowing for better
      refactoring.
-*** KEYWORDS Algorithm
-*** KEYWORDS Modules
-*** KEYWORDS Server
+*** KEYWORDS Modules                                               :appendix:
+*** WRITE Server
+    - where there are several possibilities how to generate cover
+      traffic,
+    - here: simplest: server, GET-query with size=bytes parameter
+      returns this many bytes random data
 *** brainstorm                                                      :ARCHIVE:
     - aim: selective cover traffic
       - select based on web site

@@ -10,24 +10,23 @@ import sys
 import counter
 
 JOBS_NUM = -3
-#JOBS_NUM = 4 #maybe at duckstein, but for panchenko problematic
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
 #LOGLEVEL = logging.WARN
 TIME_SEPARATOR = '@'
 
-def average_bytes(mean_std_dict):
+def _average_bytes(mean_std_dict):
     '''@return the average size over all traces'''
     return np.mean([x[0] for x in mean_std_dict.values()])
 
-def average_duration(counter_dict):
+def _average_duration(counter_dict):
     '''@return the average duration over all traces'''
     ms = times_mean_std(counter_dict)
     return np.mean([x[0] for x in ms.values()])
 
-def bytes_mean_std(counter_dict):
+def _bytes_mean_std(counter_dict):
     '''@return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
-    >>> bytes_mean_std({'yahoo.com': [counter._ptest(3)]})
+    >>> _bytes_mean_std({'yahoo.com': [counter._ptest(3)]})
     {'yahoo.com': (1800.0, 0.0)}
     '''
     out = {}
@@ -37,10 +36,13 @@ def bytes_mean_std(counter_dict):
     return out
 
 def compare_stats(dirs):
-    '''@return a dict {dir1: {domain1: {...}, ..., domainN: {...}}, dir2:...} with domain mean, standard distribution and labels'''
+    '''@return a dict {dir1: {domain1: {...}, ..., domainN: {...}},
+    dir2:..., ..., dirN: ...} with domain mean, standard distribution
+    and labels
+    '''
     places = _gen_counters(dirs)
-    means = {k: mean(v) for (k,v) in places.iteritems()}
-    stds = {k: std(v) for (k,v) in places.iteritems()}
+    means = {k: _mean(v) for (k,v) in places.iteritems()}
+    stds = {k: _std(v) for (k,v) in places.iteritems()}
     out = []
     for d in dirs:
         logging.info('version: %s', d)
@@ -54,14 +56,15 @@ def compare_stats(dirs):
             out.append(tmp)
     return out
 
-def find_domain(mean_per_dir, mean):
+def _find_domain(mean_per_dir, mean):
     '''@return (first) domain name with mean'''
     for place_means in mean_per_dir.values():
         for (domain, domain_mean) in place_means.items():
             if domain_mean == mean:
                 return domain
 
-def times_mean_std(counter_dict):
+# unused
+def _times_mean_std(counter_dict):
     '''@return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
     with mean and standard of timing data
     '''
@@ -83,12 +86,12 @@ def top_30(mean_per_dir):
                                 interpolation='lower')
     out = set()
     for mean in percentiles:
-        out.add(find_domain(mean_per_dir, mean))
+        out.add(_find_domain(mean_per_dir, mean))
     return out
 
-def mean(counter_dict):
+def _mean(counter_dict):
     '''@return a dict of {domain1: mean1, ... domainN: meanN}
-    >>> mean({'yahoo.com': [counter._ptest(3)]})
+    >>> _mean({'yahoo.com': [counter._ptest(3)]})
     {'yahoo.com': 1800.0}
     '''
     out = {}
@@ -97,9 +100,9 @@ def mean(counter_dict):
         out[domain] = np.mean(total)
     return out
 
-def std(counter_dict):
+def _std(counter_dict):
     '''@return a dict of {domain1: std1, ... domainN: stdN}
-    >>> std({'yahoo.com': [counter._ptest(3)]})
+    >>> _std({'yahoo.com': [counter._ptest(3)]})
     {'yahoo.com': 0.0}
     '''
     out = {}
@@ -108,7 +111,7 @@ def std(counter_dict):
         out[domain] = np.std(total)
     return out
 
-def find_max_lengths(counters):
+def _find_max_lengths(counters):
     '''determines maximum lengths of variable-length features'''
     max_lengths = counters.values()[0][0].variable_lengths()
     all_lengths = []
@@ -122,7 +125,7 @@ def find_max_lengths(counters):
     return max_lengths
 
 # courtesy of http://stackoverflow.com/a/38060351
-def dict_elementwise(func, d1, d2):
+def _dict_elementwise(func, d1, d2):
     return {k: func(d1[k], d2[k]) for k in d1}
 
 def to_features(counters, max_lengths=None):
@@ -130,7 +133,7 @@ def to_features(counters, max_lengths=None):
 
     if max_lengths is given, use that instead of trying to determine'''
     if not max_lengths:
-        max_lengths = find_max_lengths(counters)
+        max_lengths = _find_max_lengths(counters)
 
     X_in = []
     out_y = []
@@ -176,6 +179,7 @@ def to_libsvm(X, y, fname='libsvm_in'):
                 f.write('{}:{} '.format(no+1, val))
         f.write('\n')
 
+# unused
 def to_X_y_dom_size_d(place, out_rm=True):
     '''@return (X,y,y_domains, avg_size, avg_duration)
 
@@ -185,8 +189,8 @@ def to_X_y_dom_size_d(place, out_rm=True):
     cs = counter.Counter.all_from_dir(place)
     if out_rm:
         cs = panchenko_outlier_removal(cs)
-    size = average_bytes(cs)
-    duration = average_duration(cs)
+    size = _average_bytes(cs)
+    duration = _average_duration(cs)
     return to_features_cumul(cs) + (size, duration)
 
 ### outlier removal
@@ -378,10 +382,10 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
     # call with 1: x-validate test that
     # call with 2+: train 1 (whole), test 2,3,4,...
     places = _gen_counters(argv[1:], False)
-    stats = {k: bytes_mean_std(v) for (k,v) in places.iteritems()}
-    sizes = {k: average_bytes(v) for (k,v) in stats.iteritems()}
+    stats = {k: _bytes_mean_std(v) for (k,v) in places.iteritems()}
+    sizes = {k: _average_bytes(v) for (k,v) in stats.iteritems()}
     # td: continue here, recompute duration (was not averaged per domain), compare
-    # durations = {k: average_duration(v) for (k,v) in places.iteritems()}
+    # durations = {k: _average_duration(v) for (k,v) in places.iteritems()}
 
     place0 = argv[1] if len(argv) > 1 else '.'
 
@@ -392,8 +396,8 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
         (X, y, y_dom) = to_features(places[place0])
 
     if with_svm:
-#        clf = my_grid(X, y)
-        clf = smart_grid(X, y) #enabled if ranges are not clear
+        clf = my_grid(X, y)
+#        clf = smart_grid(X, y) #enabled if ranges are not clear
         logging.info('grid result: %s', clf)
         GOOD.append(clf)
 
@@ -411,9 +415,9 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
         if cumul:
             (X2, y2, _) = to_features_cumul(its_counters)
         else:
-            l = dict_elementwise(max,
-                                 find_max_lengths(places[place0]),
-                                 find_max_lengths(its_counters))
+            l = _dict_elementwise(max,
+                                  _find_max_lengths(places[place0]),
+                                  _find_max_lengths(its_counters))
             (X, y, y_dom) = to_features(places[place0], l)
             (X2, y2, y_dom2) = to_features(its_counters, l)
 
@@ -468,7 +472,7 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
 
 # places = _gen_counters(sys.argv[1:])
 # some_30 = top_30(means)
-# timing = {k: average_duration(v) for (k,v) in places.iteritems()}
+# timing = {k: _average_duration(v) for (k,v) in places.iteritems()}
 
 def tts(counter_dict, test_size=1.0/3):
     '''splits counter_dict in train_dict and test_dict
@@ -511,7 +515,7 @@ if __name__ == "__main__":
     # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
     # sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
     # sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
-    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', '22.0/10aI/', 'simple/factor=10/', 'simple/factor=50/']
+    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', '22.0/10aI/', 'simple/factor=10/', 'simple/factor=50/', '0.15.3-retrofixed/bridge/30.js/', '0.15.3-retrofixed/bridge/70.js/', '0.15.3-retrofixed/bridge/50.js/']
     # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp'); os.chdir(PANCHENKO_PATH)
     # counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
     cross_test(sys.argv, with_svm=True) #, cumul=False)
