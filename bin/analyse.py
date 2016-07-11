@@ -300,8 +300,10 @@ def _testcg(X, y, c, gamma):
     clf = multiclass.OneVsRestClassifier(svm.SVC(C=c, gamma=gamma))
     return _test(X, y, clf, scale=True, nj=1).mean()
 
-def smart_grid(X, y, stepmin=1, c_low=-2, c_high=18, g_low=-12, g_high=8):
-    ''' ''smarter'' grid-search, params are exponents of 2'''
+def smart_grid(X, y, stepmin=6, c_low=-2, c_high=18, g_low=-12, g_high=8):
+    ''' ''smarter'' grid-search, params are exponents of 2
+
+    use this to get the general range of the correct parameters for my_grid'''
     import math
     # init
     results = {}
@@ -388,12 +390,15 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
     # durations = {k: _average_duration(v) for (k,v) in places.iteritems()}
 
     place0 = argv[1] if len(argv) > 1 else '.'
+    # or for first element only
+    places[place0] = panchenko_outlier_removal(places[place0])
 
     # X,y for training set
+    (train, test) = tts(places[place0])
     if cumul:
-        (X, y, y_dom) = to_features_cumul(places[place0])
+        (X, y, _) = to_features_cumul(train)
     else:
-        (X, y, y_dom) = to_features(places[place0])
+        (X, y, _) = to_features(train)
 
     if with_svm:
         clf = my_grid(X, y)
@@ -401,7 +406,12 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
         logging.info('grid result: %s', clf)
         GOOD.append(clf)
 
-    # evaluate accuracy on training set
+    # X,y for eval
+    if cumul:
+        (X, y, _) = to_features_cumul(places[place0])
+    else:
+        (X, y, _) = to_features(places[place0])
+    # evaluate accuracy on all of unaddoned
     print 'cross-validation on X,y'
     for esti in GOOD:
         verbose_test_11(X, y, esti)
@@ -418,8 +428,8 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
             l = _dict_elementwise(max,
                                   _find_max_lengths(places[place0]),
                                   _find_max_lengths(its_counters))
-            (X, y, y_dom) = to_features(places[place0], l)
-            (X2, y2, y_dom2) = to_features(its_counters, l)
+            (X, y, _) = to_features(places[place0], l)
+            (X2, y2, _2) = to_features(its_counters, l)
 
         for esti in GOOD:
             scale = True if 'SVC' in str(esti) else False
@@ -469,13 +479,15 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
     #     return math.sqrt(fixedm + variable1 + variable2)
     # sys.argv = ['', 'disabled/06-09@10', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
     # sys.argv = ['', 'disabled/wfpad', 'wfpad']
+#    (X, y ,y_dom) = to_features_cumul(counters)
+#_test(X, y, nj=1)
 
 # places = _gen_counters(sys.argv[1:])
 # some_30 = top_30(means)
 # timing = {k: _average_duration(v) for (k,v) in places.iteritems()}
 
 def tts(counter_dict, test_size=1.0/3):
-    '''splits counter_dict in train_dict and test_dict
+    '''train-test-split: splits counter_dict in train_dict and test_dict
 
     test_size = deep_len(test)/deep_len(train)
     uses cross_validation.train_test_split
@@ -492,14 +504,13 @@ def tts(counter_dict, test_size=1.0/3):
     (train_ids, test_ids) = cross_validation.train_test_split(
         ids, test_size=test_size)
     train = {}
-    for (url, index) in train_ids:
-        if url not in train:
-            train[url] = []
-        train[url].append(counter_dict[url][index])
     test = {}
+    for url in counter_dict:
+        train[url] = []
+        test[url] = []
+    for (url, index) in train_ids:
+        train[url].append(counter_dict[url][index])
     for (url, index) in test_ids:
-        if url not in test:
-            test[url] = []
         test[url].append(counter_dict[url][index])
     return (train, test)
 
@@ -515,10 +526,8 @@ if __name__ == "__main__":
     # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
     # sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
     # sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
-    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', '22.0/10aI/', 'simple/factor=10/', 'simple/factor=50/', '0.15.3-retrofixed/bridge/30.js/', '0.15.3-retrofixed/bridge/70.js/', '0.15.3-retrofixed/bridge/50.js/']
+    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', '22.0/10aI/', 'simple/1/factor=10/', 'simple/1/factor=50/', '0.15.3-retrofixed/bridge/30.js/', '0.15.3-retrofixed/bridge/70.js/', '0.15.3-retrofixed/bridge/50.js/', 'simple/2/30']
     # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp'); os.chdir(PANCHENKO_PATH)
     # counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
     cross_test(sys.argv, with_svm=True) #, cumul=False)
 
-#    (X, y ,y_dom) = to_features_cumul(counters)
-#_test(X, y, nj=1)

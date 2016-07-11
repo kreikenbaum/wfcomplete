@@ -1,6 +1,20 @@
 getting data for gnuplot:  | <15> | <2> | <2> | <2> | <2> | <2> |   |   |
 compare classifiers: | <10>  | <6> | <6> | <6> | <6> | <6> |   <5> |    <6> |  
 compare versions:  | <15> | <5> | <5> |   <5> |   <5> |   <5> |   <5> |  <6> |
+* table 2/3 (bridge test-train-split)
+  |            | ExtraTrees | RandomForest | KNeighbors | DecisionTree | SVC(scale) | overhead % |    max |
+  | <10>       |    <6> |    <6> |    <6> |    <6> |    <6> |   <5> |    <6> |
+  |------------+--------+--------+--------+--------+--------+-------+--------|
+  | X-validation | 0.916470674736 | 0.893283053545 | 0.833026795719 | 0.888055842265 | 0.96954627519 |     0 | 96.954628 |
+  | 0.15.3-re  | 0.746666666667 | 0.7275 | 0.6825 |  0.525 |  0.135 | 26.766882278 | 74.666667 |
+  | 0.15.3-ret | 0.727272727273 | 0.695579649708 | 0.660550458716 | 0.525437864887 | 0.292743953294 | 16.6027859811 | 72.727273 |
+  | wfpad      | 0.73894912427 | 0.715596330275 | 0.659716430359 | 0.723936613845 | 0.302752293578 | 12.9047077098 | 73.894912 |
+  | 0.15.3-ret | 0.726666666667 | 0.6975 | 0.645833333333 | 0.539166666667 | 0.330833333333 | 22.3359945259 | 72.666667 |
+  | 22.0/10aI/ | 0.716666666667 | 0.6925 | 0.6675 | 0.533333333333 | 0.113333333333 | 27.7337867893 | 71.666667 |
+  | simple1@10 |   0.71 | 0.686666666667 | 0.643333333333 | 0.636666666667 |  0.185 | 25.1641266803 |    71. |
+  | simple1@50 | 0.165833333333 |  0.155 | 0.130833333333 | 0.1525 | 0.251666666667 | 70.893016648 | 25.166667 |
+  | simple2@30 | 0.198333333333 |   0.18 | 0.184166666667 | 0.205833333333 | 0.124166666667 | 48.9719398629 | 20.583333 |
+  #+TBLFM: $8=100*reduce(max, $2..$6)
 * table bridge
   |            | ExtraTrees | RandomForest | KNeighbors | DecisionTree | SVC(scale) | overhead % |    max |
   | <10>       |    <6> |    <6> |    <6> |    <6> |    <6> |   <5> |    <6> |
@@ -10,6 +24,7 @@ compare versions:  | <15> | <5> | <5> |   <5> |   <5> |   <5> |   <5> |  <6> |
   | simple@10  | 0.798113207547 | 0.779245283019 | 0.721698113208 | 0.711320754717 | 0.183018867925 | 29.1931678384 | 79.811321 |
   | 22.0@10aI  | 0.771271729186 | 0.740164684355 | 0.718206770357 | 0.552607502287 | 0.112534309241 | 33.2183170937 | 77.127173 |
   | simple@50  | 0.17955801105 | 0.164825046041 | 0.142725598527 | 0.161141804788 | 0.266114180479 | 75.483688562 | 26.611418 |
+  | simple2@30 | 0.2325 | 0.236666666667 | 0.203333333333 | 0.231666666667 | 0.154166666667 | 48.9719398629 | 23.666667 |
   #+TBLFM: $8=100*reduce(max, $2..$6)
 * table addon
 SVC(scale) |     % |    max |
@@ -95,9 +110,161 @@ SVC(scale) |     % |    max |
   | 0.15.3/nocache | 0.265454545455 | 0.247272727273 | 0.261818181818 | 0.261818181818 |   |
   | 0.15.3/cache        | 0.259124087591 | 0.251824817518 | 0.251824817518 | 0.251824817518 |     |
 * ========== END TABLES ===================
+* 2/3 up to simple2@30
+** data
+*** grid result:
+OneVsRestClassifier(estimator=SVC(C=8192.0, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape=None, degree=3, gamma=1.3195079107728929,
+  kernel='rbf', max_iter=-1, probability=False, random_state=None,
+  shrinking=True, tol=0.001, verbose=False),
+          n_jobs=1)
+*** cross-validation on X,y
+ExtraTreesClassifier 0.919158541215, [ 0.91071429  0.9086758   0.93396226  0.90776699  0.93467337]
+RandomForestClassifier 0.897291126954, [ 0.89732143  0.89497717  0.9009434   0.87864078  0.91457286]
+KNeighborsClassifier 0.833026795719, [ 0.83035714  0.8173516   0.86320755  0.83009709  0.8241206 ]
+DecisionTreeClassifier 0.895844174359, [ 0.87053571  0.89497717  0.91981132  0.8592233   0.93467337]
+OneVsRestClassifier 0.974214037703, [ 0.99107143  0.97260274  0.97169811  0.97087379  0.96482412]
+*** train: disabled/bridge VS 22.0/10aI/ (overhead 27.7337867893%)
+ExtraTreesClassifier: 0.716666666667
+RandomForestClassifier: 0.6925
+KNeighborsClassifier: 0.6675
+DecisionTreeClassifier: 0.533333333333
+OneVsRestClassifier: 0.113333333333
+*** train: disabled/bridge VS wfpad/bridge (overhead 12.9047077098%)
+ExtraTreesClassifier: 0.737281067556
+RandomForestClassifier: 0.721434528774
+KNeighborsClassifier: 0.659716430359
+DecisionTreeClassifier: 0.723102585488
+OneVsRestClassifier: 0.304420350292
+*** train: disabled/bridge VS 0.15.3-retrofixed/bridge/50.js/ (overhead 16.6027859811%)
+ExtraTreesClassifier: 0.727272727273
+RandomForestClassifier: 0.695579649708
+KNeighborsClassifier: 0.660550458716
+DecisionTreeClassifier: 0.525437864887
+OneVsRestClassifier: 0.292743953294
+*** train: disabled/bridge VS simple/2/30 (overhead 48.9719398629%)
+ExtraTreesClassifier: 0.198333333333
+RandomForestClassifier: 0.18
+KNeighborsClassifier: 0.184166666667
+DecisionTreeClassifier: 0.205833333333
+OneVsRestClassifier: 0.124166666667
+*** train: disabled/bridge VS 0.15.3-retrofixed/bridge/70.js/ (overhead 22.3359945259%)
+ExtraTreesClassifier: 0.726666666667
+RandomForestClassifier: 0.6975
+KNeighborsClassifier: 0.645833333333
+DecisionTreeClassifier: 0.539166666667
+OneVsRestClassifier: 0.330833333333
+*** train: disabled/bridge VS 0.15.3-retrofixed/bridge/30.js/ (overhead 26.766882278%)
+ExtraTreesClassifier: 0.746666666667
+RandomForestClassifier: 0.7275
+KNeighborsClassifier: 0.6825
+DecisionTreeClassifier: 0.525
+OneVsRestClassifier: 0.135
+*** train: disabled/bridge VS simple/1/factor=10/ (overhead 25.1641266803%)
+ExtraTreesClassifier: 0.71
+RandomForestClassifier: 0.686666666667
+KNeighborsClassifier: 0.643333333333
+DecisionTreeClassifier: 0.636666666667
+OneVsRestClassifier: 0.185
+*** train: disabled/bridge VS simple/1/factor=50/ (overhead 70.893016648%)
+ExtraTreesClassifier: 0.165833333333
+RandomForestClassifier: 0.155
+KNeighborsClassifier: 0.130833333333
+DecisionTreeClassifier: 0.1525
+OneVsRestClassifier: 0.251666666667
+* 2/3 wfpad
+  x-valid wfpad from here
+** data
+*** grid result:
+OneVsRestClassifier(estimator=SVC(C=2048.0, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape=None, degree=3, gamma=1.3195079107728929,
+  kernel='rbf', max_iter=-1, probability=False, random_state=None,
+  shrinking=True, tol=0.001, verbose=False),
+          n_jobs=1)
+*** cross-validation on X,y
+ExtraTreesClassifier 0.916470674736, [ 0.90625     0.90410959  0.9245283   0.90776699  0.93969849]
+RandomForestClassifier 0.893283053545, [ 0.89732143  0.88584475  0.9245283   0.8592233   0.89949749]
+KNeighborsClassifier 0.833026795719, [ 0.83035714  0.8173516   0.86320755  0.83009709  0.8241206 ]
+DecisionTreeClassifier 0.888055842265, [ 0.87053571  0.88584475  0.91981132  0.84951456  0.91457286]
+OneVsRestClassifier 0.952712435443, [ 0.97767857  0.93150685  0.95283019  0.94174757  0.95979899]
+OneVsRestClassifier 0.96954627519, [ 0.98660714  0.96347032  0.96698113  0.97087379  0.95979899]
+*** train: disabled/bridge VS wfpad/bridge (overhead 12.9047077098%)
+ExtraTreesClassifier: 0.73894912427
+RandomForestClassifier: 0.715596330275
+KNeighborsClassifier: 0.659716430359
+DecisionTreeClassifier: 0.723936613845
+OneVsRestClassifier: 0.29941618015
+OneVsRestClassifier: 0.302752293578
+* 2/3 22-10aI (smart_grid)
+** data
+*** grid result:
+OneVsRestClassifier(estimator=SVC(C=153.630511928, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape=None, degree=3, gamma=1.44902574819,
+  kernel='rbf', max_iter=-1, probability=False, random_state=None,
+  shrinking=True, tol=0.001, verbose=False),
+          n_jobs=1)
+*** cross-validation on X,y
+ExtraTreesClassifier 0.917322287846, [ 0.90625     0.9086758   0.92924528  0.90776699  0.93467337]
+RandomForestClassifier 0.89276383649, [ 0.86607143  0.89497717  0.91509434  0.89320388  0.89447236]
+KNeighborsClassifier 0.833026795719, [ 0.83035714  0.8173516   0.86320755  0.83009709  0.8241206 ]
+DecisionTreeClassifier 0.893004670971, [ 0.87053571  0.87671233  0.92924528  0.86893204  0.91959799]
+OneVsRestClassifier 0.952712435443, [ 0.97767857  0.93150685  0.95283019  0.94174757  0.95979899]
+*** train: disabled/bridge VS wfpad/bridge (overhead 12.9047077098%)
+ExtraTreesClassifier: 0.737281067556
+RandomForestClassifier: 0.725604670559
+KNeighborsClassifier: 0.659716430359
+DecisionTreeClassifier: 0.722268557131
+OneVsRestClassifier: 0.29941618015
+* 2/3 training bridge 22-10aI wfpad (ohne or)
+** data
+*** grid result:
+OneVsRestClassifier(estimator=SVC(C=512.0, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape=None, degree=3, gamma=9.1895868399762755,
+  kernel='rbf', max_iter=-1, probability=False, random_state=None,
+  shrinking=True, tol=0.001, verbose=False),
+          n_jobs=1)
+*** cross-validation on X,y
+ExtraTreesClassifier 0.871666666667, [ 0.8375      0.86666667  0.87083333  0.875       0.90833333]
+RandomForestClassifier 0.846666666667, [ 0.825       0.81666667  0.85833333  0.83333333  0.9       ]
+KNeighborsClassifier 0.776666666667, [ 0.75833333  0.77083333  0.78333333  0.78333333  0.7875    ]
+DecisionTreeClassifier 0.821666666667, [ 0.775       0.83333333  0.82083333  0.81666667  0.8625    ]
+OneVsRestClassifier 0.935, [ 0.925       0.92916667  0.93333333  0.9375      0.95      ]
+*** train: disabled/bridge VS 22.0/10aI/ (overhead 27.7337867893%)
+ExtraTreesClassifier: 0.738333333333
+RandomForestClassifier: 0.710833333333
+KNeighborsClassifier: 0.691666666667
+DecisionTreeClassifier: 0.4975
+OneVsRestClassifier: 0.16
+*** train: disabled/bridge VS wfpad/bridge (overhead 12.9047077098%)
+ExtraTreesClassifier: 0.798999165972
+RandomForestClassifier: 0.768974145121
+KNeighborsClassifier: 0.690575479566
+DecisionTreeClassifier: 0.733110925771
+OneVsRestClassifier: 0.501251042535
+* bridge simple/2/30
+  24% acc with 50% overhead, x-v bit worse than before (95% max)
+** data
+*** grid result:
+OneVsRestClassifier(estimator=SVC(C=2048.0, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape=None, degree=3, gamma=9.1895868399762755,
+  kernel='rbf', max_iter=-1, probability=False, random_state=None,
+  shrinking=True, tol=0.001, verbose=False),
+          n_jobs=1)
+*** cross-validation on X,y
+ExtraTreesClassifier 0.868333333333, [ 0.83333333  0.8625      0.87083333  0.875       0.9       ]
+RandomForestClassifier 0.8275, [ 0.8125      0.80416667  0.82916667  0.84583333  0.84583333]
+KNeighborsClassifier 0.776666666667, [ 0.75833333  0.77083333  0.78333333  0.78333333  0.7875    ]
+DecisionTreeClassifier 0.824166666667, [ 0.77916667  0.83333333  0.825       0.825       0.85833333]
+OneVsRestClassifier 0.935833333333, [ 0.92916667  0.93333333  0.925       0.9375      0.95416667]
+*** train: disabled/bridge/ VS simple/2/30/ (overhead 48.9719398629%)
+ExtraTreesClassifier: 0.2325
+RandomForestClassifier: 0.236666666667
+KNeighborsClassifier: 0.203333333333
+DecisionTreeClassifier: 0.231666666667
+OneVsRestClassifier: 0.154166666667
 * bridge retro-30-70 (my_grid)
 ** data
-*** grid result: 
+*** grid result:
 OneVsRestClassifier(estimator=SVC(C=2048.0, cache_size=200, class_weight=None, coef0=0.0,
   decision_function_shape=None, degree=3, gamma=9.1895868399762755,
   kernel='rbf', max_iter=-1, probability=False, random_state=None,
@@ -203,7 +370,7 @@ OneVsRestClassifier: 0.150943396226
 * bridge simple-10 (svm problem)
   disabled data for et, rf
 ** data
-*** grid result: 
+*** grid result:
 OneVsRestClassifier(estimator=SVC(C=8192.0, cache_size=200, class_weight=None, coef0=0.0,
   decision_function_shape=None, degree=3, gamma=1.3195079107728929,
   kernel='rbf', max_iter=-1, probability=False, random_state=None,
@@ -251,26 +418,26 @@ OneVsRestClassifier: 0.266114180479
 * bridge simple wfpad (smart_grid)
   not better
 ** data
-INFO:grid result: OneVsRestClassifier(estimator=SVC(C=47.7190052143, cache_size=200, class_weight=None, coef0=0.0,
+*** INFO:grid result:
+OneVsRestClassifier(estimator=SVC(C=47.7190052143, cache_size=200, class_weight=None, coef0=0.0,
   decision_function_shape=None, degree=3, gamma=4.95125075957,
   kernel='rbf', max_iter=-1, probability=False, random_state=None,
   shrinking=True, tol=0.001, verbose=False),
           n_jobs=1)
-cross-validation on X,y
+*** cross-validation on X,y
 ExtraTreesClassifier 0.921196069027, [ 0.91071429  0.9086758   0.92924528  0.91262136  0.94472362]
 RandomForestClassifier 0.89887289014, [ 0.91071429  0.89954338  0.9009434   0.87864078  0.90452261]
 KNeighborsClassifier 0.833026795719, [ 0.83035714  0.8173516   0.86320755  0.83009709  0.8241206 ]
 DecisionTreeClassifier 0.8984362606, [ 0.875       0.89954338  0.93396226  0.86407767  0.91959799]
 OneVsRestClassifier 0.962286007522, [ 0.97321429  0.9543379   0.95754717  0.95145631  0.97487437]
-
-train: disabled/bridge/ VS wfpad/bridge/ (overhead 19.8453353207%)
+*** train: disabled/bridge/ VS wfpad/bridge/ (overhead 19.8453353207%)
 ExtraTreesClassifier: 0.787578757876
 RandomForestClassifier: 0.76597659766
 KNeighborsClassifier: 0.701170117012
 DecisionTreeClassifier: 0.751575157516
 OneVsRestClassifier: 0.381638163816
 
-train: disabled/bridge/ VS simple/ (overhead 75.483688562%)
+*** train: disabled/bridge/ VS simple/ (overhead 75.483688562%)
 ExtraTreesClassifier: 0.181399631676
 RandomForestClassifier: 0.196132596685
 KNeighborsClassifier: 0.142725598527
@@ -278,26 +445,26 @@ DecisionTreeClassifier: 0.164825046041
 OneVsRestClassifier: 0.249539594843
 * bridge simple wfpad (svm problem)
 ** data
-grid result: OneVsRestClassifier(estimator=SVC(C=512.0, cache_size=200, class_weight=None, coef0=0.0,
+*** grid result:
+OneVsRestClassifier(estimator=SVC(C=512.0, cache_size=200, class_weight=None, coef0=0.0,
   decision_function_shape=None, degree=3, gamma=9.1895868399762755,
   kernel='rbf', max_iter=-1, probability=False, random_state=None,
   shrinking=True, tol=0.001, verbose=False),
           n_jobs=1)
-cross-validation on X,y
+*** cross-validation on X,y
 ExtraTreesClassifier 0.918304251448, [ 0.91071429  0.9086758   0.91981132  0.91262136  0.93969849]
 RandomForestClassifier 0.886969660861, [ 0.89285714  0.88584475  0.87264151  0.86893204  0.91457286]
 KNeighborsClassifier 0.833026795719, [ 0.83035714  0.8173516   0.86320755  0.83009709  0.8241206 ]
 DecisionTreeClassifier 0.894977418926, [ 0.85714286  0.89497717  0.9245283   0.87864078  0.91959799]
 OneVsRestClassifier 0.973641296764, [ 0.97767857  0.97260274  0.96698113  0.96601942  0.98492462]
-
-train: disabled/bridge/ VS wfpad/bridge/ (overhead 19.8453353207%)
+*** train: disabled/bridge/ VS wfpad/bridge/ (overhead 19.8453353207%)
 ExtraTreesClassifier: 0.784878487849
 RandomForestClassifier: 0.801080108011
 KNeighborsClassifier: 0.701170117012
 DecisionTreeClassifier: 0.747074707471
 OneVsRestClassifier: 0.384338433843
 
-train: disabled/bridge/ VS simple/ (overhead 75.483688562%)
+*** train: disabled/bridge/ VS simple/ (overhead 75.483688562%)
 ExtraTreesClassifier: 0.183241252302
 RandomForestClassifier: 0.180478821363
 KNeighborsClassifier: 0.142725598527
@@ -509,7 +676,7 @@ DecisionTreeClassifier: 0.835125448029
 OneVsRestClassifier: 0.967741935484
 * 0.19 with aii
 ** data
-*** grid result: 
+*** grid result:
 OneVsRestClassifier(estimator=SVC(C=8.0, cache_size=200, class_weight=None, coef0=0.0, degree=3,
   gamma=1.31950791077, kernel=rbf, max_iter=-1, probability=False,
   random_state=None, shrinking=True, tol=0.001, verbose=False),
@@ -558,7 +725,7 @@ DecisionTreeClassifier: 0.183673469388
 OneVsRestClassifier: 0.187755102041
 * 0.19 (vs 10_from)
 ** data
-*** grid result: 
+*** grid result:
 OneVsRestClassifier(estimator=SVC(C=8.0, cache_size=200, class_weight=None, coef0=0.0, degree=3,
   gamma=1.31950791077, kernel=rbf, max_iter=-1, probability=False,
   random_state=None, shrinking=True, tol=0.001, verbose=False),
@@ -601,7 +768,7 @@ DecisionTreeClassifier: 0.167364016736
 OneVsRestClassifier: 0.154811715481
 * different factors, no cache (?) with cumul
 ** data
-*** grid result: 
+*** grid result:
 OneVsRestClassifier(estimator=SVC(C=512.0, cache_size=200, class_weight=None, coef0=0.0, degree=3,
   gamma=0.189464570814, kernel=rbf, max_iter=-1, probability=False,
   random_state=None, shrinking=True, tol=0.001, verbose=False),
@@ -693,31 +860,31 @@ RandomForestClassifier 0.946589259797, [ 0.9245283   0.98113208  0.98113208  0.9
 KNeighborsClassifier 0.904644412192, [ 0.90566038  0.96226415  0.9245283   0.88461538  0.84615385]
 DecisionTreeClassifier 0.927576197388, [ 0.94339623  0.90566038  0.98113208  0.86538462  0.94230769]
 *** 0.18.2/json-10/a_i_noburst/
-train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/a_i_noburst/
+*** train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/a_i_noburst/
 ExtraTreesClassifier: 0.229571984436
 RandomForestClassifier: 0.221789883268
 KNeighborsClassifier: 0.225680933852
 DecisionTreeClassifier: 0.206225680934
 *** 0.18.2/json-10/a_ii_noburst/
-train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/a_ii_noburst/
+*** train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/a_ii_noburst/
 ExtraTreesClassifier: 0.187739463602
 RandomForestClassifier: 0.195402298851
 KNeighborsClassifier: 0.195402298851
 DecisionTreeClassifier: 0.183908045977
 *** 0.15.3/json-10/nocache
-train on: disabled/06-09@10/ VS test on: 0.15.3/json-10/nocache
+*** train on: disabled/06-09@10/ VS test on: 0.15.3/json-10/nocache
 ExtraTreesClassifier: 0.265454545455
 RandomForestClassifier: 0.247272727273
 KNeighborsClassifier: 0.261818181818
 DecisionTreeClassifier: 0.261818181818
 *** orig
-train on: disabled/06-09@10/ VS test on: disabled/06-09@10/
+*** train on: disabled/06-09@10/ VS test on: disabled/06-09@10/
 ExtraTreesClassifier: 1.0
 RandomForestClassifier: 1.0
 KNeighborsClassifier: 0.961977186312
 DecisionTreeClassifier: 1.0
 *** 0.15.3/json-10/cache
-train on: disabled/06-09@10/ VS test on: 0.15.3/json-10/cache
+*** train on: disabled/06-09@10/ VS test on: 0.15.3/json-10/cache
 ExtraTreesClassifier: 0.259124087591
 RandomForestClassifier: 0.251824817518
 KNeighborsClassifier: 0.251824817518
@@ -732,31 +899,31 @@ RandomForestClassifier 0.939114658926, [ 0.9245283   0.94339623  0.96226415  0.9
 KNeighborsClassifier 0.904644412192, [ 0.90566038  0.96226415  0.9245283   0.88461538  0.84615385]
 DecisionTreeClassifier 0.91618287373, [ 0.9245283   0.90566038  0.96226415  0.84615385  0.94230769]
 *** 0.18.2/json-10/a_i_noburst/
-train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/a_i_noburst/
+*** train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/a_i_noburst/
 ExtraTreesClassifier: 0.229571984436
 RandomForestClassifier: 0.225680933852
 KNeighborsClassifier: 0.225680933852
 DecisionTreeClassifier: 0.233463035019
 *** 0.18.2/json-10/a_ii_noburst/
-train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/a_ii_noburst/
+*** train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/a_ii_noburst/
 ExtraTreesClassifier: 0.195402298851
 RandomForestClassifier: 0.195402298851
 KNeighborsClassifier: 0.195402298851
 DecisionTreeClassifier: 0.183908045977
 *** 0.15.3/json-10/nocache
-train on: disabled/06-09@10/ VS test on: 0.15.3/json-10/nocache
+*** train on: disabled/06-09@10/ VS test on: 0.15.3/json-10/nocache
 ExtraTreesClassifier: 0.276363636364
 RandomForestClassifier: 0.272727272727
 KNeighborsClassifier: 0.261818181818
 DecisionTreeClassifier: 0.265454545455
 *** orig
-train on: disabled/06-09@10/ VS test on: disabled/06-09@10/
+*** train on: disabled/06-09@10/ VS test on: disabled/06-09@10/
 ExtraTreesClassifier: 1.0
 RandomForestClassifier: 0.992395437262
 KNeighborsClassifier: 0.961977186312
 DecisionTreeClassifier: 1.0
 *** 0.15.3/json-10/cache
-train on: disabled/06-09@10/ VS test on: 0.15.3/json-10/cache
+*** train on: disabled/06-09@10/ VS test on: 0.15.3/json-10/cache
 ExtraTreesClassifier: 0.255474452555
 RandomForestClassifier: 0.259124087591
 KNeighborsClassifier: 0.251824817518
@@ -773,42 +940,42 @@ KNeighborsClassifier 0.904644412192, [ 0.90566038  0.96226415  0.9245283   0.884
 DecisionTreeClassifier 0.927648766328, [ 0.9245283   0.90566038  0.98113208  0.86538462  0.96153846]
 OneVsRestClassifier 0.992307692308, [ 1.          1.          1.          0.96153846  1.        ]
 *** 0.15.3/json-10/nocache
-train on: disabled/06-09@10/ VS test on: 0.15.3/json-10/nocache
+*** train on: disabled/06-09@10/ VS test on: 0.15.3/json-10/nocache
 ExtraTreesClassifier: 0.28
 RandomForestClassifier: 0.283636363636
 KNeighborsClassifier: 0.261818181818
 DecisionTreeClassifier: 0.258181818182
 OneVsRestClassifier: 0.429090909091
 *** 0.15.3/json-10/cache
-train on: disabled/06-09@10/ VS test on: 0.15.3/json-10/cache
+*** train on: disabled/06-09@10/ VS test on: 0.15.3/json-10/cache
 ExtraTreesClassifier: 0.262773722628
 RandomForestClassifier: 0.259124087591
 KNeighborsClassifier: 0.251824817518
 DecisionTreeClassifier: 0.273722627737
 OneVsRestClassifier: 0.416058394161
 *** 0.18.2/json-10/a_ii_noburst/
-train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/a_ii_noburst/
+*** train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/a_ii_noburst/
 ExtraTreesClassifier: 0.191570881226
 RandomForestClassifier: 0.195402298851
 KNeighborsClassifier: 0.195402298851
 DecisionTreeClassifier: 0.180076628352
 OneVsRestClassifier: 0.23754789272
 *** 0.18.2/json-10/b_i_from_100
-train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/b_i_from_100
+*** train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/b_i_from_100
 ExtraTreesClassifier: 0.612716763006
 RandomForestClassifier: 0.621387283237
 KNeighborsClassifier: 0.638728323699
 DecisionTreeClassifier: 0.523121387283
 OneVsRestClassifier: 0.647398843931
 *** 0.18.2/json-10/a_i_noburst/
-train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/a_i_noburst/
+*** train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/a_i_noburst/
 ExtraTreesClassifier: 0.221789883268
 RandomForestClassifier: 0.217898832685
 KNeighborsClassifier: 0.225680933852
 DecisionTreeClassifier: 0.221789883268
 OneVsRestClassifier: 0.295719844358
 *** orig
-train on: disabled/06-09@10/ VS test on: disabled/06-09@10/
+*** train on: disabled/06-09@10/ VS test on: disabled/06-09@10/
 ExtraTreesClassifier: 1.0
 RandomForestClassifier: 1.0
 KNeighborsClassifier: 0.961977186312
@@ -826,13 +993,13 @@ RandomForestClassifier 0.895909090909, [ 0.92857143  0.92857143  0.875       0.8
 KNeighborsClassifier 0.88525974026, [ 0.89285714  0.89285714  0.875       0.89285714  0.87272727]
 DecisionTreeClassifier 0.91025974026, [ 0.96428571  0.89285714  0.92857143  0.89285714  0.87272727]
 
-train on: disabled/wfpad/ VS test on: wfpad/enabled/
+*** train on: disabled/wfpad/ VS test on: wfpad/enabled/
 ExtraTreesClassifier: 0.875
 RandomForestClassifier: 0.908088235294
 KNeighborsClassifier: 0.886029411765
 DecisionTreeClassifier: 0.922794117647
 
-train on: disabled/wfpad/ VS test on: disabled/wfpad/
+*** train on: disabled/wfpad/ VS test on: disabled/wfpad/
 ExtraTreesClassifier: 1.0
 RandomForestClassifier: 0.989247311828
 KNeighborsClassifier: 0.910394265233
@@ -1208,42 +1375,42 @@ KNeighborsClassifier 0.904644412192, [ 0.90566038  0.96226415  0.9245283   0.884
 DecisionTreeClassifier 0.912409288824, [ 0.90566038  0.88679245  0.98113208  0.86538462  0.92307692]
 OneVsRestClassifier 0.984760522496, [ 0.98113208  0.98113208  1.          0.96153846  1.        ]
 
-train on: disabled/06-09@10/ VS test on: 0.15.3/json-10/nocache (overhead 76.0609416381%)
+*** train on: disabled/06-09@10/ VS test on: 0.15.3/json-10/nocache (overhead 76.0609416381%)
 ExtraTreesClassifier: 0.272727272727
 RandomForestClassifier: 0.269090909091
 KNeighborsClassifier: 0.261818181818
 DecisionTreeClassifier: 0.272727272727
 OneVsRestClassifier: 0.341818181818
 
-train on: disabled/06-09@10/ VS test on: 0.15.3/json-10/cache (overhead 85.7112448946%)
+*** train on: disabled/06-09@10/ VS test on: 0.15.3/json-10/cache (overhead 85.7112448946%)
 ExtraTreesClassifier: 0.255474452555
 RandomForestClassifier: 0.222627737226
 KNeighborsClassifier: 0.251824817518
 DecisionTreeClassifier: 0.240875912409
 OneVsRestClassifier: 0.36496350365
 
-train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/b_i_from_100 (overhead 7.56895623136%)
+*** train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/b_i_from_100 (overhead 7.56895623136%)
 ExtraTreesClassifier: 0.618497109827
 RandomForestClassifier: 0.606936416185
 KNeighborsClassifier: 0.638728323699
 DecisionTreeClassifier: 0.456647398844
 OneVsRestClassifier: 0.517341040462
 
-train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/a_ii_noburst (overhead 146.44928088%)
+*** train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/a_ii_noburst (overhead 146.44928088%)
 ExtraTreesClassifier: 0.191570881226
 RandomForestClassifier: 0.191570881226
 KNeighborsClassifier: 0.195402298851
 DecisionTreeClassifier: 0.2030651341
 OneVsRestClassifier: 0.329501915709
 
-train on: disabled/06-09@10/ VS test on: disabled/06-09@10/ (overhead 0.0%)
+*** train on: disabled/06-09@10/ VS test on: disabled/06-09@10/ (overhead 0.0%)
 ExtraTreesClassifier: 1.0
 RandomForestClassifier: 0.996197718631
 KNeighborsClassifier: 0.961977186312
 DecisionTreeClassifier: 1.0
 OneVsRestClassifier: 1.0
 
-train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/a_i_noburst (overhead 152.595901679%)
+*** train on: disabled/06-09@10/ VS test on: 0.18.2/json-10/a_i_noburst (overhead 152.595901679%)
 ExtraTreesClassifier: 0.225680933852
 RandomForestClassifier: 0.217898832685
 KNeighborsClassifier: 0.225680933852
@@ -1479,7 +1646,7 @@ KNeighborsClassifier 0.772865515845, [ 0.76381215  0.75966851  0.77486188  0.792
 DecisionTreeClassifier 0.78115013411, [ 0.81077348  0.77486188  0.77348066  0.78314917  0.76348548]
 OneVsRestClassifier 0.91461795924, [ 0.92403315  0.91574586  0.90331492  0.91298343  0.91701245]
 
-train on: disabled/06-17@100/ VS test on: disabled/06-17@100/ (overhead 0.0%)
+*** train on: disabled/06-17@100/ VS test on: disabled/06-17@100/ (overhead 0.0%)
 ExtraTreesClassifier: 1.0
 RandomForestClassifier: 0.995302569771
 KNeighborsClassifier: 0.862669245648
@@ -1683,7 +1850,7 @@ OneVsRestClassifier: 0.262773722628
 uni@desklaptop ~/da/git/data $ 
 * different factors, no cache (?) with p1
 ** data
-*** grid result: 
+*** grid result:
 OneVsRestClassifier(estimator=SVC(C=8.0, cache_size=200, class_weight=None, coef0=0.0, degree=3,
   gamma=0.027204705103, kernel=rbf, max_iter=-1, probability=False,
   random_state=None, shrinking=True, tol=0.001, verbose=False),
@@ -1768,7 +1935,7 @@ DecisionTreeClassifier: 0.217898832685
 OneVsRestClassifier: 0.221789883268
 * wfpad with svc
 ** data
-*** grid result: 
+*** grid result:
 OneVsRestClassifier(estimator=SVC(C=512.0, cache_size=200, class_weight=None, coef0=0.0, degree=3,
   gamma=1.31950791077, kernel=rbf, max_iter=-1, probability=False,
   random_state=None, shrinking=True, tol=0.001, verbose=False),
