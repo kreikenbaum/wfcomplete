@@ -2,6 +2,7 @@
 #+TODO: KEYWORDS WRITE CHECK EVA DANIEL | FINAL
 #+TODO: TODO WAIT | DONE
 * Configuration							    :ARCHIVE:
+#+LATEX_CLASS: scrreprt
 #+LATEX_CLASS_OPTIONS: [a4paper,10pt]
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{tikz}
@@ -40,7 +41,7 @@
 #+LATEX_HEADER:   }
 #+LATEX_HEADER:   % \normalfont
 #+LATEX_HEADER: \end{center}
-#+LATEX_HEADER: \vspace {5 cm}% gegebenenfalls kleiner, falls der Titel der Arbeit sehr lang sein sollte
+#+LATEX_HEADER: \vspace {3.1 cm}% gegebenenfalls kleiner, falls der Titel der Arbeit sehr lang sein sollte % mkreik <2016-07-11 Mo>: war {5 cm}
 #+LATEX_HEADER: %{3.2 cm} bei Verwendung von scrreprt, gegebenenfalls kleiner, falls der Titel der Arbeit sehr lang sein sollte
 #+LATEX_HEADER: {\large
 #+LATEX_HEADER:   \begin{tabular}{llll}
@@ -148,18 +149,18 @@
     :END:
     
     To make sense of the noisy data retrieved via traffic sniffing,
-    the first fingerprinters distinguished by object sizes. Each
+    the first fingerprinters distinguished by object sizes: Each
     requested file has a specific size[fn::except for
     dynamically-generated objects] and is transferrend in one or
     several (IP) packets. In the first versions[fn::up to/including
     1.0] of HTTP\cite{rfc1945}, these sizes were clearly visible, as
     each HTTP request-response pair was transmitted over a separate
     TCP connection. They could be found by splitting traffic by the
-    connection's port numbers, as of \cite{quantifying},
+    connection's port numbers, as done in \cite{quantifying},
     \cite{hintz02}, and \cite{ssl-traffic-analysis}.
 
-    Against SSL, which reveals the site being browsed to but hides the
-    pages accessed, successful attacks to determine the web
+    Against HTTPS, which reveals the site being browsed to but hides
+    the pages accessed, successful attacks to determine the web
     page[fn::cryptographers talk of attempts to circumvent a protocol
     as /attack/\cite{applied96}] were carried out by both Mistry and
     Raman \cite{quantifying} and Cheng and
@@ -189,12 +190,13 @@
     inefficient\cite[sec.2.2.2]{DBLP:books/daglib/0001977}. Thus, some
     early HTTP/1.0 implementations used persistent
     connections\cite{rfc2068}. These were standardized in HTTP/1.1
-    \cite{rfc2616}. It was no longer trivial to extract the files'
-    sizes. You had to determine the start and end of each
-    request. (which was still possible by seeing when the client sent
-    a new request).
+    \cite{rfc2616}.
 
     [[./pictures/HTTP_persistent_connection.png]]
+
+    It was no longer trivial to extract the files' sizes. You had to
+    determine the start and end of each request. (which was still
+    possible by seeing when the client sent a new request).
 
     In addition to persistent connections, HTTP/1.1 allowed pipelining
     several HTTP requests in a single connection without waiting for
@@ -204,9 +206,9 @@
 
     As this created problems with some servers, pipelining was
     disabled in
-    Firefox[fn::\url{https://bugzilla.mozilla.org/show_bug.cgi?id=264354}}
+    Firefox[fn::\url{https://bugzilla.mozilla.org/show_bug.cgi?id=264354}]
     and Google
-    Chrome[fn::\url{https://www.chromium.org/developers/design-documents/network-stack/http-pipelining}}
+    Chrome[fn::\url{https://www.chromium.org/developers/design-documents/network-stack/http-pipelining}]
     and not implemented in Internet
     Explorer[fn::\url{http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp/expertzone/chats/transcripts/08_0814_ez_ie8.mspx}].
 
@@ -402,7 +404,7 @@
     the SSL 3.0 protocol\cite{SSL}, and is attributed to Bennet Yee.
 ** TODO Defenses [0/8]
    siehe [[file:~/da/da.org::*2.%20Teil:%20Verteidigungen%20gegen%20Website-Fingerprinting%20(Welche%20Methoden%20existieren?%20Welche%20Problem%20existieren%20derzeit?%20-->%20%C3%9Cberleitung%20zum%20Hauptteil)][2. Teil: Verteidigungen gegen Website-Fingerprinting (Welche        Methoden existieren? Welche Problem existieren derzeit? -->        Überleitung zum Hauptteil)]]
-*** WRITE How to defend against this
+*** CHECK How to defend against this
     Hintz\cite{hintz02} was the first to suggest defenses against
     website fingerprinting. He lists three ways to do so: adding noise
     to traffic, reducing the transferred data, and transferring
@@ -424,12 +426,12 @@
 
     Later defenses can be divided as of \cite{wang2015walkie} into
     specific and general defenses.
-*** WRITE specific features
+*** CHECK defenses against specific features
     The first website fingerprinters used only packet lengths. This
     made it seem sensible to alter the lengths of packets by padding,
     as evaluated f.ex. by Liberatore et al\cite{Liberatore:2006}.
 
-    As more and more features were used to classifify the traces,
+    As more and more features were used to classify the traces,
     different ways of altering the data were evaluated by several
     researchers (\cite{oakland2012-peekaboo}
     \cite{ccs2012-fingerprinting}, \cite{a-systematic},
@@ -452,14 +454,13 @@
     Wang et al\cite{wang2015walkie}: These both used a stochastic
     approach to generate additional traffic, with Wang et al
     additionally modifying the browser to send "half-duplex" only,
-    either only sending or only receiving data at the same
-    time. Juarez et al adapted the ideas from Shmatikov and
+    only exclusively sending or exclusively receiving data at the same
+    time. Juarez et al. adapted the ideas from Shmatikov and
     Wang\cite{ShWa-Timing06} to distinguish active and non-active
     periods, having a certain probability of sending dummy packets in
     each, omitting the sending when the browser generated packets
     itself.
 *** KEYWORDS wfpad
-    - overhead of wfpad depends on client-bridge network connection
 *** KEYWORDS walkie-talkie
 *** KEYWORDS tamaraw
 *** brainstorm                                                      :ARCHIVE:
@@ -503,17 +504,22 @@
           others need too, does not need by default)
         - HTTP traffic properties used
         - "general defense": not trying to modify specific settings
+  - design
+    - different versions
+    - different factors
 ** TODO Motivation [0/3]
+*** CHECK remove this header when done
    When this thesis was started, there existed mostly deterministic
    defenses, with both Walkie-Talkie\cite{wang2015walkie} and
    wtf-pad\cite{wtfpad} not having been published yet.
 
-   The deterministic approaches had the major shortcoming of
+   As acknowledged both in \cite{wang2015walkie} and \cite{wtfpad},
+   these deterministic approaches had the major shortcoming of
    introducing additional delay into the traffic, which conflicted
    with Tor's design goal of usability\cite{tor-design}, increasing
    f.ex. the sometimes bothersome delay of using Tor for browsing the
-   web. For the positive side higher latency, see
-   \cite[sec.4.2]{challenges}.
+   web.[fn::As for the positive side of higher latency, see
+   \cite[sec.4.2]{challenges}.]
 
    While also providing this functionality through an easy-to-add
    browser extension, keeping the Tor Browser code as-is, this
@@ -522,14 +528,10 @@
    et al.'s Walkie-Talkie\cite{wang2015walkie}, which offers sampling
    from both uniform and normal distributions, and Juarez et al.'s
    Wtfpad\cite{wtfpad}, which creates histogram-based traffic, but
-   does not specify the size of packets to retrieve, and, critically,
-   adapts a method that tries to do more (hiding from a global
-   adversary), instead of hiding which site was browsed to.
-*** WRITE How to hide: addon
-    - deployable
-    - module that is separateable
-      - easier to use and test
-      - some things harder (f.ex. shaping)
+   rather works at Tor's cell level, and, critically, adapts a method
+   that tries to do more (hiding from a global adversary), instead of
+   hiding which site was browsed to from a local passive
+   observer.[fn::which is included in Tor's design goald]
 *** WRITE Aim: selective cover traffic
    As detailed in section [[#features]], there are key features that are
    hard to cloak except by extra traffic, f.ex. total bytes up-/ and
@@ -757,9 +759,9 @@
    They both use support vector machines as classifier, but differ in
    the features they select.
 
-   Since CUMUL\cite{panchenko2} is an evolution of Panchenko et
-   al.'s\cite{panchenko} first classifier (called /version 1/ from now
-   on), better accuracy of the former is to expected.
+   Since CUMUL\cite{panchenko2} is Panchenko et al.'s newer approach
+   after their first classifier\cite{panchenko} (called /version 1/
+   from now on), better accuracy of the former is to expected.
 
    - both: similar results for different classifiers
    - panchenko v1:
@@ -797,15 +799,21 @@
         - 20 limits number of embedded requests
     - different factors
 *** KEYWORDS sota (practical): wtfpad
+    - overhead of wfpad depends on client-bridge network connection
+    - (maybe show both graphs, at least mention values)
 *** KEYWORDS sota (theoretical): walkie-talkie
 *** KEYWORDS (maybe) vs optimal attacker
 ** brainstorm                                                       :ARCHIVE:
    - addon
-     - different versions
-     - different factors
    - does it work?
    - does it work better?
    - which variant works?
+   - difference svm others
+     - other grouped
+     - svm alone
+       - but better for fitting method
+       - "overfitting"
+     - review trace pictures
 * KEYWORDS Conclusion
 * TODO topics [0/113]
 ** TODO Website Fingerprinting [0/55]
@@ -2021,10 +2029,7 @@
   priori knowledge of website burst sizes.
 ** TODO maybe move to [[CoverTraffic]]
 * TODO machine learning
-** TODO knn
-** TODO svm
-** TODO features
-** TODO extremely randomized trees
+** TODO MOVE up extremely randomized trees
 *** brainstorm
     - decision trees
     - ensemble methods
@@ -2044,19 +2049,23 @@
 * TODO npm short installation/description                          :appendix:
 * TODO panchenko v1 different classifiers                        :intro:eval:
   <<different-classifiers>>
+  - more features than cumul default
   - experiment
   - different classifiers, different results
-  - much easier to just use knn
+  - much easier to just use knn, ....
   - more work for svm parameter estimation
 * TODO outlier removal                                           :intro:eval:
   As described by \cite{panchenko2}, the CUMUL approach is greatly
-  enhanced by outlier removal. In his software, he uses both a
-  median-based as well as a 25%/75%-quantile-based approach.
+  enhanced by outlier removal. His software has different setting,
+  with a median-based as well as a 25%/75%-quantile-based
+  approach. The paper mentions only the quantile-based filtering, so
+  that was also used in the later tests here.
 
   - implemented in [[file:bin/extract_attribute.py::def%20remove_quantiles_panchenko_2(counter_list):][ex-att]]
   - quantiles:
     - numpy instead of his original code for code clarity
     - just take quantiles, use his limits
+  - how many? 5%?
 ** TODO run test, include results
 ** TODO link to panchenko's software
 * WRITE how to set up wfpad                                        :appendix:
@@ -2069,6 +2078,8 @@
     - wfpad client script: send to Y, listen on Z
     - in tbb/on 2nd tor (a.k.a. client): send traffic to bridge
       =Bridge 127.0.0.1 Z=
+      - here: Bridge 134.169.109.51:40300
+      - or in tbb without the Bridge: =134.169.109.51:40300=
   - modify capture: localhost
     - =-i lo=
     - =port Y=
@@ -2147,6 +2158,7 @@
       python-psutil
   13. apt install unison
 ** TODO mention unison (in bib)
+* 
 * WAIT Discussion
   intel model: interdependences (html bigger \to more embedded) not mentioned
 * WAIT Acknowledgements

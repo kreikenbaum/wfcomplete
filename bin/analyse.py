@@ -35,26 +35,14 @@ def _bytes_mean_std(counter_dict):
         out[domain] = (np.mean(total), np.std(total))
     return out
 
-def compare_stats(dirs):
-    '''@return a dict {dir1: {domain1: {...}, ..., domainN: {...}},
-    dir2:..., ..., dirN: ...} with domain mean, standard distribution
-    and labels
-    '''
-    places = _gen_counters(dirs)
-    means = {k: _mean(v) for (k,v) in places.iteritems()}
-    stds = {k: _std(v) for (k,v) in places.iteritems()}
-    out = []
-    for d in dirs:
-        logging.info('version: %s', d)
-        el = {"plugin-version": d,
-              "plugin-enabled": False if 'disabled' in d else True}
-        for site in places[d]:
-            tmp = dict(el)
-            tmp['website'] = site
-            tmp['mean'] = means[d][site]
-            tmp['std'] = stds[d][site]
-            out.append(tmp)
-    return out
+def _compare(X, y, X2, y2, estimators=GOOD):
+    for esti in estimators:
+        _test(X, y, esti)
+        _test(X2, y2, esti)
+
+# courtesy of http://stackoverflow.com/a/38060351
+def _dict_elementwise(func, d1, d2):
+    return {k: func(d1[k], d2[k]) for k in d1}
 
 def _find_domain(mean_per_dir, mean):
     '''@return (first) domain name with mean'''
@@ -63,30 +51,30 @@ def _find_domain(mean_per_dir, mean):
             if domain_mean == mean:
                 return domain
 
-# unused
-def _times_mean_std(counter_dict):
-    '''@return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
-    with mean and standard of timing data
-    '''
+def _find_max_lengths(counters):
+    '''determines maximum lengths of variable-length features'''
+    max_lengths = counters.values()[0][0].variable_lengths()
+    all_lengths = []
+    for domain, domain_values in counters.iteritems():
+        for trace in domain_values:
+            all_lengths.append(trace.variable_lengths())
+    for lengths in all_lengths:
+        for key in lengths.keys():
+            if max_lengths[key] < lengths[key]:
+                max_lengths[key] = lengths[key]
+    return max_lengths
+
+def _gen_counters(places, outlier_removal=True):
+    '''@return dict: {place1: {domain1: counters1_1, ...  domainN: countersN_1},
+    ..., placeM: {domain1: counters1_M, ...  domainN: countersN_M}}
+    for directories} in {@code places}'''
     out = {}
-    for (domain, counter_list) in counter_dict.iteritems():
-        total = [counter.timing[-1][0] for counter in counter_list]
-        out[domain] = (np.mean(total), np.std(total))
-    return out
+    if len(places) == 0:
+        out['.'] = counter_get('.', outlier_removal)
 
-def top_30(mean_per_dir):
-    '''@return 30 domains with well-interspersed trace means sizes
+    for p in places:
+        out[p] = counter_get(p, outlier_removal)
 
-    @param is f.ex. means from compare_stats above.'''
-    all_means = []
-    for (place, p_means) in mean_per_dir.items():
-        all_means.extend(p_means.values())
-    percentiles = np.percentile(vals,
-                                np.linspace(0, 100, 31),
-                                interpolation='lower')
-    out = set()
-    for mean in percentiles:
-        out.add(_find_domain(mean_per_dir, mean))
     return out
 
 def _mean(counter_dict):
@@ -111,22 +99,81 @@ def _std(counter_dict):
         out[domain] = np.std(total)
     return out
 
-def _find_max_lengths(counters):
-    '''determines maximum lengths of variable-length features'''
-    max_lengths = counters.values()[0][0].variable_lengths()
-    all_lengths = []
-    for domain, domain_values in counters.iteritems():
-        for trace in domain_values:
-            all_lengths.append(trace.variable_lengths())
-    for lengths in all_lengths:
-        for key in lengths.keys():
-            if max_lengths[key] < lengths[key]:
-                max_lengths[key] = lengths[key]
-    return max_lengths
+def _test(X, y, estimator=GOOD[0], nj=JOBS_NUM, verbose=True, scale=False):
+    '''tests estimator with X, y, @return result (ndarray)'''
+    if scale:
+        X = np.copy(X)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            X /= np.max(np.abs(X), axis=0)
+        X = np.nan_to_num(X)
+    return cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=nj)
 
-# courtesy of http://stackoverflow.com/a/38060351
-def _dict_elementwise(func, d1, d2):
-    return {k: func(d1[k], d2[k]) for k in d1}
+def _testcg(X, y, c, gamma):
+    '''cross-evaluates ovr.svc with parameters c,gamma on X, y'''
+    clf = multiclass.OneVsRestClassifier(svm.SVC(C=c, gamma=gamma))
+    return _test(X, y, clf, scale=True, nj=1).mean()
+
+def _xtest(X_train, y_train, X_test, y_test, estimator, scale=False):
+    '''cross_tests with estimator'''
+    if scale:
+        X_train = np.copy(X_train)
+        X_test = np.copy(X_test)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            X_train /= np.max(np.abs(X_train), axis=0)
+            X_test /= np.max(np.abs(X_test), axis=0)
+        X_train = np.nan_to_num(X_train)
+        X_test = np.nan_to_num(X_test)
+    estimator.fit(X_train, y_train)
+    return estimator.score(X_test, y_test)
+
+# unused, but could be useful
+def _times_mean_std(counter_dict):
+    '''analyse timing data (time overhead)
+
+    @return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
+    with mean and standard of timing data
+    '''
+    out = {}
+    for (domain, counter_list) in counter_dict.iteritems():
+        total = [counter.timing[-1][0] for counter in counter_list]
+        out[domain] = (np.mean(total), np.std(total))
+    return out
+
+def compare_stats(dirs):
+    '''@return a dict {dir1: {domain1: {...}, ..., domainN: {...}},
+    dir2:..., ..., dirN: ...} with domain mean, standard distribution
+    and labels
+    '''
+    places = _gen_counters(dirs)
+    means = {k: _mean(v) for (k,v) in places.iteritems()}
+    stds = {k: _std(v) for (k,v) in places.iteritems()}
+    out = []
+    for d in dirs:
+        logging.info('version: %s', d)
+        el = {"plugin-version": d,
+              "plugin-enabled": False if 'disabled' in d else True}
+        for site in places[d]:
+            tmp = dict(el)
+            tmp['website'] = site
+            tmp['mean'] = means[d][site]
+            tmp['std'] = stds[d][site]
+            out.append(tmp)
+    return out
+
+def top_30(mean_per_dir):
+    '''@return 30 domains with well-interspersed trace means sizes
+
+    @param is f.ex. means from compare_stats above.'''
+    all_means = []
+    for (place, p_means) in mean_per_dir.items():
+        all_means.extend(p_means.values())
+    percentiles = np.percentile(vals,
+                                np.linspace(0, 100, 31),
+                                interpolation='lower')
+    out = set()
+    for mean in percentiles:
+        out.add(_find_domain(mean_per_dir, mean))
+    return out
 
 def to_features(counters, max_lengths=None):
     '''transforms counter data to panchenko.v1-feature vector pair (X,y)
@@ -210,7 +257,6 @@ def p_or_median(counter_list):
     return [x for x in counter_list
             if x.get_total_in() >= 0.2 * med and x.get_total_in() <= 1.8 * med]
 
-# td: maybe test that enough instances remain...
 def p_or_quantiles(counter_list):
     '''remove if total_in < (q1-1.5 * (q3-q1))
     or total_in > (q3+1.5 * (q3-q1)
@@ -228,13 +274,15 @@ def p_or_quantiles(counter_list):
             out.append(counter)
     return out
 
+# td: maybe test that enough instances remain...
 def panchenko_outlier_removal(counters):
     '''apply outlier removal to input of form
     {'domain1': [counter, ...], ... 'domainN': [..]}'''
     out = {}
     for (k, v) in counters.iteritems():
         try:
-            out[k] = p_or_quantiles(p_or_median(p_or_tiny(v)))
+#            out[k] = p_or_quantiles(p_or_median(p_or_tiny(v)))
+            out[k] = p_or_quantiles(p_or_tiny(v))
         except ValueError: ## somewhere, list got to []
             logging.warn('%s discarded in outlier removal', k)
     return out
@@ -251,28 +299,6 @@ ALL.extend([ensemble.AdaBoostClassifier(),
 def esti_name(estimator):
     '''@return name of estimator class'''
     return str(estimator.__class__).split('.')[-1].split("'")[0]
-
-def _test(X, y, estimator=GOOD[0], nj=JOBS_NUM, verbose=True, scale=False):
-    '''tests estimator with X, y, @return result (ndarray)'''
-    if scale:
-        X = np.copy(X)
-        with np.errstate(divide='ignore', invalid='ignore'):
-            X /= np.max(np.abs(X), axis=0)
-        X = np.nan_to_num(X)
-    return cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=nj)
-
-def _xtest(X_train, y_train, X_test, y_test, estimator, scale=False):
-    '''cross_tests with estimator'''
-    if scale:
-        X_train = np.copy(X_train)
-        X_test = np.copy(X_test)
-        with np.errstate(divide='ignore', invalid='ignore'):
-            X_train /= np.max(np.abs(X_train), axis=0)
-            X_test /= np.max(np.abs(X_test), axis=0)
-        X_train = np.nan_to_num(X_train)
-        X_test = np.nan_to_num(X_test)
-    estimator.fit(X_train, y_train)
-    return estimator.score(X_test, y_test)
 
 def my_grid(X, y,
 #            cs=np.logspace(-1, 9, 6, base=2),
@@ -294,11 +320,6 @@ def my_grid(X, y,
         logging.warn('optimal parameters found at the border. c:%f, g:%f',
                      best.estimator.C, best.estimator.gamma)
     return best
-
-def _testcg(X, y, c, gamma):
-    '''cross-evaluates ovr.svc with parameters c,gamma on X, y'''
-    clf = multiclass.OneVsRestClassifier(svm.SVC(C=c, gamma=gamma))
-    return _test(X, y, clf, scale=True, nj=1).mean()
 
 def smart_grid(X, y, stepmin=6, c_low=-2, c_high=18, g_low=-12, g_high=8):
     ''' ''smarter'' grid-search, params are exponents of 2
@@ -340,14 +361,10 @@ def outlier_removal_vs_without(counters):
     _compare(X, y, X2, y2)
 
 def cumul_vs_panchenko(counters):
+    '''tests version1 and cumul on counters'''
     (X, y, y_domains) = to_features(counters)
     (X2, y2, y2_domains) = to_features_cumul(counters)
     _compare(X, y, X2, y2)
-
-def _compare(X, y, X2, y2, estimators=GOOD):
-    for esti in estimators:
-        _test(X, y, esti)
-        _test(X2, y2, esti)
 
 # td: remove this, or happens later
 def counter_get(place, outlier_removal=True):
@@ -357,18 +374,33 @@ def counter_get(place, outlier_removal=True):
     else:
         return counter.Counter.all_from_dir(place)
 
-def _gen_counters(places, outlier_removal=True):
-    '''@return dict: {place1: {domain1: counters1_1, ...  domainN: countersN_1},
-    ..., placeM: {domain1: counters1_M, ...  domainN: countersN_M}}
-    for directories} in {@code places}'''
-    out = {}
-    if len(places) == 0:
-        out['.'] = counter_get('.', outlier_removal)
+def tts(counter_dict, test_size=1.0/3):
+    '''train-test-split: splits counter_dict in train_dict and test_dict
 
-    for p in places:
-        out[p] = counter_get(p, outlier_removal)
-
-    return out
+    test_size = deep_len(test)/deep_len(train)
+    uses cross_validation.train_test_split
+    @return (train_dict, test_dict) which together yield counter_dict
+    >>> len(tts({'yahoo.com': map(counter._ptest, [3,3,3])})[0]['yahoo.com'])
+    2
+    >>> len(tts({'yahoo.com': map(counter._ptest, [3,3,3])})[1]['yahoo.com'])
+    1
+    '''
+    ids = []
+    for url in counter_dict:
+        for i in range(len(counter_dict[url])):
+            ids.append((url, i))
+    (train_ids, test_ids) = cross_validation.train_test_split(
+        ids, test_size=test_size)
+    train = {}
+    test = {}
+    for url in counter_dict:
+        train[url] = []
+        test[url] = []
+    for (url, index) in train_ids:
+        train[url].append(counter_dict[url][index])
+    for (url, index) in test_ids:
+        test[url].append(counter_dict[url][index])
+    return (train, test)
 
 def verbose_test_11(X, y, estimator):
     '''cross-test (1) estimator on (1) X, y, print results and estimator name'''
@@ -485,34 +517,6 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
 # places = _gen_counters(sys.argv[1:])
 # some_30 = top_30(means)
 # timing = {k: _average_duration(v) for (k,v) in places.iteritems()}
-
-def tts(counter_dict, test_size=1.0/3):
-    '''train-test-split: splits counter_dict in train_dict and test_dict
-
-    test_size = deep_len(test)/deep_len(train)
-    uses cross_validation.train_test_split
-    @return (train_dict, test_dict) which together yield counter_dict
-    >>> len(tts({'yahoo.com': map(counter._ptest, [3,3,3])})[0]['yahoo.com'])
-    2
-    >>> len(tts({'yahoo.com': map(counter._ptest, [3,3,3])})[1]['yahoo.com'])
-    1
-    '''
-    ids = []
-    for url in counter_dict:
-        for i in range(len(counter_dict[url])):
-            ids.append((url, i))
-    (train_ids, test_ids) = cross_validation.train_test_split(
-        ids, test_size=test_size)
-    train = {}
-    test = {}
-    for url in counter_dict:
-        train[url] = []
-        test[url] = []
-    for (url, index) in train_ids:
-        train[url].append(counter_dict[url][index])
-    for (url, index) in test_ids:
-        test[url].append(counter_dict[url][index])
-    return (train, test)
 
 if __name__ == "__main__":
     doctest.testmod()
