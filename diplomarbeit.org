@@ -2,7 +2,7 @@
 #+TODO: KEYWORDS WRITE CHECK EVA DANIEL | FINAL
 #+TODO: TODO WAIT | DONE
 * Configuration							    :ARCHIVE:
-#+LATEX_CLASS: scrreprt
+#+LATEX_CLASS: scrartcl
 #+LATEX_CLASS_OPTIONS: [a4paper,10pt]
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{tikz}
@@ -62,7 +62,7 @@
 #+LATEX_HEADER: }}
 * WAIT Abstract
 * TODO Introduction (=basics) [0%]
-** TODO Website Fingerprinting [0/24]
+** TODO Website Fingerprinting [0/28]
 *** DANIEL Intro (remove this headline when reviewed)
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -71,8 +71,9 @@
     This chapter contains first [[#visual][a visual introduction to the subject]],
     then a short review of [[#http][what happens during website
     retrieval]]. Afterwards, [[#wf1.0][early methods of website fingerprinting]]
-    will be presented. The next section explains [[Hurdles][why these early
-    techniques no longer work]], especially on anonymity networks like Tor.
+    will be presented. The next section explains [[#Hurdles][why these
+    early techniques no longer work]] especially on anonymity networks
+    like Tor.
 
     Finally, [[#wf2.0][current attacks]] will be explored.
 *** DANIEL Visual Representation of Traces
@@ -156,18 +157,20 @@
     1.0] of HTTP\cite{rfc1945}, these sizes were clearly visible, as
     each HTTP request-response pair was transmitted over a separate
     TCP connection. They could be found by splitting traffic by the
-    connection's port numbers, as done in \cite{quantifying},
-    \cite{hintz02}, and \cite{ssl-traffic-analysis}.
+    connection's port numbers, as done by Mistry and Rahman
+    \cite{quantifying}, Cheng and Avnur \cite{ssl-traffic-analysis},
+    and Hintz \cite{hintz02}.
 
-    Against HTTPS[fn::HTTP over SSL\cite{sslv3}], which reveals the
-    site being browsed to but hides the pages accessed, successful
-    attacks to determine the web page[fn::cryptographers talk of
-    attempts to circumvent a protocol as /attack/\cite{applied96}]
-    were carried out by both Mistry and Raman \cite{quantifying} and
-    Cheng and Avnur\cite{ssl-traffic-analysis} at Berkeley in 1998.
+    Against HTTPS[fn::HTTP over SSL\cite{sslv3}, the attacks were
+    carried out against SSL 3.0], which reveals the site being browsed
+    to but hides the pages accessed, successful attacks to determine
+    the web page[fn::cryptographers talk of attempts to circumvent a
+    protocol as /attack/\cite{applied96}] were carried out by the
+    formers (\cite{quantifying}, \cite{ssl-traffic-analysis}) at
+    Berkeley in 1998.
 
-    The term /website fingerprinting/ was coined in Hintz's analysis
-    of the SafeWeb anonymizing proxy\cite{hintz02}, where he
+    The term /website fingerprinting/ was coined in the latter's
+    analysis of the SafeWeb anonymizing proxy\cite{hintz02}, where he
     qualitatively classified which web site was being visited.
 
     All of these approaches determined which page was visited via
@@ -175,20 +178,24 @@
     additionally proposed a hidden markov model for page
     /transitions/, for hard-to-identify pages.
 
-    As the above attacks, Herrmann et al\cite{ccsw09-fingerprinting}
-    used only packet sizes, but employed machine learning
-    techniques. They applied a Naïve Bayes
-    Classifier\cite[ch.1.3.1]{intro2ir} which gave them good results
-    against one-hop anonymizing proxies, yet yielded only 3% accuracy
-    against 775 distinct pages when retrieved via Tor\cite{tor-design}.
+    Like the above attacks, Liberatore and
+    Levine\cite{Liberatore:2006} and Herrmann et
+    al\cite{ccsw09-fingerprinting} used only packet sizes, but
+    employed machine learning techniques. Herrmann et al. used a Naïve
+    Bayes Classifier\cite[ch.1.3.1]{intro2ir}, which gave them good
+    results against one-hop anonymizing proxies, yet yielded only 3%
+    accuracy against 775 distinct pages when retrieved via
+    Tor\cite{tor-design}.
 *** CHECK Hurdles to website fingerprinting
-    <<Hurdles>> The refinement of web protocols and anonymization
-    systems such as Tor\cite{tor-design} made website fingerprinting
-    harder. 
+    :PROPERTIES:
+    :CUSTOM_ID: Hurdles
+    :END:
+    The refinement of web protocols and anonymization systems such as
+    Tor\cite{tor-design} made website fingerprinting harder.
 
-    Building a new connection for each transferred object is
-    inefficient\cite[sec.2.2.2]{DBLP:books/daglib/0001977}. Thus, some
-    early HTTP/1.0 implementations used persistent
+    Building a new HTTP connection for each transferred object is
+    inefficient\cite[sec.2.2.2]{DBLP:books/daglib/0001977}. Some early
+    HTTP/1.0 implementations used persistent
     connections\cite{rfc2068}. These were standardized in HTTP/1.1
     \cite{rfc2616}.
 
@@ -196,7 +203,8 @@
 
     It was no longer trivial to extract the files' sizes. You had to
     determine the start and end of each request. (which was still
-    possible by seeing when the client sent a new request).
+    possible to estimate by cutting when the client sent a new request
+    data packet).
 
     In addition to persistent connections, HTTP/1.1 allowed pipelining
     several HTTP requests in a single connection without waiting for
@@ -219,11 +227,14 @@
     et al.\cite{ccs2012-fingerprinting} found fingerprinting to be
     easier with this defense enabled than without.
 **** TODO caption for pictures
-**** DANIEL Tor [0/3]
+**** DANIEL Tor [0/4]
      The Onion Router\cite{tor-design} (short: /Tor/) is an anonymity
-     system: While encryption hides the /content of communication/, Tor
-     also attempts to hide /metadata/: Who communicates with whom, for
-     how long, when, how frequent, ...?
+     system: While encryption hides the /content of communication/,
+     Tor also attempts to hide some /metadata/: Who communicates with
+     whom, for how long, when, how frequent, ...?
+
+     This metadata is important, as it can reveal "[a] lot of good
+     information"\cite{applied96}.
 ***** CHECK History of Tor
       Tor inherits its onion design from the Onion Routing Project
       \cite{anonymous-connections}. It was originally developed by the
@@ -235,7 +246,7 @@
 ***** DANIEL Who uses Tor
       As more and more (internet) users wish to increase their
       anonymity for various reasons, one of Tor's main design goals is
-      usability\cite[Sec.3]{tor-design}, this increases
+      usability\cite[Sec.3]{tor-design}, which increases
       anonymity\cite{usability:weis2006}. This has led to a diverse
       user base\cite{who-uses-tor}: The network consists of over six
       thousand nodes and is used by about two million people
@@ -256,9 +267,10 @@
       a proxy implementing the SOCKS5\cite{rfc1928} protocol called
       /onion proxy/.
 
-      A connection is routed through three onion routers (=OR), each of
-      which can only see the previous and next. Thus, no router has
-      knowledge of both origin and destination of traffic.
+      A connection is routed through three onion routers (=OR), each
+      of which can only see the previous and next, due to
+      encryption. Thus, no router has knowledge of both origin and
+      destination of traffic.
 
       The messages look different from OR to OR due to same-length
       encryption.
@@ -267,19 +279,40 @@
       identification; routing through 4 globally-distributed hops
       increases latency; and Tor multiplexes all data cells through a
       single TCP-connection.
+****** TODO picture from tor website
 *** (wf 2.0)
     :PROPERTIES:
     :CUSTOM_ID: wf2.0
     :END:
+    In spite of these difficulties, website fingerprinting was shown
+    to be possible in even when Tor is used.
 **** WRITE panchenko v1
      Panchenko et al.'s \cite{panchenko} attack was the first that
      successfully classifed traces retrieved via Tor\cite{critique}.
-     It treated a huge world size and carefully evaluated possible
-     features.
+
+     They used both Herrmann et al.'s\cite{ccsw09-fingerprinting} and
+     an open-world dataset.
+
+     To achieve this, they evaluated several HTTP-specific features,
+     classifying only on those they found to have the greatest impact
+     on classification.
+
+     Then, they used a Support Vector Machine with parameter
+     evaluation to
+
+     - It treated a huge world size and carefully evaluated possible
+       features.
+
 
      - svm
      - hand-tuned features
        - several evaluated
+***** TODO impact on classification word for that?
+***** TODO mention sizes data sets?
+      - (background-data: 4000 + 1000 from Alexa top 1000000,
+        foreground: three sets with five sites)
+      - (775 sites)
+***** TODO open/closed world?
 **** WRITE SVM
      - how works
      - multi-class strategies
@@ -461,6 +494,8 @@
     each, omitting the sending when the browser generated packets
     itself.
 *** KEYWORDS wfpad
+    - wfpad/wtf-pad
+    - changes adaptive padding\cite{ShWa-Timing06}
 *** KEYWORDS walkie-talkie
 *** KEYWORDS tamaraw
 *** brainstorm                                                      :ARCHIVE:
@@ -2019,7 +2054,7 @@
   finished, this number (which should be 0 or less in more than half
   the cases) of embedded objects is requested. As the cover traffic
   currently comes from a single server, the multiple connection limit
-  (compare [[Hurdles]]) should automatically lead to multiple bursts if
+  (compare [[#Hurdles]]) should automatically lead to multiple bursts if
   the number of embedded objects is high enough.
 ** MOVE to here
   This should emulate normal browser traffic better than the proposed
@@ -2078,7 +2113,7 @@
     - wfpad client script: send to Y, listen on Z
     - in tbb/on 2nd tor (a.k.a. client): send traffic to bridge
       =Bridge 127.0.0.1 Z=
-      - here: Bridge 134.169.109.51:40300
+      - here: =Bridge 134.169.109.51:40300=
       - or in tbb without the Bridge: =134.169.109.51:40300=
   - modify capture: localhost
     - =-i lo=
