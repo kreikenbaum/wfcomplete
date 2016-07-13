@@ -338,7 +338,11 @@
      - picture
      - understandeable
      - faster than knn
-**** WRITE features
+**** WRITE extremely randomized trees
+***** brainstorm                                                    :ARCHIVE:
+      - decision trees
+      - ensemble methods
+**** WRITE (move up ?) features
      :PROPERTIES:
      :CUSTOM_ID: features
      :END:
@@ -350,6 +354,7 @@
     - top-five
     - CUMUL
     - dyer: features count
+    - feature analysis in k-forests
       #+CAPTION: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
       [[./pictures/cumul_aus_paper.pdf]]
 ***** TODO visual representation of CUMUL
@@ -435,7 +440,7 @@
     is a subtask. The first mention of applying it against encrypted
     internet communication dates to Wagner and Schneier's analysis of
     the SSL 3.0 protocol\cite{SSL}, and is attributed to Bennet Yee.
-** TODO Defenses [0/8]
+** TODO Defenses [0/9]
    siehe [[file:~/da/da.org::*2.%20Teil:%20Verteidigungen%20gegen%20Website-Fingerprinting%20(Welche%20Methoden%20existieren?%20Welche%20Problem%20existieren%20derzeit?%20-->%20%C3%9Cberleitung%20zum%20Hauptteil)][2. Teil: Verteidigungen gegen Website-Fingerprinting (Welche        Methoden existieren? Welche Problem existieren derzeit? -->        Überleitung zum Hauptteil)]]
 *** CHECK How to defend against this
     Hintz\cite{hintz02} was the first to suggest defenses against
@@ -469,6 +474,7 @@
     researchers (\cite{oakland2012-peekaboo}
     \cite{ccs2012-fingerprinting}, \cite{a-systematic},
     \cite{morphing09}, \cite{httpos}.
+**** TODO bit more detail on morphing?
 *** CHECK general defense
     To stop the arms race between attacks and defenses - the attacks
     finding new feature combinations to use, the defenses obfuscating
@@ -493,15 +499,34 @@
     periods, having a certain probability of sending dummy packets in
     each, omitting the sending when the browser generated packets
     itself.
-*** KEYWORDS wfpad
-    - wfpad/wtf-pad
-    - changes adaptive padding\cite{ShWa-Timing06}
-*** KEYWORDS walkie-talkie
-*** KEYWORDS tamaraw
+*** WRITE wtf-pad
+    - Juarez\cite{wtfpad}
+    - Website Traffic Fingerprinting Protection with Adaptive Defense
+    - adapts adaptive padding\cite{ShWa-Timing06}
+      - hide from global adversary's correlation attack
+    - defense + crawler and modifier
+    - packet histogram-based
+      - when packet is sent, timer from (one of two) histogram is started
+      - if timer is finished without another packet, send dummy request
+      - else (if another packet): restart timer with new values from histogram
+    - built using Tor's pluggable transport\cite{tor-spec-pt}
+      censorship avoidance layer
+*** WRITE walkie-talkie
+    - Wang\cite{wang2015walkie}
+    - half-duplex (cite kurose?)
+      - send XOR receive
+    - with additional traffic
+    - browser modification
+    - only detectable metric: number of bursts
+      - (and also total data, which is a powerful metric)
+*** WRITE tamaraw
+    - evolution of BuFLO\cite{oakland2012-peekaboo}
+    - different rate up-/downstream
+    - longer sending cloaks end of transmission
+    - tunable overhead
 *** brainstorm                                                      :ARCHIVE:
     - obfuscate features
     - specific features
-      - morphing
     - general obfuscation
       - deterministic
         - fixed data rate
@@ -681,11 +706,25 @@
      object retrieved, this ratio determines the number of
      embedded-sized requests, once again from the [[#HTTP traffic model][HTTP traffic model]].
 **** TODO improvements
-***** WRITE 0.17 bursts at end
+***** TODO 0.17 bursts at end - bursts on addon site load finish
       - wang: burst distinguishing feature left with
         w/t\cite{wang2015walkie}
       - solution: count how many embedded, add those as bursts at the
         end
+
+      One characteristic which identified sites well as per Dyer et
+      al.\cite{oakland2012-peekaboo} and Wang and Goldberg
+      \cite{wang2015walkie} is the number of bursts.
+
+      As the addon would conceptually only increase burst sizes, and not
+      alter their number, this should be covered as well. To address this,
+      the per-site traffic module [[CoverTraffic]] remembers the number of
+      unsent requests for embedded elements. When the page loading is
+      finished, this number (which should be 0 or less in more than half
+      the cases) of embedded objects is requested. As the cover traffic
+      currently comes from a single server, the multiple connection limit
+      (compare [[#Hurdles]]) should automatically lead to multiple bursts if
+      the number of embedded objects is high enough.
 ***** WRITE 0.18: configurability
       - options choosing which tactic:
         - known/guess sizes
@@ -846,9 +885,11 @@
    - difference svm others
      - other grouped
      - svm alone
-       - but better for fitting method
+       - but better for fitting original data
        - "overfitting"
      - review trace pictures
+   - panchenko worse?
+     - do pictures/comparisons
 * KEYWORDS Conclusion
 * TODO topics [0/113]
 ** TODO Website Fingerprinting [0/55]
@@ -2042,32 +2083,13 @@
 * TODO mention tor browser bundle version etc
 * TODO why defense better
 * TODO which sites well-protected, which less
-* TODO MOVE bursts on addon site load finish
-  One characteristic which identified sites well as per Dyer et
-  al.\cite{oakland2012-peekaboo} and Wang and Goldberg
-  \cite{wang2015walkie} is the number of bursts.
-
-  As the addon would conceptually only increase burst sizes, and not
-  alter their number, this should be covered as well. To address this,
-  the per-site traffic module [[CoverTraffic]] remembers the number of
-  unsent requests for embedded elements. When the page loading is
-  finished, this number (which should be 0 or less in more than half
-  the cases) of embedded objects is requested. As the cover traffic
-  currently comes from a single server, the multiple connection limit
-  (compare [[#Hurdles]]) should automatically lead to multiple bursts if
-  the number of embedded objects is high enough.
-** MOVE to here
+* rest of bursts on addon site load finish                    :evaluation:mb:
   This should emulate normal browser traffic better than the proposed
   probabilistic schemes by Wang and Goldberg (normal and uniform
   distribution). It might be that Wang and Goldberg's deterministic
   padding to common values performs better, but that seems require a
   priori knowledge of website burst sizes.
-** TODO maybe move to [[CoverTraffic]]
 * TODO machine learning
-** TODO MOVE up extremely randomized trees
-*** brainstorm
-    - decision trees
-    - ensemble methods
 * TODO addon weaknesses/uncertainties
   - all HTTP gets treated the same
     - redirects
@@ -2193,7 +2215,6 @@
       python-psutil
   13. apt install unison
 ** TODO mention unison (in bib)
-* 
 * WAIT Discussion
   intel model: interdependences (html bigger \to more embedded) not mentioned
 * WAIT Acknowledgements

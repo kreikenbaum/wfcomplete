@@ -15,6 +15,15 @@ LOGLEVEL = logging.INFO
 #LOGLEVEL = logging.WARN
 TIME_SEPARATOR = '@'
 
+### classifiers
+GOOD = [ensemble.ExtraTreesClassifier(n_estimators=250),
+        ensemble.RandomForestClassifier(),
+        neighbors.KNeighborsClassifier(),
+        tree.DecisionTreeClassifier()]
+ALL = GOOD[:]
+ALL.extend([ensemble.AdaBoostClassifier(),
+            svm.SVC(gamma=2**-4)])
+
 def _average_bytes(mean_std_dict):
     '''@return the average size over all traces'''
     return np.mean([x[0] for x in mean_std_dict.values()])
@@ -287,14 +296,6 @@ def panchenko_outlier_removal(counters):
             logging.warn('%s discarded in outlier removal', k)
     return out
         
-### evaluation code
-GOOD = [ensemble.ExtraTreesClassifier(n_estimators=250),
-        ensemble.RandomForestClassifier(),
-        neighbors.KNeighborsClassifier(),
-        tree.DecisionTreeClassifier()]
-ALL = GOOD[:]
-ALL.extend([ensemble.AdaBoostClassifier(),
-            svm.SVC(gamma=2**-4)])
 
 def esti_name(estimator):
     '''@return name of estimator class'''
