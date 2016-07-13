@@ -62,7 +62,7 @@
 #+LATEX_HEADER: }}
 * WAIT Abstract
 * TODO Introduction (=basics) [0%]
-** TODO Website Fingerprinting [0/28]
+** TODO Website Fingerprinting [0/29]
 *** DANIEL Intro (remove this headline when reviewed)
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -177,7 +177,7 @@
     object sizes. Cheng and Avnur \cite{ssl-traffic-analysis}
     additionally proposed a hidden markov model for page
     /transitions/, for hard-to-identify pages.
-
+**** MOVE to wf2.0, stress that they used *packet sizes*
     Like the above attacks, Liberatore and
     Levine\cite{Liberatore:2006} and Herrmann et
     al\cite{ccsw09-fingerprinting} used only packet sizes, but
@@ -338,7 +338,7 @@
      - picture
      - understandeable
      - faster than knn
-**** WRITE extremely randomized trees
+**** KEYWORDS extremely randomized trees
 ***** brainstorm                                                    :ARCHIVE:
       - decision trees
       - ensemble methods
@@ -554,6 +554,7 @@
           - not fitting: no need to hide *that* traffic occurs, just where to,
           - compare to real fingerprints
           - less efficient
+      - not tunable, bridge-dependent
     - problems walkie-talkie: also modify all
       - bit slower
       - not preferred method
@@ -604,7 +605,7 @@
     - simultaneous to real traffic
 
     - make wf harder such that it is impossible
-** TODO Design and Implementation (=Implementation) [0/21]
+** TODO Design and Implementation (=Implementation) [0/20]
 *** CHECK description of add-on
     The add-on tries to defend against website fingerprinting by
     adding HTTP-distributed extra traffic.
@@ -613,12 +614,12 @@
     start of the /HTML-request/, a dummy request is sent. Of which
     size and how it continues depends on the version of the add-on.
 
-    With this first request, the host becomes active. At the end of the
-    page load, indicated either by a load
+    With the user's first request, the host is marked active. At the
+    end of the page load, indicated either by a load
     event\cite[ch.1.6.5]{dom2-events}, or the end of a timeout, the
     host goes back to inactive status.
 
-    For code details, see appendix ... .
+    For implementation details, see appendix ... .
 **** TODO appendix for addon
 *** CHECK HTTP traffic model
     :PROPERTIES:
@@ -764,7 +765,6 @@
 
      This halved the number of lines of code, allowing for better
      refactoring.
-*** KEYWORDS Modules                                               :appendix:
 *** WRITE Server
     - where there are several possibilities how to generate cover
       traffic,
@@ -823,7 +823,7 @@
        - error estimation?
        - +: fixed size
        - -: error both ways, and difference bin-size to real size
-*** KEYWORDS Related Work?
+*** WRITE Related Work?
     - bloom paper
     - network applications
 * TODO Results and Evaluation [0%]
@@ -857,9 +857,14 @@
      - k-fingerprinting
        - accuracy
      - all similar accuracies (as of k-fingerprinting)
-** TODO Evaluation of Defenses [0/3]
-*** KEYWORDS Evaluation of Addon
-    - different versions
+** TODO Evaluation of Defenses [0/4]
+*** WRITE Evaluation of Addon
+    - problem: tunable: factor correlation to overhead
+      - not given for 0.15, retro, 0.18-0.21
+    - given in 0.22? (td: tests)
+    - if yes, scenarios (a/b I/II bursts)
+    - bursts at simple
+    - factor at simple
       - 0.18 over-engineered?
       - scenarios
         - evolution:
@@ -868,12 +873,13 @@
         - continue to 18:
           - much more traffic
         - try to fix at 19 (and backport to 15.3, codename retro)
-          - all on same curve
         - keep in mind: only 10 sites: 10% accuracy is random guessing
         - 20 limits number of embedded requests
     - different factors
+    - all around same curve
 *** KEYWORDS sota (practical): wtfpad
     - overhead of wfpad depends on client-bridge network connection
+      - show different results
     - (maybe show both graphs, at least mention values)
 *** KEYWORDS sota (theoretical): walkie-talkie
 *** KEYWORDS (maybe) vs optimal attacker
@@ -890,8 +896,9 @@
      - review trace pictures
    - panchenko worse?
      - do pictures/comparisons
+     - timing comparison on disabled
 * KEYWORDS Conclusion
-* TODO topics [0/113]
+* TODO topics [0/109]
 ** TODO Website Fingerprinting [0/55]
 *** tools
 **** TODO capture alternatives [0/1]
@@ -1617,7 +1624,7 @@
     #+END_LATEX
 **** by
      - generating cover traffic
-**** TODO modules [0/17]                                           :appendix:
+**** MOVE to appendix modules [0/17]                          :appendix:
 ***** TODO replace with pic [[shell:dia pictures/model.dia &]]
 ***** TODO how to show (singleton)-module in jUML
 ***** TODO Watcher
@@ -2016,7 +2023,7 @@
 * TODO extract dom tags python
   - diveintopython
   - see code
-* CHECK modified top-100
+* CHECK MOVE TO EVAL modified top-100
   The files for retrieval were from the alexa-top-1m[fn:: Available
   at \url{ http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}],
   from September 30, 2015. Similar to \cite{wpes13-fingerprinting},
@@ -2024,7 +2031,7 @@
   failed to respond to python's =urllib=. The list of sites with their
   Alexa index can be found in appendix [[top-100]].
 ** TODO complete list in appendix
-* CHECK wsgi.py cover traffic server and generator
+* CHECK MOVE wsgi.py cover traffic server and generator      :appendix:addon:
   With the technology stack to implement the cover traffic generator
   being settled, implementation becomes a single-page file, see
   [[wsgi.py]].
@@ -2069,7 +2076,6 @@
     but better)
   - growth of websites
   - [[*Further%20work][Further work]]
-* TODO panchenko CUMUL
 * TODO truncated distributions
   - html: truncated lognormal instead of lognormal
     truncated at 0.999918739 quantile
@@ -2103,15 +2109,15 @@
   - if protects against this, should also protect against worse
   - additional (?defense?) as proposed in critique
 ** TODO follow critique at all?
-* TODO npm short installation/description                          :appendix:
-* TODO panchenko v1 different classifiers                        :intro:eval:
+* TODO MOVE npm short installation/description                     :appendix:
+* TODO MOVE panchenko v1 different classifiers                         :eval:
   <<different-classifiers>>
   - more features than cumul default
   - experiment
   - different classifiers, different results
   - much easier to just use knn, ....
   - more work for svm parameter estimation
-* TODO outlier removal                                           :intro:eval:
+* TODO MOVE outlier removal                                            :eval:
   As described by \cite{panchenko2}, the CUMUL approach is greatly
   enhanced by outlier removal. His software has different setting,
   with a median-based as well as a 25%/75%-quantile-based
@@ -2125,7 +2131,7 @@
   - how many? 5%?
 ** TODO run test, include results
 ** TODO link to panchenko's software
-* WRITE how to set up wfpad                                        :appendix:
+* WRITE MOVE how to set up wfpad                                   :appendix:
   - helpful notes at scramblesuit
   - modify for wfpad
   - failed to work if called from Tor
@@ -2175,11 +2181,17 @@
   - needed: representation with fewer classes
   - solutions: percentiles of both addon and non-addon sizes joined
   - link to code
-* KEYWORDS outlier removal
+* WRITE MOVE outlier removal                                           :eval:
   - after cross-validation split
   - but can do that before features
     - list of (url, list-id) tuples, one for each counter
     - randomly choose subset
+  - link to file
+  - document effect of different schemes: is there any accuracy effect?
+    - tables
+    - scheme: all, only quantile, none, only minimial
+  - document number of filtered traces
+    - both panchenko's own and mine
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}

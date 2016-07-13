@@ -9,7 +9,7 @@ import sys
 
 import counter
 
-JOBS_NUM = -3
+JOBS_NUM = -4
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
 #LOGLEVEL = logging.WARN
@@ -531,7 +531,7 @@ if __name__ == "__main__":
     # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
     # sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
     # sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
-    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', '22.0/10aI/', 'simple/1/factor=10/', 'simple/1/factor=50/', '0.15.3-retrofixed/bridge/30.js/', '0.15.3-retrofixed/bridge/70.js/', '0.15.3-retrofixed/bridge/50.js/', 'simple/2/30']
+    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', '22.0/10aI/', 'simple/1/factor=10/', 'simple/1/factor=50/', '0.15.3-retrofixed/bridge/30.js/', '0.15.3-retrofixed/bridge/70.js/', '0.15.3-retrofixed/bridge/50.js/', 'simple/2/30', 'simple/2/30-burst', 'tamaraw']
     # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp'); os.chdir(PANCHENKO_PATH)
     # counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
     cross_test(sys.argv, with_svm=True) #, cumul=False)
