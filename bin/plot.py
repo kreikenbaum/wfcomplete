@@ -7,8 +7,6 @@ import Gnuplot
 import colorsys
 import numpy as np
 
-COLOR_LIST = ["blue", "green", "yellow", "orange", 'red', "violet"]
-
 def _table_to_data(f):
     '''parse file f with org-mode table export data'''
     import collections
@@ -71,10 +69,7 @@ def defenses(places, defs=['disabled/bridge', 'simple1/10'], url='google.com'):
 
     @return g: otherwise plots are closed ;-)
     '''
-    if len(defs) in [1,2,3,6]:
-        local_list = COLOR_LIST[::len(COLOR_LIST)/len(defs)]
-    else:
-        local_list = _color_cycle(len(defs))
+    local_list = _color_cycle(len(defs))
     g = None
     for d in defs:
         g = counters(places[d][url], g, d.replace('/bridge',''),
