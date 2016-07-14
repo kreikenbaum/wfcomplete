@@ -4,6 +4,9 @@
 - list of counters'''
 import Gnuplot
 
+import colorsys
+import numpy as np
+
 COLOR_LIST = ["blue", "green", "yellow", "orange", 'red', "violet"]
 
 def _table_to_data(f):
@@ -68,14 +71,31 @@ def defenses(places, defs=['disabled/bridge', 'simple1/10'], url='google.com'):
 
     @return g: otherwise plots are closed ;-)
     '''
-    local_list = COLOR_LIST[::len(COLOR_LIST)/len(defs)]
+    if len(defs) in [1,2,3,6]:
+        local_list = COLOR_LIST[::len(COLOR_LIST)/len(defs)]
+    else:
+        local_list = _color_cycle(len(defs))
     g = None
     for d in defs:
         g = counters(places[d][url], g, d.replace('/bridge',''),
                      local_list.pop())
-    g.title('page: {}'.format(url))
+    g.title('CUMUL-traces on {} after defenses'.format(url))
     g.replot()
     return g
+
+def _color_cycle(steps=6):
+    '''yields steps many different colors'''
+    out = map(_to_color, np.linspace(2.0/3, 5.0/3, num=steps, endpoint=False))
+    out = map(_to_hex, out)
+    return out
+
+def _to_color(value):
+    '''gives color to hls-hue'''
+    return colorsys.hls_to_rgb(value, 0.5, 1)
+
+def _to_hex(a):
+    '''color tuple to hex string'''
+    return "0x{:02x}{:02x}{:02x}".format(int(255 * a[0]), int(255* a[1]), int(255*a[2]))
     
 if __name__ == "__main__":
     import sys
