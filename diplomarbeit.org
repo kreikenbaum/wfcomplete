@@ -62,7 +62,7 @@
 #+LATEX_HEADER: }}
 * WAIT Abstract
 * TODO Introduction (=basics) [0%]
-** TODO Website Fingerprinting [0/29]
+** TODO Website Fingerprinting [0/30]
 *** DANIEL Intro (remove this headline when reviewed)
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -177,15 +177,6 @@
     object sizes. Cheng and Avnur \cite{ssl-traffic-analysis}
     additionally proposed a hidden markov model for page
     /transitions/, for hard-to-identify pages.
-**** MOVE to wf2.0, stress that they used *packet sizes*
-    Like the above attacks, Liberatore and
-    Levine\cite{Liberatore:2006} and Herrmann et
-    al\cite{ccsw09-fingerprinting} used only packet sizes, but
-    employed machine learning techniques. Herrmann et al. used a Naïve
-    Bayes Classifier\cite[ch.1.3.1]{intro2ir}, which gave them good
-    results against one-hop anonymizing proxies, yet yielded only 3%
-    accuracy against 775 distinct pages when retrieved via
-    Tor\cite{tor-design}.
 *** CHECK Hurdles to website fingerprinting
     :PROPERTIES:
     :CUSTOM_ID: Hurdles
@@ -286,6 +277,15 @@
     :END:
     In spite of these difficulties, website fingerprinting was shown
     to be possible in even when Tor is used.
+**** TODO they used *packet sizes*
+    Like the above attacks, Liberatore and
+    Levine\cite{Liberatore:2006} and Herrmann et
+    al\cite{ccsw09-fingerprinting} used only packet sizes, but
+    employed machine learning techniques. Herrmann et al. used a Naïve
+    Bayes Classifier\cite[ch.1.3.1]{intro2ir}, which gave them good
+    results against one-hop anonymizing proxies, yet yielded only 3%
+    accuracy against 775 distinct pages when retrieved via
+    Tor\cite{tor-design}.
 **** WRITE panchenko v1
      Panchenko et al.'s \cite{panchenko} attack was the first that
      successfully classifed traces retrieved via Tor\cite{critique}.
@@ -834,6 +834,47 @@
     - bloom paper
     - network applications
 * TODO Results and Evaluation [0%]
+** CHECK modified top-100
+   The files for retrieval were from the alexa-top-1m[fn:: Available
+   at \url{ http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}],
+   from September 30, 2015. Similar to \cite{wpes13-fingerprinting},
+   similar sites were removed. Also removed were those sites which
+   failed to respond to python's =urllib=. The list of sites with their
+   Alexa index can be found in appendix [[top-100]].
+*** TODO complete list in appendix
+** TODO panchenko v1 different classifiers                        :eval:
+   <<different-classifiers>>
+   - more features than cumul default
+   - experiment
+   - different classifiers, different results
+   - much easier to just use knn, ....
+   - more work for svm parameter estimation
+** TODO outlier removal                                           :eval:
+   As described by \cite{panchenko2}, the CUMUL approach is greatly
+   enhanced by outlier removal. His software has different setting,
+   with a median-based as well as a 25%/75%-quantile-based
+   approach. The paper mentions only the quantile-based filtering, so
+   that was also used in the later tests here.
+
+   - implemented in [[file:bin/extract_attribute.py::def%20remove_quantiles_panchenko_2(counter_list):][ex-att]]
+   - quantiles:
+     - numpy instead of his original code for code clarity
+     - just take quantiles, use his limits
+   - how many? 5%?
+   - cumul-print of outlier removal steps? (maybe, ask d if enough time ;-)
+*** TODO run test, include results
+*** TODO link to panchenko's software
+** WRITE outlier removal                                          :eval:
+   - after cross-validation split
+   - but can do that before features
+     - list of (url, list-id) tuples, one for each counter
+     - randomly choose subset
+   - link to file
+   - document effect of different schemes: is there any accuracy effect?
+     - tables
+     - scheme: all, only quantile, none, only minimial
+   - document number of filtered traces
+     - both panchenko's own and mine
 ** WRITE panchenko v1 vs cumul
    Panchenko et al proposed two methods for analysing traces.
 
@@ -1642,7 +1683,7 @@
     #+END_LATEX
 **** by
      - generating cover traffic
-**** MOVE to appendix modules [0/17]                          :appendix:
+**** modules [0/17]                                     :appendix:move_later:
 ***** TODO replace with pic [[shell:dia pictures/model.dia &]]
 ***** TODO how to show (singleton)-module in jUML
 ***** TODO Watcher
@@ -2041,15 +2082,7 @@
 * TODO extract dom tags python
   - diveintopython
   - see code
-* CHECK MOVE TO EVAL modified top-100
-  The files for retrieval were from the alexa-top-1m[fn:: Available
-  at \url{ http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}],
-  from September 30, 2015. Similar to \cite{wpes13-fingerprinting},
-  similar sites were removed. Also removed were those sites which
-  failed to respond to python's =urllib=. The list of sites with their
-  Alexa index can be found in appendix [[top-100]].
-** TODO complete list in appendix
-* CHECK MOVE wsgi.py cover traffic server and generator      :appendix:addon:
+* CHECK wsgi.py cover traffic server and generator :appendix:addon:move_later:
   With the technology stack to implement the cover traffic generator
   being settled, implementation becomes a single-page file, see
   [[wsgi.py]].
@@ -2127,30 +2160,8 @@
   - if protects against this, should also protect against worse
   - additional (?defense?) as proposed in critique
 ** TODO follow critique at all?
-* TODO MOVE npm short installation/description                     :appendix:
-* TODO MOVE panchenko v1 different classifiers                         :eval:
-  <<different-classifiers>>
-  - more features than cumul default
-  - experiment
-  - different classifiers, different results
-  - much easier to just use knn, ....
-  - more work for svm parameter estimation
-* TODO MOVE outlier removal                                            :eval:
-  As described by \cite{panchenko2}, the CUMUL approach is greatly
-  enhanced by outlier removal. His software has different setting,
-  with a median-based as well as a 25%/75%-quantile-based
-  approach. The paper mentions only the quantile-based filtering, so
-  that was also used in the later tests here.
-
-  - implemented in [[file:bin/extract_attribute.py::def%20remove_quantiles_panchenko_2(counter_list):][ex-att]]
-  - quantiles:
-    - numpy instead of his original code for code clarity
-    - just take quantiles, use his limits
-  - how many? 5%?
-  - cumul-print of outlier removal steps? (maybe, ask d if enough time ;-)
-** TODO run test, include results
-** TODO link to panchenko's software
-* WRITE MOVE how to set up wfpad                                   :appendix:
+* TODO npm short installation/description               :appendix:move_later:
+* WRITE how to set up wfpad                             :appendix:move_later:
   - helpful notes at scramblesuit
   - modify for wfpad
   - failed to work if called from Tor
@@ -2205,17 +2216,6 @@
       - write which addon version (top-100, so 0.18.2@bI?)
     - easier to distinguish than average, as intentionally very different sites
       - harder to conceal
-* WRITE MOVE outlier removal                                           :eval:
-  - after cross-validation split
-  - but can do that before features
-    - list of (url, list-id) tuples, one for each counter
-    - randomly choose subset
-  - link to file
-  - document effect of different schemes: is there any accuracy effect?
-    - tables
-    - scheme: all, only quantile, none, only minimial
-  - document number of filtered traces
-    - both panchenko's own and mine
 * misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}

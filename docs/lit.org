@@ -7753,839 +7753,6 @@
 
     - no longer developed
 *** ref [[file:master.bib::chickenfoot][2015: Chickenfoot]]
-** TODO MOVE [#B] PART -s 1,5,7 [[./McGrawHill_-_Machine_Learning_-Tom_Mitchell.pdf][Mitchell - Machine Learning]]
-*** summary
-    1) INTRODUCTION
-
-       0) [@0]
-
-          - programming computers to learn
-
-       1) WELL-POSED LEARNING PROBLEMS
-
-          - definition: see quotes
-
-          - fits many examples from simple (db query optimizer) to
-            complex (robot car driver, checkers play algorithm)
-
-       2) DESIGNING A LEARNING SYSTEM
-
-          0) [@0]
-
-             - checkers
-
-               - performance measure: percent of games won in world tournament
-
-          1) Choosing the Training Experience
-
-             - direct feedback vs indirect feedback
-
-               - best moves, vs
-
-               - sequence of game moves
-
-             - learner control over learning sequence
-
-               - teacher selects, vs learner asks, vs learner explores
-
-             - examples vs reality
-
-               - training set complete enough?
-
-             Decision: plays against itself (+: no trainer, as much
-             data as time permits)
-
-             - Example
-               A checkers learning problem:
-               - Task T: playing checkers
-               - Performance measure P: percent of games won in the world tournament
-               - Training experience E: games played against itself
-               In order to complete the design of the learning system, we must now choose
-               1. the exact type of knowledge to be,learned
-               2. a representation for this target knowledge
-               3. a learning mechanism
-          2) Choosing the Target Function
-
-             - 1st idea: maps state to next move
-
-             - 2nd idea (better to compute): maps board state B to real number
-
-               - won\to 100, lost \to -100, tie \to 0
-
-               - compute back from every state, assuming optimal
-                 strategy of both
-
-               - nonoperational: hard to compute
-
-               - operational approximation V^{\tilde} : B \to {real numbers}
-
-          3) Choosing a Representation for the Target Function
-
-             - possibilities: table with values, neural network,
-               polynomial based on board state, ...
-
-             - here, simple choice: linear function with weights
-
-               d(x) = w0 + w1 x1 + ... + w6 x6
-
-               with weights as number of b/w pieces/kings/threatened by other
-
-          4) Choosing a Function Approximation Algorithm
-
-             training data, f.ex ((0, 1, 0, 0, 0, 0), -100) (black won)
-
-             1) Estimating training values
-
-                - simple approach: assign value of successor (next
-                  state that can be played by this side)
-
-		  #+BEGIN_EXAMPLE
-		  V_train(b) = V^{\tilde}(successor(b)) (ref:1.1)
-		  #+END_EXAMPLE
-
-             2) Estimating the Weights
-
-                - minimize the squared error \sum (V_train - V^{\tilde})^2
-
-                - method: least mean squares, for each instance (b, V_train(b))
-
-                  w_i = w_i + \eta (V_train(b) -v^{\tilde}(b)) x_i
-
-          5) The Final Design
-
-	     four parts
-
-	     1) Performance System: must solve task (f.ex. playing checkers)
-
-		- input: new problem (new game)
-
-		- output: solution (game trace)
-
-	     2) Critic:
-
-		- input solution (game trace)
-
-		- output: training examples of target function (similar to [[(1.1)]])
-
-	     3) Generalizer
-
-		- input: training examples
-
-		- output: estimate of target function (f.ex. via LMS)
-
-	     4) Experiment Generator: practice problems that maximize learning
-
-		- input: hypothesis/target function
-
-		- output: game start state
-
-	     summary
-
-	     - for good performance the solution should be modelable
-               similar to the linear approach
-
-	     - and depend mostly on the six features used for learning
-
-       3) PERSPECTIVES AND ISSUES IN MACHINE LEARNING
-
-	  learning as searching the hypothesis space
-
-	  1) Issues in Machine Learning
-
-	     - which algorithms to use?
-
-	     - "how much training data is sufficient"?
-
-	     - how much can prior knowledge help? (perfect and approximate)
-
-	     - how to choose next training experience?
-
-	     - what functions to learn? (automatable?)
-
-	     - automatically change representation to better
-               learn target ufnction?
-
-       4) HOW TO READ THIS BOOK
-
-	  - any sequence
-
-	  - best first read chapters 1 and 2
-
-	  - (interesting to me)
-
-	    2. [@2] inductive bias, ordering of hypotheses
-
-	    5. [@5] estimation theory, central limit theorem
-
-	    6. bayesian
-
-	    7. weighted majority: combine multiple methods
-
-       5) SUMMARY AND FURTHER READING
-
-	  - ml useful in
-
-	    - data mining (large dbs)
-
-	    - domains poorly understood by humans (face recognition)
-
-	    - adapt to changing conditions (stock, "adapt to changing reading
-              interests of individuals")
-
-	  - many domains
-
-	  - well-defined: task, performance metric, source of training
-            experience
-
-	  - learning as searching the hypothesis space
-
-    2) CONCEPT LEARNING AND THE GENERAL-TO-SPECIFIC ORDERING
-
-       concept learning: "acquiring the definition of a general
-       category given a sample of positive and negative training
-       examples of the category."
-
-       search a predifined set of hypotheses for those that fit best
-
-       1) INTRODUCTION
-
-	  - "Concept learning. Inferring a boolean-valued function from
-            training examples of its input and output."
-
-       2) A CONCEPT LEARNING TASK
-
-	  0) [@0]
-
-	     - enjoysports: given sky, airtemp, humidity, wind, water,
-               forecast, predict if aldo enjoys water sports that day
-
-	     - simple representation: conjuction of constraints
-
-	  1) Notation
-
-	     - set of Instances X
-
-	     - target concept c: X \to {0, 1}
-
-	     - training example (x \in X, c(x))
-
-	       - positive if c(x) = 1, negative if c(x) = 0
-
-	     - hypothesis h \in H, h: X \to {0, 1}
-
-	       - aim: h = c for x \in X
-
-	  2) The Inductive Learning Hypothesis
-
-	     "Any hypothesis found to approximate the target function
-             well over a sufficiently large set of training examples
-             will also approximate the target function well over other
-             unobserved examples." (?stupid?)
-
-       3) CONCEPT LEARNING AS SEARCH
-
-	  0) [@0]
-
-	     - distinct instances: possible combinations
-
-	     - syntactically different instances: possible
-               combinations with \emptyset and ? on each place
-
-	     - semantically different instances: \emptyset always classifies
-               as false, thus 1+ possible combinations with ? on each place
-
-	  1) General-to-Specific Ordering of Hypotheses
-
-	     - order hypotheses by moregeneral-than-or-equal-to
-
-	       - superset of hypotheses (see quotes)
-
-	       - is a partial ordering
-
-	       - algorithm based on this (see quotes)
-
-       4) FIND-S: FINDING A MAXIMALLY SPECIFIC HYPOTHESIS
-
-	  - start with (\empty, ..., \empty)
-
-	  - first example as new hypothesis
-
-	  - generalises to h \to (Sunny, Warm, ?, Strong, Warm, Same)
-
-	  - ignores all negative examples as they should not match
-
-	    - assumption: H contains correct hypothesis and no
-              contradictions
-
-	  - gives (one) most specific hypothesis that fits all
-
-       5) VERSION SPACES AND THE CANDIDATE-ELIMINATION ALGORITHM
-
-	  0) [@0]
-
-	     - candidate-elimination gives all fitting results
-
-	       - as with find-s: problem with noisy data
-
-	  1) Representation
-
-	     - consistent hypothesis: fits all examples (def see quotes)
-
-	     - version space: all hypotheses in H consistent with
-               training examples D (def see quotes)
-
-	  2) The LIST-THEN-ELIMINATE Algorithm
-
-	     - list all, eliminate non-fitting
-
-	     - guaranteed to terminate (on finite H), simple
-
-	     - takes too long
-
-	  3) A More Compact Representation for Version Spaces
-
-	     - save only the most general and most specific consistent
-               hypotheses (see defs quotes, and
-               moregeneral-than-or-equal-to)
-
-	     - all instances in between are equal to the version space
-               (theorem see quotes)
-
-	  4) CANDIDATE-ELIMINATION Learning Algorithm
-
-       7) [@7] INDUCTIVE BIAS
-
-	  1) A Biased Hypothesis Space
-
-	     hypothesis space might be limited in advance, precluding
-             perfect solution
-
-	  2) An Unbiased Learner
-
-	     - if the full hypothesis space is allowed, it gets very big
-
-	     - ...
-
-    5) [@5] EVALUATING HYPOTHESES
-
-       0) [@0]
-
-	  - dealing with limited training data
-
-	    - generalize accuracy to all data
-
-	    - one outperforming other on training, does it also
-              outperform on whole data
-
-	    - how to best learn hypothesis and estimate its accuracy
-
-       1) MOTIVATION
-
-	  problems with limited data
-
-	  - bias in the estimate: tends to some non-optimal solution,
-            especially for a "very rich hypothesis space,"
-
-	  - variance in the estimate: even if unbiased, the less data,
-            the higher the variance of results
-
-       2) ESTIMATING HYPOTHESIS ACCURACY
-
-	  0) [@0]
-
-	     - setting: n elements drawn with probability given by D from
-               population X
-
-	     - estimate accuracy of hypothesis h given accuracy over n elements
-
-	     - how correct is this estimate?
-
-	  1) Sample Error and True Error
-
-	     - sample error: misclassification rate on sample (see quotes)
-
-	     - true error: misclassification rate on whole
-               distribution (see quotes)
-
-	     - how good an approximation is the sample error?
-
-	  2) Confidence Intervals for Discrete-Valued Hypotheses
-
-	     - sample error and number of samples estimate true error
-               (see quotes)
-
-	     - this works well if error not to close to 0 or 1 and n
-               big enough (see quotes)
-
-       3) BASICS OF SAMPLING THEORY
-
-	  1) Error Estimation and Estimating Binomial Proportions
-
-	     - measure sample error \to experiment with random outcome
-
-	     - follows Binomial distribution
-
-	       - for np(1-p) \ge 5, you can use normal distribution
-
-	  2) The Binomial Distribution
-
-	     - weird coin with probability p for heads.
-
-	       - How many heads r after n tosses
-
-	       - r/n estimates p
-
-	     - corresponds to estimation of error:
-
-	       - p to error_{D}(h)
-
-	       - r/n to error_{S}(h)
-
-	     - general: base experiment with binary outcome repeated n times
-
-	  3) Mean and Variance
-
-	     - mean
-
-	     - variance, standard distribution
-
-	  4) Estimators, Bias, and Variance
-
-	     - error_{S}(h) is an estimator for error_{D}(h): random
-               variable to estimate "underlying population"
-
-	     - estimation bias is how much an estimator is wrong on
-               average
-
-	       - with bias = 0, it is called an /unbiased estimator/ for p
-
-	       - hypothesis h and sample S must be chosen independently
-
-	       - /estimation bias/ is a number, vs /inductive bias/ a
-                 set of estimations
-
-	     - if several unbiased estimators exist, best choose that
-               with the smallest variance
-
-	     - error standard deviation grows with p, shrinks with
-               \sqrt(n) (see quote)
-
-	  5) Confidence Intervals
-
-	     - confidence interval: contains param p with prob N% (see
-               quotes)
-
-	     - approximate error_{D} with error_{S}
-
-	     - approximate binomial with normal distribution
-
-	     - z-tables for normal distribution: z_{N} is "half the width
-               of the interval measured in standard deviations"
-
-	     - use normal-binomial approximation for n \ge 30 or np(1-p)\ge5
-
-	  6) Two-sided and One-sided Bounds
-
-	     - with error, one-sided bound is often sufficient:
-
-	     - 100(1-a)% two-sided confidence interval implies
-               100(1-a/2)% one-sided c.i. (symmetry of N)
-
-       4) A GENERAL APPROACH FOR DERIVING CONFIDENCE INTERVALS
-
-	  (which param, esti, pdf, interval bounds) see quotes
-
-	  1) Central Limit Theorem
-
-	     - n iid variables Y1, ..., Yn (independent, identically
-               distributed)
-
-	       - Y'_n := 1/n \sum_{i=1}^n Y_i
-
-	       - n \to \infty: mean(Y'_n) \to mean(Y)
-
-		 - and std \to \sigma/\sqrt{n}
-
-	       - can use normal distribution to estimate, for n \ge 30
-
-       5) DIFFERENCE IN ERROR OF TWO HYPOTHESES
-
-	  0) [@0]
-
-	     - evaluate two hypotheses h_1, h_2, tested on samples S_1,
-               S_2 with sizes |S_1| = n_1, |S_2| = n_2
-
-	     - estimate difference d = error_D(h_1) - error_D(h_2)
-               between true errors by d^ = error_{S_1}(h_1) - error_{S_2}(h_2)
-
-	       - difference of normal distributions is normal \to d^ assumed normal
-
-	       - variance of d^ is sum of variances of error_{S_{i}}(h_i) [[(mi5.12)]]
-
-	     - single sample S \to smaller variance (no variance of S_1 \neq S_2)
-
-	  1) Hypothesis Testing
-
-	     - compare hypotheses h1, h2
-
-	       - error_{s_1}(h_1) = 0.30
-
-	       - error_{s_1}(h_2) = 0.20
-
-	     - observed difference of d^ = .10
-
-	       - probability that h1 is still better than h2?
-
-		 1. compute variance as of [[(mi5.12)]]
-
-		 2. look up z-value from table, "halve" for one-sided
-
-		 3. see that: 95% confidence level.
-
-       6) COMPARING LEARNING ALGORITHMS
-
-          0) [@0]
-
-             - compare learning algorithms L1, L2 instead of hypotheses
-
-             - find out if error of L1 <, >, or = error of L2
-
-               - use training set S_0 and test set T_0
-
-             - algorithm: average of cross-validated error difference (see quotes)
-
-             - confidence interval \delta \pm t_{N, k-1} s_{\delta}
-
-               - t_{N, k-1} similar to z_N, goes to z_N as (k-1) \to \infty
-
-               - s_{\delta} = \sqrt{1 / (k(k-1)) \sum_{i=1}^k (\delta_i - \delta)^2}
-
-             - note: same set, different to hypothesis testing
-
-          1) Paired t Tests
-
-             first reading: skip or skim this section
-
-          2) Practical Considerations
-
-             - assumption of 1): iid normal variables
-
-               - invalid for limited data
-
-             - either cross-test: split data into test sets, train on rest
-
-             - or randomly draw at least 30 elements, use rest as training
-
-               - problem: not independnt any more
-
-               - advantage: resample as often as you want, reduce variance
-
-       7) SUMMARY AND FURTHER READING
-
-          main points:
-
-          - estimate confidence interval as of [[(5.1)]]
-
-          - general: identify parameter
-            \to get estimator for it
-            \to is random variable
-            \to check confidence interval
-
-          - estimation bias: estimators mean is different from parameter mean
-
-          - variance of estimator: decreases with size of sample
-
-          - compare two learning algos: cross-validate difference of error rates
-
-          - assumptions:
-
-            - approximate binomial distribution with normal distribution + variance
-
-            - and assume distribution fixed
-
-    7) [@7] COMPUTATIONAL LEARNING THEORY
-
-       0) [@0]
-
-          - which conditions enable/forbid successful learning?
-
-          - when is success assured?
-
-       1) INTRODUCTION
-
-          - classes of problems? (difficult/easy)
-
-          - how much data needed? (necessary/sufficient)
-
-          - smart sampling vs random sampling
-
-          - computational complexity of classes
-
-          - estimate number of errors made before learning target
-
-          - how much sample and computation complexity and mistake
-            bound is necessary (see quotes)
-
-       2) PROBABLY LEARNING AN APPROXIMATELY CORRECT HYPOTHESIS
-
-          binary noise-free training data, can be extended somewhat
-
-          1) The Problem Setting
-
-             - X all possible instances (f.ex. people = { {young,
-               short}, {old, tall}})
-
-             - C target concepts, c \in C: X \to {0,1} (f.ex. people who
-               are skiers)
-
-             - D distribution over X (f.ex. largest sports store
-               switzerland)
-
-             - learner L draws x from D, tests with other x from D
-
-          2) Error of a Hypothesis
-
-             - (see quotes, see also ch.5)
-
-             - true error of hypothesis: how often wrong re distribution/class
-
-             - training error: how much of training data classified wrongly
-
-             - re sample error: same, but statements assumed
-               independent of training data and h
-
-          3) PAC Learnability
-
-             - error bounded by \epsilon
-
-             - sucess rate bounded by \delta (suceed in at least 1-\delta cases)
-
-             - C pak-learnable (see quote) if in fixed max error rate
-               and failure rate, learnable in polynomial(\epsilon, \delta, n,
-               size(c))
-
-             - assumptions:
-
-               - H contains small-error hypothesis
-
-       3) SAMPLE COMPLEXITY FOR FINITE HYPOTHESIS SPACES
-
-          0) [@0]
-
-             - how many training samples needed until perfectly fitting
-               hypothesis is found
-
-             - assumption: *consistent learners*: can learn perfect
-               hypothesis
-
-             - bound number of hypotheses needed to probably (p > 1-\delta)
-               learn an approximate (error \epsilon) hypothesis: m (see quotes)
-
-          1) Agnostic Learning and Inconsistent Hypotheses
-*** quotes
-    1) INTRODUCTION
-       1) WELL-POSED LEARNING PROBLEMS
-          - Definition: A computer program is said to learn from
-            experience E with respect to some class of tasks T and
-            performance measure P, if its performance at tasks in T,
-            as measured by P, improves with experience E.
-    2) CONCEPT LEARNING AND THE GENERAL-TO-SPECIFIC ORDERING
-       3) [@3] CONCEPT LEARNING AS SEARCH
-	  - Definition: Let hj and hk be boolean-valued functions
-            defined over X. Then hj is *moregeneral-than-or-equal-to* hk
-            (written h_{j} \ge_{g} h_{k} ) if and only if
-
-	    (\forall x \in X)[(hk(x) = 1) \to (hj(x) = 1)]
-	  - FIND-S Algorithm.
-	    1. Initialize h to the most specific hypothesis in H
-	    2. For each positive training instance x
-	       - For each attribute constraint a_i in h
-		 - If the constraint a_i is satisfied by x
-		   - Then do nothing
-		   - Else replace a_i in h by the next more general
-                     constraint that is satisfied by x
-	    3. Output hypothesis h
-       5) [@5] VERSION SPACES AND THE CANDIDATE-ELIMINATION ALGORITHM
-	  1) Representation
-	     - A hypothesis h is *consistent* with a set of training
-               examples D if and only if h(x) = c(x) for each example
-               (x, c(x)) in D.
-
-	       Consistent(h, D) \equiv (\forall(x, c(x)) \in D) h(x) = c(x)
-	     - The *version space*, denoted VS_{H, D} with respect to
-               hypothesis space H and training examples D, is the
-               subset of hypotheses from H consistent with the
-               training examples in D.
-
-	       VS_{H, D} \equiv {h \in H | Consistent(h, D)}
-	  3) [@3] A More Compact Representation for Version Spaces
-	     - Definition: The *general boundary* G, with respect to
-               hypothesis space H and training data D, is the set of
-               maximally general members of H consistent with D.
-
-	       G = {g \in H | Consistent(g, D)
-                    \wedge (\not\exists g' \in H) [(g' >_{g} g) \wedge Consistent(g', D)]]
-	     - Definition: The *specific boundary* S, with respect to
-               hypothesis space H and training data D, is the set of
-               minimally general (i.e., maximally specific) members of
-               H consistent with D.
-
-	       S = {s \in H | Consistent(s, D)
-                    \wedge (\not\exists s' \in H) [(s >_{g} s') \wedge Consistent(s', D)]]
-	     - Theorem 2.1. *Version space representation
-               theorem*. Let X be an arbitrary set of instances and
-               let H be a set of boolean-valued hypotheses defined
-               over X. Let c : X \to {O, 1) be an arbitrary target
-               concept defined over X, and let D be an arbitrary set
-               of training examples {<x, c(x)>). For all X, H, c, and
-               D such that S and G are well defined,
-
-	       VS_{H, D} = {h \in H | (\exists s \in S, g \in G)(g \ge_{g} h \ge_{g} s)}
-    5) [@5] EVALUATING HYPOTHESES
-       1) ESTIMATING HYPOTHESIS ACCURACY
-	  1) Sample Error and True Error
-	     - Definition: The *sample error* (denoted error_{S}(h)) of
-               hypothesis h with respect to target function f and data
-               sample S is
-
-	       error_{S}(h) \equiv 1/n \sum_{x \in S} \delta(f(x), h(x))
-
-	       Where n is the number of examples in S, and the
-               quantity \delta(f(x), h(x)) is 1 if f(x) \neq h(x) , and 0
-               otherwise
-	     - Definition: The *true error* (denoted error_{D}(h)) of
-               hypothesis h with respect to target function f and
-               distribution D, is the probability that h will
-               misclassify an instance drawn at random according to D.
-
-	       error_{D}(h) \equiv Pr_{x \in D}[f(x) \neq h(x)]
-	  2) Confidence Intervals for Discrete-Valued Hypotheses
-	     - [confidence interval z_N = 1.96 for 95% confidence interval]
-               error_{S} \pm z_{N} \sqrt(error_{S}(h)(1- error_{S}(h)) / n)          (ref:5.1)
-	     - n \cdot error_{S}(h) (1-error_{S}(h)) \ge 5
-       3) [@3] BASICS OF SAMPLING THEORY
-	  4) [@4] Estimators, Bias, and Variance
-	     - The *estimation bias* of an estimator Y for an arbitrary
-               parameter p is
-
-	       E[Y] - p
-	     - In general, given r errors in a sample of n
-               independently drawn test examples, the standard
-               deviation for errors(h) is given by
-
-	       \sigma_{errors_{S}(h)} = \sigma_{r} / n = \sqrt{p(1-p) / n} (5.8)
-	     - which can be approximated by substituting r/n =
-               errors_{S}(h) for p
-	  5) Confidence Intervals
-	     - An N% *confidence interval* for some parameter p is an
-               interval that is expected with probability N% to
-               contain p .
-	     - if a random variable Y obeys a Normal distribution with
-               mean \mu and standard deviation \sigma , then the measured
-               random value y of Y will fall into the following
-               interval N% of the time
-
-	       \mu \pm z_{N }\sigma
-
-	       Equivalently, the mean \mu will fall into the following
-               interval N% of the time
-
-	       y \pm z_{N} \sigma
-       4) A GENERAL APPROACH FOR DERIVING CONFIDENCE INTERVALS
-	  0) [@0]
-	     1. Identify the underlying population parameter p to
-                be estimated, for example, error_{D}(h).
-	     2. Define the estimator Y (e.g., error_{S}(h)). It is
-                desirable to choose a minimum-variance, unbiased
-                estimator.
-	     3. Determine the probability distribution D_{Y} that governs
-                the estimator Y, including its mean and variance.
-	     4. Determine the N% confidence interval by finding
-                thresholds L and U such that N% of the mass in the
-                probability distribution D_{Y} falls between L and U.
-	  1) Central Limit Theorem
-	     - *Central Limit Theorem*. Consider a set of independent,
-               identically distributed random variables Y1 ... Yn,
-               governed by an arbitrary probability distribution with
-               mean p and finite variance \sigma^2. Define the sample mean,
-               Y'_n := 1/n \sum_{i=1}^n Y_i. Then as n \to \infty, the distribution
-               governing
-
-	       (Y'_n - \mu) / (\sigma / \sqrt{n})
-
-	       approaches a Normal distribution, with zero mean and
-               standard deviation equal to 1.
-       5) DIFFERENCE IN ERROR OF TWO HYPOTHESES
-	  0) [@0]
-	     - d^ \equiv error_{S_1}(h_1) - error_{S_2}(h_2)
-	     - \sigma_{d^}^{2} \approx
-               [error_{S_1}(h_1) (1 - error_{S_1}(h_1))] /n_1
-	       + [error_{S_2}(h_2) (1 - error_{S_2}(h_2))] /n_2         (ref:mi5.12)
-       6) COMPARING LEARNING ALGORITHMS
-          - Learning procedure
-            1. Partition the available data D0 into k disjoint subsets
-               T1, T2, ..., Tk of equal size, where this size is at
-               least 30.
-            2. for i in range(1,k+1):
-               S_i = D0 \ Ti
-               h_A = L_A(S_i)
-               h_B = L_B(S_i)
-               \delta_i = error_{Ti}(h_A) - error_{Ti}(h_B)
-            3. Return the value \delta, where
-
-               \delta = 1/k \sum_{i=1}^k \delta_i
-    7) [@7] COMPUTATIONAL LEARNING THEORY
-       1) INTRODUCTION
-          - *Sample complexity*. How many training examples are needed
-            for a learner to converge (with high probability) to a
-            successful hypothesis?
-          - *Computational complexity*. How much computational effort
-            is needed for a learner to converge (with high
-            probability) to a successful hypothesis?
-          - *Mistake bound*. How many training examples will the
-            learner misclassify before converging to a successful
-            hypothesis?
-       2) PROBABLY LEARNING AN APPROXIMATELY CORRECT HYPOTHESIS
-          *PAC*: probably approximately correct model
-          2) [@2] Error of a Hypothesis
-             - Error of a Hypothesis
-               - The *true error* (denoted error_{D}(h)) of hypothesis h
-                 with respect to target concept c and distribution D is
-                 the probability that h will misclassify an instance
-                 drawn at random according to D.
-
-                 error_{D}(h) \equiv Pr_{x \in D} [c(x) \neq h(x)]
-          3) PAC Learnability
-             - classes of target concepts that can be reliably learned
-               from a reasonable number of randomly drawn training
-               examples and a reasonable amount of computation.
-             - Consider a concept class C defined over a set of
-               instances X of length n and a learner L using
-               hypothesis space H . C is *PAC-learnable* by L using H
-               if for all c \in C, distributions D over X, \epsilon such that 0
-               < \epsilon < 1/2, and \delta such that 0 < \delta < 1/2, learner L will
-               with probability at least (1 - \delta) output a hypothesis h
-               \in H such that error_{D}(h) \le \epsilon, in time that is polynomial
-               in 1/\epsilon, 1/\delta, n, and size(c).
-       3) SAMPLE COMPLEXITY FOR FINITE HYPOTHESIS SPACES
-          - The reason is that in most practical settings the factor
-            that most limits success of the learner is the limited
-            availability of training data.
-          - Consider a hypothesis space H, target concept c, instance
-            distribution \cal D, and set of training examples D of c. The
-            version space VS_{H,D} is said to be *\epsilon-exhausted* with
-            respect to c and \cal D, if every hypothesis h in VS_{H,D} has
-            error less than \epsilon with respect to c and \cal D.
-
-            (\forall h \in VS_{H, D}) error_{\cal D}(h) < \epsilon
-          - *\epsilon-exhausting the version space*. If the hypothesis space H
-            is finite, and D is a sequence of m \ge 1 independent
-            randomly drawn examples of some target concept c, then for
-            any 0 \le \epsilon \le 1, the probability that the version space VS_{H,
-            \cal D} is not \epsilon-exhausted (with respect to c) is less
-            than or equal to |H| e^{-\epsilon m}
-          - m \ge 1/\epsilon (ln |H| + ln (1/\delta))
-*** ref [[file:master.bib::mitchell][Mitchell: Machine Learning]]
 ** TODO [#A] [[./ronathan-heyning.pdf][Cheng - Traffic Analysis of SSL Encrypted Web Browsing]]
 *** summary
     0) [@0] Abstract
@@ -9638,6 +8805,1126 @@
             - If the output is constant in S, then return TRUE;
             - Otherwise, return FALSE.
 *** ref [[file:master.bib::DBLP:journals/ml/GeurtsEW06][Geurts et al. 2006: Extremely]]
+** TODO [#A] [[./10.1.1.20.98.bloom-nw.pdf][Network Applications of Bloom Filters: A Survey]]
+*** summary
+    0) [@0] Abstract
+
+       - "space efficient"
+
+       - "small probability of false positives"
+
+    1) Introduction
+
+       - various uses: peer-to-peer, packet routing, locating
+         resources, measurement
+
+       - can replace lists and sets
+
+       - design: weigh false positives
+
+    2) Bloom filters: Mathematical preliminaries
+
+       1) Standard Bloom filters
+*** quotes
+    1) Introduction
+       - A Bloom filter is a simple space-efficient randomized data
+         structure for representing a set in order to support
+         membership queries.
+       - If false positives do not cause significant problems, the
+         Bloom filter may provide improved performance.
+       - The Bloom filter principle: Wherever a list or set is used,
+         and space is a consideration, a Bloom filter should be
+         considered. When using a Bloom filter, consider the potential
+         effects of false positives.
+*** ref [[file:master.bib::Broder02networkapplications][Broder & Mitzenmacher 2002: Network Applications Bloom Filters]]
+** TODO [#A] [[./10.1.1.20.2080.bloom_orig.pdf][Bloom - Space/Time Trade-offs in Hash Coding with Allowable Errors]]
+*** summary
+    0) [@0] Abstract
+
+       - set membership hash-coding
+
+       - reduce amount of space by allowing some errors
+
+    1) Introduction
+*** quotes
+*** ref [[file:master.bib::Bloom70space/timetrade-offs][Bloom 1970: Space Time Trade]]
+** TODO [#A] PART [[./ESLII_print4.pdf][Hastie - The Elements of Statistical Learning]]
+*** TODO skim chapters 2.8, 2.9, 3.3, 7 (esp 7.10), 9, 12 and 13, 15, 16
+    (leave out 11,14,17)
+*** summary
+    1) Introduction
+
+       examples
+
+    2) Overview of Supervised Learning
+
+       1) inputs
+
+          == predictors (statistics)
+
+          == independent variables (statistics)
+
+	  == features (pattern recognition)
+
+	  outputs
+
+	  == responses (statistics)
+
+	  == dependent variables (statistics)
+
+       2) Variable Types and Terminology
+
+	  - qualitative aka discrete aka categorical variables aka factors
+
+	    example: handwritten digits, fisher's irises
+
+	  - regression for quantitative outputs Y, classification for
+            qualitative outputs G
+
+       3) Two Simple Approaches to Prediction: Least Squares and
+          Nearest Neighbors
+
+	  0) [@0]
+
+	     - linear model
+
+	       - "stable but possibly inaccurate predictions"
+
+	     - k-nearest neighbors
+
+	       - "often accurate but can be unstable"
+
+	  1) Linear Models and Least Squares
+
+	     "solve" the quadratic equation in quotes by finding a
+             minimum
+
+	  2) Nearest-Neighbor Methods
+
+	     - majority of the closest (by specific metric) k neigbors
+               are of the class
+
+	     - k=1 - might lead to overfitting
+
+	  3) From Least Squares to Nearest Neighbors
+
+	     - defined later
+
+	       - variance: ca schwankung
+
+	       - bias: ca vorannahmen
+
+	     - ls: high bias, low variance
+
+	     - nn: low bias, high variance
+
+	     - knn - degrees of freedom: N / k
+
+	     - many models today are variations of knn and the linear
+               model
+
+       4) Statistical Decision Theory
+
+	  - minimize expected loss
+
+	    - knn: localized minimization
+
+	    - linear model: assume linearity
+
+	    - expected loss (for regression):
+
+	      - squared (L2) most often,
+
+	      - L1 has discontinuties in derivative (=nicht stetig diffbar)
+
+	    - expected loss for classification:
+
+	      - often zero-one loss function
+
+	      - results in Bayes classifiers
+
+	    - classification similar to regression
+
+	      - knn: localized conditional probability, estimated by
+                training sample proportions
+
+	      - linear: map to dummy variable
+
+       5) Local Methods in High Dimensions
+
+	  - unbiased methods like problematic supposedly more
+            problematic, as dimension rises
+
+       6) Statistical Models, Supervised Learning and Function
+          Approximation
+
+	  0) [@0]
+
+	     Try to approximate the I/O relationship f(x) via f\circ(x)
+
+	     1) A Statistical Model for the Joint Distribution Pr(X, Y )
+
+    4) [@4] 4. Linear Methods for Classification
+
+       4) [@4] Logistic Regression
+
+          model posterior probabilities linearly (?)
+
+          1) Fitting Logistic Regression Models
+
+             - multinomial distribution: different outcomes,
+               "completely specif[ied]"
+
+             - cont p. 120
+
+    9) [@9] Additive Models, Trees, and Related Methods
+
+       continues ch.3-6
+
+       1) Generalized Additive Models
+
+          - related to logistic regression (4.4)
+
+          - cont p. 315
+*** quotes
+    0) [@0] Preface to the Second Edition
+       - Our first edition was unfriendly to colorblind readers; in
+         particular, we tended to favor red/green contrasts which are
+         particularly troublesome. We have changed the color palette
+         in this edition to a large extent, replacing the above with
+         an orange/blue contrast.
+       - Chapter 18 explores the “p ≫ N ” problem, which is learning in
+         high-dimensional feature spaces. These problems arise in many
+         areas, including genomic and proteomic studies, and document
+         classification.
+    0) [@0] unsorted
+       - 7 Model Assessment and Selection
+       - 7.10.2 The Wrong and Right Way to Do Cross-validation
+       - 15 Random Forests
+       - 18 High-Dimensional Problems: p ≫ N
+       - 18.3.3 The Support Vector Classifier
+       - (ends Contents)
+       - Average percentage of words or characters in an email message
+         equal to the indicated word or character. We have chosen the
+         words and characters showing the largest difference between spam
+         and email.
+         |       | george |  you | your |   hp | free |  hpl |    ! |  our |   re |  edu | remove |
+         |-------+--------+------+------+------+------+------+------+------+------+------+--------|
+         | spam  |   0.00 | 2.26 | 1.38 | 0.02 | 0.52 | 0.01 | 0.51 | 0.51 | 0.13 | 0.01 |   0.28 |
+         | email |   1.27 | 1.27 | 0.44 | 0.90 | 0.07 | 0.43 | 0.11 | 0.18 | 0.42 | 0.29 |   0.01 |
+       - This is a classification problem for which the error rate needs
+         to be kept very low [...] In order to achieve this low error
+         rate, some objects can be assignedto a “don’t know” category,
+         and sorted instead by hand.
+       - splines, wavelets and regularization/penalization methods for a
+         single predictor, [...] kernel methods and local
+         regression. Both of these sets of methods are important building
+         blocks for high-dimensional learning techniques.
+       - At the end of each chapter we discuss computational considerations
+       - Chapters 1–4 be first read in sequence. Chapter 7 should also be
+         considered mandatory, as it covers central concepts that pertain
+         to all learning methods.
+       - (ends 1)
+       - predict the output Y via the model
+
+         Ŷ = β̂_{0} + \sum_{j=1}^{p} X_{j} β̂_{j} . (2.1)
+       - in vector form as an inner product
+
+         Ŷ = X^{T} β̂, (2.2)
+       - least squares. In this approach, we pick the coefficients β to
+         minimize the residual sum of squares
+
+         RSS(β) = \sum_{i=1}^{N} (y_{i} − x^{T}_{i} β)^{2}. (2.3)
+       - in matrix notation. We can write
+
+         RSS(β) = (y − Xβ)^{T} (y − Xβ), (2.4)
+       - the unique solution is given by
+
+         β̂ = (X^{T} X)^{−1} X^{T} y, (2.6)
+       - In the case of one Gaussian per class, we will see in Chapter 4
+         that a linear decision boundary is the best one can do, and that
+         our estimate is almost optimal. The region of overlap is
+         inevitable, and future data to be predicted will be plagued by
+         this overlap as well.
+       - (ends 2.3.1)
+       - linear decision boundary [...] has low variance and potentially
+         high bias.
+       - k-nearest-neighbor [...] high variance and low bias.
+       - 1-nearest-neighbor, the simplest of all, captures a large
+         percentage of the market for low-dimensional problems.
+       - Kernel methods use weights that decrease smoothly to zero with
+         distance from the target point, rather than the effective 0/1
+         weights used by k-nearest neighbors.
+       - Projection pursuit and neural network models consist of sums of
+         nonlinearly transformed linear models.
+       - (ends 2.3.3)
+       - X ∈ R^{p} input
+       - Y ∈ R output
+       - function f(X) for predicting Y
+       - /squared error loss/: L(Y, f(X)) = (Y − f (X))^{2} .
+       - EPE(f) = E(Y − f (X))^{2} (2.9)
+
+         = \int [y − f (x)]^{2} Pr(dx, dy) (2.10)
+
+         the /expected (squared) prediction error/
+       - The solution is
+
+         f (x) = E(Y |X = x), (2.13)
+
+         the conditional expectation, also known as the regression
+         function. Thus the best prediction of Y at any point X = x is
+         the conditional mean, when best is measured by average squared
+         error.
+       - (ends 2.4)
+       - In ten dimensions we need to cover 80% of the range of each
+         coordinate to capture 10% of the data.
+       - (ends 2.5)
+       - Thus it is not surprising that the analysis of high-dimensional
+         data requires either modification of procedures designed for the
+         N > p scenario, or entirely new procedures
+       - (ends 2.6.0)
+    4) [@4] 4. Linear Methods for Classification
+       4) [@4] Logistic Regression
+          - model the posterior probabilities of the K classes via
+            linear functions in x, while at the same time ensuring
+            that they sum to one and remain in [0, 1].
+    9) [@9] Additive Models, Trees, and Related Methods
+       1) Generalized Additive Models
+          - the *binary response* μ(X) = Pr(Y = 1|X)
+*** ref [[file:master.bib::elemstatlearn][Hastie et al. 2008: Elements Statistical Learning]]
+** TODO [#B] PART -s 1,5,7 [[./McGrawHill_-_Machine_Learning_-Tom_Mitchell.pdf][Mitchell - Machine Learning]]
+*** summary
+    1) INTRODUCTION
+
+       0) [@0]
+
+          - programming computers to learn
+
+       1) WELL-POSED LEARNING PROBLEMS
+
+          - definition: see quotes
+
+          - fits many examples from simple (db query optimizer) to
+            complex (robot car driver, checkers play algorithm)
+
+       2) DESIGNING A LEARNING SYSTEM
+
+          0) [@0]
+
+             - checkers
+
+               - performance measure: percent of games won in world tournament
+
+          1) Choosing the Training Experience
+
+             - direct feedback vs indirect feedback
+
+               - best moves, vs
+
+               - sequence of game moves
+
+             - learner control over learning sequence
+
+               - teacher selects, vs learner asks, vs learner explores
+
+             - examples vs reality
+
+               - training set complete enough?
+
+             Decision: plays against itself (+: no trainer, as much
+             data as time permits)
+
+             - Example
+               A checkers learning problem:
+               - Task T: playing checkers
+               - Performance measure P: percent of games won in the world tournament
+               - Training experience E: games played against itself
+               In order to complete the design of the learning system, we must now choose
+               1. the exact type of knowledge to be,learned
+               2. a representation for this target knowledge
+               3. a learning mechanism
+          2) Choosing the Target Function
+
+             - 1st idea: maps state to next move
+
+             - 2nd idea (better to compute): maps board state B to real number
+
+               - won\to 100, lost \to -100, tie \to 0
+
+               - compute back from every state, assuming optimal
+                 strategy of both
+
+               - nonoperational: hard to compute
+
+               - operational approximation V^{\tilde} : B \to {real numbers}
+
+          3) Choosing a Representation for the Target Function
+
+             - possibilities: table with values, neural network,
+               polynomial based on board state, ...
+
+             - here, simple choice: linear function with weights
+
+               d(x) = w0 + w1 x1 + ... + w6 x6
+
+               with weights as number of b/w pieces/kings/threatened by other
+
+          4) Choosing a Function Approximation Algorithm
+
+             training data, f.ex ((0, 1, 0, 0, 0, 0), -100) (black won)
+
+             1) Estimating training values
+
+                - simple approach: assign value of successor (next
+                  state that can be played by this side)
+
+		  #+BEGIN_EXAMPLE
+		  V_train(b) = V^{\tilde}(successor(b)) (ref:1.1)
+		  #+END_EXAMPLE
+
+             2) Estimating the Weights
+
+                - minimize the squared error \sum (V_train - V^{\tilde})^2
+
+                - method: least mean squares, for each instance (b, V_train(b))
+
+                  w_i = w_i + \eta (V_train(b) -v^{\tilde}(b)) x_i
+
+          5) The Final Design
+
+	     four parts
+
+	     1) Performance System: must solve task (f.ex. playing checkers)
+
+		- input: new problem (new game)
+
+		- output: solution (game trace)
+
+	     2) Critic:
+
+		- input solution (game trace)
+
+		- output: training examples of target function (similar to [[(1.1)]])
+
+	     3) Generalizer
+
+		- input: training examples
+
+		- output: estimate of target function (f.ex. via LMS)
+
+	     4) Experiment Generator: practice problems that maximize learning
+
+		- input: hypothesis/target function
+
+		- output: game start state
+
+	     summary
+
+	     - for good performance the solution should be modelable
+               similar to the linear approach
+
+	     - and depend mostly on the six features used for learning
+
+       3) PERSPECTIVES AND ISSUES IN MACHINE LEARNING
+
+	  learning as searching the hypothesis space
+
+	  1) Issues in Machine Learning
+
+	     - which algorithms to use?
+
+	     - "how much training data is sufficient"?
+
+	     - how much can prior knowledge help? (perfect and approximate)
+
+	     - how to choose next training experience?
+
+	     - what functions to learn? (automatable?)
+
+	     - automatically change representation to better
+               learn target ufnction?
+
+       4) HOW TO READ THIS BOOK
+
+	  - any sequence
+
+	  - best first read chapters 1 and 2
+
+	  - (interesting to me)
+
+	    2. [@2] inductive bias, ordering of hypotheses
+
+	    5. [@5] estimation theory, central limit theorem
+
+	    6. bayesian
+
+	    7. weighted majority: combine multiple methods
+
+       5) SUMMARY AND FURTHER READING
+
+	  - ml useful in
+
+	    - data mining (large dbs)
+
+	    - domains poorly understood by humans (face recognition)
+
+	    - adapt to changing conditions (stock, "adapt to changing reading
+              interests of individuals")
+
+	  - many domains
+
+	  - well-defined: task, performance metric, source of training
+            experience
+
+	  - learning as searching the hypothesis space
+
+    2) CONCEPT LEARNING AND THE GENERAL-TO-SPECIFIC ORDERING
+
+       concept learning: "acquiring the definition of a general
+       category given a sample of positive and negative training
+       examples of the category."
+
+       search a predifined set of hypotheses for those that fit best
+
+       1) INTRODUCTION
+
+	  - "Concept learning. Inferring a boolean-valued function from
+            training examples of its input and output."
+
+       2) A CONCEPT LEARNING TASK
+
+	  0) [@0]
+
+	     - enjoysports: given sky, airtemp, humidity, wind, water,
+               forecast, predict if aldo enjoys water sports that day
+
+	     - simple representation: conjuction of constraints
+
+	  1) Notation
+
+	     - set of Instances X
+
+	     - target concept c: X \to {0, 1}
+
+	     - training example (x \in X, c(x))
+
+	       - positive if c(x) = 1, negative if c(x) = 0
+
+	     - hypothesis h \in H, h: X \to {0, 1}
+
+	       - aim: h = c for x \in X
+
+	  2) The Inductive Learning Hypothesis
+
+	     "Any hypothesis found to approximate the target function
+             well over a sufficiently large set of training examples
+             will also approximate the target function well over other
+             unobserved examples." (?stupid?)
+
+       3) CONCEPT LEARNING AS SEARCH
+
+	  0) [@0]
+
+	     - distinct instances: possible combinations
+
+	     - syntactically different instances: possible
+               combinations with \emptyset and ? on each place
+
+	     - semantically different instances: \emptyset always classifies
+               as false, thus 1+ possible combinations with ? on each place
+
+	  1) General-to-Specific Ordering of Hypotheses
+
+	     - order hypotheses by moregeneral-than-or-equal-to
+
+	       - superset of hypotheses (see quotes)
+
+	       - is a partial ordering
+
+	       - algorithm based on this (see quotes)
+
+       4) FIND-S: FINDING A MAXIMALLY SPECIFIC HYPOTHESIS
+
+	  - start with (\empty, ..., \empty)
+
+	  - first example as new hypothesis
+
+	  - generalises to h \to (Sunny, Warm, ?, Strong, Warm, Same)
+
+	  - ignores all negative examples as they should not match
+
+	    - assumption: H contains correct hypothesis and no
+              contradictions
+
+	  - gives (one) most specific hypothesis that fits all
+
+       5) VERSION SPACES AND THE CANDIDATE-ELIMINATION ALGORITHM
+
+	  0) [@0]
+
+	     - candidate-elimination gives all fitting results
+
+	       - as with find-s: problem with noisy data
+
+	  1) Representation
+
+	     - consistent hypothesis: fits all examples (def see quotes)
+
+	     - version space: all hypotheses in H consistent with
+               training examples D (def see quotes)
+
+	  2) The LIST-THEN-ELIMINATE Algorithm
+
+	     - list all, eliminate non-fitting
+
+	     - guaranteed to terminate (on finite H), simple
+
+	     - takes too long
+
+	  3) A More Compact Representation for Version Spaces
+
+	     - save only the most general and most specific consistent
+               hypotheses (see defs quotes, and
+               moregeneral-than-or-equal-to)
+
+	     - all instances in between are equal to the version space
+               (theorem see quotes)
+
+	  4) CANDIDATE-ELIMINATION Learning Algorithm
+
+       7) [@7] INDUCTIVE BIAS
+
+	  1) A Biased Hypothesis Space
+
+	     hypothesis space might be limited in advance, precluding
+             perfect solution
+
+	  2) An Unbiased Learner
+
+	     - if the full hypothesis space is allowed, it gets very big
+
+	     - ...
+
+    5) [@5] EVALUATING HYPOTHESES
+
+       0) [@0]
+
+	  - dealing with limited training data
+
+	    - generalize accuracy to all data
+
+	    - one outperforming other on training, does it also
+              outperform on whole data
+
+	    - how to best learn hypothesis and estimate its accuracy
+
+       1) MOTIVATION
+
+	  problems with limited data
+
+	  - bias in the estimate: tends to some non-optimal solution,
+            especially for a "very rich hypothesis space,"
+
+	  - variance in the estimate: even if unbiased, the less data,
+            the higher the variance of results
+
+       2) ESTIMATING HYPOTHESIS ACCURACY
+
+	  0) [@0]
+
+	     - setting: n elements drawn with probability given by D from
+               population X
+
+	     - estimate accuracy of hypothesis h given accuracy over n elements
+
+	     - how correct is this estimate?
+
+	  1) Sample Error and True Error
+
+	     - sample error: misclassification rate on sample (see quotes)
+
+	     - true error: misclassification rate on whole
+               distribution (see quotes)
+
+	     - how good an approximation is the sample error?
+
+	  2) Confidence Intervals for Discrete-Valued Hypotheses
+
+	     - sample error and number of samples estimate true error
+               (see quotes)
+
+	     - this works well if error not to close to 0 or 1 and n
+               big enough (see quotes)
+
+       3) BASICS OF SAMPLING THEORY
+
+	  1) Error Estimation and Estimating Binomial Proportions
+
+	     - measure sample error \to experiment with random outcome
+
+	     - follows Binomial distribution
+
+	       - for np(1-p) \ge 5, you can use normal distribution
+
+	  2) The Binomial Distribution
+
+	     - weird coin with probability p for heads.
+
+	       - How many heads r after n tosses
+
+	       - r/n estimates p
+
+	     - corresponds to estimation of error:
+
+	       - p to error_{D}(h)
+
+	       - r/n to error_{S}(h)
+
+	     - general: base experiment with binary outcome repeated n times
+
+	  3) Mean and Variance
+
+	     - mean
+
+	     - variance, standard distribution
+
+	  4) Estimators, Bias, and Variance
+
+	     - error_{S}(h) is an estimator for error_{D}(h): random
+               variable to estimate "underlying population"
+
+	     - estimation bias is how much an estimator is wrong on
+               average
+
+	       - with bias = 0, it is called an /unbiased estimator/ for p
+
+	       - hypothesis h and sample S must be chosen independently
+
+	       - /estimation bias/ is a number, vs /inductive bias/ a
+                 set of estimations
+
+	     - if several unbiased estimators exist, best choose that
+               with the smallest variance
+
+	     - error standard deviation grows with p, shrinks with
+               \sqrt(n) (see quote)
+
+	  5) Confidence Intervals
+
+	     - confidence interval: contains param p with prob N% (see
+               quotes)
+
+	     - approximate error_{D} with error_{S}
+
+	     - approximate binomial with normal distribution
+
+	     - z-tables for normal distribution: z_{N} is "half the width
+               of the interval measured in standard deviations"
+
+	     - use normal-binomial approximation for n \ge 30 or np(1-p)\ge5
+
+	  6) Two-sided and One-sided Bounds
+
+	     - with error, one-sided bound is often sufficient:
+
+	     - 100(1-a)% two-sided confidence interval implies
+               100(1-a/2)% one-sided c.i. (symmetry of N)
+
+       4) A GENERAL APPROACH FOR DERIVING CONFIDENCE INTERVALS
+
+	  (which param, esti, pdf, interval bounds) see quotes
+
+	  1) Central Limit Theorem
+
+	     - n iid variables Y1, ..., Yn (independent, identically
+               distributed)
+
+	       - Y'_n := 1/n \sum_{i=1}^n Y_i
+
+	       - n \to \infty: mean(Y'_n) \to mean(Y)
+
+		 - and std \to \sigma/\sqrt{n}
+
+	       - can use normal distribution to estimate, for n \ge 30
+
+       5) DIFFERENCE IN ERROR OF TWO HYPOTHESES
+
+	  0) [@0]
+
+	     - evaluate two hypotheses h_1, h_2, tested on samples S_1,
+               S_2 with sizes |S_1| = n_1, |S_2| = n_2
+
+	     - estimate difference d = error_D(h_1) - error_D(h_2)
+               between true errors by d^ = error_{S_1}(h_1) - error_{S_2}(h_2)
+
+	       - difference of normal distributions is normal \to d^ assumed normal
+
+	       - variance of d^ is sum of variances of error_{S_{i}}(h_i) [[(mi5.12)]]
+
+	     - single sample S \to smaller variance (no variance of S_1 \neq S_2)
+
+	  1) Hypothesis Testing
+
+	     - compare hypotheses h1, h2
+
+	       - error_{s_1}(h_1) = 0.30
+
+	       - error_{s_1}(h_2) = 0.20
+
+	     - observed difference of d^ = .10
+
+	       - probability that h1 is still better than h2?
+
+		 1. compute variance as of [[(mi5.12)]]
+
+		 2. look up z-value from table, "halve" for one-sided
+
+		 3. see that: 95% confidence level.
+
+       6) COMPARING LEARNING ALGORITHMS
+
+          0) [@0]
+
+             - compare learning algorithms L1, L2 instead of hypotheses
+
+             - find out if error of L1 <, >, or = error of L2
+
+               - use training set S_0 and test set T_0
+
+             - algorithm: average of cross-validated error difference (see quotes)
+
+             - confidence interval \delta \pm t_{N, k-1} s_{\delta}
+
+               - t_{N, k-1} similar to z_N, goes to z_N as (k-1) \to \infty
+
+               - s_{\delta} = \sqrt{1 / (k(k-1)) \sum_{i=1}^k (\delta_i - \delta)^2}
+
+             - note: same set, different to hypothesis testing
+
+          1) Paired t Tests
+
+             first reading: skip or skim this section
+
+          2) Practical Considerations
+
+             - assumption of 1): iid normal variables
+
+               - invalid for limited data
+
+             - either cross-test: split data into test sets, train on rest
+
+             - or randomly draw at least 30 elements, use rest as training
+
+               - problem: not independnt any more
+
+               - advantage: resample as often as you want, reduce variance
+
+       7) SUMMARY AND FURTHER READING
+
+          main points:
+
+          - estimate confidence interval as of [[(5.1)]]
+
+          - general: identify parameter
+            \to get estimator for it
+            \to is random variable
+            \to check confidence interval
+
+          - estimation bias: estimators mean is different from parameter mean
+
+          - variance of estimator: decreases with size of sample
+
+          - compare two learning algos: cross-validate difference of error rates
+
+          - assumptions:
+
+            - approximate binomial distribution with normal distribution + variance
+
+            - and assume distribution fixed
+
+    7) [@7] COMPUTATIONAL LEARNING THEORY
+
+       0) [@0]
+
+          - which conditions enable/forbid successful learning?
+
+          - when is success assured?
+
+       1) INTRODUCTION
+
+          - classes of problems? (difficult/easy)
+
+          - how much data needed? (necessary/sufficient)
+
+          - smart sampling vs random sampling
+
+          - computational complexity of classes
+
+          - estimate number of errors made before learning target
+
+          - how much sample and computation complexity and mistake
+            bound is necessary (see quotes)
+
+       2) PROBABLY LEARNING AN APPROXIMATELY CORRECT HYPOTHESIS
+
+          binary noise-free training data, can be extended somewhat
+
+          1) The Problem Setting
+
+             - X all possible instances (f.ex. people = { {young,
+               short}, {old, tall}})
+
+             - C target concepts, c \in C: X \to {0,1} (f.ex. people who
+               are skiers)
+
+             - D distribution over X (f.ex. largest sports store
+               switzerland)
+
+             - learner L draws x from D, tests with other x from D
+
+          2) Error of a Hypothesis
+
+             - (see quotes, see also ch.5)
+
+             - true error of hypothesis: how often wrong re distribution/class
+
+             - training error: how much of training data classified wrongly
+
+             - re sample error: same, but statements assumed
+               independent of training data and h
+
+          3) PAC Learnability
+
+             - error bounded by \epsilon
+
+             - sucess rate bounded by \delta (suceed in at least 1-\delta cases)
+
+             - C pak-learnable (see quote) if in fixed max error rate
+               and failure rate, learnable in polynomial(\epsilon, \delta, n,
+               size(c))
+
+             - assumptions:
+
+               - H contains small-error hypothesis
+
+       3) SAMPLE COMPLEXITY FOR FINITE HYPOTHESIS SPACES
+
+          0) [@0]
+
+             - how many training samples needed until perfectly fitting
+               hypothesis is found
+
+             - assumption: *consistent learners*: can learn perfect
+               hypothesis
+
+             - bound number of hypotheses needed to probably (p > 1-\delta)
+               learn an approximate (error \epsilon) hypothesis: m (see quotes)
+
+          1) Agnostic Learning and Inconsistent Hypotheses
+*** quotes
+    1) INTRODUCTION
+       1) WELL-POSED LEARNING PROBLEMS
+          - Definition: A computer program is said to learn from
+            experience E with respect to some class of tasks T and
+            performance measure P, if its performance at tasks in T,
+            as measured by P, improves with experience E.
+    2) CONCEPT LEARNING AND THE GENERAL-TO-SPECIFIC ORDERING
+       3) [@3] CONCEPT LEARNING AS SEARCH
+	  - Definition: Let hj and hk be boolean-valued functions
+            defined over X. Then hj is *moregeneral-than-or-equal-to* hk
+            (written h_{j} \ge_{g} h_{k} ) if and only if
+
+	    (\forall x \in X)[(hk(x) = 1) \to (hj(x) = 1)]
+	  - FIND-S Algorithm.
+	    1. Initialize h to the most specific hypothesis in H
+	    2. For each positive training instance x
+	       - For each attribute constraint a_i in h
+		 - If the constraint a_i is satisfied by x
+		   - Then do nothing
+		   - Else replace a_i in h by the next more general
+                     constraint that is satisfied by x
+	    3. Output hypothesis h
+       5) [@5] VERSION SPACES AND THE CANDIDATE-ELIMINATION ALGORITHM
+	  1) Representation
+	     - A hypothesis h is *consistent* with a set of training
+               examples D if and only if h(x) = c(x) for each example
+               (x, c(x)) in D.
+
+	       Consistent(h, D) \equiv (\forall(x, c(x)) \in D) h(x) = c(x)
+	     - The *version space*, denoted VS_{H, D} with respect to
+               hypothesis space H and training examples D, is the
+               subset of hypotheses from H consistent with the
+               training examples in D.
+
+	       VS_{H, D} \equiv {h \in H | Consistent(h, D)}
+	  3) [@3] A More Compact Representation for Version Spaces
+	     - Definition: The *general boundary* G, with respect to
+               hypothesis space H and training data D, is the set of
+               maximally general members of H consistent with D.
+
+	       G = {g \in H | Consistent(g, D)
+                    \wedge (\not\exists g' \in H) [(g' >_{g} g) \wedge Consistent(g', D)]]
+	     - Definition: The *specific boundary* S, with respect to
+               hypothesis space H and training data D, is the set of
+               minimally general (i.e., maximally specific) members of
+               H consistent with D.
+
+	       S = {s \in H | Consistent(s, D)
+                    \wedge (\not\exists s' \in H) [(s >_{g} s') \wedge Consistent(s', D)]]
+	     - Theorem 2.1. *Version space representation
+               theorem*. Let X be an arbitrary set of instances and
+               let H be a set of boolean-valued hypotheses defined
+               over X. Let c : X \to {O, 1) be an arbitrary target
+               concept defined over X, and let D be an arbitrary set
+               of training examples {<x, c(x)>). For all X, H, c, and
+               D such that S and G are well defined,
+
+	       VS_{H, D} = {h \in H | (\exists s \in S, g \in G)(g \ge_{g} h \ge_{g} s)}
+    5) [@5] EVALUATING HYPOTHESES
+       1) ESTIMATING HYPOTHESIS ACCURACY
+	  1) Sample Error and True Error
+	     - Definition: The *sample error* (denoted error_{S}(h)) of
+               hypothesis h with respect to target function f and data
+               sample S is
+
+	       error_{S}(h) \equiv 1/n \sum_{x \in S} \delta(f(x), h(x))
+
+	       Where n is the number of examples in S, and the
+               quantity \delta(f(x), h(x)) is 1 if f(x) \neq h(x) , and 0
+               otherwise
+	     - Definition: The *true error* (denoted error_{D}(h)) of
+               hypothesis h with respect to target function f and
+               distribution D, is the probability that h will
+               misclassify an instance drawn at random according to D.
+
+	       error_{D}(h) \equiv Pr_{x \in D}[f(x) \neq h(x)]
+	  2) Confidence Intervals for Discrete-Valued Hypotheses
+	     - [confidence interval z_N = 1.96 for 95% confidence interval]
+               error_{S} \pm z_{N} \sqrt(error_{S}(h)(1- error_{S}(h)) / n)          (ref:5.1)
+	     - n \cdot error_{S}(h) (1-error_{S}(h)) \ge 5
+       3) [@3] BASICS OF SAMPLING THEORY
+	  4) [@4] Estimators, Bias, and Variance
+	     - The *estimation bias* of an estimator Y for an arbitrary
+               parameter p is
+
+	       E[Y] - p
+	     - In general, given r errors in a sample of n
+               independently drawn test examples, the standard
+               deviation for errors(h) is given by
+
+	       \sigma_{errors_{S}(h)} = \sigma_{r} / n = \sqrt{p(1-p) / n} (5.8)
+	     - which can be approximated by substituting r/n =
+               errors_{S}(h) for p
+	  5) Confidence Intervals
+	     - An N% *confidence interval* for some parameter p is an
+               interval that is expected with probability N% to
+               contain p .
+	     - if a random variable Y obeys a Normal distribution with
+               mean \mu and standard deviation \sigma , then the measured
+               random value y of Y will fall into the following
+               interval N% of the time
+
+	       \mu \pm z_{N }\sigma
+
+	       Equivalently, the mean \mu will fall into the following
+               interval N% of the time
+
+	       y \pm z_{N} \sigma
+       4) A GENERAL APPROACH FOR DERIVING CONFIDENCE INTERVALS
+	  0) [@0]
+	     1. Identify the underlying population parameter p to
+                be estimated, for example, error_{D}(h).
+	     2. Define the estimator Y (e.g., error_{S}(h)). It is
+                desirable to choose a minimum-variance, unbiased
+                estimator.
+	     3. Determine the probability distribution D_{Y} that governs
+                the estimator Y, including its mean and variance.
+	     4. Determine the N% confidence interval by finding
+                thresholds L and U such that N% of the mass in the
+                probability distribution D_{Y} falls between L and U.
+	  1) Central Limit Theorem
+	     - *Central Limit Theorem*. Consider a set of independent,
+               identically distributed random variables Y1 ... Yn,
+               governed by an arbitrary probability distribution with
+               mean p and finite variance \sigma^2. Define the sample mean,
+               Y'_n := 1/n \sum_{i=1}^n Y_i. Then as n \to \infty, the distribution
+               governing
+
+	       (Y'_n - \mu) / (\sigma / \sqrt{n})
+
+	       approaches a Normal distribution, with zero mean and
+               standard deviation equal to 1.
+       5) DIFFERENCE IN ERROR OF TWO HYPOTHESES
+	  0) [@0]
+	     - d^ \equiv error_{S_1}(h_1) - error_{S_2}(h_2)
+	     - \sigma_{d^}^{2} \approx
+               [error_{S_1}(h_1) (1 - error_{S_1}(h_1))] /n_1
+	       + [error_{S_2}(h_2) (1 - error_{S_2}(h_2))] /n_2         (ref:mi5.12)
+       6) COMPARING LEARNING ALGORITHMS
+          - Learning procedure
+            1. Partition the available data D0 into k disjoint subsets
+               T1, T2, ..., Tk of equal size, where this size is at
+               least 30.
+            2. for i in range(1,k+1):
+               S_i = D0 \ Ti
+               h_A = L_A(S_i)
+               h_B = L_B(S_i)
+               \delta_i = error_{Ti}(h_A) - error_{Ti}(h_B)
+            3. Return the value \delta, where
+
+               \delta = 1/k \sum_{i=1}^k \delta_i
+    7) [@7] COMPUTATIONAL LEARNING THEORY
+       1) INTRODUCTION
+          - *Sample complexity*. How many training examples are needed
+            for a learner to converge (with high probability) to a
+            successful hypothesis?
+          - *Computational complexity*. How much computational effort
+            is needed for a learner to converge (with high
+            probability) to a successful hypothesis?
+          - *Mistake bound*. How many training examples will the
+            learner misclassify before converging to a successful
+            hypothesis?
+       2) PROBABLY LEARNING AN APPROXIMATELY CORRECT HYPOTHESIS
+          *PAC*: probably approximately correct model
+          2) [@2] Error of a Hypothesis
+             - Error of a Hypothesis
+               - The *true error* (denoted error_{D}(h)) of hypothesis h
+                 with respect to target concept c and distribution D is
+                 the probability that h will misclassify an instance
+                 drawn at random according to D.
+
+                 error_{D}(h) \equiv Pr_{x \in D} [c(x) \neq h(x)]
+          3) PAC Learnability
+             - classes of target concepts that can be reliably learned
+               from a reasonable number of randomly drawn training
+               examples and a reasonable amount of computation.
+             - Consider a concept class C defined over a set of
+               instances X of length n and a learner L using
+               hypothesis space H . C is *PAC-learnable* by L using H
+               if for all c \in C, distributions D over X, \epsilon such that 0
+               < \epsilon < 1/2, and \delta such that 0 < \delta < 1/2, learner L will
+               with probability at least (1 - \delta) output a hypothesis h
+               \in H such that error_{D}(h) \le \epsilon, in time that is polynomial
+               in 1/\epsilon, 1/\delta, n, and size(c).
+       3) SAMPLE COMPLEXITY FOR FINITE HYPOTHESIS SPACES
+          - The reason is that in most practical settings the factor
+            that most limits success of the learner is the limited
+            availability of training data.
+          - Consider a hypothesis space H, target concept c, instance
+            distribution \cal D, and set of training examples D of c. The
+            version space VS_{H,D} is said to be *\epsilon-exhausted* with
+            respect to c and \cal D, if every hypothesis h in VS_{H,D} has
+            error less than \epsilon with respect to c and \cal D.
+
+            (\forall h \in VS_{H, D}) error_{\cal D}(h) < \epsilon
+          - *\epsilon-exhausting the version space*. If the hypothesis space H
+            is finite, and D is a sequence of m \ge 1 independent
+            randomly drawn examples of some target concept c, then for
+            any 0 \le \epsilon \le 1, the probability that the version space VS_{H,
+            \cal D} is not \epsilon-exhausted (with respect to c) is less
+            than or equal to |H| e^{-\epsilon m}
+          - m \ge 1/\epsilon (ln |H| + ln (1/\delta))
+*** ref [[file:master.bib::mitchell][Mitchell: Machine Learning]]
 ** TODO [#B] Entwurfsmuster
 *** summary (weiter bei Besucher, S. 317)
     0) [@0] Preface
@@ -11540,38 +11827,6 @@
       - generate a synthetic workload for benchmarking or simulation.
 *** [[file:master.bib::tumwt][Ihm & Pai 2011: Towards Understanding Modern Web Traffic]]
 ** TODO [#B] [[~/da/git/docs/timing-fc2004.pdf][Timing Attacks in Low-Latency Mix Systems]]
-** TODO MOVE [#A] [[./10.1.1.20.98.bloom-nw.pdf][Network Applications of Bloom Filters: A Survey]]
-*** summary
-    0) [@0] Abstract
-
-       - "space efficient"
-
-       - "small probability of false positives"
-
-    1) Introduction
-
-       - various uses: peer-to-peer, packet routing, locating
-         resources, measurement
-
-       - can replace lists and sets
-
-       - design: weigh false positives
-
-    2) Bloom filters: Mathematical preliminaries
-
-       1) Standard Bloom filters
-*** quotes
-    1) Introduction
-       - A Bloom filter is a simple space-efficient randomized data
-         structure for representing a set in order to support
-         membership queries.
-       - If false positives do not cause significant problems, the
-         Bloom filter may provide improved performance.
-       - The Bloom filter principle: Wherever a list or set is used,
-         and space is a consideration, a Bloom filter should be
-         considered. When using a Bloom filter, consider the potential
-         effects of false positives.
-*** ref [[file:master.bib::Broder02networkapplications][Broder & Mitzenmacher 2002: Network Applications Bloom Filters]]
 ** TODO [#B] search feature vs classifier [[./2009-diss.pdf][Machine Learning for Application-Layer Intrusion Detection]]
 *** #B PART
 *** summary
@@ -11709,17 +11964,6 @@
 	     - Persistent Connections
 *** quotes
 *** ref [[file:master.bib::DBLP:books/daglib/0001977][Kurose & Ross 2001: Computer]]
-** TODO MOVE [#A] [[./10.1.1.20.2080.bloom_orig.pdf][Bloom - Space/Time Trade-offs in Hash Coding with Allowable Errors]]
-*** summary
-    0) [@0] Abstract
-
-       - set membership hash-coding
-
-       - reduce amount of space by allowing some errors
-
-    1) Introduction
-*** quotes
-*** ref [[file:master.bib::Bloom70space/timetrade-offs][Bloom 1970: Space Time Trade]]
 ** TODO PART [#B] [[./minion-design.pdf][Mixminion: Design of a Type III Anonymous Remailer Protocol]]
 *** TODO at least dummy problem
 *** summary
@@ -11975,250 +12219,6 @@
            - bigger anonymity set, at least protects against other threats
     4) Case study: against options
 *** ref [[file:master.bib::usability:weis2006][Dingledine & Mathewson 2006: Anonymity Loves Company]]
-** TODO [#A] MOVE PART [[./ESLII_print4.pdf][Hastie - The Elements of Statistical Learning]]
-*** TODO skim chapters 2.8, 2.9, 3.3, 7 (esp 7.10), 9, 12 and 13, 15, 16
-    (leave out 11,14,17)
-*** summary
-    1) Introduction
-
-       examples
-
-    2) Overview of Supervised Learning
-
-       1) inputs
-
-          == predictors (statistics)
-
-          == independent variables (statistics)
-
-	  == features (pattern recognition)
-
-	  outputs
-
-	  == responses (statistics)
-
-	  == dependent variables (statistics)
-
-       2) Variable Types and Terminology
-
-	  - qualitative aka discrete aka categorical variables aka factors
-
-	    example: handwritten digits, fisher's irises
-
-	  - regression for quantitative outputs Y, classification for
-            qualitative outputs G
-
-       3) Two Simple Approaches to Prediction: Least Squares and
-          Nearest Neighbors
-
-	  0) [@0]
-
-	     - linear model
-
-	       - "stable but possibly inaccurate predictions"
-
-	     - k-nearest neighbors
-
-	       - "often accurate but can be unstable"
-
-	  1) Linear Models and Least Squares
-
-	     "solve" the quadratic equation in quotes by finding a
-             minimum
-
-	  2) Nearest-Neighbor Methods
-
-	     - majority of the closest (by specific metric) k neigbors
-               are of the class
-
-	     - k=1 - might lead to overfitting
-
-	  3) From Least Squares to Nearest Neighbors
-
-	     - defined later
-
-	       - variance: ca schwankung
-
-	       - bias: ca vorannahmen
-
-	     - ls: high bias, low variance
-
-	     - nn: low bias, high variance
-
-	     - knn - degrees of freedom: N / k
-
-	     - many models today are variations of knn and the linear
-               model
-
-       4) Statistical Decision Theory
-
-	  - minimize expected loss
-
-	    - knn: localized minimization
-
-	    - linear model: assume linearity
-
-	    - expected loss (for regression):
-
-	      - squared (L2) most often,
-
-	      - L1 has discontinuties in derivative (=nicht stetig diffbar)
-
-	    - expected loss for classification:
-
-	      - often zero-one loss function
-
-	      - results in Bayes classifiers
-
-	    - classification similar to regression
-
-	      - knn: localized conditional probability, estimated by
-                training sample proportions
-
-	      - linear: map to dummy variable
-
-       5) Local Methods in High Dimensions
-
-	  - unbiased methods like problematic supposedly more
-            problematic, as dimension rises
-
-       6) Statistical Models, Supervised Learning and Function
-          Approximation
-
-	  0) [@0]
-
-	     Try to approximate the I/O relationship f(x) via f\circ(x)
-
-	     1) A Statistical Model for the Joint Distribution Pr(X, Y )
-
-    4) [@4] 4. Linear Methods for Classification
-
-       4) [@4] Logistic Regression
-
-          model posterior probabilities linearly (?)
-
-          1) Fitting Logistic Regression Models
-
-             - multinomial distribution: different outcomes,
-               "completely specif[ied]"
-
-             - cont p. 120
-
-    9) [@9] Additive Models, Trees, and Related Methods
-
-       continues ch.3-6
-
-       1) Generalized Additive Models
-
-          - related to logistic regression (4.4)
-
-          - cont p. 315
-*** quotes
-    0) [@0] Preface to the Second Edition
-       - Our first edition was unfriendly to colorblind readers; in
-         particular, we tended to favor red/green contrasts which are
-         particularly troublesome. We have changed the color palette
-         in this edition to a large extent, replacing the above with
-         an orange/blue contrast.
-       - Chapter 18 explores the “p ≫ N ” problem, which is learning in
-         high-dimensional feature spaces. These problems arise in many
-         areas, including genomic and proteomic studies, and document
-         classification.
-    0) [@0] unsorted
-       - 7 Model Assessment and Selection
-       - 7.10.2 The Wrong and Right Way to Do Cross-validation
-       - 15 Random Forests
-       - 18 High-Dimensional Problems: p ≫ N
-       - 18.3.3 The Support Vector Classifier
-       - (ends Contents)
-       - Average percentage of words or characters in an email message
-         equal to the indicated word or character. We have chosen the
-         words and characters showing the largest difference between spam
-         and email.
-         |       | george |  you | your |   hp | free |  hpl |    ! |  our |   re |  edu | remove |
-         |-------+--------+------+------+------+------+------+------+------+------+------+--------|
-         | spam  |   0.00 | 2.26 | 1.38 | 0.02 | 0.52 | 0.01 | 0.51 | 0.51 | 0.13 | 0.01 |   0.28 |
-         | email |   1.27 | 1.27 | 0.44 | 0.90 | 0.07 | 0.43 | 0.11 | 0.18 | 0.42 | 0.29 |   0.01 |
-       - This is a classification problem for which the error rate needs
-         to be kept very low [...] In order to achieve this low error
-         rate, some objects can be assignedto a “don’t know” category,
-         and sorted instead by hand.
-       - splines, wavelets and regularization/penalization methods for a
-         single predictor, [...] kernel methods and local
-         regression. Both of these sets of methods are important building
-         blocks for high-dimensional learning techniques.
-       - At the end of each chapter we discuss computational considerations
-       - Chapters 1–4 be first read in sequence. Chapter 7 should also be
-         considered mandatory, as it covers central concepts that pertain
-         to all learning methods.
-       - (ends 1)
-       - predict the output Y via the model
-
-         Ŷ = β̂_{0} + \sum_{j=1}^{p} X_{j} β̂_{j} . (2.1)
-       - in vector form as an inner product
-
-         Ŷ = X^{T} β̂, (2.2)
-       - least squares. In this approach, we pick the coefficients β to
-         minimize the residual sum of squares
-
-         RSS(β) = \sum_{i=1}^{N} (y_{i} − x^{T}_{i} β)^{2}. (2.3)
-       - in matrix notation. We can write
-
-         RSS(β) = (y − Xβ)^{T} (y − Xβ), (2.4)
-       - the unique solution is given by
-
-         β̂ = (X^{T} X)^{−1} X^{T} y, (2.6)
-       - In the case of one Gaussian per class, we will see in Chapter 4
-         that a linear decision boundary is the best one can do, and that
-         our estimate is almost optimal. The region of overlap is
-         inevitable, and future data to be predicted will be plagued by
-         this overlap as well.
-       - (ends 2.3.1)
-       - linear decision boundary [...] has low variance and potentially
-         high bias.
-       - k-nearest-neighbor [...] high variance and low bias.
-       - 1-nearest-neighbor, the simplest of all, captures a large
-         percentage of the market for low-dimensional problems.
-       - Kernel methods use weights that decrease smoothly to zero with
-         distance from the target point, rather than the effective 0/1
-         weights used by k-nearest neighbors.
-       - Projection pursuit and neural network models consist of sums of
-         nonlinearly transformed linear models.
-       - (ends 2.3.3)
-       - X ∈ R^{p} input
-       - Y ∈ R output
-       - function f(X) for predicting Y
-       - /squared error loss/: L(Y, f(X)) = (Y − f (X))^{2} .
-       - EPE(f) = E(Y − f (X))^{2} (2.9)
-
-         = \int [y − f (x)]^{2} Pr(dx, dy) (2.10)
-
-         the /expected (squared) prediction error/
-       - The solution is
-
-         f (x) = E(Y |X = x), (2.13)
-
-         the conditional expectation, also known as the regression
-         function. Thus the best prediction of Y at any point X = x is
-         the conditional mean, when best is measured by average squared
-         error.
-       - (ends 2.4)
-       - In ten dimensions we need to cover 80% of the range of each
-         coordinate to capture 10% of the data.
-       - (ends 2.5)
-       - Thus it is not surprising that the analysis of high-dimensional
-         data requires either modification of procedures designed for the
-         N > p scenario, or entirely new procedures
-       - (ends 2.6.0)
-    4) [@4] 4. Linear Methods for Classification
-       4) [@4] Logistic Regression
-          - model the posterior probabilities of the K classes via
-            linear functions in x, while at the same time ensuring
-            that they sum to one and remain in [0, 1].
-    9) [@9] Additive Models, Trees, and Related Methods
-       1) Generalized Additive Models
-          - the *binary response* μ(X) = Pr(Y = 1|X)
-*** ref [[file:master.bib::elemstatlearn][Hastie et al. 2008: Elements Statistical Learning]]
 ** TODO [#C] [[./torspec/pt-spec.txt][Pluggable Transport Specification (Version 1)]]
 *** summary (stopped at [[file:torspec/pt-spec.txt::"TOR_PT_SERVER_TRANSPORT_OPTIONS"][3.2.3]])
     0) [@0] Abstract
@@ -12303,7 +12303,6 @@
 	     - TOR_PT_AUTH_COOKIE_FILE: Extended ORPort autho cookie =/path/to=
 
        3) Pluggable Transport To Parent Process Communication
-	     
 *** quotes
 *** ref [[file:master.bib::tor-spec-pt][Yawning 2015: Pluggable Transport Specification Version]]
 ** TODO [#C] [[./xxx-multihop-padding-primitives.txt][Multihop Padding Primitives]]
@@ -14566,6 +14565,62 @@
       always use this process in the future: we reserve the right to
       get really excited and run off and implement something in a
       caffeine-or-m&m-fueled all-night hacking session.}
+** TODO chaum-mix.pdf: Untraceable Electronic Mail, Return Addresses and Digital Pseudonyms
+*** TODO refactor
+*** summary
+    1) Abstract: untraceable electronic mail over insecure
+       connections, ballots, untraceable return addresses
+    2) Introduction: "key distribution problem" addressed by public
+       key cryptography, "traffic analysis problem" addressable based
+       on this (without common authority)
+    3) Notation: public K, private $K^{-1}$, encryption K(X),
+       seal=encrypt, sign, random R, constant C (all zeros)
+    4) Assumptions: network watchable, cryptography secure
+    5) Mail System:
+       - each mix i decrypts K_i(R_i,K_a(R_0,m),a) \to K_a(R_0,m), a
+       - receipts allow for clients to prove that an item was left out
+       - cascade of "mixes", with lexicographic ordered batches of items
+    6) Return Addresses:
+       - intermediary 1 decrypts and reencrypts K_1(R_1, A_x), K_x(R_0, M)
+	 \to A_x, R_1(K_x(R_0, M))
+       - R_1 is part key, must not be repeated
+       - allows for certified mail
+       - cascade possible
+    7) Digital Pseudonyms:
+       ...
+*** quotes
+    - The order of arrival is hidden by outputting the uniformly sized
+      items in lexicographically ordered batches.
+    - The following two sections introduce the notation and
+      assumptions.  Then the basic concepts are introduced for some
+      special cases involving a series of one or more authorities.
+      The final section covers general purpose mail networks.
+** TODO control-spec.txt
+*** TODO refactor
+*** summary
+    0) communication with locally running Tor process
+*** quotes
+** TODO dir-spec.txt
+*** TODO refactor
+*** summary
+    0) Scope and preliminaries
+       0) "describes TOR directory service v3"
+       1) History:
+          - before version 1, there was a fixed list of hosts
+	  - 0.0.2 introduced "directory authorities" that signed router lists,
+	    0.0.8 introduced "directory caches" that cached that list,
+	    there were also "router status" documents: just up/down-status
+	  - Version 2 switched to voting and partitioning the router list
+	    format: (hash(id_key), hash(descriptor), status summary)
+       2) Goals of the version 3 protocol:
+          less info->less bandwidth,
+	  avoid partitioning,
+	  store identity keys of authorities offline
+       3) Some remaining questions:
+          in V3: sha-1 is old, hardcoded IPs, longer router identity keys,
+	  later: all clients (/ all caches) knowing all routers won't scale
+     1) ...
+*** quotes
 ** PART [[info:gnuplot#Top][Broeker - gnuplot]]
 *** summary
     1) [[info:gnuplot#Top][gnuplot]]
@@ -19549,6 +19604,455 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
                The load event occurs when the DOM implementation
                finishes loading [...]
 *** ref [[file:master.bib::dom2-events][W3C 2000: Document Object Model]]
+** PART Beck - extreme Programming explained                          :hobby:
+*** summary
+    1) Risk: The Basic Problem
+
+       There are several risks in Software Development. XP addresses them.
+
+    2) A Development Episode
+
+       Two programmers complement each other in test case design,
+       interaction, test refactoring, test writing, coding,
+       refactoring, integration, often switching keyboard control.
+
+    3) Economics of Software Development
+
+       There are interest payments.
+
+       - factors: cash flows in/out, interest rates, project mortality
+
+       - earn by: (spending less), (earning more),
+
+         - spending later/earning sooner
+
+         - keeping the project alive
+
+       - choices: abandon the project, switch direction, defer action or grow
+
+       - example: could add feature, cost 10$, estimated return 15$ \pm 100%
+
+         - strategy to wait: $7.87 (blackbox options theory calculator)
+
+    4) Four Variables
+
+       Cost, Time, Quality, Scope - pick three
+
+    5) Cost of Change
+
+       - exponential cost increase is no longer true, due to
+
+         - object-orientation, message-passing
+
+         - simple design
+
+         - automated tests
+
+         - practice in modifying the system
+
+       - easily change system later, defer decisions
+
+    6) Learning to Drive
+
+       - small changes, adjust course
+
+       - driver is customer
+
+    7) Four Values
+
+       communication, simplicity, feedback, courage
+
+       1) Communication
+
+          - problem arise when people don't communicate
+
+          - some steps make you communicate: unit testing, pair
+            programming, task estimation
+
+          - coach to reintroduce non-communicating members
+
+       2) Simplicity
+
+          - "what is the simplest thing that could possibly work?"
+
+          - simplicity is hard
+
+          - makes communication easier
+
+       3) Feedback
+
+          - from the system
+
+            - minutes/days: unit tests (+ programmers give feedback to
+              customer stories?)
+
+            - weeks/months: functional tests ("simplified use cases")
+              (+customers review schedule)
+
+          - deploy early
+
+          - "when all tests run, you're done"
+
+       4) Courage
+
+          - just do it
+
+          - change system if it is broken
+
+            - or if you have an idea how to improve
+
+          - supported by
+
+            - simplicity (easy to change), and
+
+            - communication: (agree before that bad solution, improvement)
+
+            - feedback: feel safer if you have tests
+
+          - supports simplicity: try to simplify asap
+
+       5) The Values in Practice
+
+          - next: how to implement xp
+
+    8) Basic Priciples
+
+       - Rapid feedback: helps in learning
+
+       - Assume simplicity: 98% when it helps give you free resources
+         for other 2%
+
+       - Incremental change: small changes at a time
+
+       - Embracing change
+
+       - Quality work: makes work more fun
+
+       - (less central principles)
+
+       - teach learning: self-responsibility
+
+       - small initial investment: start small, focuses, enough to
+         solve one interesting problem
+
+       - play to win
+
+       - Concrete experiments: test every abstract decision's
+         (code+requirements)
+
+       - open, honest communication
+
+       - work with people's instinct, not against them:
+
+       - accepted responsibility: of your own choosing (still part of team...)
+
+       - local adaptation: adapt this to local conditions
+
+       - travel light: keep only tests and code
+
+       - honest measurement
+
+         - to measurable scale ("two weeks" instead of "14.176 hours")
+
+         - with sensible metrics (not lines of code, f.ex.)
+
+    9) Back to Basics
+
+       1) Coding
+
+          - code to test thoughts: computer does exactly what you tell
+            it to do
+
+          - code to communicate (intent, algorithms, expansion, tests)
+
+       2) Testing
+*** quotes
+    00) [@00] unsorted
+        - Use XP when requirements are vague or changing
+        - Since feedback from system in production is vastly higher
+          quality than any other kind of feedback, giving a project too
+          much time will hurt it.
+    0) [@0] Foreword by Erich Gamma
+       - Delivering software is hard, and delivering quality software
+         in time is even harder.
+    0) [@0] Preface
+       - In short, XP promises to reduce project risk, improve
+         responsiveness to business changes, improve productivity
+         throughout the life of a system, and add fun to building
+         osftware in teams --- all at the same time. Really. Quit
+         laughing. Now you'll have to read the rest of the book to see
+         if I'm crazy.
+    1) Risk: The Basic Problem
+       - loneliness that is often at the heart of job dissatisfaction
+    6) [@6] Learning to Drive
+       - The driver of a software project is the customer.
+       - Our job as programmers is to give the customer a steering
+         wheel and give them feedback about exactly where we are on
+         the road.
+    7) Four Values
+       - Short-term individual goals often conflict with long-term
+         social goals.
+       - Optimism is an occupational hazard of programming. Feedback
+         is the treatment.
+    8) Basic Priciples
+       - Even the adoption of XP must be taken in little steps.
+       - Most software development I see is played not to lose.
+    9) Back to Basics
+       - For a system to live, it must retain its source code.
+*** ref [[file:master.bib::xp][Beck 1999: Extreme Programming Explained]]
+** TODO 2009-03-11-performance.pdf: Performance Improvements on Tor or, Why Tor is slow and what we’re going to do about it
+*** TODO refactor
+*** summary
+    - so far mostly usability and blocking-resistance
+    - six reasons why slow
+      1) congestion control broken / web browsing
+	 - tcp/tor interaction
+	 - windows sizes
+      2) some users clog network
+	 - squeeze circuit
+	 - throttle some at exit
+	 - throttle some at client
+	 - throttle all at client
+	 - default exit policy 80,443
+	 - user education
+      3) overall capacity
+	 - advocacy
+	   - talk
+	   - support
+	   - fb app
+	   - look more
+	 - fund directly
+	 - fast tor on windows
+	 - find overloaded or broken relays
+	 - dynamic IPs
+	 - incentives
+	 - automatic relay in tor sw
+      4) path selection not distributed
+	 - better balancing of traffic via ORs
+	 - inaccurate bandwidth measurements
+	 - bandwidth might not be the best metric
+	 - exit policy in relay selecton
+      5) clients dumb
+	 - every-second-bump
+	 - how long to establish circuit, when to dump
+	 - extend to other places when next hop build fails?
+	 - bundle data and relay cell
+      6) low-bandwidth users: much directory information
+	 - directory optimization
+	 - tls bundling (negligeable)
+    - conclusion
+      - better network -> more users ->slower network
+      - this means less usability or other work
+*** quotes
+    - Over the past few years, our funding (and thus our development
+      effort) has focused on usability and blocking-resistance.
+    - Tor clients choose paths imperfectly
+      - We don’t balance traffic over our bandwidth numbers correctly
+      - The bandwidth estimates we have aren’t very accurate
+      - Bandwidth might not even be the right metric to weight by
+    - But over the past year, research has shown that it’s [one tcp
+      connection] a bad idea in terms of performance, since TCP’s
+      backoff mechanism only has one option when that connection is
+      sending too many bytes: slow it down, and thus slow down all the
+      circuits going across it.
+    - Experiments show that moving congestion management to be fully
+      end-to-end offers a significant im- provement in performance.
+    - We could optimistically have this [UDP-TLS] testbed network
+      deployed in late 2009.
+    - Currently when we’re picking cells to write onto the network, we
+      choose round-robin from each circuit that wants to write. We
+      could instead remember which circuits have written many cells
+      recently, and give priority to the ones that haven’t.
+    - Plus, we could make the defaults higher if you sign up as a
+      relay and pass your reachability test.
+    - Our experience is that visiting them in person produces much
+      better results, long-term, than Slashdot articles.
+    - Several users have posted that they get much better Tor
+      performance if they hard-code their paths to only use the
+      fastest ten relays (and ignore the huge anonymity implications,
+      of course).
+
+
+
+
+
+    - ...
+    - If web-browsing users are more sensitive to latency than
+      bandwidth, then we could optimize the network for latency rather
+      than throughput.
+*** TODO ref plus file
+** TODO blocking.pdf: Design of a blocking-resistant anonymity system
+*** TODO refactor
+*** quotes
+*** summary
+    1) Introduction
+       Previously: TOR anonymizes, threat: first only passive, then active
+       Now: TOR provides censorship avoidance, threat: also interrupt
+    2) Adversary Assumptions
+       ....
+
+    3) tor anti-blocking procedures
+       - different solutions
+	 - paid for proxy
+	 - volunteer work
+	 - tor
+       - arms race
+	 - tor weaknesses
+	   - 2 certs
+	   - special traffic
+	 - strengths
+	   - many users: help freedom
+	   - discoverability
+*** up to
+    - Identity keys as part of addressing information
+** TODO defenestrator.pdf
+*** TODO refactor
+*** quotes
+    - We also argue that our proposals do not enable any new attacks
+      on Tor users’ privacy.
+    - The Tor network is a decentralized circuit-switching overlay
+      consisting of volunteer-run Tor routers hosted around the world
+    - Fig. 1. A Tor router’s queuing architecture
+      (defenestrator.router_queues.png)
+*** summary
+    1) Introduction: tor: distributed circuit-switching overlay
+       - Context: big hurdle in TOR adoption lies in delays
+       - Improving Congestion and Flow Control: 2 approaches
+	 - end-to-end window sizing like tcp congestion control
+	 - n23
+       - Evaluation:
+	 - end2end poor downloads
+	 - n23 seems to work
+    2) TOR Background: chain of onion routers, selected by bw, onion
+       encryption, special entry guard, mostly http, mostly
+       downstream, 512-byte cells (newer: different)
+    3) Tor’s Approach to Congestion and Flow Control
+       1) Congestion and Flow Control Mechanisms
+	  - Pairwise TCP: tcp flow control, BUT circuit multiplexing
+	  - Tiered Output Buffers: conn fifo->decrypt->circ fifo->out fifo(32k)
+	  - ....
+** TODO shadow-ndss2012.pdf: Shadow: Running Tor in a Box for Accurate and Efﬁcient Experimentation
+*** TODO refactor
+*** summary
+    1) Introduction:
+      - Many research papers on tor are loth to interefere with the
+        actual network, yet would profit from a realistic simulation
+        environment
+      - Shadow uses unmodified TOR source code in an discrete-event
+        simulation
+      - This is verified by comparing to live tor and PlanetLAB
+      - The EWMA-scheduling is tested and found wanting
+    2) Requirements:
+      - Accuracy: original source code, realistic system simulation
+      - Usability: easy setup, easy config, obtainable
+    3) Design:
+      library calls substituted by shadow
+      1) the simulation is set up by a simulation script that describes
+        nodes (upstream, downstream, latency, cpu [, name) and events
+        (commands)
+      2) a plug-in is a wrapper from the application to shadow. the app
+        must be non-blocking, single-threaded and must register all
+        state variables to shadow
+      3) virtual nodes are the hosts of shadow's simulation
+	1) network is a token bucket algorithm
+	2) libraries are preloaded/overridden with shadow-specific
+           code: time, hostname, crypto, CPU-byte-passing
+	3) instead of the whole plug-in being swapped in and out of
+           memory, the registered state variables are replaced when
+           switching virtual nodes
+    4) The Scallion Plug-In: Running Tor in Shadow
+       - State registration: Scallion registers variables including
+         static (via objcopy, readelf and nm) and globals
+       - Bandwidth Measurements: Scallion intercepts bandwidth
+         messages to the directory servers
+       - Preloaded Functions: sockets, CPU worker, bw measurement
+       - Configurability: network generation via scripts
+    5) evaluate accuracy
+       1) HTTP client, (delay) server (multiple/buffering), and socks
+          proxy plug-in and code
+       2) trying to model planet-lab
+	  - 2 setups: one bulk 5MB download, one 320KB with delays
+	  - on planetlab and TOR in planetlab
+       3) live tor network
+    6) evaluate EWMA
+       - ewma prioritises those circuits with the shortest queue
+       - testing: two bulk, then 10 minutes later 1 bulk, 1 web
+       - result: mixed resultst, sometimes better, sometimes worse
+    7) related work:
+       - others (defunct)
+       - ExperimenTOR: shadow is
+	 - more usable: stand-alone user, little configuration
+	 - more efficient and scalable, can run faster (or slower)
+	 - minimizes memory overhead
+	 - more customizable, f.ex. adversarial nodes
+    8) conclusion
+       - uses approximations of network that may or not be correct
+       - is single-threaded
+*** quotes
+    - Tor is a large and popular overlay network providing both
+      anonymity to its users and a platform for anonymous
+      communication research.
+    - Shadow, an architecture for efﬁciently running accurate Tor
+      experiments on a single machine.
+    - Although Shadow simulates the network layer, it links to and
+      runs real Tor software, allowing us to experiment with new
+      designs by implementing them directly into the Tor source
+      code.
+    - Shadow was designed especially for running simulations using the
+      Tor application.
+    - the plug-in implementation itself is minimal (roughly 1500 lines
+      of code).
+    - Each Tor relay reports its recent bandwidth history to the
+      directory authorities to help balance bandwidth across all
+      available relays. However, relays’ reports are based on the
+      amount of data it has recently transferred, and the reported
+      value is updated every twenty minutes only if it has not changed
+      signiﬁcantly from the last reported value.  This causes relays
+      to be underutilized when ﬁrst joining the network, and causes
+      bootstrapping problems in new networks since every node’s
+      bandwidth will be zero for the ﬁrst twenty minutes of the
+      simulation.
+    - For example, several relays with smaller bandwidth capacities
+      will not result in the same network throughput as fewer relays
+      with larger bandwidth capacities, even if the total capacities
+      are equal. Further, correctly distributing this bandwidth among
+      entry, middle, and exit nodes can be tricky. Although live Tor
+      consensus documents may be used to assist in network scaling,
+      two randomly generated consensus topologies can have dras-
+      tically different network throughput measurements.
+    - The most significant improvement will enhance Shadow’s ability
+      to run in parallel environments, leading to faster experiments
+      and better utilization of hardware resources.
+** PART [[./201335142847631.pdf][Lohr - Sampling: Design and Analysis]]
+** PART [[/usr/lib/python2.7/dist-packages/Gnuplot/demo.py][haggerty - python-gnuplot's demo.py -- Demonstrate the Gnuplot python module]]
+   :PROPERTIES:
+   :ORDERED:  t
+   :END:
+*** summary
+*** quotes
+    - A straightforward use of gnuplot.  The `debug=1' switch is used
+      in these examples so that the commands that are sent to gnuplot
+      are also output on stderr.
+      #+BEGIN_SRC python
+        g = Gnuplot.Gnuplot(debug=1)
+        g.title('A simple example') # (optional)
+        g('set data style linespoints') # give gnuplot an arbitrary command
+        # Plot a list of (x, y) pairs (tuples or a numpy array would
+        # also be OK):
+        g.plot([[0,1.1], [1,5.8], [2,3.3], [3,4.2]])
+      #+END_SRC
+    - Save what we just plotted as a color postscript file.
+      #+BEGIN_SRC python
+        g.ylabel('x^2') # take advantage of enhanced postscript mode
+        g.hardcopy('gp_test.ps', enhanced=1, color=1)
+      #+END_SRC
+** PART [[/usr/lib/python2.7/dist-packages/Gnuplot/test.py][haggerty - python-gnuplot's test.py -- Exercise the Gnuplot.py module]]
+*** summary
+    - set gnuplot's =with= parameter via =with_=
+      #+BEGIN_SRC python
+        g.plot(Gnuplot.Data(d, with_='lp 4 4'))
+      #+END_SRC
+*** quotes
 ** onion routing project
 *** [[~/da/git/docs/onion-routing_pet2000.pdf][Towards an Analysis of Onion Routing Security]]
 **** ref: [[file:master.bib::onion-routing:pet2000][Syverson et al. 2000: Towards Analysis Onion Routing Security]]
@@ -19882,511 +20386,6 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        2) HTML Application of Core DOM
 *** quotes
 *** ref
-** PART MOVE Beck - extreme Programming explained                     :hobby:
-*** summary
-    1) Risk: The Basic Problem
-
-       There are several risks in Software Development. XP addresses them.
-
-    2) A Development Episode
-
-       Two programmers complement each other in test case design,
-       interaction, test refactoring, test writing, coding,
-       refactoring, integration, often switching keyboard control.
-
-    3) Economics of Software Development
-
-       There are interest payments.
-
-       - factors: cash flows in/out, interest rates, project mortality
-
-       - earn by: (spending less), (earning more),
-
-         - spending later/earning sooner
-
-         - keeping the project alive
-
-       - choices: abandon the project, switch direction, defer action or grow
-
-       - example: could add feature, cost 10$, estimated return 15$ \pm 100%
-
-         - strategy to wait: $7.87 (blackbox options theory calculator)
-
-    4) Four Variables
-
-       Cost, Time, Quality, Scope - pick three
-
-    5) Cost of Change
-
-       - exponential cost increase is no longer true, due to
-
-         - object-orientation, message-passing
-
-         - simple design
-
-         - automated tests
-
-         - practice in modifying the system
-
-       - easily change system later, defer decisions
-
-    6) Learning to Drive
-
-       - small changes, adjust course
-
-       - driver is customer
-
-    7) Four Values
-
-       communication, simplicity, feedback, courage
-
-       1) Communication
-
-          - problem arise when people don't communicate
-
-          - some steps make you communicate: unit testing, pair
-            programming, task estimation
-
-          - coach to reintroduce non-communicating members
-
-       2) Simplicity
-
-          - "what is the simplest thing that could possibly work?"
-
-          - simplicity is hard
-
-          - makes communication easier
-
-       3) Feedback
-
-          - from the system
-
-            - minutes/days: unit tests (+ programmers give feedback to
-              customer stories?)
-
-            - weeks/months: functional tests ("simplified use cases")
-              (+customers review schedule)
-
-          - deploy early
-
-          - "when all tests run, you're done"
-
-       4) Courage
-
-          - just do it
-
-          - change system if it is broken
-
-            - or if you have an idea how to improve
-
-          - supported by
-
-            - simplicity (easy to change), and
-
-            - communication: (agree before that bad solution, improvement)
-
-            - feedback: feel safer if you have tests
-
-          - supports simplicity: try to simplify asap
-
-       5) The Values in Practice
-
-          - next: how to implement xp
-
-    8) Basic Priciples
-
-       - Rapid feedback: helps in learning
-
-       - Assume simplicity: 98% when it helps give you free resources
-         for other 2%
-
-       - Incremental change: small changes at a time
-
-       - Embracing change
-
-       - Quality work: makes work more fun
-
-       - (less central principles)
-
-       - teach learning: self-responsibility
-
-       - small initial investment: start small, focuses, enough to
-         solve one interesting problem
-
-       - play to win
-
-       - Concrete experiments: test every abstract decision's
-         (code+requirements)
-
-       - open, honest communication
-
-       - work with people's instinct, not against them:
-
-       - accepted responsibility: of your own choosing (still part of team...)
-
-       - local adaptation: adapt this to local conditions
-
-       - travel light: keep only tests and code
-
-       - honest measurement
-
-         - to measurable scale ("two weeks" instead of "14.176 hours")
-
-         - with sensible metrics (not lines of code, f.ex.)
-
-    9) Back to Basics
-
-       1) Coding
-
-          - code to test thoughts: computer does exactly what you tell
-            it to do
-
-          - code to communicate (intent, algorithms, expansion, tests)
-
-       2) Testing
-*** quotes
-    00) [@00] unsorted
-        - Use XP when requirements are vague or changing
-        - Since feedback from system in production is vastly higher
-          quality than any other kind of feedback, giving a project too
-          much time will hurt it.
-    0) [@0] Foreword by Erich Gamma
-       - Delivering software is hard, and delivering quality software
-         in time is even harder.
-    0) [@0] Preface
-       - In short, XP promises to reduce project risk, improve
-         responsiveness to business changes, improve productivity
-         throughout the life of a system, and add fun to building
-         osftware in teams --- all at the same time. Really. Quit
-         laughing. Now you'll have to read the rest of the book to see
-         if I'm crazy.
-    1) Risk: The Basic Problem
-       - loneliness that is often at the heart of job dissatisfaction
-    6) [@6] Learning to Drive
-       - The driver of a software project is the customer.
-       - Our job as programmers is to give the customer a steering
-         wheel and give them feedback about exactly where we are on
-         the road.
-    7) Four Values
-       - Short-term individual goals often conflict with long-term
-         social goals.
-       - Optimism is an occupational hazard of programming. Feedback
-         is the treatment.
-    8) Basic Priciples
-       - Even the adoption of XP must be taken in little steps.
-       - Most software development I see is played not to lose.
-    9) Back to Basics
-       - For a system to live, it must retain its source code.
-*** ref [[file:master.bib::xp][Beck 1999: Extreme Programming Explained]]
-** TODO MOVE 2009-03-11-performance.pdf: Performance Improvements on Tor or, Why Tor is slow and what we’re going to do about it
-*** TODO refactor
-*** summary
-    - so far mostly usability and blocking-resistance
-    - six reasons why slow
-      1) congestion control broken / web browsing
-	 - tcp/tor interaction
-	 - windows sizes
-      2) some users clog network
-	 - squeeze circuit
-	 - throttle some at exit
-	 - throttle some at client
-	 - throttle all at client
-	 - default exit policy 80,443
-	 - user education
-      3) overall capacity
-	 - advocacy
-	   - talk
-	   - support
-	   - fb app
-	   - look more
-	 - fund directly
-	 - fast tor on windows
-	 - find overloaded or broken relays
-	 - dynamic IPs
-	 - incentives
-	 - automatic relay in tor sw
-      4) path selection not distributed
-	 - better balancing of traffic via ORs
-	 - inaccurate bandwidth measurements
-	 - bandwidth might not be the best metric
-	 - exit policy in relay selecton
-      5) clients dumb
-	 - every-second-bump
-	 - how long to establish circuit, when to dump
-	 - extend to other places when next hop build fails?
-	 - bundle data and relay cell
-      6) low-bandwidth users: much directory information
-	 - directory optimization
-	 - tls bundling (negligeable)
-    - conclusion
-      - better network -> more users ->slower network
-      - this means less usability or other work
-*** quotes
-    - Over the past few years, our funding (and thus our development
-      effort) has focused on usability and blocking-resistance.
-    - Tor clients choose paths imperfectly
-      - We don’t balance traffic over our bandwidth numbers correctly
-      - The bandwidth estimates we have aren’t very accurate
-      - Bandwidth might not even be the right metric to weight by
-    - But over the past year, research has shown that it’s [one tcp
-      connection] a bad idea in terms of performance, since TCP’s
-      backoff mechanism only has one option when that connection is
-      sending too many bytes: slow it down, and thus slow down all the
-      circuits going across it.
-    - Experiments show that moving congestion management to be fully
-      end-to-end offers a significant im- provement in performance.
-    - We could optimistically have this [UDP-TLS] testbed network
-      deployed in late 2009.
-    - Currently when we’re picking cells to write onto the network, we
-      choose round-robin from each circuit that wants to write. We
-      could instead remember which circuits have written many cells
-      recently, and give priority to the ones that haven’t.
-    - Plus, we could make the defaults higher if you sign up as a
-      relay and pass your reachability test.
-    - Our experience is that visiting them in person produces much
-      better results, long-term, than Slashdot articles.
-    - Several users have posted that they get much better Tor
-      performance if they hard-code their paths to only use the
-      fastest ten relays (and ignore the huge anonymity implications,
-      of course).
-
-
-
-
-
-    - ...
-    - If web-browsing users are more sensitive to latency than
-      bandwidth, then we could optimize the network for latency rather
-      than throughput.
-*** TODO ref plus file
-** TODO MOVE blocking.pdf: Design of a blocking-resistant anonymity system
-*** TODO refactor
-*** quotes
-*** summary
-    1) Introduction
-       Previously: TOR anonymizes, threat: first only passive, then active
-       Now: TOR provides censorship avoidance, threat: also interrupt
-    2) Adversary Assumptions
-       ....
-
-    3) tor anti-blocking procedures
-       - different solutions
-	 - paid for proxy
-	 - volunteer work
-	 - tor
-       - arms race
-	 - tor weaknesses
-	   - 2 certs
-	   - special traffic
-	 - strengths
-	   - many users: help freedom
-	   - discoverability
-*** up to
-    - Identity keys as part of addressing information
-** TODO MOVE defenestrator.pdf
-*** TODO refactor
-*** quotes
-    - We also argue that our proposals do not enable any new attacks
-      on Tor users’ privacy.
-    - The Tor network is a decentralized circuit-switching overlay
-      consisting of volunteer-run Tor routers hosted around the world
-    - Fig. 1. A Tor router’s queuing architecture
-      (defenestrator.router_queues.png)
-*** summary
-    1) Introduction: tor: distributed circuit-switching overlay
-       - Context: big hurdle in TOR adoption lies in delays
-       - Improving Congestion and Flow Control: 2 approaches
-	 - end-to-end window sizing like tcp congestion control
-	 - n23
-       - Evaluation:
-	 - end2end poor downloads
-	 - n23 seems to work
-    2) TOR Background: chain of onion routers, selected by bw, onion
-       encryption, special entry guard, mostly http, mostly
-       downstream, 512-byte cells (newer: different)
-    3) Tor’s Approach to Congestion and Flow Control
-       1) Congestion and Flow Control Mechanisms
-	  - Pairwise TCP: tcp flow control, BUT circuit multiplexing
-	  - Tiered Output Buffers: conn fifo->decrypt->circ fifo->out fifo(32k)
-	  - ....
-** TODO MOVE shadow-ndss2012.pdf: Shadow: Running Tor in a Box for Accurate and Efﬁcient Experimentation
-*** TODO refactor
-*** summary
-    1) Introduction:
-      - Many research papers on tor are loth to interefere with the
-        actual network, yet would profit from a realistic simulation
-        environment
-      - Shadow uses unmodified TOR source code in an discrete-event
-        simulation
-      - This is verified by comparing to live tor and PlanetLAB
-      - The EWMA-scheduling is tested and found wanting
-    2) Requirements:
-      - Accuracy: original source code, realistic system simulation
-      - Usability: easy setup, easy config, obtainable
-    3) Design:
-      library calls substituted by shadow
-      1) the simulation is set up by a simulation script that describes
-        nodes (upstream, downstream, latency, cpu [, name) and events
-        (commands)
-      2) a plug-in is a wrapper from the application to shadow. the app
-        must be non-blocking, single-threaded and must register all
-        state variables to shadow
-      3) virtual nodes are the hosts of shadow's simulation
-	1) network is a token bucket algorithm
-	2) libraries are preloaded/overridden with shadow-specific
-           code: time, hostname, crypto, CPU-byte-passing
-	3) instead of the whole plug-in being swapped in and out of
-           memory, the registered state variables are replaced when
-           switching virtual nodes
-    4) The Scallion Plug-In: Running Tor in Shadow
-       - State registration: Scallion registers variables including
-         static (via objcopy, readelf and nm) and globals
-       - Bandwidth Measurements: Scallion intercepts bandwidth
-         messages to the directory servers
-       - Preloaded Functions: sockets, CPU worker, bw measurement
-       - Configurability: network generation via scripts
-    5) evaluate accuracy
-       1) HTTP client, (delay) server (multiple/buffering), and socks
-          proxy plug-in and code
-       2) trying to model planet-lab
-	  - 2 setups: one bulk 5MB download, one 320KB with delays
-	  - on planetlab and TOR in planetlab
-       3) live tor network
-    6) evaluate EWMA
-       - ewma prioritises those circuits with the shortest queue
-       - testing: two bulk, then 10 minutes later 1 bulk, 1 web
-       - result: mixed resultst, sometimes better, sometimes worse
-    7) related work:
-       - others (defunct)
-       - ExperimenTOR: shadow is
-	 - more usable: stand-alone user, little configuration
-	 - more efficient and scalable, can run faster (or slower)
-	 - minimizes memory overhead
-	 - more customizable, f.ex. adversarial nodes
-    8) conclusion
-       - uses approximations of network that may or not be correct
-       - is single-threaded
-*** quotes
-    - Tor is a large and popular overlay network providing both
-      anonymity to its users and a platform for anonymous
-      communication research.
-    - Shadow, an architecture for efﬁciently running accurate Tor
-      experiments on a single machine.
-    - Although Shadow simulates the network layer, it links to and
-      runs real Tor software, allowing us to experiment with new
-      designs by implementing them directly into the Tor source
-      code.
-    - Shadow was designed especially for running simulations using the
-      Tor application.
-    - the plug-in implementation itself is minimal (roughly 1500 lines
-      of code).
-    - Each Tor relay reports its recent bandwidth history to the
-      directory authorities to help balance bandwidth across all
-      available relays. However, relays’ reports are based on the
-      amount of data it has recently transferred, and the reported
-      value is updated every twenty minutes only if it has not changed
-      signiﬁcantly from the last reported value.  This causes relays
-      to be underutilized when ﬁrst joining the network, and causes
-      bootstrapping problems in new networks since every node’s
-      bandwidth will be zero for the ﬁrst twenty minutes of the
-      simulation.
-    - For example, several relays with smaller bandwidth capacities
-      will not result in the same network throughput as fewer relays
-      with larger bandwidth capacities, even if the total capacities
-      are equal. Further, correctly distributing this bandwidth among
-      entry, middle, and exit nodes can be tricky. Although live Tor
-      consensus documents may be used to assist in network scaling,
-      two randomly generated consensus topologies can have dras-
-      tically different network throughput measurements.
-    - The most significant improvement will enhance Shadow’s ability
-      to run in parallel environments, leading to faster experiments
-      and better utilization of hardware resources.
-** TODO MOVE chaum-mix.pdf: Untraceable Electronic Mail, Return Addresses and Digital Pseudonyms
-*** TODO refactor
-*** summary
-    1) Abstract: untraceable electronic mail over insecure
-       connections, ballots, untraceable return addresses
-    2) Introduction: "key distribution problem" addressed by public
-       key cryptography, "traffic analysis problem" addressable based
-       on this (without common authority)
-    3) Notation: public K, private $K^{-1}$, encryption K(X),
-       seal=encrypt, sign, random R, constant C (all zeros)
-    4) Assumptions: network watchable, cryptography secure
-    5) Mail System:
-       - each mix i decrypts K_i(R_i,K_a(R_0,m),a) \to K_a(R_0,m), a
-       - receipts allow for clients to prove that an item was left out
-       - cascade of "mixes", with lexicographic ordered batches of items
-    6) Return Addresses:
-       - intermediary 1 decrypts and reencrypts K_1(R_1, A_x), K_x(R_0, M)
-	 \to A_x, R_1(K_x(R_0, M))
-       - R_1 is part key, must not be repeated
-       - allows for certified mail
-       - cascade possible
-    7) Digital Pseudonyms:
-       ...
-*** quotes
-    - The order of arrival is hidden by outputting the uniformly sized
-      items in lexicographically ordered batches.
-    - The following two sections introduce the notation and
-      assumptions.  Then the basic concepts are introduced for some
-      special cases involving a series of one or more authorities.
-      The final section covers general purpose mail networks.
-** TODO MOVE control-spec.txt
-*** TODO refactor
-*** summary
-    0) communication with locally running Tor process
-*** quotes
-** TODO MOVE dir-spec.txt
-*** TODO refactor
-*** summary
-    0) Scope and preliminaries
-       0) "describes TOR directory service v3"
-       1) History:
-          - before version 1, there was a fixed list of hosts
-	  - 0.0.2 introduced "directory authorities" that signed router lists,
-	    0.0.8 introduced "directory caches" that cached that list,
-	    there were also "router status" documents: just up/down-status
-	  - Version 2 switched to voting and partitioning the router list
-	    format: (hash(id_key), hash(descriptor), status summary)
-       2) Goals of the version 3 protocol:
-          less info->less bandwidth,
-	  avoid partitioning,
-	  store identity keys of authorities offline
-       3) Some remaining questions:
-          in V3: sha-1 is old, hardcoded IPs, longer router identity keys,
-	  later: all clients (/ all caches) knowing all routers won't scale
-     1) ...
-*** quotes
-** PART MOVE [[./201335142847631.pdf][Lohr - Sampling: Design and Analysis]]
-** PART MOVE [[/usr/lib/python2.7/dist-packages/Gnuplot/demo.py][haggerty - python-gnuplot's demo.py -- Demonstrate the Gnuplot python module]]
-   :PROPERTIES:
-   :ORDERED:  t
-   :END:
-*** summary
-*** quotes
-    - A straightforward use of gnuplot.  The `debug=1' switch is used
-      in these examples so that the commands that are sent to gnuplot
-      are also output on stderr.
-      #+BEGIN_SRC python
-        g = Gnuplot.Gnuplot(debug=1)
-        g.title('A simple example') # (optional)
-        g('set data style linespoints') # give gnuplot an arbitrary command
-        # Plot a list of (x, y) pairs (tuples or a numpy array would
-        # also be OK):
-        g.plot([[0,1.1], [1,5.8], [2,3.3], [3,4.2]])
-      #+END_SRC
-    - Save what we just plotted as a color postscript file.
-      #+BEGIN_SRC python
-        g.ylabel('x^2') # take advantage of enhanced postscript mode
-        g.hardcopy('gp_test.ps', enhanced=1, color=1)
-      #+END_SRC
-** PART MOVE [[/usr/lib/python2.7/dist-packages/Gnuplot/test.py][haggerty - python-gnuplot's test.py -- Exercise the Gnuplot.py module]]
-*** summary
-    - set gnuplot's =with= parameter via =with_=
-      #+BEGIN_SRC python
-        g.plot(Gnuplot.Data(d, with_='lp 4 4'))
-      #+END_SRC
-*** quotes
 ** [[./single-page.html][HTML 5]]
 *** summary
 *** quotes
