@@ -432,30 +432,6 @@ class Counter(object):
 
         return features
 
-# td: label lines together with one label
-def plot(counter_list, color="blue", gnuplotter=None, title=None):
-    '''plots counter's cumul data in color. in gnuplotter is not None, do reuse.
-
-    usage: g = plot(COUNTERS['soso.com']);
-    g2 = plot(COUNTERS['msn.com'], color="orange", gnuplotter=g)
-
-    @return gnuplotter for additional plots'''
-    import Gnuplot
-    if title:
-        datas = [Gnuplot.Data(counter_list.pop(0).cumul()[4:], inline=1,
-                              with_='lines lc rgb "'+color+'"',
-                              title=title)]
-    else:
-        datas = []
-    datas.extend([Gnuplot.Data(x.cumul()[4:], inline=1,
-                               with_='lines lc rgb "'+color+'"')
-                  for x in counter_list])
-    if not gnuplotter:
-        gnuplotter = Gnuplot.Gnuplot()
-    for d in datas:
-        gnuplotter.replot(d)
-    return gnuplotter
-
 if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
