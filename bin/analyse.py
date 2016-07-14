@@ -120,7 +120,7 @@ def _test(X, y, estimator=GOOD[0], nj=JOBS_NUM, verbose=True, scale=False):
 def _testcg(X, y, c, gamma):
     '''cross-evaluates ovr.svc with parameters c,gamma on X, y'''
     clf = multiclass.OneVsRestClassifier(svm.SVC(C=c, gamma=gamma))
-    return _test(X, y, clf, scale=True, nj=1).mean()
+    return _test(X, y, clf, scale=True, nj=JOBS_NUM).mean()
 
 def _xtest(X_train, y_train, X_test, y_test, estimator, scale=False):
     '''cross_tests with estimator'''
