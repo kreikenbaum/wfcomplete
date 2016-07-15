@@ -4,8 +4,18 @@
 - list of counters'''
 import Gnuplot
 
-import colorsys
 import numpy as np
+
+def _color_cycle(steps=6):
+    '''yields steps of different colors'''
+    out = map(_to_color,
+              np.linspace(1.0/12, 13.0/12, num=steps, endpoint=False))
+    out = map(_to_hex, out)
+    return out
+
+def _scale(lst, factor=1/1024.0):
+    '''scale byte to kByte'''
+    return [x*factor for x in lst]
 
 def _table_to_data(f):
     '''parse file f with org-mode table export data'''
@@ -21,8 +31,16 @@ def _table_to_data(f):
         out[name] = Datum(float(overhead), float(svc), float(et))
     return out
 
-def _scale(lst, factor=1/1000.0):
-    return [x*factor for x in lst]
+def _to_color(value):
+    '''gives color to hls-hue'''
+    import colorsys
+    return colorsys.hls_to_rgb(value, 0.5, 1)
+
+def _to_hex(a):
+    '''color tuple to hex string'''
+    return "0x{:02x}{:02x}{:02x}".format(int(255 * a[0]),
+                                         int(255 * a[1]),
+                                         int(255 * a[2]))
 
 def counters(counter_list, gnuplotter=None, label=None, color="blue"):
     '''counter's cumul data in color. in gnuplotter is not None, do reuse.
@@ -48,19 +66,6 @@ def counters(counter_list, gnuplotter=None, label=None, color="blue"):
         gnuplotter.replot(d)
     return gnuplotter
 
-def table(data, cls="svc"):
-    '''table data'''
-    g = Gnuplot.Gnuplot()
-    g("set xrange [0:*]")
-    g("set yrange [0:100]")
-    g("set xlabel 'overhead [\%]'")
-    g("set ylabel 'accuracy [\%]'")
-
-    for (defense, datum) in data.items():
-        g.replot(Gnuplot.Data([(datum.overhead, datum._asdict()[cls]*100)],
-                              title=defense, inline=1), title="method: " + cls)
-    return g
-
 def defenses(places, defs=['disabled/bridge', 'simple1/10'], url='google.com'):
     '''compares defenses at url
 
@@ -78,20 +83,26 @@ def defenses(places, defs=['disabled/bridge', 'simple1/10'], url='google.com'):
     g.replot()
     return g
 
-def _color_cycle(steps=6):
-    '''yields steps of different colors'''
-    out = map(_to_color, np.linspace(1.0/12, 13.0/12, num=steps, endpoint=False))
-    out = map(_to_hex, out)
-    return out
+def save(gnuplotter, prefix='plot'):
+    '''saves plot to dated file'''
+    import time
+    gnuplotter.hardcopy("/tmp/mem/{}_{}.eps".format(prefix,
+                                                    time.strftime('%F_%T')),
+                        enhanced=1, color=1)
 
-def _to_color(value):
-    '''gives color to hls-hue'''
-    return colorsys.hls_to_rgb(value, 0.5, 1)
+def table(data, cls="svc"):
+    '''table data'''
+    g = Gnuplot.Gnuplot()
+    g("set xrange [0:*]")
+    g("set yrange [0:100]")
+    g("set xlabel 'overhead [\%]'")
+    g("set ylabel 'accuracy [\%]'")
 
-def _to_hex(a):
-    '''color tuple to hex string'''
-    return "0x{:02x}{:02x}{:02x}".format(int(255 * a[0]), int(255* a[1]), int(255*a[2]))
-    
+    for (defense, datum) in data.items():
+        g.replot(Gnuplot.Data([(datum.overhead, datum._asdict()[cls]*100)],
+                              title=defense, inline=1), title="method: " + cls)
+    return g
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 2:

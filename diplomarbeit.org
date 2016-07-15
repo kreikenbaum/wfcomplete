@@ -1,6 +1,7 @@
 #+TITLE: Selective Cover Traffic
 #+TODO: KEYWORDS WRITE CHECK EVA DANIEL | FINAL
 #+TODO: TODO WAIT | DONE
+#+TODO: INTEGRATE |
 * Configuration							    :ARCHIVE:
 #+LATEX_CLASS: scrartcl
 #+LATEX_CLASS_OPTIONS: [a4paper,10pt]
@@ -60,6 +61,7 @@
 #+LATEX_HEADER:                                     % verteidigen muessen.
 #+LATEX_HEADER:   \end{tabular}
 #+LATEX_HEADER: }}
+* TODO look through unsorted top-level headings
 * WAIT Abstract
 * TODO Introduction (=basics) [0%]
 ** TODO Website Fingerprinting [0/30]
@@ -836,36 +838,48 @@
     - network applications
 * TODO Results and Evaluation [0%]
 ** KEYWORDS setup
-*** CHECK modified top-100
-    The files for retrieval were from the alexa-top-1m[fn:: Available
-    at \url{ http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}],
-    from September 30, 2015. Similar to \cite{wpes13-fingerprinting},
-    similar sites were removed. Also removed were those sites which
-    failed to respond to python's =urllib=. The list of sites with their
-    Alexa index can be found in appendix [[#top-100]].
-** TODO MOVE below [[*panchenko v1 vs cumul][vs cumul]] panchenko v1 different classifiers         :eval:
+*** TODO sites
+**** CHECK modified top-100
+     The files for retrieval were from the alexa-top-1m[fn:: Available
+     at \url{ http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}],
+     from September 30, 2015. Similar to \cite{wpes13-fingerprinting},
+     similar sites were removed. Also removed were those sites which
+     failed to respond to python's =urllib=. The list of sites with their
+     Alexa index can be found in appendix [[#top-100]].
+**** KEYWORDS 30 sites
+     - top-10 have other distribution than main sites \cite{web-is-doom}
+     - find sites with high variance
+       - use also addon data (version 0.18.2) to check
+       - quantiles of (total incoming) sizes
+         - panchenko: relevant metric
+     - link to code: top30() in analyse.py
+** KEYWORDS MOVE below [[*panchenko v1 vs cumul][vs cumul]] panchenko v1 different classifiers
    <<different-classifiers>>
    - more features than cumul default
    - experiment
    - different classifiers, different results
    - much easier to just use knn, ....
    - more work for svm parameter estimation
-** TODO outlier removal                                           :eval:
-   As described by \cite{panchenko2}, the CUMUL approach is greatly
-   enhanced by outlier removal. His software has different setting,
-   with a median-based as well as a 25%/75%-quantile-based
-   approach. The paper mentions only the quantile-based filtering, so
-   that was also used in the later tests here.
+** KEYWORDS outlier removal
+   As described by Panchenko et al. \cite{panchenko2}, CUMUL is
+   enhanced by outlier removal. Their
+   software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}] has
+   different settings, with a median-based as well as a
+   25%/75%-quantile-based approach. The paper mentions only the
+   quantile-based filtering, so that was also used in the later tests
+   here.
 
    - implemented in [[file:bin/extract_attribute.py::def%20remove_quantiles_panchenko_2(counter_list):][ex-att]]
    - quantiles:
      - numpy instead of his original code for code clarity
      - just take quantiles, use his limits
    - how many? 5%?
-   - cumul-print of outlier removal steps? (maybe, ask d if enough time ;-)
+   - evaluation of outlier removal steps
+     - cumul-print of outlier removal steps? (maybe, ask d if enough time ;-)
+   - train on or, test without
+   - maybe show outlier in CUMUL graphics
 *** TODO run test, include results
 *** TODO link to panchenko's software
-** WRITE outlier removal                                          :eval:
    - after cross-validation split
    - but can do that before features
      - list of (url, list-id) tuples, one for each counter
@@ -910,11 +924,19 @@
 *** WRITE Evaluation of Addon
     - problem: tunable: factor correlation to overhead
       - not given for 0.15, retro, 0.18-0.21
-    - given in 0.22? (td: tests)
-    - if yes, scenarios (a/b I/II bursts)
-    - bursts at simple
+      - old graph: cluster for retro, etc
+      - given in 0.22? (td: tests)
+      - graph: accuracy vs overhead
+        - mention (somewhere else that tamaraw fell through)
+    - problem: variants
+      - a.k.a. scenarios (a/b I/II bursts)
+      - reevaluate if make a difference
+    - problem: bursts
+      - at simple
+      - at normal
     - factor at simple
       - 0.18 over-engineered?
+**** MOVE to design
       - scenarios
         - evolution:
           - 15.3 first results
@@ -924,12 +946,21 @@
         - try to fix at 19 (and backport to 15.3, codename retro)
         - keep in mind: only 10 sites: 10% accuracy is random guessing
         - 20 limits number of embedded requests
+**** end move
     - different factors
     - all around same curve
 *** KEYWORDS sota (practical): wtfpad
     - overhead of wfpad depends on client-bridge network connection
       - show different results
     - (maybe show both graphs, at least mention values)
+    - all of mine so far add additional data for each request, wtfpad
+      adds additional data over time, less with more requests, more
+      with less
+    - graph
+      - disabled vs wfpad
+        - google.com
+        - biggest: tumblr.com (less political)
+        - medium: netflix.com
 *** KEYWORDS sota (theoretical): walkie-talkie
 *** KEYWORDS (maybe) vs optimal attacker
 ** brainstorm                                                       :ARCHIVE:
@@ -971,6 +1002,7 @@
    - compare bursts to nobursts
    - wfpad pads small sites much, larger sites little
      - addon-simple does the opposite
+   - have a look at [[*practical wf: analyzing traces][practical wf: analyzing traces]]
 * KEYWORDS Conclusion
 * TODO topics [0/109]
 ** TODO Website Fingerprinting [0/55]
@@ -1284,12 +1316,12 @@
      class of the data, then a colon, finally all the data for an
      instance, separated by whitespace.
 ***** TODO link to code to generate
-**** TODO transform features to vector
+**** TODO transform features to vector                           :eval:setup:
      Once the =Counter=s data is obtained, it needs to be transformed
      to input for scikit-learn's\cite{scikit-learn} classifiers.
 
      The code to convert these features to classification input can be
-     found in `analyse.py` (see [[analyse.py][appendix]]). This determines the maximum
+     found in `analyse.py` (see appendix [[#analyse)]]. This determines the maximum
      length of all variable-length features, 0-pads Panchenko's features
      with zeroes to the same length, and converts them to an array fit
      for input into scikit-learn's classifiers. When called from the
@@ -1327,7 +1359,7 @@
      and regressors, such as K-NN, SVM, decision trees, linear
      approximation, random trees, etc.
 ***** TODO regressor? wording
-*** TODO History of Website Fingerprinting
+*** INTEGRATE History of Website Fingerprinting
     The idea of using traffic analysis to gather information about
     encrypted traffic was mentioned in \cite[10.3]{applied96} and
     applied in the analysis of SSL 3.0 by Wagner and
@@ -2151,6 +2183,7 @@
   - meta-bursts as described in walkie-talkie
   - are those hidden, too, or can the number of bursts be found out
   - easy to implement, maybe do this
+  - see that higher overhead per protection
 ** maybe see cumul-graphics
 * TODO mention tor browser bundle version etc
 * TODO why defense better
@@ -2375,7 +2408,9 @@
    <<one-site.py>>
    #+INCLUDE: "./bin/one_site.py" src python
 ** Script =analyse.py=: classify the data
-   <<analyse.py>>
+   :PROPERTIES:
+   :CUSTOM_ID: analyse
+   :END:
    #+INCLUDE: "./bin/analyse.py" src python
 ** Script =counter.py=: parse pcap files
    #+INCLUDE: "./bin/counter.py" src python
