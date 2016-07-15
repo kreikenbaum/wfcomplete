@@ -77,30 +77,33 @@ def defenses(places, defs=['disabled/bridge', 'simple1/10'], url='google.com'):
     local_list = _color_cycle(len(defs))
     g = None
     for d in defs:
-        g = counters(places[d][url], g, d.replace('/bridge',''),
+        g = counters(places[d][url], g,
+                     d.replace('/bridge',''),
                      local_list.pop())
     g.title('CUMUL-traces on {} after defenses'.format(url))
     g.replot()
     return g
 
-def save(gnuplotter, prefix='plot'):
+def save(gnuplotter, prefix='plot', type_='eps'):
     '''saves plot to dated file'''
     import time
-    gnuplotter.hardcopy("/tmp/mem/{}_{}.eps".format(prefix,
-                                                    time.strftime('%F_%T')),
-                        enhanced=1, color=1)
+    gnuplotter.hardcopy("/tmp/mem/{}_{}.{}".format(prefix,
+                                                   time.strftime('%F_%T'),
+                                                   type_),
+                        enhanced=1, color=1, mode="eps")
 
 def table(data, cls="svc"):
     '''table data'''
     g = Gnuplot.Gnuplot()
     g("set xrange [0:*]")
     g("set yrange [0:100]")
-    g("set xlabel 'overhead [\%]'")
-    g("set ylabel 'accuracy [\%]'")
+    g("set xlabel 'overhead [%]'")
+    g("set ylabel 'accuracy [%]'")
 
     for (defense, datum) in data.items():
         g.replot(Gnuplot.Data([(datum.overhead, datum._asdict()[cls]*100)],
-                              title=defense, inline=1), title="method: " + cls)
+                              title=defense.replace('@', '-'), inline=1),
+                 title="method: " + cls)
     return g
 
 if __name__ == "__main__":
