@@ -79,8 +79,8 @@ def defenses(places, defs=['disabled/bridge', 'simple1/10'], url='google.com'):
     return g
 
 def _color_cycle(steps=6):
-    '''yields steps many different colors'''
-    out = map(_to_color, np.linspace(2.0/3, 5.0/3, num=steps, endpoint=False))
+    '''yields steps of different colors'''
+    out = map(_to_color, np.linspace(1.0/12, 13.0/12, num=steps, endpoint=False))
     out = map(_to_hex, out)
     return out
 
