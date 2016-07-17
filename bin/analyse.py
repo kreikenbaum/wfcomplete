@@ -9,7 +9,7 @@ import sys
 
 import counter
 
-JOBS_NUM = -4
+JOBS_NUM = 2 # 1 (version1 to 4-6 (cumul onduckstein)), maybe also -4, ...
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
 #LOGLEVEL = logging.WARN
@@ -302,30 +302,52 @@ def esti_name(estimator):
     return str(estimator.__class__).split('.')[-1].split("'")[0]
 
 def my_grid(X, y,
-#            cs=np.logspace(-1, 9, 6, base=2),
-#            gammas=np.logspace(-8, 6, 6, base=2)):
-            cs=np.logspace(3, 13, 6, base=2),
-            gammas=np.logspace(-8, 6, 6, base=2)):
-    '''grid-search on fixed params'''
+            cs=np.logspace(11, 17, 4, base=2),
+            gammas=np.logspace(-3, 3, 4, base=2),
+            results={}):
+    '''grid-search on fixed params
+
+    @param results are previously computed results {(c, g): accuracy, ...}
+    @return optimal_classifier, results_object'''
     best = None
     bestres = 0
     for c in cs:
         for g in gammas:
             clf = multiclass.OneVsRestClassifier(svm.SVC(gamma=g, C=c))
-            res = _test(X, y, clf, scale=True)
-            if not best or bestres.mean() < res.mean():
+            if (c,g) in results:
+                current = results[(c,g)]
+            else:
+                current = _test(X, y, clf, scale=True)
+                results[(c, g)] = current
+            if not best or bestres.mean() < current.mean():
                 best = clf
-                bestres = res
-            logging.debug('c: {:8} g: {:10} acc: {}'.format(c, g, res.mean()))
-    if best.estimator.C in (cs[0], cs[-1]) or best.estimator.gamma in (gammas[0], gammas[-1]):
+                bestres = current
+            logging.debug('c: {:8} g: {:10} acc: {}'.format(c, g,
+                                                            current.mean()))
+    if (best.estimator.C in (cs[0], cs[-1])
+        or best.estimator.gamma in (gammas[0], gammas[-1])):
         logging.warn('optimal parameters found at the border. c:%f, g:%f',
                      best.estimator.C, best.estimator.gamma)
-    return best
+        return my_grid(X, y,
+                       new_search_range(best.estimator.C),
+                       new_search_range(best.estimator.gamma),
+                       results)
+    else:
+        return best, results
 
-def smart_grid(X, y, stepmin=6, c_low=-2, c_high=18, g_low=-12, g_high=8):
-    ''' ''smarter'' grid-search, params are exponents of 2
+def new_search_range(best_param):
+    '''returns new array of parameters to search in
 
-    use this to get the general range of the correct parameters for my_grid'''
+    (use if best result was at border)
+    '''
+    return [best_param / 2, best_param, best_param * 2]
+
+def smart_grid(X, y, stepmin=2, c_low=-2, c_high=18, g_low=-12, g_high=8):
+    '''''smarter'' grid-search, params are exponents of 2
+
+    use this to get the general range of the correct parameters for
+    my_grid, as accuracy was slightly worse than for my_grid()
+    '''
     import math
     # init
     results = {}
@@ -434,7 +456,7 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
         (X, y, _) = to_features(train)
 
     if with_svm:
-        clf = my_grid(X, y)
+        clf,_ = my_grid(X, y)
 #        clf = smart_grid(X, y) #enabled if ranges are not clear
         logging.info('grid result: %s', clf)
         GOOD.append(clf)

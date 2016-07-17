@@ -7819,17 +7819,31 @@
        user should have the option: overhead/security tradeoff
 
        1) Protocol Modifications
+
+          0) [@0]
+
+             - layer between HTTP and SSL
+
+               - easy to implement, as only need to modify MS-IE and
+                 Netscape Navigator
+
+          1) Random padding.
 *** quotes
     3) [@3] Defenses
-       - defenses almost always impose some degree of overhead in
-         terms of computing resources, network bandwidth, or
-         latency. Therefore, the user should have the option of
-         choosing among different levels of defenses (or no traffic
-         analysis defense, for that matter), depending on the desired
-         tradeoff between security and performance.
+       0) [@0]
+          - defenses almost always impose some degree of overhead in
+            terms of computing resources, network bandwidth, or
+            latency. Therefore, the user should have the option of
+            choosing among different levels of defenses (or no traffic
+            analysis defense, for that matter), depending on the desired
+            tradeoff between security and performance.
+       1) Protocol Modifications
+          - traffic analysis defenses for Web browsing should be
+            encapsulated in a separate security protocol layer to mediate
+            between the HTTP and SSL layers.
 *** ref [[file:master.bib::ssl-traffic-analysis][Cheng & Avnur 1998: Traffic Analysis SSL]]
 ** TODO [#A] [[./challenges.pdf][Challenges in deploying low-latency anonymity]]
-*** TODO refactor from 2.1.2
+*** TODO refactor from 2.2
 *** summary
     0. [@0] Abstract
 
@@ -7867,6 +7881,17 @@
                who cannot observe both sides of a user’s connections."
 
           2. Distributed trust
+
+             - "mutually distrustful users" possible
+
+             - increases anonymity for every party involved
+
+               - as otherwise, f.ex. government would be identifyable
+
+             - built-in encryption and authentication for "enclave
+               approach"
+
+       2. Related work
     3. Social challenges
        - Communicating Security
 	 Perceived security is a value to the user
@@ -7924,6 +7949,14 @@
        - here: study packet length, not object length
 
     3) MODEL
+
+       0) [@0]
+
+          - how to capture
+
+          - Jaccard's coefficient and naive Bayes
+
+       1) Observer Model
 *** quotes
     1) INTRODUCTION
        - Encrypted tunnels thwart the legitimate gathering of evidence
@@ -8336,6 +8369,16 @@
                 - easy to compute, as k(x,x') = <\Phi(x), \Phi(x')> = (<x, x'>)^d
 
     7) Linear Models
+
+       0) [@0]
+
+          - hyperplane [[(ml-7.1)]] divides space H in two halves
+
+            - decision boundary
+
+            - maximize margin [[(ml-7.2)]]
+
+       1) Support Vector Classification
 *** TODO quotes
     1) Introduction
        1) A Taste of Machine Learning
@@ -8680,13 +8723,25 @@
     6) [@6] Kernels and Function Spaces
        - the design of a good kernel underlies the success of machine
          learning in many applications.
-** TODO [#A] [[./Oya.pdf][Do dummies pay off ? Limits of dummy traffic protection in anonymous communications]]
+    7) Linear Models
+       - A *hyperplane* in a space H endowed with a dot product <·, ·>
+         is described by the set
+         #+BEGIN_SRC latex
+           {x ∈ H| <w, x> + b = 0} (ref:ml-7.1)
+         #+END_SRC
+         where w ∈ H and b ∈ R.
+       - Given a set X = {x_1, ..., x_m}, the *margin* is the distance
+         of the closest point in X to the hyperplane [[(ml-7.1)]].
+         #+BEGIN_SRC latex
+           min_{i=1,...,m} \frac{|<w, x_i> + b|}{\|w\|}. (ref:ml-7.2)
+         #+END_SRC
+** TODO MOVE [[./Oya.pdf][Do dummies pay off-Limits of dummy traffic protection in anonymous communications]]
 *** summary
     0) [@0] Abstract
 
-       Communication patterns recognizable
+       - Communication patterns recognizable
 
-       Dummy evaluated
+       - Dummy evaluated
 
     1) Introduction
 
@@ -8714,7 +8769,7 @@
 
 	 - goal: determine communication channel probabilities
 
-    3) A Least Square Profile Estimator for Dummy-basedAnonymization
+    3) A Least Square Profile Estimator for Dummy-based Anonymization
        Systems
 *** quotes
     - In practice, user behavior and latency constrain the composition
@@ -8772,6 +8827,16 @@
           - (see quotes for full algorithm)
 
        2) Empirical evaluation
+
+          0) [@0]
+
+             - datasets
+
+             - (tree-based) comparison algorithms
+
+             - evaluate (accuracy, computational resources)
+
+          1) Datasets
 *** quotes
     1) Introduction
        - selects its cut-point fully at random, i.e., independently of
@@ -8805,7 +8870,7 @@
             - If the output is constant in S, then return TRUE;
             - Otherwise, return FALSE.
 *** ref [[file:master.bib::DBLP:journals/ml/GeurtsEW06][Geurts et al. 2006: Extremely]]
-** TODO [#A] [[./10.1.1.20.98.bloom-nw.pdf][Network Applications of Bloom Filters: A Survey]]
+** TODO [#A] [[./10.1.1.20.98.bloom-nw.pdf][Broder - Network Applications of Bloom Filters: A Survey]]
 *** summary
     0) [@0] Abstract
 
@@ -8825,6 +8890,33 @@
     2) Bloom filters: Mathematical preliminaries
 
        1) Standard Bloom filters
+
+          - represent set of size n by m bits
+
+          - k hash functions h_1, ..., h_k
+
+            - to add element x to filter, set bits at h_1(x), ..., h_k(x) to 1
+
+            - element y maybe in set if all bits h_1(y), ..., h_k(y) are 1
+
+          - /false positive rate/ with n bits in filter is (assuming
+            perfectly random hashes)
+
+            (1 - e^{-kn/m})^{k}
+
+            - asymptotically same behavior if bits are split per hash
+              function
+
+              - but non-asymptotically slightly better to have one bit field
+
+          - minimal fp-rate [(1/2)^k \approx (0.6185)^{m/n} at
+
+            k = ln 2 \cdot (m/n)
+
+            (in reality, choose smaller of integers bounding k to
+            reduce computation)
+
+       2) Hashing vs. Bloom filters
 *** quotes
     1) Introduction
        - A Bloom filter is a simple space-efficient randomized data
@@ -8836,8 +8928,13 @@
          and space is a consideration, a Bloom filter should be
          considered. When using a Bloom filter, consider the potential
          effects of false positives.
+    2) Bloom filters: Mathematical preliminaries
+       1) Standard Bloom filters
+          - A *Bloom filter* for representing a set S = {x_1, x_2,...,
+            x_n} of n elements is described by an array of m bits,
+            initially all set to 0.
 *** ref [[file:master.bib::Broder02networkapplications][Broder & Mitzenmacher 2002: Network Applications Bloom Filters]]
-** TODO [#A] [[./10.1.1.20.2080.bloom_orig.pdf][Bloom - Space/Time Trade-offs in Hash Coding with Allowable Errors]]
+** TODO MOVE [#B] [[./10.1.1.20.2080.bloom_orig.pdf][Bloom - Space/Time Trade-offs in Hash Coding with Allowable Errors]]
 *** summary
     0) [@0] Abstract
 
@@ -8848,7 +8945,7 @@
     1) Introduction
 *** quotes
 *** ref [[file:master.bib::Bloom70space/timetrade-offs][Bloom 1970: Space Time Trade]]
-** TODO [#A] PART [[./ESLII_print4.pdf][Hastie - The Elements of Statistical Learning]]
+** TODO [#B] PART [[./ESLII_print4.pdf][Hastie - The Elements of Statistical Learning]]
 *** TODO skim chapters 2.8, 2.9, 3.3, 7 (esp 7.10), 9, 12 and 13, 15, 16
     (leave out 11,14,17)
 *** summary
@@ -8963,6 +9060,12 @@
 	     Try to approximate the I/O relationship f(x) via f\circ(x)
 
 	     1) A Statistical Model for the Joint Distribution Pr(X, Y )
+
+                - cont p. 47
+
+       8) [@8] Classes of Restricted Estimators
+
+          - cont p. 52
 
     4) [@4] 4. Linear Methods for Classification
 
@@ -16066,8 +16169,8 @@
            - This is done with the ‘src’ block, where you also need to
              specify the name of the major mode that should be used to
              fontify the example
-           - In literal examples, Org will interpret strings like
-             ‘(ref:name)’ as labels, and use them as targets for
+           - *In literal examples*, Org will interpret strings like
+             (ref:name) as labels, and use them as targets for
              special hyperlinks like [[(name)]]
     12) Exporting
         7) [@7] LATEX and PDF export
