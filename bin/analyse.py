@@ -10,6 +10,7 @@ import sys
 import counter
 
 JOBS_NUM = 2 # 1 (version1 to 4-6 (cumul onduckstein)), maybe also -4, ...
+# panchenko grid takes about 16% mem/cpu: 3-4 should be fine, 5 ok'ish, 6 limit
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
 #LOGLEVEL = logging.WARN
@@ -73,6 +74,7 @@ def _find_max_lengths(counters):
                 max_lengths[key] = lengths[key]
     return max_lengths
 
+# move to counter.py
 def _gen_counters(places, outlier_removal=True):
     '''@return dict: {place1: {domain1: counters1_1, ...  domainN: countersN_1},
     ..., placeM: {domain1: counters1_M, ...  domainN: countersN_M}}
@@ -390,6 +392,7 @@ def cumul_vs_panchenko(counters):
     _compare(X, y, X2, y2)
 
 # td: remove this, or happens later
+# td: move to counter.py
 def counter_get(place, outlier_removal=True):
     '''helper to get counters w/o outlier_removal'''
     if outlier_removal:

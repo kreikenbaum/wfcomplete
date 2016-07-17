@@ -66,6 +66,14 @@ def counters(counter_list, gnuplotter=None, label=None, color="blue"):
         gnuplotter.replot(d)
     return gnuplotter
 
+def many_defenses(places, defs=['simple1/10', '22.0/10aI'],
+                  urls=['google.com', 'netflix.com', 'tumblr.com']):
+    for d in defs:
+        for u in urls:
+            tmp_defs = ['disabled/bridge']; tmp_defs.append(d)
+            g = defenses(places, tmp_defs, u)
+            save(g, "{}__{}_vs_disabled".format(u, d.replace('/', '@')))
+
 def defenses(places, defs=['disabled/bridge', 'simple1/10'], url='google.com'):
     '''compares defenses at url
 

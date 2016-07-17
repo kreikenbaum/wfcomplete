@@ -246,6 +246,30 @@ class Counter(object):
             out = Counter.all_from_dir('.')
         return out
 
+    # td: read up on ordereddict, maybe replace
+    @classmethod
+    def for_places(cls, places, outlier_removal=True):
+        '''@return dict: {place1: {domain1: counters1_1, ...  domainN:
+    countersN_1}, ..., placeM: {domain1: counters1_M, ...  domainN:
+    countersN_M}} for directories} in {@code places}
+        '''
+        out = {}
+        if len(places) == 0:
+            out['.'] = cls._get_all('.', outlier_removal)
+
+        for p in places:
+            out[p] = cls._get_all(p, outlier_removal)
+
+        return out
+
+    @classmethod
+    def _get_all(cls, place, outlier_removal=True):
+        '''helper to get counters w/o outlier_removal'''
+        if outlier_removal:
+            return panchenko_outlier_removal(cls.all_from_dir(place))
+        else:
+            return cls.all_from_dir(place)
+
     @classmethod
     def from_pcap(cls, filename):
         '''creates Counter from pcap file'''
@@ -431,6 +455,53 @@ class Counter(object):
             features.append(el)
 
         return features
+
+### outlier removal
+def p_or_tiny(counter_list):
+    '''removes if len(packets) < 2 or total_in < 2*512
+    >>> len(p_or_tiny([counter._ptest(1), counter._ptest(3)]))
+    1
+    >>> len(p_or_tiny([counter._ptest(2, val=-600), counter._ptest(3)]))
+    1
+    '''
+    return [x for x in counter_list
+            if len(x.packets) >= 2 and x.get_total_in() >= 2*512]
+
+def p_or_median(counter_list):
+    '''removes if total_in < 0.2 * median or > 1.8 * median'''
+    med = np.median([counter.get_total_in() for counter in counter_list])
+    return [x for x in counter_list
+            if x.get_total_in() >= 0.2 * med and x.get_total_in() <= 1.8 * med]
+
+def p_or_quantiles(counter_list):
+    '''remove if total_in < (q1-1.5 * (q3-q1))
+    or total_in > (q3+1.5 * (q3-q1)
+    >>> [x.get_total_in()/600 for x in p_or_quantiles(map(counter._ptest, [0, 2, 2, 2, 2, 2, 2, 4]))]
+    [2, 2, 2, 2, 2, 2]
+    '''
+    counter_total_in = [counter.get_total_in() for counter in counter_list]
+    q1 = np.percentile(counter_total_in, 25)
+    q3 = np.percentile(counter_total_in, 75)
+
+    out = []
+    for counter in counter_list:
+        if (counter.get_total_in() >= (q1 - 1.5 * (q3 - q1)) and
+            counter.get_total_in() <= (q3 + 1.5 * (q3 - q1))):
+            out.append(counter)
+    return out
+
+# td: maybe test that enough instances remain...
+def panchenko_outlier_removal(counters):
+    '''apply outlier removal to input of form
+    {'domain1': [counter, ...], ... 'domainN': [..]}'''
+    out = {}
+    for (k, v) in counters.iteritems():
+        try:
+#            out[k] = p_or_quantiles(p_or_median(p_or_tiny(v)))
+            out[k] = p_or_quantiles(p_or_tiny(v))
+        except ValueError: ## somewhere, list got to []
+            logging.warn('%s discarded in outlier removal', k)
+    return out
 
 if __name__ == "__main__":
     doctest.testmod()
