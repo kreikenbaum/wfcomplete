@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+!/usr/bin/env python
 '''aggregates trace data, extracts features'''
 import doctest
 import glob
@@ -6,7 +6,7 @@ import itertools
 import json
 import logging
 import math
-import numpy
+import numpy as np
 import os
 import subprocess
 import sys
@@ -445,11 +445,10 @@ class Counter(object):
                 logging.warn('packetsize == 0 in cumul')
 
         features = [inCount, outCount, outSize, inSize]
-        cumulFeatures = numpy.interp(numpy.linspace(c_abs[0],
-                                                    c_abs[-1],
-                                                    num_features+1),
-                                     c_abs,
-                                     c_rel)
+        cumulFeatures = np.interp(np.linspace(c_abs[0], c_abs[-1],
+                                              num_features+1),
+                                  c_abs,
+                                  c_rel)
         # could be cumulFeatures[1:], but never change a running system
         for el in itertools.islice(cumulFeatures, 1, None):
             features.append(el)
@@ -459,9 +458,9 @@ class Counter(object):
 ### outlier removal
 def p_or_tiny(counter_list):
     '''removes if len(packets) < 2 or total_in < 2*512
-    >>> len(p_or_tiny([counter._ptest(1), counter._ptest(3)]))
+    >>> len(p_or_tiny([_ptest(1), _ptest(3)]))
     1
-    >>> len(p_or_tiny([counter._ptest(2, val=-600), counter._ptest(3)]))
+    >>> len(p_or_tiny([_ptest(2, val=-600), _ptest(3)]))
     1
     '''
     return [x for x in counter_list
@@ -476,7 +475,7 @@ def p_or_median(counter_list):
 def p_or_quantiles(counter_list):
     '''remove if total_in < (q1-1.5 * (q3-q1))
     or total_in > (q3+1.5 * (q3-q1)
-    >>> [x.get_total_in()/600 for x in p_or_quantiles(map(counter._ptest, [0, 2, 2, 2, 2, 2, 2, 4]))]
+    >>> [x.get_total_in()/600 for x in p_or_quantiles(map(_ptest, [0, 2, 2, 2, 2, 2, 2, 4]))]
     [2, 2, 2, 2, 2, 2]
     '''
     counter_total_in = [counter.get_total_in() for counter in counter_list]

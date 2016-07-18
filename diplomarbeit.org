@@ -8,6 +8,8 @@
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{tikz}
 #+LATEX_HEADER: \usepackage{times}
+#+LATEX_HEADER: \usepackage{float}
+#+LATEX_HEADER: \restylefloat{table}
 #+LATEX_HEADER: \renewcommand*{\maketitle}{\thispagestyle{empty}
 #+LATEX_HEADER:
 #+LATEX_HEADER: \hspace{20cm}
@@ -363,6 +365,26 @@
      :PROPERTIES:
      :CUSTOM_ID: features
      :END:
+    As stressed by Perry in \cite{critique}, analysis of which feature
+    contribute the most towards classification is important. Panchenko
+    et al. \cite{panchenko} provided a qualitative analysis. Hayes and
+    Danezis \cite{kfingerprint} used forests of randomized trees, which
+    provide feature importance estimation.[fn:: f.ex. in scikit-learn
+    \cite{scikit-learn} via the =_feature_importances= attribute]
+
+    As Dyer et al \cite{oakland2012-peekaboo} noted and experiments with
+    Panchenko et al's \cite{panchenko} estimator support (see
+    [[different-classifiers]]), you can get good accuracy with several
+    classifiers, given the right features.
+
+    As determined by Hayes and Danezis \cite{kfingerprint}, the top-five
+    features are the number (both absolute and percentage of total) of
+    both incoming and outgoing packets. The standard deviation of the
+    packet ordering list [fn:: Panchenko et al \cite{panchenko} call
+    these features /Number Markers/] completes the top five. Each added
+    feature increases accuracy, yet with nearly the same accuracy for 30 as
+    for the total of 150 features.
+
 
     - patterns to features
     - why features
@@ -724,6 +746,9 @@
      (target-embedded)/(site-embedded) is computed. For each embedded
      object retrieved, this ratio determines the number of
      embedded-sized requests, once again from the [[#HTTP traffic model][HTTP traffic model]].
+
+          - 15.3 first results
+          - buggy: did not match spec (only did html requests)
 **** TODO improvements
 ***** TODO 0.17 bursts at end - bursts on addon site load finish
       - wang: burst distinguishing feature left with
@@ -749,6 +774,9 @@
         - known/guess sizes
         - bins/target
         - bursts
+
+      - much more traffic
+        - try to fix at 19 (and backport to 15.3, codename retro)
 ***** WRITE 0.19: negative values in distribution
       :PROPERTIES:
       :CUSTOM_ID: addon0.19
@@ -762,14 +790,18 @@
           - get value at random up to min(request size, saved values)
           - subtract from request size, and from saved value
 
-      The improvements described in this sectionwere backported to
-      this version, with version name 0.15.3-retrofixed.
+      The improvements described in this section were backported to
+      version 0.15.3, with version name 0.15.3-retrofixed. This
+      greatly reduced the amount of overhead, but had the same
+      problem: the factor was not correlated to the overhead: it
+      lacked control on how much traffic to generate.
 ***** WRITE 0.20: bounds for probability
       - buggy html model: counts many more URLs as HTML than expected
         - fix would be: use only absolute numbers, not probabilities,
           detect HTML (by suffix as approximation, and by content-type
           when found), increase counter when found
         - workaround: bound probability
+        - 20 limits number of embedded requests
 ***** WRITE 0.21 bounds absolute number of retrieved objects
        - better workaround
          - stricter bounds on retrieval of embedded objects
@@ -823,7 +855,7 @@
        - if one returns: fine
        - if none returns: ok: clear that not inserted, default value
        - if two return: error, fall back to default value
-**** KEYWORDS Error estimation of Bloom Sort
+**** MAYBE Error estimation of Bloom Sort
      - error both ways, and difference bin-size to real size
 **** brainstorm                                                     :ARCHIVE:
      - stochastic fixed-width data structure
@@ -847,26 +879,34 @@
 ** KEYWORDS setup
 *** TODO sites
 **** CHECK modified top-100
-     The files for retrieval were from the alexa-top-1m[fn:: Available
-     at \url{ http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}],
-     from September 30, 2015. Similar to \cite{wpes13-fingerprinting},
-     similar sites were removed. Also removed were those sites which
-     failed to respond to python's =urllib=. The list of sites with their
-     Alexa index can be found in appendix [[#top-100]].
+     The files for retrieval were from the alexa-top-1m[fn:: Current
+     version available  at \url{
+     http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}], from
+     September 30, 2015. Akin to \cite{wpes13-fingerprinting}, similar
+     sites were removed. Also removed were those sites which failed to
+     respond to python's =urllib=. The list of sites with their Alexa
+     index can be found in appendix [[#top-100]].
 **** KEYWORDS 30 sites
+        - keep in mind: only 10 sites: 10% accuracy is random guessing
      - top-10 have other distribution than main sites \cite{web-is-doom}
      - find sites with high variance
        - use also addon data (version 0.18.2) to check
        - quantiles of (total incoming) sizes
          - panchenko: relevant metric
      - link to code: top30() in analyse.py
-** KEYWORDS MOVE below [[*panchenko v1 vs cumul][vs cumul]] panchenko v1 different classifiers
-   <<different-classifiers>>
-   - more features than cumul default
-   - experiment
-   - different classifiers, different results
-   - much easier to just use knn, ....
-   - more work for svm parameter estimation
+*** WRITE capture
+      #+CAPTION: setup to capture web page traffic
+      #+ATTR_LATEX: :float nil :width 0.5\textwidth
+      [[./pictures/Setup.eps]]
+    - evolved
+      - first version: all on same host
+        - bug: wfpad had overhead of \pm 1%
+        - and had to filtered (also cover traffic server)
+    - now: two virtual machines
+      - tbb, ct-server on one host
+      - tor bridge on other, connects to Tor network
+      - same for wfpad and addon
+      - capture always via bridge
 ** KEYWORDS outlier removal
    As described by Panchenko et al. \cite{panchenko2}, CUMUL is
    enhanced by outlier removal. Their
@@ -927,7 +967,14 @@
      - k-fingerprinting
        - accuracy
      - all similar accuracies (as of k-fingerprinting)
-** TODO Evaluation of Defenses [0/6]
+** KEYWORDS panchenko v1 different classifiers
+   <<different-classifiers>>
+   - more features than cumul default
+   - experiment
+   - different classifiers, different results
+   - much easier to just use knn, ....
+   - more work for svm parameter estimation
+** TODO Evaluation of Defenses [0/7]
 *** WRITE Evaluation of Addon
     #+CAPTION: different defense versions with CUMUL, svc classifier
     #+ATTR_LATEX: :float nil :width \textwidth
@@ -954,17 +1001,6 @@
     - optimal defenses: 22 and simple2@10
       - td: battle those
       - td: pix vs disabled
-**** MOVE to design
-      - scenarios
-        - evolution:
-          - 15.3 first results
-          - buggy: did not match spec (only did html requests)
-        - continue to 18:
-          - much more traffic
-        - try to fix at 19 (and backport to 15.3, codename retro)
-        - keep in mind: only 10 sites: 10% accuracy is random guessing
-        - 20 limits number of embedded requests
-**** end move
     - different factors
     - all around same curve
 **** TODO rotate graphics
@@ -979,17 +1015,30 @@
       - disabled vs wfpad
         - on each page: how much correctly classified?
         - google.com
-    #+CAPTION: different defense versions with CUMUL, extratrees classifier
-    #+ATTR_LATEX: :float nil :width \textwidth
-    [[./pictures/google.com__wfpad_vs_disabled.eps]]
-        - biggest: tumblr.com (less political)
-    #+CAPTION: different defense versions with CUMUL, extratrees classifier
-    #+ATTR_LATEX: :float nil :width \textwidth
-    [[./pictures/tumblr.com__wfpad_vs_disabled.eps]]
-        - medium: netflix.com
-    #+CAPTION: different defense versions with CUMUL, extratrees classifier
-    #+ATTR_LATEX: :float nil :width \textwidth
-    [[./pictures/netflix.com__wfpad_vs_disabled.eps]]
+#+BEGIN_LaTeX
+\begin{table}[H]
+\begin{tabular}{c c c}
+   Page: google.com & Page: tumblr.com & Page: netflix.com \\
+   \hline
+   \multicolumn{3}{c}{WTF-PAD} \\
+  \includegraphics[width=0.3 \textwidth]{./pictures/google.com__wfpad.eps}
+  & \includegraphics[width=0.3 \textwidth]{./pictures/tumblr.com__wfpad.eps}
+  & \includegraphics[width=0.3 \textwidth]{./pictures/netflix.com__wfpad.eps}
+  \\
+   \multicolumn{3}{c}{Addon Version Simple.1, Factor 10\%} \\
+\includegraphics[width=0.3 \textwidth]{./pictures/google.com__simple1@10.eps}
+& \includegraphics[width=0.3 \textwidth]{./pictures/tumblr.com__simple1@10.eps}
+&\includegraphics[width=0.3 \textwidth]{./pictures/netflix.com__simple1@10.eps}
+\\
+   \multicolumn{3}{c}{Addon Version 0.22, Factor 10\%} \\
+\includegraphics[width=0.3 \textwidth]{./pictures/google.com__22.0@10aI.eps}
+&\includegraphics[width=0.3 \textwidth]{./pictures/tumblr.com__22.0@10aI.eps}
+&\includegraphics[width=0.3 \textwidth]{./pictures/netflix.com__22.0@10aI.eps}
+\end{tabular}
+\caption{CUMUL traces of different defenses}
+\end{table}
+#+END_LaTeX
+
 *** KEYWORDS sota (theoretical): walkie-talkie
 *** KEYWORDS (maybe) vs optimal attacker
 *** KEYWORDS svc vs extratrees
@@ -1532,26 +1581,6 @@
     kernel.
 **** practical wf: Capturing traces
 **** TODO move to subsection related work
-*** CHECK MOVE to [[#features][features]] which features work well                   :intro:
-    As stressed by Perry in \cite{critique}, analysis of which feature
-    contribute the most towards classification is important. Panchenko
-    et al. \cite{panchenko} provided a qualitative analysis. Hayes and
-    Danezis \cite{kfingerprint} used forests of randomized trees, which
-    provide feature importance estimation.[fn:: f.ex. in scikit-learn
-    \cite{scikit-learn} via the =_feature_importances= attribute]
-
-    As Dyer et al \cite{oakland2012-peekaboo} noted and experiments with
-    Panchenko et al's \cite{panchenko} estimator support (see
-    [[different-classifiers]]), you can get good accuracy with several
-    classifiers, given the right features.
-
-    As determined by Hayes and Danezis \cite{kfingerprint}, the top-five
-    features are the number (both absolute and percentage of total) of
-    both incoming and outgoing packets. The standard deviation of the
-    packet ordering list [fn:: Panchenko et al \cite{panchenko} call
-    these features /Number Markers/] completes the top five. Each added
-    feature increases accuracy, yet with nearly the same accuracy for 30 as
-    for the total of 150 features.
 ** TODO Addon Design and Implementation [0/55]
 *** [[*description of add-on][description of add-on]]
 *** Defenses
