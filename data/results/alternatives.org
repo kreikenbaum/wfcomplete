@@ -1,10 +1,17 @@
 getting data for gnuplot:  | <15> | <2> | <2> | <2> | <2> | <2> |   |   |
 compare classifiers: | <10>  | <6> | <6> | <6> | <6> | <6> |   <5> |    <6> |  
 compare versions:  | <15> | <5> | <5> |   <5> |   <5> |   <5> |   <5> |  <6> |
-* table 2/3 version 1 (bridge+OR+tts)
+* table bridge+tts+train(2/3)-OR (OR^2)
   |            | ExtraTrees | RandomForest | KNeighbors | DecisionTree | SVC(scale) | overhead % |    max |
   | <10>       |    <6> |    <6> |    <6> |    <6> |    <6> |   <5> |    <6> |
   |------------+--------+--------+--------+--------+--------+-------+--------|
+  | train-test | 0.87081429685 | 0.841980447033 | 0.754211000009 | 0.82447538791 | 0.912626859843 |     0 | 91.262686 |
+  | wfpad/bridge | 0.683903252711 | 0.691409507923 | 0.593828190158 | 0.688907422852 | 0.254378648874 | 12.9047077098 | 69.140951 |
+  | 0.22@10aI  | 0.6675 | 0.641666666667 | 0.605833333333 | 0.525833333333 | 0.0966666666667 | 27.7337867893 |  66.75 |
+  | simple1@10 | 0.651666666667 | 0.6475 | 0.598333333333 | 0.629166666667 | 0.186666666667 | 25.1641266803 | 65.166667 |
+  | simple2@5  | 0.529608006672 | 0.508757297748 | 0.477064220183 | 0.569641367807 | 0.160133444537 | 20.1580990424 | 56.964137 |
+  | simple2@20 | 0.280833333333 | 0.284166666667 | 0.229166666667 | 0.291666666667 | 0.158333333333 | 37.455444787 | 29.166667 |
+  #+TBLFM: $8=100*reduce(max, $2..$6)
 
 * table 2/3 +correct OR (+bridge+tts)
   |            | ExtraTrees | RandomForest | KNeighbors | DecisionTree | SVC(scale) | overhead (in %) |    max |
@@ -131,6 +138,74 @@ SVC(scale) |     % |    max |
   | 0.15.3/nocache | 0.265454545455 | 0.247272727273 | 0.261818181818 | 0.261818181818 |   |
   | 0.15.3/cache        | 0.259124087591 | 0.251824817518 | 0.251824817518 | 0.251824817518 |     |
 * ========== END TABLES ===================
+* test_or: disabled
+  best result for level3 or, also applied to test set
+** data
+WARNING:root:optimal parameters found at the border. c:2048.000000, g:8.000000
+WARNING:root:optimal parameters found at the border. c:2048.000000, g:4.000000
+*** l: 1, test_or: True
+OneVsRestClassifier 0.861617104123, [ 0.89010989  0.87058824  0.80769231  0.87012987  0.86956522]
+WARNING:root:optimal parameters found at the border. c:2048.000000, g:8.000000
+WARNING:root:optimal parameters found at the border. c:2048.000000, g:4.000000
+*** l: 1, test_or: False
+OneVsRestClassifier 0.861617104123, [ 0.89010989  0.87058824  0.80769231  0.87012987  0.86956522]
+WARNING:root:optimal parameters found at the border. c:2048.000000, g:8.000000
+WARNING:root:optimal parameters found at the border. c:2048.000000, g:4.000000
+*** l: 2, test_or: True
+OneVsRestClassifier 0.898603490709, [ 0.91666667  0.92105263  0.83783784  0.92857143  0.88888889]
+WARNING:root:optimal parameters found at the border. c:2048.000000, g:8.000000
+WARNING:root:optimal parameters found at the border. c:2048.000000, g:4.000000
+*** l: 2, test_or: False
+OneVsRestClassifier 0.861617104123, [ 0.89010989  0.87058824  0.80769231  0.87012987  0.86956522]
+WARNING:root:optimal parameters found at the border. c:2048.000000, g:8.000000
+WARNING:root:optimal parameters found at the border. c:2048.000000, g:4.000000
+*** l: 3, test_or: True
+OneVsRestClassifier 0.934211627405, [ 0.94936709  0.93333333  0.90277778  0.95454545  0.93103448]
+WARNING:root:optimal parameters found at the border. c:2048.000000, g:8.000000
+WARNING:root:optimal parameters found at the border. c:2048.000000, g:4.000000
+*** l: 3, test_or: False
+OneVsRestClassifier 0.861617104123, [ 0.89010989  0.87058824  0.80769231  0.87012987  0.86956522]
+* tts+train(2/3)-OR (OR^2): simple[1@10,2@5,2@20], 22@10aI
+** data
+WARNING:root:optimal parameters found at the border. c:2048.000000, g:2.000000
+WARNING:root:optimal parameters found at the border. c:4096.000000, g:2.000000
+WARNING:root:optimal parameters found at the border. c:8192.000000, g:1.000000
+*** cross-validation on X,y
+ExtraTreesClassifier 0.87081429685, [ 0.91358025  0.86075949  0.87012987  0.85714286  0.85245902]
+RandomForestClassifier 0.841980447033, [ 0.87654321  0.86075949  0.85714286  0.82857143  0.78688525]
+KNeighborsClassifier 0.754211000009, [ 0.74074074  0.74683544  0.72727273  0.78571429  0.7704918 ]
+DecisionTreeClassifier 0.82447538791, [ 0.82716049  0.84810127  0.80519481  0.87142857  0.7704918 ]
+OneVsRestClassifier 0.912626859843, [ 0.90123457  0.87341772  0.90909091  0.92857143  0.95081967]
+*** train: disabled/bridge VS wfpad/bridge (overhead 12.9047077098%)
+ExtraTreesClassifier: 0.683903252711
+RandomForestClassifier: 0.691409507923
+KNeighborsClassifier: 0.593828190158
+DecisionTreeClassifier: 0.688907422852
+OneVsRestClassifier: 0.254378648874
+*** train: disabled/bridge VS 22.0/10aI (overhead 27.7337867893%)
+ExtraTreesClassifier: 0.6675
+RandomForestClassifier: 0.641666666667
+KNeighborsClassifier: 0.605833333333
+DecisionTreeClassifier: 0.525833333333
+OneVsRestClassifier: 0.0966666666667
+*** train: disabled/bridge VS simple2/5 (overhead 20.1580990424%)
+ExtraTreesClassifier: 0.529608006672
+RandomForestClassifier: 0.508757297748
+KNeighborsClassifier: 0.477064220183
+DecisionTreeClassifier: 0.569641367807
+OneVsRestClassifier: 0.160133444537
+*** train: disabled/bridge VS simple2/20 (overhead 37.455444787%)
+ExtraTreesClassifier: 0.280833333333
+RandomForestClassifier: 0.284166666667
+KNeighborsClassifier: 0.229166666667
+DecisionTreeClassifier: 0.291666666667
+OneVsRestClassifier: 0.158333333333
+*** train: disabled/bridge VS simple1/10 (overhead 25.1641266803%)
+ExtraTreesClassifier: 0.651666666667
+RandomForestClassifier: 0.6475
+KNeighborsClassifier: 0.598333333333
+DecisionTreeClassifier: 0.629166666667
+OneVsRestClassifier: 0.186666666667
 * 2/3 panchenko version 1 (with warning)
 WARNING:optimal parameters found at the border. c:8.000000, g:0.003906
 ** data

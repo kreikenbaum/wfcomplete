@@ -1,4 +1,4 @@
-!/usr/bin/env python
+#!/usr/bin/env python
 '''aggregates trace data, extracts features'''
 import doctest
 import glob
@@ -266,7 +266,7 @@ class Counter(object):
     def _get_all(cls, place, outlier_removal=True):
         '''helper to get counters w/o outlier_removal'''
         if outlier_removal:
-            return panchenko_outlier_removal(cls.all_from_dir(place))
+            return outlier_removal(cls.all_from_dir(place))
         else:
             return cls.all_from_dir(place)
 
@@ -489,15 +489,19 @@ def p_or_quantiles(counter_list):
             out.append(counter)
     return out
 
-# td: maybe test that enough instances remain...
-def panchenko_outlier_removal(counters):
+def outlier_removal(counters, level=2):
     '''apply outlier removal to input of form
     {'domain1': [counter, ...], ... 'domainN': [..]}'''
     out = {}
     for (k, v) in counters.iteritems():
         try:
-#            out[k] = p_or_quantiles(p_or_median(p_or_tiny(v)))
-            out[k] = p_or_quantiles(p_or_tiny(v))
+            out[k] = p_or_tiny(v)
+            if level > 2:
+                out[k] = p_or_median(out[k])
+            if level > 1:
+                out[k] = p_or_quantiles(out[k])
+            if not out[k]:
+                raise ValueError
         except ValueError: ## somewhere, list got to []
             logging.warn('%s discarded in outlier removal', k)
     return out

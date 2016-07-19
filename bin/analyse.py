@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 '''Analyses (Panchenko's) features returned from Counter class'''
 
 import numpy as np
@@ -74,19 +74,6 @@ def _find_max_lengths(counters):
                 max_lengths[key] = lengths[key]
     return max_lengths
 
-# move to counter.py
-def _gen_counters(places, outlier_removal=True):
-    '''@return dict: {place1: {domain1: counters1_1, ...  domainN: countersN_1},
-    ..., placeM: {domain1: counters1_M, ...  domainN: countersN_M}}
-    for directories} in {@code places}'''
-    out = {}
-    if len(places) == 0:
-        out['.'] = counter_get('.', outlier_removal)
-
-    for p in places:
-        out[p] = counter_get(p, outlier_removal)
-
-    return out
 
 def _mean(counter_dict):
     '''@return a dict of {domain1: mean1, ... domainN: meanN}
@@ -119,11 +106,6 @@ def _test(X, y, estimator=GOOD[0], nj=JOBS_NUM, verbose=True, scale=False):
         X = np.nan_to_num(X)
     return cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=nj)
 
-def _testcg(X, y, c, gamma):
-    '''cross-evaluates ovr.svc with parameters c,gamma on X, y'''
-    clf = multiclass.OneVsRestClassifier(svm.SVC(C=c, gamma=gamma))
-    return _test(X, y, clf, scale=True, nj=JOBS_NUM).mean()
-
 def _xtest(X_train, y_train, X_test, y_test, estimator, scale=False):
     '''cross_tests with estimator'''
     if scale:
@@ -141,7 +123,7 @@ def _xtest(X_train, y_train, X_test, y_test, estimator, scale=False):
 def _times_mean_std(counter_dict):
     '''analyse timing data (time overhead)
 
-    @return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
+    @return a dict of {domain1: (mean1,std1)}, ... domainN: (meanN, stdN)}
     with mean and standard of timing data
     '''
     out = {}
@@ -155,7 +137,7 @@ def compare_stats(dirs):
     dir2:..., ..., dirN: ...} with domain mean, standard distribution
     and labels
     '''
-    places = _gen_counters(dirs)
+    places = counter.Counter.for_places(dirs, False)
     means = {k: _mean(v) for (k,v) in places.iteritems()}
     stds = {k: _std(v) for (k,v) in places.iteritems()}
     out = []
@@ -237,68 +219,6 @@ def to_libsvm(X, y, fname='libsvm_in'):
                 f.write('{}:{} '.format(no+1, val))
         f.write('\n')
 
-# unused
-def to_X_y_dom_size_d(place, out_rm=True):
-    '''@return (X,y,y_domains, avg_size, avg_duration)
-
-    tuple for Counters in =place= after cumul (and outlier removal if
-    out_rm == {@code True})
-    '''
-    cs = counter.Counter.all_from_dir(place)
-    if out_rm:
-        cs = panchenko_outlier_removal(cs)
-    size = _average_bytes(cs)
-    duration = _average_duration(cs)
-    return to_features_cumul(cs) + (size, duration)
-
-### outlier removal
-def p_or_tiny(counter_list):
-    '''removes if len(packets) < 2 or total_in < 2*512
-    >>> len(p_or_tiny([counter._ptest(1), counter._ptest(3)]))
-    1
-    >>> len(p_or_tiny([counter._ptest(2, val=-600), counter._ptest(3)]))
-    1
-    '''
-    return [x for x in counter_list
-            if len(x.packets) >= 2 and x.get_total_in() >= 2*512]
-
-def p_or_median(counter_list):
-    '''removes if total_in < 0.2 * median or > 1.8 * median'''
-    med = np.median([counter.get_total_in() for counter in counter_list])
-    return [x for x in counter_list
-            if x.get_total_in() >= 0.2 * med and x.get_total_in() <= 1.8 * med]
-
-def p_or_quantiles(counter_list):
-    '''remove if total_in < (q1-1.5 * (q3-q1))
-    or total_in > (q3+1.5 * (q3-q1)
-    >>> [x.get_total_in()/600 for x in p_or_quantiles(map(counter._ptest, [0, 2, 2, 2, 2, 2, 2, 4]))]
-    [2, 2, 2, 2, 2, 2]
-    '''
-    counter_total_in = [counter.get_total_in() for counter in counter_list]
-    q1 = np.percentile(counter_total_in, 25)
-    q3 = np.percentile(counter_total_in, 75)
-
-    out = []
-    for counter in counter_list:
-        if (counter.get_total_in() >= (q1 - 1.5 * (q3 - q1)) and
-            counter.get_total_in() <= (q3 + 1.5 * (q3 - q1))):
-            out.append(counter)
-    return out
-
-# td: maybe test that enough instances remain...
-def panchenko_outlier_removal(counters):
-    '''apply outlier removal to input of form
-    {'domain1': [counter, ...], ... 'domainN': [..]}'''
-    out = {}
-    for (k, v) in counters.iteritems():
-        try:
-#            out[k] = p_or_quantiles(p_or_median(p_or_tiny(v)))
-            out[k] = p_or_quantiles(p_or_tiny(v))
-        except ValueError: ## somewhere, list got to []
-            logging.warn('%s discarded in outlier removal', k)
-    return out
-        
-
 def esti_name(estimator):
     '''@return name of estimator class'''
     return str(estimator.__class__).split('.')[-1].split("'")[0]
@@ -344,44 +264,8 @@ def new_search_range(best_param):
     '''
     return [best_param / 2, best_param, best_param * 2]
 
-def smart_grid(X, y, stepmin=2, c_low=-2, c_high=18, g_low=-12, g_high=8):
-    '''''smarter'' grid-search, params are exponents of 2
-
-    use this to get the general range of the correct parameters for
-    my_grid, as accuracy was slightly worse than for my_grid()
-    '''
-    import math
-    # init
-    results = {}
-    c_bound = (c_low, c_high)
-    g_bound = (g_low, g_high)
-    while c_bound[1] - c_bound[0] > stepmin and g_bound[1] - g_bound[0] > stepmin:
-        print 'iteration with bounds: {}, {}'.format(c_bound, g_bound)
-        for c in np.logspace(c_bound[0], c_bound[1], 5, base=2):
-            for g in np.logspace(g_bound[0], g_bound[1], 5, base=2):
-                if (c,g) not in results:
-                    results[(c,g)] = _testcg(X, y, c, g)
-        # find max, reset bounds, continue
-        best = None
-        maxval = 0
-        for ((c,g), v) in results.iteritems():
-            if v > maxval:
-                best = (math.log(c), math.log(g))
-                maxval = v
-        if best[0] in c_bound:
-            c_plus = 0.5* (c_bound[1] - c_bound[0])
-        else:
-            c_plus = 0.25* (c_bound[1] - c_bound[0])
-        if best[1] in g_bound:
-            g_plus = 0.5* (g_bound[1] - g_bound[0])
-        else:
-            g_plus = 0.25* (g_bound[1] - g_bound[0])
-        c_bound = (best[0] - c_plus, best[0] + c_plus)
-        g_bound = (best[1] - g_plus, best[1] + g_plus)
-    return multiclass.OneVsRestClassifier(svm.SVC(C=2**best[0], gamma=2**best[1]))
-
 def outlier_removal_vs_without(counters):
-    (X, y, y_domains) = to_features_cumul(panchenko_outlier_removal(counters))
+    (X, y, y_domains) = to_features_cumul(counter.outlier_removal(counters))
     (X2, y2, y2_domains) = to_features_cumul(counters)
     _compare(X, y, X2, y2)
 
@@ -390,15 +274,6 @@ def cumul_vs_panchenko(counters):
     (X, y, y_domains) = to_features(counters)
     (X2, y2, y2_domains) = to_features_cumul(counters)
     _compare(X, y, X2, y2)
-
-# td: remove this, or happens later
-# td: move to counter.py
-def counter_get(place, outlier_removal=True):
-    '''helper to get counters w/o outlier_removal'''
-    if outlier_removal:
-        return panchenko_outlier_removal(counter.Counter.all_from_dir(place))
-    else:
-        return counter.Counter.all_from_dir(place)
 
 def tts(counter_dict, test_size=1.0/3):
     '''train-test-split: splits counter_dict in train_dict and test_dict
@@ -438,21 +313,20 @@ def verbose_test_11(X, y, estimator):
 def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
     '''cross test on dirs: 1st has training data, rest have test
 
-    argv is like sys.argv, cumul triggers CUMUL. if false: panchenko 1'''
+    argv is like sys.argv, cumul triggers CUMUL, else version 1'''
     # call with 1: x-validate test that
     # call with 2+: train 1 (whole), test 2,3,4,...
-    places = _gen_counters(argv[1:], False)
+    places = counter.Counter.for_places(argv[1:], False)
     stats = {k: _bytes_mean_std(v) for (k,v) in places.iteritems()}
     sizes = {k: _average_bytes(v) for (k,v) in stats.iteritems()}
     # td: continue here, recompute duration (was not averaged per domain), compare
     # durations = {k: _average_duration(v) for (k,v) in places.iteritems()}
 
     place0 = argv[1] if len(argv) > 1 else '.'
-    # or for first element only
-    places[place0] = panchenko_outlier_removal(places[place0])
 
     # X,y for training set
     (train, test) = tts(places[place0])
+    train = counter.outlier_removal(train)
     if cumul:
         (X, y, _) = to_features_cumul(train)
     else:
@@ -460,15 +334,14 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
 
     if with_svm:
         clf,_ = my_grid(X, y)
-#        clf = smart_grid(X, y) #enabled if ranges are not clear
         logging.info('grid result: %s', clf)
         GOOD.append(clf)
 
     # X,y for eval
     if cumul:
-        (X, y, _) = to_features_cumul(places[place0])
+        (X, y, _) = to_features_cumul(test)
     else:
-        (X, y, _) = to_features(places[place0])
+        (X, y, _) = to_features(test)
     # evaluate accuracy on all of unaddoned
     print 'cross-validation on X,y'
     for esti in GOOD:
@@ -494,6 +367,21 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
             print '{}: {}'.format(esti_name(esti),
                                   _xtest(X, y, X2, y2, esti, scale=scale))
 
+def test_or(place):
+    '''tests different outlier removal schemes and levels'''
+    (train, test) = tts(place)    
+    for lvl in [1,2,3]:
+        for or_test in [True, False]:
+            (X, y, _) = to_features_cumul(counter.outlier_removal(train, lvl))
+            clf,_ = my_grid(X, y)
+            if or_test:
+                (X, y, _) = to_features_cumul(counter.outlier_removal(test,
+                                                                      lvl))
+            else:
+                (X, y, _) = to_features_cumul(test)
+            
+            print "l: {}, test_or: {}".format(lvl, or_test)
+            verbose_test_11(X, y, clf)
     #_test(X, y, svm.SVC(kernel='linear')) #problematic, but best
     #grid rbf
 #     cstart, cstop = -45, -35
@@ -540,7 +428,11 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
 #    (X, y ,y_dom) = to_features_cumul(counters)
 #_test(X, y, nj=1)
 
-# places = _gen_counters(sys.argv[1:])
+# older data (without bridge)
+    # sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
+    # sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
+
+#places = counter.Counter.for_places(sys.argv[1:], False)
 # some_30 = top_30(means)
 # timing = {k: _average_duration(v) for (k,v) in places.iteritems()}
 
@@ -554,9 +446,8 @@ if __name__ == "__main__":
 
     # if by hand: change to the right directory before importing
     # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
-    # sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
-    # sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
-    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', '22.0/10aI', 'simple1/10', 'simple1/50', '0.15.3-retrofixed/bridge/30.js', '0.15.3-retrofixed/bridge/70.js', '0.15.3-retrofixed/bridge/50.js', 'simple2/30', 'simple2/30-burst', 'tamaraw']
+    # sys.argv = ['', 'disabled/bridge', 'simple1/50', '0.15.3-retrofixed/bridge/30.js', '0.15.3-retrofixed/bridge/70.js', '0.15.3-retrofixed/bridge/50.js', 'simple2/30', 'simple2/30-burst', 'tamaraw']
+    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', '22.0/10aI', 'simple1/10', 'simple2/5', 'simple2/20']
     # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
     # counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
     cross_test(sys.argv, with_svm=True) #, cumul=False)
