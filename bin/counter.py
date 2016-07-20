@@ -225,7 +225,7 @@ class Counter(object):
                     json_only = False
                     _append_features(out, fullname)
         if not out:
-            logging.warn('%s did not contain any counter files', dirname)
+            logging.error('%s did not contain any counter files', dirname)
         return out
 
     @staticmethod

@@ -21,14 +21,15 @@ def _table_to_data(f):
     '''parse file f with org-mode table export data'''
     import collections
 
-    Datum = collections.namedtuple('Datum', ['overhead', 'svc', 'extratrees'])
+    Datum = collections.namedtuple('Datum', ['overhead', 'et', 'rf', 'knn', 'svc'])
 
     out = {}
     for line in f:
-        if "overhead (in %)" in line:
+        if "overhead %" in line:
             continue
-        (name, et, _, _, _, svc, overhead, _) = line.split("\t")
-        out[name] = Datum(float(overhead), float(svc), float(et))
+        (name, et, rf, knn, _, svc, overhead, _) = line.split("\t")
+        out[name] = Datum(float(overhead),
+                          float(et), float(rf), float(knn), float(svc))
     return out
 
 def _to_color(value):

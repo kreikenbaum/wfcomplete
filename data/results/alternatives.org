@@ -5,14 +5,20 @@ compare versions:  | <15> | <5> | <5> |   <5> |   <5> |   <5> |   <5> |  <6> |
   |            | ExtraTrees | RandomForest | KNeighbors | DecisionTree | SVC(scale) | overhead % |    max |
   | <10>       |    <6> |    <6> |    <6> |    <6> |    <6> |   <5> |    <6> |
   |------------+--------+--------+--------+--------+--------+-------+--------|
-  | train-test | 0.87081429685 | 0.841980447033 | 0.754211000009 | 0.82447538791 | 0.912626859843 |     0 | 91.262686 |
-  | wfpad/bridge | 0.683903252711 | 0.691409507923 | 0.593828190158 | 0.688907422852 | 0.254378648874 | 12.9047077098 | 69.140951 |
-  | 0.22@10aI  | 0.6675 | 0.641666666667 | 0.605833333333 | 0.525833333333 | 0.0966666666667 | 27.7337867893 |  66.75 |
-  | simple1@10 | 0.651666666667 | 0.6475 | 0.598333333333 | 0.629166666667 | 0.186666666667 | 25.1641266803 | 65.166667 |
-  | simple2@5  | 0.529608006672 | 0.508757297748 | 0.477064220183 | 0.569641367807 | 0.160133444537 | 20.1580990424 | 56.964137 |
+  | no cover   | 0.87081429685 | 0.841980447033 | 0.754211000009 | 0.82447538791 | 0.912626859843 |     0 | 91.262686 |
+  | retro@30   | 0.723333333333 | 0.719166666667 | 0.621666666667 | 0.5375 | 0.118333333333 | 26.766882278 | 72.333333 |
+  | wfpad      | 0.720600500417 | 0.695579649708 | 0.618849040867 | 0.647206005004 | 0.271059216013 | 12.9047077098 | 72.060050 |
+  | simple1@10 |  0.705 | 0.658333333333 |  0.615 | 0.576666666667 | 0.1875 | 25.1641266803 |   70.5 |
+  | retro@50   | 0.698915763136 | 0.657214345288 | 0.61551292744 | 0.531276063386 | 0.183486238532 | 16.6027859811 | 69.891576 |
+  | 22@10aI    | 0.688333333333 | 0.663333333333 | 0.615833333333 | 0.5025 | 0.123333333333 | 27.7337867893 | 68.833333 |
+  | retro@70   |   0.68 | 0.6525 | 0.5975 | 0.546666666667 |  0.185 | 22.3359945259 |    68. |
+  | tamaraw    | 0.656666666667 | 0.5525 |   0.61 | 0.2875 | 0.250833333333 | 23.8743081642 | 65.666667 |
+  | simple2@5  | 0.57130942452 | 0.542952460384 | 0.499582985822 | 0.463719766472 | 0.166805671393 | 20.1580990424 | 57.130942 |
   | simple2@20 | 0.280833333333 | 0.284166666667 | 0.229166666667 | 0.291666666667 | 0.158333333333 | 37.455444787 | 29.166667 |
+  | simple1@50 | 0.1625 | 0.136666666667 | 0.111666666667 |   0.14 | 0.224166666667 | 70.893016648 | 22.416667 |
+  | simple2@30-burst | 0.214166666667 | 0.198333333333 | 0.170833333333 | 0.190833333333 | 0.110833333333 | 54.3315794585 | 21.416667 |
+  | simple2@30 | 0.199166666667 |  0.195 | 0.161666666667 | 0.165833333333 | 0.0975 | 48.9719398629 | 19.916667 |
   #+TBLFM: $8=100*reduce(max, $2..$6)
-
 * table 2/3 +correct OR (+bridge+tts)
   |            | ExtraTrees | RandomForest | KNeighbors | DecisionTree | SVC(scale) | overhead (in %) |    max |
   | <10>       |    <6> |    <6> |    <6> |    <6> |    <6> |   <5> |    <6> |
@@ -138,6 +144,185 @@ SVC(scale) |     % |    max |
   | 0.15.3/nocache | 0.265454545455 | 0.247272727273 | 0.261818181818 | 0.261818181818 |   |
   | 0.15.3/cache        | 0.259124087591 | 0.251824817518 | 0.251824817518 | 0.251824817518 |     |
 * ========== END TABLES ===================
+* tts+train(2/3)-OR: 22@10aI, 30aI
+  better accuracy for 10aI, also for 30
+** data
+*** grid result
+OneVsRestClassifier(estimator=SVC(C=32768.0, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape=None, degree=3, gamma=2.0, kernel='rbf',
+  max_iter=-1, probability=False, random_state=None, shrinking=True,
+  tol=0.001, verbose=False),
+          n_jobs=1)
+*** cross-validation on X,y
+ExtraTreesClassifier 0.765016283883, [ 0.81318681  0.76470588  0.69512195  0.74324324  0.80882353]
+RandomForestClassifier 0.747216834505, [ 0.81318681  0.69411765  0.70731707  0.75675676  0.76470588]
+KNeighborsClassifier 0.693045914882, [ 0.73626374  0.72941176  0.65853659  0.63513514  0.70588235]
+DecisionTreeClassifier 0.726318206203, [ 0.74725275  0.68235294  0.64634146  0.7027027   0.85294118]
+OneVsRestClassifier 0.825888041541, [ 0.79120879  0.83529412  0.79268293  0.78378378  0.92647059]
+*** train: disabled/bridge VS 22.0/aI30 (overhead 50.4447331217%)
+ExtraTreesClassifier: 0.025
+RandomForestClassifier: 0.0338235294118
+KNeighborsClassifier: 0.0294117647059
+DecisionTreeClassifier: 0.0279411764706
+OneVsRestClassifier: 0.0132352941176
+*** train: disabled/bridge VS 22.0/10aI (overhead 27.7337867893%)
+ExtraTreesClassifier: 0.688333333333
+RandomForestClassifier: 0.663333333333
+KNeighborsClassifier: 0.615833333333
+DecisionTreeClassifier: 0.5025
+OneVsRestClassifier: 0.123333333333
+* tts+train(2/3)-OR: simple[1@10,2@5,2@20], 22@10aI
+  some updates
+** data
+*** grid result: OneVsRestClassifier(estimator=SVC(C=32768.0, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape=None, degree=3, gamma=2.0, kernel='rbf',
+  max_iter=-1, probability=False, random_state=None, shrinking=True,
+  tol=0.001, verbose=False),
+          n_jobs=1)
+*** cross-validation on X,y
+ExtraTreesClassifier 0.777544047874, [ 0.76344086  0.75        0.75609756  0.8         0.81818182]
+RandomForestClassifier 0.754209999285, [ 0.79569892  0.75        0.68292683  0.8         0.74242424]
+KNeighborsClassifier 0.669638972619, [ 0.72043011  0.64285714  0.6097561   0.69333333  0.68181818]
+DecisionTreeClassifier 0.712032172915, [ 0.72043011  0.72619048  0.63414634  0.70666667  0.77272727]
+OneVsRestClassifier 0.861907282332, [ 0.83870968  0.88095238  0.82926829  0.86666667  0.89393939]
+*** train: disabled/bridge VS wfpad/bridge (overhead 12.9047077098%)
+ExtraTreesClassifier: 0.720600500417
+RandomForestClassifier: 0.695579649708
+KNeighborsClassifier: 0.618849040867
+DecisionTreeClassifier: 0.647206005004
+OneVsRestClassifier: 0.271059216013
+*** train: disabled/bridge VS 22.0/10aI (overhead 27.7337867893%)
+ExtraTreesClassifier: 0.679166666667
+RandomForestClassifier: 0.6275
+KNeighborsClassifier: 0.631666666667
+DecisionTreeClassifier: 0.471666666667
+OneVsRestClassifier: 0.120833333333
+*** train: disabled/bridge VS simple2/5 (overhead 20.1580990424%)
+ExtraTreesClassifier: 0.57130942452
+RandomForestClassifier: 0.542952460384
+KNeighborsClassifier: 0.499582985822
+DecisionTreeClassifier: 0.463719766472
+OneVsRestClassifier: 0.166805671393
+*** train: disabled/bridge VS simple2/20 (overhead 37.455444787%)
+ExtraTreesClassifier: 0.303333333333
+RandomForestClassifier: 0.291666666667
+KNeighborsClassifier: 0.250833333333
+DecisionTreeClassifier: 0.283333333333
+OneVsRestClassifier: 0.134166666667
+*** train: disabled/bridge VS simple1/10 (overhead 25.1641266803%)
+ExtraTreesClassifier: 0.705
+RandomForestClassifier: 0.658333333333
+KNeighborsClassifier: 0.615
+DecisionTreeClassifier: 0.576666666667
+OneVsRestClassifier: 0.1875
+* redone simple[1@50,2@30[,-burst], retro@[3,5,7]0, tamaraw
+  similar results
+** data
+*** grid result
+OneVsRestClassifier(estimator=SVC(C=32768.0, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape=None, degree=3, gamma=2.0, kernel='rbf',
+  max_iter=-1, probability=False, random_state=None, shrinking=True,
+  tol=0.001, verbose=False),
+          n_jobs=1)
+*** cross-validation on X,y
+ExtraTreesClassifier 0.771061353828, [ 0.82417582  0.72413793  0.81012658  0.74324324  0.75362319]
+RandomForestClassifier 0.768789999063, [ 0.76923077  0.8045977   0.78481013  0.7027027   0.7826087 ]
+KNeighborsClassifier 0.671695763101, [ 0.63736264  0.65517241  0.73417722  0.62162162  0.71014493]
+DecisionTreeClassifier 0.725858138215, [ 0.79120879  0.70114943  0.6835443   0.74324324  0.71014493]
+OneVsRestClassifier 0.856615224736, [ 0.86813187  0.85057471  0.87341772  0.86486486  0.82608696]
+*** train: disabled/bridge VS tamaraw (overhead 23.8743081642%)
+ExtraTreesClassifier: 0.6575
+RandomForestClassifier: 0.604166666667
+KNeighborsClassifier: 0.615
+DecisionTreeClassifier: 0.249166666667
+OneVsRestClassifier: 0.261666666667
+*** train: disabled/bridge VS simple2/30-burst (overhead 54.3315794585%)
+ExtraTreesClassifier: 0.219166666667
+RandomForestClassifier: 0.2075
+KNeighborsClassifier: 0.178333333333
+DecisionTreeClassifier: 0.2225
+OneVsRestClassifier: 0.121666666667
+*** train: disabled/bridge VS simple2/30 (overhead 48.9719398629%)
+ExtraTreesClassifier: 0.198333333333
+RandomForestClassifier: 0.193333333333
+KNeighborsClassifier: 0.165833333333
+DecisionTreeClassifier: 0.218333333333
+OneVsRestClassifier: 0.116666666667
+*** train: disabled/bridge VS 0.15.3-retrofixed/bridge/70.js (overhead 22.3359945259%)
+ExtraTreesClassifier: 0.703333333333
+RandomForestClassifier: 0.665
+KNeighborsClassifier: 0.608333333333
+DecisionTreeClassifier: 0.5025
+OneVsRestClassifier: 0.234166666667
+*** train: disabled/bridge VS 0.15.3-retrofixed/bridge/30.js (overhead 26.766882278%)
+ExtraTreesClassifier: 0.740833333333
+RandomForestClassifier: 0.720833333333
+KNeighborsClassifier: 0.653333333333
+DecisionTreeClassifier: 0.448333333333
+OneVsRestClassifier: 0.131666666667
+*** train: disabled/bridge VS 0.15.3-retrofixed/bridge/50.js (overhead 16.6027859811%)
+ExtraTreesClassifier: 0.712260216847
+RandomForestClassifier: 0.663052543786
+KNeighborsClassifier: 0.617180984153
+DecisionTreeClassifier: 0.4670558799
+OneVsRestClassifier: 0.217681401168
+*** train: disabled/bridge VS simple1/50 (overhead 70.893016648%)
+ExtraTreesClassifier: 0.166666666667
+RandomForestClassifier: 0.1475
+KNeighborsClassifier: 0.1175
+DecisionTreeClassifier: 0.129166666667
+OneVsRestClassifier: 0.2
+* tts+train(2/3)-OR: simple[1@50,2@30[,-burst]], retro@[3,5,7]0, tamaraw
+  bad result on cross-validation: 0.85 (svc) [maybe due to tts?], no clf output
+** data
+*** cross-validation on X,y
+ExtraTreesClassifier 0.792246308846, [ 0.83333333  0.78823529  0.82716049  0.76623377  0.74626866]
+RandomForestClassifier 0.758995405791, [ 0.76666667  0.75294118  0.81481481  0.71428571  0.74626866]
+KNeighborsClassifier 0.71311688734, [ 0.66666667  0.72941176  0.74074074  0.72727273  0.70149254]
+DecisionTreeClassifier 0.749825608117, [ 0.76666667  0.78823529  0.83950617  0.62337662  0.73134328]
+OneVsRestClassifier 0.852365335702, [ 0.88888889  0.83529412  0.85185185  0.80519481  0.88059701]
+*** train: disabled/bridge VS tamaraw (overhead 23.8743081642%)
+ExtraTreesClassifier: 0.656666666667
+RandomForestClassifier: 0.5525
+KNeighborsClassifier: 0.61
+DecisionTreeClassifier: 0.2875
+OneVsRestClassifier: 0.250833333333
+*** train: disabled/bridge VS simple2/30-burst (overhead 54.3315794585%)
+ExtraTreesClassifier: 0.214166666667
+RandomForestClassifier: 0.198333333333
+KNeighborsClassifier: 0.170833333333
+DecisionTreeClassifier: 0.190833333333
+OneVsRestClassifier: 0.110833333333
+*** train: disabled/bridge VS simple2/30 (overhead 48.9719398629%)
+ExtraTreesClassifier: 0.199166666667
+RandomForestClassifier: 0.195
+KNeighborsClassifier: 0.161666666667
+DecisionTreeClassifier: 0.165833333333
+OneVsRestClassifier: 0.0975
+*** train: disabled/bridge VS 0.15.3-retrofixed/bridge/70.js (overhead 22.3359945259%)
+ExtraTreesClassifier: 0.68
+RandomForestClassifier: 0.6525
+KNeighborsClassifier: 0.5975
+DecisionTreeClassifier: 0.546666666667
+OneVsRestClassifier: 0.185
+*** train: disabled/bridge VS 0.15.3-retrofixed/bridge/30.js (overhead 26.766882278%)
+ExtraTreesClassifier: 0.723333333333
+RandomForestClassifier: 0.719166666667
+KNeighborsClassifier: 0.621666666667
+DecisionTreeClassifier: 0.5375
+OneVsRestClassifier: 0.118333333333
+*** train: disabled/bridge VS 0.15.3-retrofixed/bridge/50.js (overhead 16.6027859811%)
+ExtraTreesClassifier: 0.698915763136
+RandomForestClassifier: 0.657214345288
+KNeighborsClassifier: 0.61551292744
+DecisionTreeClassifier: 0.531276063386
+OneVsRestClassifier: 0.183486238532
+*** train: disabled/bridge VS simple1/50 (overhead 70.893016648%)
+ExtraTreesClassifier: 0.1625
+RandomForestClassifier: 0.136666666667
+KNeighborsClassifier: 0.111666666667
+DecisionTreeClassifier: 0.14
+OneVsRestClassifier: 0.224166666667
 * test_or: disabled
   best result for level3 or, also applied to test set
 ** data
@@ -165,7 +350,7 @@ WARNING:root:optimal parameters found at the border. c:2048.000000, g:8.000000
 WARNING:root:optimal parameters found at the border. c:2048.000000, g:4.000000
 *** l: 3, test_or: False
 OneVsRestClassifier 0.861617104123, [ 0.89010989  0.87058824  0.80769231  0.87012987  0.86956522]
-* tts+train(2/3)-OR (OR^2): simple[1@10,2@5,2@20], 22@10aI
+* tts+train(2/3)-OR (wrongly OR^2): simple[1@10,2@5,2@20], 22@10aI
 ** data
 WARNING:root:optimal parameters found at the border. c:2048.000000, g:2.000000
 WARNING:root:optimal parameters found at the border. c:4096.000000, g:2.000000

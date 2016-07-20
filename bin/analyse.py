@@ -11,6 +11,7 @@ import counter
 
 JOBS_NUM = 2 # 1 (version1 to 4-6 (cumul onduckstein)), maybe also -4, ...
 # panchenko grid takes about 16% mem/cpu: 3-4 should be fine, 5 ok'ish, 6 limit
+LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
 #LOGLEVEL = logging.WARN
@@ -334,7 +335,7 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
 
     if with_svm:
         clf,_ = my_grid(X, y)
-        logging.info('grid result: %s', clf)
+        print 'grid result: {}'.format(clf) # maybe disable in production
         GOOD.append(clf)
 
     # X,y for eval
@@ -438,7 +439,7 @@ def test_or(place):
 
 if __name__ == "__main__":
     doctest.testmod()
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=LOGLEVEL)
+    logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 
     # counters = counter.Counter.all_from_dir(sys.argv))
     # test_outlier_removal(counters)
@@ -446,8 +447,10 @@ if __name__ == "__main__":
 
     # if by hand: change to the right directory before importing
     # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
-    # sys.argv = ['', 'disabled/bridge', 'simple1/50', '0.15.3-retrofixed/bridge/30.js', '0.15.3-retrofixed/bridge/70.js', '0.15.3-retrofixed/bridge/50.js', 'simple2/30', 'simple2/30-burst', 'tamaraw']
-    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', '22.0/10aI', 'simple1/10', 'simple2/5', 'simple2/20']
+    # sys.argv = ['', 'disabled/bridge', '0.15.3-retrofixed/bridge/30.js', '0.15.3-retrofixed/bridge/70.js', '0.15.3-retrofixed/bridge/50.js']
+    # sys.argv = ['', 'disabled/bridge', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5', 'simple2/20']
+    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', 'tamaraw', '22.0/10aI']
+    # sys.argv = ['', 'disabled/bridge', '22.0/10aI', '22.0/aI30']
     # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
     # counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
     cross_test(sys.argv, with_svm=True) #, cumul=False)
