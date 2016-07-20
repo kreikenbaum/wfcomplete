@@ -878,7 +878,7 @@
     - bloom paper
     - network applications
 * TODO Results and Evaluation [0%]
-** KEYWORDS setup
+** TODO setup
 *** TODO sites
 **** CHECK modified top-100
      The files for retrieval were from the alexa-top-1m[fn:: Current
@@ -888,11 +888,13 @@
      sites were removed. Also removed were those sites which failed to
      respond to python's =urllib=. The list of sites with their Alexa
      index can be found in appendix [[#top-100]].
-**** KEYWORDS 30 sites
-        - keep in mind: only 10 sites: 10% accuracy is random guessing
-     - top-10 have other distribution than main sites \cite{web-is-doom}
+**** WRITE 30 sites
+     - top-10
+       - tried first
+       - have other size-distributions than f.ex. top-100 sites (see f.ex.
+         \cite{web-is-doom})
      - find sites with high variance
-       - use also addon data (version 0.18.2) to check
+       - use also addon data on top-100 (version 0.18.2) to check
        - quantiles of (total incoming) sizes
          - panchenko: relevant metric
      - link to code: top30() in analyse.py
@@ -909,6 +911,13 @@
       - tor bridge on other, connects to Tor network
       - same for wfpad and addon
       - capture always via bridge
+    - code:
+      - see one_site
+      - start_xvfb
+      - retrieve ...
+*** TODO classification
+**** WAIT counter.py: represent trace files
+**** KEYWORDS analyse.py: code to classify etc
 ** KEYWORDS outlier removal
    As described by Panchenko et al. \cite{panchenko2}, CUMUL is
    enhanced by outlier removal. Their
@@ -1103,8 +1112,8 @@
      - addon-simple does the opposite
    - have a look at [[*practical wf: analyzing traces][practical wf: analyzing traces]]
 * KEYWORDS Conclusion
-* TODO topics [0/109]
-** TODO Website Fingerprinting [0/55]
+* TODO topics [0/108]
+** TODO Website Fingerprinting [0/50]
 *** tools
 **** TODO capture alternatives [0/1]
      Several applications can capture network traffic to files. The most
@@ -1205,10 +1214,9 @@
      browser bundle-firefox by hand once, set the connection type and
      have it load any website via Tor. All this also downloads Tor
      metadata, which allows to connect more quickly later on.
-
-     Once the Browser Bundle is working, as it runs when starting
-     manually, webpages can be retrieved automatically. This is done
-     via the [[one-site.py][one-site.py]] script.
+**** MOVE to [[*capture][capture]] one-site.py: retrieve web sites via Tor
+     If the Browser Bundle runs when started manually, webpages can be
+     retrieved automatically. This is done via the [[one-site.py][one-site.py]] script.
 
      The script
 
@@ -1361,45 +1369,43 @@
      In encoding packet sizes, this thesis follows Panchenko et al.'s
      approach, who recorded "incoming packets as positive, outgoing ones
      as negative numbers."\cite{panchenko}
-**** usage of counter.py to extract features from pcap
+**** CHECK MOVE to [[*counter.py: represent trace files][counter.py: represent trace files]] usage of counter.py to extract features from pcap
      Once the website traces are stored in pcap-files, feature vectors
      need to be extracted. A feature vector is represented by a Python
-     class `Counter`, which can be created from a pcap file, or persisted
+     class =Counter=, which can be created from a pcap file, or persisted
      to a json file containing timing and packet size information (to
      save time and space).
 
-     To create a counter, you can use `counter.Counter.from(filename1,
-     filename2, ...)`. This is also called indirectly when using
-     `counter.py` from the command line, as in
+     To create a counter, you can use =counter.Counter.from(filename1,
+     filename2, ...)=. This is also called indirectly when using
+     =counter.py= from the command line, as in
 
      python -i /path/to/counter.py
 
      This extracts data from all pcap files in the current directory and
      subdirectories (excluding Address Resolution Protocol messages and
-     ACKs). The filename of the pcap files needs to be `domain@tstamp`,
-     for example `craigslist.org@1445352269`. The part up to the
-     separator `@` is treated as the URL. If JSON-files of the name
-     `domain.json` (for example `craigslist.com.json`) exist, those are
+     ACKs). The filename of the pcap files needs to be =url@timestamp=,
+     for example =craigslist.org@1445352269=. The part up to the
+     separator =@= is treated as the URL. If JSON-files of the name
+     =url.json= (for example =craigslist.com.json=) exist, those are
      preferred instead of the pcap files.
 
-     In the interactive shell, there is a dictionary called `COUNTERS`,
-     with the domain names as keys and an array of `Counter`s as
-     values. To persist these to JSON, you can use `save` in the
-     python interactive shell, for example
+     In the interactive shell, there is a dictionary called
+     =COUNTERS=, with the domain names as keys and an array with
+     =Counter=s as values. If there were no JSON files in the
+     directory, these are created automatically via the =save()=-method.
 
-     >>> Counter.save(COUNTERS)
+     To extract the features from a single =Counter=, they
+     =panchenko()= or =cumul()=-methods can be used, to inspect single
+     features of Panchenko et al.'s first attack\cite{panchenko} you
+     can call =get('feature_name')=[fn::for example
+     =COUNTERS['cnn.com'][0].get('duration')')=].
 
-     To distill the features from a single `Counter`, call its
-     `panchenko()`, to inspect single features, call
-     `get('feature_name')` (for example
-     =COUNTERS['cnn.com'][0].get('duration')')=.
-
-     `panchenko()` yields a feature vector with default padding of
+     =panchenko()= yields a feature vector with default padding of
      Panchenko's variable-length features. Since Panchenko et
      al\cite{panchenko} gave explicit size conversions, the sizes have
-     not been normalized further. The default padding (300 per
-     feature) might not be large enough for some traces.
-***** TODO maybe rename counter.py to trace.py
+     not been normalized further. The default padding is computed to
+     be large enough for all traces.
 **** WAIT and MAYBE how to get wang/goldberg to work
      As the =notes= file says:
 
@@ -1420,7 +1426,7 @@
      to input for scikit-learn's\cite{scikit-learn} classifiers.
 
      The code to convert these features to classification input can be
-     found in `analyse.py` (see appendix [[#analyse]]). This determines the maximum
+     found in =analyse.py= (see appendix [[#analyse]]). This determines the maximum
      length of all variable-length features, 0-pads Panchenko's features
      with zeroes to the same length, and converts them to an array fit
      for input into scikit-learn's classifiers. When called from the
