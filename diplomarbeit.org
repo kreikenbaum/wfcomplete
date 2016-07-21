@@ -68,7 +68,7 @@
 * TODO look through unsorted top-level headings
 * WAIT Abstract
 * TODO Introduction (=basics) [0%]
-** TODO Website Fingerprinting [0/31]
+** TODO Website Fingerprinting [0/28]
 *** DANIEL Intro (remove this headline when reviewed)
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -291,33 +291,29 @@
     results against one-hop anonymizing proxies, yet yielded only 3%
     accuracy against 775 distinct pages when retrieved via
     Tor\cite{tor-design}.
-**** WRITE panchenko v1
+**** CHECK panchenko v1
      Panchenko et al.'s \cite{panchenko} attack was the first that
-     successfully classifed traces retrieved via Tor\cite{critique}.
-
-     They used both Herrmann et al.'s\cite{ccsw09-fingerprinting} and
-     an open-world dataset.
+     successfully classifed traces for websites retrieved via
+     Tor\cite{critique}.
 
      To achieve this, they evaluated several HTTP-specific features,
      classifying only on those they found to have the greatest impact
      on classification.
 
-     Then, they used a Support Vector Machine with parameter
-     evaluation to
+     They used both Herrmann et al.'s\cite{ccsw09-fingerprinting} and
+     a new open-world dataset.
 
-     - It treated a huge world size and carefully evaluated possible
-       features.
+     Then, they used a Support Vector Machine with
+     grid-search-parameter evaluation.
 
+     This resulted in a closed-world recognition rates of 54.61% for
+     Tor and open-world true-positive rate of up to 73%[fn::for the
+     Alexa top-ranked dataset].
 
-     - svm
-     - hand-tuned features
-       - several evaluated
-***** TODO impact on classification word for that?
-***** TODO mention sizes data sets?
-      - (background-data: 4000 + 1000 from Alexa top 1000000,
-        foreground: three sets with five sites)
-      - (775 sites)
-***** TODO open/closed world?
+     The size of the open-world data set was five sites. Yet, it was
+     the first to show that even open-world classification (with some
+     interesting sites and many that should not trigger) could be
+     achieved.
 **** WRITE SVM
      - how works
      - multi-class strategies aka ovr vs ovo
@@ -915,10 +911,68 @@
       - see one_site
       - start_xvfb
       - retrieve ...
+
+     If the Browser Bundle runs when started manually, webpages can be
+     retrieved automatically. This is done via the [[one-site.py][one-site.py]] script.
+
+     The script
+
+     1. starts the Tor Browser Bundle's =firefox= binary, enabling
+        remote-control via the [[Marionette][=-marionette=]] command-line argument,
+        waiting up to 60 seconds for its initialization
+     2. starts the =tshark= capture
+     3. loads the page (given as first parameter) via Marionette
+     4. waits up to 600 seconds for the page load to finish
+     5. waits 3 more seconds (for the last cover traffic to finish)
+     6. ends the capture
+     7. ends Firefox
+
+     This setup (restart after each trace) avoids caching issues with
+     website fingerprinting, as the Tor Browser Bundle cleans the
+     cache between restarts (as mentioned f.ex. in \cite{critique}). If a
+     browsing-session scenario is desired, the script could be
+     modified to omit terminating the browser instance.
 *** TODO classification
-**** WAIT counter.py: represent trace files
-**** KEYWORDS analyse.py: code to classify etc
-** KEYWORDS outlier removal
+**** WRITE counter.py: represent trace files
+     Once the website traces are stored in pcap-files, feature vectors
+     need to be extracted. A feature vector is represented by a Python
+     class =Counter=, which can be created from a pcap file, or
+     persisted to a JSON\cite{rfc7159} file containing timing and
+     packet size information (to save time and space).
+
+     To create a counter, you can use =counter.Counter.from(filename1,
+     filename2, ...)=. This is also called indirectly when using
+     =counter.py= from the command line, as in
+
+     python /path/to/counter.py
+
+     This extracts data from all pcap files in the current directory and
+     subdirectories (excluding Address Resolution Protocol messages and
+     ACKs). The filename of the pcap files needs to be =url@timestamp=,
+     for example =craigslist.org@1445352269=. The part up to the
+     separator =@= is treated as the URL. If JSON-files of the name
+     =url.json= (for example =craigslist.com.json=) exist, those are
+     preferred instead of the pcap files.
+
+     In the interactive shell, there is a dictionary called
+     =COUNTERS=, with the domain names as keys and an array with
+     =Counter=s as values. If there were no JSON files in the
+     directory, these are created automatically via the =save()=-method.
+
+     To extract the features from a single =Counter=, they
+     =panchenko()= or =cumul()=-methods can be used, to inspect single
+     features of Panchenko et al.'s first attack\cite{panchenko} you
+     can call =get('feature_name')=[fn::for example
+     =COUNTERS['cnn.com'][0].get('duration')')=].
+
+     =panchenko()= yields a feature vector with default padding of
+     Panchenko's variable-length features. Since Panchenko et
+     al\cite{panchenko} gave explicit size conversions, the sizes have
+     not been normalized further. The default padding is computed to
+     be large enough for all traces.
+***** TODO cumul
+**** WAIT analyse.py: code to classify etc
+** WRITE outlier removal
    As described by Panchenko et al. \cite{panchenko2}, CUMUL is
    enhanced by outlier removal. Their
    software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}] has
@@ -941,6 +995,14 @@
      - cumul-print of outlier removal steps? (maybe, ask d if enough time ;-)
    - train on or, test without
    - maybe show outlier in CUMUL graphics
+   - daniel arp\cite{arp-personal}
+     - better approach: only OR on training data, or keep values from
+       there to apply later
+     - other approach makes little sense (except for minimal-OR)
+       - do not know in advance
+   - results
+     - use [[file:data/results/alternatives.org::*or%201-3,-1-3][or 1-3,-1-3]]
+     - test -1 (use max-min), no advantage over just removing smallest/largest
 *** TODO run test, include results
 *** TODO link to panchenko's software
    - after cross-validation split
@@ -986,6 +1048,7 @@
 ** KEYWORDS panchenko v1 different classifiers
    <<different-classifiers>>
    - more features than cumul default
+     - grows with more classes as it has to pad to maximum
    - experiment
    - different classifiers, different results
    - much easier to just use knn, ....
@@ -1130,7 +1193,7 @@
 ***** TODO subsect to [[*by-hand initialization to retrieve websites][by-hand initialization to retrieve websites]]
 **** shell script
      Simply calling =firefox website= loads the website in Firefox. This
-     is the approach Wang recommended(\cite{wang-scripting}.
+     is the approach Wang recommended(\cite{wang-personal}.
 ***** TODO how to check that page has loaded
 **** Selenium
      Selenium is the de-facto standard for testing web applications. It
@@ -1214,28 +1277,6 @@
      browser bundle-firefox by hand once, set the connection type and
      have it load any website via Tor. All this also downloads Tor
      metadata, which allows to connect more quickly later on.
-**** MOVE to [[*capture][capture]] one-site.py: retrieve web sites via Tor
-     If the Browser Bundle runs when started manually, webpages can be
-     retrieved automatically. This is done via the [[one-site.py][one-site.py]] script.
-
-     The script
-
-     1. starts the Tor Browser Bundle's =firefox= binary, enabling
-        remote-control via the [[Marionette][=-marionette=]] command-line argument,
-        waiting up to 60 seconds for its initialization
-     2. starts the =tshark= capture
-     3. loads the page (given as first parameter) via Marionette
-     4. waits up to 600 seconds for the page load to finish
-     5. waits 3 more seconds (for the last cover traffic to finish)
-     6. ends the capture
-     7. ends Firefox
-
-     This setup (restart after each trace) avoids caching issues with
-     website fingerprinting, as the Tor Browser Bundle cleans the
-     cache between restarts (as mentioned f.ex. in \cite{critique}). If a
-     browsing-session scenario is desired, the script could be
-     modified to omit terminating the browser instance.
-***** TODO this is not [only] by-hand! split or change title
 **** tshark installation
      You also need to install =tshark= [fn:: via f.ex. =sudo apt-get
      install tshark= on Debian-based systems] and enable the user to
@@ -1369,43 +1410,6 @@
      In encoding packet sizes, this thesis follows Panchenko et al.'s
      approach, who recorded "incoming packets as positive, outgoing ones
      as negative numbers."\cite{panchenko}
-**** CHECK MOVE to [[*counter.py: represent trace files][counter.py: represent trace files]] usage of counter.py to extract features from pcap
-     Once the website traces are stored in pcap-files, feature vectors
-     need to be extracted. A feature vector is represented by a Python
-     class =Counter=, which can be created from a pcap file, or persisted
-     to a json file containing timing and packet size information (to
-     save time and space).
-
-     To create a counter, you can use =counter.Counter.from(filename1,
-     filename2, ...)=. This is also called indirectly when using
-     =counter.py= from the command line, as in
-
-     python -i /path/to/counter.py
-
-     This extracts data from all pcap files in the current directory and
-     subdirectories (excluding Address Resolution Protocol messages and
-     ACKs). The filename of the pcap files needs to be =url@timestamp=,
-     for example =craigslist.org@1445352269=. The part up to the
-     separator =@= is treated as the URL. If JSON-files of the name
-     =url.json= (for example =craigslist.com.json=) exist, those are
-     preferred instead of the pcap files.
-
-     In the interactive shell, there is a dictionary called
-     =COUNTERS=, with the domain names as keys and an array with
-     =Counter=s as values. If there were no JSON files in the
-     directory, these are created automatically via the =save()=-method.
-
-     To extract the features from a single =Counter=, they
-     =panchenko()= or =cumul()=-methods can be used, to inspect single
-     features of Panchenko et al.'s first attack\cite{panchenko} you
-     can call =get('feature_name')=[fn::for example
-     =COUNTERS['cnn.com'][0].get('duration')')=].
-
-     =panchenko()= yields a feature vector with default padding of
-     Panchenko's variable-length features. Since Panchenko et
-     al\cite{panchenko} gave explicit size conversions, the sizes have
-     not been normalized further. The default padding is computed to
-     be large enough for all traces.
 **** WAIT and MAYBE how to get wang/goldberg to work
      As the =notes= file says:
 
@@ -1421,7 +1425,7 @@
      class of the data, then a colon, finally all the data for an
      instance, separated by whitespace.
 ***** TODO link to code to generate
-**** TODO transform features to vector                           :eval:setup:
+**** TODO MOVE to [[*analyse.py: code to classify etc][analyse.py: code to classify etc]] transform features to vector :eval:setup:
      Once the =Counter=s data is obtained, it needs to be transformed
      to input for scikit-learn's\cite{scikit-learn} classifiers.
 

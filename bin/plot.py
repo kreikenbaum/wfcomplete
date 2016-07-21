@@ -21,15 +21,16 @@ def _table_to_data(f):
     '''parse file f with org-mode table export data'''
     import collections
 
-    Datum = collections.namedtuple('Datum', ['overhead', 'et', 'rf', 'knn', 'svc'])
+    Datum = collections.namedtuple('Datum', ['overhead',
+                                             'ExtraTrees',
+                                             'OneVsRest_SVC'])
 
     out = {}
     for line in f:
         if "overhead %" in line:
             continue
         (name, et, rf, knn, _, svc, overhead, _) = line.split("\t")
-        out[name] = Datum(float(overhead),
-                          float(et), float(rf), float(knn), float(svc))
+        out[name] = Datum(float(overhead), float(et), float(svc))
     return out
 
 def _to_color(value):
@@ -112,12 +113,15 @@ def table(data, cls="svc"):
     for (defense, datum) in data.items():
         g.replot(Gnuplot.Data([(datum.overhead, datum._asdict()[cls]*100)],
                               title=defense.replace('@', '-'), inline=1),
-                 title="method: " + cls)
+                 title="method: " + cls.replace('_', ' '))
     return g
 
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 2:
         sys.argv = ['_', 'table']
-    g = table(_table_to_data(open(sys.argv[1])))
-    raw_input('press any key to exit')
+    data = _table_to_data(open(sys.argv[1]))
+    for cls in ['ExtraTrees', 'OneVsRest_SVC']:
+        g = table(data, cls)
+        save(g, 'defenses with {}'.format(cls))
+    raw_input('press the enter key to exit')

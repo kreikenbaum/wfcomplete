@@ -19,7 +19,9 @@ LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 
 TIME_SEPARATOR = '@'
 
+# module-globals
 json_only = True
+minmax = None
 
 def _append_features(keys, filename):
     '''appends features in trace file of name "filename" to keys.
@@ -455,6 +457,22 @@ class Counter(object):
 
         return features
 
+class MinMaxer(object):
+    '''keeps min and max scores
+
+    >>> a = MinMaxer(); a.setIf(4,13); a.setIf(3,7); a.max
+    13
+    '''
+    def __init__(self):
+        self.min = sys.maxint
+        self.max = - sys.maxint -1
+
+    def setIf(self, minval, maxval):
+        if maxval > self.max:
+            self.max = maxval
+        if minval < self.min:
+            self.min = minval
+
 ### outlier removal
 def p_or_tiny(counter_list):
     '''removes if len(packets) < 2 or total_in < 2*512
@@ -469,6 +487,10 @@ def p_or_tiny(counter_list):
 def p_or_median(counter_list):
     '''removes if total_in < 0.2 * median or > 1.8 * median'''
     med = np.median([counter.get_total_in() for counter in counter_list])
+    global minmax
+    if minmax is None: minmax = MinMaxer()
+    minmax.setIf(0.2 * med, 1.8 * med)
+
     return [x for x in counter_list
             if x.get_total_in() >= 0.2 * med and x.get_total_in() <= 1.8 * med]
 
@@ -483,19 +505,34 @@ def p_or_quantiles(counter_list):
     q3 = np.percentile(counter_total_in, 75)
 
     out = []
+    global minmax
+    if minmax is None: minmax = MinMaxer()
+    minmax.setIf(q1 - 1.5 * (q3 - q1), q3 + 1.5 * (q3 - q1))
     for counter in counter_list:
         if (counter.get_total_in() >= (q1 - 1.5 * (q3 - q1)) and
             counter.get_total_in() <= (q3 + 1.5 * (q3 - q1))):
             out.append(counter)
     return out
 
+def p_or_test(counter_list):
+    '''outlier removal if training values are known'''
+    global minmax
+
+    return [x for x in counter_list
+            if x.get_total_in() >= minmax.min
+            and x.get_total_in() <= minmax.max]
+
 def outlier_removal(counters, level=2):
     '''apply outlier removal to input of form
-    {'domain1': [counter, ...], ... 'domainN': [..]}'''
+    {'domain1': [counter, ...], ... 'domainN': [..]}
+
+    levels from 1 to 3 use panchenko's levels, -1 uses previous global minmax'''
     out = {}
     for (k, v) in counters.iteritems():
         try:
             out[k] = p_or_tiny(v)
+            if level == -1:
+                out[k] = p_or_test(out[k])
             if level > 2:
                 out[k] = p_or_median(out[k])
             if level > 1:

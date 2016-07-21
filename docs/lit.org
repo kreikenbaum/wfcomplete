@@ -7850,6 +7850,14 @@
                - only by splitting/delaying, but "disruptive" to viewer
 
        2) Web site Modifications
+
+          - break big page into smaller hyperlinked pages
+
+          - insert additional data: spaces, comments, metatags, blank images...
+
+          - unlikely to happen
+
+       3) Web Proxies
 *** quotes
     3) [@3] Defenses
        0) [@0]
@@ -7865,7 +7873,6 @@
             between the HTTP and SSL layers.
 *** ref [[file:master.bib::ssl-traffic-analysis][Cheng & Avnur 1998: Traffic Analysis SSL]]
 ** TODO [#A] [[./challenges.pdf][Challenges in deploying low-latency anonymity]]
-*** TODO refactor from 3.2
 *** summary
     0. [@0] Abstract
 
@@ -7939,8 +7946,15 @@
 
        2. Reputability and perceived social value
 
-          People want their anonymity network to be mainly for good uses, 
-          you want to attract them, also OR-administrators
+          - better to have reputable users than irreputable
+
+            - public support, political climate
+
+            - want to attract them, also OR-operators
+
+          - better to have more diverse groups than only reputable users (?)
+
+          - good uses often kept private (privacy network)
 
        3. Sustainability and incentives
 *** quotes
@@ -8023,6 +8037,24 @@
           - naive Bayes classifier
 
     4) DATA COLLECTION
+
+       0) [@0]
+
+          - large dataset
+
+          - representing real-world users
+
+          - collected like real attacker
+
+       1) Initial Data Collection
+
+          - use real traffic
+
+          - strip lots
+
+          - select top 2000 (64% of ~100000)
+
+       2) 
 *** quotes
     1) INTRODUCTION
        - Encrypted tunnels thwart the legitimate gathering of evidence
@@ -8490,15 +8522,29 @@
 
              - hard margin: data linearly separable, else
 
-             - soft margin: y_i(<w, xi> +b) \ge 1 - \zeta_i, with
+             - soft margin: y_i(<w, xi> +b) \ge 1 - \xi_i
 
-               - minimize: 1/2 ||w||^2 + C/m \sum_{i=1}^{m} \zeta_i
+               - see [[(iml-7.5)]]
 
              - lagrangian form to accomodate constraints
 
                - solve minimization for that
 
           1) A Regularized Risk Minimization Viewpoint
+
+             - possible to remove \xi from optimization problem, see [[(iml-7.12)]]
+
+             - SVC as regularized risk minimizer with binary hinge loss
+
+             - compute
+
+               - primal: d-dimensional problem (d dimension of x)
+
+               - (Fenchel) dual: m-dimensional problem
+
+                 - use at kernel trick or when d >> m
+
+          2) An Exponential Family Interpretation
 *** TODO quotes
     1) Introduction
        1) A Taste of Machine Learning
@@ -8840,7 +8886,7 @@
                - The reason why many discrete processes follow the Poisson
                  distribution is that it can be seen as the limit over the
                  average of a large number of Bernoulli draws
-    3) Optimization
+    2) Optimization
        3) [@3] Constrained Optimization
           2) [@2] Lagrange Duality
              - Lagrangian (for \alpha_i \ge 0, \beta_i \in \mathbb R)
@@ -8852,17 +8898,32 @@
        - the design of a good kernel underlies the success of machine
          learning in many applications.
     7) Linear Models
-       - A *hyperplane* in a space H endowed with a dot product <·, ·>
-         is described by the set
-         #+BEGIN_SRC latex
-           {x ∈ H| <w, x> + b = 0} (ref:ml-7.1)
-         #+END_SRC
-         where w ∈ H and b ∈ R.
-       - Given a set X = {x_1, ..., x_m}, the *margin* is the distance
-         of the closest point in X to the hyperplane [[(ml-7.1)]].
-         #+BEGIN_SRC latex
-           min_{i=1,...,m} \frac{|<w, x_i> + b|}{\|w\|}. (ref:ml-7.2)
-         #+END_SRC
+       0) [@0]
+          - A *hyperplane* in a space H endowed with a dot product <·, ·>
+            is described by the set
+            #+BEGIN_SRC latex
+              {x ∈ H| <w, x> + b = 0} (ref:iml-7.1)
+            #+END_SRC
+            where w ∈ H and b ∈ R.
+          - Given a set X = {x_1, ..., x_m}, the *margin* is the distance
+            of the closest point in X to the hyperplane [[(iml-7.1)]].
+            #+BEGIN_SRC latex
+              min_{i=1,...,m} \frac{|<w, x_i> + b|}{\|w\|}. (ref:iml-7.2)
+            #+END_SRC
+       1) Support Vector Classification
+          0) [@0]
+             - penalize large ξ_i [...] via the following modified
+               optimization problem:
+
+               min_{w, b, \xi} 1/2 ||w||^2 + C/m \sum_{i=1..m} \xi_i
+               s.t. y_i(<w, x_i>+b) \ge 1 - \xi_i for all i
+                    \xi_i \ge 0 (ref: iml-7.5)
+          1) A Regularized Risk Minimization Viewpoint
+             - eliminate \xi_i from [[(iml-7.5)]], and write it as the
+               following unconstrained optimization problem:
+
+               min_{w,b} 1/2 ||w||^2 + C/m \sum_{1=1..m} max(0, 1−y_i (<w, x_i> + b))
+               (ref:iml-7.12)
 ** TODO [#A] [[./geurtz.pdf][Geurts - Extremely randomized trees]]
 *** summary
     0) [@0] Abstract
@@ -8932,6 +8993,32 @@
                - a priori, none later excluded
 
           2) Compared algorithms
+
+             - single CART tree
+
+             - tree bagging
+
+             - random subspace
+
+             - random forests
+
+             - parameters:
+             
+               - M = 100
+
+               - n_min = 2 for classification, 5 for regression
+
+               - K = \sqrt{n} for classification, n for regression
+
+             - score: normalized shannon information gain [[(et-a1)]]
+
+             - aggregation scheme
+
+               - majority vote for classification
+
+               - arithmetic average for regression
+
+          3) Protocols
 *** quotes
     1) Introduction
        - selects its cut-point fully at random, i.e., independently of
@@ -8964,6 +9051,12 @@
             - If all attributes are constant in S, then return TRUE;
             - If the output is constant in S, then return TRUE;
             - Otherwise, return FALSE.
+    100) [@100] Appendix
+         1) A. Pseudo-code of the complete Extra-Trees algorithm and
+            score measures
+            #+BEGIN_EXAMPLE
+              Score_C(s, S) = 2I^S_C(S) / (H_S(S)+H_C(S)) (ref:et-a1)
+            #+END_EXAMPLE
 *** ref [[file:master.bib::DBLP:journals/ml/GeurtsEW06][Geurts et al. 2006: Extremely]]
 ** TODO [#A] [[./10.1.1.20.98.bloom-nw.pdf][Broder - Network Applications of Bloom Filters: A Survey]]
 *** summary
@@ -9019,6 +9112,12 @@
             probability
 
        3) Standard Bloom filter tricks
+
+          - union of two sets: OR bit vectors
+
+          - halve size: OR lower and upper set, mask hash of high order bit
+
+       4) Counting Bloom filters
 *** quotes
     1) Introduction
        - A Bloom filter is a simple space-efficient randomized data
@@ -12167,6 +12266,26 @@
                - parallel or serial: depends on browser (standard)
 
              - Persistent Connections
+
+               - advantages
+
+                 - less overhead at client and *server*
+
+                 - each object suffers two RTTs
+
+                 - each object suffers from slow-start (but parallelizable)
+
+               - without pipelining: one RTT, connection hangs
+
+               - with:
+
+                 - one RTT for all referenced objects (not one for each)
+
+                 - hangs less
+
+          3) HTTP Message Format
+
+             continue at p.104
 *** quotes
 *** ref [[file:master.bib::DBLP:books/daglib/0001977][Kurose & Ross 2001: Computer]]
 ** TODO PART [#B] [[./minion-design.pdf][Mixminion: Design of a Type III Anonymous Remailer Protocol]]
@@ -12680,7 +12799,7 @@
 ** TODO [#C] [[./oakland2013-parrot.pdf][The Parrot is Dead: Observing Unobservable Network Communications]]
 *** summary
 *** quotes
-** TODO [#C]  [[./torspec/tor-spec.txt][Tor Protocol Specification]]
+** TODO [#C] [[./torspec/tor-spec.txt][Tor Protocol Specification]]
 *** TODO refactor
 *** [#B] 2.2-renegotiation to 3 (see also spacing), see that correct
 *** summary
@@ -13530,6 +13649,14 @@
             4. outermost: built-in names
 
           - if global: directly to middle scope
+
+       3) A First Look at Classes
+
+          1) Class Definition Syntax
+
+             - all assignments to local scope
+
+          2) Class Objects
 *** quotes
     4) [@4] MORE CONTROL FLOW TOOLS
        6) [@6] Defining Functions
@@ -18179,6 +18306,10 @@
                   ...
          #+END_SRC
     5) [@5] BUILT-IN TYPES
+       4) [@4] Numeric Types — int, float, long, complex
+          - =sys.maxint= is always set to the maximum plain integer
+            value for the current platform, the minimum value is
+            =-sys.maxint - 1=
        6) [@6] Sequence Types — str, unicode, list, [...] buffer, xrange
           1) String Methods
              - str.lstrip( [ chars ] )
@@ -18261,7 +18392,7 @@
                 the listscontain no path components. To get a full
                 path (which begins with top) to a file or directory in
                 dirpath, do os.path.join(dirpath, name).
-        2) [@3] time — Time access and conversions
+        3) [@3] time — Time access and conversions
            - time.strftime(format [ , t ] )
 
              Convert a tuple or struct_time representing a time as
@@ -20078,6 +20209,18 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
           - unit tests *and* functional tests
 
        3) Listening
+
+          - understand "customer", business people, etc
+
+          - active listening, tell them what's hard and what's easy
+
+          - structure communication
+
+            - which things, when, which detail
+
+            - not things that don't help, before understanding, too detailed
+
+       4) Designing
 *** quotes
     00) [@00] unsorted
         - Use XP when requirements are vague or changing
@@ -20123,6 +20266,9 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
             system increases over time.
           - Programming and testing together is also faster than just
             programming.
+       3) Listening
+          - programmers don't know anything that business people think
+            is interesting
 *** ref [[file:master.bib::xp][Beck 1999: Extreme Programming Explained]]
 ** TODO 2009-03-11-performance.pdf: Performance Improvements on Tor or, Why Tor is slow and what we’re going to do about it
 *** TODO refactor
@@ -20347,8 +20493,8 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
     - The most significant improvement will enhance Shadow’s ability
       to run in parallel environments, leading to faster experiments
       and better utilization of hardware resources.
-** PART MOVE [[./201335142847631.pdf][Lohr - Sampling: Design and Analysis]]
-** PART MOVE [[/usr/lib/python2.7/dist-packages/Gnuplot/demo.py][haggerty - demo.py -- Demonstrate the Gnuplot python module]]
+** PART [[./201335142847631.pdf][Lohr - Sampling: Design and Analysis]]
+** PART [[/usr/lib/python2.7/dist-packages/Gnuplot/demo.py][haggerty - demo.py -- Demonstrate the Gnuplot python module]]
    :PROPERTIES:
    :ORDERED:  t
    :END:
@@ -20370,7 +20516,7 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
         g.ylabel('x^2') # take advantage of enhanced postscript mode
         g.hardcopy('gp_test.ps', enhanced=1, color=1)
       #+END_SRC
-** PART MOVE [[/usr/lib/python2.7/dist-packages/Gnuplot/test.py][haggerty - test.py -- Exercise the Gnuplot.py module]]
+** PART [[/usr/lib/python2.7/dist-packages/Gnuplot/test.py][haggerty - test.py -- Exercise the Gnuplot.py module]]
 *** summary
     - set gnuplot's =with= parameter via =with_=
       #+BEGIN_SRC python

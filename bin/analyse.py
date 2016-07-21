@@ -311,7 +311,7 @@ def verbose_test_11(X, y, estimator):
     res = _test(X, y, estimator, scale=scale)
     print '{}, {}'.format(res.mean(), res)
 
-def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
+def cross_test(argv, cumul=True, with_svm=False):
     '''cross test on dirs: 1st has training data, rest have test
 
     argv is like sys.argv, cumul triggers CUMUL, else version 1'''
@@ -334,15 +334,18 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
         (X, y, _) = to_features(train)
 
     if with_svm:
-        clf,_ = my_grid(X, y)
-        print 'grid result: {}'.format(clf) # maybe disable in production
-        GOOD.append(clf)
+        if not "OneVsRestClassifier" in [esti_name(clf) for clf in GOOD]:
+            clf,_ = my_grid(X, y)
+            print 'grid result: {}'.format(clf) # maybe disable in production
+            GOOD.append(clf)
+        else:
+            logging.info("reused existing OVR-SVM-classifier")
 
     # X,y for eval
     if cumul:
-        (X, y, _) = to_features_cumul(test)
+        (X, y, _) = to_features_cumul(counter.outlier_removal(test, -1))
     else:
-        (X, y, _) = to_features(test)
+        (X, y, _) = to_features(counter.outlier_removal(test, -1))
     # evaluate accuracy on all of unaddoned
     print 'cross-validation on X,y'
     for esti in GOOD:
@@ -371,17 +374,15 @@ def cross_test(argv, cumul=True, outlier_rm=True, with_svm=False):
 def test_or(place):
     '''tests different outlier removal schemes and levels'''
     (train, test) = tts(place)    
-    for lvl in [1,2,3]:
-        for or_test in [True, False]:
-            (X, y, _) = to_features_cumul(counter.outlier_removal(train, lvl))
+    for train_lvl in [1,2,3]:
+        for test_lvl in [-1,1,2,3]:
+            (X, y, _) = to_features_cumul(counter.outlier_removal(train,
+                                                                  train_lvl))
             clf,_ = my_grid(X, y)
-            if or_test:
-                (X, y, _) = to_features_cumul(counter.outlier_removal(test,
-                                                                      lvl))
-            else:
-                (X, y, _) = to_features_cumul(test)
+            (X, y, _) = to_features_cumul(counter.outlier_removal(test,
+                                                                  test_lvl))
             
-            print "l: {}, test_or: {}".format(lvl, or_test)
+            print "level train: {}, test: {}".format(train_lvl, test_lvl)
             verbose_test_11(X, y, clf)
     #_test(X, y, svm.SVC(kernel='linear')) #problematic, but best
     #grid rbf
@@ -449,8 +450,8 @@ if __name__ == "__main__":
     # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
     # sys.argv = ['', 'disabled/bridge', '0.15.3-retrofixed/bridge/30.js', '0.15.3-retrofixed/bridge/70.js', '0.15.3-retrofixed/bridge/50.js']
     # sys.argv = ['', 'disabled/bridge', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5', 'simple2/20']
-    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', 'tamaraw', '22.0/10aI']
-    # sys.argv = ['', 'disabled/bridge', '22.0/10aI', '22.0/aI30']
+    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', 'tamaraw']
+    # sys.argv = ['', 'disabled/bridge', '22.0/10aI', '22.0/5aI', '22.0/5aII']
     # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
     # counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
     cross_test(sys.argv, with_svm=True) #, cumul=False)
