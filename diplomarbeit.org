@@ -68,7 +68,7 @@
 * TODO look through unsorted top-level headings
 * WAIT Abstract
 * TODO Introduction (=basics) [0%]
-** TODO Website Fingerprinting [0/28]
+** TODO Website Fingerprinting [0/31]
 *** DANIEL Intro (remove this headline when reviewed)
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -314,12 +314,32 @@
      the first to show that even open-world classification (with some
      interesting sites and many that should not trigger) could be
      achieved.
-**** WRITE SVM
+**** KEYWORDS SVM
      - how works
-     - multi-class strategies aka ovr vs ovo
-     - draw border(s) (linear/polynomial/rbf) between points
-       - kernel trick
+       - set with dot product
+       - tuples (x1, y1), ..., (xm, ym), with xi \in set, yi \in {-1, 1}
+         - "binary classification task"
+       - find hyperplane {x \in X | <w, x> +b = 0} that separates
+         tuples, such that
+         - <w, xi> +b \ge 0 whenever yi = 1, and
+         - <w, xi> +b < 0 whenever yi = -1
+       - hard margin classifier: assume that linearly separable
+       - soft margin classifier: does not
+     - multi-class strategies aka ovr vs ovo (vs ecoc)
+       - svm binary classifier
+       - multi-class: train one for each class (ovr) or one for each
+         class-combination (ovo)
+         - ovr better efficiency, scales linearly
+           - used by panchenko et al
+         - ovo evaluates fewer samples per fitting
+         - error-correcting codes, mention elemstatlearn p.625
+           - or web-dl original paper
+           - used by k-forest
+     - kernel trick
      - parameter estimation
+***** TODO check page elemstatlearn printed
+***** TODO link to smola-book
+***** TODO link to basic book (bronstein) for vector space ...
 **** WRITE wang
      - improved detection
      - many features
@@ -971,7 +991,37 @@
      not been normalized further. The default padding is computed to
      be large enough for all traces.
 ***** TODO cumul
-**** WAIT analyse.py: code to classify etc
+**** WRITE analyse.py: code to classify etc: transform features to vector
+     Once the =Counter=s data is obtained, it needs to be transformed
+     to input for scikit-learn's\cite{scikit-learn} classifiers.
+
+     The code to convert these features to classification input can be
+     found in =analyse.py= (see appendix [[#analyse]]). This determines the maximum
+     length of all variable-length features, 0-pads Panchenko's features
+     with zeroes to the same length, and converts them to an array fit
+     for input into scikit-learn's classifiers. When called from the
+     command line, as
+
+     python -i /path/to/analyse.py
+
+     , it will extract the feature vectors from JSON or pcap files in
+     the current directory, and run 5-fold cross-validated classifiers
+     against the data.
+
+     =Counter= input features are transformed into scikit-learn input
+     in the =to_features()= function, which normalizes all vectors to
+     have the same size (padding with 0s), and creates the feature
+     matrix =X= with numeric class labels =y= (and class names in
+     =y_domain=).
+
+     If you wish to run LibSVM on the command-line, there is also
+     =to_libsvm(X, y, fname='libsvm_in')=, which can be called with the
+     output of =to_features=. It writes lines in X with labels in y to the
+     file 'libsvm_in' (by default).
+***** TODO ref stackoverflow why 0 padding
+****** TODO or better, some statistics text
+***** TODO see also =to_features_cumul=
+
 ** WRITE outlier removal
    As described by Panchenko et al. \cite{panchenko2}, CUMUL is
    enhanced by outlier removal. Their
@@ -1045,15 +1095,17 @@
      - k-fingerprinting
        - accuracy
      - all similar accuracies (as of k-fingerprinting)
-** KEYWORDS panchenko v1 different classifiers
+** KEYWORDS MOVE ONE STEP ABOVE VS CUMUL panchenko v1 different classifiers
    <<different-classifiers>>
    - more features than cumul default
      - grows with more classes as it has to pad to maximum
+     - takes a long time to do param-eval, and partly not as accurate
    - experiment
    - different classifiers, different results
    - much easier to just use knn, ....
+     - and slightly better results
    - more work for svm parameter estimation
-** TODO Evaluation of Defenses [0/7]
+** TODO Evaluation of Defenses [0/5]
 *** WRITE Evaluation of Addon
     #+CAPTION: different defense versions with CUMUL, svc classifier
     #+ATTR_LATEX: :float nil :width \textwidth
@@ -1082,10 +1134,10 @@
       - td: pix vs disabled
     - different factors
     - all around same curve
-**** TODO rotate graphics
-*** KEYWORDS sota (practical): wtfpad
+*** WRITE sota (practical): wtfpad
     - overhead of wfpad depends on client-bridge network connection
       - show different results
+      - insert value from paper?
     - (maybe show both graphs, at least mention values)
     - all of mine so far add additional data for each request, wtfpad
       adds additional data over time, less with more requests, more
@@ -1120,20 +1172,30 @@
 \caption{CUMUL traces of different defenses}
 \end{table}
 #+END_LaTeX
-*** KEYWORDS sota (theoretical): walkie-talkie
-*** KEYWORDS (maybe) vs optimal attacker
+*** WAIT sota (theoretical): walkie-talkie
+    - as of paper: 32%bw \to 5% fpr and 55% bw \to 10% fpr
+    - how to translate to closed-world?
+    - wait for [[file:~/da/da.org::*open-world?%20(vs%20erst%20mal%20fertig?)][open-world? (vs erst mal fertig?)]]
+*** WAIT (maybe) vs optimal attacker
+    - show just traces of single html retrieval:
+      - small page, small page with addon, bigger page
+      - does with addon look like bigger page?
+    - wait for [[file:~/da/da.org::*experimente][experimente]] plan 3
 *** KEYWORDS svc vs extratrees
-    - svc very good on unaddoned data,
-      - extratrees lacked ca5% behind, but shines on addons
+    - svc very good on unaddoned data, (if trained and or on all)
+      - extratrees lacked ca 5% behind, but shines on addons
         - similar, but bit less good for knn, randomforest, even decisiontrees
       - others not tested
-** WRITE Problematic websites
+      - exception 22.0/5aII
+        - continue here: inspect which pages, etc
+** WAIT Problematic websites
    - google.com
      - check that not a robot
      - td: estimate probability if matches traces
    - aliexpress.com
      - https of akamai
      - td: check with recapture both
+   - wait for [[file:~/da/da.org::*klassifikator][klassifikator {0/12}.plan.2]]
 ** brainstorm                                                       :ARCHIVE:
    - describe setup
      - which sites, why
@@ -1174,7 +1236,7 @@
    - wfpad pads small sites much, larger sites little
      - addon-simple does the opposite
    - have a look at [[*practical wf: analyzing traces][practical wf: analyzing traces]]
-* KEYWORDS Conclusion
+* WAIT Conclusion
 * TODO topics [0/108]
 ** TODO Website Fingerprinting [0/50]
 *** tools
@@ -1425,36 +1487,6 @@
      class of the data, then a colon, finally all the data for an
      instance, separated by whitespace.
 ***** TODO link to code to generate
-**** TODO MOVE to [[*analyse.py: code to classify etc][analyse.py: code to classify etc]] transform features to vector :eval:setup:
-     Once the =Counter=s data is obtained, it needs to be transformed
-     to input for scikit-learn's\cite{scikit-learn} classifiers.
-
-     The code to convert these features to classification input can be
-     found in =analyse.py= (see appendix [[#analyse]]). This determines the maximum
-     length of all variable-length features, 0-pads Panchenko's features
-     with zeroes to the same length, and converts them to an array fit
-     for input into scikit-learn's classifiers. When called from the
-     command line, as
-
-     python -i /path/to/analyse.py
-
-     , it will extract the feature vectors from JSON or pcap files in
-     the current directory, and run 5-fold cross-validated classifiers
-     against the data.
-
-     =Counter= input features are transformed into scikit-learn input
-     in the =to_features()= function, which normalizes all vectors to
-     have the same size (padding with 0s), and creates the feature
-     matrix =X= with numeric class labels =y= (and class names in
-     =y_domain=).
-
-     If you wish to run LibSVM on the command-line, there is also
-     =to_libsvm(X, y, fname='libsvm_in')=, which can be called with the
-     output of =to_features=. It writes lines in X with labels in y to the
-     file 'libsvm_in' (by default).
-***** TODO ref stackoverflow why 0 padding
-****** TODO or better, some statistics text
-***** TODO see also =to_features_cumul=
 **** WAIT effect of panchenko's weighting schema
      Currently, fixed attributes are weighted heavily in favor of total
      incoming/outgoing bytes.
@@ -2390,7 +2422,7 @@
 ** TODO mention unison (in bib)
 * WAIT Discussion
   intel model: interdependences (html bigger \to more embedded) not mentioned
-* WAIT Acknowledgements
+* TODO Acknowledgements
   - Dr. med. Dr. phil. Eva
   - Daniel Arp
   - Prof. Dr. Konrad Rieck
@@ -2544,11 +2576,11 @@
    and respectively for craigslist, in the directories containing the
    pcap files.
 
-   These commands first extract the timing attributes (at git commit
-   791af76 the last line of the output of counter.py), format it for
-   gnuplot (inserting appropriate newlines via =sed= and removing
-   extra characters via =tr=), and =gnuplot= s it to a png file with
-   the name of the trace file as prefix.
+   These commands first extract each =Counter=s =timing= attribute
+   (the last line of the output of counter.py at git commit 791af76),
+   format it for gnuplot (inserting appropriate newlines via =sed= and
+   removing extra characters via =tr=), and =gnuplot= s it to a png
+   file with the name of the trace file as prefix.
 ** KEYWORDS Tor Browser despite --sync problems
    - broke with error (quote)
    - solution1: --sync
