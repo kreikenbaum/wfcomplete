@@ -68,7 +68,7 @@
 * TODO look through unsorted top-level headings
 * WAIT Abstract
 * TODO Introduction (=basics) [0%]
-** TODO Website Fingerprinting [0/32]
+** TODO Website Fingerprinting [0/33]
 *** DANIEL Intro (remove this headline when reviewed)
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -324,8 +324,13 @@
          tuples, such that
          - <w, xi> +b \ge 0 whenever yi = 1, and
          - <w, xi> +b < 0 whenever yi = -1
+         - hastie et al\cite[sec.4.1]{esl}: hyperplane passes through
+           origin, so strictly speaking: affine plane. Nevertheless
+           hyperplane
        - hard margin classifier: assume that linearly separable
-       - soft margin classifier: does not
+       - soft margin classifier: does not assume, tries to limit error
+         in addition to maximizing margin
+       - optimization problem
      - multi-class strategies aka ovr vs ovo (vs ecoc)
        - svm binary classifier
        - multi-class: train one for each class (ovr) or one for each
@@ -333,14 +338,26 @@
          - ovr better efficiency, scales linearly
            - used by panchenko et al
          - ovo evaluates fewer samples per fitting
-         - error-correcting codes, mention elemstatlearn p.625
+         - error-correcting codes, mention esl p.625
            - or web-dl original paper
            - used by k-forest
-     - kernel trick
+     - kernel trick (see figure \ref{hastie-kerneltrick})
+       - instead of dot product <.,.> use =kernel= k(., .)
+       - same effect as mapping each point in set to dot product
+         space, and applying <.,.> there, k(x, x') = <\Phi(x), \Phi(x')>
+         - but need not compute complete mapping
+       #+CAPTION: kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left half shows linear boundaries, the right half  linear boundaries computed with added input data X^2, Y^2 and cross-product XY
+       #+NAME fig:hastie-kerneltrick
+       [[./pictures/hastie.png]]
      - parameter estimation
-***** TODO check page elemstatlearn printed
+       - each soft margin SVM has an error term C which states how
+         much to penalize outliers
+       - rbf kernel also has a gamma term which gives the grade of the
+         gaussian
+***** TODO rbf kernel
+***** TODO check page esl printed
 ***** TODO link to smola-book
-***** TODO link to basic book (bronstein) for vector space ...
+***** TODO link to basic book (bronstein) for vector space etc
 **** WRITE wang
      - improved detection
      - many features
@@ -1066,6 +1083,16 @@
      - scheme: all, only quantile, none, only minimial
    - document number of filtered traces
      - both panchenko's own and mine
+** KEYWORDS panchenko v1 different classifiers
+   <<different-classifiers>>
+   - more features than cumul default
+     - grows with more classes as it has to pad to maximum
+     - takes a long time to do param-eval, and partly not as accurate
+   - experiment
+   - different classifiers, different results
+   - much easier to just use knn, ....
+     - and slightly better results
+   - more work for svm parameter estimation
 ** WRITE panchenko v1 vs cumul
    Panchenko et al proposed two methods for analysing traces.
 
@@ -1096,16 +1123,6 @@
      - k-fingerprinting
        - accuracy
      - all similar accuracies (as of k-fingerprinting)
-** KEYWORDS MOVE ONE STEP ABOVE VS CUMUL panchenko v1 different classifiers
-   <<different-classifiers>>
-   - more features than cumul default
-     - grows with more classes as it has to pad to maximum
-     - takes a long time to do param-eval, and partly not as accurate
-   - experiment
-   - different classifiers, different results
-   - much easier to just use knn, ....
-     - and slightly better results
-   - more work for svm parameter estimation
 ** TODO Evaluation of Defenses [0/5]
 *** WRITE Evaluation of Addon
     #+CAPTION: different defense versions with CUMUL, svc classifier

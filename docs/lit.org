@@ -6556,6 +6556,365 @@
           - the attacker can increase their open-world success rate by
             training on more non-monitored sites.
 *** ref [[file:master.bib::wpes13-fingerprinting][Wang & Goldberg 2013: Improved Website Fingerprinting Tor]]
+** [[./cacr2015-08.pdf][Wang - Walkie-Talkie: An Effective and Efficient Defense against Website Fingerprinting]]
+*** summary
+    0) [@0] ABSTRACT
+
+       other defenses: too much time: 1/2 minute wait
+
+       here: half-duplex
+
+       9% time, 32% bw \to 5 % fpr
+
+       9% time (?), 55% bw \to 10%fpr
+
+    1) INTRODUCTION
+
+       - tor breakable by wf
+
+       - walkie-talkie: half-duplex defense, against perfect attacker
+
+    2) RELATED WORK
+
+       0) [@0]
+
+          1998 wf first mentioned
+
+       1) Attacks
+
+          evolution
+
+       2) Defenses
+
+          0) [@0]
+
+             - limited: against specific WF attack
+
+             - general: against perfectly accurate attacker
+
+          1) Limited defenses
+
+             - Wright's morphing
+
+               - addressed Liberatore and Levine's attack (relies on
+                 unique packet lengths)
+
+               - randomly padded packets
+
+               - broken by effective's packet ordering attack
+
+             - Luo's HTTPOS
+
+               - broken by touching and effective
+
+             - Tor's randomised pipelining
+
+               - updated in critique
+
+               - both versions ineffective as of [[file:master.bib::ccs2012-fingerprinting][Cai et al. 2012:
+                 Touching Distance]], effective and "improved wf on tor"
+
+          2) General defenses
+
+             - "different web pages should, with sufficient
+               likelihood, produce the exact same packet sequence."
+
+             - Dyer: BuFLO: fixed, constant rate, dummy packets
+
+               - padded upto 10 seconds
+
+             - Cai: Tamaraw
+
+             - Wang: Supersequence
+
+       3) Moving Forward
+
+          - Problems:
+
+            - Overhead:
+
+              - time 170% to 240%
+
+              - bandwdith 90% to 180%
+
+            - Congestion:
+
+              - not congestion-aware
+
+          - Solution: half-duplex communication
+
+    3) IMPLEMENTING HALF-DUPLEX COMMUNICATION
+
+       0) [@0]
+          - half-duplex:
+
+            - bursts by each side
+
+            - small time overhead
+
+            - no bandwidth overhead
+
+            - easy to implement
+
+       1) How browsers work
+
+          - HTTP: client connects, retrieves or sends data
+
+          - Firefox (other browsers similar): connectionmanager uses
+            up to fixed maximum of connections, sends requests via
+            these
+
+          - for half-duplex: modify connection manager
+
+       2) Implementing half-duplex communication
+
+          - walkie: idle
+
+          - talkie: sent data, receiving replies
+
+          - proof:
+
+            - client sends only when no active connections, \to server not talking
+
+            - server talking: client sends no data \to client not talking
+
+       3) Optimistic data
+
+          - sending TCP connection request and GET at the same time
+
+            - one less RTT
+
+            - reduces number of bursts, thus padding
+
+       4) Other Implementation Details
+
+          - pipelining disabled
+
+          - tls: delay, but not a weakness
+
+          - speculative connections: disabled
+
+    4) PADDING
+
+       0) [@0]
+
+          - assume padding of data
+
+          - half-duplex reduces further to number of packets in each
+            burst [+timing?]
+
+            to burst pair (incoming number, outgoing number)
+
+          - perfect attacker can detect except for collision
+
+       1) Deterministic Padding
+
+          - round_Y(a) up to rounding set Y
+
+          - pad number of bursts to round_Y(bursts)
+
+          - overhead-optimal rounding set by algorithm
+
+          - randomized test 2 \le |Y| \le 9
+
+       2) Random padding
+
+          - client and cooperator send dummy packets when request has
+            started
+
+          - adding from uniform distribution to real burst
+
+          - adding from (test uniform and normal)
+
+    5) EVALUATION
+
+       0) [@0]
+
+          test against known attacks
+
+          expect perfect attacker, which can do perfect table lookup
+
+       1) Evaluation of deterministic defenses
+
+          - "The objective of the defense is to maximize collisions."
+
+          - "To classify any sequence belonging to c, the attacker’s
+            optimal strategy (optimizing accuracy) is to guess that
+            all elements in the collision set belong to the class with
+            the highest rate of occurrence in that set. The attacker’s
+            overall accuracy over c is therefore max_{i} n_{i} /|c|.
+
+       2) Evaluation of random defenses
+
+          - determine maximum probability instead of "highest rate of
+            occurrence"
+
+       3) Overhead
+
+          - bandwidth in %: dummy / real packets
+
+          - time
+
+    6) RESULTS
+
+       1) Data Collection
+
+          - modified tor browser
+
+          - top 100 a 90 as monitored
+
+          - next 10000 as non-monitored
+
+          - drop \le 50 cells
+
+          - no padding
+
+       2) Walkie-Talkie results
+
+          - 3 ways of adding bursts
+
+            - nofake: none
+
+            - normal: normal distribution
+
+            - uniform: uniform distribution
+
+            - and also deterministic padding
+
+          - perfect attacker
+
+          - uniform padding best
+
+          - overhead 35% \to fpr 5%, 55% \to fpr 10%
+
+       3) Comparison with previous defenses
+
+          morphing (other form) and padding (more traffic)
+
+          1) Morphing
+
+             - time overhead 8.5%
+
+               - rtt dominates
+
+             - more realistic than supersequence/tamaraw
+
+          2) Padding
+
+             - wt has way less time overhead and much less bandwidth
+               overhead than tamaraw/supersequence
+
+       4) Performance against known attacks
+
+          - none comes close to theoretical maximum
+
+          - different amounts of padding (\to bandwidth) (none, low, high)
+
+    7) ALTERNATIVE DEFENSES
+
+       without generality (only against kNN), without ease-of-use
+       (only select sites), without decentralization (with database)
+
+       1) Without generality
+
+          - half-duplex with inserted dummy packets works well against
+            knn
+
+          - should be general defense against specific attack, not
+            specific defense, as in this point
+
+       2) Without ease of use
+
+          select some pages to shield
+
+          for each page: supersequence of most traces, then popular
+          page which is supersequence of this supersequence
+
+          failure rate 4% \pm 3%
+
+       3) Without decentralization
+
+          - save packet sequences for each page
+
+          - computer supersequences in advance
+
+          - 5% \to only 90% accuracy
+
+            - yet some pages undefended
+
+    8) DISCUSSION
+
+       1. reproducibility
+
+          code downloadable
+
+       2. timing
+
+          left out
+
+          1. no research has shown benefits
+
+          2. different network conditions
+
+          3. changes in circuit changes avery x minutes
+
+          4. many users with different access speeds pose a problem
+
+    9) Conclusion
+
+       - easy-to use efficient,
+
+       - tamaraw, supersequence too much
+
+       - better when conditions relaxed
+*** quotes
+    - design goals:
+      1. General: The defense succeeds against all possible
+         classification attacks by causing collisions, where the
+         defense outputs the same packet sequence given input packet
+         sequences from different web pages. Even a perfect attacker
+         would not be able to tell which page it came from.
+      2. Easy to use: The client does not need to configure the
+         defense. The defense is ready to use out of the box, and can
+         be deployed incrementally as it does not depend on other
+         clients using the same defense.
+      3. Decentralized: The defense should not require some central
+         server, with a shared database, to operate. We want to match
+         the decentralized model of anonymity networks.
+    - (ends 1)
+    - Half-duplex communication reduces the attacker’s potential
+      feature set to only a series of burst traffic sizes, which makes
+      WF difficult.
+    - (ends 2/3?)
+    - The client adds outgoing dummy packets, while a cooperator adds
+      incoming dummy packets.
+    - Due to the low base rate of visits to each single web page, a
+      client protecting her page accesses against an attacker may only
+      need a false positive rate over 5% [18,21] even if the
+      attacker’s true positive rate was 100%.
+    - (ends 4.0-6.1)
+    - If the attacker categorized a monitored page as a different
+      monitored page, we count it as a false positive
+    - (ends 6.2)
+    - designing a defense that specifically defeats the
+      state-of-the-art attack is a flawed approach.
+    - (ends 7.1)
+*** questions
+    - Further, we assume this encrypted channel pads all packets to a
+      fixed size so as to remove packet size as a possible
+      feature. (Note that Tor delivers all data in fixed-size cells.)
+
+      How about other cells? Are they irrelevant?
+
+      Probably, as they are only the versions, tls, etc
+
+      Maybe not, handshake etc...
+    - client reduces the attacker’s possible feature set even further,
+      to simply counts for thenumber of packets in each burst of
+      traffic.
+
+      How about timing data?
+*** ref [[file:master.bib::wang2015walkie][Wang & Goldberg 2015: Walkie Talkie]]
 ** [[./notes][Wang - notes]]
 *** quotes
     - While we did some editing and customization to Firefox to enable
@@ -6597,13 +6956,86 @@
          - Content Policy: cleaner-looking code, allows =shoudLoad=
 
            - does not show redirects
+** [[./Security best practices in extensions - Mozilla | MDN.html][wbamberg - Security best practices in extensions - Mozilla | MDN]]
+*** summary
+    0) [@0]
+
+       some strict guidelines, some recommendations
+
+    1) Web content handling
+
+       - best: little privileges: https://developer.mozilla.org/En/Displaying_web_content_in_an_extension_without_security_issues
+
+       - privileges depend on origin
+
+         - website: only that site
+
+         - chrome: all
+
+         - file: all files
+
+       - restrict via
+
+         #+BEGIN_SRC js
+           frame.docShell.allowImages = false;
+           frame.docShell.allowJavascript = false;
+           frame.docShell.allowPlugins = false;
+         #+END_SRC
+
+       - Components.utils.evalInSandbox()
+
+    2) The sidebar: a use case
+
+       - iframe with _type="content"_ attribute sandboxes, blocks callbacks
+
+    3) Using eval() in an extension: don't
+
+    4) Sandboxed HTTP connections: prevents cookies, etc, see:
+
+    5) Handling of logins and passwords: Login Manager
+
+    6) APIs and other data handling
+
+       - https
+
+       - JSON: see https://developer.mozilla.org/En/Using_native_JSON
+
+       - certificates MUST NOT be self-signed
+
+    7) Remote JavaScript and Content: not in chrome context, use sandbox
+
+    8) evalInSandbox: look at doc, see also http://arantius.com/misc/greasemonkey/script-compiler
+
+    9) Third-party JavaScript:
+
+       - namespace
+
+       - trusted source
+
+    10) Conclusion: also http://blog.mozilla.com/security/
 ** [[./topranked.html][Web - Does Alexa have a list of its top-ranked websites?]]
 *** url https://support.alexa.com/hc/en-us/articles/200449834-Does-Alexa-have-a-list-of-its-top-ranked-websites-
 *** summary
     top 1m sites at http://s3.amazonaws.com/alexa-static/top-1m.csv.zip
 
     updated daily
-** MOVE [[./JavaScript Garden.html][Wetzel - JavaScript Garden]]
+** [[./Add-ons_Extension Signing - MozillaWiki.html][Web - Add-ons/Extension Signing - MozillaWiki]]
+*** summary
+    - all extensions need to be signed (no themes, dictionaries, etc)
+
+    - since Firefox 47
+
+    - via API: http://olympia.readthedocs.org/en/latest/topics/api/signing.html
+
+    - or jpm: https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_sign
+*** ref [[file:master.bib::addon-signing][Mozilla 2016: Add Extension Signing]]
+** [[./chickenfoot.html][Web - Chickenfoot]]
+*** summary
+    - script firefox
+
+    - no longer developed
+*** ref [[file:master.bib::chickenfoot][2015: Chickenfoot]]
+** [[./JavaScript Garden.html][Wetzel - JavaScript Garden]]
 *** summary
     1) Objects
 
@@ -7320,443 +7752,11 @@
          not foo. This is, most of the time, a silent error, since
          when the function returns undefined setTimeout will not raise
          any error.
-** MOVE [[./tf-idf.html][Wiki - term frequency–inverse document frequency]]
+** [[./tf-idf.html][Wiki - term frequency–inverse document frequency]]
 *** quotes
     - tf–idf is the product of two statistics, term frequency and
       inverse document frequency. Various ways for determining the
       exact values of both statistics exist.
-** MOVE [[./Security best practices in extensions - Mozilla | MDN.html][wbamberg - Security best practices in extensions - Mozilla | MDN]]
-*** summary
-    0) [@0]
-
-       some strict guidelines, some recommendations
-
-    1) Web content handling
-
-       - best: little privileges: https://developer.mozilla.org/En/Displaying_web_content_in_an_extension_without_security_issues
-
-       - privileges depend on origin
-
-         - website: only that site
-
-         - chrome: all
-
-         - file: all files
-
-       - restrict via
-
-         #+BEGIN_SRC js
-           frame.docShell.allowImages = false;
-           frame.docShell.allowJavascript = false;
-           frame.docShell.allowPlugins = false;
-         #+END_SRC
-
-       - Components.utils.evalInSandbox()
-
-    2) The sidebar: a use case
-
-       - iframe with _type="content"_ attribute sandboxes, blocks callbacks
-
-    3) Using eval() in an extension: don't
-
-    4) Sandboxed HTTP connections: prevents cookies, etc, see:
-
-    5) Handling of logins and passwords: Login Manager
-
-    6) APIs and other data handling
-
-       - https
-
-       - JSON: see https://developer.mozilla.org/En/Using_native_JSON
-
-       - certificates MUST NOT be self-signed
-
-    7) Remote JavaScript and Content: not in chrome context, use sandbox
-
-    8) evalInSandbox: look at doc, see also http://arantius.com/misc/greasemonkey/script-compiler
-
-    9) Third-party JavaScript:
-
-       - namespace
-
-       - trusted source
-
-    10) Conclusion: also http://blog.mozilla.com/security/
-** MOVE [[./cacr2015-08.pdf][Wang - Walkie-Talkie: An Effective and Efficient Defense against Website Fingerprinting]]
-*** summary
-    0) [@0] ABSTRACT
-
-       other defenses: too much time: 1/2 minute wait
-
-       here: half-duplex
-
-       9% time, 32% bw \to 5 % fpr
-
-       9% time (?), 55% bw \to 10%fpr
-
-    1) INTRODUCTION
-
-       - tor breakable by wf
-
-       - walkie-talkie: half-duplex defense, against perfect attacker
-
-    2) RELATED WORK
-
-       0) [@0]
-
-          1998 wf first mentioned
-
-       1) Attacks
-
-          evolution
-
-       2) Defenses
-
-          0) [@0]
-
-             - limited: against specific WF attack
-
-             - general: against perfectly accurate attacker
-
-          1) Limited defenses
-
-             - Wright's morphing
-
-               - addressed Liberatore and Levine's attack (relies on
-                 unique packet lengths)
-
-               - randomly padded packets
-
-               - broken by effective's packet ordering attack
-
-             - Luo's HTTPOS
-
-               - broken by touching and effective
-
-             - Tor's randomised pipelining
-
-               - updated in critique
-
-               - both versions ineffective as of [[file:master.bib::ccs2012-fingerprinting][Cai et al. 2012:
-                 Touching Distance]], effective and "improved wf on tor"
-
-          2) General defenses
-
-             - "different web pages should, with sufficient
-               likelihood, produce the exact same packet sequence."
-
-             - Dyer: BuFLO: fixed, constant rate, dummy packets
-
-               - padded upto 10 seconds
-
-             - Cai: Tamaraw
-
-             - Wang: Supersequence
-
-       3) Moving Forward
-
-          - Problems:
-
-            - Overhead:
-
-              - time 170% to 240%
-
-              - bandwdith 90% to 180%
-
-            - Congestion:
-
-              - not congestion-aware
-
-          - Solution: half-duplex communication
-
-    3) IMPLEMENTING HALF-DUPLEX COMMUNICATION
-
-       0) [@0]
-          - half-duplex:
-
-            - bursts by each side
-
-            - small time overhead
-
-            - no bandwidth overhead
-
-            - easy to implement
-
-       1) How browsers work
-
-          - HTTP: client connects, retrieves or sends data
-
-          - Firefox (other browsers similar): connectionmanager uses
-            up to fixed maximum of connections, sends requests via
-            these
-
-          - for half-duplex: modify connection manager
-
-       2) Implementing half-duplex communication
-
-          - walkie: idle
-
-          - talkie: sent data, receiving replies
-
-          - proof:
-
-            - client sends only when no active connections, \to server not talking
-
-            - server talking: client sends no data \to client not talking
-
-       3) Optimistic data
-
-          - sending TCP connection request and GET at the same time
-
-            - one less RTT
-
-            - reduces number of bursts, thus padding
-
-       4) Other Implementation Details
-
-          - pipelining disabled
-
-          - tls: delay, but not a weakness
-
-          - speculative connections: disabled
-
-    4) PADDING
-
-       0) [@0]
-
-          - assume padding of data
-
-          - half-duplex reduces further to number of packets in each
-            burst [+timing?]
-
-            to burst pair (incoming number, outgoing number)
-
-          - perfect attacker can detect except for collision
-
-       1) Deterministic Padding
-
-          - round_Y(a) up to rounding set Y
-
-          - pad number of bursts to round_Y(bursts)
-
-          - overhead-optimal rounding set by algorithm
-
-          - randomized test 2 \le |Y| \le 9
-
-       2) Random padding
-
-          - client and cooperator send dummy packets when request has
-            started
-
-          - adding from uniform distribution to real burst
-
-          - adding from (test uniform and normal)
-
-    5) EVALUATION
-
-       0) [@0]
-
-          test against known attacks
-
-          expect perfect attacker, which can do perfect table lookup
-
-       1) Evaluation of deterministic defenses
-
-          - "The objective of the defense is to maximize collisions."
-
-          - "To classify any sequence belonging to c, the attacker’s
-            optimal strategy (optimizing accuracy) is to guess that
-            all elements in the collision set belong to the class with
-            the highest rate of occurrence in that set. The attacker’s
-            overall accuracy over c is therefore max_{i} n_{i} /|c|.
-
-       2) Evaluation of random defenses
-
-          - determine maximum probability instead of "highest rate of
-            occurrence"
-
-       3) Overhead
-
-          - bandwidth in %: dummy / real packets
-
-          - time
-
-    6) RESULTS
-
-       1) Data Collection
-
-          - modified tor browser
-
-          - top 100 a 90 as monitored
-
-          - next 10000 as non-monitored
-
-          - drop \le 50 cells
-
-          - no padding
-
-       2) Walkie-Talkie results
-
-          - 3 ways of adding bursts
-
-            - nofake: none
-
-            - normal: normal distribution
-
-            - uniform: uniform distribution
-
-            - and also deterministic padding
-
-          - perfect attacker
-
-          - uniform padding best
-
-          - overhead 35% \to fpr 5%, 55% \to fpr 10%
-
-       3) Comparison with previous defenses
-
-          morphing (other form) and padding (more traffic)
-
-          1) Morphing
-
-             - time overhead 8.5%
-
-               - rtt dominates
-
-             - more realistic than supersequence/tamaraw
-
-          2) Padding
-
-             - wt has way less time overhead and much less bandwidth
-               overhead than tamaraw/supersequence
-
-       4) Performance against known attacks
-
-          - none comes close to theoretical maximum
-
-          - different amounts of padding (\to bandwidth) (none, low, high)
-
-    7) ALTERNATIVE DEFENSES
-
-       without generality (only against kNN), without ease-of-use
-       (only select sites), without decentralization (with database)
-
-       1) Without generality
-
-          - half-duplex with inserted dummy packets works well against
-            knn
-
-          - should be general defense against specific attack, not
-            specific defense, as in this point
-
-       2) Without ease of use
-
-          select some pages to shield
-
-          for each page: supersequence of most traces, then popular
-          page which is supersequence of this supersequence
-
-          failure rate 4% \pm 3%
-
-       3) Without decentralization
-
-          - save packet sequences for each page
-
-          - computer supersequences in advance
-
-          - 5% \to only 90% accuracy
-
-            - yet some pages undefended
-
-    8) DISCUSSION
-
-       1. reproducibility
-
-          code downloadable
-
-       2. timing
-
-          left out
-
-          1. no research has shown benefits
-
-          2. different network conditions
-
-          3. changes in circuit changes avery x minutes
-
-          4. many users with different access speeds pose a problem
-
-    9) Conclusion
-
-       - easy-to use efficient,
-
-       - tamaraw, supersequence too much
-
-       - better when conditions relaxed
-*** quotes
-    - design goals:
-      1. General: The defense succeeds against all possible
-         classification attacks by causing collisions, where the
-         defense outputs the same packet sequence given input packet
-         sequences from different web pages. Even a perfect attacker
-         would not be able to tell which page it came from.
-      2. Easy to use: The client does not need to configure the
-         defense. The defense is ready to use out of the box, and can
-         be deployed incrementally as it does not depend on other
-         clients using the same defense.
-      3. Decentralized: The defense should not require some central
-         server, with a shared database, to operate. We want to match
-         the decentralized model of anonymity networks.
-    - (ends 1)
-    - Half-duplex communication reduces the attacker’s potential
-      feature set to only a series of burst traffic sizes, which makes
-      WF difficult.
-    - (ends 2/3?)
-    - The client adds outgoing dummy packets, while a cooperator adds
-      incoming dummy packets.
-    - Due to the low base rate of visits to each single web page, a
-      client protecting her page accesses against an attacker may only
-      need a false positive rate over 5% [18,21] even if the
-      attacker’s true positive rate was 100%.
-    - (ends 4.0-6.1)
-    - If the attacker categorized a monitored page as a different
-      monitored page, we count it as a false positive
-    - (ends 6.2)
-    - designing a defense that specifically defeats the
-      state-of-the-art attack is a flawed approach.
-    - (ends 7.1)
-*** questions
-    - Further, we assume this encrypted channel pads all packets to a
-      fixed size so as to remove packet size as a possible
-      feature. (Note that Tor delivers all data in fixed-size cells.)
-
-      How about other cells? Are they irrelevant?
-
-      Probably, as they are only the versions, tls, etc
-
-      Maybe not, handshake etc...
-    - client reduces the attacker’s possible feature set even further,
-      to simply counts for thenumber of packets in each burst of
-      traffic.
-
-      How about timing data?
-*** ref [[file:master.bib::wang2015walkie][Wang & Goldberg 2015: Walkie Talkie]]
-** [[./Add-ons_Extension Signing - MozillaWiki.html][Web - Add-ons/Extension Signing - MozillaWiki]]
-*** summary
-    - all extensions need to be signed (no themes, dictionaries, etc)
-
-    - since Firefox 47
-
-    - via API: http://olympia.readthedocs.org/en/latest/topics/api/signing.html
-
-    - or jpm: https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_sign
-*** ref [[file:master.bib::addon-signing][Mozilla 2016: Add Extension Signing]]
-** [[./chickenfoot.html][Web - Chickenfoot]]
-*** summary
-    - script firefox
-
-    - no longer developed
-*** ref [[file:master.bib::chickenfoot][2015: Chickenfoot]]
 ** TODO [#A] [[./ronathan-heyning.pdf][Cheng - Traffic Analysis of SSL Encrypted Web Browsing]]
 *** summary
     0) [@0] Abstract
@@ -8095,864 +8095,6 @@
               S(X, Y) = |X \cap Y| / |X \cup Y| (ref:liberatore-1)
             #+END_SRC
 *** ref [[file:master.bib::Liberatore:2006][Liberatore & Levine 2006: Inferring Source Encrypted HTTP Connections]]
-** TODO MOVE PART [#C] [[./thebook.pdf][Smola - INTRODUCTION TO MACHINE LEARNING]] [0/2]
-*** parts: classifiers for thesis: knn, svm, (bayes?, random forest?)
-*** TODO summary
-    1) Introduction
-
-       often in background
-
-       1) A Taste of Machine Learning
-
-          applications, formalize
-
-          1) Applications
-
-             - page rank
-
-             - collaborative filtering: amazon recommendations
-
-             - automatic translation
-
-             - face recognition vs face verification
-
-             - named entity recognition: from documents etc some named thing
-
-             - speech recognition: annotate voice sample
-
-               - and similarly: handwriting, etc
-
-             classification: yes/no answer
-
-          2) Data
-
-             types of data
-
-             - Lists
-
-             - Sets
-
-             - Matrices
-
-             - Images
-
-             - Videos
-
-             - Trees and Graphs
-
-             - Strings
-
-             - Compound structures: combine these
-
-          3) Problems
-
-             1) Binary Classification:
-
-                - online learning: instantaneous determination of y for x
-
-                - batch learning: group of stuff
-
-                - transduction: know X' (testing data)
-
-                - active learning: choose X
-
-                - estimation with missing variables
-
-                - covariate shift correction: X and X' from different
-                  data sources
-
-                - co-training: related but different problems
-
-                - loss functions
-
-             2) Multiclass Classification
-
-             3) Structured Estimation
-
-             4) Regression
-
-             5) Novelty Detection: new and unusual observations
-
-       2) Probability Theory
-
-          1) Random Variables
-
-             X takes on values in f.ex. \cal X = {1,..., 6} \ni x
-
-          2) Distributions
-
-             - discrete values: probability mass function, PMF
-
-             - continuous values: probability density function, PDF
-               integral: CDF
-
-             - Pr(a \le X \le b) = \int_{a}^{b} dp(x) = F(b) - F(a)
-
-             - Quantile: value x' for which Pr(X < x') \le q, Pr(X > x') \le 1-q
-               is /q-quantile/. q=0.5: /median/
-
-          3) Mean and Variance
-
-             - mean: E[x] = \sum_{x} xp(x) and \int x dp(x)
-               E[f(x)] =  \int f(x) dp(x)
-
-             - variance Var[X] = E[(X - E(X))^{2}]
-               Var[f(x)] =  E[(f(X) - E(f(X)))^{2}]
-
-          4) Marginalization, Independence, Conditioning, and Bayes Rule
-
-             0) [@0]
-
-                - marginalization, independence, conditioning, iid, bayes
-                  rule: see quotes
-
-                - Bayes Rule holds because p(x,y) = p(x|y)p(y) = p(y|x)p(x)
-
-                - "The key consequence of (1.15) is that we may
-                  reverse the conditioning between a pair of random
-                  variables."
-
-             1) An Example
-
-                HIV testing,
-
-                - p(T = HIV+ | X = HIV+) = 1
-
-                - p(T = HIV+ | X = HIV-) = 0.01
-
-                - p(X = HIV+) = 0.0015
-                  \to  p(X = HIV-) = 0.9985
-
-                - then p(X = HIV+ | T = HIV+) is (shorthand P(x+, t-) etc)
-                  = p(t+ | x+) p(x+) / p(t+)
-
-                - p(t+) = p(x+, t+) + p(x-, t+)
-                  = p(t+ | x+ ) p(x+) + p(t+ | x-) p(x-)
-                  = 1 * 0.0015 + 0.01 * 0.9985
-
-                - back to p(x+ | t+)
-                  = 1 * 0.0015 / (1 * 0.0015 + 0.01 * 0.9985)
-
-                - increase test accuracy by further information (f.ex. age)
-
-                - and further, conditionally independent, tests
-
-       3) Basic Algorithms
-
-          0) [@0]
-
-             - features X, labels y
-
-             - /bag of words/: "Assume we have a list of all possible
-               words occurring in X, that is a dictionary, then we are
-               able to assign a unique number with each of those words
-               (e.g. the position in the dictionary). Now we may
-               simply count for each document x_{i} the number of times
-               a given word j is occurring. This is then used as the
-               value of the j-th coordinate of x_{i}."
-
-          1) Naive Bayes
-
-             use Bayes Rule with approximations
-
-             - replace p(x) by likelihood ratio (adjusted)
-
-             - replace p(x|y) by independent product of parts (spam: words)
-
-          2) Nearest Neighbor Estimators
-
-             - distance to (k-) nearest point(s).
-
-             - whichever class is closest
-
-             - distance-dependent
-
-             - works well if work was put into distance
-
-          3) A Simple Classifier
-
-             1. use means of classes
-
-             2. compute distance of point to means
-
-             3. extension: line boundary \to geometric boundary
-
-          4) Perceptron
-
-             - online learning
-
-             - "data points x t ∈ R d , and labels y t ∈ {±1}"
-
-               - if wrong, updates w by x_{t}y_{t}
-
-               - kernelizeable: x replaceable by \phi(x)
-
-             - converges if convergeable
-
-             - margin describes how thin the border is
-
-             - novikoff's theorem gives perceptron's accuracy bounded
-               by margin (+ data set diameter)
-
-             - proof by two limits per step, induction, cauchy-schwartz
-
-             - perceptron was used in (a)nn
-
-             - here, more complex feature maps and "associated kernel"s
-
-          5) K-Means
-
-             - cluster
-
-             - start with k /prototype vector/s,
-
-             - approximate classes
-
-             - approximate vectors
-
-             - repeat
-
-    2) Density Estimation
-
-       1) Limit Theorems
-
-          0) [@0] Casino
-
-             - example: 100 die (1w6) tosses at casino yields only 11 6es
-               (instead of 17, as expected)
-
-             - (^{m}_{n}) = m! / n!(m-n)! different sequences with
-               proportions n="6" and m="not 6" respectively
-
-             - only 11 '6'es for 100 die tosses: \sim 7.0%
-
-               probability[X \le 11] = \sum_{i=0}^{11} (^{100}_{i}) (1/6)^{i}  (5/6)^{100-i}
-
-          1) Fundamental Laws
-
-             - weak law: irgendwann ist summe durch \epsilon beschraenkt
-
-             - strong law: wkt der konvergenz ist 1
-
-             - central limit theorem: id vars converge to (var-sth)
-               normal distribution (all - \mu)
-
-             - slutsky: continuous functions can be pulled into E
-
-             - delta method: see later
-
-          2) The Characteristic Function
-
-             - Fourier transform
-
-             - Characteristic functions
-
-             - Sum of random variables and convolutions
-
-               - Proof via Y=z-x, joint distribution p(z, x)
-
-             - proofs of 1)
-
-             - moments \to function
-
-          3) Tail Bounds
-
-             - Gauss inequality: proof via
-
-               - 1 \le x/\epsilon (auf [\epsilon, \infty))
-
-               - 1/\epsilon herausziehen, auf [0, \infty) erweitern
-
-               - auf dem Intervall ist x durschnittlich kleiner \mu
-
-          4) An Example
-
-             - assume that all production steps are iid, have the same \mu_{B}
-
-             - X_{i} for wafer i
-
-             - X̄_{m} the average of the yields of m wafers using process
-               ’B’
-
-             - interested in is the accuracy \epsilon for which the
-               probability
-
-               δ = Pr(| X̄_{m} − μ_{B} | > \epsilon) satisfies δ ≤ 0.05.
-
-             - solve
-
-               - chebyshev: 40000
-
-               - hoeffding: 738
-
-               - central limit theorem: 55
-
-       2) Parzen Windows
-
-          1) Discrete Density Estimation
-
-             estimate by actual occurrences in sample data
-
-             problem: some numbers might not appear
-
-             solution: laplace smoothing
-
-          2) Smoothing Kernel
-
-             - "proper density estimation."
-
-             - parzen windows estimate (see quotes)
-
-             - different kernels
-
-          3) Parameter Estimation
-
-             - width of kernel function is important, shape less
-
-             - to maximize likelihood, sum over log-likelihood to
-               avoid float overflow
-
-             - maximizing likelihood on all of data leads to
-               overfitting
-
-             - avoid by using a Validation Set, n-fold
-               Cross-validation or a Leave-one-out Estimator
-
-          4) Silverman’s Rule
-
-             - locality-dependent kernel width
-
-               r_{i} = c/k \sum_{x \in kNN(x_i)} ||x - x_{i}||
-
-             - locality-dependent parzen rule
-
-               p\circ(x) = 1/m \sum_{i=1}^{m} r^{-d}h(x - x_{i}/r_{i})
-
-          5) Watson-Nadaraya Estimator
-
-             - non-parametric data
-
-       3) Exponential Families
-
-          0) [@0]
-
-             - "Gaussians, Poisson, Gamma and Wishart distributions all
-               form part of the exponential family"
-
-             - "lead to convex optimization problems"
-
-          1) Basics
-
-             - Defined by
-
-               p(x; θ) := p_{0}(x) exp (<φ(x), θ> − g(θ)) . (2.40)
-
-             - with g(\theta) weighting term to get density function
-
-             - \varphi map from parameters to statistics
-
-          2) Examples
-
-             Many distributions can be seen as member of the exponential family
-
-             - Gaussian
-
-             - Multinomial
-
-             - Poisson
-
-             - Beta
-
-    3) Optimization
-
-       3) [@3] Constrained Optimization
-
-          0) [@0]
-
-             - minimize J(w)
-
-               - given constraints c_i(w) \le 0 or e_j(w) = 0 for some i,j
-
-             - normal solution to find w with ||\nablaJ(w)||=0 does
-               ignore these
-
-          1) Projection Based Methods
-
-             find projection to constraint set (for simple constraint
-             set)
-
-          2) Lagrange Duality
-
-             - add weighted sums to J for constraints, see [[(iml-3.107)]]
-
-             - continue at p.128
-
-    6) [@6] Kernels and Function Spaces
-
-       all algorithms which use dot product =<x, x'>= can be
-       made to use a kernel function =k(x, x')=
-
-       1) The Basics
-
-          0) [@0]
-
-             - let *X* be the input space,
-
-             - $k: X \times X \to \mathbb{R}$ function with
-
-               k(x, x') = <\Phi(x), \Phi(x')>
-
-               with \Phi being a /feature map/ from X to dot product
-               space \cal H.
-
-             - Advantages
-
-               1. hyperplane suffices to characterize in \cal H
-
-               2. no need to explicitly compute \Phi
-
-               3. input space can be any set (strings, trees, graphs, etc)
-
-          1) Examples
-
-             1) Linear Kernel
-
-                - k(x, x') = <x, x'> = \sum_{i} x_{i}x_{i}'
-
-                - simplest, easy to compute: O(n) or less for sparse vectors
-
-             2) Polynomial Kernel
-
-                - easy to compute, as k(x,x') = <\Phi(x), \Phi(x')> = (<x, x'>)^d
-
-    7) Linear Models
-
-       0) [@0]
-
-          - hyperplane [[(iml-7.1)]] divides space H in two halves
-
-            - decision boundary
-
-            - maximize margin [[(iml-7.2)]]
-
-       1) Support Vector Classification
-
-          0) [@0]
-
-             - given point-class tuples {(x1, y1), ..., (xm, ym)} with xi
-               \in H, yi \in {-1, 1}
-
-             - find linear boundary such that <w, xi> + b \ge 0 if yi == 1,
-               else \le (iff y_i(<w, xi> +b) \ge 1)
-
-               - maximizing the margin
-
-                 - equivalent to minimize: 1/2 ||w||^2
-
-             - hard margin: data linearly separable, else
-
-             - soft margin: y_i(<w, xi> +b) \ge 1 - \xi_i
-
-               - see [[(iml-7.5)]]
-
-             - lagrangian form to accomodate constraints
-
-               - solve minimization for that
-
-          1) A Regularized Risk Minimization Viewpoint
-
-             - possible to remove \xi from optimization problem, see [[(iml-7.12)]]
-
-             - SVC as regularized risk minimizer with binary hinge loss
-
-             - compute
-
-               - primal: d-dimensional problem (d dimension of x)
-
-               - (Fenchel) dual: m-dimensional problem
-
-                 - use at kernel trick or when d >> m
-
-          2) An Exponential Family Interpretation
-*** TODO quotes
-    1) Introduction
-       1) A Taste of Machine Learning
-          0) [@0]
-             - much of the art of machine learning is to reduce a range of
-               fairly disparate problems to a set of fairly narrow
-               prototypes.
-          1) Applications
-             - A rather related application is collaborative
-               filtering. Internet book stores such as Amazon, or video rental
-               sites such as Netflix use this information extensively to entice
-               users to purchase additional goods (or rent more movies).
-             - Many security applications, e.g. for access control, use face
-               recognition as one of its components.
-             - The overarching theme of learning problems is that there exists
-               a nontrivial dependence between some observations, which we will
-               commonly refer to as x and a desired response, which we refer to
-               as y, for which a simple set of deterministic rules is not
-               known. By using learning we can infer such a dependency between
-               x and y in a systematic fashion.
-          2) Data
-             - One of the challenges in dealing with vectors is that the scales
-               and units of different coordinates may vary widely.
-             - One way of dealing with those issues in an automatic fashion is
-               to normalize the data. We will discuss means of doing so in an
-               automatic fashion.
-             - In some cases the vectors we obtain may contain a variable
-               number of features.
-          3) Problems
-             - 3-class classification. Note that in the latter case we have
-               much more degree for ambiguity.
-             - a sequence of (x_{i} , y_{i} ) pairs for which y i needs to be
-               estimated in an instantaneous online fashion. This is commonly
-               referred to as online learning.
-             - know X 0 already at the time of constructing the model. This is
-               commonly referred to as transduction.
-       2) Probability Theory
-          0) [@0]
-             - For more details and a very gentle and detailed discussion see
-               the excellent book of [BT03].
-          1) Random Variables
-             - Formally, [...] 1 occurs with probability 1/6
-             - notational convention [...] use uppercase letters, e.g., X, Y
-               etc to denote random variables and lower case letters, e.g., x,
-               y etc to denote the values they take.
-          2) Distributions
-             - If the random variable is discrete, i.e., it takes on a finite
-               number of values, then this assignment of probabilities is
-               called a /probability mass function/ or PMF for short.
-             - slightly informal notation p(x) := Pr(X = x)
-             - continuous random variable the assignment of probabilities
-               results in a probability density function or PDF for short.
-             - Closely associated with a PDF is the indefinite integral
-               over p. It is commonly referred to as the cumulative
-               distribution function (CDF).
-          3) Mean and Variance
-             - if f: R → R is a function, then f(X) is also a random
-               variable. Its mean is mean given by
-               E[f(X)] := \int f(x)dp(x).
-          4) Marginalization, Independence, Conditioning, and Bayes
-             Rule
-             0) [@0]
-                - /joint density/ p(x, y).
-                - /marginalization/: recover p(x) by integrating out y:
-                  p(x) = \int dp(x, y).
-                - /X and Y are independent/: p(x,y) = p(x) p(y)
-                - /iid random variables/: independently and identically distributed
-                - /conditional probabilities/:
-                  p(x|y) := p(x, y) / p(y)
-                - /Bayes Rule/: p(y|x) = p(x|y)p(y) / p(x) (ref:bayes_rule)
-             1) An Example
-                - The physician recommends a test which is guaranteed to detect
-                  HIV-positive whenever a patient is infected.
-                - On the other hand, for healthy patients it has a 1% error
-                  rate. That is, with probability 0.01 it diagnoses a patient as
-                  HIV-positive even when he is, in fact, HIV-negative.
-                - Moreover, assume that 0.15% of the population is infected.
-                - Denote by X and T the random variables associated with the
-                  health status of the patient and the outcome of the test
-                  respectively.
-                - We are interested in p(X = HIV+|T = HIV+).
-                - Note that often our tests may not be conditionally independent
-                  and we would need to take this into account.
-                - p(X = HIV+|T = HIV+) = p(T = HIV+|X = HIV+) p(X = HIV+) / p(T = HIV+)
-                - p(T = HIV+) = \sum p(T = HIV+, x) = \sum p(T = HIV+|x)p(x)
-                - The corresponding expression yields:
-
-                  p(T = HIV+|X = HIV+, A)p(X = HIV+|A) / p(T = HIV+|A)
-
-                  Here we simply conditioned all random variables on A in order to
-                  take additional information into account.
-                - What we want is that the diagnosis of T_{2} is independent of that
-                  of T_{2} given the health status X of the patient. This is
-                  expressed as
-                  p(t_{1} , t_{2} |x) = p(t_{1} |x)p(t_{2} |x). (1.16)
-                - Random variables satisfying the condition (1.16) are commonly
-                  referred to as /conditionally independent/.
-       3) Basic Algorithms
-          0) [@0]
-             - assume that there is sufficiently strong dependence between x
-               and y that we will be able to estimate y given x and a set of
-               labeled instances X, Y.
-          1) Naive Bayes
-             - use [[(bayes_rule)]] to estimate p(y), f.ex. the
-               probability of receiving a spam or ham mail.
-             - dispose of the requirement of knowing p(x) by settling for a
-               likelihood ratio
-
-               L(x) := p(spam|x) / p(ham|x) = p(x|spam)p(spam) /
-               p(x|ham)p(ham)
-             - treat the occurrence of each word in a document as a separate
-               test and combine the outcomes in a naive fashion by assuming
-               that
-
-               p(x|y) = \Pi_{j=1}^{# of words in x} p(w^{j} |y)
-             - p(w|y) can be obtained, for instance, by simply
-               counting the frequency occurrence of the word within
-               documents of a given class.
-             - since we are computing a product over a large number
-               of factors the numbers might lead to numerical
-               overflow or underflow. This can be addressed by
-               summing over the logarithm of terms rather than
-               computing products.
-             - need to address the issue of estimating p(w|y) for
-               words w which we might not have seen before. One way
-               of dealing with this is to increment all counts
-               by 1.
-             - perform surprisingly well
-          2) Nearest Neighbor Estimators
-             - Note that nearest neighbor algorithms can yield
-               excellent performance when used with a good distance
-               measure.
-             - lemma by Johnson and Lindenstrauss [DG03] asserts
-               that a set of m points in high dimensional Euclidean
-               space can be projected into a O(log m/\epsilon 2 )
-               dimensional Euclidean space such that the distance
-               between any two points changes only by a factor of
-               (1 ± \epsilon). [...] The surprising fact is that the
-               projection relies on a simple randomized algorithm.
-             - (ends 1.3.2)
-             - In general, we may pick *arbitrary maps* φ : X → H mapping the
-               space of observations into a feature space H, as long as the
-               latter is endowed with a dot product (see Figure 1.21). This
-               means that instead of dealing with <x, x'> we will be dealing
-               with <φ(x), φ(x')>.
-             - (ends 1.3.3)
-             - a user might want to have instant results whenever a new e-mail
-               arrives and he would like the system to learn immediately from
-               any corrections to mistakes the system makes.
-             - the Perceptron is a linear classifier
-             - if ŷ_{t} \neq y_{t} the weight vector is updated as
-               w ← w + y_{t} x_{t} and b ← b + y_{t}
-             - If the dataset (X, Y) is linearly separable, then the Perceptron
-               algorithm eventually converges and correctly classifies all the
-               points in X.
-             - Definition 1.6 (*Margin*) Let w ∈ R d be a weight vector and let
-               b ∈ R be an offset. The margin of an observation x ∈ R d with
-               associated label y is
-
-               \gamma(x, y) := y (<w, x> + b) (1.27)
-
-               Moreover, the margin of an entire set of observations X with
-               labels Y is
-
-               γ(X, Y) := min_{i} γ(x_{i} , y_{i}) (1.28)
-             - Geometrically speaking (see Figure 1.22) the margin measures the
-               distance of x from the hyperplane defined by {x| <w, x> + b = 0}.
-             - Theorem 1.7 (*Novikoff’s theorem*) Let (X, Y) be a dataset with
-               at least one example labeled +1 and one example labeled −1. Let
-               R := max_{t} ||x_{t}||, and assume that there exists (w^{∗}, b^{∗}) such
-               that ||w^{∗}|| = 1 and γ_{t} := y_{t} (<w^{∗}, x_{t}>) + b^{∗} ) ≥ γ for
-               all t. Then, the Perceptron will make at most (1+R^{2})(1+(b^{*})^2)/γ^{2}
-               mistakes.
-             - a similar bound can be shown for Support Vector Machines [Vap95]
-             - (ends 1.3.4)
-             - define prototype vectors μ_{1} , ... , μ_{k} and an indicator vector
-               r_{ij} which is 1 if, and only if, x_{i} is assigned to cluster j. To
-               cluster our dataset we will minimize the following *distortion
-               measure*, which minimizes the distance of each point from the
-               prototype vector:
-
-               J(r, μ) := 1/2 \sum_{i=1}^{m} \sum_{j=1}^{k} r_{ij} ||x_{i} - \mu_{j}||^{2}
-
-               where r = {r_{ij}}, μ = {μ_{j}}
-             - adapt a two stage strategy
-               - Stage 1 Keep the μ [prototype vectors] fixed and determine r.[...]
-                 The solution for the i-th data point x_{i} can be found by setting:
-
-                 r_{ij} = 1 if j = argmin_{j'} ||x_{i} − μ_{j'}||^{2} (1.30)
-
-                 and 0 otherwise.
-               - Stage 2 Keep the r fixed and determine μ. [...]  [J] can be
-                 minimized by setting the derivative with respect to μ_{j} to be
-                 0:
-
-                 \sum_{j=1}^{m} r_{ij} (x_{i} - \mu_{j}) = 0 for all j. (1.31)
-
-                 Rearranging obtains \mu_{j} = \sum_{i} r_{ij}x_{i} / \sum_{i} r_{ij} (1.32)
-
-                 Since \sum_{i} r_{ij} counts the number of points assigned to cluster
-                 j, we are essentially setting μ_{j} to be the sample mean of the
-                 points assigned to cluster j.
-               - Two issues [...]
-                 1. sensitive to the choice of the initial cluster centers μ.
-                 2. hard assignment of every point to a cluster center.
-               - (ends 1.5)
-               - Before crying foul you decide that some mathematical analysis
-                 is in order.
-               - limit theorems [...] tell us by how much averages over a set
-                 of observations may deviate from the corresponding
-                 expectations and how many observations we need to draw to
-                 estimate a number of probabilities reliably.
-               - (ends 2.0)
-               - Theorem 2.1 (Weak Law of Large Numbers) Denote by X_{1} , ... ,
-                 X_{m} random variables drawn from p(x) with mean μ = E_{X_{i}} [x_{i}]
-                 for all i. Moreover let
-
-                 X̄_{m} := 1/m \sum_{i=1}^{m} X_{i} (2.2)
-
-                 be the empirical average over the random variables X_{i} . Then
-                 for any \epsilon > 0 the following holds
-
-                 lim_{m \to \infty} Pr (|X̄_{m} − μ| ≤ \epsilon = 1). (2.3)
-               - Theorem 2.2 (Strong Law of Large Numbers) Under the conditions
-                 of Theorem 2.1 we have Pr(lim_{m→∞} X̄_{m} = μ) = 1.
-               - Theorem 2.3 (Central Limit Theorem) Denote by X_{i} independent
-                 random variables with means μ_{i} and standard deviation σ_{i}. Then
-
-                 Z_{m} := m [ \sum_{i=1}^{m} \sigma_{i}^{2} ]^{- 1/2} [ \sum_{i=1}^{m} X_{}_{i} - \mu_{i}^{} ] (2.4)
-
-                 converges to a Normal Distribution with zero mean and unit
-                 variance.
-               - Theorem 2.4 (Slutsky’s Theorem) Denote by X_{i} , Y_{i} sequences of
-                 random variables with X_{i} → X and Y_{i} → c for c ∈ R in
-                 probability. Moreover, denote by g(x, y) a function which is
-                 continuous for all (x, c). In this case the random variable
-                 g(X_{i}, Y_{i}) converges in probability to g(X, c).
-               - Theorem 2.5 (Delta Method) Assume that X_{n} ∈ R^{d} is
-                 asymptotically normal with a_{n}^{-2}(X_{n} - b) \to N(0, \Sigma) for a_{n}
-                 → 0. Moreover, assume that g : R^{d} → R^{l} is a mapping which is
-                 continuously differentiable at b. In this case the random
-                 variable g(X_{n}) converges
-
-                 a_{n}^{-2}(g(X_{n}) - g(b)) \to N(0, [∇_{x} g(b)]Σ[∇_{x} g(b)]^{T}) (2.5)
-               - The Fourier transform plays a crucial role [...] in
-                 statistics. For historic reasons its applications to
-                 distributions is called *the characteristic function*.
-               - Definition 2.6 (*Fourier Transform*) Denote by f : R^{n} → C a
-                 function defined on a d-dimensional Euclidean space. Moreover,
-                 let x, ω ∈ R^{n} . Then the Fourier transform F and its inverse
-                 F^{-1} are given by
-
-                 F [f](ω) := (2π)^{−d/2} \int_{R^{n}} f(x) exp(-i<\omega, x>)dx (2.7)
-
-                 F^{-1} [g](ω) := (2π)^{−d/2} \int_{R^{n}} g(\omega) exp(i<\omega, x>)d\omega (2.8)
-               - Definition 2.7 (*Characteristic Function*) Denote by p(x) a
-                 distribution of a random variable X ∈ R^{d}. Then the
-                 characteristic function φ_{X} (ω) with ω ∈ R^{d} is given by
-
-                 φ_{X} (ω) := (2π)^{d/2} F^{−1} [p(x)] = \int exp(i <ω, x>)dp(x). (2.9)
-               - Theorem 2.8 (*Sums of random variables and convolutions*)
-                 Denote by X, Y ∈ R two independent random variables. Moreover,
-                 denote by Z := X + Y the sum of both random variables. Then
-                 the distribution over Z satisfies p(z) = p(x) ◦
-                 p(y). Moreover, the characteristic function yields:
-
-                 φ_{Z} (ω) = φ_{X}(ω)φ_{Y}(ω). (2.10)
-               - ∇^{n}_{ω} φ_{X}(0) = i^{−n} E_{X} [x^{n}]. (2.12)
-
-               - if we know the moments of a distribution we are able to
-                 reconstruct it directly since it allows us to reconstruct its
-                 characteristic function.
-               - (ends 2.1.2)
-               - Theorem 2.9 (*Gauss-Markov*) Denote by X ≥ 0 a random variable
-                 and let μ be its mean. Then for any \epsilon > 0 we have
-
-                 Pr(X ≥ \epsilon) ≤ \mu / \epsilon (2.13).
-
-                 This means that for random variables with a small mean, the
-                 proportion of samples with large value has to be small.
-               - Theorem 2.10 (*Chebyshev*) Denote by X a random variable with
-                 mean μ and variance σ^{2} . Then the following holds for \epsilon > 0:
-
-                 Pr(|x − μ| ≥ \epsilon) \le \sigma^{2} / \epsilon^{2} (2.14)
-               - Theorem 2.12 (*Hoeffding*) Denote by X_{i} iid random variables
-                 with bounded range X_{i} ∈ [a, b] and mean μ. Let X̄_{m} := m^{−1}
-                 \sum_{i=1}^{m} X_{i} be their average. Then the following bound holds:
-
-                 Pr(|X̄_{m} − μ| > \epsilon) ≤ 2 exp(-2m\epsilon^{2} / (b-a)^{2}) (2.15)
-               - (ends 2.1.3)
-               - The convergence theorems discussed so far mean that we can use
-                 empirical observations for the purpose of density estimation.
-               - Example 2.4 (Curse of Dimensionality) Assume that X = {0, 1} d
-                 , i.e. x consists of binary bit vectors of
-                 dimensionality d. As d increases the size of X increases
-                 exponentially, requiring an exponential number of observations
-                 to perform density estimation. For instance, if we work with
-                 images, a 100 × 100 black and white picture would require in
-                 the order of 10^{3010} observations to model such fairly
-                 low-resolution images accurately. This is clearly utterly
-                 infeasible — the number of particles in the known universe is
-                 in the order of 10^{80} . Bellman [Bel61] was one of the first to
-                 formalize this dilemma by coining the term ’curse of
-                 dimensionality’.
-               - (ends 2.2.1)
-               - p\circ(x) = 1/m \sum_{i=1}^{m} r^{-d}h(x - x_{i}/r)
-
-                 This expansion is commonly known as the /Parzen windows/ estimate.
-               - h(x) = (2π)^{−1/2} e^{−1/2 x^2} /Gaussian kernel/
-               - h(x) = 3/4 max(0, 1 − x^2) /Epanechnikov kernel/
-               - For practical purposes the Gaussian kernel (2.28) or the
-                 Epanechnikov kernel (2.30) are most suitable.
-               - /compact support/ [...] for any given density estimate at
-                 location x we will only need to evaluate terms h(x_{i} − x) for
-                 which the distance ||x_{i} − x|| is less than r.
-               - (ends 2.2.2)
-               - choose r such that the /log-likelihood of the data/ is
-                 maximized. It is given by
-
-                 log \Pi_{j=0}^m p(x_{j}) = −m log m + \sum_{j=1}^m log (m \cdot p\circ(x_{j}))
-               - (ends 2.2.3)
-               - Provided that we are able to compute density estimates p(x)
-                 given a set of observations X we could appeal to Bayes rule to
-                 obtain
-
-                 p(y|x) = p(x|y)p(y)/p(x)
-                 = ((m_{y} / m) \cdot 1/m_{y} \sum_{i:y_i=y} r^{-d} h(x_{i}-x/r) / 1/m \sum_{i=1}^{m} r^{-d} h(x_{i}-x/r) ) (2.38)
-               - For binary classification (2.38) can be simplified [...] the function
-
-                 f (x)
-                 = \sum_{i} y_{i} h(x_{i}-x/r) / \sum_{i} h(x_{i}-x/r)
-                 = \sum_{i} y_{i} (h(x_{i}-x/r) / \sum_{i} h(x_{i}-x/r))
-                 =: \sum_{i} y_{i} w_{i}(x) (2.39)
-
-                 can be used to achieve the same goal since
-
-                 f (x) > 0 ⇐⇒ p(y = 1|x) > 0.5
-               - (ends 2.2.5)
-               - The reason why many discrete processes follow the Poisson
-                 distribution is that it can be seen as the limit over the
-                 average of a large number of Bernoulli draws
-    2) Optimization
-       3) [@3] Constrained Optimization
-          2) [@2] Lagrange Duality
-             - Lagrangian (for \alpha_i \ge 0, \beta_i \in \mathbb R)
-               #+BEGIN_SRC latex
-                 L(w, α, β) = J(w) + \Sigma_{i \in I} α_i c_i (w) + \Sigma_{j \in E} β_i e_i (w)
-                 (ref:iml-3.107)
-               #+END_SRC
-    6) [@6] Kernels and Function Spaces
-       - the design of a good kernel underlies the success of machine
-         learning in many applications.
-    7) Linear Models
-       0) [@0]
-          - A *hyperplane* in a space H endowed with a dot product <·, ·>
-            is described by the set
-            #+BEGIN_SRC latex
-              {x ∈ H | <w, x> + b = 0} (w \in H, b \in \mathbb R) (ref:iml-7.1)
-            #+END_SRC
-            where w ∈ H and b ∈ R.
-          - Given a set X = {x_1, ..., x_m}, the *margin* is the distance
-            of the closest point in X to the hyperplane [[(iml-7.1)]].
-            #+BEGIN_SRC latex
-              min_{i=1,...,m} \frac{|<w, x_i> + b|}{\|w\|}. (ref:iml-7.2)
-            #+END_SRC
-       1) Support Vector Classification
-          0) [@0]
-             - penalize large ξ_i [...] via the following modified
-               optimization problem:
-
-               min_{w, b, \xi} 1/2 ||w||^2 + C/m \sum_{i=1..m} \xi_i
-               s.t. y_i(<w, x_i>+b) \ge 1 - \xi_i for all i
-                    \xi_i \ge 0 (ref: iml-7.5)
-          1) A Regularized Risk Minimization Viewpoint
-             - eliminate \xi_i from [[(iml-7.5)]], and write it as the
-               following unconstrained optimization problem:
-
-               min_{w,b} 1/2 ||w||^2 + C/m \sum_{1=1..m} max(0, 1−y_i (<w, x_i> + b))
-               (ref:iml-7.12)
 ** TODO [#A] [[./geurtz.pdf][Geurts - Extremely randomized trees]]
 *** summary
     0) [@0] Abstract
@@ -9319,7 +8461,22 @@
 
           - cont p. 52
 
-    4) [@4] 4. Linear Methods for Classification
+    4) [@4] Linear Methods for Classification
+
+       1) Introduction
+
+          - split with linear methods
+
+            - decision boundaries are linear
+
+          - if model is f_k(x) = \beta_k_0 + \beta_k^T \cdot x, then
+
+            - boundary between classes k and l is affine set (hyperplane)
+              {x : ( \beta_k_0 − \beta_l_0 ) + ( \beta_k - \beta_l )^T \cdot x = 0}
+
+          - generalization: add variables, example: adding squares and
+            cross-products to input data gives you quadratic
+            boundaries
 
        4) [@4] Logistic Regression
 
@@ -9331,6 +8488,10 @@
                "completely specif[ied]"
 
              - cont p. 120
+
+       5) Separating Hyperplanes
+
+          cont p. 148
 
     5) Basis Expansions and Regularization
 
@@ -9371,9 +8532,36 @@
 
     12) [@12] Flexible Discriminants
 
+        1) Introduction
+
+           - generalize linear decision boundaries
+
+           - SVMs construct linear boundary in "large, transformed" space
+
+           - linear discriminant analysis (LDA), 3 variants
+
+             - flexible DA: similar to svm
+
+             - penalized DA: singal/image classification, highly correlated
+
+             - lmixture DA: irregularly shaped classes
+
+        2) The Support Vector Classifier
+
+           cont p.436
+
         3) [@3] Support Vector Machines and Kernels
 
-           cont. p.442
+           0) [@0]
+
+              - linear classifiers seperate input by hyperplanes
+
+              - enlarging feature space via =basis expansion= allow
+                nonlinear decision boundaries in the original space
+
+              - expand this idea via SVM: large/infinite dimension
+
+           1) Computing the SVM for Classification
 *** quotes
     0) [@0] Preface to the Second Edition
        - Our first edition was unfriendly to colorblind readers; in
@@ -9412,66 +8600,75 @@
        - Chapters 1–4 be first read in sequence. Chapter 7 should also be
          considered mandatory, as it covers central concepts that pertain
          to all learning methods.
-       - (ends 1)
-       - predict the output Y via the model
+    2) [@2] Overview of Supervised Learning
+       3) [@3] Two Simple Approaches to Prediction: Least Squares and
+          Nearest Neighbors
+          1) Linear Models and Least Squares
+             - predict the output Y via the model
 
-         Ŷ = β̂_{0} + \sum_{j=1}^{p} X_{j} β̂_{j} . (2.1)
-       - in vector form as an inner product
+               Ŷ = β̂_{0} + \sum_{j=1}^{p} X_{j} β̂_{j} . (2.1)
+             - in vector form as an inner product
 
-         Ŷ = X^{T} β̂, (2.2)
-       - least squares. In this approach, we pick the coefficients β to
-         minimize the residual sum of squares
+               Ŷ = X^{T} β̂, (2.2)
+             - least squares. In this approach, we pick the coefficients β to
+               minimize the residual sum of squares
 
-         RSS(β) = \sum_{i=1}^{N} (y_{i} − x^{T}_{i} β)^{2}. (2.3)
-       - in matrix notation. We can write
+               RSS(β) = \sum_{i=1}^{N} (y_{i} − x^{T}_{i} β)^{2}. (2.3)
+             - in matrix notation. We can write
 
-         RSS(β) = (y − Xβ)^{T} (y − Xβ), (2.4)
-       - the unique solution is given by
+               RSS(β) = (y − Xβ)^{T} (y − Xβ), (2.4)
+             - the unique solution is given by
 
-         β̂ = (X^{T} X)^{−1} X^{T} y, (2.6)
-       - In the case of one Gaussian per class, we will see in Chapter 4
-         that a linear decision boundary is the best one can do, and that
-         our estimate is almost optimal. The region of overlap is
-         inevitable, and future data to be predicted will be plagued by
-         this overlap as well.
-       - (ends 2.3.1)
-       - linear decision boundary [...] has low variance and potentially
-         high bias.
-       - k-nearest-neighbor [...] high variance and low bias.
-       - 1-nearest-neighbor, the simplest of all, captures a large
-         percentage of the market for low-dimensional problems.
-       - Kernel methods use weights that decrease smoothly to zero with
-         distance from the target point, rather than the effective 0/1
-         weights used by k-nearest neighbors.
-       - Projection pursuit and neural network models consist of sums of
-         nonlinearly transformed linear models.
-       - (ends 2.3.3)
-       - X ∈ R^{p} input
-       - Y ∈ R output
-       - function f(X) for predicting Y
-       - /squared error loss/: L(Y, f(X)) = (Y − f (X))^{2} .
-       - EPE(f) = E(Y − f (X))^{2} (2.9)
+               β̂ = (X^{T} X)^{−1} X^{T} y, (2.6)
+             - In the case of one Gaussian per class, we will see in Chapter 4
+               that a linear decision boundary is the best one can do, and that
+               our estimate is almost optimal. The region of overlap is
+               inevitable, and future data to be predicted will be plagued by
+               this overlap as well.
+          3) [@3] From Least Squares to Nearest Neighbors
+             - linear decision boundary [...] has low variance and potentially
+               high bias.
+             - k-nearest-neighbor [...] high variance and low bias.
+             - 1-nearest-neighbor, the simplest of all, captures a large
+               percentage of the market for low-dimensional problems.
+             - Kernel methods use weights that decrease smoothly to zero with
+               distance from the target point, rather than the effective 0/1
+               weights used by k-nearest neighbors.
+             - Projection pursuit and neural network models consist of sums of
+               nonlinearly transformed linear models.
+             - (ends 2.3.3)
+       4) Statistical Decision Theory
+          - X ∈ R^{p} input
+          - Y ∈ R output
+          - function f(X) for predicting Y
+          - /squared error loss/: L(Y, f(X)) = (Y − f (X))^{2} .
+          - EPE(f) = E(Y − f (X))^{2} (2.9)
 
-         = \int [y − f (x)]^{2} Pr(dx, dy) (2.10)
+            = \int [y − f (x)]^{2} Pr(dx, dy) (2.10)
 
-         the /expected (squared) prediction error/
-       - The solution is
+            the /expected (squared) prediction error/
+          - The solution is
 
-         f (x) = E(Y |X = x), (2.13)
+            f (x) = E(Y |X = x), (2.13)
 
-         the conditional expectation, also known as the regression
-         function. Thus the best prediction of Y at any point X = x is
-         the conditional mean, when best is measured by average squared
-         error.
-       - (ends 2.4)
-       - In ten dimensions we need to cover 80% of the range of each
-         coordinate to capture 10% of the data.
-       - (ends 2.5)
-       - Thus it is not surprising that the analysis of high-dimensional
-         data requires either modification of procedures designed for the
-         N > p scenario, or entirely new procedures
-       - (ends 2.6.0)
+            the conditional expectation, also known as the regression
+            function. Thus the best prediction of Y at any point X = x is
+            the conditional mean, when best is measured by average squared
+            error.
+       5) Local Methods in High Dimensions
+          - In ten dimensions we need to cover 80% of the range of each
+            coordinate to capture 10% of the data.
+       6) Statistical Models, Supervised Learning and Function
+          Approximation
+          - Thus it is not surprising that the analysis of high-dimensional
+            data requires either modification of procedures designed for the
+            N > p scenario, or entirely new procedures
     4) [@4] 4. Linear Methods for Classification
+       1) Introduction
+          - Strictly speaking, a hyperplane passes through the origin,
+            while an affine set need not. We sometimes ignore the
+            distinction and refer in general to hyperplanes.
+          - the *logit* transformation: log[p/(1−p)]
        4) [@4] Logistic Regression
           - model the posterior probabilities of the K classes via
             linear functions in x, while at the same time ensuring
@@ -9487,7 +8684,7 @@
     9) [@9] Additive Models, Trees, and Related Methods
        1) Generalized Additive Models
           - the *binary response* μ(X) = Pr(Y = 1|X)
-*** ref [[file:master.bib::elemstatlearn][Hastie et al. 2008: Elements Statistical Learning]]
+*** ref [[file:master.bib::esl][Hastie et al. 2008: Elements Statistical Learning]]
 ** TODO [#B] PART -s 1,5,7 [[./McGrawHill_-_Machine_Learning_-Tom_Mitchell.pdf][Mitchell - Machine Learning]]
 *** summary
     1) INTRODUCTION
@@ -12385,6 +11582,865 @@
 *** summary
 *** quotes
 *** ref [[file:master.bib::minion-design][Danezis et al. 2003: Mixminion]]
+** TODO PART [#C] [[./thebook.pdf][Smola - INTRODUCTION TO MACHINE LEARNING]] [0/2]
+*** parts: classifiers for thesis: knn, svm, (bayes?, random forest?)
+*** TODO summary
+    1) Introduction
+
+       often in background
+
+       1) A Taste of Machine Learning
+
+          applications, formalize
+
+          1) Applications
+
+             - page rank
+
+             - collaborative filtering: amazon recommendations
+
+             - automatic translation
+
+             - face recognition vs face verification
+
+             - named entity recognition: from documents etc some named thing
+
+             - speech recognition: annotate voice sample
+
+               - and similarly: handwriting, etc
+
+             classification: yes/no answer
+
+          2) Data
+
+             types of data
+
+             - Lists
+
+             - Sets
+
+             - Matrices
+
+             - Images
+
+             - Videos
+
+             - Trees and Graphs
+
+             - Strings
+
+             - Compound structures: combine these
+
+          3) Problems
+
+             1) Binary Classification:
+
+                - online learning: instantaneous determination of y for x
+
+                - batch learning: group of stuff
+
+                - transduction: know X' (testing data)
+
+                - active learning: choose X
+
+                - estimation with missing variables
+
+                - covariate shift correction: X and X' from different
+                  data sources
+
+                - co-training: related but different problems
+
+                - loss functions
+
+             2) Multiclass Classification
+
+             3) Structured Estimation
+
+             4) Regression
+
+             5) Novelty Detection: new and unusual observations
+
+       2) Probability Theory
+
+          1) Random Variables
+
+             X takes on values in f.ex. \cal X = {1,..., 6} \ni x
+
+          2) Distributions
+
+             - discrete values: probability mass function, PMF
+
+             - continuous values: probability density function, PDF
+               integral: CDF
+
+             - Pr(a \le X \le b) = \int_{a}^{b} dp(x) = F(b) - F(a)
+
+             - Quantile: value x' for which Pr(X < x') \le q, Pr(X > x') \le 1-q
+               is /q-quantile/. q=0.5: /median/
+
+          3) Mean and Variance
+
+             - mean: E[x] = \sum_{x} xp(x) and \int x dp(x)
+               E[f(x)] =  \int f(x) dp(x)
+
+             - variance Var[X] = E[(X - E(X))^{2}]
+               Var[f(x)] =  E[(f(X) - E(f(X)))^{2}]
+
+          4) Marginalization, Independence, Conditioning, and Bayes Rule
+
+             0) [@0]
+
+                - marginalization, independence, conditioning, iid, bayes
+                  rule: see quotes
+
+                - Bayes Rule holds because p(x,y) = p(x|y)p(y) = p(y|x)p(x)
+
+                - "The key consequence of (1.15) is that we may
+                  reverse the conditioning between a pair of random
+                  variables."
+
+             1) An Example
+
+                HIV testing,
+
+                - p(T = HIV+ | X = HIV+) = 1
+
+                - p(T = HIV+ | X = HIV-) = 0.01
+
+                - p(X = HIV+) = 0.0015
+                  \to  p(X = HIV-) = 0.9985
+
+                - then p(X = HIV+ | T = HIV+) is (shorthand P(x+, t-) etc)
+                  = p(t+ | x+) p(x+) / p(t+)
+
+                - p(t+) = p(x+, t+) + p(x-, t+)
+                  = p(t+ | x+ ) p(x+) + p(t+ | x-) p(x-)
+                  = 1 * 0.0015 + 0.01 * 0.9985
+
+                - back to p(x+ | t+)
+                  = 1 * 0.0015 / (1 * 0.0015 + 0.01 * 0.9985)
+
+                - increase test accuracy by further information (f.ex. age)
+
+                - and further, conditionally independent, tests
+
+       3) Basic Algorithms
+
+          0) [@0]
+
+             - features X, labels y
+
+             - /bag of words/: "Assume we have a list of all possible
+               words occurring in X, that is a dictionary, then we are
+               able to assign a unique number with each of those words
+               (e.g. the position in the dictionary). Now we may
+               simply count for each document x_{i} the number of times
+               a given word j is occurring. This is then used as the
+               value of the j-th coordinate of x_{i}."
+
+          1) Naive Bayes
+
+             use Bayes Rule with approximations
+
+             - replace p(x) by likelihood ratio (adjusted)
+
+             - replace p(x|y) by independent product of parts (spam: words)
+
+          2) Nearest Neighbor Estimators
+
+             - distance to (k-) nearest point(s).
+
+             - whichever class is closest
+
+             - distance-dependent
+
+             - works well if work was put into distance
+
+          3) A Simple Classifier
+
+             1. use means of classes
+
+             2. compute distance of point to means
+
+             3. extension: line boundary \to geometric boundary
+
+          4) Perceptron
+
+             - online learning
+
+             - "data points x t ∈ R d , and labels y t ∈ {±1}"
+
+               - if wrong, updates w by x_{t}y_{t}
+
+               - kernelizeable: x replaceable by \phi(x)
+
+             - converges if convergeable
+
+             - margin describes how thin the border is
+
+             - novikoff's theorem gives perceptron's accuracy bounded
+               by margin (+ data set diameter)
+
+             - proof by two limits per step, induction, cauchy-schwartz
+
+             - perceptron was used in (a)nn
+
+             - here, more complex feature maps and "associated kernel"s
+
+          5) K-Means
+
+             - cluster
+
+             - start with k /prototype vector/s,
+
+             - approximate classes
+
+             - approximate vectors
+
+             - repeat
+
+    2) Density Estimation
+
+       1) Limit Theorems
+
+          0) [@0] Casino
+
+             - example: 100 die (1w6) tosses at casino yields only 11 6es
+               (instead of 17, as expected)
+
+             - (^{m}_{n}) = m! / n!(m-n)! different sequences with
+               proportions n="6" and m="not 6" respectively
+
+             - only 11 '6'es for 100 die tosses: \sim 7.0%
+
+               probability[X \le 11] = \sum_{i=0}^{11} (^{100}_{i}) (1/6)^{i}  (5/6)^{100-i}
+
+          1) Fundamental Laws
+
+             - weak law: irgendwann ist summe durch \epsilon beschraenkt
+
+             - strong law: wkt der konvergenz ist 1
+
+             - central limit theorem: id vars converge to (var-sth)
+               normal distribution (all - \mu)
+
+             - slutsky: continuous functions can be pulled into E
+
+             - delta method: see later
+
+          2) The Characteristic Function
+
+             - Fourier transform
+
+             - Characteristic functions
+
+             - Sum of random variables and convolutions
+
+               - Proof via Y=z-x, joint distribution p(z, x)
+
+             - proofs of 1)
+
+             - moments \to function
+
+          3) Tail Bounds
+
+             - Gauss inequality: proof via
+
+               - 1 \le x/\epsilon (auf [\epsilon, \infty))
+
+               - 1/\epsilon herausziehen, auf [0, \infty) erweitern
+
+               - auf dem Intervall ist x durschnittlich kleiner \mu
+
+          4) An Example
+
+             - assume that all production steps are iid, have the same \mu_{B}
+
+             - X_{i} for wafer i
+
+             - X̄_{m} the average of the yields of m wafers using process
+               ’B’
+
+             - interested in is the accuracy \epsilon for which the
+               probability
+
+               δ = Pr(| X̄_{m} − μ_{B} | > \epsilon) satisfies δ ≤ 0.05.
+
+             - solve
+
+               - chebyshev: 40000
+
+               - hoeffding: 738
+
+               - central limit theorem: 55
+
+       2) Parzen Windows
+
+          1) Discrete Density Estimation
+
+             estimate by actual occurrences in sample data
+
+             problem: some numbers might not appear
+
+             solution: laplace smoothing
+
+          2) Smoothing Kernel
+
+             - "proper density estimation."
+
+             - parzen windows estimate (see quotes)
+
+             - different kernels
+
+          3) Parameter Estimation
+
+             - width of kernel function is important, shape less
+
+             - to maximize likelihood, sum over log-likelihood to
+               avoid float overflow
+
+             - maximizing likelihood on all of data leads to
+               overfitting
+
+             - avoid by using a Validation Set, n-fold
+               Cross-validation or a Leave-one-out Estimator
+
+          4) Silverman’s Rule
+
+             - locality-dependent kernel width
+
+               r_{i} = c/k \sum_{x \in kNN(x_i)} ||x - x_{i}||
+
+             - locality-dependent parzen rule
+
+               p\circ(x) = 1/m \sum_{i=1}^{m} r^{-d}h(x - x_{i}/r_{i})
+
+          5) Watson-Nadaraya Estimator
+
+             - non-parametric data
+
+       3) Exponential Families
+
+          0) [@0]
+
+             - "Gaussians, Poisson, Gamma and Wishart distributions all
+               form part of the exponential family"
+
+             - "lead to convex optimization problems"
+
+          1) Basics
+
+             - Defined by
+
+               p(x; θ) := p_{0}(x) exp (<φ(x), θ> − g(θ)) . (2.40)
+
+             - with g(\theta) weighting term to get density function
+
+             - \varphi map from parameters to statistics
+
+          2) Examples
+
+             Many distributions can be seen as member of the exponential family
+
+             - Gaussian
+
+             - Multinomial
+
+             - Poisson
+
+             - Beta
+
+    3) Optimization
+
+       3) [@3] Constrained Optimization
+
+          0) [@0]
+
+             - minimize J(w)
+
+               - given constraints c_i(w) \le 0 or e_j(w) = 0 for some i,j
+
+             - normal solution to find w with ||\nablaJ(w)||=0 does
+               ignore these
+
+          1) Projection Based Methods
+
+             find projection to constraint set (for simple constraint
+             set)
+
+          2) Lagrange Duality
+
+             - add weighted sums to J for constraints, see [[(iml-3.107)]]
+
+             - continue at p.128
+
+    6) [@6] Kernels and Function Spaces
+
+       all algorithms which use dot product =<x, x'>= can be
+       made to use a kernel function =k(x, x')=
+
+       1) The Basics
+
+          0) [@0]
+
+             - let *X* be the input space,
+
+             - $k: X \times X \to \mathbb{R}$ function with
+
+               k(x, x') = <\Phi(x), \Phi(x')>
+
+               with \Phi being a /feature map/ from X to dot product
+               space \cal H.
+
+             - Advantages
+
+               1. hyperplane suffices to characterize in \cal H
+
+               2. no need to explicitly compute \Phi
+
+               3. input space can be any set (strings, trees, graphs, etc)
+
+          1) Examples
+
+             1) Linear Kernel
+
+                - k(x, x') = <x, x'> = \sum_{i} x_{i}x_{i}'
+
+                - simplest, easy to compute: O(n) or less for sparse vectors
+
+             2) Polynomial Kernel
+
+                - easy to compute, as k(x,x') = <\Phi(x), \Phi(x')> = (<x, x'>)^d
+
+    7) Linear Models
+
+       0) [@0]
+
+          - hyperplane [[(iml-7.1)]] divides space H in two halves
+
+            - decision boundary
+
+            - maximize margin [[(iml-7.2)]]
+
+       1) Support Vector Classification
+
+          0) [@0]
+
+             - given point-class tuples {(x1, y1), ..., (xm, ym)} with xi
+               \in H, yi \in {-1, 1}
+
+             - find linear boundary such that <w, xi> + b \ge 0 if yi == 1,
+               else \le (iff y_i(<w, xi> +b) \ge 1)
+
+               - maximizing the margin
+
+                 - equivalent to minimize: 1/2 ||w||^2
+
+             - hard margin: data linearly separable, else
+
+             - soft margin: y_i(<w, xi> +b) \ge 1 - \xi_i
+
+               - see [[(iml-7.5)]]
+
+             - lagrangian form to accomodate constraints
+
+               - solve minimization for that
+
+          1) A Regularized Risk Minimization Viewpoint
+
+             - possible to remove \xi from optimization problem, see [[(iml-7.12)]]
+
+             - SVC as regularized risk minimizer with binary hinge loss
+
+             - compute
+
+               - primal: d-dimensional problem (d dimension of x)
+
+               - (Fenchel) dual: m-dimensional problem
+
+                 - use at kernel trick or when d >> m
+
+          2) An Exponential Family Interpretation
+*** TODO quotes
+    1) Introduction
+       1) A Taste of Machine Learning
+          0) [@0]
+             - much of the art of machine learning is to reduce a range of
+               fairly disparate problems to a set of fairly narrow
+               prototypes.
+          1) Applications
+             - A rather related application is collaborative
+               filtering. Internet book stores such as Amazon, or video rental
+               sites such as Netflix use this information extensively to entice
+               users to purchase additional goods (or rent more movies).
+             - Many security applications, e.g. for access control, use face
+               recognition as one of its components.
+             - The overarching theme of learning problems is that there exists
+               a nontrivial dependence between some observations, which we will
+               commonly refer to as x and a desired response, which we refer to
+               as y, for which a simple set of deterministic rules is not
+               known. By using learning we can infer such a dependency between
+               x and y in a systematic fashion.
+          2) Data
+             - One of the challenges in dealing with vectors is that the scales
+               and units of different coordinates may vary widely.
+             - One way of dealing with those issues in an automatic fashion is
+               to normalize the data. We will discuss means of doing so in an
+               automatic fashion.
+             - In some cases the vectors we obtain may contain a variable
+               number of features.
+          3) Problems
+             - 3-class classification. Note that in the latter case we have
+               much more degree for ambiguity.
+             - a sequence of (x_{i} , y_{i} ) pairs for which y i needs to be
+               estimated in an instantaneous online fashion. This is commonly
+               referred to as online learning.
+             - know X 0 already at the time of constructing the model. This is
+               commonly referred to as transduction.
+       2) Probability Theory
+          0) [@0]
+             - For more details and a very gentle and detailed discussion see
+               the excellent book of [BT03].
+          1) Random Variables
+             - Formally, [...] 1 occurs with probability 1/6
+             - notational convention [...] use uppercase letters, e.g., X, Y
+               etc to denote random variables and lower case letters, e.g., x,
+               y etc to denote the values they take.
+          2) Distributions
+             - If the random variable is discrete, i.e., it takes on a finite
+               number of values, then this assignment of probabilities is
+               called a /probability mass function/ or PMF for short.
+             - slightly informal notation p(x) := Pr(X = x)
+             - continuous random variable the assignment of probabilities
+               results in a probability density function or PDF for short.
+             - Closely associated with a PDF is the indefinite integral
+               over p. It is commonly referred to as the cumulative
+               distribution function (CDF).
+          3) Mean and Variance
+             - if f: R → R is a function, then f(X) is also a random
+               variable. Its mean is mean given by
+               E[f(X)] := \int f(x)dp(x).
+          4) Marginalization, Independence, Conditioning, and Bayes
+             Rule
+             0) [@0]
+                - /joint density/ p(x, y).
+                - /marginalization/: recover p(x) by integrating out y:
+                  p(x) = \int dp(x, y).
+                - /X and Y are independent/: p(x,y) = p(x) p(y)
+                - /iid random variables/: independently and identically distributed
+                - /conditional probabilities/:
+                  p(x|y) := p(x, y) / p(y)
+                - /Bayes Rule/: p(y|x) = p(x|y)p(y) / p(x) (ref:bayes_rule)
+             1) An Example
+                - The physician recommends a test which is guaranteed to detect
+                  HIV-positive whenever a patient is infected.
+                - On the other hand, for healthy patients it has a 1% error
+                  rate. That is, with probability 0.01 it diagnoses a patient as
+                  HIV-positive even when he is, in fact, HIV-negative.
+                - Moreover, assume that 0.15% of the population is infected.
+                - Denote by X and T the random variables associated with the
+                  health status of the patient and the outcome of the test
+                  respectively.
+                - We are interested in p(X = HIV+|T = HIV+).
+                - Note that often our tests may not be conditionally independent
+                  and we would need to take this into account.
+                - p(X = HIV+|T = HIV+) = p(T = HIV+|X = HIV+) p(X = HIV+) / p(T = HIV+)
+                - p(T = HIV+) = \sum p(T = HIV+, x) = \sum p(T = HIV+|x)p(x)
+                - The corresponding expression yields:
+
+                  p(T = HIV+|X = HIV+, A)p(X = HIV+|A) / p(T = HIV+|A)
+
+                  Here we simply conditioned all random variables on A in order to
+                  take additional information into account.
+                - What we want is that the diagnosis of T_{2} is independent of that
+                  of T_{2} given the health status X of the patient. This is
+                  expressed as
+                  p(t_{1} , t_{2} |x) = p(t_{1} |x)p(t_{2} |x). (1.16)
+                - Random variables satisfying the condition (1.16) are commonly
+                  referred to as /conditionally independent/.
+       3) Basic Algorithms
+          0) [@0]
+             - assume that there is sufficiently strong dependence between x
+               and y that we will be able to estimate y given x and a set of
+               labeled instances X, Y.
+          1) Naive Bayes
+             - use [[(bayes_rule)]] to estimate p(y), f.ex. the
+               probability of receiving a spam or ham mail.
+             - dispose of the requirement of knowing p(x) by settling for a
+               likelihood ratio
+
+               L(x) := p(spam|x) / p(ham|x) = p(x|spam)p(spam) /
+               p(x|ham)p(ham)
+             - treat the occurrence of each word in a document as a separate
+               test and combine the outcomes in a naive fashion by assuming
+               that
+
+               p(x|y) = \Pi_{j=1}^{# of words in x} p(w^{j} |y)
+             - p(w|y) can be obtained, for instance, by simply
+               counting the frequency occurrence of the word within
+               documents of a given class.
+             - since we are computing a product over a large number
+               of factors the numbers might lead to numerical
+               overflow or underflow. This can be addressed by
+               summing over the logarithm of terms rather than
+               computing products.
+             - need to address the issue of estimating p(w|y) for
+               words w which we might not have seen before. One way
+               of dealing with this is to increment all counts
+               by 1.
+             - perform surprisingly well
+          2) Nearest Neighbor Estimators
+             - Note that nearest neighbor algorithms can yield
+               excellent performance when used with a good distance
+               measure.
+             - lemma by Johnson and Lindenstrauss [DG03] asserts
+               that a set of m points in high dimensional Euclidean
+               space can be projected into a O(log m/\epsilon 2 )
+               dimensional Euclidean space such that the distance
+               between any two points changes only by a factor of
+               (1 ± \epsilon). [...] The surprising fact is that the
+               projection relies on a simple randomized algorithm.
+             - (ends 1.3.2)
+             - In general, we may pick *arbitrary maps* φ : X → H mapping the
+               space of observations into a feature space H, as long as the
+               latter is endowed with a dot product (see Figure 1.21). This
+               means that instead of dealing with <x, x'> we will be dealing
+               with <φ(x), φ(x')>.
+             - (ends 1.3.3)
+             - a user might want to have instant results whenever a new e-mail
+               arrives and he would like the system to learn immediately from
+               any corrections to mistakes the system makes.
+             - the Perceptron is a linear classifier
+             - if ŷ_{t} \neq y_{t} the weight vector is updated as
+               w ← w + y_{t} x_{t} and b ← b + y_{t}
+             - If the dataset (X, Y) is linearly separable, then the Perceptron
+               algorithm eventually converges and correctly classifies all the
+               points in X.
+             - Definition 1.6 (*Margin*) Let w ∈ R d be a weight vector and let
+               b ∈ R be an offset. The margin of an observation x ∈ R d with
+               associated label y is
+
+               \gamma(x, y) := y (<w, x> + b) (1.27)
+
+               Moreover, the margin of an entire set of observations X with
+               labels Y is
+
+               γ(X, Y) := min_{i} γ(x_{i} , y_{i}) (1.28)
+             - Geometrically speaking (see Figure 1.22) the margin measures the
+               distance of x from the hyperplane defined by {x| <w, x> + b = 0}.
+             - Theorem 1.7 (*Novikoff’s theorem*) Let (X, Y) be a dataset with
+               at least one example labeled +1 and one example labeled −1. Let
+               R := max_{t} ||x_{t}||, and assume that there exists (w^{∗}, b^{∗}) such
+               that ||w^{∗}|| = 1 and γ_{t} := y_{t} (<w^{∗}, x_{t}>) + b^{∗} ) ≥ γ for
+               all t. Then, the Perceptron will make at most (1+R^{2})(1+(b^{*})^2)/γ^{2}
+               mistakes.
+             - a similar bound can be shown for Support Vector Machines [Vap95]
+             - (ends 1.3.4)
+             - define prototype vectors μ_{1} , ... , μ_{k} and an indicator vector
+               r_{ij} which is 1 if, and only if, x_{i} is assigned to cluster j. To
+               cluster our dataset we will minimize the following *distortion
+               measure*, which minimizes the distance of each point from the
+               prototype vector:
+
+               J(r, μ) := 1/2 \sum_{i=1}^{m} \sum_{j=1}^{k} r_{ij} ||x_{i} - \mu_{j}||^{2}
+
+               where r = {r_{ij}}, μ = {μ_{j}}
+             - adapt a two stage strategy
+               - Stage 1 Keep the μ [prototype vectors] fixed and determine r.[...]
+                 The solution for the i-th data point x_{i} can be found by setting:
+
+                 r_{ij} = 1 if j = argmin_{j'} ||x_{i} − μ_{j'}||^{2} (1.30)
+
+                 and 0 otherwise.
+               - Stage 2 Keep the r fixed and determine μ. [...]  [J] can be
+                 minimized by setting the derivative with respect to μ_{j} to be
+                 0:
+
+                 \sum_{j=1}^{m} r_{ij} (x_{i} - \mu_{j}) = 0 for all j. (1.31)
+
+                 Rearranging obtains \mu_{j} = \sum_{i} r_{ij}x_{i} / \sum_{i} r_{ij} (1.32)
+
+                 Since \sum_{i} r_{ij} counts the number of points assigned to cluster
+                 j, we are essentially setting μ_{j} to be the sample mean of the
+                 points assigned to cluster j.
+               - Two issues [...]
+                 1. sensitive to the choice of the initial cluster centers μ.
+                 2. hard assignment of every point to a cluster center.
+               - (ends 1.5)
+               - Before crying foul you decide that some mathematical analysis
+                 is in order.
+               - limit theorems [...] tell us by how much averages over a set
+                 of observations may deviate from the corresponding
+                 expectations and how many observations we need to draw to
+                 estimate a number of probabilities reliably.
+               - (ends 2.0)
+               - Theorem 2.1 (Weak Law of Large Numbers) Denote by X_{1} , ... ,
+                 X_{m} random variables drawn from p(x) with mean μ = E_{X_{i}} [x_{i}]
+                 for all i. Moreover let
+
+                 X̄_{m} := 1/m \sum_{i=1}^{m} X_{i} (2.2)
+
+                 be the empirical average over the random variables X_{i} . Then
+                 for any \epsilon > 0 the following holds
+
+                 lim_{m \to \infty} Pr (|X̄_{m} − μ| ≤ \epsilon = 1). (2.3)
+               - Theorem 2.2 (Strong Law of Large Numbers) Under the conditions
+                 of Theorem 2.1 we have Pr(lim_{m→∞} X̄_{m} = μ) = 1.
+               - Theorem 2.3 (Central Limit Theorem) Denote by X_{i} independent
+                 random variables with means μ_{i} and standard deviation σ_{i}. Then
+
+                 Z_{m} := m [ \sum_{i=1}^{m} \sigma_{i}^{2} ]^{- 1/2} [ \sum_{i=1}^{m} X_{}_{i} - \mu_{i}^{} ] (2.4)
+
+                 converges to a Normal Distribution with zero mean and unit
+                 variance.
+               - Theorem 2.4 (Slutsky’s Theorem) Denote by X_{i} , Y_{i} sequences of
+                 random variables with X_{i} → X and Y_{i} → c for c ∈ R in
+                 probability. Moreover, denote by g(x, y) a function which is
+                 continuous for all (x, c). In this case the random variable
+                 g(X_{i}, Y_{i}) converges in probability to g(X, c).
+               - Theorem 2.5 (Delta Method) Assume that X_{n} ∈ R^{d} is
+                 asymptotically normal with a_{n}^{-2}(X_{n} - b) \to N(0, \Sigma) for a_{n}
+                 → 0. Moreover, assume that g : R^{d} → R^{l} is a mapping which is
+                 continuously differentiable at b. In this case the random
+                 variable g(X_{n}) converges
+
+                 a_{n}^{-2}(g(X_{n}) - g(b)) \to N(0, [∇_{x} g(b)]Σ[∇_{x} g(b)]^{T}) (2.5)
+               - The Fourier transform plays a crucial role [...] in
+                 statistics. For historic reasons its applications to
+                 distributions is called *the characteristic function*.
+               - Definition 2.6 (*Fourier Transform*) Denote by f : R^{n} → C a
+                 function defined on a d-dimensional Euclidean space. Moreover,
+                 let x, ω ∈ R^{n} . Then the Fourier transform F and its inverse
+                 F^{-1} are given by
+
+                 F [f](ω) := (2π)^{−d/2} \int_{R^{n}} f(x) exp(-i<\omega, x>)dx (2.7)
+
+                 F^{-1} [g](ω) := (2π)^{−d/2} \int_{R^{n}} g(\omega) exp(i<\omega, x>)d\omega (2.8)
+               - Definition 2.7 (*Characteristic Function*) Denote by p(x) a
+                 distribution of a random variable X ∈ R^{d}. Then the
+                 characteristic function φ_{X} (ω) with ω ∈ R^{d} is given by
+
+                 φ_{X} (ω) := (2π)^{d/2} F^{−1} [p(x)] = \int exp(i <ω, x>)dp(x). (2.9)
+               - Theorem 2.8 (*Sums of random variables and convolutions*)
+                 Denote by X, Y ∈ R two independent random variables. Moreover,
+                 denote by Z := X + Y the sum of both random variables. Then
+                 the distribution over Z satisfies p(z) = p(x) ◦
+                 p(y). Moreover, the characteristic function yields:
+
+                 φ_{Z} (ω) = φ_{X}(ω)φ_{Y}(ω). (2.10)
+               - ∇^{n}_{ω} φ_{X}(0) = i^{−n} E_{X} [x^{n}]. (2.12)
+
+               - if we know the moments of a distribution we are able to
+                 reconstruct it directly since it allows us to reconstruct its
+                 characteristic function.
+               - (ends 2.1.2)
+               - Theorem 2.9 (*Gauss-Markov*) Denote by X ≥ 0 a random variable
+                 and let μ be its mean. Then for any \epsilon > 0 we have
+
+                 Pr(X ≥ \epsilon) ≤ \mu / \epsilon (2.13).
+
+                 This means that for random variables with a small mean, the
+                 proportion of samples with large value has to be small.
+               - Theorem 2.10 (*Chebyshev*) Denote by X a random variable with
+                 mean μ and variance σ^{2} . Then the following holds for \epsilon > 0:
+
+                 Pr(|x − μ| ≥ \epsilon) \le \sigma^{2} / \epsilon^{2} (2.14)
+               - Theorem 2.12 (*Hoeffding*) Denote by X_{i} iid random variables
+                 with bounded range X_{i} ∈ [a, b] and mean μ. Let X̄_{m} := m^{−1}
+                 \sum_{i=1}^{m} X_{i} be their average. Then the following bound holds:
+
+                 Pr(|X̄_{m} − μ| > \epsilon) ≤ 2 exp(-2m\epsilon^{2} / (b-a)^{2}) (2.15)
+               - (ends 2.1.3)
+               - The convergence theorems discussed so far mean that we can use
+                 empirical observations for the purpose of density estimation.
+               - Example 2.4 (Curse of Dimensionality) Assume that X = {0, 1} d
+                 , i.e. x consists of binary bit vectors of
+                 dimensionality d. As d increases the size of X increases
+                 exponentially, requiring an exponential number of observations
+                 to perform density estimation. For instance, if we work with
+                 images, a 100 × 100 black and white picture would require in
+                 the order of 10^{3010} observations to model such fairly
+                 low-resolution images accurately. This is clearly utterly
+                 infeasible — the number of particles in the known universe is
+                 in the order of 10^{80} . Bellman [Bel61] was one of the first to
+                 formalize this dilemma by coining the term ’curse of
+                 dimensionality’.
+               - (ends 2.2.1)
+               - p\circ(x) = 1/m \sum_{i=1}^{m} r^{-d}h(x - x_{i}/r)
+
+                 This expansion is commonly known as the /Parzen windows/ estimate.
+               - h(x) = (2π)^{−1/2} e^{−1/2 x^2} /Gaussian kernel/
+               - h(x) = 3/4 max(0, 1 − x^2) /Epanechnikov kernel/
+               - For practical purposes the Gaussian kernel (2.28) or the
+                 Epanechnikov kernel (2.30) are most suitable.
+               - /compact support/ [...] for any given density estimate at
+                 location x we will only need to evaluate terms h(x_{i} − x) for
+                 which the distance ||x_{i} − x|| is less than r.
+               - (ends 2.2.2)
+               - choose r such that the /log-likelihood of the data/ is
+                 maximized. It is given by
+
+                 log \Pi_{j=0}^m p(x_{j}) = −m log m + \sum_{j=1}^m log (m \cdot p\circ(x_{j}))
+               - (ends 2.2.3)
+               - Provided that we are able to compute density estimates p(x)
+                 given a set of observations X we could appeal to Bayes rule to
+                 obtain
+
+                 p(y|x) = p(x|y)p(y)/p(x)
+                 = ((m_{y} / m) \cdot 1/m_{y} \sum_{i:y_i=y} r^{-d} h(x_{i}-x/r) / 1/m \sum_{i=1}^{m} r^{-d} h(x_{i}-x/r) ) (2.38)
+               - For binary classification (2.38) can be simplified [...] the function
+
+                 f (x)
+                 = \sum_{i} y_{i} h(x_{i}-x/r) / \sum_{i} h(x_{i}-x/r)
+                 = \sum_{i} y_{i} (h(x_{i}-x/r) / \sum_{i} h(x_{i}-x/r))
+                 =: \sum_{i} y_{i} w_{i}(x) (2.39)
+
+                 can be used to achieve the same goal since
+
+                 f (x) > 0 ⇐⇒ p(y = 1|x) > 0.5
+               - (ends 2.2.5)
+               - The reason why many discrete processes follow the Poisson
+                 distribution is that it can be seen as the limit over the
+                 average of a large number of Bernoulli draws
+    2) Optimization
+       3) [@3] Constrained Optimization
+          2) [@2] Lagrange Duality
+             - Lagrangian (for \alpha_i \ge 0, \beta_i \in \mathbb R)
+               #+BEGIN_SRC latex
+                 L(w, α, β) = J(w) + \Sigma_{i \in I} α_i c_i (w) + \Sigma_{j \in E} β_i e_i (w)
+                 (ref:iml-3.107)
+               #+END_SRC
+    6) [@6] Kernels and Function Spaces
+       - the design of a good kernel underlies the success of machine
+         learning in many applications.
+    7) Linear Models
+       0) [@0]
+          - A *hyperplane* in a space H endowed with a dot product <·, ·>
+            is described by the set
+            #+BEGIN_SRC latex
+              {x ∈ H | <w, x> + b = 0} (w \in H, b \in \mathbb R) (ref:iml-7.1)
+            #+END_SRC
+            where w ∈ H and b ∈ R.
+          - Given a set X = {x_1, ..., x_m}, the *margin* is the distance
+            of the closest point in X to the hyperplane [[(iml-7.1)]].
+            #+BEGIN_SRC latex
+              min_{i=1,...,m} \frac{|<w, x_i> + b|}{\|w\|}. (ref:iml-7.2)
+            #+END_SRC
+       1) Support Vector Classification
+          0) [@0]
+             - penalize large ξ_i [...] via the following modified
+               optimization problem:
+               #+BEGIN_SRC latex
+                 min_{w, b, \xi} 1/2 ||w||^2 + C/m \sum_{i=1..m} \xi_i
+                 s.t. y_i(<w, x_i>+b) \ge 1 - \xi_i for all i
+                      \xi_i \ge 0                               (ref:iml-7.5)
+               #+END_SRC
+          1) A Regularized Risk Minimization Viewpoint
+             - eliminate \xi_i from [[(iml-7.5)]], and write it as the
+               following unconstrained optimization problem:
+               #+BEGIN_SRC latex
+                 min_{w,b} 1/2 ||w||^2 + C/m \sum_{1=1..m} max(0, 1−y_i (<w, x_i> + b)) (ref:iml-7.12)
+               #+END_SRC
 ** TODO [#C] PART [[./Applied_Cryptography.pdf][Schneier - Applied Cryptography]]
 *** TODO parts: maybe 10 (see quote t.a.)
 *** summary
@@ -17525,6 +17581,29 @@
               - can also use multi-label
 
            3) One-Vs-One
+
+    7) [@7] Dataset transformations
+
+       3) [@3] Preprocessing data
+
+          make data "more suitable for downstream estimators"
+
+          1) Standardization, or mean removal and variance scaling
+
+             - set to zero mean and unit variance
+               #+BEGIN_SRC python
+                 X_scaled = preprocessing.scale(X)
+               #+END_SRC
+
+             - save values to apply to test data later
+               #+BEGIN_SRC python
+                 scaler = preprocessing.StandardScaler().fit(X)
+                 scaler.transform(X)
+               #+END_SRC
+
+             - Scaling features to a range
+
+               instead of fixed variance, set to range
 *** quotes
     2) [@2] A tutorial on statistical-learning for scientific data processing
        1) Statistical learning: the setting and the estimator object
@@ -17596,6 +17675,20 @@
                practice, one-vs-rest classification is usually
                preferred, since the results are mostly similar, but the
                runtime is significantly less.
+          4) [@4] Support Vector Machines
+             5) [@5] Tips on Practical Use
+                - Avoiding data copy: For SVC, SVR, NuSVC and NuSVR,
+                  if the data passed to certain methods is not
+                  C-ordered contiguous, and double precision, it will
+                  be copied before calling the underlying C
+                  implementation. You can check whether a give numpy
+                  array is C-contiguous by inspecting its =flags=
+                  attribute.
+                - *it is highly recommended to scale your data*
+                - In SVC, if data for classification are unbalanced
+                  (e.g. many positive and few negative), set
+                  =class_weight=’auto’= and/or try different penalty
+                  parameters C.
        6) [@6] Nearest Neighbors
           0) [@0]
              - Despite its simplicity, nearest neighbors has been successful in
@@ -17630,7 +17723,7 @@
              - although naive Bayes is known as a decent classifier, it
                is known to be a bad estimator, so the probability outputs
                from predict_proba are not to be taken too seriously.
-          1) [@2] Multinomial Naive Bayes
+          2) [@2] Multinomial Naive Bayes
        10) Decision Trees
            - DecisionTreeClassifier [...]
              #+BEGIN_SRC python
@@ -20961,7 +21054,7 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
           plt.show()
         #+END_SRC
 *** quotes
-** PART [[../../../chive/GG/it/LaTeX/a026.pdf][Jürgens - LATEX — eine Einführung und ein bisschen mehr ...]]
+** PART MOVE [[../../../chive/GG/it/LaTeX/a026.pdf][Jürgens - LATEX — eine Einführung und ein bisschen mehr ...]]
 *** summary
     23) [@23] NUMMERIERTE ABBILDUNGEN UND TABELLEN
         - nummerierte tabelle mit
@@ -21013,3 +21106,42 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
              \multicolumn{AnzahlSpalten}{Ausrichtung}{Text}
              #+END_LaTeX
              erzeugt werden können.
+** PART MOVE [[./comp.ai.neural-nets FAQ, Part 2 of 7: Learning.html][Sarle - comp.ai.neural-nets FAQ, Part 2 of 7: Learning]]
+*** summary
+    - Should I normalize/standardize/rescale the data?
+
+      - *rescale*: add/subtrace, then divide/multiply, example: Celsius
+        to Fahrenheit
+
+      - *normalize*: divide by norm of vector: make length 0
+
+      - *standardize*: subtract location, divide by scale,
+        f.ex. normal distribution subtract mean, divide by std \to
+        standard normal
+
+      - but used interchangeably
+
+      - following: input instance as row, input variables as columns
+
+      - Should I standardize the input variables (column vectors)?
+
+        - how are they used?
+
+          - if combined via distance function, then "standardizing
+            inputs can be crucial"
+
+          - if combined linearly, can speed up training, "and reduce
+            the chances of getting stuck in local optima"
+
+          - if random values as starters (NN-specific), should be
+            scale with input scale
+*** quotes
+    - Should I normalize/standardize/rescale the data?
+      - Should I standardize the input variables (column vectors)?
+        - In particular, scaling the inputs to [-1,1] will work better
+          than [0,1], although any scaling that sets to zero the mean
+          or median or other measure of central tendency is likely to
+          be as good, and robust estimators of location and scale
+          (Iglewicz, 1983) will be even better for input variables
+          with extreme outliers.
+*** ref [[file:master.bib::sarle2][Sarle 2002]]
