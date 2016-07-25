@@ -236,7 +236,8 @@ def my_grid(X, y,
     bestres = 0
     for c in cs:
         for g in gammas:
-            clf = multiclass.OneVsRestClassifier(svm.SVC(gamma=g, C=c))
+            clf = multiclass.OneVsRestClassifier(svm.SVC(
+                gamma=g, C=c, class_weight='balanced'))
             if (c,g) in results:
                 current = results[(c,g)]
             else:
@@ -316,11 +317,12 @@ def cross_test(argv, cumul=True, with_svm=False):
 
     argv is like sys.argv, cumul triggers CUMUL, else version 1'''
     # call with 1: x-validate test that
-    # call with 2+: train 1 (whole), test 2,3,4,...
+    # call with 2+: also train 1 (split), test 2,3,4,...
     places = counter.Counter.for_places(argv[1:], False)
     stats = {k: _bytes_mean_std(v) for (k,v) in places.iteritems()}
     sizes = {k: _average_bytes(v) for (k,v) in stats.iteritems()}
-    # td: continue here, recompute duration (was not averaged per domain), compare
+    # td: continue here, recompute duration (was not averaged per
+    # domain), compare
     # durations = {k: _average_duration(v) for (k,v) in places.iteritems()}
 
     place0 = argv[1] if len(argv) > 1 else '.'
@@ -350,6 +352,8 @@ def cross_test(argv, cumul=True, with_svm=False):
     print 'cross-validation on X,y'
     for esti in GOOD:
         verbose_test_11(X, y, esti)
+
+    import pdb; pdb.set_trace()
 
     # vs test sets
     for (place, its_counters) in places.iteritems():
@@ -451,8 +455,29 @@ if __name__ == "__main__":
     # sys.argv = ['', 'disabled/bridge', '0.15.3-retrofixed/bridge/30.js', '0.15.3-retrofixed/bridge/70.js', '0.15.3-retrofixed/bridge/50.js']
     # sys.argv = ['', 'disabled/bridge', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5', 'simple2/20']
     # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', 'tamaraw']
-    # sys.argv = ['', 'disabled/bridge', '22.0/10aI', '22.0/5aI', '22.0/5aII']
+    # sys.argv = ['', 'disabled/bridge', '0.22/10aI', '0.22/5aI', '0.22/5aII', '0.22/2aI__2016-07-23']
     # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
     # counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
     cross_test(sys.argv, with_svm=True) #, cumul=False)
 
+def class_predictions(y2, y2_predict):
+    '''@return list: for each class in y2: what was it predicted to be'''
+    out = []
+    for i in range(y2[-1]+1):
+        out.append([])
+    for (idx, elem) in enumerate(y2):
+        out[elem].append(y2_predict[idx])
+    return out
+
+def class_predict_percentages(class_predictions_list):
+    '''@sum up percentages how often a class was mapped to itself'''
+    import collections
+    out = []
+    for (idx, elem) in enumerate(class_predictions_list):
+        out.append(collections.Counter(elem)[idx]/40.0)
+    return out
+        
+        
+# p = et.predict(X2)
+# m = class_predictions(y2, p)
+# class_predict_percentages(m)

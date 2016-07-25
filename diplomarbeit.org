@@ -169,7 +169,7 @@
 
     Against HTTPS[fn::HTTP over SSL\cite{sslv3}, the attacks were
     carried out against SSL 3.0], which reveals the site being browsed
-    to but hides the pages accessed, successful attacks to determine
+    to but hides the URLs accessed, successful attacks to determine
     the web page[fn::cryptographers talk of attempts to circumvent a
     protocol as /attack/\cite{applied96}] were carried out by the
     formers (\cite{quantifying}, \cite{ssl-traffic-analysis}) at
@@ -188,7 +188,8 @@
     :CUSTOM_ID: Hurdles
     :END:
     The refinement of web protocols and anonymization systems such as
-    Tor\cite{tor-design} made website fingerprinting harder.
+    Tor\cite{tor-design} made website fingerprinting harder:
+
 
     Building a new HTTP connection for each transferred object is
     inefficient\cite[sec.2.2.2]{DBLP:books/daglib/0001977}. Some early
@@ -316,6 +317,29 @@
      interesting sites and many that should not trigger) could be
      achieved.
 **** WRITE SVM
+     Support Vector Machines (short: SVM) are a linear classifier:
+     they find a linear boundary between points. While this might seem
+     overly limiting, SVMs can compute the boundary not only on the
+     original data, but also on a projected space. This allows for
+     complex decision boundaries.
+
+     (This section is mostly based on chapters 6 and 7 of Smola and
+     Vishwanathan's book \cite{iml}). Given a set {x1, ..., xn} = X
+     with a dot product $<., .>: X \times X \to \mathbb R$. Given further
+     tuples (x1, y1), ..., (xm, ym), with xi \in set, yi \in {-1, 1} as a
+     binary classification task.
+
+     The SVM's job is to find a hyperplane[fn::as Hastie et
+     al. mention in \cite[ch.4.1]{esl}, this is actually an affine
+     set, as it need not pass through the origin. Keeping with
+     tradition, it will be called hyperplane in this thesis.[fn::as
+     long as those things formed by quarks are still called atoms...]]
+     #+BEGIN_LaTeX
+       \[\{x \in X | \langle w, x \rangle +b = 0\}\]
+     #+END_LaTeX
+     such that <w, xi> +b \ge 0 whenever yi = 1, and <w, xi> +b < 0
+     whenever yi = -1.
+
      - how works
        - set with dot product
        - tuples (x1, y1), ..., (xm, ym), with xi \in set, yi \in {-1, 1}
@@ -1152,6 +1176,7 @@
       - td: pix vs disabled
     - different factors
     - all around same curve
+    - which classifier classifies which page well?
 *** WRITE sota (practical): wtfpad
     - overhead of wfpad depends on client-bridge network connection
       - show different results
@@ -1207,6 +1232,17 @@
       - exception 22.0/5aII
         - continue here: inspect which pages, etc
 ** WAIT Problematic websites
+   - which websites classify well with which classifier, which badly
+     - algorithm
+       1. clf.train on whole disabled set, with or level 2
+       2. clf.predict on addon set
+       3. for each class (number) in y2
+          1. create list of classes it was mapped to
+          2. compute score of how much it was mapped to itself
+          3. compute score of top three other classes
+             1. count occurrence number
+             2. sort
+       4. look up names
    - google.com
      - check that not a robot
      - td: estimate probability if matches traces
