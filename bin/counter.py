@@ -27,7 +27,7 @@ def _append_features(keys, filename):
     '''appends features in trace file of name "filename" to keys.
 
     keys is a dictionary, indexed by domain, holding arrays of Counter'''
-    domain = _get_domain(filename)
+    domain = _extract_url(filename)
     if not keys.has_key(domain):
         keys[domain] = []
     counter = Counter.from_pcap(filename)
@@ -48,12 +48,19 @@ def _discretize(number, step):
     return int(math.ceil(float(number) / step) * step)
 
 #td: rename to _get_url
-def _get_domain(filename):
+def _extract_url(filename):
     '''extracts domain part from filename:
-    >>> _get_domain('/tmp/google.com@12412')
+    >>> _extract_url('/tmp/google.com@12412')
     'google.com'
     '''
     return os.path.basename(filename).split(TIME_SEPARATOR)[0]
+
+def _get_all(place, outlier_removal=True):
+    '''helper to get counters w/o outlier_removal'''
+    if outlier_removal:
+        return outlier_removal(all_from_dir(place))
+    else:
+        return all_from_dir(place)
 
 def _normalize(array):
     '''normalizes array so that its maximum absolute value is +- 1.0
@@ -82,7 +89,15 @@ def _num_packets(packets):
     return((sum((1 for x in packets if x > 0)),
             sum((1 for x in packets if x < 0))))
 
-# td: move this back to analyse
+def _pad(row, upto=300):
+    '''enlarges row to have upto entries (padded with 0)
+    >>> _pad([2], 20)
+    [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    '''
+    row.extend([0] * (upto - len(row)))
+    return row
+
+# td: move this back to analyse, why? only used there?
 def _ptest(num, val=600):
     '''returns counter with num packets of size val set for testing'''
     return Counter.from_json('{{"packets": {}}}'.format([val]*num))
@@ -118,13 +133,44 @@ def _sum_stream(packets):
     out.append(tmp)
     return out
 
-def pad(row, upto=300):
-    '''enlarges row to have upto entries (padded with 0)
-    >>> pad([2], 20)
-    [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+# td: separate json parsing and pcap-parsing
+# td: use glob.iglob? instead of os.walk?
+def all_from_dir(dirname):
+    '''all packets traces in subdirectories of the name domain@tstamp are
+    parsed to Counters. If there are JSON files created by
+    =save()=, use those instead of the pcap files for their
+    domains
     '''
-    row.extend([0] * (upto - len(row)))
-    return row
+    global json_only
+    out = {}
+
+    for (dirpath, _, filenames) in os.walk(dirname):
+        for jfile in [x for x in filenames if '.json' in x]:
+            domain = jfile.replace('.json', '')
+            logging.info('traces for %s from JSON %s', domain, jfile)
+            out[domain] = all_from_json(os.path.join(dirname, jfile))
+            filenames.remove(jfile)
+            for trace in [x for x in filenames if domain + '@' in x]:
+                filenames.remove(trace)
+
+        length = len(filenames)
+        for i, filename in enumerate(filenames):
+            fullname = os.path.join(dirpath, filename)
+            if TIME_SEPARATOR in fullname: # file like google.com@1445350513
+                logging.info('processing (%d/%d) %s ',
+                             i+1, length, fullname)
+                json_only = False
+                _append_features(out, fullname)
+    if not out:
+        logging.error('%s did not contain any counter files', dirname)
+    return out
+
+def all_from_json(filename):
+    '''returns all the counters in json file named filename '''
+    out = []
+    for entry in open(filename):
+        out.append(Counter.from_json(entry))
+    return out
 
 class Counter(object):
     '''single trace file'''
@@ -189,55 +235,13 @@ class Counter(object):
                     file_.write('\n')
 
     @staticmethod
-    def all_from_json(filename):
-        '''returns all the counters in json file named filename '''
-        out = []
-        for entry in open(filename):
-            out.append(Counter.from_json(entry))
-        return out
-
-    # td: separate json parsing and pcap-parsing
-    # td: use glob.iglob? instead of os.walk?
-    @staticmethod
-    def all_from_dir(dirname):
-        '''all packets traces in subdirectories of the name domain@tstamp are
-        parsed to Counters. If there are JSON files created by
-        =save()=, use those instead of the pcap files for their
-        domains
-        '''
-        global json_only
-        out = {}
-
-        for (dirpath, _, filenames) in os.walk(dirname):
-            for jfile in [x for x in filenames if '.json' in x]:
-                domain = jfile.replace('.json', '')
-                logging.info('traces for %s from JSON %s', domain, jfile)
-                out[domain] = Counter.all_from_json(os.path.join(dirname,
-                                                                 jfile))
-                filenames.remove(jfile)
-                for trace in [x for x in filenames if domain + '@' in x]:
-                    filenames.remove(trace)
-
-            length = len(filenames)
-            for i, filename in enumerate(filenames):
-                fullname = os.path.join(dirpath, filename)
-                if TIME_SEPARATOR in fullname: # file like google.com@1445350513
-                    logging.info('processing (%d/%d) %s ',
-                                 i+1, length, fullname)
-                    json_only = False
-                    _append_features(out, fullname)
-        if not out:
-            logging.error('%s did not contain any counter files', dirname)
-        return out
-
-    @staticmethod
     def from_(*args):
         '''helper method to handle empty argument'''
         logging.info('args: %s, length: %d', args, len(args))
         if len(args) == 2:
             try:
                 os.chdir(args[1])
-                out = Counter.all_from_dir('.')
+                out = all_from_dir('.')
             except OSError:
                 pass # ok, was a filename
         elif len(args) > 1:
@@ -245,7 +249,7 @@ class Counter(object):
             for filename in args[1:]:
                 _append_features(out, filename)
         else:
-            out = Counter.all_from_dir('.')
+            out = all_from_dir('.')
         return out
 
     # td: read up on ordereddict, maybe replace
@@ -257,20 +261,12 @@ class Counter(object):
         '''
         out = {}
         if len(places) == 0:
-            out['.'] = cls._get_all('.', outlier_removal)
+            out['.'] = _get_all('.', outlier_removal)
 
         for p in places:
-            out[p] = cls._get_all(p, outlier_removal)
+            out[p] = _get_all(p, outlier_removal)
 
         return out
-
-    @classmethod
-    def _get_all(cls, place, outlier_removal=True):
-        '''helper to get counters w/o outlier_removal'''
-        if outlier_removal:
-            return outlier_removal(cls.all_from_dir(place))
-        else:
-            return cls.all_from_dir(place)
 
     @classmethod
     def from_pcap(cls, filename):
@@ -327,7 +323,7 @@ class Counter(object):
         percentage incoming, number in/out, size markers, td:nummark)
 
         pad_by determines how much to pad feature-length vectors
-        if pad_by is an int, all args will be pad()-ed by this amount
+        if pad_by is an int, all args will be padded by this amount
         if it is a dictionary, the corresponding values in
         self.variable will be padded
 
@@ -348,7 +344,7 @@ class Counter(object):
                 tmp[key] = pad_by
             pad_by = tmp
         for k, feature in self.variable.iteritems():
-            out += pad(feature, pad_by[k])
+            out += _pad(feature, pad_by[k])
         return out
 
     def extract_line(self, src, size, tstamp):

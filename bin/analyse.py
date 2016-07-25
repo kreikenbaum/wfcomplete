@@ -456,6 +456,7 @@ if __name__ == "__main__":
     # sys.argv = ['', 'disabled/bridge', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5', 'simple2/20']
     # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', 'tamaraw']
     # sys.argv = ['', 'disabled/bridge', '0.22/10aI', '0.22/5aI', '0.22/5aII', '0.22/2aI__2016-07-23']
+    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', 'simple2/5', '0.22/5aI'] # TOP
     # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
     # counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
     cross_test(sys.argv, with_svm=True) #, cumul=False)
@@ -469,15 +470,39 @@ def class_predictions(y2, y2_predict):
         out[elem].append(y2_predict[idx])
     return out
 
-def class_predict_percentages(class_predictions_list):
-    '''@sum up percentages how often a class was mapped to itself'''
+def class_predict_percentages(class_predictions_list, url_list):
+    '''@return percentages how often a class was mapped to itself'''
     import collections
-    out = []
+    out = {}
     for (idx, elem) in enumerate(class_predictions_list):
-        out.append(collections.Counter(elem)[idx]/40.0)
+        out[url_list[idx]] =  float(collections.Counter(elem)[idx])/len(elem)
     return out
-        
-        
+
+def gen_url_list(y, y_domains):
+    '''@return list of urls, the index is the class'''
+    out = []
+    for i in range(y[-1]+1):
+        out.append([])
+    for (idx, cls) in enumerate(y):
+        if not out[cls]:
+            out[cls] = y_domains[idx]
+        else:
+            assert out[cls] == y_domains[idx]
+    return out
+
+def show_class_stats(train, test, clf=GOOD[0]):
+    '''@return misclassification rates per class in test'''
+    (X, y, y_d) = to_features_cumul(counter.outlier_removal(train))
+    clf.fit(X, y)
+    (X2, y2, y2d) = to_features_cumul(test)
+    return class_predict_percentages(class_predictions(y2, clf.predict(X2)),
+                                     gen_url_list(y2, y2d))
+
+
+# et=GOOD[0]
+# et.fit(X, y)
+# (X2, y2, y2d) = to_features_cumul(places['some_defense'])
 # p = et.predict(X2)
 # m = class_predictions(y2, p)
 # class_predict_percentages(m)
+# l = gen_url_list(y, y_d)
