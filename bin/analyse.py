@@ -46,10 +46,10 @@ def _bytes_mean_std(counter_dict):
         out[domain] = (np.mean(total), np.std(total))
     return out
 
-def _compare(X, y, X2, y2, estimators=GOOD):
-    for esti in estimators:
-        _test(X, y, esti)
-        _test(X2, y2, esti)
+def _compare(X, y, X2, y2, clfs=GOOD):
+    for clf in clfs:
+        _test(X, y, clf)
+        _test(X2, y2, clf)
 
 # courtesy of http://stackoverflow.com/a/38060351
 def _dict_elementwise(func, d1, d2):
@@ -98,16 +98,27 @@ def _std(counter_dict):
         out[domain] = np.std(total)
     return out
 
-def _test(X, y, estimator=GOOD[0], nj=JOBS_NUM, verbose=True, scale=False):
+def _scale(X, clf):
+    '''@return scaled X if estimator is SVM, else just X'''
+    if 'SVC' in str(clf):
+        tmp = np.copy(X)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            tmp /= np.max(np.abs(tmp), axis=0)
+        return np.nan_to_num(tmp)
+    else:
+        return X
+
+# td merge etc with _scale()
+def _test(X, y, clf=GOOD[0], nj=JOBS_NUM, verbose=True, scale=False):
     '''tests estimator with X, y, @return result (ndarray)'''
     if scale:
         X = np.copy(X)
         with np.errstate(divide='ignore', invalid='ignore'):
             X /= np.max(np.abs(X), axis=0)
         X = np.nan_to_num(X)
-    return cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=nj)
+    return cross_validation.cross_val_score(clf, X, y, cv=5, n_jobs=nj)
 
-def _xtest(X_train, y_train, X_test, y_test, estimator, scale=False):
+def _xtest(X_train, y_train, X_test, y_test, clf, scale=False):
     '''cross_tests with estimator'''
     if scale:
         X_train = np.copy(X_train)
@@ -117,8 +128,8 @@ def _xtest(X_train, y_train, X_test, y_test, estimator, scale=False):
             X_test /= np.max(np.abs(X_test), axis=0)
         X_train = np.nan_to_num(X_train)
         X_test = np.nan_to_num(X_test)
-    estimator.fit(X_train, y_train)
-    return estimator.score(X_test, y_test)
+    clf.fit(X_train, y_train)
+    return clf.score(X_test, y_test)
 
 # unused, but could be useful
 def _times_mean_std(counter_dict):
@@ -220,9 +231,20 @@ def to_libsvm(X, y, fname='libsvm_in'):
                 f.write('{}:{} '.format(no+1, val))
         f.write('\n')
 
-def esti_name(estimator):
+# td: check and if ok mark private (_)
+def clf_name(clf):
     '''@return name of estimator class'''
-    return str(estimator.__class__).split('.')[-1].split("'")[0]
+    return str(clf.__class__).split('.')[-1].split("'")[0]
+
+def my_grid_helper(counter_dict, cumul=True, outlier_removal=True):
+    '''@return grid-search on counter_dict result (clf, results)'''
+    if outlier_removal:
+        counter_dict = counter.outlier_removal(counter_dict)
+    if cumul:
+        (X, y, _) = to_features_cumul(counter_dict)
+    else:
+        (X, y, _) = to_features(counter_dict)
+    return my_grid(X, y)
 
 def my_grid(X, y,
             cs=np.logspace(11, 17, 4, base=2),
@@ -305,11 +327,11 @@ def tts(counter_dict, test_size=1.0/3):
         test[url].append(counter_dict[url][index])
     return (train, test)
 
-def verbose_test_11(X, y, estimator):
+def verbose_test_11(X, y, clf):
     '''cross-test (1) estimator on (1) X, y, print results and estimator name'''
-    scale = True if 'SVC' in str(estimator) else False
-    print esti_name(estimator),
-    res = _test(X, y, estimator, scale=scale)
+    scale = True if 'SVC' in str(clf) else False
+    print clf_name(clf),
+    res = _test(X, y, clf, scale=scale)
     print '{}, {}'.format(res.mean(), res)
 
 def cross_test(argv, cumul=True, with_svm=False):
@@ -327,33 +349,24 @@ def cross_test(argv, cumul=True, with_svm=False):
 
     place0 = argv[1] if len(argv) > 1 else '.'
 
-    # X,y for training set
+    # training set
     (train, test) = tts(places[place0])
-    train = counter.outlier_removal(train)
-    if cumul:
-        (X, y, _) = to_features_cumul(train)
-    else:
-        (X, y, _) = to_features(train)
-
     if with_svm:
-        if not "OneVsRestClassifier" in [esti_name(clf) for clf in GOOD]:
-            clf,_ = my_grid(X, y)
+        if not "OneVsRestClassifier" in [clf_name(clf) for clf in GOOD]:
+            clf,_ = my_grid_helper(train)
             print 'grid result: {}'.format(clf) # maybe disable in production
             GOOD.append(clf)
         else:
             logging.info("reused existing OVR-SVM-classifier")
-
     # X,y for eval
     if cumul:
-        (X, y, _) = to_features_cumul(counter.outlier_removal(test, -1))
+        (X, y, _) = to_features_cumul(counter.outlier_removal(test, 1))
     else:
-        (X, y, _) = to_features(counter.outlier_removal(test, -1))
+        (X, y, _) = to_features(counter.outlier_removal(test, 1))
     # evaluate accuracy on all of unaddoned
     print 'cross-validation on X,y'
-    for esti in GOOD:
-        verbose_test_11(X, y, esti)
-
-    import pdb; pdb.set_trace()
+    for clf in GOOD:
+        verbose_test_11(X, y, clf)
 
     # vs test sets
     for (place, its_counters) in places.iteritems():
@@ -370,10 +383,10 @@ def cross_test(argv, cumul=True, with_svm=False):
             (X, y, _) = to_features(places[place0], l)
             (X2, y2, _2) = to_features(its_counters, l)
 
-        for esti in GOOD:
-            scale = True if 'SVC' in str(esti) else False
-            print '{}: {}'.format(esti_name(esti),
-                                  _xtest(X, y, X2, y2, esti, scale=scale))
+        for clf in GOOD:
+            scale = True if 'SVC' in str(clf) else False
+            print '{}: {}'.format(clf_name(clf),
+                                  _xtest(X, y, X2, y2, clf, scale=scale))
 
 def test_or(place):
     '''tests different outlier removal schemes and levels'''
@@ -438,9 +451,9 @@ def test_or(place):
     # sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
     # sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
 
-#places = counter.Counter.for_places(sys.argv[1:], False)
+# defenses = counter.Counter.for_places(sys.argv[1:], False)
 # some_30 = top_30(means)
-# timing = {k: _average_duration(v) for (k,v) in places.iteritems()}
+# timing = {k: _average_duration(v) for (k,v) in defenses.iteritems()}
 
 if __name__ == "__main__":
     doctest.testmod()
@@ -491,18 +504,49 @@ def gen_url_list(y, y_domains):
     return out
 
 def show_class_stats(train, test, clf=GOOD[0]):
-    '''@return misclassification rates per class in test'''
+    '''@return (mis-)classification rates per class in test'''
     (X, y, y_d) = to_features_cumul(counter.outlier_removal(train))
-    clf.fit(X, y)
+    clf.fit(_scale(X, clf), y)
     (X2, y2, y2d) = to_features_cumul(test)
+    X2 = _scale(X2, clf)
     return class_predict_percentages(class_predictions(y2, clf.predict(X2)),
                                      gen_url_list(y2, y2d))
 
+def gen_class_stats_list(places,
+        compare=['disabled/bridge', 'wfpad/bridge', 'simple2/5', '0.22/5aI'],
+        clfs=[GOOD[0]]):
+    '''@return list of show_class_stats output amended with defense name'''
+    out = []
+    for clf in clfs:
+        for c in compare:
+            res = show_class_stats(places[compare[0]], places[c], clf=clf)
+            res['id'] = '{} with {}'.format(c, clf_name(clf))
+            out.append(res)
+    return out
 
-# et=GOOD[0]
-# et.fit(X, y)
-# (X2, y2, y2d) = to_features_cumul(places['some_defense'])
-# p = et.predict(X2)
-# m = class_predictions(y2, p)
-# class_predict_percentages(m)
-# l = gen_url_list(y, y_d)
+def format_row(row):
+    out = [row[0]]
+    out.extend(el[:6] for el in row[1:])
+    return out
+
+## write gen_class_stats_list to csv file, transpose via
+# with open('/tmp/names.csv', 'w') as csvfile:
+#     writer = csv.DictWriter(csvfile, fieldnames=defense_per_class[0].keys())
+#     writer.writeheader()
+#     for d in defense_per_class:
+#             writer.writerow(d)
+
+# read = []
+# with open('/tmp/names.csv') as csvfile:
+#     reader = csv.reader(csvfile)
+#     for row in reader:
+#             read.append(row)
+# a = np.array(read)
+# b = a.transpose()
+# with open('/tmp/names.csv', 'w') as csvfile:
+#     writer = csv.writer(csvfile)
+#     writer.writerow(b[8])
+#     for row in b[:8]:
+#             writer.writerow(format_row(row))
+#     for row in b[9:]:
+#             writer.writerow(format_row(row))
