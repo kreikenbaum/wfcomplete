@@ -707,6 +707,38 @@
 
     - make wf harder such that it is impossible
 ** TODO Design and Implementation (=Implementation) [0/20]
+*** redo
+    The aim is to create cover traffic to hinder website
+    fingerprinting[fn::and, coincidentally, correlation attacks]. The
+    question is how, and how much.
+
+    All of website fingerprinting is an application-level problem,
+    exploiting features of HTTP, so a same-level solution would be to
+    generate additional HTTP-shaped traffic.
+
+    When a new webpage is opened by the user, the browser creates a
+    sequence of HTTP requests as detailed above. As of the [[#HTTP traffic model][HTTP
+    traffic model]] embedded elements have a different size distribution
+    than the HTML document.
+
+
+    It would make sense to distinguish between HTML and other
+    requests. This would usually be done via HTTP's =content-type=
+    header\cite[sec.14.18]{rfc2068}, yet that is only accessible when
+    the content has been received. The defense needs to distinguish at
+    the time it is requested.
+
+    The next sections describe in detail how to distinguish this, how
+    to create traffic and describe the different versions of the addon
+    evaluated.
+*** How to distinguish HTML and embedded objects
+    Common wisdom is that you cannot distinguish HTTP elements at
+    request time by just looking at the URL. As a solution in this
+    addon, the first request to a host is considered the HTML page,
+    while subsequent requests while the page is being loaded
+    [fn::until the =body.onLoad= event] are considered requests for
+    embedded elements.
+**** TODO link to stackoverflow post and link
 *** CHECK description of add-on
     The add-on tries to defend against website fingerprinting by
     adding HTTP-distributed extra traffic.
@@ -2377,7 +2409,7 @@ similar, little to see
   being settled, implementation becomes a single-page file, see
   [[wsgi.py]].
 
-  One detail is that the length of the content gets inflated by the
+  One detail that inicreases accuracy is that the length of the content gets inflated by the
   content-headers. To decrease this again, the length (which in turn
   depends on the required length) needs to be calculated and
   subtracted from the body-length. Some uncertainty arises because the
