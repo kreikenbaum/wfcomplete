@@ -693,7 +693,7 @@
    rather works at Tor's cell level, and, critically, adapts a method
    that tries to do more (hiding from a global adversary), instead of
    hiding which site was browsed to from a local passive
-   observer.[fn::which is included in Tor's design goald]
+   observer.[fn::which is included in Tor's design goals]
 *** WRITE Aim: selective cover traffic
    As detailed in section [[#features]], there are key features that are
    hard to cloak except by extra traffic, f.ex. total bytes up-/ and
@@ -732,53 +732,38 @@
     to create traffic and describe the different versions of the addon
     evaluated.
 *** How to distinguish HTML and embedded objects
+    :PROPERTIES:
+    :CUSTOM_ID: distinguish_HTML_embedded
+    :END:
     Common wisdom is that you cannot distinguish HTTP elements at
     request time by just looking at the URL. As a solution in this
     addon, the first request to a host is considered the HTML page,
     while subsequent requests while the page is being loaded
-    [fn::until the =body.onLoad= event] are considered requests for
-    embedded elements.
+    [fn::until the body's =load= event\cite[ch.1.6.5]{dom2-events}]
+    are considered requests for embedded elements.
 **** TODO link to stackoverflow post and link
-*** CHECK description of add-on
-    The add-on tries to defend against website fingerprinting by
-    adding HTTP-distributed extra traffic.
-
-    To do so, it detects the start of each web site request. With the
-    start of the /HTML-request/, a dummy request is sent. Of which
-    size and how it continues depends on the version of the add-on.
-
-    With the user's first request, the host is marked active. At the
-    end of the page load, indicated either by a load
-    event\cite[ch.1.6.5]{dom2-events}, or the end of a timeout, the
-    host goes back to inactive status.
-
-    For implementation details, see appendix ... .
-**** TODO appendix for addon
 *** CHECK HTTP traffic model
     :PROPERTIES:
     :CUSTOM_ID: HTTP traffic model
     :END:
 
-    The work by Lee and Gupta\cite{newtrafficmodel} has not been cited
-    in a later paper by Ihm and Pai \cite{tumwt}. It matches web
-    traffic to statistical distributions.
+    Lee and Gupta's work\cite{newtrafficmodel} matches web traffic to
+    statistical distributions.
 
-    The size of HTML documents is characterized by a lognormal
-    distribution with parameters \mu = 7.90272, \sigma = 1.7643, truncated to
-    the maximum of 2 MB. This yields a mean size of 11872.
+    The size of both HTML documents and embedded objects is
+    characterized by lognormal distributions, yet with different
+    parameters for both. They offer further parameters to fully model
+    web browsing. See figure \ref{distribution} and
+    \cite{newtrafficmodel} for parameters.
 
-    The size of objects embedded in a HTML document is also
-    characterized by a lognormal distribution with parameters
-    \mu = 7.51384, and \sigma = 2.17454, truncated to the maximum of 6 MB. This
-    yields a mean of 12460.
-
-    The number of embedded objects is characterized by a gamma
-    function with parameters \kappa = 0.141385, and \theta = 40.3257. It is
-    truncated to the maximum of 300, which yields a mean of 5.07
-    embedded objects per page.
-
-    They offer further parameters to fully model web browsing, which
-    do not apply to the problem at hand.
+    #+BEGIN_LaTeX
+    \begin{figure}
+    \includegraphics[width=0.45 \textwidth]{./pictures/HTML_lognorm.eps}
+    \includegraphics[width=0.45 \textwidth]{./pictures/embedded_size_lognorm.eps}
+    \caption{distribution of sizes for HTML and embedded documents}
+    \label{distribution}
+    \end{figure}
+    #+END_LaTeX
 
     There are two problems with the distributions given
     above. Firstly, web traffic has evolved since 2007, when the paper
@@ -1787,7 +1772,6 @@ similar, little to see
 **** practical wf: Capturing traces
 **** TODO move to subsection related work
 ** TODO Addon Design and Implementation [0/55]
-*** [[*description of add-on][description of add-on]]
 *** Defenses
 *** TODO Variations of Cover Traffic
     There are two variations how to generate Cover Traffic.
