@@ -708,18 +708,22 @@
     - make wf harder such that it is impossible
 ** TODO Design and Implementation (=Implementation) [0/20]
 *** redo
-    The aim is to create cover traffic to hinder website
+    This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
     question is how, and how much.
 
-    All of website fingerprinting is an application-level problem,
-    exploiting features of HTTP, so a same-level solution would be to
-    generate additional HTTP-shaped traffic.
+    All of website fingerprinting is an application-layer
+    problem[fn::for an introduction to protocol layering etc, see
+    f.ex. \cite[ch.1.7]{DBLP:books/daglib/0001977}]. It exploits
+    features of HTTP, so an application-layer solution would be to
+    generate additional HTTP-shaped traffic to make the classifier
+    misclassify.
 
     When a new webpage is opened by the user, the browser creates a
     sequence of HTTP requests as detailed above. As of the [[#HTTP traffic model][HTTP
     traffic model]] embedded elements have a different size distribution
-    than the HTML document.
+    than the HTML document, but both come from (heavy-tailed) lognormal
+    distributions.
 
 
     It would make sense to distinguish between HTML and other
@@ -731,7 +735,7 @@
     The next sections describe in detail how to distinguish this, how
     to create traffic and describe the different versions of the addon
     evaluated.
-*** How to distinguish HTML and embedded objects
+*** CHECK How to distinguish HTML and embedded objects
     :PROPERTIES:
     :CUSTOM_ID: distinguish_HTML_embedded
     :END:
@@ -746,7 +750,6 @@
     :PROPERTIES:
     :CUSTOM_ID: HTTP traffic model
     :END:
-
     Lee and Gupta's work\cite{newtrafficmodel} matches web traffic to
     statistical distributions.
 
@@ -775,8 +778,26 @@
 
     Providing an accurate estimate of embedded objects /per web page/
     is further work.
-**** TODO some distribution pictures
 **** TODO further work link + mention
+*** CHECK Why to choose HTTP cover traffic
+    Heeding layering/separation-of-concerns[fn::For a deeper treatment
+    of this, \cite[ch.1.7]{DBLP:books/daglib/0001977} is recommended],
+    HTTP-shaped cover traffic might prove effective. There are several
+    approaches on how to do this. The simplest, HTTP dummy
+    traffic[fn:a.k.a. loading another page in the background
+    a.k.a. decoy pages a.k.a. multi-tab browsing], has been evaluated
+    several times (\cite{ccs2012-fingerprinting}, \cite{a-systematic},
+    \cite{kfingerprint}, \cite{effective}, \cite{panchenko},
+    \cite{wtfpad}) and was surprisingly effective for all its
+    simplicity, albeit at a high overhead.
+
+    It might also be advantageous to be able to adjust the amount of
+    cover traffic, firstly to the webpage being loaded, and secondly
+    to some user-settable privacy level, as a whistleblower might need
+    more anonymity protection than Jane Doe who just reads the latest
+    news, eventually censored in her country.
+*** How to generate cover traffic
+    As Juarez et al. pointed out \cite{wfpad},
 *** TODO Addon-Versions
      While just adding random traffic to each page might enhance
      anonymity, always adding in the same way might be wasteful and
