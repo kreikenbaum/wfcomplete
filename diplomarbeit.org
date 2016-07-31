@@ -299,24 +299,19 @@
      successfully classifed traces for websites retrieved via
      Tor\cite{critique}.
 
-     To achieve this, they evaluated several HTTP-specific features,
-     classifying only on those they found to have the greatest impact
-     on classification.
+     They evaluated several HTTP-specific features, selecting only
+     those found to have the greatest impact on classification.
 
-     They used both Herrmann et al.'s\cite{ccsw09-fingerprinting} and
-     a new open-world dataset.
+     The sites retrieved were from both Herrmann et
+     al.'s\cite{ccsw09-fingerprinting} and a new open-world
+     dataset. The size of the open-world data set was five foreground
+     sites.
 
-     Then, they used a Support Vector Machine with
-     grid-search-parameter evaluation.
+     They were also the first to use Support Vector Machines to
+     fingerprint websites.
 
-     This resulted in a closed-world recognition rates of 54.61% for
-     Tor and open-world true-positive rate of up to 73%[fn::for the
-     Alexa top-ranked dataset].
-
-     The size of the open-world data set was five sites. Yet, it was
-     the first to show that even open-world classification (with some
-     interesting sites and many that should not trigger) could be
-     achieved.
+     The paper achieved closed-world recognition rates of 54.61% and
+     open-world true-positive rate of up to 73% for Tor.
 **** WRITE SVM
      Support Vector Machines (short: SVM) are a linear classifier:
      they find a linear boundary between points. While this might seem
@@ -371,7 +366,7 @@
        - same effect as mapping each point in set to dot product
          space, and applying <.,.> there, k(x, x') = <\Phi(x), \Phi(x')>
          - but need not compute complete mapping
-       #+CAPTION: kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left half shows linear boundaries, the right half  linear boundaries computed with added input data X^2, Y^2 and cross-product XY
+       #+CAPTION: Kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left half shows linear boundaries on X and Y --- the right half linear boundaries computed with added input data X^2, Y^2 and XY
        #+NAME fig:hastie-kerneltrick
        [[./pictures/hastie.png]]
      - parameter estimation
@@ -380,7 +375,6 @@
        - rbf kernel also has a gamma term which gives the grade of the
          gaussian
 ***** TODO rbf kernel
-***** TODO check page esl printed
 ***** TODO link to smola-book
 ***** TODO link to basic book (bronstein) for vector space etc
 **** WRITE wang
@@ -706,11 +700,11 @@
     - simultaneous to real traffic
 
     - make wf harder such that it is impossible
-** TODO Design and Implementation (=Implementation) [0/20]
-*** redo
+** TODO Design and Implementation (=Implementation) [0/21]
+*** CHECK intro
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
-    question is how, and how much.
+    question is how, and how much traffic to create.
 
     All of website fingerprinting is an application-layer
     problem[fn::for an introduction to protocol layering etc, see
@@ -720,17 +714,17 @@
     misclassify.
 
     When a new webpage is opened by the user, the browser creates a
-    sequence of HTTP requests as detailed above. As of the [[#HTTP traffic model][HTTP
-    traffic model]] embedded elements have a different size distribution
-    than the HTML document, but both come from (heavy-tailed) lognormal
-    distributions.
+    sequence of HTTP requests as detailed above (see [[#http]]). As of the
+    [[#HTTP traffic model][HTTP traffic model]] embedded elements have a different size
+    distribution than the HTML document, but both come from
+    (heavy-tailed) lognormal distributions.
 
-
-    It would make sense to distinguish between HTML and other
-    requests. This would usually be done via HTTP's =content-type=
-    header\cite[sec.14.18]{rfc2068}, yet that is only accessible when
-    the content has been received. The defense needs to distinguish at
-    the time it is requested.
+**** MOVE this paragraph to [[#distinguish_HTML_embedded][How to distinguish HTML and embedded objects]]
+    To tune traffic generation, it would make sense to distinguish
+    between HTML and other requests. This would usually be done via
+    HTTP's =content-type= header\cite[sec.14.18]{rfc2068}, yet that is
+    only accessible when the content has been received. The defense
+    needs to distinguish at the time it is requested.
 
     The next sections describe in detail how to distinguish this, how
     to create traffic and describe the different versions of the addon
@@ -745,6 +739,10 @@
     while subsequent requests while the page is being loaded
     [fn::until the body's =load= event\cite[ch.1.6.5]{dom2-events}]
     are considered requests for embedded elements.
+
+    This accurately distinguishes between start of a page load and the
+    loading of its embedded objects, but a drawback is that is does
+    not recongnize embedded iframes etc. as HTML.
 **** TODO link to stackoverflow post and link
 *** CHECK HTTP traffic model
     :PROPERTIES:
@@ -779,14 +777,17 @@
     Providing an accurate estimate of embedded objects /per web page/
     is further work.
 **** TODO further work link + mention
-*** CHECK Why to choose HTTP cover traffic
-    Heeding layering/separation-of-concerns[fn::For a deeper treatment
-    of this, \cite[ch.1.7]{DBLP:books/daglib/0001977} is recommended],
-    HTTP-shaped cover traffic might prove effective. There are several
-    approaches on how to do this. The simplest, HTTP dummy
-    traffic[fn:a.k.a. loading another page in the background
-    a.k.a. decoy pages a.k.a. multi-tab browsing], has been evaluated
-    several times (\cite{ccs2012-fingerprinting}, \cite{a-systematic},
+*** CHECK Why HTTP-shaped cover traffic
+    HTTP-shaped cover traffic might prove more effective, as it heeds
+    layering/separation-of-concerns[fn::For a deeper treatment of
+    this, \cite[ch.1.7]{DBLP:books/daglib/0001977} is recommended].
+
+
+    There are several approaches on how to do generate HTTP-shaped
+    traffic. The simplest, HTTP dummy traffic[fn::a.k.a. loading
+    another page in the background a.k.a. decoy pages a.k.a. multi-tab
+    browsing], has been evaluated several times
+    (\cite{ccs2012-fingerprinting}, \cite{a-systematic},
     \cite{kfingerprint}, \cite{effective}, \cite{panchenko},
     \cite{wtfpad}) and was surprisingly effective for all its
     simplicity, albeit at a high overhead.
@@ -795,9 +796,20 @@
     cover traffic, firstly to the webpage being loaded, and secondly
     to some user-settable privacy level, as a whistleblower might need
     more anonymity protection than Jane Doe who just reads the latest
-    news, eventually censored in her country.
-*** How to generate cover traffic
-    As Juarez et al. pointed out \cite{wfpad},
+    news, possibly censored in her country.
+*** KEYWORDS How to generate cover traffic
+    - ( also look below what to use )
+    - first request: always add some traffic
+      - (HTML/first traffic is important feature, thus always a bit obfuscated)
+    - split: original vs simple
+      - original combines HTTP traffic model with (kinda) Wang's supersequence
+        - knows (or guesses) the page's size
+        - sets target size
+        - adds traffic to each request (with certain probability)
+          until target reached
+      - simple: KISS
+        - cite xp
+        - maybe adds another embedded request to each request
 *** TODO Addon-Versions
      While just adding random traffic to each page might enhance
      anonymity, always adding in the same way might be wasteful and
@@ -1146,7 +1158,7 @@
      - scheme: all, only quantile, none, only minimial
    - document number of filtered traces
      - both panchenko's own and mine
-** KEYWORDS panchenko v1 different classifiers
+** KEYWORDS MOVE ONE STEP ABOVE panchenko v1 different classifiers
    <<different-classifiers>>
    - more features than cumul default
      - grows with more classes as it has to pad to maximum

@@ -46,6 +46,19 @@ def _bytes_mean_std(counter_dict):
         out[domain] = (np.mean(total), np.std(total))
     return out
 
+def _class_predictions(y2, y2_predict):
+    '''@return list: for each class in y2: what was it predicted to be'''
+    out = []
+    for i in range(y2[-1]+1):
+        out.append([])
+    for (idx, elem) in enumerate(y2):
+        out[elem].append(y2_predict[idx])
+    return out
+
+def _clf_name(clf):
+    '''@return name of estimator class'''
+    return str(clf.__class__).split('.')[-1].split("'")[0]
+
 def _compare(X, y, X2, y2, clfs=GOOD):
     for clf in clfs:
         _test(X, y, clf)
@@ -75,6 +88,23 @@ def _find_max_lengths(counters):
                 max_lengths[key] = lengths[key]
     return max_lengths
 
+def _format_row(row):
+    '''format row of orgtable to only contain relevant data (for tex export)'''
+    out = [row[0]]
+    out.extend(el[:6] for el in row[1:])
+    return out
+
+def _gen_url_list(y, y_domains):
+    '''@return list of urls, the index is the class'''
+    out = []
+    for i in range(y[-1]+1):
+        out.append([])
+    for (idx, cls) in enumerate(y):
+        if not out[cls]:
+            out[cls] = y_domains[idx]
+        else:
+            assert out[cls] == y_domains[idx]
+    return out
 
 def _mean(counter_dict):
     '''@return a dict of {domain1: mean1, ... domainN: meanN}
@@ -85,6 +115,67 @@ def _mean(counter_dict):
     for (domain, counter_list) in counter_dict.iteritems():
         total = [counter.get_total_both() for counter in counter_list]
         out[domain] = np.mean(total)
+    return out
+
+
+def _my_grid(X, y,
+            cs=np.logspace(11, 17, 4, base=2),
+            gammas=np.logspace(-3, 3, 4, base=2),
+            results={}):
+    '''grid-search on fixed params
+
+    @param results are previously computed results {(c, g): accuracy, ...}
+    @return optimal_classifier, results_object'''
+    best = None
+    bestres = 0
+    for c in cs:
+        for g in gammas:
+            clf = multiclass.OneVsRestClassifier(svm.SVC(
+                gamma=g, C=c, class_weight='balanced'))
+            if (c,g) in results:
+                current = results[(c,g)]
+            else:
+                current = _test(X, y, clf, scale=True)
+                results[(c, g)] = current
+            if not best or bestres.mean() < current.mean():
+                best = clf
+                bestres = current
+            logging.debug('c: {:8} g: {:10} acc: {}'.format(c, g,
+                                                            current.mean()))
+    if (best.estimator.C in (cs[0], cs[-1])
+        or best.estimator.gamma in (gammas[0], gammas[-1])):
+        logging.warn('optimal parameters found at the border. c:%f, g:%f',
+                     best.estimator.C, best.estimator.gamma)
+        return _my_grid(X, y,
+                       _new_search_range(best.estimator.C),
+                       _new_search_range(best.estimator.gamma),
+                       results)
+    else:
+        return best, results
+
+def _my_grid_helper(counter_dict, cumul=True, outlier_removal=True):
+    '''@return grid-search on counter_dict result (clf, results)'''
+    if outlier_removal:
+        counter_dict = counter.outlier_removal(counter_dict)
+    if cumul:
+        (X, y, _) = to_features_cumul(counter_dict)
+    else:
+        (X, y, _) = to_features(counter_dict)
+    return _my_grid(X, y)
+
+def _new_search_range(best_param):
+    '''returns new array of parameters to search in
+
+    (use if best result was at border)
+    '''
+    return [best_param / 2, best_param, best_param * 2]
+
+def _predict_percentages(class_predictions_list, url_list):
+    '''@return percentages how often a class was mapped to itself'''
+    import collections
+    out = {}
+    for (idx, elem) in enumerate(class_predictions_list):
+        out[url_list[idx]] =  float(collections.Counter(elem)[idx])/len(elem)
     return out
 
 def _std(counter_dict):
@@ -118,6 +209,26 @@ def _test(X, y, clf=GOOD[0], nj=JOBS_NUM, verbose=True, scale=False):
         X = np.nan_to_num(X)
     return cross_validation.cross_val_score(clf, X, y, cv=5, n_jobs=nj)
 
+# unused, but could be useful
+def _times_mean_std(counter_dict):
+    '''analyse timing data (time overhead)
+
+    @return a dict of {domain1: (mean1,std1)}, ... domainN: (meanN, stdN)}
+    with mean and standard of timing data
+    '''
+    out = {}
+    for (domain, counter_list) in counter_dict.iteritems():
+        total = [counter.timing[-1][0] for counter in counter_list]
+        out[domain] = (np.mean(total), np.std(total))
+    return out
+
+def _verbose_test_11(X, y, clf):
+    '''cross-test (1) estimator on (1) X, y, print results and estimator name'''
+    scale = True if 'SVC' in str(clf) else False
+    print _clf_name(clf),
+    res = _test(X, y, clf, scale=scale)
+    print '{}, {}'.format(res.mean(), res)
+
 def _xtest(X_train, y_train, X_test, y_test, clf, scale=False):
     '''cross_tests with estimator'''
     if scale:
@@ -131,18 +242,59 @@ def _xtest(X_train, y_train, X_test, y_test, clf, scale=False):
     clf.fit(X_train, y_train)
     return clf.score(X_test, y_test)
 
-# unused, but could be useful
-def _times_mean_std(counter_dict):
-    '''analyse timing data (time overhead)
+def cross_test(argv, cumul=True, with_svm=False):
+    '''cross test on dirs: 1st has training data, rest have test
 
-    @return a dict of {domain1: (mean1,std1)}, ... domainN: (meanN, stdN)}
-    with mean and standard of timing data
-    '''
-    out = {}
-    for (domain, counter_list) in counter_dict.iteritems():
-        total = [counter.timing[-1][0] for counter in counter_list]
-        out[domain] = (np.mean(total), np.std(total))
-    return out
+    argv is like sys.argv, cumul triggers CUMUL, else version 1'''
+    # call with 1: x-validate test that
+    # call with 2+: also train 1 (split), test 2,3,4,...
+    places = counter.Counter.for_places(argv[1:], False)
+    stats = {k: _bytes_mean_std(v) for (k,v) in places.iteritems()}
+    sizes = {k: _average_bytes(v) for (k,v) in stats.iteritems()}
+    # td: continue here, recompute duration (was not averaged per
+    # domain), compare
+    # durations = {k: _average_duration(v) for (k,v) in places.iteritems()}
+
+    place0 = argv[1] if len(argv) > 1 else '.'
+
+    # training set
+    (train, test) = tts(places[place0])
+    if with_svm:
+        if not "OneVsRestClassifier" in [_clf_name(clf) for clf in GOOD]:
+            clf,_ = _my_grid_helper(train)
+            print 'grid result: {}'.format(clf) # maybe disable in production
+            GOOD.append(clf)
+        else:
+            logging.info("reused existing OVR-SVM-classifier")
+    # X,y for eval
+    if cumul:
+        (X, y, _) = to_features_cumul(counter.outlier_removal(test, 1))
+    else:
+        (X, y, _) = to_features(counter.outlier_removal(test, 1))
+    # evaluate accuracy on all of unaddoned
+    print 'cross-validation on X,y'
+    for clf in GOOD:
+        _verbose_test_11(X, y, clf)
+
+    # vs test sets
+    for (place, its_counters) in places.iteritems():
+        if place == place0:
+            continue
+        print '\ntrain: {} VS {} (overhead {}%)'.format(
+            place0, place, 100.0*(sizes[place]/sizes[place0] -1))
+        if cumul:
+            (X2, y2, _) = to_features_cumul(its_counters)
+        else:
+            l = _dict_elementwise(max,
+                                  _find_max_lengths(places[place0]),
+                                  _find_max_lengths(its_counters))
+            (X, y, _) = to_features(places[place0], l)
+            (X2, y2, _2) = to_features(its_counters, l)
+
+        for clf in GOOD:
+            scale = True if 'SVC' in str(clf) else False
+            print '{}: {}'.format(_clf_name(clf),
+                                  _xtest(X, y, X2, y2, clf, scale=scale))
 
 def compare_stats(dirs):
     '''@return a dict {dir1: {domain1: {...}, ..., domainN: {...}},
@@ -165,20 +317,51 @@ def compare_stats(dirs):
             out.append(tmp)
     return out
 
-def top_30(mean_per_dir):
-    '''@return 30 domains with well-interspersed trace means sizes
+# outdated, lacks correct OR etc
+def cumul_vs_panchenko(counters):
+    '''tests version1 and cumul on counters'''
+    (X, y, y_domains) = to_features(counters)
+    (X2, y2, y2_domains) = to_features_cumul(counters)
+    _compare(X, y, X2, y2)
 
-    @param is f.ex. means from compare_stats above.'''
-    all_means = []
-    for (place, p_means) in mean_per_dir.items():
-        all_means.extend(p_means.values())
-    percentiles = np.percentile(vals,
-                                np.linspace(0, 100, 31),
-                                interpolation='lower')
-    out = set()
-    for mean in percentiles:
-        out.add(_find_domain(mean_per_dir, mean))
+def gen_class_stats_list(places,
+        compare=['disabled/bridge', 'wfpad/bridge', 'simple2/5', '0.22/5aI'],
+        clfs=[GOOD[0]]):
+    '''@return list of show_class_stats() output amended with defense name'''
+    out = []
+    for clf in clfs:
+        for c in compare:
+            res = show_class_stats(places[compare[0]], places[c], clf=clf)
+            res['id'] = '{} with {}'.format(c, _clf_name(clf))
+            out.append(res)
     return out
+
+def outlier_removal_vs_without(counters):
+    (X, y, y_domains) = to_features_cumul(counter.outlier_removal(counters))
+    (X2, y2, y2_domains) = to_features_cumul(counters)
+    _compare(X, y, X2, y2)
+
+def show_class_stats(train, test, clf=GOOD[0]):
+    '''@return (mis-)classification rates per class in test'''
+    (X, y, y_d) = to_features_cumul(counter.outlier_removal(train))
+    clf.fit(_scale(X, clf), y)
+    (X2, y2, y2d) = to_features_cumul(test)
+    X2 = _scale(X2, clf)
+    return _predict_percentages(_class_predictions(y2, clf.predict(X2)),
+                                _gen_url_list(y2, y2d))
+
+def test_or(place):
+    '''tests different outlier removal schemes and levels'''
+    (train, test) = tts(place)
+    for train_lvl in [1,2,3]:
+        for test_lvl in [-1,1,2,3]:
+            (X, y, _) = to_features_cumul(counter.outlier_removal(train,
+                                                                  train_lvl))
+            clf,_ = _my_grid(X, y)
+            (X, y, _) = to_features_cumul(counter.outlier_removal(test,
+                                                                  test_lvl))
+            print "level train: {}, test: {}".format(train_lvl, test_lvl)
+            _verbose_test_11(X, y, clf)
 
 def to_features(counters, max_lengths=None):
     '''transforms counter data to panchenko.v1-feature vector pair (X,y)
@@ -231,73 +414,20 @@ def to_libsvm(X, y, fname='libsvm_in'):
                 f.write('{}:{} '.format(no+1, val))
         f.write('\n')
 
-# td: check and if ok mark private (_)
-def clf_name(clf):
-    '''@return name of estimator class'''
-    return str(clf.__class__).split('.')[-1].split("'")[0]
+def top_30(mean_per_dir):
+    '''@return 30 domains with well-interspersed trace means sizes
 
-def my_grid_helper(counter_dict, cumul=True, outlier_removal=True):
-    '''@return grid-search on counter_dict result (clf, results)'''
-    if outlier_removal:
-        counter_dict = counter.outlier_removal(counter_dict)
-    if cumul:
-        (X, y, _) = to_features_cumul(counter_dict)
-    else:
-        (X, y, _) = to_features(counter_dict)
-    return my_grid(X, y)
-
-def my_grid(X, y,
-            cs=np.logspace(11, 17, 4, base=2),
-            gammas=np.logspace(-3, 3, 4, base=2),
-            results={}):
-    '''grid-search on fixed params
-
-    @param results are previously computed results {(c, g): accuracy, ...}
-    @return optimal_classifier, results_object'''
-    best = None
-    bestres = 0
-    for c in cs:
-        for g in gammas:
-            clf = multiclass.OneVsRestClassifier(svm.SVC(
-                gamma=g, C=c, class_weight='balanced'))
-            if (c,g) in results:
-                current = results[(c,g)]
-            else:
-                current = _test(X, y, clf, scale=True)
-                results[(c, g)] = current
-            if not best or bestres.mean() < current.mean():
-                best = clf
-                bestres = current
-            logging.debug('c: {:8} g: {:10} acc: {}'.format(c, g,
-                                                            current.mean()))
-    if (best.estimator.C in (cs[0], cs[-1])
-        or best.estimator.gamma in (gammas[0], gammas[-1])):
-        logging.warn('optimal parameters found at the border. c:%f, g:%f',
-                     best.estimator.C, best.estimator.gamma)
-        return my_grid(X, y,
-                       new_search_range(best.estimator.C),
-                       new_search_range(best.estimator.gamma),
-                       results)
-    else:
-        return best, results
-
-def new_search_range(best_param):
-    '''returns new array of parameters to search in
-
-    (use if best result was at border)
-    '''
-    return [best_param / 2, best_param, best_param * 2]
-
-def outlier_removal_vs_without(counters):
-    (X, y, y_domains) = to_features_cumul(counter.outlier_removal(counters))
-    (X2, y2, y2_domains) = to_features_cumul(counters)
-    _compare(X, y, X2, y2)
-
-def cumul_vs_panchenko(counters):
-    '''tests version1 and cumul on counters'''
-    (X, y, y_domains) = to_features(counters)
-    (X2, y2, y2_domains) = to_features_cumul(counters)
-    _compare(X, y, X2, y2)
+    @param is f.ex. means from compare_stats above.'''
+    all_means = []
+    for (place, p_means) in mean_per_dir.items():
+        all_means.extend(p_means.values())
+    percentiles = np.percentile(vals,
+                                np.linspace(0, 100, 31),
+                                interpolation='lower')
+    out = set()
+    for mean in percentiles:
+        out.add(_find_domain(mean_per_dir, mean))
+    return out
 
 def tts(counter_dict, test_size=1.0/3):
     '''train-test-split: splits counter_dict in train_dict and test_dict
@@ -327,80 +457,6 @@ def tts(counter_dict, test_size=1.0/3):
         test[url].append(counter_dict[url][index])
     return (train, test)
 
-def verbose_test_11(X, y, clf):
-    '''cross-test (1) estimator on (1) X, y, print results and estimator name'''
-    scale = True if 'SVC' in str(clf) else False
-    print clf_name(clf),
-    res = _test(X, y, clf, scale=scale)
-    print '{}, {}'.format(res.mean(), res)
-
-def cross_test(argv, cumul=True, with_svm=False):
-    '''cross test on dirs: 1st has training data, rest have test
-
-    argv is like sys.argv, cumul triggers CUMUL, else version 1'''
-    # call with 1: x-validate test that
-    # call with 2+: also train 1 (split), test 2,3,4,...
-    places = counter.Counter.for_places(argv[1:], False)
-    stats = {k: _bytes_mean_std(v) for (k,v) in places.iteritems()}
-    sizes = {k: _average_bytes(v) for (k,v) in stats.iteritems()}
-    # td: continue here, recompute duration (was not averaged per
-    # domain), compare
-    # durations = {k: _average_duration(v) for (k,v) in places.iteritems()}
-
-    place0 = argv[1] if len(argv) > 1 else '.'
-
-    # training set
-    (train, test) = tts(places[place0])
-    if with_svm:
-        if not "OneVsRestClassifier" in [clf_name(clf) for clf in GOOD]:
-            clf,_ = my_grid_helper(train)
-            print 'grid result: {}'.format(clf) # maybe disable in production
-            GOOD.append(clf)
-        else:
-            logging.info("reused existing OVR-SVM-classifier")
-    # X,y for eval
-    if cumul:
-        (X, y, _) = to_features_cumul(counter.outlier_removal(test, 1))
-    else:
-        (X, y, _) = to_features(counter.outlier_removal(test, 1))
-    # evaluate accuracy on all of unaddoned
-    print 'cross-validation on X,y'
-    for clf in GOOD:
-        verbose_test_11(X, y, clf)
-
-    # vs test sets
-    for (place, its_counters) in places.iteritems():
-        if place == place0:
-            continue
-        print '\ntrain: {} VS {} (overhead {}%)'.format(
-            place0, place, 100.0*(sizes[place]/sizes[place0] -1))
-        if cumul:
-            (X2, y2, _) = to_features_cumul(its_counters)
-        else:
-            l = _dict_elementwise(max,
-                                  _find_max_lengths(places[place0]),
-                                  _find_max_lengths(its_counters))
-            (X, y, _) = to_features(places[place0], l)
-            (X2, y2, _2) = to_features(its_counters, l)
-
-        for clf in GOOD:
-            scale = True if 'SVC' in str(clf) else False
-            print '{}: {}'.format(clf_name(clf),
-                                  _xtest(X, y, X2, y2, clf, scale=scale))
-
-def test_or(place):
-    '''tests different outlier removal schemes and levels'''
-    (train, test) = tts(place)    
-    for train_lvl in [1,2,3]:
-        for test_lvl in [-1,1,2,3]:
-            (X, y, _) = to_features_cumul(counter.outlier_removal(train,
-                                                                  train_lvl))
-            clf,_ = my_grid(X, y)
-            (X, y, _) = to_features_cumul(counter.outlier_removal(test,
-                                                                  test_lvl))
-            
-            print "level train: {}, test: {}".format(train_lvl, test_lvl)
-            verbose_test_11(X, y, clf)
     #_test(X, y, svm.SVC(kernel='linear')) #problematic, but best
     #grid rbf
 #     cstart, cstop = -45, -35
@@ -474,61 +530,8 @@ if __name__ == "__main__":
     # counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
     cross_test(sys.argv, with_svm=True) #, cumul=False)
 
-def class_predictions(y2, y2_predict):
-    '''@return list: for each class in y2: what was it predicted to be'''
-    out = []
-    for i in range(y2[-1]+1):
-        out.append([])
-    for (idx, elem) in enumerate(y2):
-        out[elem].append(y2_predict[idx])
-    return out
-
-def class_predict_percentages(class_predictions_list, url_list):
-    '''@return percentages how often a class was mapped to itself'''
-    import collections
-    out = {}
-    for (idx, elem) in enumerate(class_predictions_list):
-        out[url_list[idx]] =  float(collections.Counter(elem)[idx])/len(elem)
-    return out
-
-def gen_url_list(y, y_domains):
-    '''@return list of urls, the index is the class'''
-    out = []
-    for i in range(y[-1]+1):
-        out.append([])
-    for (idx, cls) in enumerate(y):
-        if not out[cls]:
-            out[cls] = y_domains[idx]
-        else:
-            assert out[cls] == y_domains[idx]
-    return out
-
-def show_class_stats(train, test, clf=GOOD[0]):
-    '''@return (mis-)classification rates per class in test'''
-    (X, y, y_d) = to_features_cumul(counter.outlier_removal(train))
-    clf.fit(_scale(X, clf), y)
-    (X2, y2, y2d) = to_features_cumul(test)
-    X2 = _scale(X2, clf)
-    return class_predict_percentages(class_predictions(y2, clf.predict(X2)),
-                                     gen_url_list(y2, y2d))
-
-def gen_class_stats_list(places,
-        compare=['disabled/bridge', 'wfpad/bridge', 'simple2/5', '0.22/5aI'],
-        clfs=[GOOD[0]]):
-    '''@return list of show_class_stats output amended with defense name'''
-    out = []
-    for clf in clfs:
-        for c in compare:
-            res = show_class_stats(places[compare[0]], places[c], clf=clf)
-            res['id'] = '{} with {}'.format(c, clf_name(clf))
-            out.append(res)
-    return out
-
-def format_row(row):
-    out = [row[0]]
-    out.extend(el[:6] for el in row[1:])
-    return out
-
+### classification results per class
+## defense_per_class is generated via gen_class_stats_list
 ## write gen_class_stats_list to csv file, transpose via
 # with open('/tmp/names.csv', 'w') as csvfile:
 #     writer = csv.DictWriter(csvfile, fieldnames=defense_per_class[0].keys())
@@ -547,6 +550,6 @@ def format_row(row):
 #     writer = csv.writer(csvfile)
 #     writer.writerow(b[8])
 #     for row in b[:8]:
-#             writer.writerow(format_row(row))
+#             writer.writerow(_format_row(row))
 #     for row in b[9:]:
-#             writer.writerow(format_row(row))
+#             writer.writerow(_format_row(row))
