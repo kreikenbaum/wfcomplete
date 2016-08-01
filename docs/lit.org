@@ -7914,6 +7914,14 @@
             much harder again
 
        2) User Testing
+
+          - users with 2 second pause, browsed unex for 5-10 minutes
+
+          - worked very well (96-94%), also without link algorithm (same)
+
+            - link structure not needed for high accuracy
+
+    6) Discussion and Conclusions
 *** quotes
     3) [@3] Defenses
        0) [@0]
@@ -8054,6 +8062,22 @@
        technical issues
 
        1. Transporting the stream vs transporting the packets
+
+          - numerous IP-leve challenges:
+
+            - TCP fingerprinting,
+
+            - application scrubbing,
+
+            - dns leaks and redesign name space
+
+            - unclear crypto (TLS?)
+
+            - even TCP needs tuning of network params
+
+            - exit policies for IP packets harder
+
+       2. Mid-latency
 *** quotes
     - Tor is an overlay network for anonymizing TCP streams over the Internet
     - Because of our strategy, Tor has a weaker threat model than many
@@ -8183,6 +8207,19 @@
           - measures: k-identifiability and k-accuracy see quotes
 
        2) Classifier Performance
+
+          - test and training: each full day, one extra day apart
+
+            - n=1000 sites
+
+          - more training: better accuracy, lower \Delta: higher accuracy
+
+          - k of course improves performance
+
+          - accuracy seems to scale down logarithmically with number of
+            sites (scalable)
+
+       3) Forensics Feasibility
 *** quotes
     1) INTRODUCTION
        - Encrypted tunnels thwart the legitimate gathering of evidence
@@ -8333,6 +8370,16 @@
        effect of parameters K, n_{min} and M on Extra-Trees
 
        1) Attribute selection strength K
+
+          - depends strongly on attribute correlation
+
+          - if correlated: K=1 is best
+
+          - if superfluous variables, rising K gives better result
+
+          - else (variable importance): default \sqrt{K} does a good job
+
+       2) Smoothing strength n_{min}
 *** quotes
     1) Introduction
        - selects its cut-point fully at random, i.e., independently of
@@ -8472,12 +8519,6 @@
             initially all set to 0.
 *** ref [[file:master.bib::Broder02networkapplications][Broder & Mitzenmacher 2002: Network Applications Bloom Filters]]
 ** TODO [#A] [[./csbuflo.pdf][Cai - CS-BuFLO: A Congestion Sensitive Website Fingerprinting Defense]]
-*** MOVE DOWN quotes
-    - Our experiments find that Congestion-Sensitive BuFLO has high
-      overhead (around 2.3-2.8x)
-    - it is not currently known whether there exists any efficient and
-      secure defense against website fingerprinting attacks.
-    - all previously-proposed defenses provide little security.
 *** summary
     0) [@0] Abstract:
 
@@ -8565,6 +8606,12 @@
        - cai(4): bootstrap cw to ow, compare attacks and defenses
 
     4) Congestion-Sensitive BuFLO
+*** quotes
+    - Our experiments find that Congestion-Sensitive BuFLO has high
+      overhead (around 2.3-2.8x)
+    - it is not currently known whether there exists any efficient and
+      secure defense against website fingerprinting attacks.
+    - all previously-proposed defenses provide little security.
 *** ref
     [[file:master.bib::wpes14-csbuflo][Cai et al. 2014: CS BuFLO]]
 ** TODO [#B] [[./10.1.1.20.2080.bloom_orig.pdf][Bloom - Space/Time Trade-offs in Hash Coding with Allowable Errors]]
@@ -15625,6 +15672,20 @@
     - The most significant improvement will enhance Shadow’s ability
       to run in parallel environments, leading to faster experiments
       and better utilization of hardware resources.
+** TODO [[./TAIntro-book.pdf][Danezis - Introducing Traffic Analysis]]
+*** summary
+    1) Introduction
+
+       - TA used by bletchley park@german air force, japan@pearl
+         harbour, google, amateurs@CIA
+
+    2) Military roots
+*** quotes
+*** TODO ref
+** TODO [[./traffic.pdf][Traffic Analysis Attacks and Trade-Offs in Anonymity Providing Systems]]
+*** summary
+*** quotes
+*** ref [[file:master.bib::back01][Back et al. 2001: Traffic Analysis Attacks]]
 ** PART [[info:gnuplot#Top][Broeker - gnuplot]]
 *** summary
     1) [[info:gnuplot#Top][gnuplot]]
@@ -17075,6 +17136,10 @@
              special hyperlinks like [[(name)]]
     12) Exporting
         7) [@7] LATEX and PDF export
+           1) LATEX export commands
+              - C-c C-e l l	org-latex-export-to-latex
+
+                Export as a LATEX file
            3) [@3] Header and sectioning structure
            4) Quoting \LATEX code
               - special code that should only be present in LATEX
@@ -18168,7 +18233,42 @@
 
            3) One-Vs-One
 
-    7) [@7] Dataset transformations
+    6) [@6] Model selection and evaluation
+
+       1) Cross-validation: evaluating estimator performance
+
+          - example usage of
+            #+BEGIN_SRC python
+              X_train, X_test, y_train, y_test = cross_validation.train_test_split(
+                  iris.data, iris.target, test_size=0.4, random_state=0)
+            #+END_SRC
+
+       2) [@2] Grid Search: Searching for estimator parameters
+
+          0) [@0]
+
+             - for *hyperparameters*: need to be set explicitly, example:
+               C, kernel, gamma for SVM
+
+          3) [@3] Tips for parameter search
+
+             - specify explicit metric (default is accuracy_score)
+
+               - good for unbalanced classification
+
+             - split train and test set
+
+             - exploit parallelism
+
+          4) Alternatives to brute force parameter search
+
+             3) [@3] (? - p.278) Out of Bag Estimates
+
+                - for bagging methods: they leave out part of the data
+
+                - use that to estimate scores
+
+    7) Dataset transformations
 
        3) [@3] Preprocessing data
 
@@ -18345,10 +18445,16 @@
                the number of clusters to be specified.
     6) MODEL SELECTION AND EVALUATION
        1) Cross-validation: evaluating estimator performance
-          #+BEGIN_SRC python
-            X_train, X_test, y_train, y_test = cross_validation.train_test_split(
-                iris.data, iris.target, test_size=0.4, random_state=0)
-          #+END_SRC
+          - Learning the parameters of a prediction function and
+            testing it on the same data is a methodological mistake
+       2) Grid Search: Searching for estimator parameters
+          3) [@3] Tips for parameter search
+             - When evaluating the resulting model it is important to
+               do it on held-out samples that were not seen during the
+               grid search process: it is recommended to split the
+               data into a development set (to be fed to the
+               GridSearchCV instance) and an evaluation set to compute
+               performance metrics.
     12) [@12] Frequently Asked Questions
         12) [@12] How do I deal with string data (or trees, graphs...)?
             - Firstly, many estimators take precomputed
@@ -18950,6 +19056,13 @@
 
                 changes this process's environment variables,
                 f.ex. =environ[’HOME’]=
+
+              - os.uname
+
+                - get tuple (sysname, nodename, release, version, machine)
+
+                - use =socket.gethostname()= for hostname to get a
+                  more reliable version
     18) [@18] INTERNET DATA HANDLING
         12) [@12] base64 — RFC 3548: Base16, Base32, Base64 Data
             Encodings
@@ -20679,7 +20792,6 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
     - Convert seconds since the epoch (1970-01-01 UTC) to a date
 
       $ date --date='@2147483647'
-
 ** PART developer.mozilla.org
 *** [[../../../chive/developer.mozilla.org/en-US/docs/Mozilla/Add-ons/Add-on_Manager/Addon.html][Addon]]
 **** quotes
@@ -20688,11 +20800,26 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 
           The ID of the add-on. No other installed add-on will have
           the same ID.
-*** MOVE below Addon... [[../../../chive/developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/splice.html][Array.prototype.splice()]]
+*** [[../../../chive/developer.mozilla.org/en-US/docs/Mozilla/Add-ons/Add-on_Manager/AddonListener.html][AddonListener]]
 **** quotes
-     - The splice() method changes the content of an array by removing
-       existing elements and/or adding new elements.
-     - array.splice(start, deleteCount[, item1[, item2[, ...]]])
+     - onDisabling()
+
+       Called when an add-on is about to be disabled.
+       #+BEGIN_SRC js
+         void onDisabling(
+           in Addon addon,
+           in boolean needsRestart
+         )
+       #+END_SRC
+     - onUninstalling()
+
+       Called when an add-on is about to be uninstalled.
+       #+BEGIN_SRC js
+         void onUninstalling(
+           in Addon addon,
+           in boolean needsRestart
+         )
+       #+END_SRC
 *** [[../../../chive/developer.mozilla.org/en-US/docs/Mozilla/Add-ons/Add-on_Manager/AddonManager.html][AddonManager]]
 **** quotes
      8) [@8] Methods
@@ -20714,26 +20841,21 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
                 in AddonListener listener
               )
             #+END_SRC
-*** MOVE above Addonmanager [[../../../chive/developer.mozilla.org/en-US/docs/Mozilla/Add-ons/Add-on_Manager/AddonListener.html][AddonListener]]
+*** [[../../../chive/developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/splice.html][Array.prototype.splice()]]
 **** quotes
-     - onDisabling()
-
-       Called when an add-on is about to be disabled.
-       #+BEGIN_SRC js
-         void onDisabling(
-           in Addon addon,
-           in boolean needsRestart
-         )
-       #+END_SRC
-     - onUninstalling()
-
-       Called when an add-on is about to be uninstalled.
-       #+BEGIN_SRC js
-         void onUninstalling(
-           in Addon addon,
-           in boolean needsRestart
-         )
-       #+END_SRC
+     - The splice() method changes the content of an array by removing
+       existing elements and/or adding new elements.
+     - array.splice(start, deleteCount[, item1[, item2[, ...]]])
+*** [[developer.mozilla.org/en-US/Add-ons/SDK/Tools/console.html][console]] ([[../../../chive/IT-gg/js/Mozilla_Addon_SDK_doc/developer.mozilla.org/en-US/Add-ons/SDK/Tools/console.html][local link]])
+    - When you run your add-on using jpm run or jpm test, the global
+      extensions.sdk.console.logLevel preference is automatically set
+      to "info". This means that calls to console.log() will appear
+      in the console output.
+    - When you install an add-on into Firefox, the logging level will
+      be "error" by default (that is, unless you have set one of the
+      two preferences). This means that messages written using
+      debug(), log(), info(), trace(), and warn() will not appear in
+      the console.
 *** [[../../../chive/developer.mozilla.org/en-US/docs/Creating_Sandboxed_HTTP_Connections.html][Creating Sandboxed HTTP Connections]]
 **** summary
 **** quotes
@@ -20794,6 +20916,22 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        nsIHttpChannel. However, it is passed to us as an nsISupports. So
        we need to change the nsISupports into a nsIHttpChannel which is
        what the QueryInterface call does.
+*** system/events
+    - Usage The system/events module provides core (low level) API
+      for working with the application observer service, also known
+      as nsIObserverService. You can find a list of events dispatched
+      by firefox codebase here.
+      #+BEGIN_SRC javascript
+        var events = require("sdk/system/events");
+        var { Ci } = require("chrome");
+
+        function listener(event) {
+          var channel = event.subject.QueryInterface(Ci.nsIHttpChannel);
+          channel.setRequestHeader("User-Agent", "MyBrowser/1.0", false);
+        }
+
+        events.on("http-on-modify-request", listener);
+      #+END_SRC
 *** [[../../../chive/developer.mozilla.org/en-US/docs//Mozilla/Add-ons/SDK/Low-Level_APIs/system_unload.html][system/unload]]
 **** quotes
      1. Globals
@@ -20812,7 +20950,14 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        #+BEGIN_SRC js
          const { setTimeout } = require("sdk/timers");
        #+END_SRC
-*** MOVE XUL Migration Guide
+*** window/utils
+    - getWindowLoadingContext(window)
+      Returns the nsILoadContext.
+      - Parameters
+        window : nsIDOMWindow
+      - Returns
+        nsILoadContext
+*** XUL Migration Guide
     - Using XPCOM This example uses the action button API, which is
       only available from Firefox 29 onwards.
 
@@ -20867,39 +21012,6 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
           }
         });
       #+END_SRC
-*** MOVE system/events
-    - Usage The system/events module provides core (low level) API
-      for working with the application observer service, also known
-      as nsIObserverService. You can find a list of events dispatched
-      by firefox codebase here.
-      #+BEGIN_SRC javascript
-        var events = require("sdk/system/events");
-        var { Ci } = require("chrome");
-
-        function listener(event) {
-          var channel = event.subject.QueryInterface(Ci.nsIHttpChannel);
-          channel.setRequestHeader("User-Agent", "MyBrowser/1.0", false);
-        }
-
-        events.on("http-on-modify-request", listener);
-      #+END_SRC
-*** window/utils
-    - getWindowLoadingContext(window)
-      Returns the nsILoadContext.
-      - Parameters
-        window : nsIDOMWindow
-      - Returns
-        nsILoadContext
-*** MOVE [[developer.mozilla.org/en-US/Add-ons/SDK/Tools/console.html][console]] ([[../../../chive/IT-gg/js/Mozilla_Addon_SDK_doc/developer.mozilla.org/en-US/Add-ons/SDK/Tools/console.html][local link]])
-    - When you run your add-on using jpm run or jpm test, the global
-      extensions.sdk.console.logLevel preference is automatically set
-      to "info". This means that calls to console.log() will appear
-      in the console output.
-    - When you install an add-on into Firefox, the logging level will
-      be "error" by default (that is, unless you have set one of the
-      two preferences). This means that messages written using
-      debug(), log(), info(), trace(), and warn() will not appear in
-      the console.
 ** PART rsync manual
 *** summary
 *** quotes
@@ -21127,6 +21239,10 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
               - "allows extension with changes in only one place"
 
     10) A Quick Overview
+
+        practices that complement each other
+
+        1) The Planning Game1
 *** quotes
     00) [@00] unsorted
         - Use XP when requirements are vague or changing
@@ -21225,6 +21341,20 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 
                 www.simply<wbr>orange<wbr>juice.com
 *** ref [[file:master.bib::html5][Hickson et al. 2014: HTML5]]
+** PART [[file:///usr/share/doc/python-matplotlib-doc/html/index.html][matplotlib]]
+*** summary
+    - [[file:///usr/share/doc/python-matplotlib-doc/html/api/pyplot_api.html][plot]]
+      - with one data array, setting color from color_cycle, and transparency
+        #+BEGIN_SRC python
+          plt.plot(plot_list[0], color=(1.0, 0.5, 0.0), alpha=0.5)
+          plt.show()
+        #+END_SRC
+*** quotes
+** PART [[../../../chive/GG/it/LaTeX/Symbols/symbols.pdf][The Great, Big List of \LaTeX Symbols]]
+*** quotes
+    14) [@14] Delimiters
+        - \langle =\ langle=
+        - \rangle =\ rangle=
 ** onion routing project
 *** [[~/da/git/docs/onion-routing_pet2000.pdf][Towards an Analysis of Onion Routing Security]]
 **** ref: [[file:master.bib::onion-routing:pet2000][Syverson et al. 2000: Towards Analysis Onion Routing Security]]
@@ -21549,21 +21679,7 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        2) HTML Application of Core DOM
 *** quotes
 *** ref
-** PART MOVE [[file:///usr/share/doc/python-matplotlib-doc/html/index.html][matplotlib]]
-*** summary
-    - [[file:///usr/share/doc/python-matplotlib-doc/html/api/pyplot_api.html][plot]]
-      - with one data array, setting color from color_cycle, and transparency
-        #+BEGIN_SRC python
-          plt.plot(plot_list[0], color=(1.0, 0.5, 0.0), alpha=0.5)
-          plt.show()
-        #+END_SRC
-*** quotes
-** PART MOVE [[../../../chive/GG/it/LaTeX/Symbols/symbols.pdf][The Great, Big List of \LaTeX Symbols]]
-*** quotes
-    14) [@14] Delimiters
-        - \langle =\ langle=
-        - \rangle =\ rangle=
-** [[./9501101.pdf][Solving Multiclass Learning Problems via Error-Correcting Output Codes]]
+** TODO [[./9501101.pdf][Dietterich - Solving Multiclass Learning Problems via Error-Correcting Output Codes]]
 *** summary
 *** quotes
 *** ref [[file:master.bib::DBLP:journals/jair/DietterichB95][Dietterich & Bakiri 1995: Solving Multiclass Learning]]
@@ -21578,20 +21694,12 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 ** [[./flow-correlation04.pdf][On Flow Correlation Attacks and Countermeasures in Mix Networks]]
 *** summary
 *** quotes
-*** ref
+*** ref [[file:master.bib::flow-correlation04][Zhu et al. 2004: Flow Correlation Attacks]]
 ** [[./oakland05torta.pdf][Low-Cost Traffic Analysis of Tor]]
 *** summary
 *** quotes
-*** ref
-** [[./SS03.pdf][Passive Attack Analysis for Connection-Based Anonymity Systems]]
+*** ref [[file:master.bib::torta05][Murdoch & Danezis 2005: Low Cost Traffic Analysis Tor]]
+** TODO MOVE [[./SS03.pdf][Passive Attack Analysis for Connection-Based Anonymity Systems]]
 *** summary
 *** quotes
-*** ref
-** TODO MOVE [[./TAIntro-book.pdf][Introducing Traffic Analysis]]
-*** summary
-*** quotes
-*** ref
-** TODO MOVE [[./traffic.pdf][Traffic Analysis Attacks and Trade-Offs in Anonymity Providing Systems]]
-*** summary
-*** quotes
-*** ref
+*** ref [[file:master.bib::SS03][Serjantov & Sewell 2003: Passive Attack Analysis]]

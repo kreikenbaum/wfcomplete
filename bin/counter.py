@@ -55,12 +55,12 @@ def _extract_url(filename):
     '''
     return os.path.basename(filename).split(TIME_SEPARATOR)[0]
 
-def _get_all(place, outlier_removal=True):
+def _get_all(defense, outlier_removal=True):
     '''helper to get counters w/o outlier_removal'''
     if outlier_removal:
-        return outlier_removal(all_from_dir(place))
+        return outlier_removal(all_from_dir(defense))
     else:
-        return all_from_dir(place)
+        return all_from_dir(defense)
 
 def _normalize(array):
     '''normalizes array so that its maximum absolute value is +- 1.0
@@ -254,17 +254,17 @@ class Counter(object):
 
     # td: read up on ordereddict, maybe replace
     @classmethod
-    def for_places(cls, places, outlier_removal=True):
-        '''@return dict: {place1: {domain1: counters1_1, ...  domainN:
-    countersN_1}, ..., placeM: {domain1: counters1_M, ...  domainN:
-    countersN_M}} for directories} in {@code places}
+    def for_defenses(cls, defenses, outlier_removal=True):
+        '''@return dict: {defense1: {domain1: counters1_1, ...  domainN:
+    countersN_1}, ..., defenseM: {domain1: counters1_M, ...  domainN:
+    countersN_M}} for directories} in {@code defenses}
         '''
         out = {}
-        if len(places) == 0:
+        if len(defenses) == 0:
             out['.'] = _get_all('.', outlier_removal)
 
-        for p in places:
-            out[p] = _get_all(p, outlier_removal)
+        for d in defenses:
+            out[d] = _get_all(d, outlier_removal)
 
         return out
 
