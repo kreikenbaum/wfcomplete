@@ -192,13 +192,24 @@
     Tor\cite{tor-design} made website fingerprinting harder:
 
 
-    Building a new HTTP connection for each transferred object is
+    Building a new HTTP connection for each transferred object turned
+    out to be
     inefficient\cite[sec.2.2.2]{DBLP:books/daglib/0001977}. To improve
     on this, some early HTTP/1.0 implementations used persistent
-    connections\cite{rfc2068}. These were standardized in HTTP/1.1
-    \cite{rfc2616}.
+    connections\cite{rfc2068}, see fig. \ref{http_persistent}. These
+    were standardized in HTTP/1.1 \cite{rfc2616}.
+
+#+BEGIN_LaTeX
+\begin{figure}[htb]
+\centering
+\includegraphics[width=.9\linewidth]{./pictures/HTTP_persistent_connection.png}
+\caption{\label{http_persistent}
+HTTP persistent connections, source \url{https://en.wikipedia.org/wiki/File:HTTP_persistent_connection.svg}}
+\end{figure}
+#+END_LaTeX
 
     #+CAPTION: HTTP persistent connections, source \url{https://en.wikipedia.org/wiki/File:HTTP_persistent_connection.svg}
+    #+NAME: http_persistent
     [[./pictures/HTTP_persistent_connection.png]]
 
     It was no longer trivial to extract the files' sizes. You had to
@@ -208,25 +219,29 @@
 
     In addition to persistent connections, HTTP/1.1 allowed pipelining
     several HTTP requests in a single connection without waiting for
-    the files to arrive in between.
+    the files to arrive in between, see fig \ref{http_pipelining}.
 
-    #+CAPTION: HTTP pipelining, source \url{https://commons.wikimedia.org/wiki/File:HTTP_pipelining2.svg}
-    [[./pictures/HTTP_pipelining2.png]]
+#+BEGIN_LaTeX
+\begin{figure}[htb]
+\centering
+\includegraphics[width=.9\linewidth]{./pictures/HTTP_pipelining2.png}
+\caption{\label{http_pipelining}
+HTTP persistent connections, source \url{https://commons.wikimedia.org/wiki/File:HTTP_pipelining2.svg}}
+\end{figure}
+#+END_LaTeX
 
-    As this created problems with some servers, pipelining was
-    disabled in
-    Firefox[fn::\url{https://bugzilla.mozilla.org/show_bug.cgi?id=264354}]
-    and Google
-    Chrome[fn::\url{https://www.chromium.org/developers/design-documents/network-stack/http-pipelining}]
-    and not implemented in Internet
-    Explorer[fn::\url{http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp/expertzone/chats/transcripts/08_0814_ez_ie8.mspx}].
-
-    After Panchenko et al.'s first successful attack\cite{panchenko},
-    Firefox's built-in request pipelining was enabled with added
-    request order randomization as an additional no-cost defense
-    prototype in the Tor-Browser-Bundle \cite{experimental}. Yet, Cai
-    et al.\cite{ccs2012-fingerprinting} found fingerprinting to be
-    easier with this defense enabled than without.
+    Pipelining was
+    disabled[fn::\url{https://bugzilla.mozilla.org/show_bug.cgi?id=264354},
+    url{https://www.chromium.org/developers/design-documents/network-stack/http-pipelining}]
+    or not implemented
+    [fn::\url{http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp/expertzone/chats/transcripts/08_0814_ez_ie8.mspx}]
+    in all major browsers. After Panchenko et al.'s first successful
+    attack\cite{panchenko}, Firefox's built-in request pipelining was
+    enabled [fn::with added request order randomization] as an
+    additional no-cost defense prototype in the Tor-Browser-Bundle
+    \cite{experimental}. Cai et al.\cite{ccs2012-fingerprinting} found
+    fingerprinting to be easier with this defense enabled than
+    without.
 **** DANIEL Tor [0/4]
      The Onion Router\cite{tor-design} (short: /Tor/) is an anonymity
      system: While encryption hides the /content of communication/,
