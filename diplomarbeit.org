@@ -1005,6 +1005,7 @@
        - quantiles of (total incoming) sizes
          - panchenko: relevant metric
      - link to code: top30() in analyse.py
+     - it's good if it's easy to classify, because then it's easy to cloak
 *** WRITE capture
       #+CAPTION: setup to capture web page traffic
       #+ATTR_LATEX: :float nil :width 0.5\textwidth
@@ -1045,8 +1046,8 @@
      modified to omit terminating the browser instance.
 *** TODO classification
 **** WRITE counter.py: represent trace files
-     Once the website traces are stored in pcap-files, feature vectors
-     need to be extracted. A feature vector is represented by a Python
+     Once the website traces are stored in pcap-files, attribute vectors
+     need to be extracted. A attribute vector is represented by a Python
      class =Counter=, which can be created from a pcap file, or
      persisted to a JSON\cite{rfc7159} file containing timing and
      packet size information (to save time and space).
@@ -1070,38 +1071,38 @@
      =Counter=s as values. If there were no JSON files in the
      directory, these are created automatically via the =save()=-method.
 
-     To extract the features from a single =Counter=, they
+     To extract the attributes from a single =Counter=, they
      =panchenko()= or =cumul()=-methods can be used, to inspect single
-     features of Panchenko et al.'s first attack\cite{panchenko} you
-     can call =get('feature_name')=[fn::for example
+     attributes of Panchenko et al.'s first attack\cite{panchenko} you
+     can call =get('attribute_name')=[fn::for example
      =COUNTERS['cnn.com'][0].get('duration')')=].
 
-     =panchenko()= yields a feature vector with default padding of
-     Panchenko's variable-length features. Since Panchenko et
+     =panchenko()= yields a attribute vector with default padding of
+     Panchenko's variable-length attributes. Since Panchenko et
      al\cite{panchenko} gave explicit size conversions, the sizes have
      not been normalized further. The default padding is computed to
      be large enough for all traces.
 ***** TODO cumul
-**** WRITE analyse.py: code to classify etc: transform features to vector
+**** WRITE analyse.py: code to classify etc: transform attributes to vector
      Once the =Counter=s data is obtained, it needs to be transformed
      to input for scikit-learn's\cite{scikit-learn} classifiers.
 
-     The code to convert these features to classification input can be
+     The code to convert these attributes to classification input can be
      found in =analyse.py= (see appendix [[#analyse]]). This determines the maximum
-     length of all variable-length features, 0-pads Panchenko's features
+     length of all variable-length attributes, 0-pads Panchenko's attributes
      with zeroes to the same length, and converts them to an array fit
      for input into scikit-learn's classifiers. When called from the
      command line, as
 
      python -i /path/to/analyse.py
 
-     , it will extract the feature vectors from JSON or pcap files in
+     , it will extract the attribute vectors from JSON or pcap files in
      the current directory, and run 5-fold cross-validated classifiers
      against the data.
 
-     =Counter= input features are transformed into scikit-learn input
+     =Counter= input attributes are transformed into scikit-learn input
      in the =to_features()= function, which normalizes all vectors to
-     have the same size (padding with 0s), and creates the feature
+     have the same size (padding with 0s), and creates the attribute
      matrix =X= with numeric class labels =y= (and class names in
      =y_domain=).
 
@@ -1112,9 +1113,20 @@
 ***** TODO ref stackoverflow why 0 padding
 ****** TODO or better, some statistics text
 ***** TODO see also =to_features_cumul=
-** KEYWORDS panchenko v1 different classifiers
-   <<different-classifiers>>
-   - more features than cumul default
+** WRITE panchenko v1 different classifiers
+   <<different-classifiers>> Panchenko et al's first
+   attack\cite{panchenko} number of attributes grow with the size of
+   the packet trace, other than CUMUL\cite{panchenko2}. They are often
+   quite many and thus, SVM evaluation takes much longer, especially
+   parameter estimation. In addition, CUMUL greatly improved the
+   accuracy (and TPR/TNR).
+
+   In our various tests with the first attack many classifiers,
+   notably k-nearest-neighbors, perform better than the SVM
+   classifier.
+
+
+   - more attributes than cumul default
      - svm grows with more classes as it has to pad to maximum
      - takes a long time to do param-eval, and partly not as accurate
    - experiment
@@ -1157,7 +1169,7 @@
 *** TODO run test, include results
 *** TODO link to panchenko's software
    - after cross-validation split
-   - but can do that before features
+   - but can do that before attributes
      - list of (url, list-id) tuples, one for each counter
      - randomly choose subset
    - link to file
@@ -1170,7 +1182,7 @@
    Panchenko et al proposed two methods for analysing traces.
 
    They both use support vector machines as classifier, but differ in
-   the features they select.
+   the attributes they select.
 
    Since CUMUL\cite{panchenko2} is Panchenko et al.'s newer approach
    after their first classifier\cite{panchenko} (called /version 1/
@@ -1622,7 +1634,7 @@ similar, little to see
 **** TODO mention redirects
 *** practical wf: analyzing traces
 **** TODO how to process the data
-     The aim of processing is to extract features relevant for machine
+     The aim of processing is to extract attributes relevant for machine
      learning from the original trace files, which are in =pcap= format.
 
      Of the several tools available for reading =pcap=, =tshark= was
@@ -1636,9 +1648,9 @@ similar, little to see
      - displays
      - =Counter=-class
 ***** TODO why filtering allowed
-***** TODO see if merge/unify with [[transform to panchenko-features]]
-***** TODO and if include stuff from [[*from%20%5B%5B*transform%20to%20panchenko-features%5D%5D][from {{*transform to panchenko-features}}]]
-**** transform to panchenko-features
+***** TODO see if merge/unify with [[transform to panchenko-attributes]]
+***** TODO and if include stuff from [[*from%20%5B%5B*transform%20to%20panchenko-features%5D%5D][from {{*transform to panchenko-attributes}}]]
+**** transform to panchenko-attributes
      In encoding packet sizes, this thesis follows Panchenko et al.'s
      approach, who recorded "incoming packets as positive, outgoing ones
      as negative numbers."\cite{panchenko}
@@ -1748,8 +1760,8 @@ similar, little to see
        extra protection
 **** CHECK text-only
 ***** TODO lynx link
-*** distribution of (main) features
-    These distribution histograms show how Panchenko's main features
+*** distribution of (main) attributes
+    These distribution histograms show how Panchenko's main attributes
     are distributed. They are stacked histograms with classes
     separated by colors. They are compared (visually) to the HTTP
     Traffic Model\cite{newtrafficmodel}.
@@ -1768,7 +1780,7 @@ similar, little to see
     Conceptually, the
 
     [[file:pictures/all_length_0.png]]
-    the length of the Size Marker feature vector.
+    the length of the Size Marker attribute vector.
 
     [[file:pictures/all_num_sizes_in.png]]
     number of different packet sizes downstream/incoming.
@@ -1797,7 +1809,7 @@ similar, little to see
 
     Panchenko et al\cite{panchenko} were the first to publish a
     successful website fingerprinting attack on Tor. They extracted
-    HTTP-specific features from the packet trace and used those in a
+    HTTP-specific attributes from the packet trace and used those in a
     hand-tuned support vector machine with a radial basis function
     kernel.
 **** practical wf: Capturing traces
@@ -2279,7 +2291,7 @@ similar, little to see
 ****** TODO understand adaptive padding histogram
 ***** TODO differences to walkie-talkie
 ***** TODO differences to panchenkos
-      - feature extraction via python class directly from pcap
+      - attribute extraction via python class directly from pcap
         - packet data saveable to JSON
 ***** TODO why several covers
       - competition
@@ -2762,7 +2774,7 @@ similar, little to see
        xpra start ssh:user@host:37 --start=path/to/tor-browser_en-US/Browser/start-tor-browser     
      #+END_SRC
 * unused
-** from [[*transform to panchenko-features]]
+** from [[*transform to panchenko-attributes]]
   The code to examine a single trace file is in =analyze_file()=
   It
   - opens the filename in tshark
@@ -2823,7 +2835,7 @@ similar, little to see
 ** how sally works
    - configuration file
      - input
-     - features
+     - attributes
      - output
 
 ** problematic websites
