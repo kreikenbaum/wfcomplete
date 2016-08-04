@@ -1144,6 +1144,201 @@
       no security or overhead advantage compared to deterministic
       defenses.
 *** ref [[file:master.bib::a-systematic][Cai et al. 2014: Systematic Approach Developing]]
+** [[./ronathan-heyning.pdf][Cheng - Traffic Analysis of SSL Encrypted Web Browsing]]
+*** summary
+    0) [@0] Abstract
+
+       - SSL not designed as protection against traffic analysis, tested here
+
+    1) Introduction
+
+       - HTTP lacks encryption, provided by HTTPS
+
+       - gives "false impression of [...] confidentiality"
+
+       - easy to set up: metadata in packets (needed for Internet to work)
+
+         - readily-available tools
+
+       - most files have unique sizes ("Only 10% [...] non-unique")
+
+    2) Traffic Analysis Techniques
+
+       protocol issues, extract data from sniffed traffic, identify
+       web pages using this data
+
+       1) Protocol Issues
+
+          - procedure
+
+            1. request html
+
+            2. ip packets with html code
+
+            3. parse html, issue requests for embedded objects
+
+            4. several ip streams with embedded objects
+
+          - user behavior changes fingerprint: cancel request, disable
+            images, etc
+
+            - here: images only, assume full download of each
+
+       2) Extracting Information from Sniffed Traffic
+
+          - tcpdump as traffic sniffer
+
+          - separate by ports
+
+          - assume first is HTML (non-parallel)
+
+          - assume others are images
+
+          - caching: if turned on, identify only by HTML
+
+       3) Page Identification
+
+          - (HTML_size, object_size) tuple in DB
+
+          - see if exact match
+
+          - HMM for increased accuracy: (previous, current, next)
+            tuples
+
+    3) Defenses
+
+       user should have the option: overhead/security tradeoff
+
+       1) Protocol Modifications
+
+          0) [@0]
+
+             - layer between HTTP and SSL
+
+               - easy to implement, as only need to modify MS-IE and
+                 Netscape Navigator
+
+          1) Random padding.
+
+             - to each request add length from uniform distribution
+
+             - SSL supported for block ciphers
+
+          2) Constant size packets
+
+             - pad to full-size packets
+
+             - deterministic relationship web page to traffic sent
+
+          3) Background traffic
+
+             - "selective addition"
+
+             - random enough to not be filtered out
+
+             - pages much larger than others hard to hide
+
+               - only by splitting/delaying, but "disruptive" to viewer
+
+       2) Web site Modifications
+
+          - break big page into smaller hyperlinked pages
+
+          - insert additional data: spaces, comments, metatags, blank images...
+
+          - unlikely to happen
+
+       3) Web Proxies
+
+          - single-hop: alice might sniff at proxy(in and out)
+
+          - rewriting proxies
+
+          - multi-hop
+
+          - currently implemented
+
+    4) Implementation
+
+       - tcpdump, webcopy
+
+       - crude parser for hperlinks and image references
+
+         - ignores al other features (dynamic, java, ...) and external
+           hyperlinks
+
+       - simple implementation
+
+    5) Results
+
+       0) [@0]
+
+          - http sites, as https just adds constant size increase
+
+          - spider-accessible, large enough, mix of HTML and images,
+            mostly static
+
+          - also rich link structure
+
+       1) Numerical Simulations
+
+          - first browsing by hand to get a feel
+
+          - then select websites by following mainly links
+
+            - two hyperlinks, no outgoing links, or loop(0.8): select
+              next at random
+
+            - result: mostly landing pages
+
+          - random padding: uniform to max size
+
+          - next: unex site and link algorithm
+
+          - much harder to trick classifier: needs much more padding (10x)
+
+          - caching (70% for once-visited, 90% for twice) makes it
+            much harder again
+
+       2) User Testing
+
+          - users with 2 second pause, browsed unex for 5-10 minutes
+
+          - worked very well (96-94%), also without link algorithm (same)
+
+            - link structure not needed for high accuracy
+
+    6) Discussion and Conclusions
+
+       - real threat
+
+       - several defenses
+*** quotes
+    3) [@3] Defenses
+       0) [@0]
+          - defenses almost always impose some degree of overhead in
+            terms of computing resources, network bandwidth, or
+            latency. Therefore, the user should have the option of
+            choosing among different levels of defenses (or no traffic
+            analysis defense, for that matter), depending on the desired
+            tradeoff between security and performance.
+       1) Protocol Modifications
+          - traffic analysis defenses for Web browsing should be
+            encapsulated in a separate security protocol layer to mediate
+            between the HTTP and SSL layers.
+    4) Implementation
+       - Both the HTML parser and the network traffic parser are
+         incomplete due to time constraints.
+    5) Results
+       1) Numerical Simulations
+          - The use of link analysis has the effect of making the
+            attack much more resistant to padding, increasing by an
+            order of magnitude the amount of padding needed to provide
+            the same amount of protection.
+          - random padding is much more effective against traffic
+            analysis when caching is used, due to the loss of object
+            size information.
+*** ref [[file:master.bib::ssl-traffic-analysis][Cheng & Avnur 1998: Traffic Analysis SSL]]
 ** [[./Javascript Closures.prototype_chain.html][Cornford - Javascript Closures]]
 *** summary
     1) Introduction
@@ -7755,201 +7950,6 @@
     - tf–idf is the product of two statistics, term frequency and
       inverse document frequency. Various ways for determining the
       exact values of both statistics exist.
-** MOVE [[./ronathan-heyning.pdf][Cheng - Traffic Analysis of SSL Encrypted Web Browsing]]
-*** summary
-    0) [@0] Abstract
-
-       - SSL not designed as protection against traffic analysis, tested here
-
-    1) Introduction
-
-       - HTTP lacks encryption, provided by HTTPS
-
-       - gives "false impression of [...] confidentiality"
-
-       - easy to set up: metadata in packets (needed for Internet to work)
-
-         - readily-available tools
-
-       - most files have unique sizes ("Only 10% [...] non-unique")
-
-    2) Traffic Analysis Techniques
-
-       protocol issues, extract data from sniffed traffic, identify
-       web pages using this data
-
-       1) Protocol Issues
-
-          - procedure
-
-            1. request html
-
-            2. ip packets with html code
-
-            3. parse html, issue requests for embedded objects
-
-            4. several ip streams with embedded objects
-
-          - user behavior changes fingerprint: cancel request, disable
-            images, etc
-
-            - here: images only, assume full download of each
-
-       2) Extracting Information from Sniffed Traffic
-
-          - tcpdump as traffic sniffer
-
-          - separate by ports
-
-          - assume first is HTML (non-parallel)
-
-          - assume others are images
-
-          - caching: if turned on, identify only by HTML
-
-       3) Page Identification
-
-          - (HTML_size, object_size) tuple in DB
-
-          - see if exact match
-
-          - HMM for increased accuracy: (previous, current, next)
-            tuples
-
-    3) Defenses
-
-       user should have the option: overhead/security tradeoff
-
-       1) Protocol Modifications
-
-          0) [@0]
-
-             - layer between HTTP and SSL
-
-               - easy to implement, as only need to modify MS-IE and
-                 Netscape Navigator
-
-          1) Random padding.
-
-             - to each request add length from uniform distribution
-
-             - SSL supported for block ciphers
-
-          2) Constant size packets
-
-             - pad to full-size packets
-
-             - deterministic relationship web page to traffic sent
-
-          3) Background traffic
-
-             - "selective addition"
-
-             - random enough to not be filtered out
-
-             - pages much larger than others hard to hide
-
-               - only by splitting/delaying, but "disruptive" to viewer
-
-       2) Web site Modifications
-
-          - break big page into smaller hyperlinked pages
-
-          - insert additional data: spaces, comments, metatags, blank images...
-
-          - unlikely to happen
-
-       3) Web Proxies
-
-          - single-hop: alice might sniff at proxy(in and out)
-
-          - rewriting proxies
-
-          - multi-hop
-
-          - currently implemented
-
-    4) Implementation
-
-       - tcpdump, webcopy
-
-       - crude parser for hperlinks and image references
-
-         - ignores al other features (dynamic, java, ...) and external
-           hyperlinks
-
-       - simple implementation
-
-    5) Results
-
-       0) [@0]
-
-          - http sites, as https just adds constant size increase
-
-          - spider-accessible, large enough, mix of HTML and images,
-            mostly static
-
-          - also rich link structure
-
-       1) Numerical Simulations
-
-          - first browsing by hand to get a feel
-
-          - then select websites by following mainly links
-
-            - two hyperlinks, no outgoing links, or loop(0.8): select
-              next at random
-
-            - result: mostly landing pages
-
-          - random padding: uniform to max size
-
-          - next: unex site and link algorithm
-
-          - much harder to trick classifier: needs much more padding (10x)
-
-          - caching (70% for once-visited, 90% for twice) makes it
-            much harder again
-
-       2) User Testing
-
-          - users with 2 second pause, browsed unex for 5-10 minutes
-
-          - worked very well (96-94%), also without link algorithm (same)
-
-            - link structure not needed for high accuracy
-
-    6) Discussion and Conclusions
-
-       - real threat
-
-       - several defenses
-*** quotes
-    3) [@3] Defenses
-       0) [@0]
-          - defenses almost always impose some degree of overhead in
-            terms of computing resources, network bandwidth, or
-            latency. Therefore, the user should have the option of
-            choosing among different levels of defenses (or no traffic
-            analysis defense, for that matter), depending on the desired
-            tradeoff between security and performance.
-       1) Protocol Modifications
-          - traffic analysis defenses for Web browsing should be
-            encapsulated in a separate security protocol layer to mediate
-            between the HTTP and SSL layers.
-    4) Implementation
-       - Both the HTML parser and the network traffic parser are
-         incomplete due to time constraints.
-    5) Results
-       1) Numerical Simulations
-          - The use of link analysis has the effect of making the
-            attack much more resistant to padding, increasing by an
-            order of magnitude the amount of padding needed to provide
-            the same amount of protection.
-          - random padding is much more effective against traffic
-            analysis when caching is used, due to the loss of object
-            size information.
-*** ref [[file:master.bib::ssl-traffic-analysis][Cheng & Avnur 1998: Traffic Analysis SSL]]
 ** TODO [#A] [[./challenges.pdf][Challenges in deploying low-latency anonymity]]
 *** MAYBE sort quotes
 *** summary
@@ -11752,8 +11752,8 @@
       - generate a synthetic workload for benchmarking or simulation.
 *** ref [[file:master.bib::tumwt][Ihm & Pai 2011: Towards Understanding Modern Web Traffic]]
 ** TODO [#B] [[~/da/git/docs/timing-fc2004.pdf][Timing Attacks in Low-Latency Mix Systems]]
-** TODO [#B] search feature vs classifier [[./2009-diss.pdf][Rieck - Machine Learning for Application-Layer Intrusion Detection]]
-*** #B PART
+** TODO [#B] [[./2009-diss.pdf][Rieck - Machine Learning for Application-Layer Intrusion Detection]]
+*** #B PART search feature vs classifier
 *** summary
     1) Introduction
        1) Intrusion Detection
@@ -11837,10 +11837,12 @@
     7) Appendix
        ...
 *** quotes
-    1) [@0]
+    0) [@0]
        - Misuse detection as employed in current network security
          products relies on the timely generation and distribution of
          so called attack signatures.
+    1) Introduction
+       - the Internet protocol suite (Leiner et al., 1985)
     4) [@4] Learning for Intrusion Detection
        1) Machine Learning and Intrusion Detection
           - Machine learning deals with automatically inferring and
@@ -15735,6 +15737,14 @@
 *** summary
 *** quotes
 *** ref [[file:master.bib::back01][Back et al. 2001: Traffic Analysis Attacks]]
+** TODO [[./9501101.pdf][Dietterich - Solving Multiclass Learning Problems via Error-Correcting Output Codes]]
+*** summary
+*** quotes
+*** ref [[file:master.bib::DBLP:journals/jair/DietterichB95][Dietterich & Bakiri 1995: Solving Multiclass Learning]]
+** TODO [[./SS03.pdf][Passive Attack Analysis for Connection-Based Anonymity Systems]]
+*** summary
+*** quotes
+*** ref [[file:master.bib::SS03][Serjantov & Sewell 2003: Passive Attack Analysis]]
 ** PART [[info:gnuplot#Top][Broeker - gnuplot]]
 *** summary
     1) [[info:gnuplot#Top][gnuplot]]
@@ -21772,10 +21782,6 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        2) HTML Application of Core DOM
 *** quotes
 *** ref
-** TODO [[./9501101.pdf][Dietterich - Solving Multiclass Learning Problems via Error-Correcting Output Codes]]
-*** summary
-*** quotes
-*** ref [[file:master.bib::DBLP:journals/jair/DietterichB95][Dietterich & Bakiri 1995: Solving Multiclass Learning]]
 ** [[./ColorFAQ.pdf][Frequently Asked Questions about Color]]
 *** summary
 *** quotes
@@ -21792,7 +21798,49 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 *** summary
 *** quotes
 *** ref [[file:master.bib::torta05][Murdoch & Danezis 2005: Low Cost Traffic Analysis Tor]]
-** TODO MOVE [[./SS03.pdf][Passive Attack Analysis for Connection-Based Anonymity Systems]]
+** [[./Hypertext Style: Cool URIs don't change..html][Cool URIs don't change]]
+*** ref [[file:master.bib::cooluri][Berners-Lee 1998: Cool URIs]]
+** [[/usr/share/doc/texlive-doc/generic/pgf/pgfmanual.pdf][The TikZ and PGF Packages]]
 *** summary
+    7) [@7] Guidelines on Graphics
+
+       0) [@0]
+
+          - general guidelines for scientific papers
+
+          - Edward Tufte
+
+          - break rules, but be *aware* that you are breaking them
+
+       1) Planning the Time Needed for the Creation of Graphics
+
+          - as much time as for text of the same length
+
+          - revise graphics repeatedly
+
+       3) [@3] Linking Graphics With the Main Text
+
+          - stand-alone happens to "fill" pages
+
+          - if so:
+
+            - caption to make self-clear
+
+            - add as much context as possible
+
+            - reference in text
+
+            - spell out, f.ex. "Figure 2.1"
+
+              - periods are precious
+
+       4) Consistency Between Graphics and Text
+
+          - just as with text: same font, same line width, create at right size
+
+       5) Labels in Graphics
 *** quotes
-*** ref [[file:master.bib::SS03][Serjantov & Sewell 2003: Passive Attack Analysis]]
+    7) [@7] Guidelines on Graphics
+       3) [@3] Linking Graphics With the Main Text
+          - Do not feel afraid of a 5-line caption.
+    
