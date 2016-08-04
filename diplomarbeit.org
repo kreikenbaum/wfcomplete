@@ -69,7 +69,7 @@
 * TODO look through unsorted top-level headings
 * WAIT Abstract
 * TODO Introduction (=basics) [0%]
-** TODO Website Fingerprinting [0/33]
+** TODO Website Fingerprinting [0/34]
 *** DANIEL Intro (remove this headline when reviewed)
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -184,7 +184,7 @@
     object sizes. Cheng and Avnur \cite{ssl-traffic-analysis}
     additionally proposed a hidden markov model for page
     /transitions/, for hard-to-identify pages.
-*** CHECK Hurdles to website fingerprinting
+*** WRITE Hurdles to website fingerprinting
     :PROPERTIES:
     :CUSTOM_ID: Hurdles
     :END:
@@ -242,6 +242,7 @@ HTTP persistent connections, source \url{https://commons.wikimedia.org/wiki/File
     \cite{experimental}. Cai et al.\cite{ccs2012-fingerprinting} found
     fingerprinting to be easier with this defense enabled than
     without.
+**** TODO figure numbers correct, see latex book
 **** DANIEL Tor [0/4]
      The Onion Router\cite{tor-design} (short: /Tor/) is an anonymity
      system: While encryption hides the /content of communication/,
@@ -439,31 +440,32 @@ HTTP persistent connections, source \url{https://commons.wikimedia.org/wiki/File
     contribute the most towards classification is important. Panchenko
     et al. \cite{panchenko} provided a qualitative analysis. Hayes and
     Danezis \cite{kfingerprint} used forests of randomized trees, which
-    provide attribute importance estimation.[fn:: f.ex. in scikit-learn
+    provide attribute importance feedback.[fn:: f.ex. in scikit-learn
     \cite{scikit-learn} via the =_feature_importances= attribute]
 
-    As Dyer et al \cite{oakland2012-peekaboo} noted and experiments with
-    Panchenko et al's \cite{panchenko} estimator support (see
+    As Dyer et al \cite{oakland2012-peekaboo} noted and experiments
+    with Panchenko et al's \cite{panchenko} estimator support (see
     [[different-classifiers]]), you can get good accuracy with several
-    classifiers, given the right attributes.
+    classifiers, given the right attributes.[fn::as the experiments in sec
+    show, this holds mainly for uncloaked traffic]
 
-    As determined by Hayes and Danezis \cite{kfingerprint}, the top-five
-    attributes are the number (both absolute and percentage of total) of
-    both incoming and outgoing packets. The standard deviation of the
-    packet ordering list [fn:: Panchenko et al \cite{panchenko} call
-    these attributes /Number Markers/] completes the top five. Each added
-    attribute increases accuracy, yet with nearly the same accuracy for 30 as
-    for the total of 150 attributes.
+    As of Hayes and Danezis \cite{kfingerprint}, the top-five
+    attributes are the number (both absolute and percentage of total)
+    of both incoming and outgoing packets. The standard deviation of
+    the packet ordering list [fn:: Panchenko et al \cite{panchenko}
+    call these attributes /Number Markers/] completes the top
+    five. Each added attribute increases accuracy, yet with nearly the
+    same accuracy for 30 as for the total of 150 attributes.
 
+    Both Wang et al\cite{effective} and Panchenko et
+    al\cite{panchenko} also consider the first packets of a
+    transmission/the HTML page as effective attributes.
 
     - patterns to attributes
     - why attributes
     - sizes, sizes, sizes
     - total_size
-    - top-five
     - CUMUL
-    - dyer: attributes count
-    - attribute analysis in k-forests
       #+CAPTION: CUMUL\cite{panchenko2} attributes example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
       [[./pictures/cumul_aus_paper.pdf]]
 ***** TODO visual representation of CUMUL
@@ -657,33 +659,37 @@ HTTP persistent connections, source \url{https://commons.wikimedia.org/wiki/File
     - requestpolicy (hintz 2nd way)
     - text-only browsing (hintz 2nd way)
 * TODO Methods (=methods) [0%]
-** brainstorm                                                       :ARCHIVE:
-  - make wf/ml harder, fudge attributes
-    - problems wfpad: modify all of tor,
-      - yet problem is browser traffic
-        - and traffic is app-dependent
-      - deployability: all/nothing
-      - modify firefox codebase, when addon suffices
-      - maybe also efficiency
-        - histograms
-          - not fitting: no need to hide *that* traffic occurs, just where to,
-          - compare to real fingerprints
-          - less efficient
-      - not tunable, bridge-dependent
-    - problems walkie-talkie: also modify all
-      - bit slower
-      - not preferred method
-      - TD: compare to wfpad accuracy/efficiency
-    - conversely:
-      - addon: easier to modify/implement/test
-        - *easy to use* if not default (currently needs server, but
-          others need too, does not need by default)
-        - HTTP traffic properties used
-        - "general defense": not trying to modify specific settings
-  - design
-    - different versions
-    - different factors
 ** TODO Motivation [0/3]
+*** brainstorm                                                      :ARCHIVE:
+   - make wf/ml harder, fudge attributes
+     - problems wfpad: modify all of tor,
+       - yet problem is browser traffic
+         - and traffic is app-dependent
+       - deployability: all/nothing
+       - modify firefox codebase, when addon suffices
+       - maybe also efficiency
+         - histograms
+           - not fitting: no need to hide *that* traffic occurs, just where to,
+           - compare to real fingerprints
+           - less efficient
+       - not tunable, bridge-dependent
+     - problems walkie-talkie: also modify all
+       - bit slower
+       - not preferred method
+       - TD: compare to wfpad accuracy/efficiency
+     - conversely:
+       - addon: easier to modify/implement/test
+         - *easy to use* if not default (currently needs server, but
+           others need too, does not need by default)
+         - HTTP traffic properties used
+         - "general defense": not trying to modify specific settings
+   - design
+     - different versions
+     - different factors
+   - aim: selective cover traffic
+     - select based on web site
+     - and target
+     - simultaneous to real traffic
 *** CHECK remove this header when done
    When this thesis was started, there existed mostly deterministic
    defenses, with both Walkie-Talkie\cite{wang2015walkie} and
@@ -816,23 +822,21 @@ HTTP persistent connections, source \url{https://commons.wikimedia.org/wiki/File
     to some user-settable privacy level, as a whistleblower might need
     more anonymity protection than Jane Doe who just reads the latest
     news, possibly censored in her country.
-*** WRITE How to generate cover traffic
-    Simply put, the first request always triggers additional
-    traffic. In the basic version, a target size was determined, the
-    HTML size of the current request was looked up, and a request for
-    the remainder was sent.
+*** CHECK How to generate cover traffic
+    When the user requests a page, be it by clicking on a hyperlink, a
+    bookmark, or entering an address via the location bar, the addon
+    always creates additional traffic simultaneous to the first HTTP
+    request.
 
-    - first request: always add some traffic
-      - (HTML/first traffic is important attribute, thus always a bit obfuscated)
-    - split: original vs simple
-      - original combines HTTP traffic model with (kinda) Wang's supersequence
-        - knows (or guesses) the page's size
-        - sets target size
-        - adds traffic to each request (with certain probability)
-          until target reached
-      - simple: KISS
-        - cite xp
-        - maybe adds another embedded request to each request
+    In the main version, a target HTML size is determined, the HTML
+    size of the current request is looked up, and a request for the
+    remainder is sent.
+
+    At the same time, a probability of embedded requests is computed
+    based on the page's (known or guessed) number of embedded items
+    and a target number of embedded items, sampled from the HTTP
+    traffic model.  For each real embedded request, an
+    embedded-element-sized data is requested with this probability.
 *** TODO Addon-Versions
      While just adding random traffic to each page might enhance
      anonymity, always adding in the same way might be wasteful and
@@ -948,17 +952,20 @@ HTTP persistent connections, source \url{https://commons.wikimedia.org/wiki/File
      with probability FACTOR for each embedded object.
 
      This halved the number of lines of code, allowing for better
-     refactoring.
+     refactoring. The version is called "simple".
+
+     At the user request, an additional
+     HTML-sized-multiplied-by-desired-overhead request is sent.
+
+     At each request for further page objects, a dummy request for an
+     embedded-sized object is sent with probability depending on
+     requested overhead.
 *** WRITE Server
     - where there are several possibilities how to generate cover
       traffic,
     - here: simplest: server, GET-query with size=bytes parameter
       returns this many bytes random data
 *** brainstorm                                                      :ARCHIVE:
-    - aim: selective cover traffic
-      - select based on web site
-      - and target
-      - simultaneous to real traffic
     - firefox browser extension / addon
       - addon sdk
       - maybe mention next generation
@@ -976,7 +983,7 @@ HTTP persistent connections, source \url{https://commons.wikimedia.org/wiki/File
     - server
       - later: .onion (link to related work)
     - http traffic distribution
-*** TODO Bloom Filters
+*** TODO MOVE ABOVE [[*Addon-Versions][Addon-Versions]] Bloom Filters
 **** WRITE General Idea
      - stochastic fixed-width data structure
      - works flawlessly if element is inside
@@ -1138,101 +1145,105 @@ HTTP persistent connections, source \url{https://commons.wikimedia.org/wiki/File
 ***** TODO ref stackoverflow why 0 padding
 ****** TODO or better, some statistics text
 ***** TODO see also =to_features_cumul=
-** WRITE panchenko v1 different classifiers
-   <<different-classifiers>> Panchenko et al's first
-   attack\cite{panchenko} number of attributes grow with the size of
-   the packet trace, other than CUMUL\cite{panchenko2}. They are often
-   quite many and thus, SVM evaluation takes much longer, especially
-   parameter estimation. In addition, CUMUL greatly improved the
-   accuracy (and TPR/TNR).
+** WRITE Website Fingerprinting [0/5]
+*** WRITE panchenko v1 different classifiers
+    :PROPERTIES:
+    :CUSTOM_ID: different-classifiers
+    :END:
+    Panchenko et al's first attack's\cite{panchenko} number of
+    attributes grow with the size of the packet trace, as opposed to
+    CUMUL\cite{panchenko2}. They are often much more than CUMUL's
+    default and thus, SVM evaluation takes much longer, especially
+    parameter estimation. In addition, CUMUL greatly improved the
+    accuracy (and TPR/TNR).
 
-   In our various tests with the first attack many classifiers,
-   notably k-nearest-neighbors, perform better than the SVM
-   classifier.
+    In our various tests with the first attack many classifiers,
+    notably k-nearest-neighbors, perform better than the SVM
+    classifier on the same set of features.
 
 
-   - more attributes than cumul default
-     - svm grows with more classes as it has to pad to maximum
-     - takes a long time to do param-eval, and partly not as accurate
-   - experiment
-   - different classifiers, different results
-   - much easier to just use knn, ....
-     - and slightly better results
-     - knn is best, outperforms svc on our tests
-   - more work for svm parameter estimation
-** WRITE outlier removal
-   As described by Panchenko et al. \cite{panchenko2}, CUMUL is
-   enhanced by outlier removal. Their
-   software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}] has
-   different settings, with a median-based[fn::in addition to the
-   median-based original by Wang and
-   Goldberg\cite{wpes13-fingerprinting}] as well as a
-   25%/75%-quantile-based approach. The paper\cite{panchenko2}
-   mentions only the quantile-based filtering, so that was also used
-   in the later tests here.
+    - more attributes than cumul default
+      - svm grows with more classes as it has to pad to maximum
+      - takes a long time to do param-eval, and partly not as accurate
+    - experiment
+    - different classifiers, different results
+    - much easier to just use knn, ....
+      - and slightly better results
+      - knn is best, outperforms svc on our tests
+    - more work for svm parameter estimation
+*** WRITE outlier removal
+    As described by Panchenko et al. \cite{panchenko2}, CUMUL is
+    enhanced by outlier removal. Their
+    software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}] has
+    different settings, with a median-based[fn::in addition to the
+    median-based original by Wang and
+    Goldberg\cite{wpes13-fingerprinting}] as well as a
+    25%/75%-quantile-based approach. The paper\cite{panchenko2}
+    mentions only the quantile-based filtering, so that was also used
+    in the later tests here.
 
-   If parameter estimation for the support vector machine is done on
-   both training and test data, the results
+    If parameter estimation for the support vector machine is done on
+    both training and test data, the results
 
-   - implemented in [[file:bin/extract_attribute.py::def%20remove_quantiles_panchenko_2(counter_list):][ex-att]]
-   - quantiles:
-     - numpy instead of his original code for code clarity
-     - just take quantiles, use his limits
-   - how many? 5%?
-   - evaluation of outlier removal steps
-     - cumul-print of outlier removal steps? (maybe, ask d if enough time ;-)
-   - train on or, test without
-   - maybe show outlier in CUMUL graphics
-   - daniel arp\cite{arp-personal}
-     - better approach: only OR on training data, or keep values from
-       there to apply later
-     - other approach makes little sense (except for minimal-OR)
-       - do not know in advance
-   - results
-     - use [[file:data/results/alternatives.org::*or%201-3,-1-3][or 1-3,-1-3]]
-     - test -1 (use max-min), no advantage over just removing smallest/largest
-*** TODO run test, include results
-*** TODO link to panchenko's software
-   - after cross-validation split
-   - but can do that before attributes
-     - list of (url, list-id) tuples, one for each counter
-     - randomly choose subset
-   - link to file
-   - document effect of different schemes: is there any accuracy effect?
-     - tables
-     - scheme: all, only quantile, none, only minimial
-   - document number of filtered traces
-     - both panchenko's own and mine
-** WRITE panchenko v1 vs cumul
-   Panchenko et al proposed two methods for analysing traces.
+    - implemented in [[file:bin/extract_attribute.py::def%20remove_quantiles_panchenko_2(counter_list):][ex-att]]
+    - quantiles:
+      - numpy instead of his original code for code clarity
+      - just take quantiles, use his limits
+    - how many? 5%?
+    - evaluation of outlier removal steps
+      - cumul-print of outlier removal steps? (maybe, ask d if enough time ;-)
+    - train on or, test without
+    - maybe show outlier in CUMUL graphics
+    - daniel arp\cite{arp-personal}
+      - better approach: only OR on training data, or keep values from
+        there to apply later
+      - other approach makes little sense (except for minimal-OR)
+        - do not know in advance
+    - results
+      - use [[file:data/results/alternatives.org::*or%201-3,-1-3][or 1-3,-1-3]]
+      - test -1 (use max-min), no advantage over just removing smallest/largest
+**** TODO run test, include results
+**** TODO link to panchenko's software
+    - after cross-validation split
+    - but can do that before attributes
+      - list of (url, list-id) tuples, one for each counter
+      - randomly choose subset
+    - link to file
+    - document effect of different schemes: is there any accuracy effect?
+      - tables
+      - scheme: all, only quantile, none, only minimial
+    - document number of filtered traces
+      - both panchenko's own and mine
+*** WRITE panchenko v1 vs cumul
+    Panchenko et al proposed two methods for analysing traces.
 
-   They both use support vector machines as classifier, but differ in
-   the attributes they select.
+    They both use support vector machines as classifier, but differ in
+    the attributes they select.
 
-   Since CUMUL\cite{panchenko2} is Panchenko et al.'s newer approach
-   after their first classifier\cite{panchenko} (called /version 1/
-   from now on), better accuracy of the former is to expected.
+    Since CUMUL\cite{panchenko2} is Panchenko et al.'s newer approach
+    after their first classifier\cite{panchenko} (called /version 1/
+    from now on), better accuracy of the former is to expected.
 
-   - both: similar results for different classifiers
-   - panchenko v1:
-     - takes longer
-     - is less accurate
-     - is more work: vector length normalisation [for cross-test]
-     - first to really work
-   - accuracy hit of about 20%?
-   - best parameters sometimes outside of panchenko's range
-   - same classifier
-   - state of the art:
-     - wang-knn
-       - knn with parameter weighting step
-       - first to 92% accuracy (current limit)
-     - cumul:
-       - faster
-       - easier to see
-       - bigger dataset
-     - k-fingerprinting
-       - accuracy
-     - all similar accuracies (as of k-fingerprinting)
+    - both: similar results for different classifiers
+    - panchenko v1:
+      - takes longer
+      - is less accurate
+      - is more work: vector length normalisation [for cross-test]
+      - first to really work
+    - accuracy hit of about 20%?
+    - best parameters sometimes outside of panchenko's range
+    - same classifier
+    - state of the art:
+      - wang-knn
+        - knn with parameter weighting step
+        - first to 92% accuracy (current limit)
+      - cumul:
+        - faster
+        - easier to see
+        - bigger dataset
+      - k-fingerprinting
+        - accuracy
+      - all similar accuracies (as of k-fingerprinting)
 ** TODO Evaluation of Defenses [0/5]
 *** WRITE Evaluation of Addon
     #+CAPTION: different defense versions with CUMUL, svc classifier
