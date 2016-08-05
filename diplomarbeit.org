@@ -69,7 +69,7 @@
 * TODO look through unsorted top-level headings
 * WAIT Abstract
 * TODO Basics (=basics) [0%]
-** TODO Website Fingerprinting [0/34]
+** TODO Website Fingerprinting [0/33]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -184,7 +184,7 @@
     object sizes. Cheng and Avnur \cite{ssl-traffic-analysis}
     additionally proposed a hidden markov model for page
     /transitions/, for hard-to-identify pages.
-*** WRITE Hurdles to website fingerprinting
+*** CHECK Hurdles to website fingerprinting
     :PROPERTIES:
     :CUSTOM_ID: Hurdles
     :END:
@@ -196,21 +196,17 @@
     out to be
     inefficient\cite[sec.2.2.2]{DBLP:books/daglib/0001977}. To improve
     on this, some early HTTP/1.0 implementations used persistent
-    connections\cite{rfc2068}, see fig. \ref{http_persistent}. These
+    connections\cite{rfc2068}, see Figure \ref{http_persistent}. These
     were standardized in HTTP/1.1 \cite{rfc2616}.
 
 #+BEGIN_LaTeX
 \begin{figure}[htb]
 \centering
 \includegraphics[width=.9\linewidth]{./pictures/HTTP_persistent_connection.png}
-\caption{\label{http_persistent}
-HTTP persistent connections, source \url{https://en.wikipedia.org/wiki/File:HTTP_persistent_connection.svg}}
+\caption{HTTP persistent connections, source \url{https://en.wikipedia.org/wiki/File:HTTP_persistent_connection.svg}. The left sequence includes a TCP handshake for each object, while the right keeps the TCP connection alive until the whole document can be displayed.}
+\label{http_persistent}
 \end{figure}
 #+END_LaTeX
-
-    #+CAPTION: HTTP persistent connections, source \url{https://en.wikipedia.org/wiki/File:HTTP_persistent_connection.svg}
-    #+NAME: http_persistent
-    [[./pictures/HTTP_persistent_connection.png]]
 
     It was no longer trivial to extract the files' sizes. You had to
     determine the start and end of each request. (which was still
@@ -219,20 +215,20 @@ HTTP persistent connections, source \url{https://en.wikipedia.org/wiki/File:HTTP
 
     In addition to persistent connections, HTTP/1.1 allowed pipelining
     several HTTP requests in a single connection without waiting for
-    the files to arrive in between, see fig \ref{http_pipelining}.
+    the files to arrive in between, see Figure \ref{http_pipelining}.
 
 #+BEGIN_LaTeX
 \begin{figure}[htb]
 \centering
 \includegraphics[width=.9\linewidth]{./pictures/HTTP_pipelining2.png}
-\caption{\label{http_pipelining}
-HTTP persistent connections, source \url{https://commons.wikimedia.org/wiki/File:HTTP_pipelining2.svg}}
+\caption{HTTP pipelining. The left sequence waits for each file to be received before the next request is sent. In the right one, all requests are sent at once. source: \url{https://commons.wikimedia.org/wiki/File:HTTP_pipelining2.svg}}
+\label{http_pipelining}
 \end{figure}
 #+END_LaTeX
 
     Pipelining was
     disabled[fn::\url{https://bugzilla.mozilla.org/show_bug.cgi?id=264354},
-    url{https://www.chromium.org/developers/design-documents/network-stack/http-pipelining}]
+    \url{https://www.chromium.org/developers/design-documents/network-stack/http-pipelining}]
     or not implemented
     [fn::\url{http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp/expertzone/chats/transcripts/08_0814_ez_ie8.mspx}]
     in all major browsers. After Panchenko et al.'s first successful
@@ -242,7 +238,6 @@ HTTP persistent connections, source \url{https://commons.wikimedia.org/wiki/File
     \cite{experimental}. Cai et al.\cite{ccs2012-fingerprinting} found
     fingerprinting to be easier with this defense enabled than
     without.
-**** TODO figure numbers correct, see latex book
 **** DANIEL Tor [0/4]
      The Onion Router\cite{tor-design} (short: /Tor/) is an anonymity
      system: While encryption hides the /content of communication/,
@@ -733,7 +728,7 @@ HTTP persistent connections, source \url{https://commons.wikimedia.org/wiki/File
     - simultaneous to real traffic
 
     - make wf harder such that it is impossible
-** TODO Design and Implementation (=Implementation) [0/21]
+** TODO Design and Implementation (=Implementation) [0/22]
 *** EVA Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -843,19 +838,28 @@ HTTP persistent connections, source \url{https://commons.wikimedia.org/wiki/File
     and a target number of embedded items, sampled from the HTTP
     traffic model.  For each real embedded request, an
     embedded-element-sized data is requested with this probability.
-*** TODO Bloom Filters
-**** WRITE General Idea
+*** TODO MOVE below [[*Addon-Versions][Addon-Versions]] Cache (approximate) sizes using Bloom Filters
+**** WRITE Introduction
+     - addon variant: (sampled) sizes of pages known
+     - see if this increases accuracy/overhead ratio
+     - use fixed-width data structure: bloom filters
+       - one for each bin
+       - check all if one might contain
+         - if yes, return median value
+         - if no, return random estimate
+**** WRITE Bloom Filter
      - stochastic fixed-width data structure
      - works flawlessly if element is inside
        - might fail if not
+     - details: \cite{Broder02networkapplications}
 **** WRITE Application: Bloom Sort
-     - sort into bins
+     - sort sizes into bins
        - based on target distribution
        - one bloom filter per bin
      - check size: check all filters
        - if one returns: fine
        - if none returns: ok: clear that not inserted, default value
-       - if two return: error, fall back to default value
+       - if two return: one is false positive, fall back to default value
 **** MAYBE Error estimation of Bloom Sort
      - error both ways, and difference bin-size to real size
 **** brainstorm                                                     :ARCHIVE:
@@ -874,6 +878,7 @@ HTTP persistent connections, source \url{https://commons.wikimedia.org/wiki/File
        - +: fixed size
        - -: error both ways, and difference bin-size to real size
 *** TODO Addon-Versions
+**** KEYWORDS Introduction
      While just adding random traffic to each page might enhance
      anonymity, always adding in the same way might be wasteful and
      easier to detect. Per-page values could provide better cover.
