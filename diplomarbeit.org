@@ -682,17 +682,16 @@ Facebook.com\\
      - and target
      - simultaneous to real traffic
 *** CHECK Introduction
-   When this thesis was started, there existed mostly deterministic
-   defenses, with both Walkie-Talkie\cite{wang2015walkie} and
-   WTF-PAD\cite{wtfpad} not having been published yet.
+   When this thesis was started, both
+   Walkie-Talkie\cite{wang2015walkie} and WTF-PAD\cite{wtfpad} had not
+   been published yet.
 
    As acknowledged both in \cite{wang2015walkie} and \cite{wtfpad},
    deterministic approaches had the major shortcoming of introducing
    additional delay into the traffic, which conflicted with Tor's
-   design goal of usability\cite{tor-design}, increasing f.ex. the
-   sometimes already bothersome delay of using Tor for browsing the
-   web.[fn::As for the positive side of higher latency, see
-   \cite[sec.4.2]{challenges}.]
+   design goal of usability\cite{tor-design}, increasing the sometimes
+   bothersome delay of using Tor for browsing the web.[fn::As for the
+   positive side of higher latency, see \cite[sec.4.2]{challenges}.]
 
    While also providing this functionality through an easy-to-add
    browser extension, keeping the Tor Browser code as-is, this
@@ -718,7 +717,7 @@ Facebook.com\\
     - simultaneous to real traffic
 
     - make wf harder such that it is impossible
-** TODO Design and Implementation (=Implementation) [0/21]
+** TODO Design and Implementation (=Implementation) [0/20]
 *** EVA Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -744,11 +743,11 @@ Facebook.com\\
     :PROPERTIES:
     :CUSTOM_ID: distinguish_HTML_embedded
     :END:
-    To tune traffic generation, it would make sense to distinguish
-    between HTML and other requests. This would usually be done via
-    HTTP's =content-type= header\cite[sec.14.18]{rfc2068}, yet that is
-    only accessible when the content has been received. The defense
-    needs to distinguish at the time it is requested.
+    It would make sense to distinguish between HTML and other requests
+    to tune traffic generation. This is usually be done via HTTP's
+    =content-type= header\cite[sec.14.18]{rfc2068}, yet that is only
+    accessible when the content has been received. The defense needs
+    to distinguish at the time it is requested.
 
     Common wisdom\cite{cooluri} is that you cannot distinguish HTTP
     elements at request time by just looking at the URL. As a solution
@@ -767,11 +766,12 @@ Facebook.com\\
     Lee and Gupta's work\cite{newtrafficmodel} models web traffic with
     statistical distributions.
 
-    The size of both HTML documents and embedded objects is
-    characterized by lognormal distributions, yet with different
-    parameters for both. The number of embedded elements is modeled
-    via a gamma function. They offer further parameters to fully model
-    web browsing. See illustration in figure \ref{distribution}.
+    Both the size of HTML documents and embedded objects is best
+    modeled with lognormal distributions, yet with different
+    parameters for both. The number of embedded objects is modeled via
+    a gamma function. See illustration in figure
+    \ref{distribution}. They offer further parameters to fully model
+    web browsing.
 
     #+BEGIN_LaTeX
     \begin{figure}
@@ -782,18 +782,19 @@ Facebook.com\\
     \end{figure}
     #+END_LaTeX
 
-    There are two problems with the distributions given
-    above. Firstly, web traffic has evolved since 2007, when the paper
-    was written, as documented for total web page size in
+    The distributions given above have two drawbacks. Firstly, web
+    traffic has evolved since 2007, when the paper was written, as
+    documented for total web page size in
     \cite{web-is-doom}. Secondly, as mentioned in
     \cite{newtrafficmodel}, the number of embedded objects are
     computed per each HTML page, including frames, and possibly
-    including redirects. This lowers this number artificially.
+    including redirects. While this still should correlate, there
+    probably is a difference in how it is and should be used.
 
     Providing an accurate estimate of embedded objects /per web page/
     is further work.
 **** TODO further work link + mention
-*** CHECK Why HTTP-shaped cover traffic
+*** WRITE Why HTTP-shaped cover traffic
     HTTP-shaped cover traffic might prove more effective, as it heeds
     layering/separation-of-concerns[fn::For a deeper treatment of
     this, \cite[ch.1.7]{DBLP:books/daglib/0001977} is recommended].
@@ -818,61 +819,61 @@ Facebook.com\\
     bookmark, or entering an address via the location bar, the addon
     always creates additional traffic simultaneous to the first HTTP
     request.
-*** CHECK Addon Version: Main
-    :PROPERTIES:
-    :CUSTOM_ID: addon_main
-    :END:
-    The main version works with the retrieved page's (known or
-    guessed) HTML size, and number of embedded objects, adding to
-    these to reach target values.
+**** CHECK Addon Version: Main
+     :PROPERTIES:
+     :CUSTOM_ID: addon_main
+     :END:
+     The main version works with the retrieved page's (known or
+     guessed) HTML size, and number of embedded objects, adding to
+     these to reach target values.
 
-    For the first HTML request, a target HTML size is determined, the
-    HTML size of the current request is looked up (or guessed), and a
-    request (of fixed size) for the remaining bytes is sent.
+     For the first HTML request, a target HTML size is determined, the
+     HTML size of the current request is looked up (or guessed), and a
+     request (of fixed size) for the remaining bytes is sent.
 
-    At the same time, a probability of embedded requests is computed
-    based on the page's (known or guessed) number of embedded items
-    and a target number of embedded items, sampled from the HTTP
-    traffic model.  For each real embedded request, an
-    embedded-element-sized data is requested with this probability.
+     At the same time, a probability of embedded requests is computed
+     based on the page's (known or guessed) number of embedded items
+     and a target number of embedded items, sampled from the HTTP
+     traffic model.  For each real embedded request, an
+     embedded-element-sized data is requested with this probability.
 
-    A simulated webpage is specified by its HTML size and its number
-    of embedded objects. In a closed world, it is possible to always
-    know the page sizes beforehand. If unknown, the random variates
-    from the [[#HTTP traffic model][HTTP traffic model]] are used. [fn:: The size of each
-    embedded element is always drawn from the HTTP traffic model.]
-    Using known sizes is called the /cache/ flavor. In the /nocache/
-    flavor, sizes are always guessed.
+     A simulated webpage is specified by its HTML size and its number
+     of embedded objects. In a closed world, it is possible to always
+     know the page sizes beforehand. If unknown, the random variates
+     from the [[#HTTP traffic model][HTTP traffic model]] are used. [fn:: The size of each
+     embedded element is always drawn from the HTTP traffic model.]
+     Using known sizes is called the /cache/ flavor. In the /nocache/
+     flavor, sizes are always guessed.
 
-    Once the /page's values/ are thus set, there are two tactics on
-    how to set /target/ values.
+     Once the /page's values/ are thus set, there are two tactics on
+     how to set /target/ values.
 
-    One tactic is to group the webpages by their values into bins and
-    to set the bin border as the target value, as all webpages in the
-    bin must have a size less than or equal the border. This approach
-    approximates that taken by Wang et al. in \cite{effective} with
-    the bins being equivalent to the anonymity sets / partitions. As
-    the biggest bin does not have a maximum size, its median value is
-    chosen.[fn:: The optimal size for the biggest bin is a parameter
-    that should be evaluated as well.]
+     One tactic is to group the webpages by their values into bins and
+     to set the bin border as the target value, as all webpages in the
+     bin must have a size less than or equal the border. This approach
+     approximates that taken by Wang et al. in \cite{effective} with
+     the bins being equivalent to the anonymity sets / partitions. As
+     the biggest bin does not have a maximum size, its median value is
+     chosen.[fn:: The optimal size for the biggest bin is a parameter
+     that should be evaluated as well.]
 
-    The other tactic is to have a single target distribution from
-    which values are sampled each time, once again the [[#HTTP traffic model][HTTP traffic
-    model]]. This is, again, also the fallback approach if the web
-    page's values are not known.
+     The other tactic is to have a single target distribution from
+     which values are sampled each time, once again the [[#HTTP traffic model][HTTP traffic
+     model]]. This is, again, also the fallback approach if the web
+     page's values are not known.
 
-    The web page's own values --- known or guessed, as described
-    [[#addon_main][above]] --- are subtracted from the target values.
+     The web page's own values --- known or guessed, as described
+     [[#addon_main][above]] --- are subtracted from the target values.
 
-    At the same time as the HTML-query, another query for the target
-    HTML-size (or a token amount if too small) is sent. Concerning
-    the embedded objects, the ratio of
-    (target-embedded)/(site-embedded) is computed. For each embedded
-    object retrieved, this ratio determines the number of
-    embedded-sized requests, once again from the [[#HTTP traffic model][HTTP traffic model]].
+     At the same time as the HTML-query, another query for the target
+     HTML-size (or a token amount if too small) is sent. Concerning
+     the embedded objects, the ratio of
+     (target-embedded)/(site-embedded) is computed. For each embedded
+     object retrieved, this ratio determines the number of
+     embedded-sized requests, once again from the [[#HTTP traffic model][HTTP traffic model]].
 
-         - 15.3 first results
-         - buggy: did not match spec (only did html requests)
+          - 15.3 first results
+          - buggy: did not match spec (only did html requests)
 *** TODO improvements
 **** TODO 0.17 bursts at end - bursts on addon site load finish
      - wang: burst distinguishing attribute left with
