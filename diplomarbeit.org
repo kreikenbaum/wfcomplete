@@ -69,7 +69,7 @@
 * TODO look through unsorted top-level headings
 * WAIT Abstract
 * TODO Basics (=basics) [0%]
-** TODO Website Fingerprinting [0/33]
+** TODO Website Fingerprinting [0/31]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -89,32 +89,21 @@
     :END:
     To illustrate the task of a website fingerprinter, consider these
     graphical traces[fn::see appendix [[#wf-pictures]] for the creation of
-    these pictures] of two web pages in figure \ref{traces}, where box
+    these pictures] of two web pages in Figure \ref{traces}, where box
     height signifies amount of data and width the duration until the
     next packet:
 
 #+BEGIN_LaTeX
-\begin{figure}
-\begin{longtable}{c c}
-   craigslist.org & facebook.com \\
-\endfirsthead
-\includegraphics[width=0.45\textwidth]{./pictures/craigslist_org@1445352269.png}
-&
-\includegraphics[width=0.45 \textwidth]{./pictures/facebook_com@1445350531.png}
-\\
-\includegraphics[width=0.45\textwidth]{./pictures/craigslist_org@1445585277.png}
-&
-\includegraphics[width=0.45 \textwidth]{./pictures/facebook_com@1445422155.png}
-\\
-\includegraphics[width=0.45\textwidth]{./pictures/craigslist_org@1445486337.png}
-&
-\includegraphics[width=0.45 \textwidth]{./pictures/facebook_com@1445425799.png}
-\\
-\includegraphics[width=0.45\textwidth]{./pictures/craigslist_org@1445527033.png}
-&
-\includegraphics[width=0.45 \textwidth]{./pictures/facebook_com@1445429729.png}
-\\
-\end{longtable}
+\begin{figure}[H]
+Craigslist.org\\
+\includegraphics[width=0.22\textwidth]{./pictures/craigslist_org@1445352269.png}
+\includegraphics[width=0.22\textwidth]{./pictures/craigslist_org@1445585277.png}
+\includegraphics[width=0.22\textwidth]{./pictures/craigslist_org@1445486337.png}\includegraphics[width=0.22\textwidth]{./pictures/craigslist_org@1445527033.png}\\
+Facebook.com\\
+\includegraphics[width=0.22 \textwidth]{./pictures/facebook_com@1445350531.png}
+\includegraphics[width=0.22 \textwidth]{./pictures/facebook_com@1445422155.png}
+\includegraphics[width=0.22 \textwidth]{./pictures/facebook_com@1445425799.png}
+\includegraphics[width=0.22 \textwidth]{./pictures/facebook_com@1445429729.png}
 \caption{Example traces of craigslist.org and facebook.com}
 \label{traces}
 \end{figure}
@@ -123,7 +112,6 @@
     According to Cai et al. \cite{a-systematic}, the tuples (delay,
     packet size) visualized contain all relevant information of a
     trace.
-**** WAIT when done, format in LaTeX: caption to group of images
 *** DANIEL What happens during a (HTTP) website request
     :PROPERTIES:
     :CUSTOM_ID: http
@@ -184,23 +172,20 @@
     object sizes. Cheng and Avnur \cite{ssl-traffic-analysis}
     additionally proposed a hidden markov model for page
     /transitions/, for hard-to-identify pages.
-*** CHECK Hurdles to website fingerprinting
+*** CHECK Hurdles to website fingerprinting: HTTP protocols evolution
     :PROPERTIES:
     :CUSTOM_ID: Hurdles
     :END:
-    The refinement of web protocols, and anonymization systems such as
-    Tor\cite{tor-design} made website fingerprinting harder:
-
-
-    Building a new HTTP connection for each transferred object turned
-    out to be
+    The refinement of web protocols made website fingerprinting
+    harder: Building a new HTTP connection for each transferred object
+    turned out to be
     inefficient\cite[sec.2.2.2]{DBLP:books/daglib/0001977}. To improve
     on this, some early HTTP/1.0 implementations used persistent
     connections\cite{rfc2068}, see Figure \ref{http_persistent}. These
     were standardized in HTTP/1.1 \cite{rfc2616}.
 
 #+BEGIN_LaTeX
-\begin{figure}[htb]
+\begin{figure}[H]
 \centering
 \includegraphics[width=.9\linewidth]{./pictures/HTTP_persistent_connection.png}
 \caption{HTTP persistent connections, source \url{https://en.wikipedia.org/wiki/File:HTTP_persistent_connection.svg}. The left sequence includes a TCP handshake for each object, while the right keeps the TCP connection alive until the whole document can be displayed.}
@@ -208,10 +193,12 @@
 \end{figure}
 #+END_LaTeX
 
-    It was no longer trivial to extract the files' sizes. You had to
-    determine the start and end of each request. (which was still
-    possible to estimate by cutting when the client sent a new request
-    data packet).
+    Before, it was easy to find out the number of bytes of each TCP
+    connection; this made it harder to extract the files' sizes. You
+    had to determine the start and end of each request. (which was
+    still possible to estimate by cutting when the client sent a new
+    request data packet).
+
 
     In addition to persistent connections, HTTP/1.1 allowed pipelining
     several HTTP requests in a single connection without waiting for
@@ -238,59 +225,61 @@
     \cite{experimental}. Cai et al.\cite{ccs2012-fingerprinting} found
     fingerprinting to be easier with this defense enabled than
     without.
-**** DANIEL Tor [0/4]
-     The Onion Router\cite{tor-design} (short: /Tor/) is an anonymity
-     system: While encryption hides the /content of communication/,
-     Tor also attempts to hide some /metadata/: Who communicates with
-     whom, for how long, when, how frequent, ...?
+*** DANIEL Hurdles to website fingerprinting: Tor [0/3]
+    The Onion Router\cite{tor-design} (short: /Tor/) is an anonymity
+    system: While encryption hides the /content of communication/,
+    Tor also attempts to hide some /metadata/: Who communicates with
+    whom, for how long, when, how frequent, ...?
 
-     This metadata is important, as it can reveal "[a] lot of good
-     information"\cite{applied96}.
-***** EVA History of Tor
-      Tor inherits its onion design from the Onion Routing Project
-      \cite{anonymous-connections}. It was originally developed by the
-      Naval Research Laboratory of the US Navy with the primary purpose
-      of protecting government communication.\cite{who-uses-tor}
+    This metadata is important, as it can reveal "[a] lot of good
+    information"\cite{applied96}.
+**** EVA History of Tor
+     Tor inherits its onion design from the Onion Routing Project
+     \cite{anonymous-connections}. It was originally developed by the
+     Naval Research Laboratory of the US Navy with the primary purpose
+     of protecting government communication.\cite{who-uses-tor}
 
-      In recent years, Tor has also provided censorship
-      circumvention\cite{tor-spec-pt}.
-***** DANIEL Who uses Tor
-      As more and more (internet) users wish to increase their
-      anonymity for various reasons, one of Tor's main design goals is
-      usability\cite[Sec.3]{tor-design}, which increases
-      anonymity\cite{usability:weis2006}. This has led to a diverse
-      user base\cite{who-uses-tor}: The network consists of over six
-      thousand nodes and is used by about two million people
-      daily[fn:metrics:\url{metrics.torproject.org}].
+     In recent years, Tor has also provided censorship
+     circumvention\cite{tor-spec-pt}.
+**** DANIEL Who uses Tor
+     As more and more (internet) users wish to increase their
+     anonymity for various reasons, one of Tor's main design goals is
+     usability\cite[Sec.3]{tor-design}, which increases
+     anonymity\cite{usability:weis2006}. This has led to a diverse
+     user base\cite{who-uses-tor}: The network consists of over six
+     thousand nodes and is used by about two million people
+     daily[fn:metrics:\url{metrics.torproject.org}].
 
-      As of \cite{who-uses-tor}, the groups[fn::actual or recommended]
-      who increase their anonymity via Tor are: journalists and their
-      audience, military, law enforcement officers, activists &
-      whistleblowers, high & low profile people, business executives,
-      bloggers, IT professionals, and "normal people". Actual and
-      recommended use is for diverse purposes: privacy, censorship
-      avoidance, covert ops, publishing, safety, online surveillance,
-      anonymous tip lines, whistleblowing, blogging private opinions,
-      evaluating competition, and troubleshooting IT systems.
-***** WRITE How does Tor Work
-      The Tor anonymity network consists of volunteer servers, called
-      /onion routers/. Each connection through the network is
-      facilitated by a proxy implementing the SOCKS5\cite{rfc1928}
-      protocol called /onion proxy/.
+     As of \cite{who-uses-tor}, the groups[fn::actual or recommended]
+     who increase their anonymity via Tor are: journalists and their
+     audience, military, law enforcement officers, activists &
+     whistleblowers, high & low profile people, business executives,
+     bloggers, IT professionals, and "normal people". Actual and
+     recommended use is for diverse purposes: privacy, censorship
+     avoidance, covert ops, publishing, safety, online surveillance,
+     anonymous tip lines, whistleblowing, blogging private opinions,
+     evaluating competition, and troubleshooting IT systems.
+**** EVA How does Tor Work
+     The Tor anonymity network consists of volunteer servers, called
+     /onion routers/. Each connection through the network is
+     facilitated by a proxy implementing the SOCKS5\cite{rfc1928}
+     protocol called /onion proxy/.
 
-      A connection is routed through three onion routers (=OR), each
-      of which can only see the previous and next, due to
-      encryption. Thus, no router has knowledge of both origin and
-      destination of traffic.
+     A connection is routed through three onion routers (=OR), each
+     of which can only see the previous and next, due to
+     encryption. Thus, no router has knowledge of both origin and
+     destination of traffic.
 
-      The messages look different from OR to OR due to same-length
-      encryption.
+     #+CAPTION: Connection through the Tor network. Source \url{https://www.torproject.org/about/overview.html.en}
+     [[./pictures/htw2.png]]
 
-      Tor's data cells have a fixed size of 512 bytes to prevent cell
-      identification; routing through 4 globally-distributed hops
-      increases latency; and Tor multiplexes all data cells through a
-      single TCP-connection.
-****** TODO picture from tor website
+     The messages look different from OR to OR due to same-length
+     encryption.
+
+     Tor's data cells have a fixed size of 512 bytes to prevent cell
+     identification; routing through 4 globally-distributed hops
+     increases latency; and Tor multiplexes all data cells through a
+     single TCP-connection.
 *** TODO (wf 2.0)
     :PROPERTIES:
     :CUSTOM_ID: wf2.0
@@ -549,27 +538,28 @@
     the SSL 3.0 protocol\cite{SSL}, and is attributed to Bennet Yee.
 ** TODO Defenses [0/8]
    siehe [[file:~/da/da.org::*2.%20Teil:%20Verteidigungen%20gegen%20Website-Fingerprinting%20(Welche%20Methoden%20existieren?%20Welche%20Problem%20existieren%20derzeit?%20-->%20%C3%9Cberleitung%20zum%20Hauptteil)][2. Teil: Verteidigungen gegen Website-Fingerprinting (Welche        Methoden existieren? Welche Problem existieren derzeit? -->        Überleitung zum Hauptteil)]]
-*** CHECK Early defenses
-    Cheng and Avnur\cite{ssl-traffic-analysis} proposed proxies, HTML
-    and protocol modification as defense against fingerprinting
-    webpages when retrieved via SSL. Hintz\cite{hintz02} proposed the
-    following when using proxies: adding noise to traffic, reducing
+*** EVA Early defenses
+    As defense against fingerprinting webpages when retrieved via SSL,
+    Cheng and Avnur\cite{ssl-traffic-analysis} mainly proposed using
+    proxies[fn::as well as HTML and protocol modification]. Addressing
+    the weaknesses when using proxies, Hintz\cite{hintz02} proposed
+    the following defenses: adding noise to traffic, reducing
     transferred data, and transferring everything in one connection.
 
     The first approach was followed by almost all researchers
     afterwards.
 
-    Concerning the second approach: As the sizes and interconnection
+    As for reducing transferred data: As the sizes and interconnection
     of HTML and embedded content is what makes a webpage easily
     identifyable, using a text-only non-javascript browser such as
     Lynx, disabling f.ex. images, or reducing cross-site requests via
     f.ex. the
     RequestPolicy[fn::\url{https://requestpolicycontinued.github.io/}]
-    addon, might mitigate the threat of website fingerprinting for
+    extension, might mitigate the threat of website fingerprinting for
     those who consider this trade-off acceptable. Yet, this reduces
     usability and thus conflicts with one of Tor's design
-    goals\cite{tor-design}. It is also deterministic, so that an
-    adversary could simply train on modified data.
+    goals\cite{tor-design}. It is also mostly deterministic, so that
+    an adversary could simply train on modified data.
 
     The third approach --- while valid --- would require modifying the
     server. This would conflict with Tor's design goal of
@@ -728,7 +718,7 @@
     - simultaneous to real traffic
 
     - make wf harder such that it is impossible
-** TODO Design and Implementation (=Implementation) [0/22]
+** TODO Design and Implementation (=Implementation) [0/21]
 *** EVA Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -750,7 +740,7 @@
     The next sections describe in detail how the addon distinguishes
     initial traffic from embedded objects, how to create traffic and
     describe different versions of the addon.
-*** WRITE How to distinguish HTML and embedded objects
+*** CHECK How to distinguish HTML and embedded objects
     :PROPERTIES:
     :CUSTOM_ID: distinguish_HTML_embedded
     :END:
@@ -828,17 +818,128 @@
     bookmark, or entering an address via the location bar, the addon
     always creates additional traffic simultaneous to the first HTTP
     request.
+*** CHECK Addon Version: Main
+    :PROPERTIES:
+    :CUSTOM_ID: addon_main
+    :END:
+    The main version works with the retrieved page's (known or
+    guessed) HTML size, and number of embedded objects, adding to
+    these to reach target values.
 
-    In the main version, a target HTML size is determined, the HTML
-    size of the current request is looked up, and a request for the
-    remainder is sent.
+    For the first HTML request, a target HTML size is determined, the
+    HTML size of the current request is looked up (or guessed), and a
+    request (of fixed size) for the remaining bytes is sent.
 
     At the same time, a probability of embedded requests is computed
     based on the page's (known or guessed) number of embedded items
     and a target number of embedded items, sampled from the HTTP
     traffic model.  For each real embedded request, an
     embedded-element-sized data is requested with this probability.
-*** TODO MOVE below [[*Addon-Versions][Addon-Versions]] Cache (approximate) sizes using Bloom Filters
+
+    A simulated webpage is specified by its HTML size and its number
+    of embedded objects. In a closed world, it is possible to always
+    know the page sizes beforehand. If unknown, the random variates
+    from the [[#HTTP traffic model][HTTP traffic model]] are used. [fn:: The size of each
+    embedded element is always drawn from the HTTP traffic model.]
+    Using known sizes is called the /cache/ flavor. In the /nocache/
+    flavor, sizes are always guessed.
+
+    Once the /page's values/ are thus set, there are two tactics on
+    how to set /target/ values.
+
+    One tactic is to group the webpages by their values into bins and
+    to set the bin border as the target value, as all webpages in the
+    bin must have a size less than or equal the border. This approach
+    approximates that taken by Wang et al. in \cite{effective} with
+    the bins being equivalent to the anonymity sets / partitions. As
+    the biggest bin does not have a maximum size, its median value is
+    chosen.[fn:: The optimal size for the biggest bin is a parameter
+    that should be evaluated as well.]
+
+    The other tactic is to have a single target distribution from
+    which values are sampled each time, once again the [[#HTTP traffic model][HTTP traffic
+    model]]. This is, again, also the fallback approach if the web
+    page's values are not known.
+
+    The web page's own values --- known or guessed, as described
+    [[#addon_main][above]] --- are subtracted from the target values.
+
+    At the same time as the HTML-query, another query for the target
+    HTML-size (or a token amount if too small) is sent. Concerning
+    the embedded objects, the ratio of
+    (target-embedded)/(site-embedded) is computed. For each embedded
+    object retrieved, this ratio determines the number of
+    embedded-sized requests, once again from the [[#HTTP traffic model][HTTP traffic model]].
+
+         - 15.3 first results
+         - buggy: did not match spec (only did html requests)
+*** TODO improvements
+**** TODO 0.17 bursts at end - bursts on addon site load finish
+     - wang: burst distinguishing attribute left with
+       w/t\cite{wang2015walkie}
+     - solution: count how many embedded, add those as bursts at the
+       end
+
+     One characteristic which identified sites well as per Dyer et
+     al.\cite{oakland2012-peekaboo} and Wang and Goldberg
+     \cite{wang2015walkie} is the number of bursts.
+
+     As the addon would conceptually only increase burst sizes, and not
+     alter their number, this should be covered as well. To address this,
+     the per-site traffic module [[CoverTraffic]] remembers the number of
+     unsent requests for embedded elements. When the page loading is
+     finished, this number (which should be 0 or less in more than half
+     the cases) of embedded objects is requested. As the cover traffic
+     currently comes from a single server, the multiple connection limit
+     (compare [[#Hurdles]]) should automatically lead to multiple bursts if
+     the number of embedded objects is high enough.
+**** WRITE 0.18: configurability
+     - options choosing which tactic:
+       - known/guess sizes
+       - bins/target
+       - bursts
+
+     - much more traffic
+       - try to fix at 19 (and backport to 15.3, codename retro)
+**** WRITE 0.19: negative values in distribution
+     :PROPERTIES:
+     :CUSTOM_ID: addon0.19
+     :END:
+     - negative values for requests are saved and randomly subtracted
+     - occur with real size > target size
+     - solution
+       - if small /negative request value:
+         - save value (min size is 160, thus =160 - requested_size=)
+       - else:
+         - get value at random up to min(request size, saved values)
+         - subtract from request size, and from saved value
+
+     The improvements described in this section were backported to
+     version 0.15.3, with version name 0.15.3-retrofixed. This
+     greatly reduced the amount of overhead, but had the same
+     problem: the factor was not correlated to the overhead: it
+     lacked control on how much traffic to generate.
+**** WRITE 0.20: bounds for probability
+     - buggy html model: counts many more URLs as HTML than expected
+       - fix would be: use only absolute numbers, not probabilities,
+         detect HTML (by suffix as approximation, and by content-type
+         when found), increase counter when found
+       - workaround: bound probability
+       - 20 limits number of embedded requests
+**** WRITE 0.21 bounds absolute number of retrieved objects
+      - better workaround
+        - stricter bounds on retrieval of embedded objects
+        - and stop when limit reached
+*** CHECK Addon Version: Simple
+    The previous versions had become quite complex for a Firefox
+    extension: they had more than 500 lines of code. A
+    simplified[ch.7.2]\cite{xp} algorithm triggers a FACTOR-sized
+    HTML-sized request at the beginning and an embedded-sized request
+    with probability FACTOR for each embedded object.
+
+    This halved the number of lines of code, allowing for better
+    refactoring. The version is called "simple".
+*** TODO Cache (approximate) sizes using Bloom Filters
 **** WRITE Introduction
      - addon variant: (sampled) sizes of pages known
      - see if this increases accuracy/overhead ratio
@@ -860,6 +961,7 @@
        - if one returns: fine
        - if none returns: ok: clear that not inserted, default value
        - if two return: one is false positive, fall back to default value
+     - impossible to know for certain which URL was visited/is in the cache
 **** MAYBE Error estimation of Bloom Sort
      - error both ways, and difference bin-size to real size
 **** brainstorm                                                     :ARCHIVE:
@@ -877,130 +979,6 @@
        - error estimation?
        - +: fixed size
        - -: error both ways, and difference bin-size to real size
-*** TODO Addon-Versions
-**** KEYWORDS Introduction
-     While just adding random traffic to each page might enhance
-     anonymity, always adding in the same way might be wasteful and
-     easier to detect. Per-page values could provide better cover.
-**** CHECK 0.15: base version
-     :PROPERTIES:
-     :CUSTOM_ID: addon0.15
-     :END:
-     This is the base version which was tested. Despite its alpha
-     status, it achieved an accuracy drop from 99.2% to 54.0--44.0%
-     (depending on flavor) when tested on the top-10 sites. This drop
-     came an a bandwidth overhead of 49--85%.
-
-     A simulated webpage is specified by its HTML size and its number
-     of embedded objects. In a closed world, it is possible to always
-     know the page sizes beforehand. If unknown, the random variates
-     from the [[#HTTP traffic model][HTTP traffic model]] are used. [fn:: The size of each
-     embedded element is always drawn from the HTTP traffic model.]
-     Using known sizes is called the /cache/ flavor. In the /nocache/
-     flavor, sizes are always guessed.
-
-     Once the /page's values/ are thus set, there are two tactics on
-     how to set /target/ values.
-
-     One tactic is to group the webpages by their values into bins and
-     to set the bin border as the target value, as all webpages in the
-     bin must have a size less than or equal the border. This approach
-     approximates that taken by Wang et al. in \cite{effective} with
-     the bins being equivalent to the anonymity sets / partitions. As
-     the biggest bin does not have a maximum size, its median value is
-     chosen.[fn:: The optimal size for the biggest bin is a parameter
-     that should be evaluated as well.]
-
-     The other tactic is to have a single target distribution from
-     which values are sampled each time, once again the [[#HTTP traffic model][HTTP traffic
-     model]]. This is, again, also the fallback approach if the web
-     page's values are not known.
-
-     The web page's own values --- known or guessed, as described
-     [[#addon0.15][above]] --- are subtracted from the target values.
-
-     At the same time as the HTML-query, another query for the target
-     HTML-size (or a token amount if too small) is sent. Concerning
-     the embedded objects, the ratio of
-     (target-embedded)/(site-embedded) is computed. For each embedded
-     object retrieved, this ratio determines the number of
-     embedded-sized requests, once again from the [[#HTTP traffic model][HTTP traffic model]].
-
-          - 15.3 first results
-          - buggy: did not match spec (only did html requests)
-**** TODO improvements
-***** TODO 0.17 bursts at end - bursts on addon site load finish
-      - wang: burst distinguishing attribute left with
-        w/t\cite{wang2015walkie}
-      - solution: count how many embedded, add those as bursts at the
-        end
-
-      One characteristic which identified sites well as per Dyer et
-      al.\cite{oakland2012-peekaboo} and Wang and Goldberg
-      \cite{wang2015walkie} is the number of bursts.
-
-      As the addon would conceptually only increase burst sizes, and not
-      alter their number, this should be covered as well. To address this,
-      the per-site traffic module [[CoverTraffic]] remembers the number of
-      unsent requests for embedded elements. When the page loading is
-      finished, this number (which should be 0 or less in more than half
-      the cases) of embedded objects is requested. As the cover traffic
-      currently comes from a single server, the multiple connection limit
-      (compare [[#Hurdles]]) should automatically lead to multiple bursts if
-      the number of embedded objects is high enough.
-***** WRITE 0.18: configurability
-      - options choosing which tactic:
-        - known/guess sizes
-        - bins/target
-        - bursts
-
-      - much more traffic
-        - try to fix at 19 (and backport to 15.3, codename retro)
-***** WRITE 0.19: negative values in distribution
-      :PROPERTIES:
-      :CUSTOM_ID: addon0.19
-      :END:
-      - negative values for requests are saved and randomly subtracted
-      - occur with real size > target size
-      - solution
-        - if small /negative request value:
-          - save value (min size is 160, thus =160 - requested_size=)
-        - else:
-          - get value at random up to min(request size, saved values)
-          - subtract from request size, and from saved value
-
-      The improvements described in this section were backported to
-      version 0.15.3, with version name 0.15.3-retrofixed. This
-      greatly reduced the amount of overhead, but had the same
-      problem: the factor was not correlated to the overhead: it
-      lacked control on how much traffic to generate.
-***** WRITE 0.20: bounds for probability
-      - buggy html model: counts many more URLs as HTML than expected
-        - fix would be: use only absolute numbers, not probabilities,
-          detect HTML (by suffix as approximation, and by content-type
-          when found), increase counter when found
-        - workaround: bound probability
-        - 20 limits number of embedded requests
-***** WRITE 0.21 bounds absolute number of retrieved objects
-       - better workaround
-         - stricter bounds on retrieval of embedded objects
-         - and stop when limit reached
-**** CHECK simple 1.1
-     The previous versions had become quite complex for a Firefox
-     extension: they had more than 500 lines of code. A
-     simplified[ch.7.2]\cite{xp} algorithm triggers a FACTOR-sized
-     HTML-sized request at the beginning and an embedded-sized request
-     with probability FACTOR for each embedded object.
-
-     This halved the number of lines of code, allowing for better
-     refactoring. The version is called "simple".
-
-     At the user request, an additional
-     HTML-sized-multiplied-by-desired-overhead request is sent.
-
-     At each request for further page objects, a dummy request for an
-     embedded-sized object is sent with probability depending on
-     requested overhead.
 *** WRITE Server
     - where there are several possibilities how to generate cover
       traffic,
