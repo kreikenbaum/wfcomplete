@@ -8292,6 +8292,22 @@
           - Bayes performs quite well even for maximal padding
 
     6) DISCUSSION
+
+       - easy to identify
+
+       - anonymity systems should pad (f.ex. Tor)
+
+         - but Tor might be vulnerable to timing analysis
+
+       - law enforcement might benefit from database/tools
+
+       - log-linear scales well to web
+
+       - dynamic content uses templates: easy to update
+
+       - static content updated less frequently
+
+    7) CONCLUSION AND FUTURE WORK
 *** quotes
     1) INTRODUCTION
        - Encrypted tunnels thwart the legitimate gathering of evidence
@@ -8313,329 +8329,7 @@
             the average of the k-identifiability value for each
             instance in the test set.
 *** ref [[file:master.bib::Liberatore:2006][Liberatore & Levine 2006: Inferring Source Encrypted HTTP Connections]]
-** TODO [#A] [[./geurtz.pdf][Geurts - Extremely randomized trees]]
-*** summary
-    0) [@0] Abstract
-
-       - method randomized ensemble method based on decision trees
-
-       - "randomizing strongly both attribute and cut-point choice
-         while splitting a tree node"
-
-       - evaluation: default parameters, strength (efficiency),
-         bias/variance, geometrical + kernel characterization
-
-    1) Introduction
-
-       - increase randomization even further over forests of
-         randomized trees
-
-    2) Extra-Trees algorithm
-
-       0) [@0]
-
-          - classification, many input, one output var
-
-          - algo description and rationale
-
-          - systematic evaluation (accuracy + efficiency)
-
-       1) Algorithm description and rationale
-
-          - select K non-constant (in S) attributes
-
-          - split S on each attribute
-
-          - return split with best score
-
-          - do with M different trees, majority vote
-
-          - (see quotes for full algorithm)
-
-       2) Empirical evaluation
-
-          0) [@0]
-
-             - datasets
-
-             - (tree-based) comparison algorithms
-
-             - evaluate (accuracy, computational resources)
-
-          1) Datasets
-
-             - 24 datasets: half classification (2-26 classes), half
-               regression
-
-             - different conditions:
-
-               - attributes: 2-617
-
-               - sample size: 300-10000
-
-               - redundancy: 10-1000 ("observations per attribute")
-
-               - different attribute importances: un, always, depending
-
-               - noisy/noise-free
-
-               - a priori, none later excluded
-
-          2) Compared algorithms
-
-             - single CART tree
-
-             - tree bagging
-
-             - random subspace
-
-             - random forests
-
-             - parameters:
-
-               - M = 100
-
-               - n_min = 2 for classification, 5 for regression
-
-               - K = \sqrt{n} for classification, n for regression
-
-             - score: normalized shannon information gain [[(et-a1)]]
-
-             - aggregation scheme
-
-               - majority vote for classification
-
-               - arithmetic average for regression
-
-          3) Protocols
-
-             - each set 10 times (50 for small sets)
-
-             - use best values of K for RS and RF
-
-             - also compare to kNN, other variants, least squares
-               linear regression (table 8 appendix d)
-
-             - statistical test: "corrected paired two-sided t-test"
-
-          4) Discussion of results
-
-             - many problems: et slightly worse only in two
-
-             - significance tests: et > rs > rf >> cart
-
-             - setting K by cross-validation not recommended: "very
-               small gain" and "very high cost in terms of
-               compatational burden" (see section 3)
-
-       3) Computational requirements
-
-          - ET is faster than Random Forests and Tree Bagging, and way
-            faster than Random Subspace (was taken out)
-
-          - takes about 3 times as long as ST for classification
-
-            - longer for regression
-
-    3) On the effect of parameters
-
-       effect of parameters K, n_{min} and M on Extra-Trees
-
-       1) Attribute selection strength K
-
-          - depends strongly on attribute correlation
-
-          - if correlated: K=1 is best
-
-          - if superfluous variables, rising K gives better result
-
-          - else (variable importance): default \sqrt{K} does a good job
-
-       2) Smoothing strength n_{min}
-
-          - bigger n_{min}: smaller trees, higher bias, smaller variance
-
-          - default of 2 (classification)
-
-          - should be higher for noisier data
-
-          - overall ok
-
-       3) Averaging strength M
-
-          - the higher M, the lower error (Breiman, 2001)
-
-          - depends on K
-
-       4) Bias/variance analysis
-
-          0) [@0]
-
-             - randomization increases both,
-
-             - but randomization variance decreased by averaging
-
-             - high levels of bias still ok for classification (class
-               probability estimates)
-
-          1) Experiments and protocols
-*** quotes
-    1) Introduction
-       - selects its cut-point fully at random, i.e., independently of
-         the target variable.
-       - Extra-Trees (for extremely randomized trees)
-    2) Extra-Trees algorithm
-       1) Algorithm description and rationale
-          - Split a node(S)
-            - Input: the local learning subset S corresponding to the
-              node we want to split
-            - Output: a split [a < a c ] or nothing
-            - If Stop_split(S) is TRUE then return nothing.
-            - Otherwise select K attributes {a_1 , ..., a_K} among all
-              non constant (in S) candidate attributes;
-            - Draw K splits {s_1 , ..., s_K }, where s_i =
-              Pick_a_random_split(S, a_i), ∀i = 1,...,K;
-            - Return a split s_∗ such that Score(s_∗ , S) =
-              max_{i=1,...,K} Score(s_i , S).
-          - Pick_a_random_split(S,a)
-            - Inputs: a subset S and an attribute a
-            - Output: a split
-            - Let a_max^S and a_min^S denote the maximal and minimal
-              value of a in S;
-            - Draw a random cut-point a_c uniformly in [a_min, a_max];
-            - Return the split [a < a_c].
-          - Stop_split(S)
-            - Input: a subset S
-            - Output: a boolean
-            - If |S| < n_min , then return TRUE;
-            - If all attributes are constant in S, then return TRUE;
-            - If the output is constant in S, then return TRUE;
-            - Otherwise, return FALSE.
-    100) [@100] Appendix
-         1) A. Pseudo-code of the complete Extra-Trees algorithm and
-            score measures
-            #+BEGIN_EXAMPLE
-              Score_C(s, S) = 2I^S_C(S) / (H_S(S)+H_C(S)) (ref:et-a1)
-            #+END_EXAMPLE
-*** ref [[file:master.bib::DBLP:journals/ml/GeurtsEW06][Geurts et al. 2006: Extremely]]
-** TODO [#A] [[./10.1.1.20.98.bloom-nw.pdf][Broder - Network Applications of Bloom Filters: A Survey]]
-*** summary
-    0) [@0] Abstract
-
-       - "space efficient"
-
-       - "small probability of false positives"
-
-    1) Introduction
-
-       - various uses: peer-to-peer, packet routing, locating
-         resources, measurement
-
-       - can replace lists and sets
-
-       - design: weigh false positives
-
-    2) Bloom filters: Mathematical preliminaries
-
-       1) Standard Bloom filters
-
-          - represent set of size n by m bits
-
-          - k hash functions h_1, ..., h_k
-
-            - to add element x to filter, set bits at h_1(x), ..., h_k(x) to 1
-
-            - element y maybe in set if all bits h_1(y), ..., h_k(y) are 1
-
-          - /false positive rate/ with n bits in filter is (assuming
-            perfectly random hashes)
-
-            (1 - e^{-kn/m})^{k}
-
-            - asymptotically same behavior if bits are split per hash
-              function
-
-              - but non-asymptotically slightly better to have one bit field
-
-          - minimal fp-rate [(1/2)^k \approx (0.6185)^{m/n} at
-
-            k = ln 2 \cdot (m/n)
-
-            (in reality, choose smaller of integers bounding k to
-            reduce computation)
-
-       2) Hashing vs. Bloom filters
-
-          - hashing has guaranteed results, bloom filters do not
-
-          - they offer a trade-off: space reduction for false positive
-            probability
-
-       3) Standard Bloom filter tricks
-
-          - union of two sets: OR bit vectors
-
-          - halve size: OR lower and upper set, mask hash of high order bit
-
-       4) Counting Bloom filters
-
-          - use counter (4 bits) instead of single bit
-
-          - allows deletion
-
-       5) Compressed Bloom filters
-
-          you can optimize for compressed size (sent f.ex. over the
-          network), larger bloom filter gives improved false positive
-          rate
-
-    3) Historical Applications
-
-       - spell-checkers: store bloom-filter of dictionary:
-         "significant performance advantages"
-
-       - password checking, also those with edit-distance 1
-
-       - databases: semijoin: send bloom-filter, receives pairs to
-         filter false positives
-
-    4) A Sample Network Application: Distributed Caching
-
-       - caches perodically send bloom filters of their cache contents
-
-       - might lead to additional requests and delays for false positives, but
-
-       - greatly reduces network traffic
-
-    5) Applications: P2P/Overlay Networks
-
-       browsing assistant vistabar: bloom filter for all annotated URLs
-
-       1) Moderate-sized P2P networks
-
-          - save offered objects in bloom filters
-
-            - reduce 64-bit identifier to 8 or 16 bits per object
-
-       2) Approximate Set Reconciliation for Content Delivery
-*** quotes
-    1) Introduction
-       - A Bloom filter is a simple space-efficient randomized data
-         structure for representing a set in order to support
-         membership queries.
-       - If false positives do not cause significant problems, the
-         Bloom filter may provide improved performance.
-       - The Bloom filter principle: Wherever a list or set is used,
-         and space is a consideration, a Bloom filter should be
-         considered. When using a Bloom filter, consider the potential
-         effects of false positives.
-    2) Bloom filters: Mathematical preliminaries
-       1) Standard Bloom filters
-          - A *Bloom filter* for representing a set S = {x_1, x_2,...,
-            x_n} of n elements is described by an array of m bits,
-            initially all set to 0.
-*** ref [[file:master.bib::Broder02networkapplications][Broder & Mitzenmacher 2002: Network Applications Bloom Filters]]
-** TODO [#A] [[./csbuflo.pdf][Cai - CS-BuFLO: A Congestion Sensitive Website Fingerprinting Defense]]
+** TODO [#B] [[./csbuflo.pdf][Cai - CS-BuFLO: A Congestion Sensitive Website Fingerprinting Defense]]
 *** summary
     0) [@0] Abstract:
 
@@ -8748,14 +8442,21 @@
           - can be mitigated/improved upon
 
        2) Overview of Congestion-Sensitive BuFLO
+
+          - interacts with TCP
+
+          - target average inter-packet rate \rho*, updated infrequently
+
+          - extra data after website has finished loading
+
+       3) Rate Adaptation
 *** quotes
     - Our experiments find that Congestion-Sensitive BuFLO has high
       overhead (around 2.3-2.8x)
     - it is not currently known whether there exists any efficient and
       secure defense against website fingerprinting attacks.
     - all previously-proposed defenses provide little security.
-*** ref
-    [[file:master.bib::wpes14-csbuflo][Cai et al. 2014: CS BuFLO]]
+*** ref [[file:master.bib::wpes14-csbuflo][Cai et al. 2014: CS BuFLO]]
 ** TODO [#B] [[./10.1.1.20.2080.bloom_orig.pdf][Bloom - Space/Time Trade-offs in Hash Coding with Allowable Errors]]
 *** summary
     0) [@0] Abstract
@@ -12111,6 +11812,338 @@
 
       Save the current figure.
     - (ends 68.1)
+** TODO [#C] [[./10.1.1.20.98.bloom-nw.pdf][Broder - Network Applications of Bloom Filters: A Survey]]
+*** summary
+    0) [@0] Abstract
+
+       - "space efficient"
+
+       - "small probability of false positives"
+
+    1) Introduction
+
+       - various uses: peer-to-peer, packet routing, locating
+         resources, measurement
+
+       - can replace lists and sets
+
+       - design: weigh false positives
+
+    2) Bloom filters: Mathematical preliminaries
+
+       1) Standard Bloom filters
+
+          - represent set of size n by m bits
+
+          - k hash functions h_1, ..., h_k
+
+            - to add element x to filter, set bits at h_1(x), ..., h_k(x) to 1
+
+            - element y maybe in set if all bits h_1(y), ..., h_k(y) are 1
+
+          - /false positive rate/ with n bits in filter is (assuming
+            perfectly random hashes)
+
+            (1 - e^{-kn/m})^{k}
+
+            - asymptotically same behavior if bits are split per hash
+              function
+
+              - but non-asymptotically slightly better to have one bit field
+
+          - minimal fp-rate [(1/2)^k \approx (0.6185)^{m/n} at
+
+            k = ln 2 \cdot (m/n)
+
+            (in reality, choose smaller of integers bounding k to
+            reduce computation)
+
+       2) Hashing vs. Bloom filters
+
+          - hashing has guaranteed results, bloom filters do not
+
+          - they offer a trade-off: space reduction for false positive
+            probability
+
+       3) Standard Bloom filter tricks
+
+          - union of two sets: OR bit vectors
+
+          - halve size: OR lower and upper set, mask hash of high order bit
+
+       4) Counting Bloom filters
+
+          - use counter (4 bits) instead of single bit
+
+          - allows deletion
+
+       5) Compressed Bloom filters
+
+          you can optimize for compressed size (sent f.ex. over the
+          network), larger bloom filter gives improved false positive
+          rate
+
+    3) Historical Applications
+
+       - spell-checkers: store bloom-filter of dictionary:
+         "significant performance advantages"
+
+       - password checking, also those with edit-distance 1
+
+       - databases: semijoin: send bloom-filter, receives pairs to
+         filter false positives
+
+    4) A Sample Network Application: Distributed Caching
+
+       - caches perodically send bloom filters of their cache contents
+
+       - might lead to additional requests and delays for false positives, but
+
+       - greatly reduces network traffic
+
+    5) Applications: P2P/Overlay Networks
+
+       browsing assistant vistabar: bloom filter for all annotated URLs
+
+       1) Moderate-sized P2P networks
+
+          - save offered objects in bloom filters
+
+            - reduce 64-bit identifier to 8 or 16 bits per object
+
+       2) Approximate Set Reconciliation for Content Delivery
+
+          - network: set of differences client A to client B
+
+            - false positive: do not send some files
+
+          - part of more complex data structures
+
+          - group download: each peer downloads part
+
+       3) Set Intersection for Keyword Searches
+*** quotes
+    1) Introduction
+       - A Bloom filter is a simple space-efficient randomized data
+         structure for representing a set in order to support
+         membership queries.
+       - If false positives do not cause significant problems, the
+         Bloom filter may provide improved performance.
+       - The Bloom filter principle: Wherever a list or set is used,
+         and space is a consideration, a Bloom filter should be
+         considered. When using a Bloom filter, consider the potential
+         effects of false positives.
+    2) Bloom filters: Mathematical preliminaries
+       1) Standard Bloom filters
+          - A *Bloom filter* for representing a set S = {x_1, x_2,...,
+            x_n} of n elements is described by an array of m bits,
+            initially all set to 0.
+*** ref [[file:master.bib::Broder02networkapplications][Broder & Mitzenmacher 2002: Network Applications Bloom Filters]]
+** TODO [#C] [[./geurtz.pdf][Geurts - Extremely randomized trees]]
+*** summary
+    0) [@0] Abstract
+
+       - method randomized ensemble method based on decision trees
+
+       - "randomizing strongly both attribute and cut-point choice
+         while splitting a tree node"
+
+       - evaluation: default parameters, strength (efficiency),
+         bias/variance, geometrical + kernel characterization
+
+    1) Introduction
+
+       - increase randomization even further over forests of
+         randomized trees
+
+    2) Extra-Trees algorithm
+
+       0) [@0]
+
+          - classification, many input, one output var
+
+          - algo description and rationale
+
+          - systematic evaluation (accuracy + efficiency)
+
+       1) Algorithm description and rationale
+
+          - select K non-constant (in S) attributes
+
+          - split S on each attribute
+
+          - return split with best score
+
+          - do with M different trees, majority vote
+
+          - (see quotes for full algorithm)
+
+       2) Empirical evaluation
+
+          0) [@0]
+
+             - datasets
+
+             - (tree-based) comparison algorithms
+
+             - evaluate (accuracy, computational resources)
+
+          1) Datasets
+
+             - 24 datasets: half classification (2-26 classes), half
+               regression
+
+             - different conditions:
+
+               - attributes: 2-617
+
+               - sample size: 300-10000
+
+               - redundancy: 10-1000 ("observations per attribute")
+
+               - different attribute importances: un, always, depending
+
+               - noisy/noise-free
+
+               - a priori, none later excluded
+
+          2) Compared algorithms
+
+             - single CART tree
+
+             - tree bagging
+
+             - random subspace
+
+             - random forests
+
+             - parameters:
+
+               - M = 100
+
+               - n_min = 2 for classification, 5 for regression
+
+               - K = \sqrt{n} for classification, n for regression
+
+             - score: normalized shannon information gain [[(et-a1)]]
+
+             - aggregation scheme
+
+               - majority vote for classification
+
+               - arithmetic average for regression
+
+          3) Protocols
+
+             - each set 10 times (50 for small sets)
+
+             - use best values of K for RS and RF
+
+             - also compare to kNN, other variants, least squares
+               linear regression (table 8 appendix d)
+
+             - statistical test: "corrected paired two-sided t-test"
+
+          4) Discussion of results
+
+             - many problems: et slightly worse only in two
+
+             - significance tests: et > rs > rf >> cart
+
+             - setting K by cross-validation not recommended: "very
+               small gain" and "very high cost in terms of
+               compatational burden" (see section 3)
+
+       3) Computational requirements
+
+          - ET is faster than Random Forests and Tree Bagging, and way
+            faster than Random Subspace (was taken out)
+
+          - takes about 3 times as long as ST for classification
+
+            - longer for regression
+
+    3) On the effect of parameters
+
+       effect of parameters K, n_{min} and M on Extra-Trees
+
+       1) Attribute selection strength K
+
+          - depends strongly on attribute correlation
+
+          - if correlated: K=1 is best
+
+          - if superfluous variables, rising K gives better result
+
+          - else (variable importance): default \sqrt{K} does a good job
+
+       2) Smoothing strength n_{min}
+
+          - bigger n_{min}: smaller trees, higher bias, smaller variance
+
+          - default of 2 (classification)
+
+          - should be higher for noisier data
+
+          - overall ok
+
+       3) Averaging strength M
+
+          - the higher M, the lower error (Breiman, 2001)
+
+          - depends on K
+
+       4) Bias/variance analysis
+
+          0) [@0]
+
+             - randomization increases both,
+
+             - but randomization variance decreased by averaging
+
+             - high levels of bias still ok for classification (class
+               probability estimates)
+
+          1) Experiments and protocols
+*** quotes
+    1) Introduction
+       - selects its cut-point fully at random, i.e., independently of
+         the target variable.
+       - Extra-Trees (for extremely randomized trees)
+    2) Extra-Trees algorithm
+       1) Algorithm description and rationale
+          - Split a node(S)
+            - Input: the local learning subset S corresponding to the
+              node we want to split
+            - Output: a split [a < a c ] or nothing
+            - If Stop_split(S) is TRUE then return nothing.
+            - Otherwise select K attributes {a_1 , ..., a_K} among all
+              non constant (in S) candidate attributes;
+            - Draw K splits {s_1 , ..., s_K }, where s_i =
+              Pick_a_random_split(S, a_i), ∀i = 1,...,K;
+            - Return a split s_∗ such that Score(s_∗ , S) =
+              max_{i=1,...,K} Score(s_i , S).
+          - Pick_a_random_split(S,a)
+            - Inputs: a subset S and an attribute a
+            - Output: a split
+            - Let a_max^S and a_min^S denote the maximal and minimal
+              value of a in S;
+            - Draw a random cut-point a_c uniformly in [a_min, a_max];
+            - Return the split [a < a_c].
+          - Stop_split(S)
+            - Input: a subset S
+            - Output: a boolean
+            - If |S| < n_min , then return TRUE;
+            - If all attributes are constant in S, then return TRUE;
+            - If the output is constant in S, then return TRUE;
+            - Otherwise, return FALSE.
+    100) [@100] Appendix
+         1) A. Pseudo-code of the complete Extra-Trees algorithm and
+            score measures
+            #+BEGIN_EXAMPLE
+              Score_C(s, S) = 2I^S_C(S) / (H_S(S)+H_C(S)) (ref:et-a1)
+            #+END_EXAMPLE
+*** ref [[file:master.bib::DBLP:journals/ml/GeurtsEW06][Geurts et al. 2006: Extremely]]
 ** TODO PART [#C] [[./thebook.pdf][Smola - INTRODUCTION TO MACHINE LEARNING]] [0/2]
 *** parts: classifiers for thesis: knn, svm, (bayes?, random forest?)
 *** TODO summary
@@ -15870,6 +15903,10 @@
 *** summary
 *** quotes
 *** ref [[file:master.bib::SS03][Serjantov & Sewell 2003: Passive Attack Analysis]]
+** TODO [[./randomforest2001.pdf][Breiman - RANDOM FORESTS]]
+*** summary
+*** quotes
+*** ref [[file:master.bib::randomforests][Breiman 2001: Random]]
     
 ** PART [[info:gnuplot#Top][Broeker - gnuplot]]
 *** summary
@@ -21557,6 +21594,18 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
            - you and customer: good feeling that (both sets of) tests run
 
         6) Refactoring
+
+           - when there is duplicate code
+
+           - both before or after programming feature
+
+        7) Pair Programming
+
+           - keyboarder: mainly implementation, other: strategy
+
+           - pairing is dynamic
+
+        8) Collective Ownership
 *** quotes
     00) [@00] unsorted
         - Use XP when requirements are vague or changing
@@ -21605,6 +21654,10 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        3) Listening
           - programmers don't know anything that business people think
             is interesting
+    10) A Quick Overview
+        6) Refactoring
+           - When the system requires that you duplicate code, it is
+             asking for refactoring.
 *** ref [[file:master.bib::xp][Beck 1999: Extreme Programming Explained]]
 ** PART [[./201335142847631.pdf][Lohr - Sampling: Design and Analysis]]
 ** PART [[/usr/lib/python2.7/dist-packages/Gnuplot/demo.py][haggerty - demo.py -- Demonstrate the Gnuplot python module]]
@@ -21977,10 +22030,6 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 *** ref http://tor.stackexchange.com/questions/327/how-may-i-run-multiple-tor-relay-instances-in-a-single-linux-machine
 ** [[./Analysis_of_Web_Data_Compression_and_its_Impact_on_Traffic_and_Energy_Consumption.pdf][Analysis of Web Data Compression and its Impact on Traffic and Energy Consumption]]
 ** [[./OverlierSyverson2006b.pdf][Locating Hidden Servers]]
-** TODO MOVE [[./randomforest2001.pdf][Breiman - RANDOM FORESTS]]
-*** summary
-*** quotes
-*** ref [[file:master.bib::randomforests][Breiman 2001: Random]]
 ** [[./arc97.pdf][ARCING CLASSIFIERS]]
 ** [[./DOM2-HTML.pdf][Document Object Model (DOM) Level 2 HTML Specification]]
 *** summary

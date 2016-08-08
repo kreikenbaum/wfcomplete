@@ -69,7 +69,7 @@
 * TODO look through unsorted top-level headings
 * WAIT Abstract
 * TODO Basics (=basics) [0%]
-** TODO Website Fingerprinting [0/32]
+** TODO Website Fingerprinting [0/33]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -172,7 +172,7 @@ Facebook.com\\
     object sizes. Cheng and Avnur \cite{ssl-traffic-analysis}
     additionally proposed a hidden markov model for page
     /transitions/, for hard-to-identify pages.
-*** CHECK Hurdles to website fingerprinting: HTTP protocols evolution
+*** WRITE Hurdles to website fingerprinting: HTTP protocols evolution
     :PROPERTIES:
     :CUSTOM_ID: Hurdles
     :END:
@@ -193,11 +193,11 @@ Facebook.com\\
 \end{figure}
 #+END_LaTeX
 
-    Before, it was easy to find out the number of bytes of each TCP
-    connection; this made it harder to extract the files' sizes. You
-    had to determine the start and end of each request. (which was
-    still possible to estimate by cutting when the client sent a new
-    request data packet).
+    Before this, it was trivial to find out the number of bytes of
+    each TCP connection; this made it harder to extract the files'
+    sizes. You had to determine the start and end of each
+    request. (which was still possible to estimate by splitting when
+    the client sent a new request data packet).
 
 
     In addition to persistent connections, HTTP/1.1 allowed pipelining
@@ -220,12 +220,13 @@ Facebook.com\\
     [fn::\url{http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp/expertzone/chats/transcripts/08_0814_ez_ie8.mspx}]
     in all major browsers. After Panchenko et al.'s first successful
     attack\cite{panchenko}, Firefox's built-in request pipelining was
-    enabled [fn::with added request order randomization] as an
-    additional no-cost defense prototype in the Tor-Browser-Bundle
+    enabled [fn::with added request order randomization] as part of a
+    no-cost defense prototype in the Tor-Browser-Bundle
     \cite{experimental}. Cai et al.\cite{ccs2012-fingerprinting} found
     fingerprinting to be easier with this defense enabled than
     without.
-*** DANIEL Hurdles to website fingerprinting: Tor [0/4]
+**** TODO mention wang's real-world split (read first)
+*** DANIEL Challenges to website fingerprinting: Tor [0/4]
     The Onion Router\cite{tor-design} (short: /Tor/) is an anonymity
     system: While encryption hides the /content of communication/,
     Tor also attempts to hide some /metadata/: Who communicates with
@@ -294,16 +295,21 @@ Facebook.com\\
     :END:
     In spite of these difficulties, website fingerprinting was shown
     to be possible in even when Tor is used.
-**** TODO they used *packet sizes*
-    Like the above attacks, Liberatore and
-    Levine\cite{Liberatore:2006} and Herrmann et
-    al\cite{ccsw09-fingerprinting} used only packet sizes, but
-    employed machine learning techniques. Herrmann et al. used a Naïve
-    Bayes Classifier\cite[ch.1.3.1]{intro2ir}, which gave them good
-    results against one-hop anonymizing proxies, yet yielded only 3%
-    accuracy against 775 distinct pages when retrieved via
-    Tor\cite{tor-design}.
-**** CHECK attributes
+**** WRITE Introduction
+     Similarly to the above attacks, Liberatore and
+     Levine\cite{Liberatore:2006} and Herrmann et
+     al\cite{ccsw09-fingerprinting} used packet sizes, and employed
+     machine learning techniques. Liberatore and Levine used both a
+     Naïve Bayes Classifier[fn::described f.ex. in
+     \cite[ch.1.3.1]{intro2ir}] and the Jaccard-metric, while Herrmann
+     et al. used a Naïve Bayes Classifier with different metrics,
+     which gave them good results against one-hop anonymizing proxies,
+     yet yielded only 3% accuracy against 775 distinct pages when
+     retrieved via Tor\cite{tor-design}. As this was still
+     significantly better than random guessing, they conjectured that
+     this result could be improved when attacks were specifically
+     tailed to Tor.
+**** WRITE attributes
      :PROPERTIES:
      :CUSTOM_ID: attributes
      :END:
@@ -357,7 +363,6 @@ Facebook.com\\
        then formulate correctly
 ****** TODO get picture to work
      - attributes to classes: classifiers
-****** sub... of wf2.0?
 **** EVA panchenko version 1
      Panchenko et al.'s \cite{panchenko} attack was the first that
      successfully classifed traces for websites retrieved via
@@ -692,41 +697,49 @@ Facebook.com\\
      - and target
      - simultaneous to real traffic
 *** CHECK Introduction
-   When this thesis was started, both
-   Walkie-Talkie\cite{wang2015walkie} and WTF-PAD\cite{wtfpad} had not
-   been published yet.
+    As acknowledged both in \cite{wang2015walkie} and \cite{wtfpad},
+    deterministic approaches had the major shortcoming of introducing
+    additional delay into the traffic, which conflicted with Tor's
+    design goal of usability\cite{tor-design}, increasing the sometimes
+    bothersome delay of using Tor for browsing the web.[fn::As for the
+    positive side of higher latency, see \cite[sec.4.2]{challenges}.]
 
-   As acknowledged both in \cite{wang2015walkie} and \cite{wtfpad},
-   deterministic approaches had the major shortcoming of introducing
-   additional delay into the traffic, which conflicted with Tor's
-   design goal of usability\cite{tor-design}, increasing the sometimes
-   bothersome delay of using Tor for browsing the web.[fn::As for the
-   positive side of higher latency, see \cite[sec.4.2]{challenges}.]
+    While also providing this functionality through an easy-to-add
+    browser extension, keeping the Tor Browser code as-is, this
+    thesis's approach uses properties of web traffic to determine when
+    and how much traffic to send. This stands in contrast to both Wang
+    et al.'s Walkie-Talkie\cite{wang2015walkie}, which offers sampling
+    from both uniform and normal distributions, and Juarez et al.'s
+    WTF-PAD\cite{wtfpad}, which creates histogram-based traffic, but
+    works rather at Tor's cell level, thus adds overhead to
+    non-web-based traffic, and, critically, adapts a method that tries
+    to do more (hiding from a global adversary), instead of hiding
+    which site was browsed to from a local passive observer.[fn::only
+    the second of these is included in Tor's design goals]
 
-   While also providing this functionality through an easy-to-add
-   browser extension, keeping the Tor Browser code as-is, this
-   thesis's approach uses properties of web traffic to determine when
-   and how much traffic to send. This stands in contrast to both Wang
-   et al.'s Walkie-Talkie\cite{wang2015walkie}, which offers sampling
-   from both uniform and normal distributions, and Juarez et al.'s
-   WTF-PAD\cite{wtfpad}, which creates histogram-based traffic, but
-   works rather at Tor's cell level, thus adds overhead to
-   non-web-based traffic, and, critically, adapts a method that tries
-   to do more (hiding from a global adversary), instead of hiding
-   which site was browsed to from a local passive observer.[fn::only
-   the second of these is included in Tor's design goals]
+    When this thesis was started, both
+    Walkie-Talkie\cite{wang2015walkie} and WTF-PAD\cite{wtfpad} had not
+    been published yet. Yet, it contributes
+
+    a) an easily-deployable browser extension, and
+    b) the inclusion of HTTP traffic characteristics for random traffic,
+
+    which neither of the above defenses contain.
 *** WRITE Aim: selective cover traffic
-   As detailed in section [[#attributes]], there are key attributes that are
-   hard to cloak except by extra traffic, f.ex. total bytes up-/ and
-   downstream.
+    As detailed in section [[#attributes]], there are key attributes that
+    are hard to cloak except by extra traffic, f.ex. total number of
+    bytes up-/ and downstream.[fn::For Tor, the number of bytes is an
+    almost exact multiple of the total number of bytes, due to data
+    cell padding].
 
-   Given that, the next question is how to shape traffic in order to
-   effectively cloak the fingerprint.
+    If some extra traffic needs to be created, the next question is
+    how to shape this traffic in order to effectively cloak the
+    fingerprint.
 
-    - based on target web site
-    - simultaneous to real traffic
+     - based on target web site
+     - simultaneous to real traffic
 
-    - make wf harder such that it is impossible
+     - make wf harder such that it is impossible
 ** TODO Design and Implementation (=Implementation) [0/21]
 *** EVA Introduction
     This thesis' aim is to create cover traffic to hinder website
@@ -759,12 +772,14 @@ Facebook.com\\
     accessible when the content has been received. The defense needs
     to distinguish at the time it is requested.
 
-    Common wisdom\cite{cooluri} is that you cannot distinguish HTTP
-    elements at request time by just looking at the URL. As a solution
-    in this addon, the first request to a host is considered the HTML
-    page, while subsequent requests while the page is being loaded
-    [fn::until the body's =load= event\cite[ch.1.6.5]{dom2-events}]
-    are considered requests for embedded elements.
+    World Wide Web URLs increasingly move away from including a file
+    type suffix\cite{cooluri}, so that distinguishing HTTP elements at
+    request time by just looking at the URL becomes harder. The
+    solution in this addon is to consider the first request to a host
+    as the HTML page, while subsequent requests while the page is
+    being loaded [fn::until the body's =load=
+    event\cite[ch.1.6.5]{dom2-events}] are considered requests for
+    embedded objects.
 
     This accurately distinguishes between start of a page load and the
     loading of its embedded objects, but a drawback is that is does
@@ -834,8 +849,7 @@ Facebook.com\\
     describe the main addon branch with its configuration
     possibilities, the simple version, and an older version with very
     low overhead but little configurability. Version evolution is
-    described in appendix .
-**** TODO appendix number after MOVE
+    described in appendix [[#versions]].
 **** CHECK Addon Version: Main
      :PROPERTIES:
      :CUSTOM_ID: addon_main
@@ -891,63 +905,47 @@ Facebook.com\\
 
           - 15.3 first results
           - buggy: did not match spec (only did html requests)
-*** TODO MOVE to appendix Versions
-**** TODO 0.17 bursts at end - bursts on addon site load finish
-     - wang: burst distinguishing attribute left with
-       w/t\cite{wang2015walkie}
-     - solution: count how many embedded, add those as bursts at the
-       end
-
-     One characteristic which identified sites well as per Dyer et
-     al.\cite{oakland2012-peekaboo} and Wang and Goldberg
-     \cite{wang2015walkie} is the number of bursts.
-
-     As the addon would conceptually only increase burst sizes, and not
-     alter their number, this should be covered as well. To address this,
-     the per-site traffic module [[CoverTraffic]] remembers the number of
-     unsent requests for embedded elements. When the page loading is
-     finished, this number (which should be 0 or less in more than half
-     the cases) of embedded objects is requested. As the cover traffic
-     currently comes from a single server, the multiple connection limit
-     (compare [[#Hurdles]]) should automatically lead to multiple bursts if
-     the number of embedded objects is high enough.
-**** WRITE 0.18: configurability
-     - options choosing which tactic:
-       - known/guess sizes
-       - bins/target
-       - bursts
-
-     - much more traffic
-       - try to fix at 19 (and backport to 15.3, codename retro)
-**** WRITE 0.19: negative values in distribution
-     :PROPERTIES:
-     :CUSTOM_ID: addon0.19
-     :END:
-     - negative values for requests are saved and randomly subtracted
-     - occur with real size > target size
-     - solution
-       - if small /negative request value:
-         - save value (min size is 160, thus =160 - requested_size=)
-       - else:
-         - get value at random up to min(request size, saved values)
-         - subtract from request size, and from saved value
-
-     The improvements described in this section were backported to
-     version 0.15.3, with version name 0.15.3-retrofixed. This
-     greatly reduced the amount of overhead, but had the same
-     problem: the factor was not correlated to the overhead: it
-     lacked control on how much traffic to generate.
-**** WRITE 0.20: bounds for probability
-     - buggy html model: counts many more URLs as HTML than expected
-       - fix would be: use only absolute numbers, not probabilities,
-         detect HTML (by suffix as approximation, and by content-type
-         when found), increase counter when found
-       - workaround: bound probability
-       - 20 limits number of embedded requests
-**** WRITE 0.21 bounds absolute number of retrieved objects
-      - better workaround
-        - stricter bounds on retrieval of embedded objects
-        - and stop when limit reached
+***** TODO Cache (approximate) sizes using Bloom Filters
+****** WRITE Introduction
+       - addon variant: (sampled) sizes of pages known
+       - see if this increases accuracy/overhead ratio
+       - use fixed-width data structure: bloom filters
+         - one for each bin
+         - check all if one might contain
+           - if yes, return median value
+           - if no, return random estimate
+       - bloom-nw: use in other data structures
+****** WRITE Bloom Filter
+       - stochastic fixed-width data structure
+       - works flawlessly if element is inside
+         - might fail if not
+       - details: \cite{Broder02networkapplications}
+****** WRITE Application: Bloom Sort
+       - sort sizes into bins
+         - based on target distribution
+         - one bloom filter per bin
+       - check size: check all filters
+         - if one returns: fine
+         - if none returns: ok: clear that not inserted, default value
+         - if two return: one is false positive, fall back to default value
+       - impossible to know for certain which URL was visited/is in the cache
+****** MAYBE Error estimation of Bloom Sort
+       - error both ways, and difference bin-size to real size
+****** brainstorm                                                   :ARCHIVE:
+       - stochastic fixed-width data structure
+       - works flawlessly if element is inside
+         - might fail if not
+       - based on this: bloomsort: combine filters
+         - sort into bins
+           - based on target distribution
+           - one bloom filter per bin
+         - check size: check all filters
+           - if one returns: fine
+           - if none returns: ok: clear that not inserted, default value
+           - if two return: error, fall back to default value
+         - error estimation?
+         - +: fixed size
+         - -: error both ways, and difference bin-size to real size
 *** CHECK Addon Version: Simple
     The previous versions had become quite complex for a Firefox
     extension: they had more than 500 lines of code. A
@@ -957,46 +955,6 @@ Facebook.com\\
 
     This halved the number of lines of code, allowing for better
     refactoring. The version is called "simple".
-*** TODO MOVE sub [[#addon_main][Addon Version: Main]] Cache (approximate) sizes using Bloom Filters
-**** WRITE Introduction
-     - addon variant: (sampled) sizes of pages known
-     - see if this increases accuracy/overhead ratio
-     - use fixed-width data structure: bloom filters
-       - one for each bin
-       - check all if one might contain
-         - if yes, return median value
-         - if no, return random estimate
-**** WRITE Bloom Filter
-     - stochastic fixed-width data structure
-     - works flawlessly if element is inside
-       - might fail if not
-     - details: \cite{Broder02networkapplications}
-**** WRITE Application: Bloom Sort
-     - sort sizes into bins
-       - based on target distribution
-       - one bloom filter per bin
-     - check size: check all filters
-       - if one returns: fine
-       - if none returns: ok: clear that not inserted, default value
-       - if two return: one is false positive, fall back to default value
-     - impossible to know for certain which URL was visited/is in the cache
-**** MAYBE Error estimation of Bloom Sort
-     - error both ways, and difference bin-size to real size
-**** brainstorm                                                     :ARCHIVE:
-     - stochastic fixed-width data structure
-     - works flawlessly if element is inside
-       - might fail if not
-     - based on this: bloomsort: combine filters
-       - sort into bins
-         - based on target distribution
-         - one bloom filter per bin
-       - check size: check all filters
-         - if one returns: fine
-         - if none returns: ok: clear that not inserted, default value
-         - if two return: error, fall back to default value
-       - error estimation?
-       - +: fixed size
-       - -: error both ways, and difference bin-size to real size
 *** WRITE Server
     - where there are several possibilities how to generate cover
       traffic,
@@ -2748,6 +2706,67 @@ similar, little to see
    HTML page and at least return the domains of all embedded elements.
 * TODO appendices [0/5]
 \appendix
+** TODO Versions
+   :PROPERTIES:
+   :CUSTOM_ID: versions
+   :END:
+*** WRITE 0.17 bursts at end - bursts on addon site load finish
+    - wang: burst distinguishing attribute left with
+      w/t\cite{wang2015walkie}
+    - solution: count how many embedded, add those as bursts at the
+      end
+
+    One characteristic which identified sites well as per Dyer et
+    al.\cite{oakland2012-peekaboo} and Wang and Goldberg
+    \cite{wang2015walkie} is the number of bursts.
+
+    As the addon would conceptually only increase burst sizes, and not
+    alter their number, this should be covered as well. To address this,
+    the per-site traffic module [[CoverTraffic]] remembers the number of
+    unsent requests for embedded elements. When the page loading is
+    finished, this number (which should be 0 or less in more than half
+    the cases) of embedded objects is requested. As the cover traffic
+    currently comes from a single server, the multiple connection limit
+    (compare [[#Hurdles]]) should automatically lead to multiple bursts if
+    the number of embedded objects is high enough.
+*** WRITE 0.18: configurability
+    - options choosing which tactic:
+      - known/guess sizes
+      - bins/target
+      - bursts
+
+    - much more traffic
+      - try to fix at 19 (and backport to 15.3, codename retro)
+*** WRITE 0.19: negative values in distribution
+    :PROPERTIES:
+    :CUSTOM_ID: addon0.19
+    :END:
+    - negative values for requests are saved and randomly subtracted
+    - occur with real size > target size
+    - solution
+      - if small /negative request value:
+        - save value (min size is 160, thus =160 - requested_size=)
+      - else:
+        - get value at random up to min(request size, saved values)
+        - subtract from request size, and from saved value
+
+    The improvements described in this section were backported to
+    version 0.15.3, with version name 0.15.3-retrofixed. This
+    greatly reduced the amount of overhead, but had the same
+    problem: the factor was not correlated to the overhead: it
+    lacked control on how much traffic to generate.
+*** WRITE 0.20: bounds for probability
+    - buggy html model: counts many more URLs as HTML than expected
+      - fix would be: use only absolute numbers, not probabilities,
+        detect HTML (by suffix as approximation, and by content-type
+        when found), increase counter when found
+      - workaround: bound probability
+      - 20 limits number of embedded requests
+*** WRITE 0.21 bounds absolute number of retrieved objects
+     - better workaround
+       - stricter bounds on retrieval of embedded objects
+       - and stop when limit reached
+
 ** Script =one-site.py=: capture pcap traces
    <<one-site.py>>
    #+INCLUDE: "./bin/one_site.py" src python
