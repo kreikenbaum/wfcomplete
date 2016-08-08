@@ -69,7 +69,7 @@
 * TODO look through unsorted top-level headings
 * WAIT Abstract
 * TODO Basics (=basics) [0%]
-** TODO Website Fingerprinting [0/31]
+** TODO Website Fingerprinting [0/32]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -110,8 +110,8 @@ Facebook.com\\
 #+END_LaTeX
 
     According to Cai et al. \cite{a-systematic}, the tuples (delay,
-    packet size) visualized contain all relevant information of a
-    trace.
+    packet size) visualized in Figure \ref{traces} contain all
+    relevant information of a trace.
 *** DANIEL What happens during a (HTTP) website request
     :PROPERTIES:
     :CUSTOM_ID: http
@@ -225,7 +225,7 @@ Facebook.com\\
     \cite{experimental}. Cai et al.\cite{ccs2012-fingerprinting} found
     fingerprinting to be easier with this defense enabled than
     without.
-*** DANIEL Hurdles to website fingerprinting: Tor [0/3]
+*** DANIEL Hurdles to website fingerprinting: Tor [0/4]
     The Onion Router\cite{tor-design} (short: /Tor/) is an anonymity
     system: While encryption hides the /content of communication/,
     Tor also attempts to hide some /metadata/: Who communicates with
@@ -259,7 +259,7 @@ Facebook.com\\
      avoidance, covert ops, publishing, safety, online surveillance,
      anonymous tip lines, whistleblowing, blogging private opinions,
      evaluating competition, and troubleshooting IT systems.
-**** EVA How does Tor Work
+**** WRITE How does Tor Work
      The Tor anonymity network consists of volunteer servers, called
      /onion routers/. Each connection through the network is
      facilitated by a proxy implementing the SOCKS5\cite{rfc1928}
@@ -280,6 +280,14 @@ Facebook.com\\
      identification; routing through 4 globally-distributed hops
      increases latency; and Tor multiplexes all data cells through a
      single TCP-connection.
+
+     Tor's cryptography will be omitted, because website
+     fingerprinting, as all traffic analysis, assumes that a
+     cryptosystem's cryptography is unbreakable, relying only on
+     traffic characteristics.[fn::for a general introduction to
+     cryptography, consider Schneier's seminal book Applied
+     Cryptography\cite{applied96}].
+***** TODO high-resolution picture
 *** TODO (wf 2.0)
     :PROPERTIES:
     :CUSTOM_ID: wf2.0
@@ -295,59 +303,61 @@ Facebook.com\\
     results against one-hop anonymizing proxies, yet yielded only 3%
     accuracy against 775 distinct pages when retrieved via
     Tor\cite{tor-design}.
-**** WRITE attributes
+**** CHECK attributes
      :PROPERTIES:
      :CUSTOM_ID: attributes
      :END:
-    As stressed by Perry in \cite{critique}, analysis of which attribute
-    contribute the most towards classification is important. Panchenko
-    et al. \cite{panchenko} provided a qualitative analysis. Hayes and
-    Danezis \cite{kfingerprint} used forests of randomized trees, which
-    provide attribute importance feedback.[fn:: f.ex. in scikit-learn
-    \cite{scikit-learn} via the =_feature_importances= attribute]
+     As stressed by Perry in \cite{critique}, analysis of which
+     attributes contribute the most towards classification is
+     fundamental to website fingerprinting success. Panchenko et
+     al. \cite{panchenko} provided a qualitative analysis. Hayes and
+     Danezis \cite{kfingerprint} classified using random
+     forests\cite{randomforests}, which provide quantitative attribute
+     importance feedback.[fn:: f.ex. in scikit-learn
+     \cite{scikit-learn} via the =_feature_importances= attribute]
 
-    As Dyer et al \cite{oakland2012-peekaboo} noted and experiments
-    with Panchenko et al's \cite{panchenko} estimator support (see
-    [[#different-classifiers]]), you can get good accuracy with several
-    classifiers, given the right attributes.[fn::as the experiments in sec
-    show, this holds mainly for uncloaked traffic]
+     As Dyer et al \cite{oakland2012-peekaboo} noted and experiments
+     with Panchenko et al's \cite{panchenko} estimator support (see
+     [[#different-classifiers]]), you can get good accuracy with several
+     classifiers, given the right attributes.[fn::as the experiments in sec
+     show, this holds mainly for uncloaked traffic]
 
-    As of Hayes and Danezis \cite{kfingerprint}, the top-five
-    attributes are the number (both absolute and percentage of total)
-    of both incoming and outgoing packets. The standard deviation of
-    the packet ordering list [fn:: Panchenko et al \cite{panchenko}
-    call these attributes /Number Markers/] completes the top
-    five. Each added attribute increases accuracy, yet with nearly the
-    same accuracy for 30 as for the total of 150 attributes.
+     According to Hayes and Danezis \cite{kfingerprint}, the top-five
+     attributes are the number (both absolute and percentage of total)
+     of both incoming and outgoing packets. The standard deviation of
+     the packet ordering list [fn:: Panchenko et al \cite{panchenko}
+     call these attributes /Number Markers/] completes the top
+     five. Each added attribute increases accuracy, yet with nearly the
+     same accuracy for 30 as for the total of 150 attributes.
 
-    Both Wang et al\cite{effective} and Panchenko et
-    al\cite{panchenko} also consider the first packets of a
-    transmission/the HTML page as effective attributes.
+     Both Wang et al\cite{effective} and Panchenko et
+     al\cite{panchenko} also consider the first packets of a
+     transmission/the HTML page as effective attributes.
 
-    - patterns to attributes
-    - why attributes
-    - sizes, sizes, sizes
-    - total_size
-    - CUMUL
-      #+CAPTION: CUMUL\cite{panchenko2} attributes example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
-      [[./pictures/cumul_aus_paper.pdf]]
-***** TODO visual representation of CUMUL
-     - Panchenko et al.'s recent approach allows for the visual
-       comparison of website traces.
-     - see images etc
-     - see how it's done
-     - example
-       #+CAPTION: CUMUL example from {\url https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
-       #+ATTR_LATEX: :width \linewidth
-       #+BEGIN_EXAMPLE
-       [[./pictures/cumul_resized_aus_paper.jpg]]
-       #+END_EXAMPLE
-****** TODO or just link here to CUMUL
-****** TODO think about order of this (at cumul, at visual, mention other...)
-      then formulate correctly
-***** TODO get picture to work
-    - attributes to classes: classifiers
-***** sub... of wf2.0?
+     If converted to appropriate representation, the random-looking web
+     site traces of Figure \ref{traces} become visually
+     distinguishable. See for example Panchenko et al's
+     CUMUL\cite{panchenko2} traces in Figure \ref{CUMUL_traces}.
+       #+CAPTION: CUMUL\cite{panchenko2} attributes example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
+       #+NAME: CUMUL_traces
+       [[./pictures/cumul_aus_paper.pdf]]
+****** TODO visual representation of CUMUL
+      - Panchenko et al.'s recent approach allows for the visual
+        comparison of website traces.
+      - see images etc
+      - see how it's done
+      - example
+        #+CAPTION: CUMUL example from {\url https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
+        #+ATTR_LATEX: :width \linewidth
+        #+BEGIN_EXAMPLE
+        [[./pictures/cumul_resized_aus_paper.jpg]]
+        #+END_EXAMPLE
+******* TODO or just link here to CUMUL
+******* TODO think about order of this (at cumul, at visual, mention other...)
+       then formulate correctly
+****** TODO get picture to work
+     - attributes to classes: classifiers
+****** sub... of wf2.0?
 **** EVA panchenko version 1
      Panchenko et al.'s \cite{panchenko} attack was the first that
      successfully classifed traces for websites retrieved via
@@ -386,8 +396,8 @@ Facebook.com\\
      #+BEGIN_LaTeX
        \[\{x \in X | \langle w, x \rangle +b = 0\}\]
      #+END_LaTeX
-     such that <w, xi> +b \ge 0 whenever yi = 1, and <w, xi> +b < 0
-     whenever yi = -1.
+     such that $<w, xi> +b \ge 0$ whenever $yi = 1$, and $<w, xi> +b < 0$
+     whenever $yi = -1$.
 
      - how works
        - set with dot product
@@ -419,7 +429,7 @@ Facebook.com\\
        - same effect as mapping each point in set to dot product
          space, and applying <.,.> there, k(x, x') = <\Phi(x), \Phi(x')>
          - but need not compute complete mapping
-       #+CAPTION: Kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left half shows linear boundaries on X and Y --- the right half linear boundaries computed with added input data X^2, Y^2 and XY
+       #+CAPTION: Kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left side shows linear boundaries on $X$ and $Y$ --- the right side linear boundaries computed with added input data $X^2$, $Y^2$ and $XY$
        #+NAME fig:hastie-kerneltrick
        [[./pictures/hastie.png]]
      - parameter estimation
@@ -717,7 +727,7 @@ Facebook.com\\
     - simultaneous to real traffic
 
     - make wf harder such that it is impossible
-** TODO Design and Implementation (=Implementation) [0/20]
+** TODO Design and Implementation (=Implementation) [0/21]
 *** EVA Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -814,11 +824,18 @@ Facebook.com\\
     to some user-settable privacy level, as a whistleblower might need
     more anonymity protection than Jane Doe who just reads the latest
     news, possibly censored in her country.
-*** CHECK How to generate cover traffic
+*** WRITE How to generate cover traffic
     When the user requests a page, be it by clicking on a hyperlink, a
     bookmark, or entering an address via the location bar, the addon
     always creates additional traffic simultaneous to the first HTTP
     request.
+
+    Several versions, and flavors were evaluated. The next sections
+    describe the main addon branch with its configuration
+    possibilities, the simple version, and an older version with very
+    low overhead but little configurability. Version evolution is
+    described in appendix .
+**** TODO appendix number after MOVE
 **** CHECK Addon Version: Main
      :PROPERTIES:
      :CUSTOM_ID: addon_main
@@ -874,7 +891,7 @@ Facebook.com\\
 
           - 15.3 first results
           - buggy: did not match spec (only did html requests)
-*** TODO improvements
+*** TODO MOVE to appendix Versions
 **** TODO 0.17 bursts at end - bursts on addon site load finish
      - wang: burst distinguishing attribute left with
        w/t\cite{wang2015walkie}
@@ -940,7 +957,7 @@ Facebook.com\\
 
     This halved the number of lines of code, allowing for better
     refactoring. The version is called "simple".
-*** TODO Cache (approximate) sizes using Bloom Filters
+*** TODO MOVE sub [[#addon_main][Addon Version: Main]] Cache (approximate) sizes using Bloom Filters
 **** WRITE Introduction
      - addon variant: (sampled) sizes of pages known
      - see if this increases accuracy/overhead ratio
@@ -1675,7 +1692,7 @@ similar, little to see
      - =Counter=-class
 ***** TODO why filtering allowed
 ***** TODO see if merge/unify with [[transform to panchenko-attributes]]
-***** TODO and if include stuff from [[*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from {{*transform to panchenko-attributes}}]]
+***** TODO and if include stuff from [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]
 **** transform to panchenko-attributes
      In encoding packet sizes, this thesis follows Panchenko et al.'s
      approach, who recorded "incoming packets as positive, outgoing ones
@@ -2729,7 +2746,7 @@ similar, little to see
    page has embedded elements from different domains, this does not
    perfectly represent reality. It would be more exact to analyse the
    HTML page and at least return the domains of all embedded elements.
-* TODO appendices [0/2]
+* TODO appendices [0/5]
 \appendix
 ** Script =one-site.py=: capture pcap traces
    <<one-site.py>>
@@ -2799,107 +2816,7 @@ similar, little to see
      #+BEGIN_SRC sh
        xpra start ssh:user@host:37 --start=path/to/tor-browser_en-US/Browser/start-tor-browser     
      #+END_SRC
-* unused
-** from [[*transform to panchenko-attributes]]
-  The code to examine a single trace file is in =analyze_file()=
-  It
-  - opens the filename in tshark
-  - splits the output by tokens
-  - gives the relevant values (source IP, size, timestamp) (with the
-    timestamp not used by Panchenko) to a =Counts=-object, which
-    aggregates it
-
-  [...]
-  For a single line, a =Counter=-object aggregates bytes (incoming,
-  outgoing), packets (incoming/outgoing), distills into a size/packets
-  array and (size+timestamp)/packets array.
-  [...]
-  This is used in =postprocess()= to determine
-  - size markers, (via the =_sum_stream()=-function),
-  - the html marker as the first of those
-  - the total transmitted bytes incoming and outgoing
-  - number marker (via the =_sum_numbers()=-function)
-    - slightly extended, as the number 16 was occuring
-      everything above 14 was mapped to the same as 14
-    - a bit unclear, currently, 3-5 \to 3, 6-8 \to 4, 9-13 \to 5, 14-\infty \to 6
-  - occurring packet sizes incoming and outgoing (binned in steps of 2)
-  - percentage of outgoing packets
-  - number of packets incoming and outgoing.
-** start browser with -marionette parameter
-   Each modern Firefox, and thus also the tor-browser-bundle, has
-   marionette-support built-in. It needs to be enabled on the
-   command-line via the =-marionette= switch, for example
-
-
-   This starts the Tor browser with marionette enabled.
-*** marionette support page link
-** Sally installation
-   Sally is a tool to transfer text into points in a vector space.
-
-   It is installed on Ubuntu Vivid Vervet by following the official
-   instructions, then changing =vivid= in the file
-   =/etc/apt/sources.list.d/mlsec-ubuntu-sally-vivid.list= to
-   =devel=.
-** from getting tbb to work
-  One external repository is required, which can be installed via
-
-  =add-apt-repository ppa:ubuntu-toolchain-r/test=
-  =apt-get update=
-  =apt-get dist-upgrade=
-
-  Furthermore, the binary needs some firefox libraries, which can be
-  retrieved most easily via =apt-get install firefox=.
-
-  Afterwards, the binary can be started by typing =./firefox=.
-** throttling
-   As especially outgoing web requests are often quite small, and this
-   paper has at the moment a 1:1 rate of outgoing vs incoming for the
-   requests, throttling the amount of data leaving the end user might
-   well suffice for reducing the bandwidth of the side-channel enough
-   to make it insignificant.
-** in-browser vs tcp-level ( ???) (generation?)
-** how sally works
-   - configuration file
-     - input
-     - attributes
-     - output
-
-** problematic websites
-   The above setup worked on most websites.
-   The websites sina.com.cn and xinhuanet.com both did not terminate loading.
-   This might need further looking into.
-
-   - do they load completely when not Tor, repeat necessary
-   - is this by design?
-*** exclude
-    "scheint sonst zu klappen"
-** Plugins: noscript and requestpolicy
-   There exist two plugins, which should both allow mitigation of this
-   attack. Used in parallel, they may hinder normal browsing somewhat
-   (which is why they are not enabled/installed by default in the Tor
-   Browser Bundle).
-
-   The first is NoScript, which selects which Javascript sources to
-   run and which to block. This is installed by default in the Tor
-   Browser Bundle for the additional security benefits it brings (XSS
-   defense etc), but not fully enabled. It is recommended by Edward
-   Snowden and many others\cite{noscript}.
-
-** what sets Tor apart / other anonymity networks
-   There are other anonymity networks, such as JonDonym, I2P, MixNet
-   and freedom.
-
-   Tor is an anonymity service.
-   - decentralized
-   - biggest
-   - high throughput
-   - rather low latency, usable for web browsing
-   - also hidden services
-
-   Using a client called /Onion Proxy/ on the local computer, almost all
-*** TODO ref onion routing
-*** TODO onion routing
-** TODO Non-parallelized-based web server for cover traffic [0/1]
+** TODO Non-parallelized-based web server for cover traffic [0/2]
    This approach did not scale to several parallel connections, so it
    was not used. It is included as a reference of what seems to work,
    but did not.
@@ -2916,7 +2833,7 @@ similar, little to see
 
    retrieves a document with 10 bytes content from a TrafficHTTPServer
    running at localhost port 8000.
-*** Problems
+*** WRITE Problems
     - did not scale: did not respond immediately for parallel
       connections
       - obviously delays problematic as they in effect create less
@@ -2924,23 +2841,4 @@ similar, little to see
     - maybe further work: test that really works worse
 *** Script
     #+INCLUDE: "./bin/unused/TrafficHTTPServer.py" src python
-** CHECK Why could website fingerprinting be a problem
-   As a typical scenario, consider the government of some state. A
-   whistleblower posts something very critical of the regime on a
-   well-known critical website. The whistleblower uses Tor or some
-   other anonymity service to protect his identity. The government
-   monitors and records all Tor connections. Even though Tor
-   obfuscates the user's traffic, the specific data-pattern of the
-   website allows the government to limit its search to, say three,
-   subjects. This gives the whistleblower away.[fn:: Such has not been
-   observed.]
-
-** from [[#http][What happens during a (HTTP) website request]]
-  Thus, the objects embedded within a page could allow a local
-  passive observer to infer which web page from a set of pages the
-  user requested.
-** from [[*Hurdles%20to%20website%20fingerprinting][Hurdles to website fingerprinting]]
-  Originally, a browser should open at most two connections per host
-  \cite{rfc2616} to retrieve the files one-by-one. An update
-  \cite{rfc7230} removed this fixed limit, but encouraged clients
-  "to be conservative when opening multiple connections".
+**** TODO github
