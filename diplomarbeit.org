@@ -95,6 +95,7 @@
 
 #+BEGIN_LaTeX
 \begin{figure}[H]
+\label{traces}
 Craigslist.org\\
 \includegraphics[width=0.22\textwidth]{./pictures/craigslist_org@1445352269.png}
 \includegraphics[width=0.22\textwidth]{./pictures/craigslist_org@1445585277.png}
@@ -105,7 +106,6 @@ Facebook.com\\
 \includegraphics[width=0.22 \textwidth]{./pictures/facebook_com@1445425799.png}
 \includegraphics[width=0.22 \textwidth]{./pictures/facebook_com@1445429729.png}
 \caption{Example traces of craigslist.org and facebook.com}
-\label{traces}
 \end{figure}
 #+END_LaTeX
 
@@ -429,13 +429,13 @@ Facebook.com\\
          - error-correcting codes, mention esl p.625
            - or web-dl original paper
            - used by k-forest
-     - kernel trick (see figure [[hastie-kerneltrick]])
+     - kernel trick (see figure [[hastie_kerneltrick]])
        - instead of dot product <.,.> use =kernel= k(., .)
        - same effect as mapping each point in set to dot product
          space, and applying <.,.> there, k(x, x') = <\Phi(x), \Phi(x')>
          - but need not compute complete mapping
        #+CAPTION: Kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left side shows linear boundaries on $X$ and $Y$ --- the right side linear boundaries computed with added input data $X^2$, $Y^2$ and $XY$
-       #+NAME fig:hastie-kerneltrick
+       #+NAME: hastie_kerneltrick
        [[./pictures/hastie.png]]
      - parameter estimation
        - each soft margin SVM has an error term C which states how
@@ -665,7 +665,7 @@ Facebook.com\\
     - requestpolicy (hintz 2nd way)
     - text-only browsing (hintz 2nd way)
 * TODO Methods (=methods) [0%]
-** TODO Motivation [0/3]
+** TODO Motivation [0/2]
 *** brainstorm                                                      :ARCHIVE:
    - make wf/ml harder, fudge attributes
      - problems wfpad: modify all of tor,
@@ -725,7 +725,7 @@ Facebook.com\\
     b) the inclusion of HTTP traffic characteristics for random traffic,
 
     which neither of the above defenses contain.
-*** WRITE Aim: selective cover traffic
+*** CHECK Aim: selective cover traffic
     As detailed in section [[#attributes]], there are key attributes that
     are hard to cloak except by extra traffic, f.ex. total number of
     bytes up-/ and downstream.[fn::For Tor, the number of bytes is an
@@ -736,11 +736,12 @@ Facebook.com\\
     how to shape this traffic in order to effectively cloak the
     fingerprint.
 
-     - based on target web site
-     - simultaneous to real traffic
-
-     - make wf harder such that it is impossible
-** TODO Design and Implementation (=Implementation) [0/21]
+    It might also be advantageous to be able to adjust the amount of
+    cover traffic, firstly to the webpage being loaded, and secondly
+    to some user-settable privacy level, as a whistleblower might need
+    more anonymity protection than Jane Doe who just reads the latest
+    news, possibly censored in her country.
+** TODO Design and Implementation (=Implementation) [0/15]
 *** EVA Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -819,60 +820,56 @@ Facebook.com\\
     Providing an accurate estimate of embedded objects /per web page/
     is further work.
 **** TODO further work link + mention
-*** WRITE Why HTTP-shaped cover traffic
-    HTTP-shaped cover traffic might prove more effective, as it heeds
-    layering/separation-of-concerns[fn::For a deeper treatment of
-    this, \cite[ch.1.7]{DBLP:books/daglib/0001977} is recommended].
+*** CHECK Why HTTP-shaped cover traffic
+    HTTP-shaped cover traffic might prove more effective, as this
+    would make it harder to separate cover and real traffic. In
+    addition, it heeds layering separation-of-concerns[fn::For a
+    deeper treatment of this, \cite[ch.1.7]{DBLP:books/daglib/0001977}
+    is recommended].
 
 
     There are several approaches on how to do generate HTTP-shaped
-    traffic. The simplest, HTTP dummy traffic[fn::a.k.a. loading
-    another page in the background a.k.a. decoy pages a.k.a. multi-tab
-    browsing], has been evaluated several times
-    (\cite{ccs2012-fingerprinting}, \cite{a-systematic},
+    traffic. The naïve way, using HTTP dummy
+    traffic[fn::a.k.a. loading another page in the background
+    a.k.a. decoy pages a.k.a. multi-tab browsing], has been evaluated
+    several times (\cite{ccs2012-fingerprinting}, \cite{a-systematic},
     \cite{kfingerprint}, \cite{effective}, \cite{panchenko},
     \cite{wtfpad}) and was surprisingly effective for all its
     simplicity, albeit at a high overhead.
-
-    It might also be advantageous to be able to adjust the amount of
-    cover traffic, firstly to the webpage being loaded, and secondly
-    to some user-settable privacy level, as a whistleblower might need
-    more anonymity protection than Jane Doe who just reads the latest
-    news, possibly censored in her country.
-*** WRITE How to generate cover traffic
+*** CHECK How to generate cover traffic
     When the user requests a page, be it by clicking on a hyperlink, a
     bookmark, or entering an address via the location bar, the addon
     always creates additional traffic simultaneous to the first HTTP
     request.
 
-    Several versions, and flavors were evaluated. The next sections
+    Several versions, and flavors, were evaluated. The next sections
     describe the main addon branch with its configuration
     possibilities, the simple version, and an older version with very
-    low overhead but little configurability. Version evolution is
+    low overhead but without adjustable overhead. Version evolution is
     described in appendix [[#versions]].
 **** CHECK Addon Version: Main
      :PROPERTIES:
      :CUSTOM_ID: addon_main
      :END:
-     The main version works with the retrieved page's (known or
-     guessed) HTML size, and number of embedded objects, adding to
-     these to reach target values.
+     The main version works with the retrieved page's HTML
+     size[fn:kg:known or guessed], and number of embedded
+     objects[fn:kg], adding to these to reach target values.
 
      For the first HTML request, a target HTML size is determined, the
      HTML size of the current request is looked up (or guessed), and a
-     request (of fixed size) for the remaining bytes is sent.
+     request for the remaining bytes is sent.
 
      At the same time, a probability of embedded requests is computed
-     based on the page's (known or guessed) number of embedded items
-     and a target number of embedded items, sampled from the HTTP
-     traffic model.  For each real embedded request, an
-     embedded-element-sized data is requested with this probability.
+     based on the page's number of embedded items[fn:kg] and a target
+     number of embedded items, sampled from the HTTP traffic model.
+     For each request to embedded objects, this is the probability
+     that embedded-object-sized dummy data is requested.
 
      A simulated webpage is specified by its HTML size and its number
      of embedded objects. In a closed world, it is possible to always
      know the page sizes beforehand. If unknown, the random variates
-     from the [[#HTTP traffic model][HTTP traffic model]] are used. [fn:: The size of each
-     embedded element is always drawn from the HTTP traffic model.]
+     from the [[#HTTP traffic model][HTTP traffic model]] are used.[fn:: The size of each
+     embedded dummy object is always drawn from the HTTP traffic model.]
      Using known sizes is called the /cache/ flavor. In the /nocache/
      flavor, sizes are always guessed.
 
@@ -883,15 +880,15 @@ Facebook.com\\
      to set the bin border as the target value, as all webpages in the
      bin must have a size less than or equal the border. This approach
      approximates that taken by Wang et al. in \cite{effective} with
-     the bins being equivalent to the anonymity sets / partitions. As
+     the bins being equivalent to the anonymity sets/partitions. As
      the biggest bin does not have a maximum size, its median value is
      chosen.[fn:: The optimal size for the biggest bin is a parameter
      that should be evaluated as well.]
 
      The other tactic is to have a single target distribution from
-     which values are sampled each time, once again the [[#HTTP traffic model][HTTP traffic
-     model]]. This is, again, also the fallback approach if the web
-     page's values are not known.
+     which values are sampled each time, the [[#HTTP traffic model][HTTP traffic model]]. This
+     is also the fallback approach if the web page's values are not
+     known.
 
      The web page's own values --- known or guessed, as described
      [[#addon_main][above]] --- are subtracted from the target values.
@@ -902,9 +899,6 @@ Facebook.com\\
      (target-embedded)/(site-embedded) is computed. For each embedded
      object retrieved, this ratio determines the number of
      embedded-sized requests, once again from the [[#HTTP traffic model][HTTP traffic model]].
-
-          - 15.3 first results
-          - buggy: did not match spec (only did html requests)
 ***** TODO Cache (approximate) sizes using Bloom Filters
 ****** WRITE Introduction
        - addon variant: (sampled) sizes of pages known
@@ -946,15 +940,26 @@ Facebook.com\\
          - error estimation?
          - +: fixed size
          - -: error both ways, and difference bin-size to real size
-*** CHECK Addon Version: Simple
-    The previous versions had become quite complex for a Firefox
-    extension: they had more than 500 lines of code. A
-    simplified[ch.7.2]\cite{xp} algorithm triggers a FACTOR-sized
-    HTML-sized request at the beginning and an embedded-sized request
-    with probability FACTOR for each embedded object.
+**** CHECK Addon Version: Simple
+     The previous versions had become quite complex for a Firefox
+     extension: they had more than 500 lines of code. A
+     simplified[ch.7.2]\cite{xp} algorithm triggers a FACTOR-sized
+     HTML-sized request at the beginning, and an embedded-sized
+     request with probability FACTOR for each embedded object.
 
-    This halved the number of lines of code, allowing for better
-    refactoring. The version is called "simple".
+     This halved the number of lines of code[fn::additionally allowing
+     for better refactoring]. The version is called "simple".
+**** WRITE MAYBE Addon Version: Retro (if not, edit super)
+     All other addon versions reached overheads as low as 20%, but not
+     lower.
+
+     - very low overhead at one test: around 10 %
+     - previous version 0.15.3, added change 0.20 to 0.21: remembers
+       negative request sizes, and randomly subtracts them for further
+       requests
+     - de facto: HTML-sized request for each request (target-size),
+       (remembering negative sizes, subtracting them)
+     - drawback: not configurable
 *** WRITE Server
     - where there are several possibilities how to generate cover
       traffic,
@@ -1110,7 +1115,7 @@ Facebook.com\\
 ***** TODO ref stackoverflow why 0 padding
 ****** TODO or better, some statistics text
 ***** TODO see also =to_features_cumul=
-** WRITE Website Fingerprinting [0/5]
+** WRITE Website Fingerprinting [0/6]
 *** WRITE panchenko v1 different classifiers
     :PROPERTIES:
     :CUSTOM_ID: different-classifiers
@@ -1209,6 +1214,10 @@ Facebook.com\\
       - k-fingerprinting
         - accuracy
       - all similar accuracies (as of k-fingerprinting)
+*** KEYWORDS trace growth, time delta, effect
+    - growth noticeable
+    - add values
+      - also per-domain
 ** TODO Evaluation of Defenses [0/5]
 *** WRITE Evaluation of Addon
     #+CAPTION: different defense versions with CUMUL, svc classifier
