@@ -66,7 +66,7 @@
 #+LATEX_HEADER:                                     % verteidigen muessen.
 #+LATEX_HEADER:   \end{tabular}
 #+LATEX_HEADER: }}
-#+OPTIONS: H:5
+#+OPTIONS: H:6
 * TODO look through unsorted top-level headings
 * WAIT Abstract
 * TODO Basics (=basics) [0%]
@@ -742,7 +742,7 @@ Facebook.com\\
     to some user-settable privacy level, as a whistleblower might need
     more anonymity protection than Jane Doe who just reads the latest
     news, possibly censored in her country.
-** TODO Design and Implementation (=Implementation) [0/15]
+** TODO Design and Implementation (=Implementation) [0/16]
 *** EVA Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -869,43 +869,37 @@ Facebook.com\\
      a target number of embedded items, sampled from the HTTP traffic
      model.  For each request to embedded objects, this is the
      probability that embedded-object-sized dummy data is requested.
-***** MOVE to [[*Cache (approximate) sizes using Bloom Filters][Cache (approximate) sizes using Bloom Filters]]
-     A simulated webpage is specified by its HTML size and its number
-     of embedded objects. In a closed world, it is possible to always
-     know the page sizes beforehand. If unknown, the random variates
-     from the [[#HTTP traffic model][HTTP traffic model]] are used.[fn:: The size of each
-     embedded dummy object is always drawn from the HTTP traffic model.]
-     Using known sizes is called the /cache/ flavor. In the /nocache/
-     flavor, sizes are always guessed.
-***** end MOVE
-***** Choice: how to set cover traffic target values
-     Once the /page's values/ are thus set, there are two tactics on
-     how to set /target/ values.
+***** CHECK Choice: how to set cover traffic target values
+      Once the /page's values/ are thus set, there are two tactics on
+      how to set /target/ values.
 
-     One tactic is to group the webpages by their values into bins and
-     to set the bin border as the target value, as all webpages in the
-     bin must have a size less than or equal the border. This approach
-     approximates that taken by Wang et al. in \cite{effective} with
-     the bins being equivalent to the anonymity sets/partitions. As
-     the biggest bin does not have a maximum size, its median value is
-     chosen.[fn:: The optimal size for the biggest bin is a parameter
-     that should be evaluated as well.]
+      One tactic is to group the webpages by their values into bins and
+      to set the bin border as the target value, as all webpages in the
+      bin must have a size less than or equal the border. This approach
+      approximates that taken by Wang et al. in \cite{effective} with
+      the bins being equivalent to the anonymity sets/partitions. As
+      the biggest bin does not have a maximum size, its median value is
+      chosen.[fn:: The optimal size for the biggest bin is a parameter
+      that should be evaluated as well.]
 
-     The other tactic is to have a single target distribution from
-     which values are sampled each time, the [[#HTTP traffic model][HTTP traffic model]]. This
-     is also the fallback approach if the web page's values are not
-     known.
-***** end Choice
-
-***** TODO Choice: Cache (approximate) sizes using Bloom Filters
+      The other tactic is to have a single target distribution from
+      which values are sampled each time, the [[#HTTP traffic model][HTTP traffic model]]. This
+      is also the fallback approach if the web page's values are not
+      known.
+***** WRITE Choice: Cache (approximate) sizes using Bloom Filters
 ****** WRITE Introduction
-       - addon variant: (sampled) sizes of pages known
+       A simulated webpage is specified by its HTML size and its
+       number of embedded objects. In a closed world, it is possible
+       to always know the page sizes beforehand. If unknown, the
+       random variates from the [[#HTTP traffic model][HTTP traffic model]] are used.[fn:: The
+       size of each embedded dummy object is always drawn from the
+       HTTP traffic model.]  Using known sizes is called the /cache/
+       flavor. In the /nocache/ flavor, sizes are always guessed.
+
+       To cache sizes, an approximate-size data structure base based
+       on bloom filters is used.
+
        - see if this increases accuracy/overhead ratio
-       - use fixed-width data structure: bloom filters
-         - one for each bin
-         - check all if one might contain
-           - if yes, return median value
-           - if no, return random estimate
        - bloom-nw: use in other data structures
 ****** WRITE Bloom Filter
        - stochastic fixed-width data structure
