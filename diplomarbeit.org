@@ -793,20 +793,20 @@ Facebook.com\\
     Lee and Gupta's work\cite{newtrafficmodel} models web traffic with
     statistical distributions.
 
-    Both the size of HTML documents and embedded objects is best
-    modeled with lognormal distributions, yet with different
-    parameters for both. The number of embedded objects is modeled via
+    Both the size of HTML documents and embedded objects is
+    well-matched by lognormal distributions, yet with different
+    parameters for both. The number of embedded objects is modeled by
     a gamma function. See illustration in Figure
     \ref{distribution}. They offer further parameters to fully model
     web browsing.
 
     #+BEGIN_LaTeX
     \begin{figure}
-      \label{distribution}
       \begin{adjustbox}{max width=\textwidth}
         \input{pictures/fig_html_embedded.pgf}
       \end{adjustbox}
       \caption{Distribution of sizes for the HTTP traffic model}
+      \label{distribution}
     \end{figure}
     #+END_LaTeX
 
@@ -820,17 +820,17 @@ Facebook.com\\
     probably is a difference in how it is and should be used.
 
     Providing an accurate estimate of embedded objects /per web page/
-    is further work.
-**** TODO further work link + mention
+    is [[Further work][further work]].
+**** TODO graphics: separate subplot1 xlabel from subplot2 title
 *** CHECK Why HTTP-shaped cover traffic
     HTTP-shaped cover traffic might prove more effective, as this
     would make it harder to separate cover and real traffic. In
-    addition, it heeds layering separation-of-concerns[fn::For a
-    deeper treatment of this, \cite[ch.1.7]{DBLP:books/daglib/0001977}
-    is recommended].
+    addition, it works at the layer where the problem
+    originates[fn::For a deeper treatment of separation-of-concerns,
+    \cite[ch.1.7]{DBLP:books/daglib/0001977} is recommended].
 
 
-    There are several approaches on how to do generate HTTP-shaped
+    There are several approaches on how to generate HTTP-shaped
     traffic. The naïve way, using HTTP dummy
     traffic[fn::a.k.a. loading another page in the background
     a.k.a. decoy pages a.k.a. multi-tab browsing], has been evaluated
@@ -847,8 +847,8 @@ Facebook.com\\
     Several versions, and flavors, were evaluated. The next sections
     describe the main addon branch with its configuration
     possibilities, the simple version, and an older version with very
-    low overhead but without adjustable overhead. Version evolution is
-    described in appendix [[#versions]].
+    low, but non-adjustable overhead. Version evolution is described
+    in appendix [[#versions]].
 **** CHECK Addon Version: Main
      :PROPERTIES:
      :CUSTOM_ID: addon_main
@@ -857,16 +857,19 @@ Facebook.com\\
      size[fn:kg:known or guessed], and number of embedded
      objects[fn:kg], adding to these to reach target values.
 
-     For the first HTML request, a target HTML size is determined, the
-     HTML size of the current request is looked up (or guessed), and a
-     request for the remaining bytes is sent.
+     For the first HTML request, a /target HTML size/ is determined,
+     the HTML size of the current request is looked up[fn:kg], The web
+     page's own values are subtracted from the target values and a
+     request for this remaining bytes[fn::or a token amount if too
+     small]] is sent.
 
-     At the same time, a probability of embedded requests is computed
-     based on the page's number of embedded items[fn:kg] and a target
-     number of embedded items, sampled from the HTTP traffic model.
-     For each request to embedded objects, this is the probability
-     that embedded-object-sized dummy data is requested.
-
+     At the same time, a /target number of embedded requests/ is
+     determined. From this, the probability of embedded requests is
+     computed based on the page's number of embedded items[fn:kg] and
+     a target number of embedded items, sampled from the HTTP traffic
+     model.  For each request to embedded objects, this is the
+     probability that embedded-object-sized dummy data is requested.
+***** MOVE to [[*Cache (approximate) sizes using Bloom Filters][Cache (approximate) sizes using Bloom Filters]]
      A simulated webpage is specified by its HTML size and its number
      of embedded objects. In a closed world, it is possible to always
      know the page sizes beforehand. If unknown, the random variates
@@ -874,7 +877,8 @@ Facebook.com\\
      embedded dummy object is always drawn from the HTTP traffic model.]
      Using known sizes is called the /cache/ flavor. In the /nocache/
      flavor, sizes are always guessed.
-
+***** end MOVE
+***** Choice: how to set cover traffic target values
      Once the /page's values/ are thus set, there are two tactics on
      how to set /target/ values.
 
@@ -891,17 +895,9 @@ Facebook.com\\
      which values are sampled each time, the [[#HTTP traffic model][HTTP traffic model]]. This
      is also the fallback approach if the web page's values are not
      known.
+***** end Choice
 
-     The web page's own values --- known or guessed, as described
-     [[#addon_main][above]] --- are subtracted from the target values.
-
-     At the same time as the HTML-query, another query for the target
-     HTML-size (or a token amount if too small) is sent. Concerning
-     the embedded objects, the ratio of
-     (target-embedded)/(site-embedded) is computed. For each embedded
-     object retrieved, this ratio determines the number of
-     embedded-sized requests, once again from the [[#HTTP traffic model][HTTP traffic model]].
-***** TODO Cache (approximate) sizes using Bloom Filters
+***** TODO Choice: Cache (approximate) sizes using Bloom Filters
 ****** WRITE Introduction
        - addon variant: (sampled) sizes of pages known
        - see if this increases accuracy/overhead ratio
