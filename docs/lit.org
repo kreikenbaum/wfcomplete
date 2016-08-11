@@ -4527,6 +4527,200 @@
 *** quotes
     - Compliant implementations MUST support GSSAPI and SHOULD support
       USERNAME/PASSWORD authentication methods.
+** [[./Liberatore_2006.pdf][Liberatore - Inferring the Source of Encrypted HTTP Connections]]
+*** summary
+    0) [@0] ABSTRACT
+
+       - two traffic analysis techniques
+
+       - work to identify sites at internet scale
+
+    1) INTRODUCTION
+
+       - traffic analysis to get information from PETs (Tor, SSH
+         tunnels, IPSec, ESP, WPA-ll)
+
+       - Contributions: large trace set, high accuracy, padding as
+         defense, profile all front pages with 13GB of storage
+
+    2) RELATED WORK
+
+       - Wright: 15,16: vulnerable to passive logging and intersection
+
+       - Hintz, Sun 12, Bissias 1: profiling attacks based on object sizes
+
+       - Fu 8: dummy packets, Levine 10: dropping packets, 13: partial-path ct
+
+       - here: study packet length, not object length
+
+    3) MODEL
+
+       0) [@0]
+
+          - how to capture
+
+          - Jaccard's coefficient and naive Bayes
+
+       1) Observer Model
+
+          - listen at encrypted OpenSSH-SOCKS tunnel
+
+          - observe packet lengths (interarrival times also possible)
+
+          - able to distinguish start/end of requests
+
+          - record database not necessarily at same connectionb
+
+       2) Profiling Methods
+
+          - trace + attributes (direction, length): instance, has class (url)
+
+          - similarity metric: Jaccard's coefficient (see [[(liberatore-1)]])
+
+            - attribute to set if in majority of instances
+
+            - normalize S(X, Y): divide by \sum_{Y \in U}S(X, Y) (U: training sets)
+
+          - naive Bayes classifier
+
+    4) DATA COLLECTION
+
+       0) [@0]
+
+          - large dataset
+
+          - representing real-world users
+
+          - collected like real attacker
+
+       1) Initial Data Collection
+
+          - use real traffic
+
+          - strip lots
+
+          - select top 2000 (64% of ~100000)
+
+       2) Page Retrieval
+
+          - GNU/Linux, Firefox 1.5, OpenSSH 4.2p1 (links to each) as
+            SOCKS proxy
+
+            - FF: disabled caching, update checks, etc
+
+          - tcpdump 3.9.4, libpcacp 0.9.4, first 68 bytes of each packet
+
+    5) EVALUATION
+
+       0) [@0]
+
+          - jaccard vs bayes, jaccard has 60% accuracy
+
+            - scales well
+
+          - gather training data before or afterwards
+
+          - countermeasure evaluation: 145% overhead yields accuracy drop to 8%
+
+       1) Experiment Setup
+
+          - as in section 4
+
+          - top-2000, every six hours, for two months, 480000 samples
+
+          - vary training, testing, \Delta, number of sites
+
+          - measures: k-identifiability and k-accuracy see quotes
+
+       2) Classifier Performance
+
+          - test and training: each full day, one extra day apart
+
+            - n=1000 sites
+
+          - more training: better accuracy, lower \Delta: higher accuracy
+
+          - k of course improves performance
+
+          - accuracy seems to scale down logarithmically with number of
+            sites (scalable)
+
+       3) Forensics Feasibility
+
+          - collect traffic traces after you saw traffic
+
+            - train data *after* test data (negative \Delta)
+
+          - accuracy reduced by "less than 3%"
+
+       4) Explaining Performance
+
+          - huge amount of information (137 bits) per unpadded trace
+
+          - if conscious about this problem, padding defeats this
+
+       5) Countermeasure Effectiveness
+
+          - measures:
+
+            - linear: pad to next mutiple of 50
+
+            - exponential: pad to next multiple of two (or MTU)
+
+            - mice/elephant: pad to either 100 or 1500
+
+            - MTU: pad all to MTU (150% overhead)
+
+          - Bayes performs quite well even for maximal padding
+
+    6) DISCUSSION
+
+       - easy to identify
+
+       - anonymity systems should pad (f.ex. Tor)
+
+         - but Tor might be vulnerable to timing analysis
+
+       - law enforcement might benefit from database/tools
+
+       - log-linear scales well to web
+
+       - dynamic content uses templates: easy to update
+
+       - static content updated less frequently
+
+    7) CONCLUSION AND FUTURE WORK
+
+       - next steps
+
+         - steps: interdependent classifier
+
+         - more padding: non-deterministic might be better
+
+         - more traces
+
+         - use timing data, but depends on location
+*** quotes
+    1) INTRODUCTION
+       - Encrypted tunnels thwart the legitimate gathering of evidence
+         by authorized law enforcement.
+    3) [@3] MODEL
+       2) [@2] Profiling Methods
+          - For two sets X and Y , *Jaccard’s coefficent* S is defined as:
+            #+BEGIN_SRC latex
+              S(X, Y) = |X \cap Y| / |X \cup Y| (ref:liberatore-1)
+            #+END_SRC
+    5) [@5] EVALUATION
+       1) Experiment Setup
+          - The *k-identifiability* for an instance is defined as 1 if
+            the actual class of the instance is in the top k of the
+            predicted class list, as ordered by probability estimate
+            (predicted classes with the same estimate are ordered in
+            an arbitrary but fixed manner) or 0 if the actual class is
+            not in the top k. The *k-accuracy* for an experiment is
+            the average of the k-identifiability value for each
+            instance in the test set.
+*** ref [[file:master.bib::Liberatore:2006][Liberatore & Levine 2006: Inferring Source Encrypted HTTP Connections]]
 ** [[./torspec/address-spec.txt][Mathewson - Special Hostnames in Tor]]
 *** summary
     1. Overview
@@ -8171,200 +8365,6 @@
             Tor client to the first Tor node, actually it traverses
             many different ASes on each hop.
 *** ref [[file:master.bib::challenges][Dingledine et al.: Challenges]]
-** MOVE [[./Liberatore_2006.pdf][Liberatore - Inferring the Source of Encrypted HTTP Connections]]
-*** summary
-    0) [@0] ABSTRACT
-
-       - two traffic analysis techniques
-
-       - work to identify sites at internet scale
-
-    1) INTRODUCTION
-
-       - traffic analysis to get information from PETs (Tor, SSH
-         tunnels, IPSec, ESP, WPA-ll)
-
-       - Contributions: large trace set, high accuracy, padding as
-         defense, profile all front pages with 13GB of storage
-
-    2) RELATED WORK
-
-       - Wright: 15,16: vulnerable to passive logging and intersection
-
-       - Hintz, Sun 12, Bissias 1: profiling attacks based on object sizes
-
-       - Fu 8: dummy packets, Levine 10: dropping packets, 13: partial-path ct
-
-       - here: study packet length, not object length
-
-    3) MODEL
-
-       0) [@0]
-
-          - how to capture
-
-          - Jaccard's coefficient and naive Bayes
-
-       1) Observer Model
-
-          - listen at encrypted OpenSSH-SOCKS tunnel
-
-          - observe packet lengths (interarrival times also possible)
-
-          - able to distinguish start/end of requests
-
-          - record database not necessarily at same connectionb
-
-       2) Profiling Methods
-
-          - trace + attributes (direction, length): instance, has class (url)
-
-          - similarity metric: Jaccard's coefficient (see [[(liberatore-1)]])
-
-            - attribute to set if in majority of instances
-
-            - normalize S(X, Y): divide by \sum_{Y \in U}S(X, Y) (U: training sets)
-
-          - naive Bayes classifier
-
-    4) DATA COLLECTION
-
-       0) [@0]
-
-          - large dataset
-
-          - representing real-world users
-
-          - collected like real attacker
-
-       1) Initial Data Collection
-
-          - use real traffic
-
-          - strip lots
-
-          - select top 2000 (64% of ~100000)
-
-       2) Page Retrieval
-
-          - GNU/Linux, Firefox 1.5, OpenSSH 4.2p1 (links to each) as
-            SOCKS proxy
-
-            - FF: disabled caching, update checks, etc
-
-          - tcpdump 3.9.4, libpcacp 0.9.4, first 68 bytes of each packet
-
-    5) EVALUATION
-
-       0) [@0]
-
-          - jaccard vs bayes, jaccard has 60% accuracy
-
-            - scales well
-
-          - gather training data before or afterwards
-
-          - countermeasure evaluation: 145% overhead yields accuracy drop to 8%
-
-       1) Experiment Setup
-
-          - as in section 4
-
-          - top-2000, every six hours, for two months, 480000 samples
-
-          - vary training, testing, \Delta, number of sites
-
-          - measures: k-identifiability and k-accuracy see quotes
-
-       2) Classifier Performance
-
-          - test and training: each full day, one extra day apart
-
-            - n=1000 sites
-
-          - more training: better accuracy, lower \Delta: higher accuracy
-
-          - k of course improves performance
-
-          - accuracy seems to scale down logarithmically with number of
-            sites (scalable)
-
-       3) Forensics Feasibility
-
-          - collect traffic traces after you saw traffic
-
-            - train data *after* test data (negative \Delta)
-
-          - accuracy reduced by "less than 3%"
-
-       4) Explaining Performance
-
-          - huge amount of information (137 bits) per unpadded trace
-
-          - if conscious about this problem, padding defeats this
-
-       5) Countermeasure Effectiveness
-
-          - measures:
-
-            - linear: pad to next mutiple of 50
-
-            - exponential: pad to next multiple of two (or MTU)
-
-            - mice/elephant: pad to either 100 or 1500
-
-            - MTU: pad all to MTU (150% overhead)
-
-          - Bayes performs quite well even for maximal padding
-
-    6) DISCUSSION
-
-       - easy to identify
-
-       - anonymity systems should pad (f.ex. Tor)
-
-         - but Tor might be vulnerable to timing analysis
-
-       - law enforcement might benefit from database/tools
-
-       - log-linear scales well to web
-
-       - dynamic content uses templates: easy to update
-
-       - static content updated less frequently
-
-    7) CONCLUSION AND FUTURE WORK
-
-       - next steps
-
-         - steps: interdependent classifier
-
-         - more padding: non-deterministic might be better
-
-         - more traces
-
-         - use timing data, but depends on location
-*** quotes
-    1) INTRODUCTION
-       - Encrypted tunnels thwart the legitimate gathering of evidence
-         by authorized law enforcement.
-    3) [@3] MODEL
-       2) [@2] Profiling Methods
-          - For two sets X and Y , *Jaccard’s coefficent* S is defined as:
-            #+BEGIN_SRC latex
-              S(X, Y) = |X \cap Y| / |X \cup Y| (ref:liberatore-1)
-            #+END_SRC
-    5) [@5] EVALUATION
-       1) Experiment Setup
-          - The *k-identifiability* for an instance is defined as 1 if
-            the actual class of the instance is in the top k of the
-            predicted class list, as ordered by probability estimate
-            (predicted classes with the same estimate are ordered in
-            an arbitrary but fixed manner) or 0 if the actual class is
-            not in the top k. The *k-accuracy* for an experiment is
-            the average of the k-identifiability value for each
-            instance in the test set.
-*** ref [[file:master.bib::Liberatore:2006][Liberatore & Levine 2006: Inferring Source Encrypted HTTP Connections]]
 ** TODO [#B] [[./csbuflo.pdf][Cai - CS-BuFLO: A Congestion Sensitive Website Fingerprinting Defense]]
 *** summary
     0) [@0] Abstract:
