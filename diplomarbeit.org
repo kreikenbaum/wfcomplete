@@ -980,7 +980,7 @@ Facebook.com\\
     - network applications
 * TODO Results and Evaluation [0%]
 ** TODO setup
-*** TODO sites
+*** CHECK sites
 **** CHECK modified top-100
      The files for retrieval were from the alexa-top-1m[fn:: Current
      version available  at \url{
@@ -989,30 +989,41 @@ Facebook.com\\
      sites were removed. Also removed were those sites which failed to
      respond to python's =urllib=. The list of sites with their Alexa
      index can be found in appendix [[#top-100]].
-**** WRITE 30 sites
-     - top-10
-       - tried first
-       - have other size-distributions than f.ex. top-100 sites (see f.ex.
-         \cite{web-is-doom})
-     - find sites with high variance
-       - use also addon data on top-100 (version 0.18.2) to check
-       - quantiles of (total incoming) sizes
-         - panchenko: relevant metric
-     - link to code: top30() in analyse.py
-     - it's good if it's easy to classify, because then it's easy to cloak
+**** CHECK 30 sites
+     Retrieval of the whole 100 sites to test addon performance proved
+     lengthy, a smaller set of sites was needed. The first attempts
+     were using the top 10 sites, but those differed from the main
+     sites, f.ex. in size, see \cite{web-is-doom}.
+
+     Thus, sites that are the most apart in the top 100, regarding
+     their incoming byte size were chosen.[fn::the method to do this
+     is top30() in analyse.py, the data is 0.18.2]. These sites should
+     be easy to classify, and thus hard to keep apart via defenses.
+***** WAIT link to github analyse.py#top30, 0.18.2/100
+**** CHECK open-world
+     For open-world evaluation, the same top-1m data was used,
+     starting after the last of the top-100 pages. 4100 pages were
+     retrieved, once each.
 *** WRITE capture
-      #+CAPTION: setup to capture web page traffic
-      #+ATTR_LATEX: :float nil :width 0.5\textwidth
-      [[./pictures/Setup.eps]]
-    - evolved
-      - first version: all on same host
-        - bug: wfpad had overhead of \pm 1%
-        - and had to filtered (also cover traffic server)
-    - now: two virtual machines
-      - tbb, ct-server on one host
-      - tor bridge on other, connects to Tor network
-      - same for wfpad and addon
-      - capture always via bridge
+    #+CAPTION: setup to capture web page traffic
+    #+ATTR_LATEX: :float nil :width 0.5\textwidth
+    [[./pictures/Setup.eps]]
+
+    For the first set of captures, one virtual machine was
+    available. This had the drawback that WTFPAD could not be compared
+    to all other methods, as its traces looked different from the
+    others.
+
+    Thus, a bridge was introduced into the traffic flow. It was needed
+    for WTFPAD anyways, but other Tor traffic just used the bridge
+    instance via the TBB's =Bridge= directive.
+
+    One host runs the Tor Browser Bundle and the cover traffic server
+    (if needed), the other has a tor server instance running in bridge
+    mode. For WTFPAD, an additional server program is run at the
+    bridge, and a client at the TBB-host. This setup utilises the same
+    bridge for WTFPAD and the browser extension.
+
     - code:
       - see one_site
       - start_xvfb
@@ -1038,6 +1049,7 @@ Facebook.com\\
      cache between restarts (as mentioned f.ex. in \cite{critique}). If a
      browsing-session scenario is desired, the script could be
      modified to omit terminating the browser instance.
+*** TODO see topic to link/move appendix/move here
 *** TODO classification
 **** WRITE counter.py: represent trace files
      Once the website traces are stored in pcap-files, attribute vectors
@@ -1136,13 +1148,13 @@ Facebook.com\\
 *** WRITE outlier removal
     As described by Panchenko et al. \cite{panchenko2}, CUMUL is
     enhanced by outlier removal. Their
-    software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}] has
-    different settings, with a median-based[fn::in addition to the
+    software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}]
+    has different settings, with a median-based[fn::in addition to the
     median-based original by Wang and
     Goldberg\cite{wpes13-fingerprinting}] as well as a
     25%/75%-quantile-based approach. The paper\cite{panchenko2}
     mentions only the quantile-based filtering, so that was also used
-    in the later tests here.
+    in this thesis' evaluation.
 
     If parameter estimation for the support vector machine is done on
     both training and test data, the results
@@ -1206,7 +1218,7 @@ Facebook.com\\
       - k-fingerprinting
         - accuracy
       - all similar accuracies (as of k-fingerprinting)
-*** KEYWORDS trace growth, time delta, effect
+*** WAIT trace growth, time delta, effect
     - growth noticeable
     - add values
       - also per-domain
