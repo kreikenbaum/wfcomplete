@@ -340,6 +340,10 @@ def show_class_stats(train, test, clf=GOOD[0]):
 
 def test_outlier_removal(defense):
     '''tests different outlier removal schemes and levels'''
+    # on both at the same time
+    
+
+    # each vs each
     (train, test) = tts(defense)
     for train_lvl in [1,2,3]:
         for test_lvl in [-1,1,2,3]:
