@@ -173,7 +173,7 @@ Facebook.com\\
     object sizes. Cheng and Avnur \cite{ssl-traffic-analysis}
     additionally proposed a hidden markov model for page
     /transitions/, for hard-to-identify pages.
-*** WRITE Hurdles to website fingerprinting: HTTP protocols evolution
+*** WRITE Hurdles to website fingerprinting: HTTP protocol evolution
     :PROPERTIES:
     :CUSTOM_ID: Hurdles
     :END:
@@ -1010,13 +1010,13 @@ Facebook.com\\
     [[./pictures/Setup.eps]]
 
     For the first set of captures, one virtual machine was
-    available. This had the drawback that WTFPAD could not be compared
-    to all other methods, as its traces looked different from the
-    others.
+    available. This had the main drawback that WTFPAD used very little
+    padding, as its overhead was determined via the loopback
+    interface.
 
     Thus, a bridge was introduced into the traffic flow. It was needed
-    for WTFPAD anyways, but other Tor traffic just used the bridge
-    instance via the TBB's =Bridge= directive.
+    for WTFPAD anyways, but other Tor traffic also uses the bridge
+    instance via the TBB's =Bridge= directive, to ease comparability.
 
     One host runs the Tor Browser Bundle and the cover traffic server
     (if needed), the other has a tor server instance running in bridge
@@ -1024,32 +1024,36 @@ Facebook.com\\
     bridge, and a client at the TBB-host. This setup utilises the same
     bridge for WTFPAD and the browser extension.
 
-    - code:
-      - see one_site
-      - start_xvfb
-      - retrieve ...
+    Single traces are retrieved via the Python script
+    [[1site_desc][one-site.py]].
+*** CHECK retrieve trace: one-site.py
+    :PROPERTIES:
+    :CUSTOM_ID: 1site_desc
+    :END:
+    If the Browser Bundle runs when started manually, webpages can be
+    retrieved automatically. This is done via the [[one-site.py][one-site.py]] script.
 
-     If the Browser Bundle runs when started manually, webpages can be
-     retrieved automatically. This is done via the [[one-site.py][one-site.py]] script.
+    The script
 
-     The script
+    1. starts the Tor Browser Bundle's =firefox= binary, enabling
+       remote-control via the [[Marionette][=-marionette=]] command-line argument,
+       waiting up to 60 seconds for its initialization
+    2. starts the =tshark= capture
+    3. loads the page (given as first parameter) via Marionette
+    4. waits up to 600 seconds for the page load to finish
+    5. waits 3 more seconds (for the last cover traffic to finish)
+    6. ends the capture
+    7. ends Firefox
 
-     1. starts the Tor Browser Bundle's =firefox= binary, enabling
-        remote-control via the [[Marionette][=-marionette=]] command-line argument,
-        waiting up to 60 seconds for its initialization
-     2. starts the =tshark= capture
-     3. loads the page (given as first parameter) via Marionette
-     4. waits up to 600 seconds for the page load to finish
-     5. waits 3 more seconds (for the last cover traffic to finish)
-     6. ends the capture
-     7. ends Firefox
+    This setup (restart after each trace) avoids caching issues with
+    website fingerprinting, as the Tor Browser Bundle cleans the
+    cache between restarts (as mentioned f.ex. in \cite{critique}). If a
+    browsing-session scenario is desired, the script could be
+    modified to omit terminating the browser instance.
 
-     This setup (restart after each trace) avoids caching issues with
-     website fingerprinting, as the Tor Browser Bundle cleans the
-     cache between restarts (as mentioned f.ex. in \cite{critique}). If a
-     browsing-session scenario is desired, the script could be
-     modified to omit terminating the browser instance.
-*** TODO see topic to link/move appendix/move here
+    This script is triggered via several scripts that ensure that the
+    frame buffer is running for the capture.
+*** TODO see topic to link/move2appendix/move here
 *** TODO classification
 **** WRITE counter.py: represent trace files
      Once the website traces are stored in pcap-files, attribute vectors
@@ -1433,8 +1437,8 @@ similar, little to see
      - addon-simple does the opposite
    - have a look at [[*practical wf: analyzing traces][practical wf: analyzing traces]]
 * WAIT Conclusion
-* TODO topics [0/108]
-** TODO Website Fingerprinting [0/50]
+* TODO topics [0/102]
+** TODO Website Fingerprinting [0/44]
 *** tools
 **** TODO capture alternatives [0/1]
      Several applications can capture network traffic to files. The most
@@ -1724,17 +1728,17 @@ similar, little to see
     There are other methods of defense, which might help mitigate
     website fingerprinting. A certain browser extension and text-only
     browsing might reduce the fingerprint.
-**** CHECK Additional Plugin: requestpolicy
+**** INTEGRATE Additional Plugin: requestpolicy
      In addition to the security-centric addons deployed with the
      Tor-Browser-Bundle, there is an additional addon with orthogonal
      protection:
-     RequestPolicy
-     controls which third-party content to load on a given page. Every
-     query to the original domain is allowed, while requests to other
-     domains must be temporarily or permanently approved. It comes
-     with a restrictive set of pre-defined rules (for example google
-     pages are allowed to access gstatic). Both a blacklist and a
-     whitelist mode exist.
+
+     RequestPolicy controls which third-party content to load on a
+     given page. Every query to the original domain is allowed, while
+     requests to other domains must be temporarily or permanently
+     approved. It comes with a restrictive set of pre-defined rules
+     (for example google pages are allowed to access gstatic). Both a
+     blacklist and a whitelist mode exist.
 
      This could easily (and individually) alter the request/response
      characteristic of a website. More study might shed some light.
@@ -1757,7 +1761,7 @@ similar, little to see
      - randomized defenses seem offer adequate defense at reduced
        latency and bandwith
 ***** TODO move to description of other defenses
-**** CHECK tor browser bundle defense
+**** INTEGRATE to [[#Hurdles][Hurdles to website fingerprinting: HTTP protocols evolution]] tor browser bundle defense
      After the attack by Panchenko et al. \cite{panchenko}, the Tor
      Project deployed an experimental defense \cite{experimental} in
      the Tor Browser Bundle.
