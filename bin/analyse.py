@@ -338,7 +338,7 @@ def show_class_stats(train, test, clf=GOOD[0]):
     return _predict_percentages(_class_predictions(y2, clf.predict(X2)),
                                 _gen_url_list(y2, y2d))
 
-def test_or(defense):
+def test_outlier_removal(defense):
     '''tests different outlier removal schemes and levels'''
     (train, test) = tts(defense)
     for train_lvl in [1,2,3]:
