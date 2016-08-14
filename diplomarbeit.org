@@ -140,7 +140,7 @@ Facebook.com\\
 **** TODO test link to firefox (and all links)
 **** TODO [#C] format this in latex: left pic, right text, float, ...
 **** TODO [#C] if time: link to mozilla-docs
-*** EVA Website Fingerprinting 1.0
+*** DANIEL Website Fingerprinting 1.0
     :PROPERTIES:
     :CUSTOM_ID: wf1.0
     :END:
@@ -235,7 +235,7 @@ Facebook.com\\
 
     This metadata is important, as it can reveal "[a] lot of good
     information"\cite{applied96}.
-**** EVA History of Tor
+**** DANIEL History of Tor
      Tor inherits its onion design from the Onion Routing Project
      \cite{anonymous-connections}. It was originally developed by the
      Naval Research Laboratory of the US Navy with the primary purpose
@@ -365,7 +365,7 @@ Facebook.com\\
        then formulate correctly
 ****** TODO get picture to work
      - attributes to classes: classifiers
-**** EVA panchenko version 1
+**** DANIEL panchenko version 1
      Panchenko et al.'s \cite{panchenko} attack was the first that
      successfully classifed traces for websites retrieved via
      Tor\cite{critique}.
@@ -555,7 +555,7 @@ Facebook.com\\
     the SSL 3.0 protocol\cite{SSL}, and is attributed to Bennet Yee.
 ** TODO Defenses [0/8]
    siehe [[file:~/da/da.org::*2.%20Teil:%20Verteidigungen%20gegen%20Website-Fingerprinting%20(Welche%20Methoden%20existieren?%20Welche%20Problem%20existieren%20derzeit?%20-->%20%C3%9Cberleitung%20zum%20Hauptteil)][2. Teil: Verteidigungen gegen Website-Fingerprinting (Welche        Methoden existieren? Welche Problem existieren derzeit? -->        Überleitung zum Hauptteil)]]
-*** EVA Early defenses
+*** DANIEL Early defenses
     As defense against fingerprinting webpages when retrieved via SSL,
     Cheng and Avnur\cite{ssl-traffic-analysis} mainly proposed using
     proxies[fn::as well as HTML and protocol modification]. Addressing
@@ -601,7 +601,7 @@ Facebook.com\\
 
     Specific defenses alter specific attributes, mostly single packet
     size.
-*** EVA General Defenses
+*** DANIEL General Defenses
     To stop the arms race between attacks and defenses - the attacks
     finding new attribute combinations to use, the defenses
     obfuscating these - the idea of a /general defense/ was presented
@@ -613,7 +613,7 @@ Facebook.com\\
     This idea was improved on by Cai et al\cite{a-systematic} while
     Wang et al\cite{effective} proposed the (offline) defense of
     morphing all traffic to supersequences of traffic patterns.
-*** EVA Stochastic Defenses
+*** DANIEL Stochastic Defenses
     The latest defenses were proposed by Juarez et al\cite{wtfpad} and
     Wang et al\cite{wang2015walkie}: These both used a stochastic
     approach to generate additional traffic, with Wang et al
@@ -701,16 +701,16 @@ Facebook.com\\
 *** CHECK Introduction
     As acknowledged both in \cite{wang2015walkie} and \cite{wtfpad},
     deterministic approaches have the major shortcoming of introducing
-    additional delay into the traffic, which conflicts with Tor's
-    design goal of usability\cite{tor-design}, increasing the
-    sometimes bothersome delay of using Tor for browsing the
-    web.[fn::As for the positive side of higher latency, see
+    delay into the traffic, which conflicts with Tor's design goal of
+    usability\cite{tor-design}, increasing the[fn::already sometimes
+    bothersome] delay of using Tor for browsing the web.[fn::As for
+    the positive side of higher latency, see
     \cite[sec.4.2]{challenges}.]
 
-    While also providing this functionality through an easy-to-add
-    browser extension, keeping the Tor Browser code as-is, this
-    thesis's approach uses properties of web traffic to determine when
-    and how much traffic to send. This stands in contrast to both Wang
+    This thesis's approach uses properties of web traffic to determine
+    when and how much traffic to send, providing this functionality
+    through an easy-to-add browser extension, thus keeping the Tor
+    Browser code as-is. This approach stands in contrast to both Wang
     et al.'s Walkie-Talkie\cite{wang2015walkie}, which offers sampling
     from both uniform and normal distributions, and Juarez et al.'s
     WTF-PAD\cite{wtfpad}, which creates histogram-based traffic, but
@@ -722,30 +722,29 @@ Facebook.com\\
 
     When this thesis was started, both
     Walkie-Talkie\cite{wang2015walkie} and WTF-PAD\cite{wtfpad} had
-    not been published yet. Yet, it contributes
+    not been published yet. To summarize, it contributes
 
-    a) an easily-deployable browser extension, and
-    b) the inclusion of HTTP traffic characteristics for random traffic,
+    a) the inclusion of HTTP traffic characteristics for random traffic, and
+    b) an easily-deployable browser extension,
 
     which neither of the above defenses contain.
 *** CHECK Aim: selective cover traffic
     As detailed in section [[#attributes]], there are key attributes that
     are hard to cloak except by extra traffic, especially the total
     number of bytes up-/ and downstream.[fn::For Tor, the number of
-    bytes is an almost exact multiple of the total number of bytes,
-    due to data cell padding].
+    bytes is an almost exact multiple of the total number of packets,
+    due to fixed data cell sizes].
 
-    If some extra traffic needs to be created, the next question is
-    how to shape this traffic in order to effectively cloak the
-    fingerprint.
+    If some extra traffic needs to be created, the question is how to
+    shape this traffic in order to effectively cloak the fingerprint.
 
-    It might also be advantageous to be able to adjust the amount of
-    cover traffic, firstly to the webpage being loaded, and secondly
-    to some user-settable privacy level, as a whistleblower might need
-    more anonymity protection than Jane Doe who just reads the latest
-    news, possibly censored in her country.
+    Additionally, it might be advantageous to be able to adjust the
+    data overhead of cover traffic to some user-settable privacy
+    level, as a whistleblower might need more anonymity protection
+    than Jane Doe who just reads the latest news, possibly censored in
+    her country.
 ** TODO Design and Implementation (=Implementation) [0/16]
-*** EVA Introduction
+*** DANIEL Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
     question is how, and how much traffic to create.
@@ -766,12 +765,12 @@ Facebook.com\\
     The next sections describe in detail how the addon distinguishes
     initial traffic from embedded objects, how to create traffic and
     describe different versions of the addon.
-*** CHECK How to distinguish HTML and embedded objects
+*** CHECK MOVE below [[#HTTP traffic model][HTTP traffic model]] How to distinguish HTML and embedded objects
     :PROPERTIES:
     :CUSTOM_ID: distinguish_HTML_embedded
     :END:
-    It would make sense to distinguish between HTML and other requests
-    to tune traffic generation. This is usually done via HTTP's
+    To tune traffic generation, it makes sense to distinguish between
+    HTML and other requests . This is usually done via HTTP's
     =content-type= header\cite[sec.14.18]{rfc2068}, yet that is only
     accessible when the content has been received, whereas this
     defense needs to distinguish at the time it is requested.
@@ -982,32 +981,33 @@ Facebook.com\\
     - bloom paper
     - network applications
 * TODO Results and Evaluation [0%]
-** TODO setup
+** WRITE setup
 *** CHECK sites
 **** CHECK modified top-100
      The files for retrieval were from the alexa-top-1m[fn:: Current
-     version available  at \url{
-     http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}], from
+     version available at
+     \url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}], from
      September 30, 2015. Akin to \cite{wpes13-fingerprinting}, similar
      sites were removed. Also removed were those sites which failed to
-     respond to python's =urllib=. The list of sites with their Alexa
-     index can be found in appendix [[#top-100]].
+     respond to python's =urllib=\cite[sec.20.5]{python-lib-ref}. The
+     list of sites with their Alexa index can be found in appendix
+     [[#top-100]].
 **** CHECK 30 sites
      Retrieval of the whole 100 sites to test addon performance proved
      lengthy, a smaller set of sites was needed. The first attempts
-     were using the top 10 sites, but those differed from the main
-     sites, f.ex. in size, see \cite{web-is-doom}.
+     used the top-10 sites, but those differed from all sites,
+     f.ex. in size, as mentioned in \cite{web-is-doom}.
 
-     Thus, sites that are the most apart in the top 100, regarding
-     their incoming byte size were chosen.[fn::the method to do this
-     is top30() in analyse.py, the data is 0.18.2]. These sites should
-     be easy to classify, and thus hard to keep apart via defenses.
+     To solve this, sites that are the most apart in the top 100 by
+     incoming byte size were chosen.[fn::the method to do this is
+     top30() in analyse.py, the data is 0.18.2]. These sites should be
+     easy to classify, and thus hard to keep apart via defenses.
 ***** WAIT link to github analyse.py#top30, 0.18.2/100
 **** CHECK open-world
      For open-world evaluation, the same top-1m data was used,
-     starting after the last of the top-100 pages. 4100 pages were
-     retrieved, once each.
-*** WRITE capture
+     starting after the last of the top-100 pages. The next 4100
+     page's traces were collected, one trace per page.
+*** CHECK capture
     #+CAPTION: setup to capture web page traffic
     #+ATTR_LATEX: :float nil :width 0.5\textwidth
     [[./pictures/Setup.eps]]
@@ -1027,37 +1027,37 @@ Facebook.com\\
     bridge, and a client at the TBB-host. This setup utilises the same
     bridge for WTFPAD and the browser extension.
 
-    Single traces are retrieved via the Python script
-    [[#1site_desc][one\_site.py]].
-*** CHECK retrieve trace: one\_site.py
-    :PROPERTIES:
-    :CUSTOM_ID: 1site_desc
-    :END:
-    If the Browser Bundle runs when started manually, webpages can be
-    retrieved automatically. This is done via the [[one-site.py][one-site.py]] script.
+    Single traces are captured via the Python script one\_site.py, see
+    appendix [[#1site_desc]].
+**** CHECK MOVE appendix retrieve trace: one\_site.py
+     :PROPERTIES:
+     :CUSTOM_ID: 1site_desc
+     :END:
+     If the Browser Bundle runs when started manually, webpages can be
+     retrieved automatically. This is done via the [[one-site.py][one-site.py]] script.
 
-    The script
+     The script
 
-    1. starts the Tor Browser Bundle's =firefox= binary, enabling
-       remote-control via the [[Marionette][=-marionette=]] command-line argument,
-       waiting up to 60 seconds for its initialization
-    2. starts the =tshark= capture
-    3. loads the page (given as first parameter) via Marionette
-    4. waits up to 600 seconds for the page load to finish
-    5. waits 3 more seconds (for the last cover traffic to finish)
-    6. ends the capture
-    7. ends Firefox
+     1. starts the Tor Browser Bundle's =firefox= binary, enabling
+        remote-control via the [[Marionette][=-marionette=]] command-line argument,
+        waiting up to 60 seconds for its initialization
+     2. starts the =tshark= capture
+     3. loads the page (given as first parameter) via Marionette
+     4. waits up to 600 seconds for the page load to finish
+     5. waits 3 more seconds (for the last cover traffic to finish)
+     6. ends the capture
+     7. ends Firefox
 
-    This setup (restart after each trace) avoids caching issues with
-    website fingerprinting, as the Tor Browser Bundle cleans the
-    cache between restarts (as mentioned f.ex. in \cite{critique}). If a
-    browsing-session scenario is desired, the script could be
-    modified to omit terminating the browser instance.
+     This setup (restart after each trace) avoids caching issues with
+     website fingerprinting, as the Tor Browser Bundle cleans the
+     cache between restarts (as mentioned f.ex. in \cite{critique}). If a
+     browsing-session scenario is desired, the script could be
+     modified to omit terminating the browser instance.
 
-    This script is triggered via several scripts that ensure that the
-    frame buffer is running for the capture.
-*** TODO see topic to link/move2appendix/move here
-*** TODO classification
+     This script is triggered via several scripts that ensure that the
+     frame buffer is running for the capture.
+*** TODO see topics, MOVE to appendix/here
+*** WRITE classification
 **** WRITE counter.py: represent trace files
      Once the website traces are stored in pcap-files, attribute vectors
      need to be extracted. A attribute vector is represented by a Python
@@ -1126,7 +1126,7 @@ Facebook.com\\
 ***** TODO ref stackoverflow why 0 padding
 ****** TODO or better, some statistics text
 ***** TODO see also =to_features_cumul=
-** WRITE Website Fingerprinting [0/6]
+** WRITE Website Fingerprinting [0/7]
 *** WRITE panchenko v1 different classifiers
     :PROPERTIES:
     :CUSTOM_ID: different-classifiers
@@ -1229,6 +1229,11 @@ Facebook.com\\
     - growth noticeable
     - add values
       - also per-domain
+*** WRITE WTFPAD overhead
+    - depending on connection client/bridge
+      - 0--1% if on localhost
+      - about 12% for virtual machine
+      - reported \cite{wtfpad}, confirmed by \cite{kfingerprint}: 54%
 ** TODO Evaluation of Defenses [0/5]
 *** WRITE Evaluation of Addon
     #+CAPTION: different defense versions with CUMUL, svc classifier
@@ -1307,13 +1312,15 @@ Facebook.com\\
       - small page, small page with addon, bigger page
       - does with addon look like bigger page?
     - wait for [[file:~/da/da.org::*experimente][experimente]] plan 3
-*** KEYWORDS svc vs extratrees
+*** KEYWORDS MOVE UP to last of [[*Website Fingerprinting][Website Fingerprinting {0/6}]] svc vs extratrees
     - svc very good on unaddoned data, (if trained and or on all)
-      - extratrees lacked ca 5% behind, but shines on addons
-        - similar, but bit less good for knn, randomforest, even decisiontrees
+      - extratrees with 5--10% lower accuracy, but excels against
+        defenses
+        - similar results, but mostly bit less good: knn,
+          randomforest, even decisiontrees
       - others not tested
-      - exception 22.0/5aII
-        - continue here: inspect which pages, etc
+      - exception 22.0/5aII: better for svc
+        - continue here: inspect which pages, etc, show traces, table
 ** WAIT Websites
    - which websites classify well with which classifier, which badly
      - algorithm
