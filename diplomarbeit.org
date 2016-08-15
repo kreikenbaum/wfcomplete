@@ -744,7 +744,7 @@ Facebook.com\\
     level, as a whistleblower might need more anonymity protection
     than Jane Doe who just reads the latest news, possibly censored in
     her country.
-** TODO Design and Implementation (=Implementation) [0/17]
+** TODO Design and Implementation (=Implementation) [0/16]
 *** DANIEL Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -807,7 +807,7 @@ Facebook.com\\
     :CUSTOM_ID: distinguish_HTML_embedded
     :END:
     To tune traffic generation, it makes sense to distinguish between
-    HTML and other requests . This is usually done via HTTP's
+    HTML and other requests. This is usually done via HTTP's
     =content-type= header\cite[sec.14.18]{rfc2068}, yet that is only
     accessible when the content has been received, whereas this
     defense needs to distinguish at the time it is requested.
@@ -818,14 +818,14 @@ Facebook.com\\
     \url{http://stackoverflow.com/questions/34656221/}]. The solution
     in this addon is to consider the first request to a host as the
     HTML page, while subsequent requests while the page is being
-    loaded [fn::until the body's =load=
+    loaded[fn::until the body's =load=
     event\cite[ch.1.6.5]{dom2-events}] are considered requests for
     embedded objects.
 
     This accurately distinguishes between start of a page load and the
     loading of its embedded objects, but a drawback is that is does
     not recongnize embedded iframes etc. as HTML.
-*** CHECK Why HTTP-shaped cover traffic
+*** EVA Why HTTP-shaped cover traffic
     HTTP-shaped cover traffic might prove more effective, as this
     would make it harder to separate cover and real traffic. In
     addition, it works at the layer where the problem
@@ -2710,192 +2710,192 @@ similar, little to see
    page has embedded elements from different domains, this does not
    perfectly represent reality. It would be more exact to analyse the
    HTML page and at least return the domains of all embedded elements.
-* TODO appendices [0/13]
+* appendices (just for searching, rest are top-level items)         :ARCHIVE:
 \appendix
-** TODO Versions
+* TODO Versions
+  :PROPERTIES:
+  :CUSTOM_ID: versions
+  :END:
+** WRITE 0.17 bursts at end - bursts on addon site load finish
+   - wang: burst distinguishing attribute left with
+     w/t\cite{wang2015walkie}
+   - solution: count how many embedded, add those as bursts at the
+     end
+
+   One characteristic which identified sites well as per Dyer et
+   al.\cite{oakland2012-peekaboo} and Wang and Goldberg
+   \cite{wang2015walkie} is the number of bursts.
+
+   As the addon would conceptually only increase burst sizes, and not
+   alter their number, this should be covered as well. To address this,
+   the per-site traffic module [[CoverTraffic]] remembers the number of
+   unsent requests for embedded elements. When the page loading is
+   finished, this number (which should be 0 or less in more than half
+   the cases) of embedded objects is requested. As the cover traffic
+   currently comes from a single server, the multiple connection limit
+   (compare [[#Hurdles]]) should automatically lead to multiple bursts if
+   the number of embedded objects is high enough.
+** WRITE 0.18: configurability
+   - options choosing which tactic:
+     - known/guess sizes
+     - bins/target
+     - bursts
+
+   - much more traffic
+     - try to fix at 19 (and backport to 15.3, codename retro)
+** WRITE 0.19: negative values in distribution
    :PROPERTIES:
-   :CUSTOM_ID: versions
+   :CUSTOM_ID: addon0.19
    :END:
-*** WRITE 0.17 bursts at end - bursts on addon site load finish
-    - wang: burst distinguishing attribute left with
-      w/t\cite{wang2015walkie}
-    - solution: count how many embedded, add those as bursts at the
-      end
+   - negative values for requests are saved and randomly subtracted
+   - occur with real size > target size
+   - solution
+     - if small /negative request value:
+       - save value (min size is 160, thus =160 - requested_size=)
+     - else:
+       - get value at random up to min(request size, saved values)
+       - subtract from request size, and from saved value
 
-    One characteristic which identified sites well as per Dyer et
-    al.\cite{oakland2012-peekaboo} and Wang and Goldberg
-    \cite{wang2015walkie} is the number of bursts.
+   The improvements described in this section were backported to
+   version 0.15.3, with version name 0.15.3-retrofixed. This
+   greatly reduced the amount of overhead, but had the same
+   problem: the factor was not correlated to the overhead: it
+   lacked control on how much traffic to generate.
+** WRITE 0.20: bounds for probability
+   - buggy html model: counts many more URLs as HTML than expected
+     - fix would be: use only absolute numbers, not probabilities,
+       detect HTML (by suffix as approximation, and by content-type
+       when found), increase counter when found
+     - workaround: bound probability
+     - 20 limits number of embedded requests
+** WRITE 0.21 bounds absolute number of retrieved objects
+    - better workaround
+      - stricter bounds on retrieval of embedded objects
+      - and stop when limit reached
 
-    As the addon would conceptually only increase burst sizes, and not
-    alter their number, this should be covered as well. To address this,
-    the per-site traffic module [[CoverTraffic]] remembers the number of
-    unsent requests for embedded elements. When the page loading is
-    finished, this number (which should be 0 or less in more than half
-    the cases) of embedded objects is requested. As the cover traffic
-    currently comes from a single server, the multiple connection limit
-    (compare [[#Hurdles]]) should automatically lead to multiple bursts if
-    the number of embedded objects is high enough.
-*** WRITE 0.18: configurability
-    - options choosing which tactic:
-      - known/guess sizes
-      - bins/target
-      - bursts
+* CHECK retrieve trace: ~one_site.py~
+  :PROPERTIES:
+  :CUSTOM_ID: 1site_desc
+  :END:
+  If the Browser Bundle runs when started manually, webpages can be
+  retrieved automatically. This is done via the [[one-site.py][~one_site.py~]] script.
 
-    - much more traffic
-      - try to fix at 19 (and backport to 15.3, codename retro)
-*** WRITE 0.19: negative values in distribution
-    :PROPERTIES:
-    :CUSTOM_ID: addon0.19
-    :END:
-    - negative values for requests are saved and randomly subtracted
-    - occur with real size > target size
-    - solution
-      - if small /negative request value:
-        - save value (min size is 160, thus =160 - requested_size=)
-      - else:
-        - get value at random up to min(request size, saved values)
-        - subtract from request size, and from saved value
+  The script
 
-    The improvements described in this section were backported to
-    version 0.15.3, with version name 0.15.3-retrofixed. This
-    greatly reduced the amount of overhead, but had the same
-    problem: the factor was not correlated to the overhead: it
-    lacked control on how much traffic to generate.
-*** WRITE 0.20: bounds for probability
-    - buggy html model: counts many more URLs as HTML than expected
-      - fix would be: use only absolute numbers, not probabilities,
-        detect HTML (by suffix as approximation, and by content-type
-        when found), increase counter when found
-      - workaround: bound probability
-      - 20 limits number of embedded requests
-*** WRITE 0.21 bounds absolute number of retrieved objects
-     - better workaround
-       - stricter bounds on retrieval of embedded objects
-       - and stop when limit reached
+  1. starts the Tor Browser Bundle's =firefox= binary, enabling
+     remote-control via the [[Marionette][=-marionette=]] command-line argument,
+     waiting up to 60 seconds for its initialization
+  2. starts the =tshark= capture
+  3. loads the page (given as first parameter) via Marionette
+  4. waits up to 600 seconds for the page load to finish
+  5. waits 3 more seconds (for the last cover traffic to finish)
+  6. ends the capture
+  7. ends Firefox
 
-** CHECK retrieve trace: ~one_site.py~
-   :PROPERTIES:
-   :CUSTOM_ID: 1site_desc
-   :END:
-   If the Browser Bundle runs when started manually, webpages can be
-   retrieved automatically. This is done via the [[one-site.py][~one_site.py~]] script.
+  This setup (restart after each trace) avoids caching issues with
+  website fingerprinting, as the Tor Browser Bundle cleans the
+  cache between restarts (as mentioned f.ex. in \cite{critique}). If a
+  browsing-session scenario is desired, the script could be
+  modified to omit terminating the browser instance.
 
-   The script
+  This script is triggered via several scripts that ensure that the
+  frame buffer is running for the capture.
+* Script ~one_site.py~: capture pcap traces
+  <<one-site.py>>
+  #+INCLUDE: "./bin/one_site.py" src python
+* Script =analyse.py=: classify the data
+  :PROPERTIES:
+  :CUSTOM_ID: analyse
+  :END:
+  #+INCLUDE: "./bin/analyse.py" src python
+* Script =counter.py=: parse pcap files
+  #+INCLUDE: "./bin/counter.py" src python
+* Cover Traffic Server: =wsgi.py=
+  <<wsgi.py>>
+  #+INCLUDE: "./bin/wsgi.py" src python
+* Script =htmlToNumEmbedded.py=: extract embedded objects
+  <<htmlToNumEmbedded.py>>
+  #+INCLUDE: "./bin/htmlToNumEmbedded.py" src python
+* Script =html-top-100.sh= to retrieve html pages via squid
+  #+INCLUDE: "./bin/html_top_100.sh" src sh
+* Script retrieve-100-embedded.sh run htmlToNumEmbedded
+  <<retrieve-100-embedded.sh>>
+  #+INCLUDE: "./bin/retrieve_100_embedded.sh" src python
+* modified top-100
+  :PROPERTIES:
+  :CUSTOM_ID: top-100
+  :END:
+  #+INCLUDE: "./sw/top-100-modified.csv" example
+* TODO Remove same-host cover traffic server from traces: =7777.sh=
+  <<7777>>
+  #+INCLUDE: "./bin/7777.sh" src sh
+* Addon
+** Control module User
+   <<user.js>>
+   #+INCLUDE: "./cover/js/user.js" src js
+* WF-Trace Pictures
+  :PROPERTIES:
+  :CUSTOM_ID: wf-pictures
+  :END:
+  The pictures were created by the commands
 
-   1. starts the Tor Browser Bundle's =firefox= binary, enabling
-      remote-control via the [[Marionette][=-marionette=]] command-line argument,
-      waiting up to 60 seconds for its initialization
-   2. starts the =tshark= capture
-   3. loads the page (given as first parameter) via Marionette
-   4. waits up to 600 seconds for the page load to finish
-   5. waits 3 more seconds (for the last cover traffic to finish)
-   6. ends the capture
-   7. ends Firefox
+  #+BEGIN_EXAMPLE
+   for fb in $(ls | grep facebook); do
+     python ~/da/bin/counter.py ./$fb  | tail -1 | sed 's/),/\n/g' | \
+         tr -d "'()][" > /tmp/times;
+     gnuplot -e "set terminal png size 1024,680; \
+             set output \"/tmp/${fb}.png\"; plot '/tmp/times' with boxes;";
+   done
+  #+END_EXAMPLE
 
-   This setup (restart after each trace) avoids caching issues with
-   website fingerprinting, as the Tor Browser Bundle cleans the
-   cache between restarts (as mentioned f.ex. in \cite{critique}). If a
-   browsing-session scenario is desired, the script could be
-   modified to omit terminating the browser instance.
+  and respectively for craigslist, in the directories containing the
+  pcap files.
 
-   This script is triggered via several scripts that ensure that the
-   frame buffer is running for the capture.
-** Script ~one_site.py~: capture pcap traces
-   <<one-site.py>>
-   #+INCLUDE: "./bin/one_site.py" src python
-** Script =analyse.py=: classify the data
-   :PROPERTIES:
-   :CUSTOM_ID: analyse
-   :END:
-   #+INCLUDE: "./bin/analyse.py" src python
-** Script =counter.py=: parse pcap files
-   #+INCLUDE: "./bin/counter.py" src python
-** Cover Traffic Server: =wsgi.py=
-   <<wsgi.py>>
-   #+INCLUDE: "./bin/wsgi.py" src python
-** Script =htmlToNumEmbedded.py=: extract embedded objects
-   <<htmlToNumEmbedded.py>>
-   #+INCLUDE: "./bin/htmlToNumEmbedded.py" src python
-** Script =html-top-100.sh= to retrieve html pages via squid
-   #+INCLUDE: "./bin/html_top_100.sh" src sh
-** Script retrieve-100-embedded.sh run htmlToNumEmbedded
-   <<retrieve-100-embedded.sh>>
-   #+INCLUDE: "./bin/retrieve_100_embedded.sh" src python
-** modified top-100
-   :PROPERTIES:
-   :CUSTOM_ID: top-100
-   :END:
-   #+INCLUDE: "./sw/top-100-modified.csv" example
-** TODO Remove same-host cover traffic server from traces: =7777.sh=
-   <<7777>>
-   #+INCLUDE: "./bin/7777.sh" src sh
-** Addon
-*** Control module User
-    <<user.js>>
-    #+INCLUDE: "./cover/js/user.js" src js
-** WF-Trace Pictures
-   :PROPERTIES:
-   :CUSTOM_ID: wf-pictures
-   :END:
-   The pictures were created by the commands
+  These commands first extract each =Counter=s =timing= attribute
+  (the last line of the output of counter.py at git commit 791af76),
+  format it for gnuplot (inserting appropriate newlines via =sed= and
+  removing extra characters via =tr=), and =gnuplot= s it to a png
+  file with the name of the trace file as prefix.
+* CHECK Tor Browser and Firefox despite --sync problems
+  In case someone experiences graphics errors when using Tor via
+  X-forwarding, there are several solutions. The first thing to check
+  is --- of course --- that firefox on the same system yields the
+  same error.
 
-   #+BEGIN_EXAMPLE
-    for fb in $(ls | grep facebook); do
-      python ~/da/bin/counter.py ./$fb  | tail -1 | sed 's/),/\n/g' | \
-          tr -d "'()][" > /tmp/times;
-      gnuplot -e "set terminal png size 1024,680; \
-              set output \"/tmp/${fb}.png\"; plot '/tmp/times' with boxes;";
-    done
-   #+END_EXAMPLE
+  The first workaround would be to use the =--sync= command-line
+  option to both firefox and the TBB. As this introduces huge lag, it
+  is less than optimal. A second solution is to install
+  XPRA[fn::\url{http://xpra.org/}. When it is installed (best via the
+  developer's repository) on both client and server, you can start it
+  via
+  #+BEGIN_SRC sh
+    xpra start ssh:user@host:DISPLAY_ID --start=/path/to/start-tor-browser
+  #+END_SRC
+  This issue was seemingly fixed in firefox 48, as of the bug report.
+** TODO [#C] bug report: quote other's error messages, link to bug report
+* TODO Non-parallelized-based web server for cover traffic [0/2]
+  This approach did not scale to several parallel connections, so it
+  was not used. It is included as a reference of what seems to work,
+  but did not.
 
-   and respectively for craigslist, in the directories containing the
-   pcap files.
+  The python module =TrafficHTTPServer= can be started on the
+  command-line via
 
-   These commands first extract each =Counter=s =timing= attribute
-   (the last line of the output of counter.py at git commit 791af76),
-   format it for gnuplot (inserting appropriate newlines via =sed= and
-   removing extra characters via =tr=), and =gnuplot= s it to a png
-   file with the name of the trace file as prefix.
-** CHECK Tor Browser and Firefox despite --sync problems
-   In case someone experiences graphics errors when using Tor via
-   X-forwarding, there are several solutions. The first thing to check
-   is --- of course --- that firefox on the same system yields the
-   same error.
+  python TrafficHTTPServer.py portname
 
-   The first workaround would be to use the =--sync= command-line
-   option to both firefox and the TBB. As this introduces huge lag, it
-   is less than optimal. A second solution is to install
-   XPRA[fn::\url{http://xpra.org/}. When it is installed (best via the
-   developer's repository) on both client and server, you can start it
-   via
-   #+BEGIN_SRC sh
-     xpra start ssh:user@host:DISPLAY_ID --start=/path/to/start-tor-browser
-   #+END_SRC
-   This issue was seemingly fixed in firefox 48, as of the bug report.
-*** TODO [#C] bug report: quote other's error messages, link to bug report
-** TODO Non-parallelized-based web server for cover traffic [0/2]
-   This approach did not scale to several parallel connections, so it
-   was not used. It is included as a reference of what seems to work,
-   but did not.
+  with portname set to 8000 by default. It generates cover traffic of the
+  size given by the =size= parameter, for example the command
 
-   The python module =TrafficHTTPServer= can be started on the
-   command-line via
+  wget 'http://localhost:8000/?size=10'
 
-   python TrafficHTTPServer.py portname
-
-   with portname set to 8000 by default. It generates cover traffic of the
-   size given by the =size= parameter, for example the command
-
-   wget 'http://localhost:8000/?size=10'
-
-   retrieves a document with 10 bytes content from a TrafficHTTPServer
-   running at localhost port 8000.
-*** WRITE Problems
-    - did not scale: did not respond immediately for parallel
-      connections
-      - obviously delays problematic as they in effect create less
-        cover traffic
-    - maybe further work: test that really works worse
-*** Script
-    #+INCLUDE: "./bin/unused/TrafficHTTPServer.py" src python
-**** TODO github
+  retrieves a document with 10 bytes content from a TrafficHTTPServer
+  running at localhost port 8000.
+** WRITE Problems
+   - did not scale: did not respond immediately for parallel
+     connections
+     - obviously delays problematic as they in effect create less
+       cover traffic
+   - maybe further work: test that really works worse
+** Script
+   #+INCLUDE: "./bin/unused/TrafficHTTPServer.py" src python
+*** TODO github
