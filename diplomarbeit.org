@@ -582,7 +582,7 @@ Facebook.com\\
     server. This would conflict with Tor's design goal of
     deployability.\cite{tor-design}
 
-    As of Wang and Goldberg \cite{wang2015walkie}, defenses designed
+    As of Wang and Goldberg\cite{wang2015walkie}, defenses designed
     against website fingerprinting can be divided into specific and
     general defenses.
 *** WRITE Defenses Against Specific Attributes
@@ -615,18 +615,18 @@ Facebook.com\\
     morphing all traffic to supersequences of traffic patterns.
 *** DANIEL Stochastic Defenses
     The latest defenses were proposed by Juarez et al\cite{wtfpad} and
-    Wang et al\cite{wang2015walkie}: These both used a stochastic
-    approach to generate additional traffic, with Wang et al
-    additionally modifying the browser to send "half-duplex", either
-    exclusively sending or exclusively receiving data at the same
-    time. Juarez et al. adapted the ideas from Shmatikov and
+    Wang and Goldberg\cite{wang2015walkie}: These both used a
+    stochastic approach to generate additional traffic, with Wang and
+    Goldberg additionally modifying the browser to send "half-duplex",
+    either exclusively sending or exclusively receiving data at the
+    same time. Juarez et al. adapted the ideas from Shmatikov and
     Wang\cite{ShWa-Timing06} to distinguish active and non-active
     periods, with a certain probability of sending dummy packets in
     each, omitting the sending when the browser generated packets
     itself.
-*** WRITE wtf-pad
+*** WRITE WTF-PAD
     - Juarez\cite{wtfpad}
-    - Website Traffic Fingerprinting Protection with Adaptive Defense
+    - Website Traffic Fingerprinting Protection with Adaptive Defense (WTF-PAD)
     - adapts adaptive padding\cite{ShWa-Timing06}
       - hide from global adversary's correlation attack
     - defense + crawler and modifier
@@ -637,7 +637,7 @@ Facebook.com\\
     - built using Tor's pluggable transport\cite{tor-spec-pt}
       censorship avoidance layer
 *** WRITE walkie-talkie
-    - Wang\cite{wang2015walkie}
+    - Wang and Goldberg\cite{wang2015walkie}
     - half-duplex (cite kurose?)
       - send XOR receive
     - with additional traffic
@@ -667,10 +667,10 @@ Facebook.com\\
     - requestpolicy (hintz 2nd way)
     - text-only browsing (hintz 2nd way)
 * TODO Methods (=methods) [0%]
-** TODO Motivation [0/2]
+** TODO Motivation [0/3]
 *** brainstorm                                                      :ARCHIVE:
    - make wf/ml harder, fudge attributes
-     - problems wfpad: modify all of tor,
+     - problems WTF-PAD: modify all of tor,
        - yet problem is browser traffic
          - and traffic is app-dependent
        - deployability: all/nothing
@@ -684,7 +684,7 @@ Facebook.com\\
      - problems walkie-talkie: also modify all
        - bit slower
        - not preferred method
-       - TD: compare to wfpad accuracy/efficiency
+       - TD: compare to WTF-PAD accuracy/efficiency
      - conversely:
        - addon: easier to modify/implement/test
          - *easy to use* if not default (currently needs server, but
@@ -698,27 +698,27 @@ Facebook.com\\
      - select based on web site
      - and target
      - simultaneous to real traffic
-*** CHECK Introduction
-    As acknowledged both in \cite{wang2015walkie} and \cite{wtfpad},
-    deterministic approaches have the major shortcoming of introducing
-    delay into the traffic, which conflicts with Tor's design goal of
-    usability\cite{tor-design}, increasing the[fn::already sometimes
-    bothersome] delay of using Tor for browsing the web.[fn::As for
-    the positive side of higher latency, see
-    \cite[sec.4.2]{challenges}.]
+*** WRITE Introduction
+    As acknowledged both by Wang and Goldberg\cite{wang2015walkie} and
+    Juarez et al\cite{wtfpad}, deterministic approaches have the major
+    shortcoming of introducing delay into the traffic, which conflicts
+    with Tor's design goal of usability\cite{tor-design}, increasing
+    the[fn::already sometimes bothersome] delay of using Tor for
+    browsing the web.[fn::As for the positive side of higher latency,
+    see \cite[sec.4.2]{challenges}.]
 
     This thesis's approach uses properties of web traffic to determine
     when and how much traffic to send, providing this functionality
     through an easy-to-add browser extension, thus keeping the Tor
-    Browser code as-is. This approach stands in contrast to both Wang
-    et al.'s Walkie-Talkie\cite{wang2015walkie}, which offers sampling
-    from both uniform and normal distributions, and Juarez et al.'s
-    WTF-PAD\cite{wtfpad}, which creates histogram-based traffic, but
-    works at Tor's cell level, adds overhead to non-web-based traffic,
-    and, critically, adapts a method that tries to do more (hiding
-    from a global adversary), instead of hiding which site was browsed
-    to from a local passive observer.[fn::only the second of these is
-    included in Tor's design goals]
+    Browser code as-is. This approach stands in contrast to both
+    Walkie-Talkie\cite{wang2015walkie}, which offers sampling from
+    both uniform and normal distributions, and WTF-PAD\cite{wtfpad},
+    which creates histogram-based traffic, but works at Tor's cell
+    level, adds overhead to non-web-based traffic, and, critically,
+    adapts a method that tries to do more (hiding from a global
+    adversary), instead of hiding which site was browsed to from a
+    local passive observer.[fn::only the second of these is included
+    in Tor's design goals]
 
     When this thesis was started, both
     Walkie-Talkie\cite{wang2015walkie} and WTF-PAD\cite{wtfpad} had
@@ -728,6 +728,7 @@ Facebook.com\\
     b) an easily-deployable browser extension,
 
     which neither of the above defenses contain.
+**** TODO first paragraph
 *** CHECK Aim: selective cover traffic
     As detailed in section [[#attributes]], there are key attributes that
     are hard to cloak except by extra traffic, especially the total
@@ -765,29 +766,6 @@ Facebook.com\\
     The next sections describe in detail how the addon distinguishes
     initial traffic from embedded objects, how to create traffic and
     describe different versions of the addon.
-*** CHECK MOVE below [[#HTTP traffic model][HTTP traffic model]] How to distinguish HTML and embedded objects
-    :PROPERTIES:
-    :CUSTOM_ID: distinguish_HTML_embedded
-    :END:
-    To tune traffic generation, it makes sense to distinguish between
-    HTML and other requests . This is usually done via HTTP's
-    =content-type= header\cite[sec.14.18]{rfc2068}, yet that is only
-    accessible when the content has been received, whereas this
-    defense needs to distinguish at the time it is requested.
-
-    World Wide Web URLs increasingly move away from including a file
-    type suffix\cite{cooluri}, so that distinguishing HTTP elements at
-    request time by just looking at the URL is not recommended[fn::See
-    \url{http://stackoverflow.com/questions/34656221/}]. The solution
-    in this addon is to consider the first request to a host as the
-    HTML page, while subsequent requests while the page is being
-    loaded [fn::until the body's =load=
-    event\cite[ch.1.6.5]{dom2-events}] are considered requests for
-    embedded objects.
-
-    This accurately distinguishes between start of a page load and the
-    loading of its embedded objects, but a drawback is that is does
-    not recongnize embedded iframes etc. as HTML.
 *** CHECK HTTP traffic model
     :PROPERTIES:
     :CUSTOM_ID: HTTP traffic model
@@ -824,6 +802,29 @@ Facebook.com\\
     Providing an accurate estimate of embedded objects /per web page/
     is [[Further work][further work]].
 **** TODO graphics: separate subplot1 xlabel from subplot2 title
+*** CHECK How to distinguish HTML and embedded objects
+    :PROPERTIES:
+    :CUSTOM_ID: distinguish_HTML_embedded
+    :END:
+    To tune traffic generation, it makes sense to distinguish between
+    HTML and other requests . This is usually done via HTTP's
+    =content-type= header\cite[sec.14.18]{rfc2068}, yet that is only
+    accessible when the content has been received, whereas this
+    defense needs to distinguish at the time it is requested.
+
+    World Wide Web URLs increasingly move away from including a file
+    type suffix\cite{cooluri}, so that distinguishing HTTP elements at
+    request time by just looking at the URL is not recommended[fn::See
+    \url{http://stackoverflow.com/questions/34656221/}]. The solution
+    in this addon is to consider the first request to a host as the
+    HTML page, while subsequent requests while the page is being
+    loaded [fn::until the body's =load=
+    event\cite[ch.1.6.5]{dom2-events}] are considered requests for
+    embedded objects.
+
+    This accurately distinguishes between start of a page load and the
+    loading of its embedded objects, but a drawback is that is does
+    not recongnize embedded iframes etc. as HTML.
 *** CHECK Why HTTP-shaped cover traffic
     HTTP-shaped cover traffic might prove more effective, as this
     would make it harder to separate cover and real traffic. In
@@ -1027,35 +1028,8 @@ Facebook.com\\
     bridge, and a client at the TBB-host. This setup utilises the same
     bridge for WTFPAD and the browser extension.
 
-    Single traces are captured via the Python script one\_site.py, see
+    Single traces are captured via the Python script ~one_site.py~, see
     appendix [[#1site_desc]].
-**** CHECK MOVE appendix retrieve trace: one\_site.py
-     :PROPERTIES:
-     :CUSTOM_ID: 1site_desc
-     :END:
-     If the Browser Bundle runs when started manually, webpages can be
-     retrieved automatically. This is done via the [[one-site.py][one-site.py]] script.
-
-     The script
-
-     1. starts the Tor Browser Bundle's =firefox= binary, enabling
-        remote-control via the [[Marionette][=-marionette=]] command-line argument,
-        waiting up to 60 seconds for its initialization
-     2. starts the =tshark= capture
-     3. loads the page (given as first parameter) via Marionette
-     4. waits up to 600 seconds for the page load to finish
-     5. waits 3 more seconds (for the last cover traffic to finish)
-     6. ends the capture
-     7. ends Firefox
-
-     This setup (restart after each trace) avoids caching issues with
-     website fingerprinting, as the Tor Browser Bundle cleans the
-     cache between restarts (as mentioned f.ex. in \cite{critique}). If a
-     browsing-session scenario is desired, the script could be
-     modified to omit terminating the browser instance.
-
-     This script is triggered via several scripts that ensure that the
-     frame buffer is running for the capture.
 *** TODO see topics, MOVE to appendix/here
 *** WRITE classification
 **** WRITE counter.py: represent trace files
@@ -1126,28 +1100,32 @@ Facebook.com\\
 ***** TODO ref stackoverflow why 0 padding
 ****** TODO or better, some statistics text
 ***** TODO see also =to_features_cumul=
-** WRITE Website Fingerprinting [0/7]
+** WRITE Website Fingerprinting [0/8]
 *** WRITE panchenko v1 different classifiers
     :PROPERTIES:
     :CUSTOM_ID: different-classifiers
     :END:
-    Panchenko et al's first attack's\cite{panchenko} number of
-    attributes grow with the size of the packet trace, as opposed to
-    CUMUL\cite{panchenko2}. They are often much more than CUMUL's
-    default and thus, SVM evaluation takes much longer, especially
-    parameter estimation. In addition, CUMUL greatly improved the
-    accuracy (and TPR/TNR).
+    Panchenko et al's first attack's\cite{panchenko} length of
+    features grow with the size of the packet trace, as opposed to
+    CUMUL's\cite{panchenko2}. They are often much more than CUMUL's
+    default. As well, the SVM classifier expects each feature vector
+    to have the same length, all vectors need to be padded to the
+    length of the longest vector. As evaluation time scales with
+    feature length, this increases classification time. In our
+    experiments, SVM evaluation takes longer by an order of magnitude,
+    especially the initial parameter estimation.
+
+
+    In addition, CUMUL greatly improved the classification
+    result[fn::accuracy and FPR/TPR respectively].
 
     In our various tests with the first attack many classifiers,
     notably k-nearest-neighbors, perform better than the SVM
-    classifier on the same set of features.
+    classifier on the same set of features. Additionally, these are
+    easier to apply, as they do not need to scale data.
 
 
-    - more attributes than cumul default
-      - svm grows with more classes as it has to pad to maximum
-      - takes a long time to do param-eval, and partly not as accurate
-    - experiment
-    - different classifiers, different results
+    - [ ] experiment
     - much easier to just use knn, ....
       - and slightly better results
       - knn is best, outperforms svc on our tests
@@ -1234,39 +1212,51 @@ Facebook.com\\
       - 0--1% if on localhost
       - about 12% for virtual machine
       - reported \cite{wtfpad}, confirmed by \cite{kfingerprint}: 54%
+*** WAIT (for [[file:~/da/da.org::*klassifikation][klassifikation {0/12}]]) svc vs extratrees
+    - svc very good on unaddoned data, (if trained and or on all)
+      - extratrees with 5--10% lower accuracy, but excels against
+        defenses
+        - similar results, but mostly bit less good: knn,
+          randomforest, even decisiontrees
+      - others not tested
+      - exception 22.0/5aII: better for svc
+        - continue here: inspect which pages, etc, show traces, table
 ** TODO Evaluation of Defenses [0/5]
 *** WRITE Evaluation of Addon
-    #+CAPTION: different defense versions with CUMUL, svc classifier
-    #+ATTR_LATEX: :float nil :width \textwidth
-    [[./pictures/svc_oh_vs_acc.eps]]
+**** Introduction
+     The selective cover traffic browser extension is pitched against
+     WTF-PAD\cite{wtfpad} (and Tamaraw\cite{a-systematic} in its
+     wfpadtools implementation).
+     #+CAPTION: different defense versions with CUMUL, svc classifier
+     #+ATTR_LATEX: :float nil :width \textwidth
+     [[./pictures/svc_oh_vs_acc.eps]]
 
-    #+CAPTION: different defense versions with CUMUL, extratrees classifier
-    #+ATTR_LATEX: :float nil :width \textwidth
-    [[./pictures/extratrees_oh_vs_acc.eps]]
-    
-    - problem: tunable: factor correlation to overhead
-      - not given for 0.15, retro, 0.18-0.21
-      - old graph: cluster for retro, etc
-      - given in 0.22? (td: tests)
-      - graph: accuracy vs overhead
-        - mention (somewhere else that tamaraw fell through)
-    - problem: variants
-      - a.k.a. scenarios (a/b I/II bursts)
-      - reevaluate if make a difference
-    - problem: bursts
-      - at simple
-      - at normal
-    - factor at simple
-      - 0.18 over-engineered?
-    - optimal defenses: 22 and simple2@10
-      - td: battle those
-      - td: pix vs disabled
-    - different factors
-    - all around same curve
-    - which classifier classifies which page well?
-    - 5aII higher accuracy at svc than at et
+     #+CAPTION: different defense versions with CUMUL, extratrees classifier
+     #+ATTR_LATEX: :float nil :width \textwidth
+     [[./pictures/extratrees_oh_vs_acc.eps]]
+     - problem: tunable: factor correlation to overhead
+       - not given for 0.15, retro, 0.18-0.21
+       - old graph: cluster for retro, etc
+       - given in 0.22? (td: tests)
+       - graph: accuracy vs overhead
+         - mention (somewhere else that tamaraw fell through)
+     - problem: variants
+       - a.k.a. scenarios (a/b I/II bursts)
+       - reevaluate if make a difference
+     - problem: bursts
+       - at simple
+       - at normal
+     - factor at simple
+       - 0.18 over-engineered?
+     - optimal defenses: 22 and simple2@10
+       - td: battle those
+       - td: pix vs disabled
+     - different factors
+     - all around same curve
+     - which classifier classifies which page well?
+     - 5aII higher accuracy at svc than at et
 *** WRITE sota (practical): wtfpad
-    - overhead of wfpad depends on client-bridge network connection
+    - overhead of WTF-PAD depends on client-bridge network connection
       - show different results
       - insert value from paper?
     - (maybe show both graphs, at least mention values)
@@ -1274,7 +1264,7 @@ Facebook.com\\
       adds additional data over time, less with more requests, more
       with less
     - graph
-      - disabled vs wfpad
+      - disabled vs WTF-PAD
         - on each page: how much correctly classified?
         - google.com
 #+BEGIN_LaTeX
@@ -1312,15 +1302,6 @@ Facebook.com\\
       - small page, small page with addon, bigger page
       - does with addon look like bigger page?
     - wait for [[file:~/da/da.org::*experimente][experimente]] plan 3
-*** KEYWORDS MOVE UP to last of [[*Website Fingerprinting][Website Fingerprinting {0/6}]] svc vs extratrees
-    - svc very good on unaddoned data, (if trained and or on all)
-      - extratrees with 5--10% lower accuracy, but excels against
-        defenses
-        - similar results, but mostly bit less good: knn,
-          randomforest, even decisiontrees
-      - others not tested
-      - exception 22.0/5aII: better for svc
-        - continue here: inspect which pages, etc, show traces, table
 ** WAIT Websites
    - which websites classify well with which classifier, which badly
      - algorithm
@@ -1344,7 +1325,7 @@ Facebook.com\\
    - results:
     #+CAPTION: classification accuracy on 30 classes, different classifiers
     #+ATTR_LATEX: :align l||p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}
-| id   | disabled with ExtraTreesClassifier | wfpad with ExtraTreesClassifier | simple2/5 with ExtraTreesClassifier | 0.22/5aI with ExtraTreesClassifier | disabled with OneVsRestClassifier | wfpad with OneVsRestClassifier | simple2/5 with OneVsRestClassifier | 0.22/5aI with OneVsRestClassifier |
+| id   | disabled with ExtraTreesClassifier | WTF-PAD with ExtraTreesClassifier | simple2/5 with ExtraTreesClassifier | 0.22/5aI with ExtraTreesClassifier | disabled with OneVsRestClassifier | WTF-PAD with OneVsRestClassifier | simple2/5 with OneVsRestClassifier | 0.22/5aI with OneVsRestClassifier |
 | <4>  |    <6> |    <6> |    <6> |    <6> |    <6> |    <6> |    <6> |    <6> |
 |------+--------+--------+--------+--------+--------+--------+--------+--------|
 | msn.com |    1.0 |  0.875 |  0.525 | 0.1230 |   0.95 |    0.3 |  0.025 |    0.0 |
@@ -1441,9 +1422,9 @@ similar, little to see
          - which parts?
            - unaddoned
      - cumul
-       - disabled vs wfpad, tamaraw, simple10, simple30, 22@best
+       - disabled vs WTF-PAD, tamaraw, simple10, simple30, 22@best
    - compare bursts to nobursts
-   - wfpad pads small sites much, larger sites little
+   - WTF-PAD pads small sites much, larger sites little
      - addon-simple does the opposite
    - have a look at [[*practical wf: analyzing traces][practical wf: analyzing traces]]
 * WAIT Conclusion
@@ -2317,7 +2298,6 @@ similar, little to see
 - currently uses exit nodes
 - this has no gap traffic, aims less at global adversary, more at ISP
 ****** TODO understand adaptive padding histogram
-***** TODO differences to walkie-talkie
 ***** TODO differences to panchenkos
       - attribute extraction via python class directly from pcap
         - packet data saveable to JSON
@@ -2538,14 +2518,14 @@ similar, little to see
   - additional (?defense?) as proposed in critique
 ** TODO follow critique at all?
 * TODO npm short installation/description               :appendix:move_later:
-* WRITE how to set up wfpad                             :appendix:move_later:
+* WRITE how to set up WTF-PAD                             :appendix:move_later:
   - helpful notes at scramblesuit
-  - modify for wfpad
+  - modify for WTF-PAD
   - failed to work if called from Tor
   - thus 3/4 separate parts
     - tor server: listen on ORPort X
-    - wfpad server script: send to X, listen on Y
-    - wfpad client script: send to Y, listen on Z
+    - WTF-PAD server script: send to X, listen on Y
+    - WTF-PAD client script: send to Y, listen on Z
     - in tbb/on 2nd tor (a.k.a. client): send traffic to bridge
       =Bridge 127.0.0.1 Z=
       - here: =Bridge 134.169.109.51:40300=
@@ -2572,7 +2552,7 @@ similar, little to see
       if you retrieve more than 4000 at once. It seems to be about
       1 per domain-request).
     - bug report in appendix, needs some code to mitigate
-  - without wfpad
+  - without WTF-PAD
     - at bridge
       tor -f torrc.no_wfpad.server (just orport)
     - at client
@@ -2731,7 +2711,7 @@ similar, little to see
    page has embedded elements from different domains, this does not
    perfectly represent reality. It would be more exact to analyse the
    HTML page and at least return the domains of all embedded elements.
-* TODO appendices [0/5]
+* TODO appendices [0/13]
 \appendix
 ** TODO Versions
    :PROPERTIES:
@@ -2794,7 +2774,34 @@ similar, little to see
        - stricter bounds on retrieval of embedded objects
        - and stop when limit reached
 
-** Script =one-site.py=: capture pcap traces
+** CHECK retrieve trace: ~one_site.py~
+   :PROPERTIES:
+   :CUSTOM_ID: 1site_desc
+   :END:
+   If the Browser Bundle runs when started manually, webpages can be
+   retrieved automatically. This is done via the [[one-site.py][~one_site.py~]] script.
+
+   The script
+
+   1. starts the Tor Browser Bundle's =firefox= binary, enabling
+      remote-control via the [[Marionette][=-marionette=]] command-line argument,
+      waiting up to 60 seconds for its initialization
+   2. starts the =tshark= capture
+   3. loads the page (given as first parameter) via Marionette
+   4. waits up to 600 seconds for the page load to finish
+   5. waits 3 more seconds (for the last cover traffic to finish)
+   6. ends the capture
+   7. ends Firefox
+
+   This setup (restart after each trace) avoids caching issues with
+   website fingerprinting, as the Tor Browser Bundle cleans the
+   cache between restarts (as mentioned f.ex. in \cite{critique}). If a
+   browsing-session scenario is desired, the script could be
+   modified to omit terminating the browser instance.
+
+   This script is triggered via several scripts that ensure that the
+   frame buffer is running for the capture.
+** Script ~one_site.py~: capture pcap traces
    <<one-site.py>>
    #+INCLUDE: "./bin/one_site.py" src python
 ** Script =analyse.py=: classify the data
@@ -2850,18 +2857,23 @@ similar, little to see
    format it for gnuplot (inserting appropriate newlines via =sed= and
    removing extra characters via =tr=), and =gnuplot= s it to a png
    file with the name of the trace file as prefix.
-** KEYWORDS Tor Browser despite --sync problems
-   - broke with error (quote)
-   - solution1: --sync
-     - but verrry slow
-   - solution 2: xpra
-     - install via instructions at ...
-       - use their repo
-       - quote fp
-   - use as
-     #+BEGIN_SRC sh
-       xpra start ssh:user@host:37 --start=path/to/tor-browser_en-US/Browser/start-tor-browser     
-     #+END_SRC
+** CHECK Tor Browser and Firefox despite --sync problems
+   In case someone experiences graphics errors when using Tor via
+   X-forwarding, there are several solutions. The first thing to check
+   is --- of course --- that firefox on the same system yields the
+   same error.
+
+   The first workaround would be to use the =--sync= command-line
+   option to both firefox and the TBB. As this introduces huge lag, it
+   is less than optimal. A second solution is to install
+   XPRA[fn::\url{http://xpra.org/}. When it is installed (best via the
+   developer's repository) on both client and server, you can start it
+   via
+   #+BEGIN_SRC sh
+     xpra start ssh:user@host:DISPLAY_ID --start=/path/to/start-tor-browser
+   #+END_SRC
+   This issue was seemingly fixed in firefox 48, as of the bug report.
+*** TODO [#C] bug report: quote other's error messages, link to bug report
 ** TODO Non-parallelized-based web server for cover traffic [0/2]
    This approach did not scale to several parallel connections, so it
    was not used. It is included as a reference of what seems to work,
