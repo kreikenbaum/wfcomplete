@@ -1,15 +1,6 @@
-import numpy as np
 import math
-
-import matplotlib as mpl
-mpl.use("pgf")
-pgf_with_rc_fonts = {
-    "font.serif": [],
-    "pgf.texsystem": "pdflatex"
-}
-mpl.rcParams.update(pgf_with_rc_fonts)
-
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy import stats
 
 x = np.linspace(0, 7000, 1000)
@@ -27,9 +18,9 @@ plt.subplot(211)
 
 plt.plot(x, html.pdf(x), 'k', label="HTML pages")
 plt.plot(x, embedded.pdf(x), 'r', label="embedded objects")
+plt.title('probability density of object sizes')
 plt.xlabel('size (Byte)')
 plt.ylabel('probability')
-plt.title('probability density of object sizes')
 plt.legend()
 
 x2 = np.linspace(0, 40, 100)
@@ -40,7 +31,18 @@ num_embedded = stats.gamma(kappa, scale=theta)
 
 plt.subplot(212)
 plt.plot(x2, num_embedded.pdf(x2))
-plt.xlabel('number of elements')
 plt.title('probability density of number of embedded elements')
-plt.show()
+plt.xlabel('number of elements')
+plt.ylabel('probability')
+plt.tight_layout()
+
+import matplotlib as mpl
+#mpl.use("pgf")
+pgf_with_rc_fonts = {
+    "font.serif": [],
+    "pgf.texsystem": "pdflatex"
+}
+mpl.rcParams.update(pgf_with_rc_fonts)
 plt.savefig('/tmp/fig_html_embedded.pgf')
+
+plt.show()
