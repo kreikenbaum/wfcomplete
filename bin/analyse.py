@@ -338,13 +338,22 @@ def show_class_stats(train, test, clf=GOOD[0]):
     return _predict_percentages(_class_predictions(y2, clf.predict(X2)),
                                 _gen_url_list(y2, y2d))
 
-def test_outlier_removal(defense):
-    '''tests different outlier removal schemes and levels'''
-    # on both at the same time
-    
+def outlier_removal_levels(defense=None, train_test=None):
+    '''tests different outlier removal schemes and levels
+
+    SET EITHER DEFENSE XOR TRAIN_TEST
+    @param defense: one "set" of data {site_1: counters, ..., site_n: counters}
+    @param train_test: tuple of two "sets" (train, test) each like defense'''
+    if not train_test:
+        (train, test) = tts(defense)
+        # on both at the same time
+        for train_lvl in [1,2,3]:
+            with_or = counter.outlier_removal(defense, train_lvl)
+    else:
+        (train, test) = train_test
+
 
     # each vs each
-    (train, test) = tts(defense)
     for train_lvl in [1,2,3]:
         for test_lvl in [-1,1,2,3]:
             (X, y, _) = to_features_cumul(counter.outlier_removal(train,
