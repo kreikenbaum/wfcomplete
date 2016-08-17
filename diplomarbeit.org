@@ -874,24 +874,7 @@ Facebook.com\\
      a target number of embedded items, sampled from the HTTP traffic
      model.  For each request to embedded objects, this is the
      probability that embedded-object-sized dummy data is requested.
-***** CHECK Choice: how to set cover traffic target values
-      Once the /page's values/ are thus set, there are two tactics on
-      how to set /target/ values.
-
-      One tactic is to group the webpages by their values into bins and
-      to set the bin border as the target value, as all webpages in the
-      bin must have a size less than or equal the border. This approach
-      approximates that taken by Wang et al. in \cite{effective} with
-      the bins being equivalent to the anonymity sets/partitions. As
-      the biggest bin does not have a maximum size, its median value is
-      chosen.[fn:: The optimal size for the biggest bin is a parameter
-      that should be evaluated as well.]
-
-      The other tactic is to have a single target distribution from
-      which values are sampled each time, the [[#HTTP traffic model][HTTP traffic model]]. This
-      is also the fallback approach if the web page's values are not
-      known.
-***** WRITE MOVE UP ONE Choice: Cache (approximate) sizes using Bloom Filters
+***** WRITE Choice: Cache (approximate) sizes using Bloom Filters
 ****** WRITE Introduction
        A simulated webpage is specified by its HTML size and its
        number of embedded objects. In a closed world, it is possible
@@ -937,6 +920,23 @@ Facebook.com\\
          - error estimation?
          - +: fixed size
          - -: error both ways, and difference bin-size to real size
+***** CHECK Choice: how to set cover traffic target values
+      Once the /page's values/ are thus set, there are two tactics on
+      how to set /target/ values.
+
+      One tactic is to group the webpages by their values into bins and
+      to set the bin border as the target value, as all webpages in the
+      bin must have a size less than or equal the border. This approach
+      approximates that taken by Wang et al. in \cite{effective} with
+      the bins being equivalent to the anonymity sets/partitions. As
+      the biggest bin does not have a maximum size, its median value is
+      chosen.[fn:: The optimal size for the biggest bin is a parameter
+      that should be evaluated as well.]
+
+      The other tactic is to have a single target distribution from
+      which values are sampled each time, the [[#HTTP traffic model][HTTP traffic model]]. This
+      is also the fallback approach if the web page's values are not
+      known.
 **** CHECK Addon Version: Simple
      The previous versions had become quite complex for a Firefox
      extension: they had more than 500 lines of code. A
@@ -1130,14 +1130,65 @@ Facebook.com\\
     easier to apply, as they do not need to scale data.
 
     - [ ] experiment
-      - how much better CUMUL than v1
-        - on disabled, best addon, wfpad
       - how much better alt(knn) than svc
     - much easier to just use knn, ....
       - and slightly better results
       - knn is best, outperforms svc on our tests
     - more work for svm parameter estimation
-*** WRITE MOVE to Defenses outlier removal
+*** WRITE panchenko v1 vs cumul
+    Panchenko et al proposed two methods for analysing traces.
+
+    They both use support vector machines as classifier, but differ in
+    the attributes they select.
+
+    Since CUMUL\cite{panchenko2} is Panchenko et al.'s newer approach
+    after their first classifier\cite{panchenko} (called /version 1/
+    from now on), better accuracy of the former is to expected.
+
+    - both: similar results for different classifiers
+    - panchenko v1:
+      - takes longer
+      - is less accurate
+      - is more work: vector length normalisation [for cross-test]
+      - first to really work
+    - accuracy hit of about 20%?
+    - best parameters sometimes outside of panchenko's range
+    - same classifier
+    - state of the art:
+      - wang-knn
+        - knn with parameter weighting step
+        - first to 92% accuracy (current limit)
+      - cumul:
+        - faster
+        - easier to see
+        - bigger dataset
+      - k-fingerprinting
+        - accuracy
+      - all similar accuracies (as of k-fingerprinting)
+    - [ ] experiment
+      - how much better CUMUL than v1
+        - on disabled, best addon, wfpad
+*** KEYWORDS trace growth, time delta, effect
+    - growth noticeable
+    - [ ] experiment
+      - values: absolute
+      - also per-domain
+    - also after outlier removal?
+*** WRITE WTFPAD overhead
+    - depending on connection client/bridge
+      - 0--1% if on localhost
+      - about 12% for virtual machine
+      - reported \cite{wtfpad}, confirmed by \cite{kfingerprint}: 54%
+*** WAIT (for [[file:~/da/da.org::*klassifikation][klassifikation {0/12}]]) svc vs extratrees
+    - svc very good on unaddoned data, (if trained and or on all)
+      - extratrees with 5--10% lower accuracy, but excels against
+        defenses
+        - similar results, but mostly bit less good: knn,
+          randomforest, even decisiontrees
+      - others not tested
+      - exception 22.0/5aII: better for svc
+        - continue here: inspect which pages, etc, show traces, table
+*** KEYWORDS outlier removal
     As described by Panchenko et al. \cite{panchenko2}, CUMUL is
     enhanced by outlier removal. Their
     software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}]
@@ -1170,11 +1221,10 @@ Facebook.com\\
       - test -1 (use max-min)
         - no advantage over just removing smallest/largest
     - [ ] experiments
-      - different versions
+      - accuracy for levels
         - svc
         - et
-**** TODO run test, include results
-**** TODO link to panchenko's software
+      - how many removed for levels
     - after cross-validation split
     - but can do that before attributes
       - list of (url, list-id) tuples, one for each counter
@@ -1185,55 +1235,8 @@ Facebook.com\\
       - scheme: all, only quantile, none, only minimial
     - document number of filtered traces
       - both panchenko's own and mine
-*** WRITE panchenko v1 vs cumul
-    Panchenko et al proposed two methods for analysing traces.
-
-    They both use support vector machines as classifier, but differ in
-    the attributes they select.
-
-    Since CUMUL\cite{panchenko2} is Panchenko et al.'s newer approach
-    after their first classifier\cite{panchenko} (called /version 1/
-    from now on), better accuracy of the former is to expected.
-
-    - both: similar results for different classifiers
-    - panchenko v1:
-      - takes longer
-      - is less accurate
-      - is more work: vector length normalisation [for cross-test]
-      - first to really work
-    - accuracy hit of about 20%?
-    - best parameters sometimes outside of panchenko's range
-    - same classifier
-    - state of the art:
-      - wang-knn
-        - knn with parameter weighting step
-        - first to 92% accuracy (current limit)
-      - cumul:
-        - faster
-        - easier to see
-        - bigger dataset
-      - k-fingerprinting
-        - accuracy
-      - all similar accuracies (as of k-fingerprinting)
-*** KEYWORDS trace growth, time delta, effect
-    - growth noticeable
-    - add values
-      - also per-domain
-    - also after outlier removal?
-*** WRITE WTFPAD overhead
-    - depending on connection client/bridge
-      - 0--1% if on localhost
-      - about 12% for virtual machine
-      - reported \cite{wtfpad}, confirmed by \cite{kfingerprint}: 54%
-*** WAIT (for [[file:~/da/da.org::*klassifikation][klassifikation {0/12}]]) svc vs extratrees
-    - svc very good on unaddoned data, (if trained and or on all)
-      - extratrees with 5--10% lower accuracy, but excels against
-        defenses
-        - similar results, but mostly bit less good: knn,
-          randomforest, even decisiontrees
-      - others not tested
-      - exception 22.0/5aII: better for svc
-        - continue here: inspect which pages, etc, show traces, table
+**** TODO link to panchenko's software
+**** WAIT move to Defenses ??
 ** TODO Evaluation of Defenses [0/5]
 *** WRITE Evaluation of Addon
 **** Introduction
