@@ -151,6 +151,7 @@ def _my_grid(X, y,
                        _new_search_range(best.estimator.gamma),
                        results)
     else:
+        logging.info('grid result: {}'.format(best))
         return best, results
 
 def _my_grid_helper(counter_dict, cumul=True, outlier_removal=True,nj=JOBS_NUM):
@@ -251,7 +252,6 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
     if with_svm:
         if not "OneVsRestClassifier" in [_clf_name(clf) for clf in GOOD]:
             clf,_ = _my_grid_helper(train, cumul)
-            print 'grid result: {}'.format(clf) # maybe disable in production
             GOOD.append(clf)
         else:
             logging.info("reused existing OVR-SVM-classifier")
@@ -338,27 +338,36 @@ def show_class_stats(train, test, clf=GOOD[0]):
     return _predict_percentages(_class_predictions(y2, clf.predict(X2)),
                                 _gen_url_list(y2, y2d))
 
-def outlier_removal_levels(defense=None, train_test=None):
+def outlier_removal_levels(defense=None, train_test=None, clf=None):
     '''tests different outlier removal schemes and levels
 
     SET EITHER DEFENSE XOR TRAIN_TEST
     @param defense: one "set" of data {site_1: counters, ..., site_n: counters}
     @param train_test: tuple of two "sets" (train, test) each like defense'''
     if not train_test:
+        # outlier removal on both at the same time
+        print 'combined outlier removal'
+        for lvl in [1,2,3]:
+            defense_with_or = counter.outlier_removal(defense, lvl)
+            (train, test) = tts(defense_with_or)
+            (X, y, _) = to_features_cumul(train)
+            if not clf:
+                clf,_ = _my_grid(X, y)
+            (X, y, _) = to_features_cumul(test)
+            print "level train: {}, test: {}".format(train_lvl, test_lvl)
+            _verbose_test_11(X, y, clf)
         (train, test) = tts(defense)
-        # on both at the same time
-        for train_lvl in [1,2,3]:
-            with_or = counter.outlier_removal(defense, train_lvl)
     else:
         (train, test) = train_test
 
-
-    # each vs each
+    # separate outlier removal on train and test set
+    print 'separate outlier removal'
     for train_lvl in [1,2,3]:
         for test_lvl in [-1,1,2,3]:
             (X, y, _) = to_features_cumul(counter.outlier_removal(train,
                                                                   train_lvl))
-            clf,_ = _my_grid(X, y)
+            if not clf:
+                clf,_ = _my_grid(X, y)
             (X, y, _) = to_features_cumul(counter.outlier_removal(test,
                                                                   test_lvl))
             print "level train: {}, test: {}".format(train_lvl, test_lvl)
