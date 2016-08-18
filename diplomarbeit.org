@@ -3,7 +3,7 @@
 #+TODO: TODO WAIT | DONE
 #+TODO: INTEGRATE |
 * Configuration							    :ARCHIVE:
-#+LATEX_CLASS: scrartcl
+#+LATEX_CLASS: scrreprt
 #+LATEX_CLASS_OPTIONS: [a4paper,10pt]
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{pgf}
@@ -770,7 +770,7 @@ Facebook.com\\
     :PROPERTIES:
     :CUSTOM_ID: HTTP traffic model
     :END:
-    Lee and Gupta's work\cite{newtrafficmodel} models web traffic with
+    Lee and Gupta's work\cite{newtrafficmodel} models web traffic via
     statistical distributions.
 
     Both the size of HTML documents and embedded objects is
@@ -781,7 +781,7 @@ Facebook.com\\
     web browsing.
 
     #+BEGIN_LaTeX
-    \begin{figure}[H]
+    \begin{figure}[htb]
       \begin{adjustbox}{max width=\textwidth}
         \input{pictures/fig_html_embedded.pgf}
       \end{adjustbox}
@@ -859,8 +859,9 @@ Facebook.com\\
      :CUSTOM_ID: addon_main
      :END:
      The main version works with the retrieved page's own HTML
-     size[fn:kg:known or guessed, see next section], and number of
-     embedded objects[fn:kg], adding to these to reach target values.
+     size[fn:kg:known or guessed, see [[#cache_size][description in next subsection]]],
+     and number of embedded objects[fn:kg], adding to these to reach
+     target values.
 
      For the first HTML request, a /target HTML size/ is determined,
      the HTML size of the current request is looked up[fn:kg], The web
@@ -875,6 +876,9 @@ Facebook.com\\
      model.  For each request to embedded objects, this is the
      probability that embedded-object-sized dummy data is requested.
 ***** WRITE Choice: Cache (approximate) sizes using Bloom Filters
+      :PROPERTIES:
+      :CUSTOM_ID: cache_size
+      :END:
 ****** WRITE Introduction
        A simulated webpage is specified by its HTML size and its
        number of embedded objects. In a closed world, it is possible
@@ -884,8 +888,8 @@ Facebook.com\\
        HTTP traffic model.]  Using known sizes is called the /cache/
        flavor. In the /nocache/ flavor, sizes are always guessed.
 
-       To cache sizes, an approximate-size data structure base based
-       on bloom filters is used.
+       To cache sizes, an approximate-size data structure based on
+       bloom filters is used.
 
        - see if this increases accuracy/overhead ratio
        - bloom-nw: use in other data structures
@@ -920,9 +924,9 @@ Facebook.com\\
          - error estimation?
          - +: fixed size
          - -: error both ways, and difference bin-size to real size
-***** CHECK Choice: how to set cover traffic target values
-      Once the /page's values/ are thus set, there are two tactics on
-      how to set /target/ values.
+***** WRITE Choice: how to set cover traffic target values
+      Once the /page's values/ are thus set[fn:kg], there are two
+      tactics on how to set /target/ values.
 
       One tactic is to group the webpages by their values into bins and
       to set the bin border as the target value, as all webpages in the
@@ -937,15 +941,17 @@ Facebook.com\\
       which values are sampled each time, the [[#HTTP traffic model][HTTP traffic model]]. This
       is also the fallback approach if the web page's values are not
       known.
+
+      - picture of binning approach
 **** CHECK Addon Version: Simple
-     The previous versions had become quite complex for a Firefox
-     extension: they had more than 500 lines of code. A
-     simplified[ch.7.2]\cite{xp} algorithm triggers a FACTOR-sized
+     The main version had become quite complex for a Firefox
+     extension: it had more than 500 lines of code. A
+     simplified\cite[ch.7.2]{xp} algorithm triggers a FACTOR-sized
      HTML-sized request at the beginning, and an embedded-sized
      request with probability FACTOR for each embedded object.
 
-     This halved the number of lines of code[fn::additionally allowing
-     for better refactoring]. The version is called "simple".
+     This halved the number of lines of code[fn::allowing easing
+     debugging]. The version is called "simple".
 **** WRITE MAYBE Addon Version: Retro (if not, edit super)
      All other addon versions reached overheads as low as 20%, but not
      lower.
@@ -1016,19 +1022,19 @@ Facebook.com\\
     [[./pictures/Setup.eps]]
 
     For the first set of captures, one virtual machine was
-    available. This had the main drawback that WTFPAD used very little
+    available. This had the main drawback that WTF-PAD used very little
     padding, as its overhead was determined via the loopback
     interface.
 
     Thus, a bridge was introduced into the traffic flow. It was needed
-    for WTFPAD anyways, but other Tor traffic also uses the bridge
+    for WTF-PAD anyways, but other Tor traffic also uses the bridge
     instance via the TBB's =Bridge= directive, to ease comparability.
 
     One host runs the Tor Browser Bundle and the cover traffic server
     (if needed), the other has a tor server instance running in bridge
-    mode. For WTFPAD, an additional server program is run at the
+    mode. For WTF-PAD, an additional server program is run at the
     bridge, and a client at the TBB-host. This setup utilises the same
-    bridge for WTFPAD and the browser extension.
+    bridge for WTF-PAD and the browser extension.
 
     Single traces are captured via the Python script ~one_site.py~, see
     appendix [[#1site_desc]].
@@ -1105,7 +1111,7 @@ Facebook.com\\
 ***** TODO ref stackoverflow why 0 padding
 ****** TODO or better, some statistics text
 ***** TODO see also =to_features_cumul=
-** WRITE Website Fingerprinting [0/8]
+** KEYWORDS Website Fingerprinting [0/8]
 *** KEYWORDS panchenko v1 different classifiers
     :PROPERTIES:
     :CUSTOM_ID: different-classifiers
@@ -1174,12 +1180,13 @@ Facebook.com\\
       - values: absolute
       - also per-domain
     - also after outlier removal?
-*** WRITE WTFPAD overhead
+*** WRITE MOVE to [[*sota (practical): wtfpad][sota (practical): wtfpad]] WTF-PAD overhead
     - depending on connection client/bridge
       - 0--1% if on localhost
-      - about 12% for virtual machine
-      - reported \cite{wtfpad}, confirmed by \cite{kfingerprint}: 54%
-*** WAIT (for [[file:~/da/da.org::*klassifikation][klassifikation {0/12}]]) svc vs extratrees
+      - ~12.9% for virtual machine
+      - reported by Juarez et al \cite{wtfpad}, confirmed by Danezis
+        \cite{kfingerprint}: 54%
+*** KEYWORDS (for [[file:~/da/da.org::*klassifikation][klassifikation {0/12}]]) svc vs extratrees
     - svc very good on unaddoned data, (if trained and or on all)
       - extratrees with 5--10% lower accuracy, but excels against
         defenses
@@ -1237,52 +1244,56 @@ Facebook.com\\
       - both panchenko's own and mine
 **** TODO link to panchenko's software
 **** WAIT move to Defenses ??
-** TODO Evaluation of Defenses [0/5]
-*** WRITE Evaluation of Addon
-**** Introduction
-     The selective cover traffic browser extension is pitched against
-     WTF-PAD\cite{wtfpad} (and Tamaraw\cite{a-systematic} in its
-     wfpadtools implementation).
-     #+CAPTION: different defense versions with CUMUL, svc classifier
-     #+ATTR_LATEX: :float nil :width \textwidth
-     [[./pictures/svc_oh_vs_acc.eps]]
+** KEYWORDS Evaluation of Defenses [0/6]
+*** KEYWORDS Introduction
+    - very dependent on time difference
+    - svc slightly better on original data, fails against defense
+      - still panchenko's accuracy only with combined test-train-OR
+*** KEYWORDS Addon
+    #+CAPTION: different defense versions with CUMUL, svc classifier
+    #+ATTR_LATEX: :float nil :width \textwidth
+    [[./pictures/svc_oh_vs_acc.eps]]
 
-     #+CAPTION: different defense versions with CUMUL, extratrees classifier
-     #+ATTR_LATEX: :float nil :width \textwidth
-     [[./pictures/extratrees_oh_vs_acc.eps]]
-     - problem: tunable: factor correlation to overhead
-       - not given for 0.15, retro, 0.18-0.21
-       - old graph: cluster for retro, etc
-       - given in 0.22? (td: tests)
-       - graph: accuracy vs overhead
-         - mention (somewhere else that tamaraw fell through)
-     - problem: variants
-       - a.k.a. scenarios (a/b I/II bursts)
-       - reevaluate if make a difference
-     - problem: bursts
-       - at simple
-       - at normal
-     - factor at simple
-       - 0.18 over-engineered?
-     - optimal defenses: 22 and simple2@10
-       - td: battle those
-       - td: pix vs disabled
-     - different factors
-     - all around same curve
-     - which classifier classifies which page well?
-     - 5aII higher accuracy at svc than at et
-*** WRITE sota (practical): wtfpad
+    #+CAPTION: different defense versions with CUMUL, extratrees classifier
+    #+ATTR_LATEX: :float nil :width \textwidth
+    [[./pictures/extratrees_oh_vs_acc.eps]]
+    - problem: tunable: factor correlation to overhead
+      - not given for 0.15, retro, 0.18-0.21
+      - old graph: cluster for retro, etc
+      - given in 0.22? (td: tests)
+      - graph: accuracy vs overhead
+        - mention (somewhere else that tamaraw fell through)
+    - problem: variants
+      - a.k.a. scenarios (a/b I/II bursts)
+      - reevaluate if make a difference
+    - problem: bursts
+      - at simple
+      - at normal
+    - factor at simple
+      - 0.18 over-engineered?
+    - optimal defenses: 22 and simple2@10
+      - td: battle those
+      - td: pix vs disabled
+    - different factors
+    - all around same curve
+    - which classifier classifies which page well?
+    - 5aII higher accuracy at svc than at et
+*** KEYWORDS sota (practical): wtfpad
     - overhead of WTF-PAD depends on client-bridge network connection
       - show different results
       - insert value from paper?
-    - (maybe show both graphs, at least mention values)
-    - all of mine so far add additional data for each request, wtfpad
-      adds additional data over time, less with more requests, more
+      - insert [[*MOVE%20to%20%5B%5B*sota%20(practical):%20wtfpad%5D%5Bsota%20(practical):%20wtfpad%5D%5D%20WTF-PAD%20overhead][MOVE to sota (practical): wtfpad WTF-PAD overhead]]
+    - all of mine so far add additional data /for each request/, wtfpad
+      adds additional data /over time/, less with more requests, more
       with less
     - graph
       - disabled vs WTF-PAD
         - on each page: how much correctly classified?
         - google.com
+    - reduction
+      - et: 79% to 75% accuracy
+      - svc: 87% to 41% accuracy
+*** KEYWORDS trace comparison three main defenses
 #+BEGIN_LaTeX
 \begin{table}[H]
 \begin{longtable}{c c c}
@@ -1309,11 +1320,11 @@ Facebook.com\\
 \caption{CUMUL traces of different defenses}
 \end{table}
 #+END_LaTeX
-*** WAIT sota (theoretical): walkie-talkie
+*** KEYWORDS sota (theoretical): walkie-talkie
     - as of paper: 32%bw \to 5% fpr and 55% bw \to 10% fpr
     - how to translate to closed-world?
     - wait for [[file:~/da/da.org::*open-world?%20(vs%20erst%20mal%20fertig?)][open-world? (vs erst mal fertig?)]]
-*** WAIT (maybe) vs optimal attacker
+*** KEYWORDS (maybe) vs optimal attacker
     - show just traces of single html retrieval:
       - small page, small page with addon, bigger page
       - does with addon look like bigger page?
@@ -2730,7 +2741,28 @@ similar, little to see
 \appendix
 * appendices (just for searching, rest are top-level items)         :ARCHIVE:
   above, as in this section cuts it out (due to ARCHIVE tag)
-* TODO Versions
+* Defenses' Accuracy on 30 Sites
+  |                 | ExtraTrees | RandomForest | KNeighbors | DecisionTree | SVC(scale) | overhead % |    max |
+  | <15>            |   <5> |   <5> |   <5> |   <5> |   <5> |   <5> |    <6> |
+  |-----------------+-------+-------+-------+-------+-------+-------+--------|
+  | disabled-07-06  | 0.790955736563 | 0.748477100293 | 0.672791788409 | 0.773659950164 | 0.872549863037 |     0 | 87.254986 |
+  | wfpad           | 0.75562969141 | 0.695579649708 | 0.603002502085 | 0.685571309425 | 0.417848206839 | 12.9047077098 | 75.562969 |
+  | 22.0/10aI       | 0.690833333333 |  0.67 |  0.63 | 0.511666666667 | 0.103333333333 | 27.7337867893 | 69.083333 |
+  | simple1@10      | 0.681666666667 | 0.653333333333 | 0.599166666667 | 0.573333333333 | 0.0766666666667 | 25.1641266803 | 68.166667 |
+  | tamaraw         |  0.68 | 0.595 | 0.605 | 0.403333333333 | 0.204166666667 | 23.8743081642 |    68. |
+  | simple2@5       | 0.593828190158 | 0.573811509591 | 0.50542118432 | 0.506255212677 | 0.0850708924103 | 20.1580990424 | 59.382819 |
+  | simple2@20      | 0.3075 | 0.295 | 0.255 | 0.253333333333 | 0.0725 | 37.455444787 |  30.75 |
+  | 22.0/5aII       | 0.221666666667 | 0.229166666667 | 0.191666666667 | 0.235 | 0.274166666667 | 36.451601434 | 27.416667 |
+  | 0.22/2aI        |  0.26 | 0.2375 | 0.213333333333 | 0.218333333333 | 0.2475 | 37.9903431533 |    26. |
+  | simple2@30      | 0.208333333333 | 0.198333333333 | 0.171666666667 | 0.183333333333 | 0.0766666666667 | 48.9719398629 | 20.833333 |
+  | 22.0/5aI        | 0.205141388175 | 0.19794344473 | 0.179434447301 | 0.197429305913 | 0.157840616967 | 49.1433961531 | 20.514139 |
+  | simple2@30burst | 0.2325 | 0.213333333333 | 0.190833333333 | 0.2175 | 0.085 | 54.3315794585 |  23.25 |
+  | simple1@50      | 0.1575 | 0.150833333333 | 0.121666666667 | 0.1675 | 0.1475 | 70.893016648 |  16.75 |
+** TODO format nicely, example
+   #+BEGIN_SRC elisp
+     (/ (fround (* 0.998739 10000)) 10000)
+   #+END_SRC
+* WRITE Versions
   :PROPERTIES:
   :CUSTOM_ID: versions
   :END:

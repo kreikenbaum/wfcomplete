@@ -25,6 +25,7 @@ GOOD = [ensemble.ExtraTreesClassifier(n_estimators=250),
 ALL = GOOD[:]
 ALL.extend([ensemble.AdaBoostClassifier(),
             svm.SVC(gamma=2**-4)])
+SVC_MAP = {}
 
 def _average_bytes(mean_std_dict):
     '''@return the average size over all traces'''
@@ -117,6 +118,14 @@ def _mean(counter_dict):
         out[domain] = np.mean(total)
     return out
 
+def _misclassification_rates(train, test, clf=GOOD[0]):
+    '''@return (mis-)classification rates per class in test'''
+    (X, y, y_d) = to_features_cumul(counter.outlier_removal(train))
+    clf.fit(_scale(X, clf), y)
+    (X2, y2, y2d) = to_features_cumul(test)
+    X2 = _scale(X2, clf)
+    return _predict_percentages(_class_predictions(y2, clf.predict(X2)),
+                                _gen_url_list(y2, y2d))
 
 def _my_grid(X, y,
              cs=np.logspace(11, 17, 4, base=2),
@@ -125,7 +134,7 @@ def _my_grid(X, y,
     '''grid-search on fixed params
 
     @param results are previously computed results {(c, g): accuracy, ...}
-    @return optimal_classifier, results_object'''
+    @return tuple (optimal_classifier, results_object)'''
     best = None
     bestres = 0
     for c in cs:
@@ -249,12 +258,17 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
 
     # training set
     (train, test) = tts(defenses[defense0])
+    CLFS = GOOD[:]
     if with_svm:
-        if not "OneVsRestClassifier" in [_clf_name(clf) for clf in GOOD]:
+        if defense0 not in SVC_MAP:
             clf,_ = _my_grid_helper(train, cumul)
-            GOOD.append(clf)
+            SVC_MAP[defense0] = clf
         else:
-            logging.info("reused existing OVR-SVM-classifier")
+            logging.info('reused svc: %s for defense: %s',
+                         SVC_MAP[defense0],
+                         defense0) #debug?
+        CLFS.append(SVC_MAP[defense0])
+
     # X,y for eval
     if cumul:
         (X, y, _) = to_features_cumul(counter.outlier_removal(test, 1))
@@ -262,7 +276,7 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
         (X, y, _) = to_features(counter.outlier_removal(test, 1))
     # evaluate accuracy on all of unaddoned
     print 'cross-validation on X,y'
-    for clf in GOOD:
+    for clf in CLFS:
         _verbose_test_11(X, y, clf)
 
     # vs test sets
@@ -280,7 +294,7 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
             (X, y, _) = to_features(defenses[defense0], l)
             (X2, y2, _2) = to_features(its_counters, l)
 
-        for clf in GOOD:
+        for clf in CLFS:
             print '{}: {}'.format(_clf_name(clf),
                                   _xtest(X, y, X2, y2, clf))
 
@@ -313,13 +327,13 @@ def cumul_vs_panchenko(counters):
     _compare(X, y, X2, y2)
 
 def gen_class_stats_list(defenses,
-        compare=['disabled/bridge', 'wfpad/bridge', 'simple2/5', '0.22/5aI'],
-        clfs=[GOOD[0]]):
-    '''@return list of show_class_stats() output amended with defense name'''
+                         defense0='disabled/bridge__2016-07-06',
+                         clfs=[GOOD[0]]):
+    '''@return list of _misclassification_rates() with defense name'''
     out = []
     for clf in clfs:
-        for c in compare:
-            res = show_class_stats(defenses[compare[0]], defenses[c], clf=clf)
+        for c in defenses:
+            res = _misclassification_rates(defenses[defense0], defenses[c], clf=clf)
             res['id'] = '{} with {}'.format(c, _clf_name(clf))
             out.append(res)
     return out
@@ -328,15 +342,6 @@ def outlier_removal_vs_without(counters):
     (X, y, y_domains) = to_features_cumul(counter.outlier_removal(counters))
     (X2, y2, y2_domains) = to_features_cumul(counters)
     _compare(X, y, X2, y2)
-
-def show_class_stats(train, test, clf=GOOD[0]):
-    '''@return (mis-)classification rates per class in test'''
-    (X, y, y_d) = to_features_cumul(counter.outlier_removal(train))
-    clf.fit(_scale(X, clf), y)
-    (X2, y2, y2d) = to_features_cumul(test)
-    X2 = _scale(X2, clf)
-    return _predict_percentages(_class_predictions(y2, clf.predict(X2)),
-                                _gen_url_list(y2, y2d))
 
 def outlier_removal_levels(defense=None, train_test=None, clf=None):
     '''tests different outlier removal schemes and levels
@@ -555,10 +560,12 @@ if __name__ == "__main__":
     # if by hand: change to the right directory before importing
     # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
     # sys.argv = ['', 'disabled/bridge', '0.15.3-retrofixed/bridge/30.js', '0.15.3-retrofixed/bridge/70.js', '0.15.3-retrofixed/bridge/50.js']
-    # sys.argv = ['', 'disabled/bridge', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5', 'simple2/20']
-    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', 'tamaraw']
-    # sys.argv = ['', 'disabled/bridge', '0.22/10aI', '0.22/5aI', '0.22/5aII', '0.22/2aI__2016-07-23']
-    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge', 'simple2/5', '0.22/5aI'] # TOP
+    # sys.argv = ['', 'disabled/bridge', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5__2016-07-17', 'simple2/20']
+    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge__2016-07-05', 'tamaraw']
+    # sys.argv = ['', 'disabled/bridge', '0.22/10aI', '0.22/5aI__2016-07-19', '0.22/5aII__2016-07-18', '0.22/2aI__2016-07-23']
+    # sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-15'] # DISABLED
+    # sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aI__2016-07-19'] # TOP
+    # sys.argv = ['', 'disabled/bridge__2016-07-06', 'wfpad/bridge__2016-07-05']
     # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
     # counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
     cross_test(sys.argv, with_svm=True) #, cumul=False)

@@ -19,8 +19,12 @@ LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 
 TIME_SEPARATOR = '@'
 
+### defense->counter_dict cache-map
+DEFENSES = {}
+
 # module-globals
 json_only = True
+# td: remove this maybe (level==-1 did not increase accuracy vs 1)
 minmax = None
 
 def _append_features(keys, filename):
@@ -162,7 +166,7 @@ def all_from_dir(dirname):
                 json_only = False
                 _append_features(out, fullname)
     if not out:
-        logging.error('%s did not contain any counter files', dirname)
+        raise Exception('no counters in path "{}"'.format(dirname))
     return out
 
 def all_from_json(filename):
@@ -256,16 +260,22 @@ class Counter(object):
     @classmethod
     def for_defenses(cls, defenses, outlier_removal=True):
         '''@return dict: {defense1: {domain1: counters1_1, ...  domainN:
-    countersN_1}, ..., defenseM: {domain1: counters1_M, ...  domainN:
-    countersN_M}} for directories} in {@code defenses}
+        countersN_1}, ..., defenseM: {domain1: counters1_M, ...  domainN:
+        countersN_M}} for directories} in {@code defenses}
         '''
         out = {}
         if len(defenses) == 0:
             out['.'] = _get_all('.', outlier_removal)
 
         for d in defenses:
-            out[d] = _get_all(d, outlier_removal)
-
+            if outlier_removal:
+                out[d] = _get_all(d, outlier_removal)
+            else:
+                if d not in DEFENSES:
+                    DEFENSES[d] = _get_all(d, outlier_removal)
+                else:
+                    logging.info('reused defense: %s', d) #debug?
+                out[d] = DEFENSES[d]
         return out
 
     @classmethod
