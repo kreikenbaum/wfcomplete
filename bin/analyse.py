@@ -118,6 +118,7 @@ def _mean(counter_dict):
         out[domain] = np.mean(total)
     return out
 
+# td: simple doctest/unit test
 def _misclassification_rates(train, test, clf=GOOD[0]):
     '''@return (mis-)classification rates per class in test'''
     (X, y, y_d) = to_features_cumul(counter.outlier_removal(train))
@@ -319,13 +320,6 @@ def compare_stats(dirs):
             out.append(tmp)
     return out
 
-# outdated, lacks correct OR etc
-def cumul_vs_panchenko(counters):
-    '''tests version1 and cumul on counters'''
-    (X, y, y_domains) = to_features(counters)
-    (X2, y2, y2_domains) = to_features_cumul(counters)
-    _compare(X, y, X2, y2)
-
 def gen_class_stats_list(defenses,
                          defense0='disabled/bridge__2016-07-06',
                          clfs=[GOOD[0]]):
@@ -337,11 +331,6 @@ def gen_class_stats_list(defenses,
             res['id'] = '{} with {}'.format(c, _clf_name(clf))
             out.append(res)
     return out
-
-def outlier_removal_vs_without(counters):
-    (X, y, y_domains) = to_features_cumul(counter.outlier_removal(counters))
-    (X2, y2, y2_domains) = to_features_cumul(counters)
-    _compare(X, y, X2, y2)
 
 def outlier_removal_levels(defense=None, train_test=None, clf=None):
     '''tests different outlier removal schemes and levels

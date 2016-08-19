@@ -14,6 +14,8 @@ import time
 import urlparse
 from marionette import Marionette
 
+BRIDGE = '134.169.109.51'
+
 def browse_to(page):
     '''creates a browser instance, packet dump, browses to page, kills both'''
     browser = _open_browser()
@@ -109,7 +111,7 @@ def _normalize_url(url='google.com'):
 def _open_packet_dump(page):
     '''returns a tshark instance which writes to /mnt/data/'page' '''
     loc = os.path.join('/mnt/data', page + '@' + str(time.time()).split('.')[0]);
-    return (subprocess.Popen(['tshark', '-w' + loc, 'host 134.169.109.51']), loc);
+    return (subprocess.Popen(['tshark', '-w' + loc, 'host ' + BRIDGE]), loc);
 
 if __name__ == "__main__":
     browse_to(sys.argv[1])

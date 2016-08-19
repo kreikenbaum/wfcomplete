@@ -796,12 +796,9 @@ Facebook.com\\
     \cite{web-is-doom}. Secondly, as mentioned in
     \cite{newtrafficmodel}, the number of embedded objects are
     computed per each HTML page, including frames, and possibly
-    including redirects. While this still should correlate, there
-    probably is a difference in how it is and should be used, see next
-    section.
-
-    Providing an accurate estimate of embedded objects /per web page/
-    is [[Further work][further work]].
+    including redirects. How it is used differs from how it should be
+    used, see next section. Providing an accurate estimate of embedded
+    objects /per web page/ is [[Further work][further work]].
 **** TODO [#C] footnote for other web traffic work
 *** EVA How to distinguish HTML and embedded objects
     :PROPERTIES:
@@ -863,17 +860,16 @@ Facebook.com\\
      and number of embedded objects[fn:kg], adding to these to reach
      target values.
 
-     For the first HTML request, a /target HTML size/ is determined,
-     the HTML size of the current request is looked up[fn:kg], The web
-     page's own values are subtracted from the target values and a
-     request for this remaining bytes[fn::or a token amount if too
+     At the web page's first HTML request, a /target HTML size/ is
+     determined, the HTML size of the current request is looked
+     up[fn:kg], this size is subtracted from the target size and a
+     request for the remaining bytes[fn::or a token amount if too
      small] is sent.
 
      At the same time, a /target number of embedded requests/ is
-     determined. From this, the probability of embedded requests is
-     computed based on the page's number of embedded items[fn:kg] and
-     a target number of embedded items, sampled from the HTTP traffic
-     model.  For each request to embedded objects, this is the
+     determined. From this and the page's number of embedded
+     items[fn:kg], the probability of embedded requests is
+     computed. For each request to embedded objects, this is the
      probability that embedded-object-sized dummy data is requested.
 ***** WRITE Choice: Cache (approximate) sizes using Bloom Filters
       :PROPERTIES:
@@ -946,11 +942,12 @@ Facebook.com\\
 **** CHECK Addon Version: Simple
      The main version had become quite complex for a Firefox
      extension: it had more than 500 lines of code. A
-     simplified\cite[ch.7.2]{xp} algorithm triggers a FACTOR-sized
-     HTML-sized request at the beginning, and an embedded-sized
-     request with probability FACTOR for each embedded object.
+     simplified\cite[ch.7.2]{xp} algorithm triggers a
+     HTML-sized[fn::times overhead] request at the beginning, and an
+     embedded-sized request with[fn::overhead-related] probability of
+     FACTOR for each embedded object.
 
-     This halved the number of lines of code[fn::allowing easing
+     This halved the number of lines of code[fn::+simplified
      debugging]. The version is called "simple".
 **** WRITE MAYBE Addon Version: Retro (if not, edit super)
      All other addon versions reached overheads as low as 20%, but not
@@ -993,10 +990,10 @@ Facebook.com\\
 ** WRITE setup
 *** CHECK sites
 **** CHECK modified top-100
-     The files for retrieval were from the alexa-top-1m[fn:: Current
-     version available at
-     \url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}], from
-     September 30, 2015. Akin to \cite{wpes13-fingerprinting}, similar
+     The URLs for retrieval come from the Alexa top million sites
+     list[fn:: Current version available at
+     \url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}], dated
+     September 30, 2015. Like to \cite{wpes13-fingerprinting}, similar
      sites were removed. Also removed were those sites which failed to
      respond to python's =urllib=\cite[sec.20.5]{python-lib-ref}. The
      list of sites with their Alexa index can be found in appendix
@@ -1004,42 +1001,52 @@ Facebook.com\\
 **** CHECK 30 sites
      Retrieval of the whole 100 sites to test addon performance proved
      lengthy, a smaller set of sites was needed. The first attempts
-     used the top-10 sites, but those differed from all sites,
-     f.ex. in size, as mentioned in \cite{web-is-doom}.
+     used the top-10 of these sites, but those differed from all sites
+     distributions, f.ex. in size, as mentioned in \cite{web-is-doom}.
 
      To solve this, sites that are the most apart in the top 100 by
      incoming byte size were chosen.[fn::the method to do this is
-     top30() in analyse.py, the data is 0.18.2]. These sites should be
-     easy to classify, and thus hard to keep apart via defenses.
-***** WAIT link to github analyse.py#top30, 0.18.2/100
+     =top30()= in [[#analyse][analyse.py]], the traces were from addon version
+     0.18.2]. Due to them being well apart, these sites should be easy
+     to classify, and thus harder to keep apart via defenses.
 **** CHECK open-world
-     For open-world evaluation, the same top-1m data was used,
-     starting after the last of the top-100 pages. The next 4100
-     page's traces were collected, one trace per page.
+     For open-world evaluation, sites from the same top-1m data used,
+     starting after the last of the modified top-100 pages. The next
+     4100 page's traces were collected, one trace per page.
 *** CHECK capture
     #+CAPTION: setup to capture web page traffic
     #+ATTR_LATEX: :float nil :width 0.5\textwidth
     [[./pictures/Setup.eps]]
 
-    For the first set of captures, one virtual machine was
-    available. This had the main drawback that WTF-PAD used very little
-    padding, as its overhead was determined via the loopback
+    For the first captures, a single virtual machine was
+    available. This had the main drawback that WTF-PAD used very
+    little padding, as its overhead was determined via the loopback
     interface.
 
     Thus, a bridge was introduced into the traffic flow. It was needed
     for WTF-PAD anyways, but other Tor traffic also uses the bridge
-    instance via the TBB's =Bridge= directive, to ease comparability.
+    instance via Tor's =Bridge= directive\cite{tor-manual}, to ease
+    comparability.
 
     One host runs the Tor Browser Bundle and the cover traffic server
-    (if needed), the other has a tor server instance running in bridge
-    mode. For WTF-PAD, an additional server program is run at the
-    bridge, and a client at the TBB-host. This setup utilises the same
-    bridge for WTF-PAD and the browser extension.
+    (if needed), the other runs a tor server instance in bridge
+    mode. For WTF-PAD, an additional server transport program is run
+    at the bridge, and a client transport at the TBB-host[fn::I could
+    not get it to run via the built-in =ServerTransportPlugin= and
+    =ClientTransportPlugin= directives].
+
+    This setup utilises the same bridge for WTF-PAD and the browser
+    extension.
 
     Single traces are captured via the Python script ~one_site.py~, see
     appendix [[#1site_desc]].
+**** TODO tbb-logo in setup pic
+**** WAIT github config files upload + mention
 *** WRITE classification
 **** WRITE counter.py: represent trace files
+     :PROPERTIES:
+     :CUSTOM_ID: counter
+     :END:
      Once the website traces are stored in pcap-files, attribute vectors
      need to be extracted. A attribute vector is represented by a Python
      class =Counter=, which can be created from a pcap file, or
@@ -1082,6 +1089,9 @@ Facebook.com\\
      104.[fn::as reported by Panchenko et al to be optimal}
 ***** TODO cumul
 **** WRITE analyse.py: code to classify etc: transform attributes to vector
+     :PROPERTIES:
+     :CUSTOM_ID: analyse
+     :END:
      Once the =Counter=s data is obtained, it needs to be transformed
      to input for scikit-learn's\cite{scikit-learn} classifiers.
 
@@ -1135,7 +1145,7 @@ Facebook.com\\
     classifier on the same set of features. Additionally, these are
     easier to apply, as they do not need to scale data.
 
-    - [ ] experiment
+    - [ ] [[file:~/da/da.org::*klassifikation][klassifikation {0/12}]]
       - how much better alt(knn) than svc
     - much easier to just use knn, ....
       - and slightly better results
@@ -1191,23 +1201,25 @@ Facebook.com\\
         - continue here: inspect which pages, etc, show traces, table
 *** KEYWORDS outlier removal
     As described by Panchenko et al. \cite{panchenko2}, CUMUL is
-    enhanced by outlier removal. Their
+    enhanced by outlier removal.[fn::Their
     software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}]
     has different settings, with a median-based[fn::in addition to the
     median-based original by Wang and
     Goldberg\cite{wpes13-fingerprinting}] as well as a
     25%/75%-quantile-based approach. The paper\cite{panchenko2}
     mentions only the quantile-based filtering, so that was also used
-    in this thesis' evaluation.
+    in this thesis' evaluation.]
 
-    If parameter estimation for the support vector machine is done on
-    both training and test data, the results
+    Just as is the case for an attacker, outlier removal can be done
+    with statistical class attributes on the training data. Yet, on
+    the test data only simple, size-based outlier removal should be
+    done, as the adversary does not know the trace's class beforehand.
 
-    - implemented in [[file:bin/extract_attribute.py::def%20remove_quantiles_panchenko_2(counter_list):][ex-att]]
+    - effected by the method =outlier_removal= in the [[#counter][counter.py]] module
     - quantiles:
       - numpy instead of his original code for code clarity
       - just take quantiles, use his limits
-    - how many? 5%?
+    - [ ] how many? 5%?
     - evaluation of outlier removal steps
       - cumul-print of outlier removal steps? (maybe, ask d if enough time ;-)
     - train on or, test without
@@ -1272,15 +1284,15 @@ Facebook.com\\
     - all around same curve
     - which classifier classifies which page well?
     - 5aII higher accuracy at svc than at et
-*** KEYWORDS sota (practical): wtfpad
+*** KEYWORDS sota (practical): WTF-PAD
     - overhead of WTF-PAD depends on client-bridge network connection
       - 0--1% if on localhost
       - ~12.9% for virtual machine
       - reported by Juarez et al \cite{wtfpad}, confirmed by Danezis
         \cite{kfingerprint}: 54%
-    - all of mine so far add additional data /for each request/, wtfpad
+    - all of mine so far add additional data /for each request/, WTF-PAD
       adds additional data /over time/, less with more requests, more
-      with less
+       with less
     - graph
       - disabled vs WTF-PAD
         - on each page: how much correctly classified?
@@ -1450,7 +1462,7 @@ similar, little to see
      - addon-simple does the opposite
    - have a look at [[*practical wf: analyzing traces][practical wf: analyzing traces]]
 * WAIT Conclusion
-* TODO topics [0/102]
+* TODO topics [0/101]
 ** TODO Website Fingerprinting [0/44]
 *** tools
 **** TODO capture alternatives [0/1]
@@ -1480,7 +1492,7 @@ similar, little to see
      was developed at MIT\cite{chickenfoot}. The most recent GitHub
      release[fn:: \url{https://github.com/bolinfest/chickenfoot}] is for
      Firefox 4.
-**** CHECK Marionette
+**** EVA Marionette
      <<Marionette>> Marionette is the next generation mozilla testing
      framework. It is works just like Selenium and was designed to be
      integrated into it. It was chosen for this thesis, as it made the
@@ -1512,8 +1524,9 @@ similar, little to see
 **** CHECK Marionette installation
      Marionette exists as a Python Package. It is thus easily installed
      via
-
-     pip install marionette_client
+     #+BEGIN_SRC sh
+       pip install marionette_client
+     #+END_SRC
 
      After installation pip via =sudo apt-get install python-pip=). Using
      a virtualenv is highly recommended in the documentation. If using
@@ -1733,7 +1746,7 @@ similar, little to see
 **** index? traffic analysis
 *** TODO defenses
     - walkie-talkie
-    - wtfpad
+    - WTF-PAD
     - supersequence
     - tamaraw
     - buflo
@@ -1761,7 +1774,7 @@ similar, little to see
      carefully checked.
 ***** TODO move below tbb
 ***** MAYBE also cite requestpolicy (orthogonal)
-**** CHECK write new plugins
+**** WRITE write new plugins
      Instead of inserting dummy traffic into the connection, one could
      throttle the "data rate" of request and responses (or only
      requests or the ratio) --- optionally padding with dummies up to
@@ -1771,7 +1784,7 @@ similar, little to see
      been proven to work, albeit requiring higher latency, it has not
      been explored further, as
      - it might be hard to implement in a plug-in, and
-     - randomized defenses seem offer adequate defense at reduced
+     - randomized defenses seem to offer adequate defense at reduced
        latency and bandwith
 ***** TODO move to description of other defenses
 **** INTEGRATE to [[#Hurdles][Hurdles to website fingerprinting: HTTP protocols evolution]] tor browser bundle defense
@@ -1832,7 +1845,7 @@ similar, little to see
     As website fingerprinting requires very litte resources, a specific
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
     state.
-*** CHECK Panchenko et al.'s Attack via Website Fingerprinting
+*** CHECK MOVE TO [[*panchenko version 1][panchenko version 1 (integrate)]] Panchenko et al.'s Attack via Website Fingerprinting
     The first website fingerprinting
     attack\cite{ccsw09-fingerprinting} to also target Tor had yielded
     little accuracy. This was due\cite{experimental} to Tor's
@@ -1863,8 +1876,8 @@ similar, little to see
     | B: random sizes |                  |                      |
 *** TODO Mozilla Add-On Sdk [0/12]
 **** CHECK Introduction to the Mozilla Add-On Sdk
-     #INDEX: XUL
-     #INDEX: XML User-interface Langage
+     #+INDEX: XUL
+     #+INDEX: XML User-interface Langage
      The Add-on SDK by Mozilla facilitates the development of
      Firefox-Addons.
 
@@ -2306,7 +2319,7 @@ similar, little to see
      to be very easy to set up, it was chosen for this evaluation.
 *** Evaluation
 **** add-on
-***** TODO differences to adaptive padding/wtfpad
+***** TODO differences to adaptive padding/WTF-PAD
 - delay of some possible (f.ex. images)
 - knowledge of packets
 - end of transmission detectable
@@ -2830,6 +2843,10 @@ similar, little to see
 
   This script is triggered via several scripts that ensure that the
   frame buffer is running for the capture.
+
+  The script's main version captures all traffic, which needs to be
+  filtered later. The script =d2g_one_site.py= contains the bridge's IP
+  and captures only traffic to and from the bridge.
 * Script ~one_site.py~: capture pcap traces
   <<one-site.py>>
   #+INCLUDE: "./bin/one_site.py" src python

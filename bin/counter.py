@@ -528,13 +528,13 @@ def p_or_test(counter_list):
             if x.get_total_in() >= minmax.min
             and x.get_total_in() <= minmax.max]
 
-def outlier_removal(counters, level=2):
+def outlier_removal(counter_dict, level=2):
     '''apply outlier removal to input of form
     {'domain1': [counter, ...], ... 'domainN': [..]}
 
     levels from 1 to 3 use panchenko's levels, -1 uses previous global minmax'''
     out = {}
-    for (k, v) in counters.iteritems():
+    for (k, v) in counter_dict.iteritems():
         try:
             out[k] = p_or_tiny(v)
             if level == -1:
