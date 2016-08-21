@@ -70,7 +70,7 @@
 * TODO look through unsorted top-level headings
 * WAIT Abstract
 * TODO Basics (=basics) [0%]
-** TODO Website Fingerprinting [0/33]
+** TODO Website Fingerprinting [0/35]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -173,7 +173,7 @@ Facebook.com\\
     object sizes. Cheng and Avnur \cite{ssl-traffic-analysis}
     additionally proposed a hidden markov model for page
     /transitions/, for hard-to-identify pages.
-*** WRITE Hurdles to website fingerprinting: HTTP protocol evolution
+*** CHECK Hurdles to website fingerprinting: HTTP protocol evolution
     :PROPERTIES:
     :CUSTOM_ID: Hurdles
     :END:
@@ -197,8 +197,8 @@ Facebook.com\\
     Before this, it was trivial to find out the number of bytes of
     each TCP connection; this made it harder to extract the files'
     sizes. You had to determine the start and end of each
-    request. (which was still possible to estimate by splitting when
-    the client sent a new request data packet).
+    request.[fn::which was still possible to estimate by splitting when
+    the client sent a new request data packet, see f.ex. \cite{realistic}].
 
 
     In addition to persistent connections, HTTP/1.1 allowed pipelining
@@ -226,7 +226,6 @@ Facebook.com\\
     \cite{experimental}. Cai et al.\cite{ccs2012-fingerprinting} found
     fingerprinting to be easier with this defense enabled than
     without.
-**** TODO mention wang's real-world split (read [[file:docs/lit.org::*%5B%5B./cacr2015-09.pdf%5D%5BWang%20-%20On%20Realistically%20Attacking%20Tor%20with%20Website%20Fingerprinting%5D%5D][Wang - On Realistically Attacking Tor with Website Fingerprinting*]] first)
 *** DANIEL Challenges to website fingerprinting: Tor [0/4]
     The Onion Router\cite{tor-design} (short: /Tor/) is an anonymity
     system: While encryption hides the /content of communication/,
@@ -382,6 +381,20 @@ Facebook.com\\
      The paper achieved closed-world recognition rates of 54.61% and
      open-world true-positive rate of up to 73% for Tor.
 ***** TODO version 1: mention here (not below) that furthermore named thus
+***** TODO how many bg sites?
+***** EVA MOVE TO [[*panchenko version 1][panchenko version 1 (integrate)]] Panchenko et al.'s Attack via Website Fingerprinting
+     The first website fingerprinting
+     attack\cite{ccsw09-fingerprinting} to also target Tor had yielded
+     little accuracy. This was due\cite{experimental} to Tor's
+     multiplexing and fixed cell-size.
+
+     Panchenko et al\cite{panchenko} were the first to publish a
+     successful website fingerprinting attack on Tor. They extracted
+     HTTP-specific attributes from the packet trace and used those in a
+     hand-tuned support vector machine with a radial basis function
+     kernel.
+**** practical wf: Capturing traces
+**** TODO move to subsection related work
 **** WRITE SVM
      Support Vector Machines (short: SVM) are a linear classifier:
      they find a linear boundary between points. While this might seem
@@ -667,7 +680,7 @@ Facebook.com\\
     - requestpolicy (hintz 2nd way)
     - text-only browsing (hintz 2nd way)
 * TODO Methods (=methods) [0%]
-** TODO Motivation [0/3]
+** TODO Motivation [0/2]
 *** brainstorm                                                      :ARCHIVE:
    - make wf/ml harder, fudge attributes
      - problems WTF-PAD: modify all of tor,
@@ -698,37 +711,36 @@ Facebook.com\\
      - select based on web site
      - and target
      - simultaneous to real traffic
-*** WRITE Introduction
-    As acknowledged both by Wang and Goldberg\cite{wang2015walkie} and
-    Juarez et al\cite{wtfpad}, deterministic approaches have the major
-    shortcoming of introducing delay into the traffic, which conflicts
-    with Tor's design goal of usability\cite{tor-design}, increasing
-    the[fn::already sometimes bothersome] delay of using Tor for
+*** CHECK Introduction
+    As acknowledged both by \cite{wang2015walkie} and \cite{wtfpad},
+    deterministic approaches have the major shortcoming of introducing
+    delay into the traffic, which conflicts with Tor's design goal of
+    usability\cite{tor-design}, increasing the delay[fn::which already
+    hinders adoption\cite{pets2011-defenestrator}] of using Tor for
     browsing the web.[fn::As for the positive side of higher latency,
     see \cite[sec.4.2]{challenges}.]
 
     This thesis's approach uses properties of web traffic to determine
     when and how much traffic to send, providing this functionality
     through an easy-to-add browser extension, thus keeping the Tor
-    Browser code as-is. This approach stands in contrast to both
-    Walkie-Talkie\cite{wang2015walkie}, which offers sampling from
-    both uniform and normal distributions, and WTF-PAD\cite{wtfpad},
-    which creates histogram-based traffic, but works at Tor's cell
-    level, adds overhead to non-web-based traffic, and, critically,
-    adapts a method that tries to do more (hiding from a global
-    adversary), instead of hiding which site was browsed to from a
-    local passive observer.[fn::only the second of these is included
-    in Tor's design goals]
+    Browser code as-is. This approach stands in contrast to
+    both \cite{wang2015walkie}, which offers sampling from both uniform
+    and normal distributions, and \cite{wtfpad}, which creates
+    histogram-based traffic, but works at Tor's cell level, adds
+    overhead to non-web-based traffic, and, critically, adapts a
+    method that tries to do more (hiding from a global adversary),
+    instead of hiding which site was browsed to from a local passive
+    observer.[fn::only the second of these is included in Tor's design
+    goals]
 
-    When this thesis was started, both
-    Walkie-Talkie\cite{wang2015walkie} and WTF-PAD\cite{wtfpad} had
-    not been published yet. To summarize, it contributes
+    When this thesis was started, both \cite{wang2015walkie} and
+    \cite{wtfpad} had not been published yet. To summarize, it
+    contributes
 
     a) the inclusion of HTTP traffic characteristics for random traffic, and
     b) an easily-deployable browser extension,
 
     which neither of the above defenses contain.
-**** TODO first paragraph
 *** EVA Aim: selective cover traffic
     As detailed in section [[#attributes]], there are key attributes that
     are hard to cloak except by extra traffic, especially the total
@@ -770,15 +782,14 @@ Facebook.com\\
     :PROPERTIES:
     :CUSTOM_ID: HTTP traffic model
     :END:
-    Lee and Gupta's work\cite{newtrafficmodel} models web traffic via
+    Lee and Gupta\cite{newtrafficmodel} model web traffic via
     statistical distributions.
 
-    Both the size of HTML documents and embedded objects is
-    well-matched by lognormal distributions, yet with different
-    parameters for both. The number of embedded objects is modeled by
-    a gamma function. See illustration in Figure
-    \ref{distribution}. They offer further parameters to fully model
-    web browsing.
+    Both the size of HTML documents and embedded objects is modeled by
+    lognormal distributions with different parameters for both. The
+    number of embedded objects is modeled by a gamma function. See
+    illustration in Figure \ref{distribution}. They offer further
+    parameters to fully model web browsing.
 
     #+BEGIN_LaTeX
     \begin{figure}[htb]
@@ -856,15 +867,15 @@ Facebook.com\\
      :CUSTOM_ID: addon_main
      :END:
      The main version works with the retrieved page's own HTML
-     size[fn:kg:known or guessed, see [[#cache_size][description in next subsection]]],
-     and number of embedded objects[fn:kg], adding to these to reach
-     target values.
+     size[fn:kg:known or guessed, see [[#cache_size][description in the next
+     subsection]]], and number of embedded objects[fn:kg], adding to
+     these to reach target values.
 
      At the web page's first HTML request, a /target HTML size/ is
      determined, the HTML size of the current request is looked
      up[fn:kg], this size is subtracted from the target size and a
-     request for the remaining bytes[fn::or a token amount if too
-     small] is sent.
+     request for the remaining bytes is sent[fn::or a token amount if
+     too small].
 
      At the same time, a /target number of embedded requests/ is
      determined. From this and the page's number of embedded
@@ -875,25 +886,27 @@ Facebook.com\\
       :PROPERTIES:
       :CUSTOM_ID: cache_size
       :END:
-****** WRITE Introduction
-       A simulated webpage is specified by its HTML size and its
-       number of embedded objects. In a closed world, it is possible
-       to always know the page sizes beforehand. If unknown, the
-       random variates from the [[#HTTP traffic model][HTTP traffic model]] are used.[fn:: The
-       size of each embedded dummy object is always drawn from the
-       HTTP traffic model.]  Using known sizes is called the /cache/
-       flavor. In the /nocache/ flavor, sizes are always guessed.
+****** CHECK Introduction
+       A simulated webpage is modeled by its HTML size and its number
+       of embedded objects. In a closed world, if the client can only
+       browse to a limited number of URLs, it is possible to cache
+       page sizes. If these are unknown, the random variates from the [[#HTTP traffic
+        model][HTTP traffic model]] are used.[fn:: The size of each embedded dummy
+       object is always drawn from the HTTP traffic model.]  Using
+       known sizes is called the /cache/ flavor. In the /nocache/
+       flavor, sizes are always guessed.
 
        To cache sizes, an approximate-size data structure based on
        bloom filters is used.
-
-       - see if this increases accuracy/overhead ratio
-       - bloom-nw: use in other data structures
-****** WRITE Bloom Filter
-       - stochastic fixed-width data structure
-       - works flawlessly if element is inside
-         - might fail if not
-       - details: \cite{Broder02networkapplications}
+****** CHECK Bloom Filter
+       Bloom Filters\cite{Bloom70space/timetrade-offs}[fn::
+       \cite{Broder02networkapplications} contains an overview and
+       applications] are a stochastic data structure for checking
+       whether an element is in a set. They work similarly to
+       hash-coding, yet require significantly less space, as a
+       trade-off for a small error rate; a Bloom Filter works
+       flawlessly if element is inside the set, yet might say that an
+       element is contained, when it is not.
 ****** WRITE Application: Bloom Sort
        - sort sizes into bins
          - based on target distribution
@@ -1010,9 +1023,13 @@ Facebook.com\\
      0.18.2]. Due to them being well apart, these sites should be easy
      to classify, and thus harder to keep apart via defenses.
 **** CHECK open-world
-     For open-world evaluation, sites from the same top-1m data used,
-     starting after the last of the modified top-100 pages. The next
-     4100 page's traces were collected, one trace per page.
+     For open-world evaluation, sites from the same top-1m data were
+     used, starting after the last of the modified top-100 pages. The
+     next 4100 page's traces were collected, one trace per page.
+
+     \cite{a-systematic} offers a model to compute open-world results
+     from closed-world. It seemed more direct to capture background
+     traces.
 *** CHECK capture
     #+CAPTION: setup to capture web page traffic
     #+ATTR_LATEX: :float nil :width 0.5\textwidth
@@ -1199,21 +1216,22 @@ Facebook.com\\
       - others not tested
       - exception 22.0/5aII: better for svc
         - continue here: inspect which pages, etc, show traces, table
-*** KEYWORDS outlier removal
+*** KEYWORDS MOVE TO [[*setup][setup]] outlier removal
     As described by Panchenko et al. \cite{panchenko2}, CUMUL is
     enhanced by outlier removal.[fn::Their
     software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}]
-    has different settings, with a median-based[fn::in addition to the
-    median-based original by Wang and
-    Goldberg\cite{wpes13-fingerprinting}] as well as a
-    25%/75%-quantile-based approach. The paper\cite{panchenko2}
-    mentions only the quantile-based filtering, so that was also used
-    in this thesis' evaluation.]
+    has 3--4 different settings: a minimal, a median-based[fn::in
+    addition to the median-based original by Wang and
+    Goldberg\cite{wpes13-fingerprinting}], and a
+    25%/75%-quantile-based approach, each adding a step to the
+    previous. The paper\cite{panchenko2} mentions only the
+    quantile-based filtering, so that was also used in this thesis.]
 
     Just as is the case for an attacker, outlier removal can be done
-    with statistical class attributes on the training data. Yet, on
-    the test data only simple, size-based outlier removal should be
-    done, as the adversary does not know the trace's class beforehand.
+    with statistical class attributes[fn::here: median and quantiles]
+    on the training data. Yet, on the test data outliers should be
+    removed only based on absolute size, as the adversary does not
+    know the trace's class beforehand.
 
     - effected by the method =outlier_removal= in the [[#counter][counter.py]] module
     - quantiles:
@@ -1248,6 +1266,8 @@ Facebook.com\\
       - scheme: all, only quantile, none, only minimial
     - document number of filtered traces
       - both panchenko's own and mine
+    - train-test-split before outlier removal
+      - table results appendix
 **** TODO link to panchenko's software
 **** WAIT move to Defenses ??
 ** KEYWORDS Evaluation of Defenses [0/6]
@@ -1462,10 +1482,10 @@ similar, little to see
      - addon-simple does the opposite
    - have a look at [[*practical wf: analyzing traces][practical wf: analyzing traces]]
 * WAIT Conclusion
-* TODO topics [0/101]
-** TODO Website Fingerprinting [0/44]
+* TODO topics [0/98]
+** TODO Website Fingerprinting [0/41]
 *** tools
-**** TODO capture alternatives [0/1]
+**** CHECK MOVE to appendix capture alternatives [0/1]
      Several applications can capture network traffic to files. The most
      well-known and oldest of these is tcpdump
      [fn:: \url{http://tcpdump.org}] It is a command-line utility, which is
@@ -1477,7 +1497,6 @@ similar, little to see
 
      Both programs rely on the libpcap library for access to network
      packets.
-***** TODO subsect to [[*by-hand initialization to retrieve websites][by-hand initialization to retrieve websites]]
 **** shell script
      Simply calling =firefox website= loads the website in Firefox. This
      is the approach Wang recommended(\cite{wang-personal}.
@@ -1845,19 +1864,6 @@ similar, little to see
     As website fingerprinting requires very litte resources, a specific
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
     state.
-*** CHECK MOVE TO [[*panchenko version 1][panchenko version 1 (integrate)]] Panchenko et al.'s Attack via Website Fingerprinting
-    The first website fingerprinting
-    attack\cite{ccsw09-fingerprinting} to also target Tor had yielded
-    little accuracy. This was due\cite{experimental} to Tor's
-    multiplexing and fixed cell-size.
-
-    Panchenko et al\cite{panchenko} were the first to publish a
-    successful website fingerprinting attack on Tor. They extracted
-    HTTP-specific attributes from the packet trace and used those in a
-    hand-tuned support vector machine with a radial basis function
-    kernel.
-**** practical wf: Capturing traces
-**** TODO move to subsection related work
 ** TODO Addon Design and Implementation [0/55]
 *** TODO Variations of Cover Traffic
     There are two variations how to generate Cover Traffic.
@@ -2655,7 +2661,6 @@ similar, little to see
 * TODO Further work
 ** eval
   - bigger world sizes
-  - open world
   - more elaborate tests with different world sizes / open world / etc
 ** addon
   - how to distinguish HTML/embedded

@@ -101,10 +101,16 @@ def _pad(row, upto=300):
     row.extend([0] * (upto - len(row)))
     return row
 
-# td: move this back to analyse, why? only used there?
-def _ptest(num, val=600):
-    '''returns counter with num packets of size val set for testing'''
-    return Counter.from_json('{{"packets": {}}}'.format([val]*num))
+def _test(num, val=600, millisecs=10):
+    '''@return Counter with num packets of size val each millisecs apart'''
+    return from_json('{{"packets": {}, "timing": {}}}'.format(
+        [val]*num, _test_timing(num, val, millisecs)))
+
+def _test_timing(num, val, millisecs):
+    out = []
+    for i in range(num):
+        out.append([i * millisecs, val])
+    return out
 
 def _sum_numbers(packets):
     '''sums number of adjacent packets in the same direction, discretized
@@ -173,8 +179,16 @@ def all_from_json(filename):
     '''returns all the counters in json file named filename '''
     out = []
     for entry in open(filename):
-        out.append(Counter.from_json(entry))
+        out.append(from_json(entry))
     return out
+
+def from_json(jsonstring):
+    '''creates Counter from self.to_json-output'''
+    tmp = Counter()
+
+    for key, value in json.loads(jsonstring).iteritems():
+        setattr(tmp, key, value)
+    return tmp
 
 class Counter(object):
     '''single trace file'''
@@ -183,20 +197,11 @@ class Counter(object):
         self.name = name
         self.variable = None
         self.packets = []
-        self.timing = [] # gets big
+        self.timing = [] # gets big, list [(packet_timing, packet_size), ...]
         self.warned = False
 
     def __str__(self):
-        return 'p: {}'.format(self.panchenko())
-
-    @staticmethod
-    def from_json(jsonstring):
-        '''creates Counter from self.to_json-output'''
-        tmp = Counter()
-
-        for key, value in json.loads(jsonstring).iteritems():
-            setattr(tmp, key, value)
-        return tmp
+        return 'counter (packet, time): {}'.format(self.timing)
 
     @staticmethod
     def from_panchenko_data(line):
@@ -311,6 +316,10 @@ class Counter(object):
         for k, feature in self.variable.iteritems():
             out[k] = len(feature)
         return out
+
+    def get_duration(self):
+        '''@return duration of this trace'''
+        return self.timing[-1][0]
 
     def get_total_in(self):
         '''returns total incoming bytes'''
@@ -482,9 +491,9 @@ class MinMaxer(object):
 ### outlier removal
 def p_or_tiny(counter_list):
     '''removes if len(packets) < 2 or total_in < 2*512
-    >>> len(p_or_tiny([_ptest(1), _ptest(3)]))
+    >>> len(p_or_tiny([_test(1), _test(3)]))
     1
-    >>> len(p_or_tiny([_ptest(2, val=-600), _ptest(3)]))
+    >>> len(p_or_tiny([_test(2, val=-600), _test(3)]))
     1
     '''
     return [x for x in counter_list
@@ -503,7 +512,7 @@ def p_or_median(counter_list):
 def p_or_quantiles(counter_list):
     '''remove if total_in < (q1-1.5 * (q3-q1))
     or total_in > (q3+1.5 * (q3-q1)
-    >>> [x.get_total_in()/600 for x in p_or_quantiles(map(_ptest, [0, 2, 2, 2, 2, 2, 2, 4]))]
+    >>> [x.get_total_in()/600 for x in p_or_quantiles(map(_test, [0, 2, 2, 2, 2, 2, 2, 4]))]
     [2, 2, 2, 2, 2, 2]
     '''
     counter_total_in = [counter.get_total_in() for counter in counter_list]
@@ -528,6 +537,13 @@ def p_or_test(counter_list):
             if x.get_total_in() >= minmax.min
             and x.get_total_in() <= minmax.max]
 
+def p_or_toolong(counter_list):
+    '''@return counter_list with counters shorter than 8 minutes.
+
+    The capturing software seemingly did not remove the others, even
+    though it should have.'''
+    return [x for x in counter_list if x.get_duration() < 8 * 60 * 1000]
+
 def outlier_removal(counter_dict, level=2):
     '''apply outlier removal to input of form
     {'domain1': [counter, ...], ... 'domainN': [..]}
@@ -536,7 +552,8 @@ def outlier_removal(counter_dict, level=2):
     out = {}
     for (k, v) in counter_dict.iteritems():
         try:
-            out[k] = p_or_tiny(v)
+            out[k] = p_or_tiny(v[:])
+            out[k] = p_or_toolong(out[k])
             if level == -1:
                 out[k] = p_or_test(out[k])
             if level > 2:
@@ -545,8 +562,11 @@ def outlier_removal(counter_dict, level=2):
                 out[k] = p_or_quantiles(out[k])
             if not out[k]:
                 raise ValueError
+            logging.debug('%15s: outlier_removal(%d) removed %d from %d',
+                          k, level, (len(v) - len(out[k])), len(v))
         except ValueError: ## somewhere, list got to []
             logging.warn('%s discarded in outlier removal', k)
+    import pdb; pdb.pm()
     return out
 
 if __name__ == "__main__":

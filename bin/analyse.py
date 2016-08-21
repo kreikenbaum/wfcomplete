@@ -332,30 +332,27 @@ def gen_class_stats_list(defenses,
             out.append(res)
     return out
 
-def outlier_removal_levels(defense=None, train_test=None, clf=None):
+def outlier_removal_levels(defense, clf=None):
     '''tests different outlier removal schemes and levels
 
     SET EITHER DEFENSE XOR TRAIN_TEST
     @param defense: one "set" of data {site_1: counters, ..., site_n: counters}
     @param train_test: tuple of two "sets" (train, test) each like defense'''
-    if not train_test:
-        # outlier removal on both at the same time
-        print 'combined outlier removal'
-        for lvl in [1,2,3]:
-            defense_with_or = counter.outlier_removal(defense, lvl)
-            (train, test) = tts(defense_with_or)
-            (X, y, _) = to_features_cumul(train)
-            if not clf:
-                clf,_ = _my_grid(X, y)
-            (X, y, _) = to_features_cumul(test)
-            print "level train: {}, test: {}".format(train_lvl, test_lvl)
-            _verbose_test_11(X, y, clf)
-        (train, test) = tts(defense)
-    else:
-        (train, test) = train_test
+    # outlier removal on both at the same time
+    print 'combined outlier removal'
+    for lvl in [1,2,3]:
+        defense_with_or = counter.outlier_removal(defense, lvl)
+        (train, test) = tts(defense_with_or)
+        (X, y, _) = to_features_cumul(train)
+        if not clf:
+            clf,_ = _my_grid(X, y)
+        (X, y, _) = to_features_cumul(test)
+        print "level: {}".format(lvl)
+        _verbose_test_11(X, y, clf)
+    (train, test) = tts(defense)
 
     # separate outlier removal on train and test set
-    print 'separate outlier removal'
+    print 'separate outlier removal for training and test data'
     for train_lvl in [1,2,3]:
         for test_lvl in [-1,1,2,3]:
             (X, y, _) = to_features_cumul(counter.outlier_removal(train,
@@ -537,13 +534,13 @@ def tts(counter_dict, test_size=1.0/3):
 # defenses = counter.Counter.for_defenses(sys.argv[1:], False)
 # some_30 = top_30(means)
 # timing = {k: _average_duration(v) for (k,v) in defenses.iteritems()}
+# outlier_removal_levels(defenses[sys.argv[1]]) #td: try out
 
 if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 
     # counters = counter.Counter.all_from_dir(sys.argv))
-    # test_outlier_removal(counters)
     # cumul_vs_panchenko(counters)
 
     # if by hand: change to the right directory before importing
