@@ -1,6 +1,18 @@
 compare classifiers: | <10>  | <6> | <6> | <6> | <6> | <6> |   <5> |    <6> |  
 compare versions:  | <15> | <5> | <5> |   <5> |   <5> |   <5> |   <5> |  <6> |
 getting data for gnuplot:  | <15> | <2> | <2> | <2> | <2> | <2> |   |   |
+* table outlier removal ET
+  :PROPERTIES:
+  :CUSTOM_ID: outlier_removal_et
+  :END:
+  | train |              1 |              2 |              3 | both            |
+  | test\ |                |                |                |                 |
+  |-------+----------------+----------------+----------------+-----------------|
+  |     1 | 0.788515073443 | 0.788515073443 | 0.788515073443 | 0.768508852368  |
+  |     2 | 0.806000485315 | 0.806000485315 | 0.806000485315 | 0.828485328945  |
+  |     3 | 0.863923244471 | 0.863923244471 | 0.863923244471 | 0.850585386768  |
+  |    -1 | 0.778529288964 | 0.788515073443 | 0.788515073443 | x               |
+  warning for both level 3: too few elements
 * table tts+{train(2/3)+test(-1)}-OR vs 07-21
   :PROPERTIES:
   :CUSTOM_ID: vs-07-21
@@ -69,14 +81,18 @@ getting data for gnuplot:  | <15> | <2> | <2> | <2> | <2> | <2> |   |   |
   | simple2@30burst | 0.2325 | 0.213333333333 | 0.190833333333 | 0.2175 | 0.085 | 54.3315794585 |  23.25 |
   | simple1@50      | 0.1575 | 0.150833333333 | 0.121666666667 | 0.1675 | 0.1475 | 70.893016648 |  16.75 |
   #+TBLFM: $8=100*reduce(max, $2..$6)
-* table outlier removal
-  | test \ train |              1 |              2 |              3 |
-  |--------------+----------------+----------------+----------------|
-  |            1 | 0.861617104123 |                |                |
-  |            2 |                | 0.898603490709 |                |
-  |            3 |                |                | 0.934211627405 |
-  |           -1 |                | 0.872549863037 |                |
-  |         None | 0.861617104123 | 0.861617104123 | 0.861617104123 |
+* table outlier removal SVC
+  :PROPERTIES:
+  :CUSTOM_ID: outlier_removal
+  :END:
+  |  train |              1 |              2 |              3 |           both |
+  | test \ |                |                |                |                |
+  |--------+----------------+----------------+----------------+----------------|
+  |      1 | 0.893597123573 | 0.893597123573 | 0.893597123573 | 0.862015771526 |
+  |      2 | 0.928354210023 | 0.928354210023 | 0.928354210023 | 0.909915734976 |
+  |      3 | 0.933391711216 | 0.933391711216 | 0.933391711216 | 0.903097707246 |
+  |     -1 | 0.893597123573 | 0.893597123573 | 0.893597123573 |              x |
+  warning for both level 3: too few elements
 * table addon with panchenko v1
   |                 | ExtraTrees | RandomForest | KNeighbors | DecisionTree | SVC(scale) |     % |    max |
   | <15>            |   <5> |   <5> |   <5> |   <5> |   <5> |   <5> |    <6> |
@@ -255,7 +271,90 @@ getting data for gnuplot:  | <15> | <2> | <2> | <2> | <2> | <2> |   |   |
    | 0.15.3/nocache | 0.265454545455 | 0.247272727273 | 0.261818181818 | 0.261818181818 |   |
    | 0.15.3/cache        | 0.259124087591 | 0.251824817518 | 0.251824817518 | 0.251824817518 |     |
 * ========== END TABLES ===================
+* outlier removal levels 0706 (ET)
+** data
+>>> outlier_removal_levels(defenses[sys.argv[1]], GOOD[0]) #td: try out
+*** combined outlier removal
+level: 1
+ExtraTreesClassifier 0.768508852368, [ 0.78494624  0.77272727  0.86585366  0.68055556  0.73846154]
+level: 2
+ExtraTreesClassifier 0.828485328945, [ 0.80232558  0.84146341  0.82191781  0.89705882  0.77966102]
+level: 3
+ExtraTreesClassifier/usr/lib/python2.7/dist-packages/sklearn/cross_validation.py:516: Warning: The least populated class in y has only 4 members, which is too few. The minimum number of labels for any class cannot be less than n_folds=5.
+  % (min_labels, self.n_folds)), Warning)
+ 0.850585386768, [ 0.88095238  0.80769231  0.84507042  0.85714286  0.86206897]
+*** separate outlier removal for training and test data
+level train: 1, test: -1
+ExtraTreesClassifier 0.778529288964, [ 0.72527473  0.8         0.8         0.77027027  0.79710145]
+level train: 1, test: 1
+ExtraTreesClassifier 0.788515073443, [ 0.75824176  0.8         0.80246914  0.77027027  0.8115942 ]
+level train: 1, test: 2
+ExtraTreesClassifier 0.806000485315, [ 0.75294118  0.86075949  0.78205128  0.77941176  0.85483871]
+level train: 1, test: 3
+ExtraTreesClassifier 0.863923244471, [ 0.80769231  0.89189189  0.83561644  0.85714286  0.92727273]
+level train: 2, test: -1
+ExtraTreesClassifier 0.788515073443, [ 0.75824176  0.8         0.80246914  0.77027027  0.8115942 ]
+level train: 2, test: 1
+ExtraTreesClassifier 0.788515073443, [ 0.75824176  0.8         0.80246914  0.77027027  0.8115942 ]
+level train: 2, test: 2
+ExtraTreesClassifier 0.806000485315, [ 0.75294118  0.86075949  0.78205128  0.77941176  0.85483871]
+level train: 2, test: 3
+ExtraTreesClassifier 0.863923244471, [ 0.80769231  0.89189189  0.83561644  0.85714286  0.92727273]
+level train: 3, test: -1
+ExtraTreesClassifier 0.788515073443, [ 0.75824176  0.8         0.80246914  0.77027027  0.8115942 ]
+level train: 3, test: 1
+ExtraTreesClassifier 0.788515073443, [ 0.75824176  0.8         0.80246914  0.77027027  0.8115942 ]
+level train: 3, test: 2
+ExtraTreesClassifier 0.806000485315, [ 0.75294118  0.86075949  0.78205128  0.77941176  0.85483871]
+level train: 3, test: 3
+ExtraTreesClassifier 0.863923244471, [ 0.80769231  0.89189189  0.83561644  0.85714286  0.92727273]
+* outlier removal levels 0706 (SVC)
+  lvl3 on test is best ;-)
+** data
+*** combined outlier removal
+WARNING:analyse.py:158:optimal parameters found at the border. c:2048.000000, g:8.000000
+WARNING:analyse.py:158:optimal parameters found at the border. c:1024.000000, g:8.000000
+WARNING:analyse.py:158:optimal parameters found at the border. c:512.000000, g:8.000000
+INFO:analyse.py:164:grid result: OneVsRestClassifier(estimator=SVC(C=512.0, cache_size=200, class_weight='balanced', coef0=0.0,
+  decision_function_shape=None, degree=3, gamma=8.0, kernel='rbf',
+  max_iter=-1, probability=False, random_state=None, shrinking=True,
+  tol=0.001, verbose=False),
+          n_jobs=1)
+**** level: 1
+OneVsRestClassifier 0.862015771526, [ 0.89130435  0.83529412  0.8625      0.85333333  0.86764706]
+**** level: 2
+OneVsRestClassifier 0.909915734976, [ 0.90804598  0.92592593  0.88732394  0.93939394  0.88888889]
+**** level: 3
+OneVsRestClassifier/usr/lib/python2.7/dist-packages/sklearn/cross_validation.py:516: Warning: The least populated class in y has only 4 members, which is too few. The minimum number of labels for any class cannot be less than n_folds=5.
+  % (min_labels, self.n_folds)), Warning)
+ 0.903097707246, [ 0.90588235  0.88311688  0.87142857  0.90769231  0.94736842]
+*** separate outlier removal for training and test data
+**** level train: 1, test: -1
+OneVsRestClassifier 0.893597123573, [ 0.90322581  0.87356322  0.87654321  0.89041096  0.92424242]
+**** level train: 1, test: 1
+OneVsRestClassifier 0.893597123573, [ 0.90322581  0.87356322  0.87654321  0.89041096  0.92424242]
+**** level train: 1, test: 2
+OneVsRestClassifier 0.928354210023, [ 0.93103448  0.9375      0.90909091  0.91176471  0.95238095]
+**** level train: 1, test: 3
+OneVsRestClassifier 0.933391711216, [ 0.94047619  0.93506494  0.93150685  0.90909091  0.95081967]
+**** level train: 2, test: -1
+OneVsRestClassifier 0.893597123573, [ 0.90322581  0.87356322  0.87654321  0.89041096  0.92424242]
+**** level train: 2, test: 1
+OneVsRestClassifier 0.893597123573, [ 0.90322581  0.87356322  0.87654321  0.89041096  0.92424242]
+**** level train: 2, test: 2
+OneVsRestClassifier 0.928354210023, [ 0.93103448  0.9375      0.90909091  0.91176471  0.95238095]
+**** level train: 2, test: 3
+OneVsRestClassifier 0.933391711216, [ 0.94047619  0.93506494  0.93150685  0.90909091  0.95081967]
+**** level train: 3, test: -1
+OneVsRestClassifier 0.893597123573, [ 0.90322581  0.87356322  0.87654321  0.89041096  0.92424242]
+**** level train: 3, test: 1
+OneVsRestClassifier 0.893597123573, [ 0.90322581  0.87356322  0.87654321  0.89041096  0.92424242]
+**** level train: 3, test: 2
+OneVsRestClassifier 0.928354210023, [ 0.93103448  0.9375      0.90909091  0.91176471  0.95238095]
+**** level train: 3, test: 3
+OneVsRestClassifier 0.933391711216, [ 0.94047619  0.93506494  0.93150685  0.90909091  0.95081967]
 * retest 07-21 vs simple2/5__2016-07-17, 5aI__2016-07-19
+  less overhead, td: move to table
 ** data
 *** grid result: OneVsRestClassifier(estimator=SVC(C=4096.0, cache_size=200, class_weight='balanced', coef0=0.0,
   decision_function_shape=None, degree=3, gamma=8.0, kernel='rbf',

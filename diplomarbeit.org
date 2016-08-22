@@ -194,7 +194,7 @@ Facebook.com\\
 \end{figure}
 #+END_LaTeX
 
-    Before this, it was trivial to find out the number of bytes of
+    Before, it was trivial to find out the number of bytes of
     each TCP connection; this made it harder to extract the files'
     sizes. You had to determine the start and end of each
     request.[fn::which was still possible to estimate by splitting when
@@ -219,11 +219,11 @@ Facebook.com\\
     \url{https://www.chromium.org/developers/design-documents/network-stack/http-pipelining}]
     or not implemented
     [fn::\url{http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp/expertzone/chats/transcripts/08_0814_ez_ie8.mspx}]
-    in all major browsers. After Panchenko et al.'s first successful
-    attack\cite{panchenko}, Firefox's built-in request pipelining was
-    enabled [fn::with added request order randomization] as part of a
-    no-cost defense prototype in the Tor-Browser-Bundle
-    \cite{experimental}. Cai et al.\cite{ccs2012-fingerprinting} found
+    in all major browsers. After \cite{panchenko}, Firefox's built-in
+    request pipelining was enabled [fn::with added request order
+    randomization] as part of a no-cost defense prototype in the
+    Tor-Browser-Bundle
+    \cite{experimental}. \cite{ccs2012-fingerprinting} found
     fingerprinting to be easier with this defense enabled than
     without.
 *** DANIEL Challenges to website fingerprinting: Tor [0/4]
@@ -364,7 +364,7 @@ Facebook.com\\
        then formulate correctly
 ****** TODO get picture to work
      - attributes to classes: classifiers
-**** DANIEL panchenko version 1
+**** WRITE panchenko version 1
      Panchenko et al.'s \cite{panchenko} attack was the first that
      successfully classifed traces for websites retrieved via
      Tor\cite{critique}.
@@ -382,7 +382,7 @@ Facebook.com\\
      open-world true-positive rate of up to 73% for Tor.
 ***** TODO version 1: mention here (not below) that furthermore named thus
 ***** TODO how many bg sites?
-***** EVA MOVE TO [[*panchenko version 1][panchenko version 1 (integrate)]] Panchenko et al.'s Attack via Website Fingerprinting
+***** TODO integrate Panchenko et al.'s Attack via Website Fingerprinting
      The first website fingerprinting
      attack\cite{ccsw09-fingerprinting} to also target Tor had yielded
      little accuracy. This was due\cite{experimental} to Tor's
@@ -495,10 +495,6 @@ Facebook.com\\
       - ensemble methods
         - read up?
       - more random: (here only classifiction)
-        - M trees, independent
-        - split training set S into K subsets
-          - split by single non-constant, randomly-selected attribute
-          - return best split
 *** Related Work
     - schneier
     - liberatore
@@ -712,7 +708,7 @@ Facebook.com\\
      - and target
      - simultaneous to real traffic
 *** CHECK Introduction
-    As acknowledged both by \cite{wang2015walkie} and \cite{wtfpad},
+    As emphasized both by \cite{wang2015walkie} and \cite{wtfpad},
     deterministic approaches have the major shortcoming of introducing
     delay into the traffic, which conflicts with Tor's design goal of
     usability\cite{tor-design}, increasing the delay[fn::which already
@@ -723,24 +719,17 @@ Facebook.com\\
     This thesis's approach uses properties of web traffic to determine
     when and how much traffic to send, providing this functionality
     through an easy-to-add browser extension, thus keeping the Tor
-    Browser code as-is. This approach stands in contrast to
-    both \cite{wang2015walkie}, which offers sampling from both uniform
-    and normal distributions, and \cite{wtfpad}, which creates
+    Browser code as-is. This approach stands in contrast to both
+    \cite{wang2015walkie}, which offers sampling from both uniform and
+    normal distributions, and \cite{wtfpad}, which creates
     histogram-based traffic, but works at Tor's cell level, adds
-    overhead to non-web-based traffic, and, critically, adapts a
-    method that tries to do more (hiding from a global adversary),
-    instead of hiding which site was browsed to from a local passive
-    observer.[fn::only the second of these is included in Tor's design
-    goals]
+    overhead to non-web-based traffic, and adapts a method that tries
+    to do more (hiding from a global adversary), instead of hiding
+    which site was browsed to from a local passive observer.[fn::only
+    the second of these is included in Tor's design goals]
 
-    When this thesis was started, both \cite{wang2015walkie} and
-    \cite{wtfpad} had not been published yet. To summarize, it
-    contributes
-
-    a) the inclusion of HTTP traffic characteristics for random traffic, and
-    b) an easily-deployable browser extension,
-
-    which neither of the above defenses contain.
+    Additionally, when this thesis was started, both \cite{wang2015walkie} and
+    \cite{wtfpad} had not been published yet.
 *** EVA Aim: selective cover traffic
     As detailed in section [[#attributes]], there are key attributes that
     are hard to cloak except by extra traffic, especially the total
@@ -782,8 +771,8 @@ Facebook.com\\
     :PROPERTIES:
     :CUSTOM_ID: HTTP traffic model
     :END:
-    Lee and Gupta\cite{newtrafficmodel} model web traffic via
-    statistical distributions.
+    \cite{newtrafficmodel} models web traffic via statistical
+    distributions.
 
     Both the size of HTML documents and embedded objects is modeled by
     lognormal distributions with different parameters for both. The
@@ -801,15 +790,14 @@ Facebook.com\\
     \end{figure}
     #+END_LaTeX
 
-    The distributions given above have two drawbacks. Firstly, web
-    traffic has evolved since 2007, when the paper was written, as
-    documented for total web page size in
-    \cite{web-is-doom}. Secondly, as mentioned in
-    \cite{newtrafficmodel}, the number of embedded objects are
+    These distributions have two drawbacks. Firstly, web traffic has
+    evolved since 2007, when the paper was written, as documented for
+    total web page size in \cite{web-is-doom}. Secondly, as mentioned
+    in \cite{newtrafficmodel}, the number of embedded objects are
     computed per each HTML page, including frames, and possibly
-    including redirects. How it is used differs from how it should be
-    used, see next section. Providing an accurate estimate of embedded
-    objects /per web page/ is [[Further work][further work]].
+    including redirects. How the number of embedded elements is used
+    in this thesis differs from how it should be used, see next
+    section.
 **** TODO [#C] footnote for other web traffic work
 *** EVA How to distinguish HTML and embedded objects
     :PROPERTIES:
@@ -834,6 +822,9 @@ Facebook.com\\
     This accurately distinguishes between start of a page load and the
     loading of its embedded objects, but a drawback is that is does
     not recongnize embedded iframes etc. as HTML.
+
+    Providing an accurate estimate of embedded objects /per web page/
+    is [[Further work][further work]].
 *** EVA Why HTTP-shaped cover traffic
     HTTP-shaped cover traffic might prove more effective, as this
     would make it harder to separate cover and real traffic. In
@@ -888,13 +879,13 @@ Facebook.com\\
       :END:
 ****** CHECK Introduction
        A simulated webpage is modeled by its HTML size and its number
-       of embedded objects. In a closed world, if the client can only
-       browse to a limited number of URLs, it is possible to cache
-       page sizes. If these are unknown, the random variates from the [[#HTTP traffic
-        model][HTTP traffic model]] are used.[fn:: The size of each embedded dummy
-       object is always drawn from the HTTP traffic model.]  Using
-       known sizes is called the /cache/ flavor. In the /nocache/
-       flavor, sizes are always guessed.
+       of embedded objects. In a closed world[fn::if the client can
+       only browse to a limited number of URLs], it is possible to
+       cache page sizes. If these are unknown, the random variates
+       from the [[#HTTP traffic model][HTTP traffic model]] are used.[fn:: The size of each
+       embedded dummy object is always drawn from the HTTP traffic
+       model.]  Using known sizes is called the /cache/ flavor. In the
+       /nocache/ flavor, sizes are always guessed.
 
        To cache sizes, an approximate-size data structure based on
        bloom filters is used.
@@ -1000,7 +991,7 @@ Facebook.com\\
     - bloom paper
     - network applications
 * TODO Results and Evaluation [0%]
-** WRITE setup
+** KEYWORDS setup
 *** CHECK sites
 **** CHECK modified top-100
      The URLs for retrieval come from the Alexa top million sites
@@ -1059,6 +1050,91 @@ Facebook.com\\
     appendix [[#1site_desc]].
 **** TODO tbb-logo in setup pic
 **** WAIT github config files upload + mention
+*** KEYWORDS outlier removal
+    As described by Panchenko et al. \cite{panchenko2}, CUMUL is
+    enhanced by outlier removal.[fn::Their
+    software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}],
+    see features/feature-scripts/outlier-removal.py] has 3--4
+    different settings: a minimal, a median-based[fn::in addition to
+    the median-based original by Wang and
+    Goldberg\cite{wpes13-fingerprinting}], and a
+    25%/75%-quantile-based approach, each adding a step to the
+    previous. The paper\cite{panchenko2} mentions only the
+    quantile-based filtering, so that was also used in this thesis.]
+
+    Just as is the case for an attacker, outlier removal can be done
+    with statistical class attributes[fn::they use incoming bytes
+    median and quantiles] on the training data. On the test data
+    outliers should be removed only based on absolute size, as the
+    adversary does not know the trace's class beforehand.
+
+**** MOVE to [[#counter]]
+    outlier removal
+    - effected by =outlier_removal= in the [[#counter][counter.py]] module
+      - numpy instead of his original code for code clarity
+      - otherwise almost verbatim copy
+    - quantiles:
+      - just take quantiles, use his limits
+**** end MOVE
+    - [ ] how many? 5%?
+    - evaluation of outlier removal steps
+    - maybe show outlier in CUMUL graphics
+    - daniel arp\cite{arp-personal}
+      - better approach: only OR on training data, or keep values from
+        there to apply later
+      - other approach makes little sense (except for minimal-OR), as
+        you do not know in advance
+    - results
+      - use [[file:data/results/alternatives.org::*or%201-3,-1-3][or 1-3,-1-3]]
+      - -1
+        - use global maximum and minimum of sizes, use that for
+          median-based outlier removal
+        - no advantage over just removing smallest/largest (1)
+      - as seen in Table \cite{outlier_removal} mostly dependent on
+        how much outlier removal done on test set
+        - this might be why results are worse than f.ex. panchenko
+#+INCLUDE: "data/results/alternatives.org::#outlier_removal" :only-contents t
+#+NAME: outlier_removal
+    - [ ] experiments
+      - accuracy for levels
+        - svc
+        - et
+      - how many removed for levels
+    - after cross-validation split
+    - but can do that before attributes
+      - list of (url, list-id) tuples, one for each counter
+      - randomly choose subset
+    - link to file
+    - document effect of different schemes: is there any accuracy effect?
+      - tables
+      - scheme: all, only quantile, none, only minimial
+    - document number of filtered traces
+      - both panchenko's own and mine
+    - train-test-split before outlier removal
+      - table results appendix
+    - results different levels of outlier removal
+
+    - problem: number of splits requires more data than just 40 instances
+      - (train-test)/validation \cite[sec.2.2.3]{iml} 2/3 to 1/3, seen: 20 to 20
+      - outlier-removal
+        - if split wrong, level-3: 17 of 20
+      - pathological example: microsoftonline.com
+        - train-test split yielded 20-20
+        - removed 17 from 20 in level-3 split
+        - level 2 removed 0 from 20
+        - pics: all, train==lvl1==lvl2, lvl3
+#+BEGIN_latex
+  \begin{figure}[htp]
+  \label{or-levels}
+\includegraphics[width=0.32\textwidth]{./pictures/or/all.eps}
+\includegraphics[width=0.32\textwidth]{./pictures/or/train.eps}
+\includegraphics[width=0.32\textwidth]{./pictures/or/level3.eps}
+  \end{figure}
+#+END_latex
+        - traces available in =data/path= directory
+        - possible solution: validation set bigger
+          - \cite{kfingerprint} captured 70 instances each
+**** WAIT move to Defenses ??
 *** WRITE classification
 **** WRITE counter.py: represent trace files
      :PROPERTIES:
@@ -1216,60 +1292,6 @@ Facebook.com\\
       - others not tested
       - exception 22.0/5aII: better for svc
         - continue here: inspect which pages, etc, show traces, table
-*** KEYWORDS MOVE TO [[*setup][setup]] outlier removal
-    As described by Panchenko et al. \cite{panchenko2}, CUMUL is
-    enhanced by outlier removal.[fn::Their
-    software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}]
-    has 3--4 different settings: a minimal, a median-based[fn::in
-    addition to the median-based original by Wang and
-    Goldberg\cite{wpes13-fingerprinting}], and a
-    25%/75%-quantile-based approach, each adding a step to the
-    previous. The paper\cite{panchenko2} mentions only the
-    quantile-based filtering, so that was also used in this thesis.]
-
-    Just as is the case for an attacker, outlier removal can be done
-    with statistical class attributes[fn::here: median and quantiles]
-    on the training data. Yet, on the test data outliers should be
-    removed only based on absolute size, as the adversary does not
-    know the trace's class beforehand.
-
-    - effected by the method =outlier_removal= in the [[#counter][counter.py]] module
-    - quantiles:
-      - numpy instead of his original code for code clarity
-      - just take quantiles, use his limits
-    - [ ] how many? 5%?
-    - evaluation of outlier removal steps
-      - cumul-print of outlier removal steps? (maybe, ask d if enough time ;-)
-    - train on or, test without
-    - maybe show outlier in CUMUL graphics
-    - daniel arp\cite{arp-personal}
-      - better approach: only OR on training data, or keep values from
-        there to apply later
-      - other approach makes little sense (except for minimal-OR)
-        - do not know in advance
-    - results
-      - use [[file:data/results/alternatives.org::*or%201-3,-1-3][or 1-3,-1-3]]
-      - test -1 (use max-min)
-        - no advantage over just removing smallest/largest
-    - [ ] experiments
-      - accuracy for levels
-        - svc
-        - et
-      - how many removed for levels
-    - after cross-validation split
-    - but can do that before attributes
-      - list of (url, list-id) tuples, one for each counter
-      - randomly choose subset
-    - link to file
-    - document effect of different schemes: is there any accuracy effect?
-      - tables
-      - scheme: all, only quantile, none, only minimial
-    - document number of filtered traces
-      - both panchenko's own and mine
-    - train-test-split before outlier removal
-      - table results appendix
-**** TODO link to panchenko's software
-**** WAIT move to Defenses ??
 ** KEYWORDS Evaluation of Defenses [0/6]
 *** KEYWORDS Introduction
     - very dependent on time difference
@@ -2760,6 +2782,8 @@ similar, little to see
    #+BEGIN_SRC elisp
      (/ (fround (* 0.998739 10000)) 10000)
    #+END_SRC
+* Outlier Removal Results with Extra-Trees Classifier
+  #+INCLUDE: "data/results/alternatives.org::#outlier_removal_et" :only-contents t
 * WRITE Versions
   :PROPERTIES:
   :CUSTOM_ID: versions
@@ -2852,6 +2876,19 @@ similar, little to see
   The script's main version captures all traffic, which needs to be
   filtered later. The script =d2g_one_site.py= contains the bridge's IP
   and captures only traffic to and from the bridge.
+* WRITE capture alternatives [0/1]
+  Several applications can capture network traffic to files. The most
+  well-known and oldest of these is tcpdump
+  [fn:: \url{http://tcpdump.org}] It is a command-line utility, which is
+  available on many UNIX-like systems and Windows.
+
+  A modern contender with a GUI is wireshark. It also sports a
+  command-line version, tshark. As it offers TLS packet reassembly,
+  tshark was used in this thesis.
+
+  Both programs rely on the libpcap library for access to network
+  packets.
+** TODO better title
 * Script ~one_site.py~: capture pcap traces
   <<one-site.py>>
   #+INCLUDE: "./bin/one_site.py" src python

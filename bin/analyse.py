@@ -60,6 +60,14 @@ def _clf_name(clf):
     '''@return name of estimator class'''
     return str(clf.__class__).split('.')[-1].split("'")[0]
 
+def _clf_params(clf):
+    '''@return name + params if SVM'''
+    if  'SVC' in str(clf):
+        return (_clf_name(clf) +
+                "(C=" + clf.estimator.C + ", gamma=" + clf.estimator.gamma)
+    else:
+        return _clf_name(clf)
+
 def _compare(X, y, X2, y2, clfs=GOOD):
     for clf in clfs:
         _test(X, y, clf)
@@ -233,7 +241,7 @@ def _times_mean_std(counter_dict):
 def _verbose_test_11(X, y, clf):
     '''cross-test (1) estimator on (1) X, y, print results and estimator name'''
     scale = True if 'SVC' in str(clf) else False
-    print _clf_name(clf),
+    print _clf_params(clf),
     res = _test(X, y, clf)
     print '{}, {}'.format(res.mean(), res)
 
@@ -344,7 +352,7 @@ def outlier_removal_levels(defense, clf=None):
         defense_with_or = counter.outlier_removal(defense, lvl)
         (train, test) = tts(defense_with_or)
         (X, y, _) = to_features_cumul(train)
-        if not clf:
+        if type(clf) is type(None):
             clf,_ = _my_grid(X, y)
         (X, y, _) = to_features_cumul(test)
         print "level: {}".format(lvl)
@@ -357,7 +365,7 @@ def outlier_removal_levels(defense, clf=None):
         for test_lvl in [-1,1,2,3]:
             (X, y, _) = to_features_cumul(counter.outlier_removal(train,
                                                                   train_lvl))
-            if not clf:
+            if type(clf) is type(None):
                 clf,_ = _my_grid(X, y)
             (X, y, _) = to_features_cumul(counter.outlier_removal(test,
                                                                   test_lvl))

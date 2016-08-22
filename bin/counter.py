@@ -232,8 +232,8 @@ class Counter(object):
         return out
 
     @staticmethod
-    def save(counter_dict):
-        '''saves counters as json data to file'''
+    def save(counter_dict, prefix=''):
+        '''saves counters as json data to file, each is prefixed with prefix'''
         for k, per_domain in counter_dict.iteritems():
             if not per_domain:
                 continue
@@ -520,6 +520,7 @@ def p_or_quantiles(counter_list):
     q3 = np.percentile(counter_total_in, 75)
 
     out = []
+    # td: remove -1-code
     global minmax
     if minmax is None: minmax = MinMaxer()
     minmax.setIf(q1 - 1.5 * (q3 - q1), q3 + 1.5 * (q3 - q1))
@@ -566,7 +567,6 @@ def outlier_removal(counter_dict, level=2):
                           k, level, (len(v) - len(out[k])), len(v))
         except ValueError: ## somewhere, list got to []
             logging.warn('%s discarded in outlier removal', k)
-    import pdb; pdb.pm()
     return out
 
 if __name__ == "__main__":
