@@ -63,8 +63,9 @@ def _clf_name(clf):
 def _clf_params(clf):
     '''@return name + params if SVM'''
     if  'SVC' in str(clf):
-        return (_clf_name(clf) +
-                "(C=" + clf.estimator.C + ", gamma=" + clf.estimator.gamma)
+        return ('{}(C={}, gamma={})'.format(_clf_name(clf),
+                                           clf.estimator.C,
+                                           clf.estimator.gamma))
     else:
         return _clf_name(clf)
 

@@ -173,7 +173,7 @@ Facebook.com\\
     object sizes. Cheng and Avnur \cite{ssl-traffic-analysis}
     additionally proposed a hidden markov model for page
     /transitions/, for hard-to-identify pages.
-*** CHECK Hurdles to website fingerprinting: HTTP protocol evolution
+*** EVA Hurdles to website fingerprinting: HTTP protocol evolution
     :PROPERTIES:
     :CUSTOM_ID: Hurdles
     :END:
@@ -260,7 +260,7 @@ Facebook.com\\
      avoidance, covert ops, publishing, safety, online surveillance,
      anonymous tip lines, whistleblowing, blogging private opinions,
      evaluating competition, and troubleshooting IT systems.
-**** WRITE How does Tor Work
+**** CHECK How does Tor Work
      The Tor anonymity network consists of volunteer servers, called
      /onion routers/. Each connection through the network is
      facilitated by a proxy implementing the SOCKS5\cite{rfc1928}
@@ -288,7 +288,7 @@ Facebook.com\\
      traffic characteristics.[fn::for a general introduction to
      cryptography, consider Schneier's seminal book Applied
      Cryptography\cite{applied96}].
-***** TODO high-resolution picture
+***** WAIT high-resolution picture
 *** TODO (wf 2.0)
     :PROPERTIES:
     :CUSTOM_ID: wf2.0
@@ -707,7 +707,7 @@ Facebook.com\\
      - select based on web site
      - and target
      - simultaneous to real traffic
-*** CHECK Introduction
+*** EVA Introduction
     As emphasized both by \cite{wang2015walkie} and \cite{wtfpad},
     deterministic approaches have the major shortcoming of introducing
     delay into the traffic, which conflicts with Tor's design goal of
@@ -774,8 +774,8 @@ Facebook.com\\
     \cite{newtrafficmodel} models web traffic via statistical
     distributions.
 
-    Both the size of HTML documents and embedded objects is modeled by
-    lognormal distributions with different parameters for both. The
+    The size of both HTML documents and embedded objects is modeled by
+    lognormal distributions with different parameters. The
     number of embedded objects is modeled by a gamma function. See
     illustration in Figure \ref{distribution}. They offer further
     parameters to fully model web browsing.
@@ -857,23 +857,22 @@ Facebook.com\\
      :PROPERTIES:
      :CUSTOM_ID: addon_main
      :END:
-     The main version works with the retrieved page's own HTML
-     size[fn:kg:known or guessed, see [[#cache_size][description in the next
-     subsection]]], and number of embedded objects[fn:kg], adding to
-     these to reach target values.
+     The main version works with the retrieved page's[fn:kg:known or
+     guessed, see [[#cache_size][description in the next subsection]]] HTML size, and
+     number of embedded objects, adding to these to reach target
+     values.
 
      At the web page's first HTML request, a /target HTML size/ is
-     determined, the HTML size of the current request is looked
-     up[fn:kg], this size is subtracted from the target size and a
-     request for the remaining bytes is sent[fn::or a token amount if
-     too small].
+     determined, the HTML size of the current request is subtracted
+     from the target size and a request for the remaining bytes is
+     sent[fn::or a token amount if too small].
 
      At the same time, a /target number of embedded requests/ is
      determined. From this and the page's number of embedded
      items[fn:kg], the probability of embedded requests is
      computed. For each request to embedded objects, this is the
      probability that embedded-object-sized dummy data is requested.
-***** WRITE Choice: Cache (approximate) sizes using Bloom Filters
+***** CHECK Choice: Cache (approximate) sizes using Bloom Filters
       :PROPERTIES:
       :CUSTOM_ID: cache_size
       :END:
@@ -881,7 +880,7 @@ Facebook.com\\
        A simulated webpage is modeled by its HTML size and its number
        of embedded objects. In a closed world[fn::if the client can
        only browse to a limited number of URLs], it is possible to
-       cache page sizes. If these are unknown, the random variates
+       cache all page sizes. If these are unknown, the random variates
        from the [[#HTTP traffic model][HTTP traffic model]] are used.[fn:: The size of each
        embedded dummy object is always drawn from the HTTP traffic
        model.]  Using known sizes is called the /cache/ flavor. In the
@@ -894,19 +893,25 @@ Facebook.com\\
        \cite{Broder02networkapplications} contains an overview and
        applications] are a stochastic data structure for checking
        whether an element is in a set. They work similarly to
-       hash-coding, yet require significantly less space, as a
-       trade-off for a small error rate; a Bloom Filter works
-       flawlessly if element is inside the set, yet might say that an
-       element is contained, when it is not.
-****** WRITE Application: Bloom Sort
-       - sort sizes into bins
-         - based on target distribution
-         - one bloom filter per bin
-       - check size: check all filters
-         - if one returns: fine
-         - if none returns: ok: clear that not inserted, default value
-         - if two return: one is false positive, fall back to default value
-       - impossible to know for certain which URL was visited/is in the cache
+       hash-coding, yet require significantly less space, which they
+       trade for a small error rate; a Bloom Filter works flawlessly
+       if element is inside the set, yet might say that an element is
+       inside, when it is not.
+****** CHECK Application: Bloom Sort
+       To save approximate sizes, they are sorted into bins based on
+       the target distribution. For each bin, a bloom filter is
+       created; an element is added to this filter if its size is
+       inside the bin.
+
+       To find out the size of an element, all filters are checked. If
+       one filter reports containment, its size is chosen. If zero or
+       more than one report containment, the size is either not known
+       or saved wrongly. The default distribution is used.
+
+       This data structure has the advantage that, even if visited
+       page sizes were saved, an adversary could not safely detemine
+       that pages were visited due to the Bloom Filter's false
+       positive errors.
 ****** MAYBE Error estimation of Bloom Sort
        - error both ways, and difference bin-size to real size
 ****** brainstorm                                                   :ARCHIVE:
@@ -944,12 +949,11 @@ Facebook.com\\
 
       - picture of binning approach
 **** CHECK Addon Version: Simple
-     The main version had become quite complex for a Firefox
-     extension: it had more than 500 lines of code. A
-     simplified\cite[ch.7.2]{xp} algorithm triggers a
-     HTML-sized[fn::times overhead] request at the beginning, and an
-     embedded-sized request with[fn::overhead-related] probability of
-     FACTOR for each embedded object.
+     The main version had become quite complex for a Firefox extension
+     with more than 500 lines of code. A simplified\cite[ch.7.2]{xp}
+     algorithm triggers a HTML-sized[fn::times overhead] request at
+     the beginning, and an embedded-sized request with
+     overhead-related probability for each embedded object.
 
      This halved the number of lines of code[fn::+simplified
      debugging]. The version is called "simple".
@@ -996,13 +1000,13 @@ Facebook.com\\
 **** CHECK modified top-100
      The URLs for retrieval come from the Alexa top million sites
      list[fn:: Current version available at
-     \url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}], dated
-     September 30, 2015. Like to \cite{wpes13-fingerprinting}, similar
-     sites were removed. Also removed were those sites which failed to
-     respond to python's =urllib=\cite[sec.20.5]{python-lib-ref}. The
-     list of sites with their Alexa index can be found in appendix
-     [[#top-100]].
-**** CHECK 30 sites
+     \url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}],
+     retrieved on 30th of September, 2015. As in
+     \cite{wpes13-fingerprinting}, similar sites were removed. Also
+     removed were those sites which failed to respond to python's
+     =urllib=\cite[sec.20.5]{python-lib-ref}. The list of sites with
+     their Alexa index can be found in appendix [[#top-100]].
+**** EVA 30 sites
      Retrieval of the whole 100 sites to test addon performance proved
      lengthy, a smaller set of sites was needed. The first attempts
      used the top-10 of these sites, but those differed from all sites
@@ -1013,7 +1017,7 @@ Facebook.com\\
      =top30()= in [[#analyse][analyse.py]], the traces were from addon version
      0.18.2]. Due to them being well apart, these sites should be easy
      to classify, and thus harder to keep apart via defenses.
-**** CHECK open-world
+**** EVA open-world
      For open-world evaluation, sites from the same top-1m data were
      used, starting after the last of the modified top-100 pages. The
      next 4100 page's traces were collected, one trace per page.
@@ -1062,30 +1066,22 @@ Facebook.com\\
     previous. The paper\cite{panchenko2} mentions only the
     quantile-based filtering, so that was also used in this thesis.]
 
-    Just as is the case for an attacker, outlier removal can be done
-    with statistical class attributes[fn::they use incoming bytes
-    median and quantiles] on the training data. On the test data
-    outliers should be removed only based on absolute size, as the
-    adversary does not know the trace's class beforehand.
+    On training data, outliers can be removed based on statistical
+    class attributes[fn::\cite{panchenko2} use incoming bytes median
+    and quantiles]. On the test data, outliers should be removed only
+    based on absolute size, as the adversary does not know the trace's
+    class beforehand.
 
-**** MOVE to [[#counter]]
-    outlier removal
-    - effected by =outlier_removal= in the [[#counter][counter.py]] module
-      - numpy instead of his original code for code clarity
-      - otherwise almost verbatim copy
-    - quantiles:
-      - just take quantiles, use his limits
-**** end MOVE
+    As proposed by
+
     - [ ] how many? 5%?
-    - evaluation of outlier removal steps
-    - maybe show outlier in CUMUL graphics
-    - daniel arp\cite{arp-personal}
+      - evaluation of outlier removal steps
+    - Daniel Arp\cite{arp-personal}
       - better approach: only OR on training data, or keep values from
         there to apply later
       - other approach makes little sense (except for minimal-OR), as
         you do not know in advance
     - results
-      - use [[file:data/results/alternatives.org::*or%201-3,-1-3][or 1-3,-1-3]]
       - -1
         - use global maximum and minimum of sizes, use that for
           median-based outlier removal
@@ -1180,6 +1176,13 @@ Facebook.com\\
 
      =cumul()= yields a CUMUL\cite{panchenko2} vector of length
      104.[fn::as reported by Panchenko et al to be optimal}
+
+     outlier removal
+     - effected by =outlier_removal= in the [[#counter][counter.py]] module
+       - numpy instead of his original code for code clarity
+       - otherwise almost verbatim copy
+     - quantiles:
+       - just take quantiles, use his limits
 ***** TODO cumul
 **** WRITE analyse.py: code to classify etc: transform attributes to vector
      :PROPERTIES:
@@ -1506,23 +1509,14 @@ similar, little to see
 * WAIT Conclusion
 * TODO topics [0/98]
 ** TODO Website Fingerprinting [0/41]
-*** tools
-**** CHECK MOVE to appendix capture alternatives [0/1]
-     Several applications can capture network traffic to files. The most
-     well-known and oldest of these is tcpdump
-     [fn:: \url{http://tcpdump.org}] It is a command-line utility, which is
-     available on many UNIX-like systems and Windows.
-
-     A modern contender with a GUI is wireshark. It also sports a
-     command-line version, tshark. As it offers TLS packet reassembly,
-     tshark was used in this thesis.
-
-     Both programs rely on the libpcap library for access to network
-     packets.
+*** MOVE to appendix tools
 **** shell script
-     Simply calling =firefox website= loads the website in Firefox. This
-     is the approach Wang recommended(\cite{wang-personal}.
-***** TODO how to check that page has loaded
+     Simply calling =firefox website= loads the website in
+     Firefox. This is the approach Wang
+     recommended(\cite{wang-personal})[fn:: it seems as though they
+     also switched to using the Marionette
+     framework.\cite{wang-personal}}. It has the drawback that
+     unsuccessful page loads are treated just like successful ones.
 **** Selenium
      Selenium is the de-facto standard for testing web applications. It
      has drivers for several browsers, allowing it to control them, and
@@ -1574,7 +1568,7 @@ similar, little to see
      only Marionette, it proved to be unnecessary. The combined
      installation of Marionette with Mozmill broke Marionette.
 ***** TODO merge with above and split out pip install (also needed for wsgi)
-**** criteria for tool to retrieve websites
+**** MOVE up to intro criteria for tool to retrieve websites
      - script tor browser: load new page
      - easy set-up
      - should
@@ -1599,7 +1593,7 @@ similar, little to see
        - modified browser
        - selenium: daniel
        - plain tor bundle
-*** setup
+*** MOVE to appendix setup
 **** TODO by-hand initialization to retrieve websites
      After installation, the tor browser bundle performs some
      initialization steps. To complete these easily, start the tor
@@ -2910,7 +2904,7 @@ similar, little to see
 * Script retrieve-100-embedded.sh run htmlToNumEmbedded
   <<retrieve-100-embedded.sh>>
   #+INCLUDE: "./bin/retrieve_100_embedded.sh" src python
-* modified top-100
+* MOVE above scripts modified top-100
   :PROPERTIES:
   :CUSTOM_ID: top-100
   :END:
