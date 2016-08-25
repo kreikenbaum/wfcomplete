@@ -265,18 +265,19 @@ Facebook.com\\
      /onion routers/. A connection through the network is
      created by a SOCKS5\cite{rfc1928} proxy, the /onion proxy/.
 
-     A connection is routed through three onion routers, each
-     of which can only see the previous and next, due to[fn::same-length]
+     As seen in Figure \ref{tor-network}, a connection is routed through three onion routers, each
+     of which can only see the previous and next, due to (same-length-)
      encryption. Thus, no router has knowledge of both origin and
      destination of traffic.
 
-     #+CAPTION: Connection through the Tor network. Source \url{https://www.torproject.org/about/overview.html.en}
+     #+CAPTION: Connection through the Tor network. Alice's computer's onion proxy connects to Bob via three onion routers. Source \url{https://www.torproject.org/about/overview.html.en}
+     #+NAME: tor-network
      [[./pictures/htw2.png]]
 
      Side-effects which hinder website fingerprinting are:
      - Tor's data cells have a fixed size of 512 bytes to prevent cell
        identification,
-     - Routing through 4 globally-distributed hops increases latency, and
+     - Routing through several globally-distributed hops increases latency, and
      - Tor multiplexes all data cells through a single TCP-connection.
 
      A detailed view of Tor's cryptography will be omitted, because
@@ -741,7 +742,7 @@ Facebook.com\\
     level, as a whistleblower might need more anonymity protection
     than Jane Doe who just reads the latest news, possibly censored in
     her country.
-** TODO Design and Implementation (=Implementation) [0/17]
+** TODO Design and Implementation (=Implementation) [0/15]
 *** DANIEL Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -871,27 +872,30 @@ Facebook.com\\
       :PROPERTIES:
       :CUSTOM_ID: cache_size
       :END:
-****** CHECK Introduction
-       A simulated webpage is modeled by its HTML size and its number
-       of embedded objects. In a closed world[fn::if the client can
-       only browse to a limited number of URLs], it is possible to
-       cache all page sizes. If these are unknown, the random variates
-       from the [[#HTTP traffic model][HTTP traffic model]] are used.[fn:: The size of each
-       embedded dummy object is always drawn from the HTTP traffic
-       model.]  Using known sizes is called the /cache/ flavor. In the
-       /nocache/ flavor, sizes are always guessed.
+      A simulated webpage is modeled by its HTML size and its number
+      of embedded objects. In a closed world[fn::if the client can
+      only browse to a limited number of URLs], it is possible to
+      cache all page sizes beforehand. If a size is unknown, the random variates
+      from the [[#HTTP traffic model][HTTP traffic model]] are used.[fn:: The size of each
+      embedded dummy object is always drawn from the HTTP traffic
+      model.]
 
-       To cache sizes, an approximate-size data structure based on
-       Bloom filters is used.
+      Using known sizes is called the /cache/ flavor. In the
+      /nocache/ flavor, sizes are always guessed.
+
+      To cache sizes, an approximate-size data structure based on
+      Bloom filters is used.
 ****** CHECK Bloom Filter
        Bloom filters\cite{Bloom70space/timetrade-offs}[fn::
-       \cite{Broder02networkapplications} contains an overview and
-       applications] are a stochastic data structure storing
-       whether an element is in a set. They work similarly to
-       hash-coding, yet require significantly less space, which they
-       trade for a small error rate; a Bloom Filter works flawlessly
-       if an element is inside the set, yet wrongly state that an element is
-       inside, when it is not.
+       \cite{Broder02networkapplications} contains a Bloom filter
+       overview with applications] are a stochastic data structure to
+       test membership in a set. They work similarly to hash-coding,
+       yet require significantly less space, which they trade for a
+       small /error rate/[fn::This error rate is dependent on the size
+       of the bloom filter and the number of inserted elements.}; a
+       Bloom Filter works flawlessly if an element is inside the set,
+       yet might wrongly state that an element is inside, when it is
+       not.
 ****** EVA Application: Bloom Sort
        To save approximate sizes, they are sorted into bins based on
        the target distribution. For each bin, a bloom filter is
@@ -943,7 +947,7 @@ Facebook.com\\
       known.
 
       - picture of binning approach
-**** CHECK Addon Version: Simple
+**** EVA Addon Version: Simple
      The main version had become quite complex for a Firefox extension
      with more than 500 lines of code. A simplified\cite[ch.7.2]{xp}
      algorithm triggers a HTML-sized[fn::times overhead] request at
@@ -991,8 +995,8 @@ Facebook.com\\
     - network applications
 * TODO Results and Evaluation [0%]
 ** WRITE setup
-*** CHECK sites
-**** CHECK modified top-100
+*** EVA sites
+**** EVA modified top-100
      The URLs for retrieval come from the Alexa top million sites
      list[fn:: Current version available at
      \url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}],
@@ -1021,7 +1025,7 @@ Facebook.com\\
      from closed-world. It seemed more direct to capture background
      traces.
 *** CHECK capture
-    #+CAPTION: setup to capture web page traffic
+    #+CAPTION: setup to capture web page traffic: Tor Browser on /Client/ machine, connects to Tor server on /Bridge/ machine, connects to Tor network, connects to web servers
     #+ATTR_LATEX: :float nil :width 0.5\textwidth
     [[./pictures/Setup.eps]]
 
@@ -1032,14 +1036,14 @@ Facebook.com\\
 
     Thus, a bridge was introduced into the traffic flow. It was needed
     for WTF-PAD anyways, but other Tor traffic also uses the bridge
-    instance via Tor's =Bridge= directive\cite[section CLIENT OPTIONS]{tor-manual}, to ease
+    instance via Tor's =Bridge= directive\cite[CLIENT OPTIONS]{tor-manual}, to ease
     comparability.
 
     One host runs the Tor Browser Bundle and the cover traffic server
     (if needed), the other runs a tor server instance in bridge
     mode. For WTF-PAD, an additional server transport program is run
-    at the bridge, and a client transport at the TBB-host[fn::I could
-    not get it to run via the built-in =ServerTransportPlugin= and
+    at the bridge, and a client transport at the client[fn::I could
+    not get WTF-PAD to run via the built-in =ServerTransportPlugin= and
     =ClientTransportPlugin= directives].
 
     This setup utilises the same bridge for WTF-PAD and the browser
@@ -1049,7 +1053,7 @@ Facebook.com\\
     appendix [[#1site_desc]].
 **** TODO tbb-logo in setup pic
 **** WAIT github config files upload + mention
-*** KEYWORDS MOVE to subset of [[*classification][classification]] outlier removal
+*** KEYWORDS outlier removal
     :PROPERTIES:
     :CUSTOM_ID: outlier_removal
     :END:
@@ -1070,11 +1074,6 @@ Facebook.com\\
     quantiles]. On test data, outliers should be removed only based on
     absolute size, as the adversary does not know the trace's class
     beforehand.
-
-**** MOVE to [[*classification][classification]]
-    So the data are split into three sets. One for validation of
-    results, one for parameter estimation, one for classifier training.
-**** end MOVE
 
     - [ ] how many? 5%?
       - evaluation of outlier removal steps
@@ -1129,7 +1128,9 @@ Facebook.com\\
 **** WAIT move to Defenses ??
 **** WAIT redo or test with more instances (70?)
 *** KEYWORDS classification
-    - capture: one_site.py
+    So the data are split into three sets. One for validation of
+    results, one for parameter estimation, one for classifier training.
+
     - transform to feature vector, or (see below sec [[#outlier_removal]]), etc: counter.py
     - analysis: analyse.py
     - or,
@@ -1138,91 +1139,6 @@ Facebook.com\\
       - re defenses: svc tends to overfit, yielding better results on regular traces, but decaying fast on data collected
         - later
         - with addon
-**** WRITE MOVE to appendix counter.py: represent trace files
-     :PROPERTIES:
-     :CUSTOM_ID: counter
-     :END:
-     Once the website traces are stored in pcap-files, attribute vectors
-     need to be extracted. A attribute vector is represented by a Python
-     class =Counter=, which can be created from a pcap file, or
-     persisted to a JSON\cite{rfc7159} file containing timing and
-     packet size information (to save time and space).
-
-     To create a counter, you can use =counter.Counter.from(filename1,
-     filename2, ...)=. This is also called indirectly when using
-     =counter.py= from the command line, as in
-
-     python /path/to/counter.py
-
-     This extracts data from all pcap files in the current directory and
-     subdirectories (excluding Address Resolution Protocol messages and
-     ACKs). The filename of the pcap files needs to be =url@timestamp=,
-     for example =craigslist.org@1445352269=. The part up to the
-     separator =@= is treated as the URL. If JSON-files of the name
-     =url.json= (for example =craigslist.com.json=) exist, those are
-     preferred instead of the pcap files.
-
-     In the interactive shell, there is a dictionary called
-     =COUNTERS=, with the domain names as keys and an array with
-     =Counter=s as values. If there were no JSON files in the
-     directory, these are created automatically via the =save()=-method.
-
-     To extract the attributes from a single =Counter=, the
-     =panchenko()= and =cumul()=-methods can be used; to inspect
-     single attributes of Panchenko et al.'s first
-     attack\cite{panchenko} you can call
-     =get('attribute_name')=[fn::for example
-     =COUNTERS['cnn.com'][0].get('duration')')=].
-
-     =panchenko()= yields a attribute vector with default padding of
-     Panchenko's variable-length attributes. Since Panchenko et
-     al\cite{panchenko} gave explicit size conversions, the sizes have
-     not been normalized further. The default padding is computed to
-     be large enough for all traces.
-
-     =cumul()= yields a CUMUL\cite{panchenko2} vector of length
-     104.[fn::as reported by Panchenko et al to be optimal}
-
-     outlier removal
-     - effected by =outlier_removal= in the [[#counter][counter.py]] module
-       - numpy instead of his original code for code clarity
-       - otherwise almost verbatim copy
-     - quantiles:
-       - just take quantiles, use his limits
-***** TODO cumul
-**** WRITE MOVE to appendix analyse.py: code to classify etc: transform attributes to vector
-     :PROPERTIES:
-     :CUSTOM_ID: analyse
-     :END:
-     Once the =Counter=s data is obtained, it needs to be transformed
-     to input for scikit-learn's\cite{scikit-learn} classifiers.
-
-     The code to convert these attributes to classification input can be
-     found in =analyse.py= (see appendix [[#analyse]]). This determines the maximum
-     length of all variable-length attributes, 0-pads Panchenko's attributes
-     with zeroes to the same length, and converts them to an array fit
-     for input into scikit-learn's classifiers. When called from the
-     command line, as
-
-     python -i /path/to/analyse.py
-
-     , it will extract the attribute vectors from JSON or pcap files in
-     the current directory, and run 5-fold cross-validated classifiers
-     against the data.
-
-     =Counter= input attributes are transformed into scikit-learn input
-     in the =to_features()= function, which normalizes all vectors to
-     have the same size (padding with 0s), and creates the attribute
-     matrix =X= with numeric class labels =y= (and class names in
-     =y_domain=).
-
-     If you wish to run LibSVM on the command-line, there is also
-     =to_libsvm(X, y, fname='libsvm_in')=, which can be called with the
-     output of =to_features=. It writes lines in X with labels in y to the
-     file 'libsvm_in' (by default).
-***** TODO ref stackoverflow why 0 padding
-****** TODO or better, some statistics text
-***** TODO see also =to_features_cumul=
 ** KEYWORDS Website Fingerprinting [0/8]
 *** KEYWORDS panchenko v1 different classifiers
     :PROPERTIES:
@@ -1527,7 +1443,7 @@ similar, little to see
      - addon-simple does the opposite
    - have a look at [[*practical wf: analyzing traces][practical wf: analyzing traces]]
 * WAIT Conclusion
-* TODO topics [0/77]
+* TODO topics [0/75]
 ** TODO Website Fingerprinting [0/24]
 *** TODO MOVE to appendix single files of a website
     The complete data of google.com can be retrieved via
@@ -1715,7 +1631,7 @@ similar, little to see
     As website fingerprinting requires very litte resources, a specific
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
     state.
-** TODO Addon Design and Implementation [0/55]
+** TODO Addon Design and Implementation [0/47]
 *** TODO Variations of Cover Traffic
     There are two variations how to generate Cover Traffic.
     2. Given a webpage and its size, how much traffic should be generated?
@@ -1765,13 +1681,12 @@ similar, little to see
      Bridging this separation, f.ex. accessing page scripts (and vice
      versa) is possible, but needs some extra work.
 ***** WAIT index: page scripts, content scripts, add-on scripts
-**** CHECK message-passing
+**** CHECK MOVE to appendix sub addon message-passing
      There is a mechanism to pass content from the add-on to the
      content scripts, as shown in the example.
 
      A single string can be passed. As this string can be any serialized
-     JSON\cite{rfc7159} object, this is not much of a limitation. (It
-     effectively disallows the passing of functions and circular
+     JSON\cite{rfc7159} object, this effectively only disallows the passing of functions and circular
      objects).
 
      In a content-script, a message can be sent via
@@ -1806,15 +1721,15 @@ similar, little to see
      domain-object-model
 **** TODO unit tests jpm
      JPM also offers the ability to write unit-tests.
-*** WAIT [#B] Design
+*** KEYWORDS [#B] Design
+**** by
+     - generating cover traffic
+**** MOVE to appendix modules [0/17]
     #+BEGIN_LATEX
     \begin{adjustbox}{max width=\textwidth}
     \input{pictures/model.tex}
     \end{adjustbox}
     #+END_LATEX
-**** by
-     - generating cover traffic
-**** modules [0/17]                                     :appendix:move_later:
 ***** TODO replace with pic [[shell:dia pictures/model.dia &]]
 ***** TODO how to show (singleton)-module in jUML
 ***** TODO Watcher
@@ -1826,7 +1741,7 @@ similar, little to see
        - endsLoad
 ***** CHECK CoverTraffic(Loader=default)
       <<CoverTraffic>> The =CoverTraffic= module provides requests for a
-      single host contacted. This is the only module used with a
+      single host contacted. This module uses a
       constructor, as it requires several instances, one for each host.
 
       The cover traffic provided tries to mimic the [[#HTTP traffic model][HTTP traffic
@@ -1904,11 +1819,11 @@ similar, little to see
       If the host is known (as defined below), an embedded page is
       assumed and the (existant) related =CoverTraffic=-Object is told
       that an embedded element was loaded.
-**** TODO browser caching
+**** WRITE browser caching
      - browsers cache
      - only helps in cover traffic, (unless warm/cold site model is used)
 ***** WAIT where to put this?
-**** TODO Cached: Size of HTML-Documents                           :appendix:
+**** CHECK MOVE to appendix Cached: Size of HTML-Documents         :appendix:
      :PROPERTIES:
      :CUSTOM_ID: find sizes of HTML-documents
      :END:
@@ -1940,7 +1855,7 @@ similar, little to see
      opposite might be too little traffic, thus easier website
      fingerprinting, which should be avoided.
 ***** TODO mention somewhere (cache)
-**** TODO Cached: Number of Embedded Objects
+**** CHECK MOVE to appendix Cached: Number of Embedded Objects
      <<number_embedded>>
      The second parameter for generating cover traffic is the number
      of embedded objects per HTML-page.
@@ -2082,14 +1997,13 @@ similar, little to see
         - more effort: one classifier for each cover scheme
 ** TODO Bloom Filters
 *** TODO what is a bloom filter
-    A Bloom Filter is a data structure to test membership in a set. It
+    A Bloom Filter is a data structure . It
     has a fixed size and a certain one-way error rate. If an item is in
     the set, the Bloom Filter is guaranteed to report this. If an item
-    is not in the set, there is a certain probability, the /error rate/,
+    is not in the set, there is a certain probability, ,
     of reporting that it belongs.
 
-    This error rate is dependent on the size of the bloom filter and the
-    number of inserted elements.
+    
 *** TODO bloom usage and implementation
     - bloom sort
       - error rate computation
@@ -2485,7 +2399,7 @@ similar, little to see
    perfectly represent reality. It would be more exact to analyse the
    HTML page and at least return the domains of all embedded elements.
 \appendix
-* appendices (just for searching, rest are top-level items)         :ARCHIVE:
+* appendices (this headline is just for searching)                  :ARCHIVE:
   above, as in this section cuts it out (due to ARCHIVE tag)
 * Accuracy on 30 Sites, Training against 2016-07-06
   #+INCLUDE: "data/results/alternatives.org::#vs-07-06" :only-contents t
@@ -2784,7 +2698,7 @@ similar, little to see
 ** overview
    - for the sake of comparability, also bridge for addon tests
      - and easier to filter
-* modified top-100
+* WRITE modified top-100
   :PROPERTIES:
   :CUSTOM_ID: top-100
   :END:
@@ -2909,6 +2823,91 @@ similar, little to see
    [fn:: \url{https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm\#jpm_sign}]
    =jpm sign --api-key $SIGNING_KEY --api-secret $SIGNING_SECRET=.
 
+* WRITE counter.py: represent trace files
+  :PROPERTIES:
+  :CUSTOM_ID: counter
+  :END:
+  Once the website traces are stored in pcap-files, attribute vectors
+  need to be extracted. A attribute vector is represented by a Python
+  class =Counter=, which can be created from a pcap file, or
+  persisted to a JSON\cite{rfc7159} file containing timing and
+  packet size information (to save time and space).
+
+  To create a counter, you can use =counter.Counter.from(filename1,
+  filename2, ...)=. This is also called indirectly when using
+  =counter.py= from the command line, as in
+
+  python /path/to/counter.py
+
+  This extracts data from all pcap files in the current directory and
+  subdirectories (excluding Address Resolution Protocol messages and
+  ACKs). The filename of the pcap files needs to be =url@timestamp=,
+  for example =craigslist.org@1445352269=. The part up to the
+  separator =@= is treated as the URL. If JSON-files of the name
+  =url.json= (for example =craigslist.com.json=) exist, those are
+  preferred instead of the pcap files.
+
+  In the interactive shell, there is a dictionary called
+  =COUNTERS=, with the domain names as keys and an array with
+  =Counter=s as values. If there were no JSON files in the
+  directory, these are created automatically via the =save()=-method.
+
+  To extract the attributes from a single =Counter=, the
+  =panchenko()= and =cumul()=-methods can be used; to inspect
+  single attributes of Panchenko et al.'s first
+  attack\cite{panchenko} you can call
+  =get('attribute_name')=[fn::for example
+  =COUNTERS['cnn.com'][0].get('duration')')=].
+
+  =panchenko()= yields a attribute vector with default padding of
+  Panchenko's variable-length attributes. Since Panchenko et
+  al\cite{panchenko} gave explicit size conversions, the sizes have
+  not been normalized further. The default padding is computed to
+  be large enough for all traces.
+
+  =cumul()= yields a CUMUL\cite{panchenko2} vector of length
+  104.[fn::as reported by Panchenko et al to be optimal}
+
+  outlier removal
+  - effected by =outlier_removal= in the [[#counter][counter.py]] module
+    - numpy instead of his original code for code clarity
+    - otherwise almost verbatim copy
+  - quantiles:
+    - just take quantiles, use his limits
+** TODO cumul
+* WRITE analyse.py: code to classify etc: transform attributes to vector
+  :PROPERTIES:
+  :CUSTOM_ID: analyse
+  :END:
+  Once the =Counter=s data is obtained, it needs to be transformed
+  to input for scikit-learn's\cite{scikit-learn} classifiers.
+
+  The code to convert these attributes to classification input can be
+  found in =analyse.py= (see appendix [[#analyse]]). This determines the maximum
+  length of all variable-length attributes, 0-pads Panchenko's attributes
+  with zeroes to the same length, and converts them to an array fit
+  for input into scikit-learn's classifiers. When called from the
+  command line, as
+
+  python -i /path/to/analyse.py
+
+  , it will extract the attribute vectors from JSON or pcap files in
+  the current directory, and run 5-fold cross-validated classifiers
+  against the data.
+
+  =Counter= input attributes are transformed into scikit-learn input
+  in the =to_features()= function, which normalizes all vectors to
+  have the same size (padding with 0s), and creates the attribute
+  matrix =X= with numeric class labels =y= (and class names in
+  =y_domain=).
+
+  If you wish to run LibSVM on the command-line, there is also
+  =to_libsvm(X, y, fname='libsvm_in')=, which can be called with the
+  output of =to_features=. It writes lines in X with labels in y to the
+  file 'libsvm_in' (by default).
+** TODO ref stackoverflow why 0 padding
+*** TODO or better, some statistics text
+** TODO see also =to_features_cumul=
 * Script ~one_site.py~: capture pcap traces
   <<one-site.py>>
   #+INCLUDE: "./bin/one_site.py" src python
