@@ -558,7 +558,7 @@ if __name__ == "__main__":
     # sys.argv = ['', 'disabled/bridge', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5__2016-07-17', 'simple2/20']
     # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge__2016-07-05', 'tamaraw']
     # sys.argv = ['', 'disabled/bridge', '0.22/10aI', '0.22/5aI__2016-07-19', '0.22/5aII__2016-07-18', '0.22/2aI__2016-07-23']
-    # sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-15'] # DISABLED
+    # sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15'] # DISABLED
     # sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aI__2016-07-19'] # TOP
     # sys.argv = ['', 'disabled/bridge__2016-07-06', 'wfpad/bridge__2016-07-05']
     # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')

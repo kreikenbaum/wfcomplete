@@ -266,7 +266,7 @@ Facebook.com\\
      facilitated by a proxy implementing the SOCKS5\cite{rfc1928}
      protocol called /onion proxy/.
 
-     A connection is routed through three onion routers (=OR), each
+     A connection is routed through three onion routers, each
      of which can only see the previous and next, due to
      encryption. Thus, no router has knowledge of both origin and
      destination of traffic.
@@ -274,20 +274,20 @@ Facebook.com\\
      #+CAPTION: Connection through the Tor network. Source \url{https://www.torproject.org/about/overview.html.en}
      [[./pictures/htw2.png]]
 
-     The messages look different from OR to OR due to same-length
-     encryption.
+     The messages look different from onion router to onion router due
+     to same-length encryption.
 
      Tor's data cells have a fixed size of 512 bytes to prevent cell
      identification; routing through 4 globally-distributed hops
      increases latency; and Tor multiplexes all data cells through a
      single TCP-connection.
 
-     Tor's cryptography will be omitted, because website
-     fingerprinting, as all traffic analysis, assumes that a
+     A detailed view of Tor's cryptography will be omitted, because
+     website fingerprinting, as all traffic analysis, assumes that a
      cryptosystem's cryptography is unbreakable, relying only on
      traffic characteristics.[fn::for a general introduction to
-     cryptography, consider Schneier's seminal book Applied
-     Cryptography\cite{applied96}].
+     cryptography, consider Schneier's book /Applied
+     Cryptography/\cite{applied96}].
 ***** WAIT high-resolution picture
 *** TODO (wf 2.0)
     :PROPERTIES:
@@ -295,20 +295,21 @@ Facebook.com\\
     :END:
     In spite of these difficulties, website fingerprinting was shown
     to be possible in even when Tor is used.
-**** WRITE Introduction
-     Similarly to the above attacks, Liberatore and
-     Levine\cite{Liberatore:2006} and Herrmann et
-     al\cite{ccsw09-fingerprinting} used packet sizes, and employed
+**** CHECK Introduction
+     Similarly to the above attacks, \cite{Liberatore:2006}
+     and\cite{ccsw09-fingerprinting} used packet sizes, but employed
      machine learning techniques. Liberatore and Levine used both a
      Naïve Bayes Classifier[fn::described f.ex. in
-     \cite[ch.1.3.1]{intro2ir}] and the Jaccard-metric, while Herrmann
-     et al. used a Naïve Bayes Classifier with different metrics,
-     which gave them good results against one-hop anonymizing proxies,
-     yet yielded only 3% accuracy against 775 distinct pages when
+     \cite[ch.1.3.1]{intro2ir}] and Jaccard's classifier $s_{AB} =
+     \frac{|A \cap B|}{|A \cup B|}$[fn::described in
+     \cite{ccsw09-fingerprinting}], while \cite{ccsw09-fingerprinting}
+     used a Naïve Bayes Classifier with different metrics and
+     preprocessing.  This gave results against one-hop anonymizing
+     proxies, yet yielded only 3% accuracy against 775 distinct pages
      retrieved via Tor\cite{tor-design}. As this was still
      significantly better than random guessing, they conjectured that
      this result could be improved when attacks were specifically
-     tailed to Tor.
+     tailored to Tor.
 **** WRITE attributes
      :PROPERTIES:
      :CUSTOM_ID: attributes
@@ -393,7 +394,6 @@ Facebook.com\\
      HTTP-specific attributes from the packet trace and used those in a
      hand-tuned support vector machine with a radial basis function
      kernel.
-**** practical wf: Capturing traces
 **** TODO move to subsection related work
 **** WRITE SVM
      Support Vector Machines (short: SVM) are a linear classifier:
@@ -578,7 +578,7 @@ Facebook.com\\
     As for reducing transferred data: As the sizes and interconnection
     of HTML and embedded content is what makes a webpage easily
     identifyable, using a text-only non-javascript browser such as
-    Lynx, disabling f.ex. images, or reducing cross-site requests via
+    Lynx[fn::available at \url{http://lynx.invisible-island.net/}], disabling f.ex. images, or reducing cross-site requests via
     f.ex. the
     RequestPolicy[fn::\url{https://requestpolicycontinued.github.io/}]
     extension, might mitigate the threat of website fingerprinting for
@@ -767,7 +767,7 @@ Facebook.com\\
     The next sections describe in detail how the addon distinguishes
     initial traffic from embedded objects, how to create traffic and
     describe different versions of the addon.
-*** CHECK HTTP traffic model
+*** EVA HTTP traffic model
     :PROPERTIES:
     :CUSTOM_ID: HTTP traffic model
     :END:
@@ -841,19 +841,18 @@ Facebook.com\\
     \cite{kfingerprint}, \cite{effective}, \cite{panchenko},
     \cite{wtfpad}) and was surprisingly effective for all its
     simplicity, albeit at a high overhead.
-*** CHECK  How to generate cover traffic
-**** EVA Introduction
-     When the user requests a page, be it by clicking on a hyperlink, a
-     bookmark, or entering an address via the location bar, the addon
-     always creates additional traffic simultaneous to the first HTTP
-     request.
+*** EVA How to generate cover traffic
+    When the user requests a page, be it by clicking on a hyperlink, a
+    bookmark, or entering an address via the location bar, the addon
+    always creates additional traffic simultaneous to the first HTTP
+    request.
 
-     Several versions, and flavors, were evaluated. The next sections
-     describe the main addon branch with its configuration
-     possibilities, the simple version, and an older version with very
-     low, but non-adjustable overhead. Version evolution is described
-     in appendix [[#versions]].
-**** CHECK Addon Version: Main
+    Several versions, and flavors, were evaluated. The next sections
+    describe the main addon branch with its configuration
+    possibilities, the simple version, and an older version with very
+    low, but non-adjustable overhead. Version evolution is described
+    in appendix [[#versions]].
+**** EVA Addon Version: Main
      :PROPERTIES:
      :CUSTOM_ID: addon_main
      :END:
@@ -887,17 +886,17 @@ Facebook.com\\
        /nocache/ flavor, sizes are always guessed.
 
        To cache sizes, an approximate-size data structure based on
-       bloom filters is used.
+       Bloom filters is used.
 ****** CHECK Bloom Filter
-       Bloom Filters\cite{Bloom70space/timetrade-offs}[fn::
+       Bloom filters\cite{Bloom70space/timetrade-offs}[fn::
        \cite{Broder02networkapplications} contains an overview and
-       applications] are a stochastic data structure for checking
+       applications] are a stochastic data structure storing
        whether an element is in a set. They work similarly to
        hash-coding, yet require significantly less space, which they
        trade for a small error rate; a Bloom Filter works flawlessly
-       if element is inside the set, yet might say that an element is
+       if an element is inside the set, yet wrongly state that an element is
        inside, when it is not.
-****** CHECK Application: Bloom Sort
+****** EVA Application: Bloom Sort
        To save approximate sizes, they are sorted into bins based on
        the target distribution. For each bin, a bloom filter is
        created; an element is added to this filter if its size is
@@ -956,7 +955,7 @@ Facebook.com\\
      overhead-related probability for each embedded object.
 
      This halved the number of lines of code[fn::+simplified
-     debugging]. The version is called "simple".
+     debugging]. The version is called /simple/.
 **** WRITE MAYBE Addon Version: Retro (if not, edit super)
      All other addon versions reached overheads as low as 20%, but not
      lower.
@@ -995,13 +994,13 @@ Facebook.com\\
     - bloom paper
     - network applications
 * TODO Results and Evaluation [0%]
-** KEYWORDS setup
+** WRITE setup
 *** CHECK sites
 **** CHECK modified top-100
      The URLs for retrieval come from the Alexa top million sites
      list[fn:: Current version available at
      \url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}],
-     retrieved on 30th of September, 2015. As in
+     retrieved on September 30th, 2015. As in
      \cite{wpes13-fingerprinting}, similar sites were removed. Also
      removed were those sites which failed to respond to python's
      =urllib=\cite[sec.20.5]{python-lib-ref}. The list of sites with
@@ -1037,7 +1036,7 @@ Facebook.com\\
 
     Thus, a bridge was introduced into the traffic flow. It was needed
     for WTF-PAD anyways, but other Tor traffic also uses the bridge
-    instance via Tor's =Bridge= directive\cite{tor-manual}, to ease
+    instance via Tor's =Bridge= directive\cite[section CLIENT OPTIONS]{tor-manual}, to ease
     comparability.
 
     One host runs the Tor Browser Bundle and the cover traffic server
@@ -1054,11 +1053,14 @@ Facebook.com\\
     appendix [[#1site_desc]].
 **** TODO tbb-logo in setup pic
 **** WAIT github config files upload + mention
-*** KEYWORDS outlier removal
+*** KEYWORDS MOVE to subset of [[*classification][classification]] outlier removal
+    :PROPERTIES:
+    :CUSTOM_ID: outlier_removal
+    :END:
     As described by Panchenko et al. \cite{panchenko2}, CUMUL is
     enhanced by outlier removal.[fn::Their
     software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}],
-    see features/feature-scripts/outlier-removal.py] has 3--4
+    see =features/feature-scripts/outlier-removal.py= has 3--4
     different settings: a minimal, a median-based[fn::in addition to
     the median-based original by Wang and
     Goldberg\cite{wpes13-fingerprinting}], and a
@@ -1066,17 +1068,21 @@ Facebook.com\\
     previous. The paper\cite{panchenko2} mentions only the
     quantile-based filtering, so that was also used in this thesis.]
 
-    On training data, outliers can be removed based on statistical
-    class attributes[fn::\cite{panchenko2} use incoming bytes median
-    and quantiles]. On the test data, outliers should be removed only
-    based on absolute size, as the adversary does not know the trace's
-    class beforehand.
+    As proposed by \cite{arp-personal}, on training data, outliers can
+    be removed based on statistical class
+    attributes[fn::\cite{panchenko2} used incoming bytes median and
+    quantiles]. On test data, outliers should be removed only based on
+    absolute size, as the adversary does not know the trace's class
+    beforehand.
 
-    As proposed by
+**** MOVE to [[*classification][classification]]
+    So the data are split into three sets. One for validation of
+    results, one for parameter estimation, one for classifier training.
+**** end MOVE
 
     - [ ] how many? 5%?
       - evaluation of outlier removal steps
-    - Daniel Arp\cite{arp-personal}
+    - Daniel Arp
       - better approach: only OR on training data, or keep values from
         there to apply later
       - other approach makes little sense (except for minimal-OR), as
@@ -1089,8 +1095,9 @@ Facebook.com\\
       - as seen in Table \cite{outlier_removal} mostly dependent on
         how much outlier removal done on test set
         - this might be why results are worse than f.ex. panchenko
-#+INCLUDE: "data/results/alternatives.org::#outlier_removal" :only-contents t
+#+CAPTION: accuracy with SVM classifier after outlier removal
 #+NAME: outlier_removal
+#+INCLUDE: "data/results/alternatives.org::#outlier_removal" :only-contents t
     - [ ] experiments
       - accuracy for levels
         - svc
@@ -1101,24 +1108,17 @@ Facebook.com\\
       - list of (url, list-id) tuples, one for each counter
       - randomly choose subset
     - link to file
-    - document effect of different schemes: is there any accuracy effect?
-      - tables
-      - scheme: all, only quantile, none, only minimial
     - document number of filtered traces
       - both panchenko's own and mine
-    - train-test-split before outlier removal
-      - table results appendix
     - results different levels of outlier removal
 
     - problem: number of splits requires more data than just 40 instances
-      - (train-test)/validation \cite[sec.2.2.3]{iml} 2/3 to 1/3, seen: 20 to 20
-      - outlier-removal
-        - if split wrong, level-3: 17 of 20
-      - pathological example: microsoftonline.com
-        - train-test split yielded 20-20
-        - removed 17 from 20 in level-3 split
-        - level 2 removed 0 from 20
-        - pics: all, train==lvl1==lvl2, lvl3
+      - (train-test)/validation set\cite[sec.2.2.3]{iml} 2/3 to 1/3,
+        - pathological example: microsoftonline.com
+          - train-test split yielded 20-20
+          - removed 17 from 20 in level-3 split
+          - level 2 removed 0 from 20
+          - pics: all, train==lvl1==lvl2, lvl3
 #+BEGIN_latex
   \begin{figure}[htp]
   \label{or-levels}
@@ -1131,8 +1131,18 @@ Facebook.com\\
         - possible solution: validation set bigger
           - \cite{kfingerprint} captured 70 instances each
 **** WAIT move to Defenses ??
-*** WRITE classification
-**** WRITE counter.py: represent trace files
+**** WAIT redo or test with more instances (70?)
+*** KEYWORDS classification
+    - capture: one_site.py
+    - transform to feature vector, or (see below sec [[#outlier_removal]]), etc: counter.py
+    - analysis: analyse.py
+    - or,
+    - validation, train, test data
+    - different classifiers: best are svc for both, knn for 1, et for 2
+      - re defenses: svc tends to overfit, yielding better results on regular traces, but decaying fast on data collected
+        - later
+        - with addon
+**** WRITE MOVE to appendix counter.py: represent trace files
      :PROPERTIES:
      :CUSTOM_ID: counter
      :END:
@@ -1184,7 +1194,7 @@ Facebook.com\\
      - quantiles:
        - just take quantiles, use his limits
 ***** TODO cumul
-**** WRITE analyse.py: code to classify etc: transform attributes to vector
+**** WRITE MOVE to appendix analyse.py: code to classify etc: transform attributes to vector
      :PROPERTIES:
      :CUSTOM_ID: analyse
      :END:
@@ -1280,12 +1290,26 @@ Facebook.com\\
     - [ ] experiment
       - how much better CUMUL than v1
         - on disabled, best addon, wfpad
-*** KEYWORDS trace growth, time delta, effect
-    - growth noticeable
+*** KEYWORDS trace growth, time difference, effect
+    :PROPERTIES:
+    :CUSTOM_ID: time
+    :END:
+    - noticeable trace growth
+      - table: overhead and accuracy, training on 07-06, testing on each
+  |                 | Extra-Trees | SVC(scale) | overhead % |
+  | <15>            |   <5> |   <5> |   <5> |
+  |-----------------+-------+-------+-------|
+  | disabled-07-06  | 0.790955736563 | 0.872549863037 |     0 |
+  | disabled-07-21  | 0.610833333333 | 0.289166666667 | 11.7945808745 |
+  | disabled-08-14  | 0.575479566305 | 0.136780650542 | 18.7285156001 |
+  | disabled-08-15  | 0.570833333333 |  0.07 | 24.3035341003 |
+      - accuracy decrease: much once, then a bit
     - [ ] experiment
       - values: absolute
-      - also per-domain
+      - also per-domain size growth
     - also after outlier removal?
+**** continue: [[file:bin/analyse.py::total%20=%20%5Bcounter.get_total_both()%20for%20counter%20in%20counter_list%5D][here, set to _in, redo analysis]] with four disableds
+**** WAIT for [[file:~/da/da.org::*experimente][experimente disabled]]
 *** KEYWORDS (for [[file:~/da/da.org::*klassifikation][klassifikation {0/12}]]) svc vs extratrees
     - svc very good on unaddoned data, (if trained and or on all)
       - extratrees with 5--10% lower accuracy, but excels against
@@ -1297,7 +1321,7 @@ Facebook.com\\
         - continue here: inspect which pages, etc, show traces, table
 ** KEYWORDS Evaluation of Defenses [0/6]
 *** KEYWORDS Introduction
-    - very dependent on time difference
+    - very dependent on retrieved trace time difference, see [[#time]]
     - svc slightly better on original data, fails against defense
       - still panchenko's accuracy only with combined test-train-OR
 *** KEYWORDS Addon
@@ -1404,7 +1428,7 @@ Facebook.com\\
    - results:
     #+CAPTION: classification accuracy on 30 classes, different classifiers
     #+ATTR_LATEX: :align l||p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}
-| id   | disabled with ExtraTreesClassifier | WTF-PAD with ExtraTreesClassifier | simple2/5 with ExtraTreesClassifier | 0.22/5aI with ExtraTreesClassifier | disabled with OneVsRestClassifier | WTF-PAD with OneVsRestClassifier | simple2/5 with OneVsRestClassifier | 0.22/5aI with OneVsRestClassifier |
+| id   | disabled, ET | WTF-PAD, ET | simple2/5, ET | 0.22/5aI, ET | disabled, OVR-SVM | WTF-PAD, OVR-SVM | simple2/5, OVR-SVM | 0.22/5aI, OVR-SVM |
 | <4>  |    <6> |    <6> |    <6> |    <6> |    <6> |    <6> |    <6> |    <6> |
 |------+--------+--------+--------+--------+--------+--------+--------+--------|
 | msn.com |    1.0 |  0.875 |  0.525 | 0.1230 |   0.95 |    0.3 |  0.025 |    0.0 |
@@ -1507,191 +1531,9 @@ similar, little to see
      - addon-simple does the opposite
    - have a look at [[*practical wf: analyzing traces][practical wf: analyzing traces]]
 * WAIT Conclusion
-* TODO topics [0/98]
-** TODO Website Fingerprinting [0/41]
-*** MOVE to appendix tools
-**** shell script
-     Simply calling =firefox website= loads the website in
-     Firefox. This is the approach Wang
-     recommended(\cite{wang-personal})[fn:: it seems as though they
-     also switched to using the Marionette
-     framework.\cite{wang-personal}}. It has the drawback that
-     unsuccessful page loads are treated just like successful ones.
-**** Selenium
-     Selenium is the de-facto standard for testing web applications. It
-     has drivers for several browsers, allowing it to control them, and
-     evaluate the retrieved page. Its documentation is currently
-     transferring from Version 1 to Version 2.
-**** Chickenfoot
-     Chickenfoot was a Firefox addon which allowed browser scripting. It
-     was developed at MIT\cite{chickenfoot}. The most recent GitHub
-     release[fn:: \url{https://github.com/bolinfest/chickenfoot}] is for
-     Firefox 4.
-**** EVA Marionette
-     <<Marionette>> Marionette is the next generation mozilla testing
-     framework. It is works just like Selenium and was designed to be
-     integrated into it. It was chosen for this thesis, as it made the
-     Tor Browser Bundle easily accessible.
-
-     After installation of the library (see below), controlling the browser
-     takes two easy steps:
-
-     1. start the Tor Browser Bundle with the `-marionette` switch
-
-        #+BEGIN_SRC sh
-          cd tor-browser_en-US/Browser
-          ./firefox -marionette
-        #+END_SRC
-
-     2. attach to a running browser in Python
-
-        #+BEGIN_SRC python
-          from marionette import Marionette
-          client = Marionette('localhost', port=2828);
-          client.start_session()
-          client.navigate('http://cnn.com'); # navigate loads a website
-        #+END_SRC
-
-     Marionette has the benefit that the =client.navigate()= call
-     returns only after the page has loaded, (and throws an error if
-     the page could not be loaded). This obsoletes f.ex. Panchenko et al.'s
-     \cite{panchenko} need to test whether a page loaded completely.
-**** CHECK Marionette installation
-     Marionette exists as a Python Package. It is thus easily installed
-     via
-     #+BEGIN_SRC sh
-       pip install marionette_client
-     #+END_SRC
-
-     After installation pip via =sudo apt-get install python-pip=). Using
-     a virtualenv is highly recommended in the documentation. If using
-     only Marionette, it proved to be unnecessary. The combined
-     installation of Marionette with Mozmill broke Marionette.
-***** TODO merge with above and split out pip install (also needed for wsgi)
-**** MOVE up to intro criteria for tool to retrieve websites
-     - script tor browser: load new page
-     - easy set-up
-     - should
-       - register page load or error
-     - might
-       - set tor's paranoia slider
-       - install extra addon
-**** TODO who used which retrieval method
-     - who did sth
-       - p: 
-         1. chickenfoot only
-         2. Chickenfoot, iMacros, and Scriptish
-       - h
-       - ll
-       - w
-       - c
-       - d
-       - j
-     - what did they use
-       - list
-       - chickenfoot
-       - modified browser
-       - selenium: daniel
-       - plain tor bundle
-*** MOVE to appendix setup
-**** TODO by-hand initialization to retrieve websites
-     After installation, the tor browser bundle performs some
-     initialization steps. To complete these easily, start the tor
-     browser bundle-firefox by hand once, set the connection type and
-     have it load any website via Tor. All this also downloads Tor
-     metadata, which allows to connect more quickly later on.
-**** tshark installation
-     You also need to install =tshark= [fn:: via f.ex. =sudo apt-get
-     install tshark= on Debian-based systems] and enable the user to
-     capture packets [fn:: via (Debian-based) =sudo dpkg-reconfigure
-     wireshark-common= and adding the user to the =wireshark= group
-     (in =/etc/groups=)].
-**** TODO how to get tor browser bundle to work
-     In order to start the tor browser bundle via the =./firefox=
-     command, you need libraries, which are bundled with the binary.
-     They can be found inside the =/TorBrowser/Tor= directory.
-
-     The library path environment variable can be set on the command-line via
-     #+BEGIN_SRC sh
-     export LD_LIBRARY_PATH=/lib:/usr/lib:/path/to/bundle/Browser/TorBrowser/Tor
-     #+END_SRC
-     The script [[one-site.py][one-site.py]] uses this internally.
-
-     - install xpra
-***** TODO is old, still use, or remove?
-**** Avoiding safe mode on restart
-     If Firefox was killed via a signal (as opposed to closing the
-     window), it prompts to start in Safe Mode afterwards.
-
-     This behavior can be avoided in three ways:
-
-     You can set the firefox preference
-     =toolkit.startup.max_resumed_crashes= to -1, you can set the
-     environment variable =MOZ_DISABLE_AUTO_SAFE_MODE= (did not work
-     in Tor Browser Bundle version ...), or --- as a last resort ---
-     you can remove the =toolkit.startup.recent_crashes= line in the
-     =prefs.js= config file which saves the number of consecutive
-     kills via =sed -i '/toolkit\.startup\.recent_crashes/d'
-     /path/to/prefs.js=.
-***** TODO TBB current version
-**** headless configuration
-     If you want to capture on a headless server, you can use the
-     =xvfb=-package. which is installed via =sudo apt-get install xvfb=.
-
-     Then, you can run the X Virtual Framebuffer via
-
-     =Xvfb :1=
-
-     tell the browser to use it via
-
-     =export DISPLAY:1=
-
-     and start the retrieval as mentioned above.
-**** TODO thoughts on size of data set
-     - computable (n^2 for svm with good results)
-     - number of instances negligible for computation
-       - check this
-     - stable results
-     - recent papers
-       - Panchenko: 775 a 20
-       - Wang:
-         - 100 a 90 of sensitive pages
-         - 5000 a 1 of non-monitored pages
-       - Cai: 400 samples of bbc.co.uk
-         - 100 \to 800 once a 20 \to 40 twice
-     - (currently closed world)
-***** TODO more complete list?
-**** TODO filtering tshark files [0/4]
-     Although this requirement might later be removed (see [[*Further%20work][further
-     work]]), the addon currently needs a generator of cover traffic to
-     work. While it can be set in the add-on's preferences, this
-     generator ran on the same host as the tor client. Thus, the
-     capture files also contained traffic of the cover traffic
-     server. As they do not belong to the Tor traffic, are not what
-     the adversary sees, and might distort the result, they were
-     filtered. (Even though the accuracy results were not greatly
-     changed by this).
-
-     Fortunately, =tshark= offers a way to filter these files as
-     mentioned in \cite{splitcap}. The (read) filter commands are
-     described in the manual \cite{wireshark-filter}, with the tcp
-     protocol specific fields as given in \cite{tcp-filter-fields}.
-
-     The script to solve this is in the appendix [[7777]]. As the server
-     ran on port 7777, which was allowed only as an incoming port by
-     the firewall, it suffices to filter by port name. (Otherwise, the
-     read filter would need to be modified).
-***** TODO implementation
-     - summary approach: file 7777.sh takes each (pcap) file in
-       current directory, filters the port 7777 out
-     - apply this to each subdirectory
-     - then move all files to a common directory
-****** TODO include script from duckstein
-***** TODO link to man tshark
-**** overview
-     - for the sake of comparability, also bridge for addon tests
-       - and easier to filter
-*** TODO example: single files of a website
+* TODO topics [0/77]
+** TODO Website Fingerprinting [0/24]
+*** TODO MOVE to appendix single files of a website
     The complete data of google.com can be retrieved via
 
     =mkdir site; cd site; wget -p -H google.com=
@@ -1708,11 +1550,14 @@ similar, little to see
     |  5430 | =www.google.de/images/branding/product/ico/googleg_lodp.ico=      |
     |  8080 | www.google.de/robots.txt                                          |
 
-    thus, there should be 5-6 (depending on robots.txt) requests
+    which are five to six[fn::depending on ~robots.txt~] requests.
 **** TODO tshark for normal (non-tor) retrieval
 **** TODO mention redirects
+**** WAIT single page
+     - tor-retrieval
+     - retrieval with addon
 *** practical wf: analyzing traces
-**** TODO how to process the data
+**** WRITE MOVE to appendix how to process the data
      The aim of processing is to extract attributes relevant for machine
      learning from the original trace files, which are in =pcap= format.
 
@@ -1726,33 +1571,29 @@ similar, little to see
      - sums in the end
      - displays
      - =Counter=-class
-***** TODO why filtering allowed
-***** TODO see if merge/unify with [[transform to panchenko-attributes]]
+***** TODO MOVE merge/unify with [[transform to panchenko-attributes]]
 ***** TODO and if include stuff from [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]
 **** transform to panchenko-attributes
-     In encoding packet sizes, this thesis follows Panchenko et al.'s
-     approach, who recorded "incoming packets as positive, outgoing ones
-     as negative numbers."\cite{panchenko}
-**** WAIT and MAYBE how to get wang/goldberg to work
-     As the =notes= file says:
-
-     "svm-train and svm-predict come from the libSVM package."
-***** maybe to unused
-**** TODO libsvm (short)
+     In encoding packet sizes, this thesis follows \cite{panchenko}'s
+     approach, who recorded "incoming packets as positive, outgoing
+     ones as negative numbers."
+**** TODO MOVE part to footnote in [[*SVM][SVM]] del rest libsvm (short)
      LibSVM is a library for support vector machine classification and
-     regression. It is used under-the-hood for scikit-learn, yet one part
+     regression. It is used under-the-hood in scikit-learn.
+***** MOVE to [[#analyse]]
+      , yet one part
      of functionality required a specific module which was not
      integrated.
 
      Its input format is very simple: First a number determining the
      class of the data, then a colon, finally all the data for an
      instance, separated by whitespace.
-***** TODO link to code to generate
+****** TODO link to code to generate
 **** WAIT effect of panchenko's weighting schema
      Currently, fixed attributes are weighted heavily in favor of total
      incoming/outgoing bytes.
 ***** maybe
-**** TODO scikit-learn
+**** TODO MOVE subset of [[#analyse]] scikit-learn
      The python module scikit-learn\cite{scikit-learn} is described as a
      collection of "tools for data mining and data analysis".
 
@@ -1837,8 +1678,6 @@ similar, little to see
      - extra traffic
      - depends on data rate: if all is easily decorrelatable, maybe no
        extra protection
-**** CHECK text-only
-***** TODO lynx link
 *** distribution of (main) attributes
     These distribution histograms show how Panchenko's main attributes
     are distributed. They are stacked histograms with classes
@@ -1897,31 +1736,6 @@ similar, little to see
     | A: known sizes  |                  |                      |
     | B: random sizes |                  |                      |
 *** TODO Mozilla Add-On Sdk [0/12]
-**** CHECK Introduction to the Mozilla Add-On Sdk
-     #+INDEX: XUL
-     #+INDEX: XML User-interface Langage
-     The Add-on SDK by Mozilla facilitates the development of
-     Firefox-Addons.
-
-     It allows users to create addons using HTML and Javascript only, as
-     opposed to the previous use of
-     XUL[fn:: \url{https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XUL}],
-     the XML User-interface Language.
-
-     The addon execution entry point (like =main= in C and Java) can be
-     configured via the =preferences.json= file. By default, the main
-     addon-script is called =index.js=.
-
-     The SDK contains many tools to interact with the browser. URLs can
-     be loaded in the background via the =page-worker= module; the
-     =page-mod= module injects JavaScript code into the page the user is
-     browsing to. User-created code can be tested via unit tests.
-
-     If none of the easily accessible high-, or low-level modules
-     suffice, much of the browser's functionality is accessible via
-     the Components
-     object[fn:: \url{https://developer.mozilla.org/en/Components_object}],
-     which can be accessed as =require("chrome")=.
 **** TODO Debugger
 **** TODO Available Data
      Firefox offers several ways for an add-on to listen for web activity.
@@ -1972,99 +1786,6 @@ similar, little to see
      content-script's =self= is replaced by a =worker=. The worker is
      initialized via the =onAttach= parameter of f.ex. the page-mod.
 **** TODO collect/list all addon sections
-**** CHECK page-worker
-     <<page-worker>>
-     A =page-worker= creates "a permanent, invisible page and access[es]
-     its
-     DOM."[fn:: \url{developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html}]
-
-     New pages can be loaded in the background, which would allow for the
-     retrieval of camouflage traffic, as described by \cite{panchenko}.
-
-     A minimal new page-worker is created via
-
-     #+BEGIN_SRC js
-       var pageWorker = require("sdk/page-worker").Page({});
-     #+END_SRC
-
-     The page-worker's page can be set dynamically via
-
-     pageWorker.contentURL = "http://en.wikipedia.org/wiki/Cheese"
-
-     This fetches only the file pointed to. The retrieval of included
-     images, stylesheets, etc, is not automatic.
-
-     A page-worker was used in the initial prototype. The RequestPolicy
-     addon blocked this method of retrieval.
-
-**** TODO page-mod
-     <<page-mod>>
-     The
-     page-mod[fn:: \url{http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html}]
-     module injects "scripts in the context of web pages whose URL
-     matches a given pattern."
-
-     The pattern can be given as ="*"= or =/.*/= to run on every
-     user-visited page.
-
-     It thus offers the possibility to check for the end of a web page
-     load by the user.
-
-     A page-mod example is
-
-     #+BEGIN_SRC js
-       const pageMod = require("sdk/page-mod");
-       pageMod.PageMod({
-           include: /.*/,
-           contentScriptFile: "./getLinks.js",
-           onAttach: function(worker) {
-               worker.port.on("links", function(JSONlinks) {
-                   addToCandidates(JSON.parse(JSONlinks));
-               });
-           }
-       });
-     #+END_SRC
-
-     , which is run on every page, applies the =getLinks.js= script and
-     listens for its feedback, which is then used via
-     =addToCandidates()=.
-
-     The page-mod has a =contentScriptWhen= parameter, which specifies
-     when to attach the script to the page. Valid values are =start=,
-     =ready=, and =end=, the last of which triggers at the
-     =window.onload= event, when the complete page, including
-     JavaScript, CSS, and images has loaded.
-
-     A page-mod offers many other options such as f.ex. stylesheets,
-     script parameters, etc.
-***** link page-mod
-      http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
-**** CHECK Installation and Use of Jpm (the build tool)
-     (SDK-)addons can be built via the =jpm=-tool. It is available as a
-     NodeJS-Module via the built-in NodeJS Package Manager =npm=.
-
-     Installing =jpm= is a two-step process. Firstly, install NodeJS
-     either via built-in tools[fn:: for example =apt-get install
-     nodejs-legacy= in Debian and Ubuntu] or via
-     download[fn:: \url{https://nodejs.org}] then, do a
-
-     npm install jpm
-
-     to install jpm[fn:: for the current user, global installation is done
-     via =npm install -g jpm=].
-
-     Once =jpm= is installed, new addons can be created via =jpm init=,
-     unit-tested via =jpm test=, live-tested via =jpm run=, the addon
-     package built via =jpm xpi=.
-
-     Another command that may be of use is =jpm sign=: as of Firefox
-     version 47, Mozilla enforces that all addons be
-     signed\cite{addon-signing}. If they are distributed via Mozilla's
-     Addon Marketplace[fn:: \url{https://addons.mozilla.org}], they are
-     checked and signed automatically. Otherwise, you can request an
-     API key for signing and sign via the command
-     [fn:: \url{https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm\#jpm_sign}]
-     =jpm sign --api-key $SIGNING_KEY --api-secret $SIGNING_SECRET=.
 **** TODO interacting with page-scripts
      By default, content-scripts are isolated from the modifications
      done by page-scripts.[[Interacting with page scripts]]
@@ -2770,12 +2491,14 @@ similar, little to see
 \appendix
 * appendices (just for searching, rest are top-level items)         :ARCHIVE:
   above, as in this section cuts it out (due to ARCHIVE tag)
-* Accuracy on 30 Sites, Training on 2016-07-06 Disabled
+* Accuracy on 30 Sites, Training against 2016-07-06
   #+INCLUDE: "data/results/alternatives.org::#vs-07-06" :only-contents t
 ** TODO format nicely, example
    #+BEGIN_SRC elisp
      (/ (fround (* 0.998739 10000)) 10000)
    #+END_SRC
+* Accuracy on 30 Sites, Training against 2016-07-21
+  #+INCLUDE: "data/results/alternatives.org::#vs-07-21" :only-contents t
 * Outlier Removal Results with Extra-Trees Classifier
   #+INCLUDE: "data/results/alternatives.org::#outlier_removal_et" :only-contents t
 * WRITE Versions
@@ -2883,6 +2606,313 @@ similar, little to see
   Both programs rely on the libpcap library for access to network
   packets.
 ** TODO better title
+* tools
+** criteria for tool to retrieve websites
+   - script tor browser: load new page
+   - easy set-up
+   - should
+     - register page load or error
+   - might
+     - set tor's paranoia slider
+     - install extra addon
+** shell script
+   Simply calling =firefox website= loads the website in
+   Firefox. This is the approach Wang
+   recommended(\cite{wang-personal})[fn:: it seems as though they
+   also switched to using the Marionette
+   framework.\cite{wang-personal}}. It has the drawback that
+   unsuccessful page loads are treated just like successful ones.
+** Selenium
+   Selenium is the de-facto standard for testing web applications. It
+   has drivers for several browsers, allowing it to control them, and
+   evaluate the retrieved page. Its documentation is currently
+   transferring from Version 1 to Version 2.
+** Chickenfoot
+   Chickenfoot was a Firefox addon which allowed browser scripting. It
+   was developed at MIT\cite{chickenfoot}. The most recent GitHub
+   release[fn:: \url{https://github.com/bolinfest/chickenfoot}] is for
+   Firefox 4.
+** EVA Marionette
+   <<Marionette>> Marionette is the next generation mozilla testing
+   framework. It is works just like Selenium and was designed to be
+   integrated into it. It was chosen for this thesis, as it made the
+   Tor Browser Bundle easily accessible.
+
+   After installation of the library (see below), controlling the browser
+   takes two easy steps:
+
+   1. start the Tor Browser Bundle with the `-marionette` switch
+
+      #+BEGIN_SRC sh
+        cd tor-browser_en-US/Browser
+        ./firefox -marionette
+      #+END_SRC
+
+   2. attach to a running browser in Python
+
+      #+BEGIN_SRC python
+        from marionette import Marionette
+        client = Marionette('localhost', port=2828);
+        client.start_session()
+        client.navigate('http://cnn.com'); # navigate loads a website
+      #+END_SRC
+
+   Marionette has the benefit that the =client.navigate()= call
+   returns only after the page has loaded, (and throws an error if
+   the page could not be loaded). This obsoletes f.ex. Panchenko et al.'s
+   \cite{panchenko} need to test whether a page loaded completely.
+** CHECK Marionette installation
+   Marionette exists as a Python Package. It is thus easily installed
+   via
+   #+BEGIN_SRC sh
+     pip install marionette_client
+   #+END_SRC
+
+   After installation pip via =sudo apt-get install python-pip=). Using
+   a virtualenv is highly recommended in the documentation. If using
+   only Marionette, it proved to be unnecessary. The combined
+   installation of Marionette with Mozmill broke Marionette.
+*** TODO merge with above and split out pip install (also needed for wsgi)
+** TODO who used which retrieval method
+   - who did sth
+     - p: 
+       1. chickenfoot only
+       2. Chickenfoot, iMacros, and Scriptish
+     - h
+     - ll
+     - w
+     - c
+     - d
+     - j
+   - what did they use
+     - list
+     - chickenfoot
+     - modified browser
+     - selenium: daniel
+     - plain tor bundle
+* setup
+** TODO by-hand initialization to retrieve websites
+   After installation, the tor browser bundle performs some
+   initialization steps. To complete these easily, start the tor
+   browser bundle-firefox by hand once, set the connection type and
+   have it load any website via Tor. All this also downloads Tor
+   metadata, which allows to connect more quickly later on.
+** tshark installation
+   You also need to install =tshark= [fn:: via f.ex. =sudo apt-get
+   install tshark= on Debian-based systems] and enable the user to
+   capture packets [fn:: via (Debian-based) =sudo dpkg-reconfigure
+   wireshark-common= and adding the user to the =wireshark= group
+   (in =/etc/groups=)].
+** TODO how to get tor browser bundle to work
+   In order to start the tor browser bundle via the =./firefox=
+   command, you need libraries, which are bundled with the binary.
+   They can be found inside the =/TorBrowser/Tor= directory.
+
+   The library path environment variable can be set on the command-line via
+   #+BEGIN_SRC sh
+   export LD_LIBRARY_PATH=/lib:/usr/lib:/path/to/bundle/Browser/TorBrowser/Tor
+   #+END_SRC
+   The script [[one-site.py][one-site.py]] uses this internally.
+
+   - install xpra
+*** TODO is old, still use, or remove?
+** Avoiding safe mode on restart
+   If Firefox was killed via a signal (as opposed to closing the
+   window), it prompts to start in Safe Mode afterwards.
+
+   This behavior can be avoided in three ways:
+
+   You can set the firefox preference
+   =toolkit.startup.max_resumed_crashes= to -1, you can set the
+   environment variable =MOZ_DISABLE_AUTO_SAFE_MODE= (did not work
+   in Tor Browser Bundle version ...), or --- as a last resort ---
+   you can remove the =toolkit.startup.recent_crashes= line in the
+   =prefs.js= config file which saves the number of consecutive
+   kills via =sed -i '/toolkit\.startup\.recent_crashes/d'
+   /path/to/prefs.js=.
+*** TODO TBB current version
+** headless configuration
+   If you want to capture on a headless server, you can use the
+   =xvfb=-package. which is installed via =sudo apt-get install xvfb=.
+
+   Then, you can run the X Virtual Framebuffer via
+
+   =Xvfb :1=
+
+   tell the browser to use it via
+
+   =export DISPLAY:1=
+
+   and start the retrieval as mentioned above.
+** TODO thoughts on size of data set
+   - computable (n^2 for svm with good results)
+   - number of instances negligible for computation
+     - check this
+   - stable results
+   - recent papers
+     - Panchenko: 775 a 20
+     - Wang:
+       - 100 a 90 of sensitive pages
+       - 5000 a 1 of non-monitored pages
+     - Cai: 400 samples of bbc.co.uk
+       - 100 \to 800 once a 20 \to 40 twice
+   - (currently closed world)
+*** TODO more complete list?
+** TODO filtering tshark files [0/4]
+   Although this requirement might later be removed (see [[*Further%20work][further
+   work]]), the addon currently needs a generator of cover traffic to
+   work. While it can be set in the add-on's preferences, this
+   generator ran on the same host as the tor client. Thus, the
+   capture files also contained traffic of the cover traffic
+   server. As they do not belong to the Tor traffic, are not what
+   the adversary sees, and might distort the result, they were
+   filtered. (Even though the accuracy results were not greatly
+   changed by this).
+
+   Fortunately, =tshark= offers a way to filter these files as
+   mentioned in \cite{splitcap}. The (read) filter commands are
+   described in the manual \cite{wireshark-filter}, with the tcp
+   protocol specific fields as given in \cite{tcp-filter-fields}.
+
+   The script to solve this is in the appendix [[7777]]. As the server
+   ran on port 7777, which was allowed only as an incoming port by
+   the firewall, it suffices to filter by port name. (Otherwise, the
+   read filter would need to be modified).
+*** TODO implementation
+   - summary approach: file 7777.sh takes each (pcap) file in
+     current directory, filters the port 7777 out
+   - apply this to each subdirectory
+   - then move all files to a common directory
+**** TODO include script from duckstein
+*** TODO link to man tshark
+** overview
+   - for the sake of comparability, also bridge for addon tests
+     - and easier to filter
+* modified top-100
+  :PROPERTIES:
+  :CUSTOM_ID: top-100
+  :END:
+  #+INCLUDE: "./sw/top-100-modified.csv" example
+* EVA Mozilla Add-On Sdk
+  #+INDEX: XUL
+  #+INDEX: XML User-interface Langage
+  The Add-on SDK by Mozilla facilitates the development of
+  Firefox-Addons.
+
+  It allows users to create addons using HTML and Javascript only, as
+  opposed to the previous use of
+  XUL[fn:: \url{https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XUL}],
+  the XML User-interface Language.
+
+  The addon execution entry point (like =main= in C and Java) can be
+  configured via the =preferences.json= file. By default, the main
+  addon-script is called =index.js=.
+
+  The SDK contains many tools to interact with the browser. URLs can
+  be loaded in the background via the =page-worker= module; the
+  =page-mod= module injects JavaScript code into the page the user is
+  browsing to. User-created code can be tested via unit tests.
+
+  If none of the easily accessible high-, or low-level modules
+  suffice, much of the browser's functionality is accessible via
+  the Components
+  object[fn:: \url{https://developer.mozilla.org/en/Components_object}],
+  which can be accessed via =require("chrome")=.
+** CHECK page-worker
+   <<page-worker>>
+   A =page-worker= creates "a permanent, invisible page and access[es]
+   its
+   DOM."[fn:: \url{developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html}]
+
+   New pages can be loaded in the background, which would allow for the
+   retrieval of camouflage traffic, as described by \cite{panchenko}.
+
+   A minimal new page-worker is created via
+
+   #+BEGIN_SRC js
+     var pageWorker = require("sdk/page-worker").Page({});
+   #+END_SRC
+
+   The page-worker's page can be set dynamically via
+
+   pageWorker.contentURL = "http://en.wikipedia.org/wiki/Cheese"
+
+   This fetches only the file pointed to. The retrieval of included
+   images, stylesheets, etc, is not automatic.
+
+   A page-worker was used in the initial prototype. The RequestPolicy
+   addon blocked this method of retrieval.
+
+** TODO page-mod
+   <<page-mod>>
+   The
+   page-mod[fn:: \url{http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html}]
+   module injects "scripts in the context of web pages whose URL
+   matches a given pattern."
+
+   The pattern can be given as ~"*"~ or =/.*/= to run on every
+   user-visited page.
+
+   It thus offers the possibility to check for the end of a web page
+   load by the user.
+
+   A page-mod example is
+
+   #+BEGIN_SRC js
+     const pageMod = require("sdk/page-mod");
+     pageMod.PageMod({
+         include: /.*/,
+         contentScriptFile: "./getLinks.js",
+         onAttach: function(worker) {
+             worker.port.on("links", function(JSONlinks) {
+                 addToCandidates(JSON.parse(JSONlinks));
+             });
+         }
+     });
+   #+END_SRC
+
+   , which is run on every page, applies the =getLinks.js= script and
+   listens for its feedback, which is then used via
+   =addToCandidates()=.
+
+   The page-mod has a =contentScriptWhen= parameter, which specifies
+   when to attach the script to the page. Valid values are =start=,
+   =ready=, and =end=, the last of which triggers at the
+   =window.onload= event, when the complete page, including
+   JavaScript, CSS, and images has loaded.
+
+   A page-mod offers many other options such as f.ex. stylesheets,
+   script parameters, etc.
+*** link page-mod
+    http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
+*** use real script (via import?)
+** CHECK Installation and Use of Jpm (the build tool)
+   The =jpm=-tool builds (SDK-based) Firefox browser extensions. It is available as a
+   NodeJS-Module via the built-in NodeJS Package Manager =npm=.
+
+   Installing =jpm= is a two-step process. Firstly, install NodeJS
+   either via built-in tools[fn:: for example =apt-get install
+   nodejs-legacy= in Debian and Ubuntu] or via
+   download[fn:: \url{https://nodejs.org}] then, do a
+
+   npm install jpm
+
+   to install jpm[fn::this command installs the software for the current user, global installation is done
+   via =npm install -g jpm=].
+
+   Once =jpm= is installed, new addons can be created via =jpm init=,
+   unit-tested via =jpm test=, live-tested via =jpm run=, the addon
+   package built via =jpm xpi=.
+
+   Another command that may be of use is =jpm sign=: as of Firefox
+   version 47, Mozilla enforces that all addons be
+   signed\cite{addon-signing}. If they are distributed via Mozilla's
+   Addon Marketplace[fn:: \url{https://addons.mozilla.org}], they are
+   checked and signed automatically. Otherwise, you can request an
+   API key for signing and sign via the command
+   [fn:: \url{https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm\#jpm_sign}]
+   =jpm sign --api-key $SIGNING_KEY --api-secret $SIGNING_SECRET=.
+
 * Script ~one_site.py~: capture pcap traces
   <<one-site.py>>
   #+INCLUDE: "./bin/one_site.py" src python
@@ -2904,11 +2934,6 @@ similar, little to see
 * Script retrieve-100-embedded.sh run htmlToNumEmbedded
   <<retrieve-100-embedded.sh>>
   #+INCLUDE: "./bin/retrieve_100_embedded.sh" src python
-* MOVE above scripts modified top-100
-  :PROPERTIES:
-  :CUSTOM_ID: top-100
-  :END:
-  #+INCLUDE: "./sw/top-100-modified.csv" example
 * TODO Remove same-host cover traffic server from traces: =7777.sh=
   <<7777>>
   #+INCLUDE: "./bin/7777.sh" src sh
