@@ -492,7 +492,7 @@ Facebook.com\\
       - ensemble methods
         - read up?
       - more random: (here only classifiction)
-*** Related Work
+*** MOVE: join with2 [[#wf-related][Related Work]]
     - schneier
     - liberatore
     - microsoft hintz-successor(?)
@@ -540,6 +540,9 @@ Facebook.com\\
     - panchenko (svm)
     - cumul + k-forest + wang-knn
 **** WRITE Related Work
+     :PROPERTIES:
+     :CUSTOM_ID: wf-related
+     :END:
      - mitchell
      - sklearn
      - herrmann: breakable shown via naive bayes
@@ -553,7 +556,7 @@ Facebook.com\\
        hadamard-distance on leaves
      - panchenko1 and 2: (ovr?) svm
 
-    Schneier's seminal books /Applied Cryptography/\cite{applied96}
+    Schneier's books /Applied Cryptography/\cite{applied96}
     and (with Ferguson) /Practical Cryptography/\cite{practical} deal
     briefly with /Traffic analysis/, of which website fingerprinting
     is a subtask. The first mention of applying it against encrypted
@@ -1169,7 +1172,7 @@ Facebook.com\\
       - and slightly better results
       - knn is best, outperforms svc on our tests
     - more work for svm parameter estimation
-*** WRITE panchenko v1 vs cumul
+*** WRITE [#A] panchenko v1 vs cumul
     Panchenko et al proposed two methods for analysing traces.
 
     They both use support vector machines as classifier, but differ in
@@ -1177,17 +1180,21 @@ Facebook.com\\
 
     Since CUMUL\cite{panchenko2} is Panchenko et al.'s newer approach
     after their first classifier\cite{panchenko} (called /version 1/
-    from now on), better accuracy of the former is to expected.
+    from now on), better accuracy of the former is to
+    expected. Version 1 has the following drawbacks: it has a longer
+    running time, is less accurate, takes more preprocessing. Still,
+    it was the first method to sucessfully classify traces recorded
+    via Tor.
 
-    - both: similar results for different classifiers
-    - panchenko v1:
-      - takes longer
-      - is less accurate
-      - is more work: vector length normalisation [for cross-test]
-      - first to really work
+    #+CAPTION: table of different classifiers side-by side on CUMUL and version 1 features, accuracy and timing is shown per classifier
+    #+NAME: 1vsCUMUL
+    #+INCLUDE: "data/results/alternatives.org::#1vsCUMUL" :only-contents t
+
+    As seen in Table \ref{1vsCUMUL}, there is both a decrease in
+    running time and an increase in accuracy for CUMUL compared to version 1.
+
     - accuracy hit of about 20%?
     - best parameters sometimes outside of panchenko's range
-    - same classifier
     - state of the art:
       - wang-knn
         - knn with parameter weighting step
@@ -1201,7 +1208,10 @@ Facebook.com\\
       - all similar accuracies (as of k-fingerprinting)
     - [ ] experiment
       - how much better CUMUL than v1
-        - on disabled, best addon, wfpad
+        - on disabled
+        - accuracy, overhead, time
+
+
 *** KEYWORDS trace growth, time difference, effect
     :PROPERTIES:
     :CUSTOM_ID: time
@@ -1236,7 +1246,7 @@ Facebook.com\\
     - very dependent on retrieved trace time difference, see [[#time]]
     - svc slightly better on original data, fails against defense
       - still panchenko's accuracy only with combined test-train-OR
-*** KEYWORDS Addon
+*** KEYWORDS [#A] Addon
     #+CAPTION: different defense versions with CUMUL, svc classifier
     #+ATTR_LATEX: :float nil :width \textwidth
     [[./pictures/svc_oh_vs_acc.eps]]
@@ -1265,7 +1275,7 @@ Facebook.com\\
     - all around same curve
     - which classifier classifies which page well?
     - 5aII higher accuracy at svc than at et
-*** KEYWORDS sota (practical): WTF-PAD
+*** KEYWORDS [#A] sota (practical): WTF-PAD
     - overhead of WTF-PAD depends on client-bridge network connection
       - 0--1% if on localhost
       - ~12.9% for virtual machine
@@ -1445,46 +1455,10 @@ similar, little to see
 * WAIT Conclusion
 * TODO topics [0/75]
 ** TODO Website Fingerprinting [0/24]
-*** TODO MOVE to appendix single files of a website
-    The complete data of google.com can be retrieved via
-
-    =mkdir site; cd site; wget -p -H google.com=
-
-    which yields (in germany) the files (=find . -type f -ls=, formatted)
-
-    |  size | url                                                               |
-    |-------+-------------------------------------------------------------------|
-    |       | <65>                                                              |
-    | 18979 | google.com/index.html                                             |
-    | 17284 | www.google.de/images/nav_logo229.png                              |
-    |  1834 | www.google.de/images/icons/product/chrome-48.png                  |
-    |  5482 | =www.google.de/images/branding/googlelogo/1x/googlelogo_white_background_color_272x92dp.png= |
-    |  5430 | =www.google.de/images/branding/product/ico/googleg_lodp.ico=      |
-    |  8080 | www.google.de/robots.txt                                          |
-
-    which are five to six[fn::depending on ~robots.txt~] requests.
-**** TODO tshark for normal (non-tor) retrieval
-**** TODO mention redirects
-**** WAIT single page
-     - tor-retrieval
-     - retrieval with addon
+*** WAIT single page
+    - tor-retrieval
+    - retrieval with addon
 *** practical wf: analyzing traces
-**** WRITE MOVE to appendix how to process the data
-     The aim of processing is to extract attributes relevant for machine
-     learning from the original trace files, which are in =pcap= format.
-
-     Of the several tools available for reading =pcap=, =tshark= was
-     chosen. It is the command-line version of the Wireshark protocol
-     analyzer[fn:: \url{http://www.wireshark.org}].
-
-     - tshark internally
-     - python triggers
-     - collects,
-     - sums in the end
-     - displays
-     - =Counter=-class
-***** TODO MOVE merge/unify with [[transform to panchenko-attributes]]
-***** TODO and if include stuff from [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]
 **** transform to panchenko-attributes
      In encoding packet sizes, this thesis follows \cite{panchenko}'s
      approach, who recorded "incoming packets as positive, outgoing
@@ -1514,18 +1488,7 @@ similar, little to see
      and regressors, such as K-NN, SVM, decision trees, linear
      approximation, random trees, etc.
 ***** TODO regressor? wording
-*** INTEGRATE History of Website Fingerprinting
-    The idea of using traffic analysis to gather information about
-    encrypted traffic was mentioned in \cite[10.3]{applied96} and
-    applied in the analysis of SSL 3.0 by Wagner and
-    Schneier\cite{SSL}
-
-    - quantifying etc
-
-    The term /website fingerprinting/ was coined by Hintz in 2002. A
-    successful attack against single-hop proxies was carried out by
-    Herrmann et al. in 2009.
-
+*** MOVE to [[*Related Work][Related Work]] INTEGRATE History of Website Fingerprinting
     The website fingerprinting attack scenario is already described in
     the original Tor design paper\cite{tor-design}. Previous to
     Panchenko et al.\cite{panchenko}, it was considered "less
@@ -2976,6 +2939,42 @@ similar, little to see
   #+END_SRC
   This issue was seemingly fixed in firefox 48, as of the bug report.
 ** TODO [#C] bug report: quote other's error messages, link to bug report
+* TODO single files of a website
+  The complete data of google.com can be retrieved via
+
+  =mkdir site; cd site; wget -p -H google.com=
+
+  which yields (in germany) the files (=find . -type f -ls=, formatted)
+
+  |  size | url                                                               |
+  |-------+-------------------------------------------------------------------|
+  |       | <65>                                                              |
+  | 18979 | google.com/index.html                                             |
+  | 17284 | www.google.de/images/nav_logo229.png                              |
+  |  1834 | www.google.de/images/icons/product/chrome-48.png                  |
+  |  5482 | =www.google.de/images/branding/googlelogo/1x/googlelogo_white_background_color_272x92dp.png= |
+  |  5430 | =www.google.de/images/branding/product/ico/googleg_lodp.ico=      |
+  |  8080 | www.google.de/robots.txt                                          |
+
+  which are five to six[fn::depending on ~robots.txt~] requests.
+** TODO tshark for normal (non-tor) retrieval
+** TODO mention redirects
+* WRITE how to process the data
+  The aim of processing is to extract attributes relevant for machine
+  learning from the original trace files, which are in =pcap= format.
+
+  Of the several tools available for reading =pcap=, =tshark= was
+  chosen. It is the command-line version of the Wireshark protocol
+  analyzer[fn:: \url{http://www.wireshark.org}].
+
+  - tshark internally
+  - python triggers
+  - collects,
+  - sums in the end
+  - displays
+  - =Counter=-class
+** TODO MOVE merge/unify with [[transform to panchenko-attributes]]
+** TODO and if include stuff from [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]
 * TODO Non-parallelized-based web server for cover traffic [0/2]
   This approach did not scale to several parallel connections, so it
   was not used. It is included as a reference of what seems to work,

@@ -6,6 +6,7 @@ from sklearn import cross_validation, ensemble, multiclass, neighbors, svm, tree
 import doctest
 import logging
 import sys
+import time
 
 import counter
 
@@ -38,7 +39,7 @@ def _average_duration(counter_dict):
 
 def _bytes_mean_std(counter_dict):
     '''@return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
-    >>> _bytes_mean_std({'yahoo.com': [counter._ptest(3)]})
+    >>> _bytes_mean_std({'yahoo.com': [counter._test(3)]})
     {'yahoo.com': (1800.0, 0.0)}
     '''
     out = {}
@@ -118,7 +119,7 @@ def _gen_url_list(y, y_domains):
 
 def _mean(counter_dict):
     '''@return a dict of {domain1: mean1, ... domainN: meanN}
-    >>> _mean({'yahoo.com': [counter._ptest(3)]})
+    >>> _mean({'yahoo.com': [counter._test(3)]})
     {'yahoo.com': 1800.0}
     '''
     out = {}
@@ -200,7 +201,7 @@ def _predict_percentages(class_predictions_list, url_list):
 
 def _std(counter_dict):
     '''@return a dict of {domain1: std1, ... domainN: stdN}
-    >>> _std({'yahoo.com': [counter._ptest(3)]})
+    >>> _std({'yahoo.com': [counter._test(3)]})
     {'yahoo.com': 0.0}
     '''
     out = {}
@@ -241,9 +242,11 @@ def _times_mean_std(counter_dict):
 
 def _verbose_test_11(X, y, clf):
     '''cross-test (1) estimator on (1) X, y, print results and estimator name'''
+    t = time.time()
     scale = True if 'SVC' in str(clf) else False
     print _clf_params(clf),
     res = _test(X, y, clf)
+    print 'time: {}'.format(time.time() -t)
     print '{}, {}'.format(res.mean(), res)
 
 def _xtest(X_train, y_train, X_test, y_test, clf):
@@ -270,14 +273,19 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
     (train, test) = tts(defenses[defense0])
     CLFS = GOOD[:]
     if with_svm:
-        if defense0 not in SVC_MAP:
-            clf,_ = _my_grid_helper(train, cumul)
-            SVC_MAP[defense0] = clf
-        else:
+        if defense0 in SVC_MAP and cumul:
             logging.info('reused svc: %s for defense: %s',
                          SVC_MAP[defense0],
                          defense0) #debug?
-        CLFS.append(SVC_MAP[defense0])
+        else:
+            t = time.time()
+            clf,_ = _my_grid_helper(counter.outlier_removal(train, 2), cumul)
+            print 'parameter search took: {}'.format(time.time() -t)
+            if cumul:
+                SVC_MAP[defense0] = clf
+                CLFS.append(SVC_MAP[defense0])
+            else:
+                CLFS.append(clf)
 
     # X,y for eval
     if cumul:
@@ -301,12 +309,16 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
             l = _dict_elementwise(max,
                                   _find_max_lengths(defenses[defense0]),
                                   _find_max_lengths(its_counters))
-            (X, y, _) = to_features(defenses[defense0], l)
-            (X2, y2, _2) = to_features(its_counters, l)
+            (X, y, _) = to_features(
+                counter.outlier_removal(defenses[defense0], 2),
+                l)
+            (X2, y2, _2) = to_features(counter.outlier_removal(its_counters, 1),
+                                       l)
 
+        t = time.time()
         for clf in CLFS:
-            print '{}: {}'.format(_clf_name(clf),
-                                  _xtest(X, y, X2, y2, clf))
+            print '{} ({} seconds): {}'.format(_clf_name(clf), t - time.time(),
+                                               _xtest(X, y, X2, y2, clf))
 
 def compare_stats(dirs):
     '''@return a dict {dir1: {domain1: {...}, ..., domainN: {...}},
@@ -445,9 +457,9 @@ def tts(counter_dict, test_size=1.0/3):
     test_size = deep_len(test)/deep_len(train)
     uses cross_validation.train_test_split
     @return (train_dict, test_dict) which together yield counter_dict
-    >>> len(tts({'yahoo.com': map(counter._ptest, [3,3,3])})[0]['yahoo.com'])
+    >>> len(tts({'yahoo.com': map(counter._test, [3,3,3])})[0]['yahoo.com'])
     2
-    >>> len(tts({'yahoo.com': map(counter._ptest, [3,3,3])})[1]['yahoo.com'])
+    >>> len(tts({'yahoo.com': map(counter._test, [3,3,3])})[1]['yahoo.com'])
     1
     '''
     ids = []
@@ -560,7 +572,7 @@ if __name__ == "__main__":
     # sys.argv = ['', 'disabled/bridge', '0.22/10aI', '0.22/5aI__2016-07-19', '0.22/5aII__2016-07-18', '0.22/2aI__2016-07-23']
     # sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15'] # DISABLED
     # sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aI__2016-07-19'] # TOP
-    # sys.argv = ['', 'disabled/bridge__2016-07-06', 'wfpad/bridge__2016-07-05']
+    # sys.argv = ['', 'disabled/bridge__2016-07-06', 'wfpad/bridge__2016-07-05'
     # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
     # counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
     cross_test(sys.argv, with_svm=True) #, cumul=False)

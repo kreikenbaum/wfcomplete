@@ -4,6 +4,8 @@
 */
 const xhr = require("sdk/net/xhr");
 
+const coverUrl = require("./coverUrl.js");
+
 /** @param toLoad load this url as cover (discarded afterwards) */
 function http(toLoad) {
 //    console.log("load: http(" + toLoad + ")");
@@ -17,7 +19,7 @@ exports.http = (toLoad) => http(toLoad);
 /** @param {size int} loads resource of size {@code size} */
 function sized(size) {
     console.log("load: sized(" + size + ")");
-    http(require("./coverUrl.js").sized(size));
+    http(coverUrl.sized(size));
 }
 exports.sized = (size) => sized(size);
 
