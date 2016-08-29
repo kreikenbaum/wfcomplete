@@ -74,7 +74,7 @@
 * TODO look through unsorted top-level headings
 * WAIT Abstract
 * TODO Basics (=basics) [0%]
-** TODO Website Fingerprinting [0/35]
+** TODO Website Fingerprinting [0/34]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -92,15 +92,17 @@
     :PROPERTIES:
     :CUSTOM_ID: visual
     :END:
-    To illustrate the task of a website fingerprinter, consider these
-    graphical traces[fn::see appendix [[#wf-pictures]] for the creation of
-    these pictures] of two web pages in Figure \ref{traces}, where box
-    height signifies amount of data and width the duration until the
-    next packet:
+    To do website fingerprinting, you collect the sizes, order, and
+    timing of IP packets, called /traces/. To illustrate the task of a
+    website fingerprinter, consider this visualization[fn::see
+    appendix [[#wf-pictures]] for the creation of these pictures] of two
+    web pages in Figure \ref{traces}.
 
 #+BEGIN_LaTeX
-\begin{figure}[H]
+\begin{figure}[htb]
 \label{traces}
+\caption{Web trace data visualized. Box height signifies
+    amount of data, width the duration until the next packet.}
 Craigslist.org\\
 \includegraphics[width=0.22\textwidth]{./pictures/craigslist_org@1445352269.png}
 \includegraphics[width=0.22\textwidth]{./pictures/craigslist_org@1445585277.png}
@@ -117,6 +119,7 @@ Facebook.com\\
     According to Cai et al. \cite{a-systematic}, the tuples (delay,
     packet size) visualized in Figure \ref{traces} contain all
     relevant information of a trace.
+**** WRITE index trace
 *** DANIEL What happens during a (HTTP) website request
     :PROPERTIES:
     :CUSTOM_ID: http
@@ -181,9 +184,11 @@ Facebook.com\\
     :PROPERTIES:
     :CUSTOM_ID: Hurdles
     :END:
-    The refinement of web protocols made website fingerprinting
-    harder: Building a new HTTP connection for each transferred object
-    turned out to be
+    As a side-effect of web protocol evolution, website fingerprinting
+    became harder:
+
+    Building a new HTTP connection for each transferred object turned
+    out to be
     inefficient\cite[sec.2.2.2]{DBLP:books/daglib/0001977}. To improve
     on this, some early HTTP/1.0 implementations used persistent
     connections\cite{rfc2068}, see Figure \ref{http_persistent}. These
@@ -280,10 +285,11 @@ Facebook.com\\
 
      Tor's side-effects which hinder website fingerprinting are:
      - Tor's data cells have a *fixed size of 512 bytes* to prevent cell
-       identification,
+       identification, obfuscating sizes used by [[#wf1.0][early methods]].
      - Routing through several globally-distributed hops *increases
        latency*, and
-     - Tor *multiplexes all data* cells through a single TCP-connection.
+     - Tor *multiplexes all data* cells through a single
+       TCP-connection, yielding an effect similar to [[#Hurdles][HTTP pipelining]].
 
      Tor's cryptography will be omitted, because website
      fingerprinting, as all traffic analysis, assumes that a
@@ -314,25 +320,24 @@ Facebook.com\\
     significantly better than random guessing, they conjectured that
     this result could be improved when attacks were specifically
     tailored to Tor.
-*** WRITE attributes
+*** WRITE features
     :PROPERTIES:
     :CUSTOM_ID: attributes
     :END:
-    As stressed by Perry in \cite{critique}, analysis of which
-    attributes contribute the most towards classification is
-    fundamental to website fingerprinting success. Panchenko et
-    al. \cite{panchenko} provided a qualitative analysis. Hayes and
-    Danezis \cite{kfingerprint} classified using random
-    forests\cite{DBLP:journals/ml/Breiman01}, which provide
-    quantitative attribute importance feedback.[fn:: f.ex. in
-    scikit-learn \cite{scikit-learn} via the =_feature_importances=
-    attribute]
+    As stressed by \cite{critique}, analysis of which features
+    contribute the most towards classification is fundamental to
+    website fingerprinting success. \cite{panchenko} provides a
+    qualitative analysis. Hayes and Danezis \cite{kfingerprint}
+    classify using random forests\cite{DBLP:journals/ml/Breiman01},
+    which provide quantitative attribute importance feedback.[fn::
+    f.ex. in scikit-learn \cite{scikit-learn} via the
+    =_feature_importances= attribute]
 
-    As Dyer et al \cite{oakland2012-peekaboo} noted and experiments
-    with Panchenko et al's \cite{panchenko} estimator support (see
-    [[#different-classifiers]]), you can get good accuracy with several
-    classifiers, given the right attributes.[fn::as the experiments in sec
-    show, this holds mainly for uncloaked traffic]
+    As \cite{oakland2012-peekaboo} noted and experiments with the
+    \cite{panchenko} estimator support (see [[#different-classifiers]]),
+    you can get good accuracy with several classifiers, given the
+    right attributes.[fn::as the experiments in sec show, this holds
+    mainly for uncloaked traffic]
 
     According to Hayes and Danezis \cite{kfingerprint}, the top-five
     attributes are the number (both absolute and percentage of total)
@@ -346,35 +351,21 @@ Facebook.com\\
     al\cite{panchenko} also consider the first packets of a
     transmission/the HTML page as effective attributes.
 
-    If converted to appropriate representation, the random-looking web
-    site traces of Figure \ref{traces} become visually
-    distinguishable. See for example Panchenko et al's
-    CUMUL\cite{panchenko2} traces in Figure [[CUMUL_traces]].
-      #+CAPTION: CUMUL\cite{panchenko2} attributes example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
+    Panchenko et al's CUMUL\cite{panchenko2} allows for the visual
+    comparison of website traces. See for example Figure [[CUMUL_traces]].
+      #+CAPTION: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
       #+NAME: CUMUL_traces
       [[./pictures/cumul_aus_paper.pdf]]
-***** TODO visual representation of CUMUL
-     - Panchenko et al.'s recent approach allows for the visual
-       comparison of website traces.
-     - see images etc
-     - see how it's done
-     - example
-       #+CAPTION: CUMUL example from {\url https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
-       #+ATTR_LATEX: :width \linewidth
-       #+BEGIN_EXAMPLE
-       [[./pictures/cumul_resized_aus_paper.jpg]]
-       #+END_EXAMPLE
 ****** TODO or just link here to CUMUL
 ****** TODO think about order of this (at cumul, at visual, mention other...)
       then formulate correctly
-***** TODO get picture to work
-    - attributes to classes: classifiers
+***** TODO really say that several classifiers?
 *** WRITE panchenko version 1
-    Panchenko et al.'s \cite{panchenko} attack was the first that
-    successfully classifed traces for websites retrieved via
-    Tor\cite{critique}.
+    \cite{ccsw09-fingerprinting} had achieved low accuracy against
+    Tor. \cite{panchenko} was the first to successfully
+    classify Tor website traces\cite{critique}.
 
-    They evaluated several HTTP-specific attributes, selecting only
+    They evaluate several HTTP-specific attributes, selecting only
     those found to have the greatest impact. These were classified
     using Support Vector Machines.
 
@@ -388,9 +379,7 @@ Facebook.com\\
 **** TODO version 1: mention here (not below) that furthermore named thus
 **** TODO how many bg sites?
 **** TODO integrate Panchenko et al.'s Attack via Website Fingerprinting
-    The first website fingerprinting
-    attack\cite{ccsw09-fingerprinting} to also target Tor had yielded
-    little accuracy. This was due\cite{experimental} to Tor's
+ This was due\cite{experimental} to Tor's
     multiplexing and fixed cell-size.
 
     Panchenko et al\cite{panchenko} were the first to publish a
@@ -399,6 +388,12 @@ Facebook.com\\
     hand-tuned support vector machine with a radial basis function
     kernel.
 *** TODO move to subsection related work
+*** WRITE CUMUL
+    - better attributes
+    - svm
+    - picture
+    - understandeable
+    - faster than knn
 *** WRITE SVM
     Support Vector Machines (short: SVM) are a linear classifier:
     they find a linear boundary between points. While this might seem
@@ -481,12 +476,6 @@ Facebook.com\\
     - as seen in table in appendix: similar results to extratrees,
       randomforest, decisiontrees
       - one or the other slightly better
-*** WRITE CUMUL MOVE above SVM
-    - better attributes
-    - svm
-    - picture
-    - understandeable
-    - faster than knn
 *** WRITE extremely randomized trees
     - more random: (here only classifiction)
       - M trees, independent
@@ -565,6 +554,7 @@ Facebook.com\\
     - microsoft hintz-successor(?)
     - bissias
     - wright
+    - fegghi
 
    Schneier's books /Applied Cryptography/\cite{applied96}
    and (with Ferguson) /Practical Cryptography/\cite{practical} deal
@@ -763,7 +753,7 @@ Facebook.com\\
     level, as a whistleblower might need more anonymity protection
     than Jane Doe who just reads the latest news, possibly censored in
     her country.
-** TODO Design and Implementation (=Implementation) [0/15]
+** TODO Design and Implementation (=Implementation) [0/16]
 *** DANIEL Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -1014,6 +1004,13 @@ Facebook.com\\
 *** WRITE Related Work?
     - bloom paper
     - network applications
+*** WRITE integrate into above
+    This implementation currently omits some possibly embedded
+    elements, f.ex. those embedded in css files and =style= tags via
+    the =@url= css-directive. It seems better for cover traffic to
+    slightly underestimate the number of embedded elements. This
+    might generate more traffic than strictly necessary, but here,
+    safe seems better than sorry.
 * TODO Results and Evaluation [0%]
 ** WRITE Setup
 *** EVA sites
@@ -1074,6 +1071,48 @@ Facebook.com\\
     appendix [[#1site_desc]].
 **** TODO tbb-logo in setup pic
 **** WAIT github config files upload + mention
+*** KEYWORDS classification
+    :PROPERTIES:
+    :CUSTOM_ID: classification
+    :END:
+    The data is split twice. Once for validation of results,
+    once for parameter estimation, which is again split by
+    cross-validation.
+
+    In encoding packet sizes, this thesis follows \cite{panchenko}'s
+    approach, who recorded "incoming packets as positive, outgoing
+    ones as negative numbers."
+
+    The aim of processing is to extract attributes relevant for machine
+    learning from the original trace files, which are in =pcap= format.
+
+    Of the several tools available for reading =pcap=-trace files,
+    =tshark= was used in this thesis, as it offers TLS packet
+    reassembly. It is the command-line version of the Wireshark
+    protocol analyzer[fn:: \url{http://www.wireshark.org}].
+
+    1. wie in vl
+       1. musterraum
+       2. merkmalsraum
+       3. klassen
+
+    - tshark internally
+    - python triggers
+    - collects,
+    - sums in the end
+    - displays
+    - =Counter=-class
+
+    - transform to feature vector, or (see below sec [[#outlier_removal]]), etc: counter.py
+    - analysis: analyse.py
+    - or,
+    - validation, train, test data
+    - different classifiers: best are svc for both, knn for 1, et for 2
+      - re defenses: svc tends to overfit, yielding better results on regular traces, but decaying fast on data collected
+        - later
+        - with addon
+    - before outlier removal
+**** see also [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]               :ARCHIVE:
 *** KEYWORDS outlier removal
     :PROPERTIES:
     :CUSTOM_ID: outlier_removal
@@ -1149,23 +1188,6 @@ Facebook.com\\
 **** WAIT move to Defenses ??
 **** WAIT redo or test with more instances (70?)
 **** on average/per class numbers how many removed
-*** MOVE one above (above or) KEYWORDS classification
-    :PROPERTIES:
-    :CUSTOM_ID: classification
-    :END:
-    The data is split into three sets. One for validation of results,
-    one for parameter estimation, which is again split by
-    cross-validation.
-
-    - transform to feature vector, or (see below sec [[#outlier_removal]]), etc: counter.py
-    - analysis: analyse.py
-    - or,
-    - validation, train, test data
-    - different classifiers: best are svc for both, knn for 1, et for 2
-      - re defenses: svc tends to overfit, yielding better results on regular traces, but decaying fast on data collected
-        - later
-        - with addon
-    - before outlier removal
 ** KEYWORDS Website Fingerprinting [0/8]
 *** KEYWORDS panchenko v1 different classifiers
     :PROPERTIES:
@@ -1482,76 +1504,14 @@ similar, little to see
      - addon-simple does the opposite
    - have a look at [[*practical wf: analyzing traces][practical wf: analyzing traces]]
 * WAIT Conclusion
-* TODO topics [0/42]
+* TODO topics [0/35]
 ** TODO Website Fingerprinting [0/10]
 *** practical wf: analyzing traces
-**** MOVE to [[#classification]] transform to panchenko-attributes
-     In encoding packet sizes, this thesis follows \cite{panchenko}'s
-     approach, who recorded "incoming packets as positive, outgoing
-     ones as negative numbers."
-**** TODO effect of panchenko's weighting schema
+**** TODO MOVE to [[*panchenko version 1][panchenko version 1]] effect of panchenko's weighting schema
      Currently, fixed attributes are weighted heavily in favor of total
      incoming/outgoing bytes.
 ***** maybe
-*** TODO defenses
-    - walkie-talkie
-    - WTF-PAD
-    - supersequence
-    - tamaraw
-    - buflo
-
-    There are other methods of defense, which might help mitigate
-    website fingerprinting. A certain browser extension and text-only
-    browsing might reduce the fingerprint.
-**** INTEGRATE Additional Plugin: requestpolicy
-     In addition to the security-centric addons deployed with the
-     Tor-Browser-Bundle, there is an additional addon with orthogonal
-     protection:
-
-     RequestPolicy controls which third-party content to load on a
-     given page. Every query to the original domain is allowed, while
-     requests to other domains must be temporarily or permanently
-     approved. It comes with a restrictive set of pre-defined rules
-     (for example google pages are allowed to access gstatic). Both a
-     blacklist and a whitelist mode exist.
-
-     This could easily (and individually) alter the request/response
-     characteristic of a website. More study might shed some light.
-
-     RequestPolicy hindered early versions of the Addon, as it blocked
-     [[page-worker]]s. If both are deployed alongside, it should be
-     carefully checked.
-***** TODO move below tbb
-***** MAYBE also cite requestpolicy (orthogonal)
-**** WRITE write new plugins
-     Instead of inserting dummy traffic into the connection, one could
-     throttle the "data rate" of request and responses (or only
-     requests or the ratio) --- optionally padding with dummies up to
-     the maximum rate.
-
-     This approach has been used by f.ex. \cite{effective}, and has
-     been proven to work, albeit requiring higher latency, it has not
-     been explored further, as
-     - it might be hard to implement in a plug-in, and
-     - randomized defenses seem to offer adequate defense at reduced
-       latency and bandwith
-***** TODO move to description of other defenses
-**** INTEGRATE to [[#Hurdles][Hurdles to website fingerprinting: HTTP protocols evolution]] tor browser bundle defense
-     After the attack by Panchenko et al. \cite{panchenko}, the Tor
-     Project deployed an experimental defense \cite{experimental} in
-     the Tor Browser Bundle.
-
-     This defense enables HTTP pipelining and randomizes both the
-     number of concurrent requests and their order.  It was shown to
-     be ineffective by \cite{ccs2012-fingerprinting}, and confirmed by
-     \cite{wpes13-fingerprinting} and \cite{effective}.
-***** TODO HTTP pipelining refer to/elaborate, make own show subsubsection
-**** TODO running an OR
-     - hinted by ...
-     - extra traffic
-     - depends on data rate: if all is easily decorrelatable, maybe no
-       extra protection
-*** distribution of (main) attributes
+*** MOVE to appendix distribution of version 1's (main) attributes
     These distribution histograms show how Panchenko's main attributes
     are distributed. They are stacked histograms with classes
     separated by colors. They are compared (visually) to the HTTP
@@ -1592,8 +1552,8 @@ similar, little to see
     As website fingerprinting requires very litte resources, a specific
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
     state.
-** TODO Addon Design and Implementation [0/47]
-*** TODO Variations of Cover Traffic
+** TODO Addon Design and Implementation [0/27]
+*** TODO MOVE to [[#addon_main][Addon Version: Main]] (discard/delete stuff)  Variations of Cover Traffic
     There are two variations how to generate Cover Traffic.
     2. Given a webpage and its size, how much traffic should be generated?
 
@@ -2006,50 +1966,6 @@ similar, little to see
   - if protects against this, should also protect against worse
   - additional (?defense?) as proposed in critique
 ** TODO follow critique at all?
-* WRITE MOVE to appendix how to set up WTF-PAD
-  - helpful notes at scramblesuit
-  - modify for WTF-PAD
-  - failed to work if called from Tor
-  - thus 3/4 separate parts
-    - tor server: listen on ORPort X
-    - WTF-PAD server script: send to X, listen on Y
-    - WTF-PAD client script: send to Y, listen on Z
-    - in tbb/on 2nd tor (a.k.a. client): send traffic to bridge
-      =Bridge 127.0.0.1 Z=
-      - here: =Bridge 134.169.109.51:40300=
-      - or in tbb without the Bridge: =134.169.109.51:40300=
-  - modify capture: localhost
-    - =-i lo=
-    - =port Y=
-  - alternative: client/server on separate hosts
-    - because localhost did not yield much
-      - because histogram based on arrival times, which are small on
-        the same host (loopback interface)
-    - ohne =-i=
-    - =host server_host=
-  - start capture
-  - bug on multiple uses:
-    #+BEGIN_EXAMPLE
-    exceptions.IOError: [Errno 24] Too many open files: '/proc/23634/stat'
-    #+END_EXAMPLE
-    - try temporary fix: increase number of file descriptors, set
-      #+BEGIN_SRC sh
-        username        -    nofile  10000
-      #+END_SRC
-      in =/etc/security/limits.conf=. (Alter 10000 to something else
-      if you retrieve more than 4000 at once. It seems to be about
-      1 per domain-request).
-    - bug report in appendix, needs some code to mitigate
-  - without WTF-PAD
-    - at bridge
-      tor -f torrc.no_wfpad.server (just orport)
-    - at client
-      configure tbb with
-      #+BEGIN_EXAMPLE
-        Bridge bridge.ip:40200
-      #+END_EXAMPLE
-** TODO scripts
-** TODO below [[*host install list][host install list]]
 * WRITE sampling web sites                                             :eval:
   - top 10 found wanting: different results from top-100
   - top-100 represented all as of ...
@@ -2316,8 +2232,7 @@ similar, little to see
   available on many UNIX-like systems and Windows.
 
   A modern contender with a GUI is wireshark. It also sports a
-  command-line version, tshark. As it offers TLS packet reassembly,
-  tshark was used in this thesis.
+  command-line version, tshark.
 
   Both programs rely on the libpcap library for access to network
   packets.
@@ -2474,8 +2389,8 @@ similar, little to see
        - 100 \to 800 once a 20 \to 40 twice
    - (currently closed world)
 *** TODO more complete list?
-** TODO filtering tshark files [0/4]
-   Although this requirement might later be removed (see [[*Further%20work][further
+** WRITE filtering tshark files [0/4]
+   Although this requirement could later be removed (see [[*Further%20work][further
    work]]), the addon currently needs a generator of cover traffic to
    work. While it can be set in the add-on's preferences, this
    generator ran on the same host as the tor client. Thus, the
@@ -2915,14 +2830,6 @@ similar, little to see
   To extract, python's lxml module to parse the HTML's
   DOM extracts the URLs of embedded files from the attributes of
   several tags, f.ex. the =src= element of =img= tags.
-** MOVE from here to [[#distinguish_HTML_embedded][How to distinguish HTML and embedded objects]]
-  This implementation currently omits some possibly embedded
-  elements, f.ex. those embedded in css files and =style= tags via
-  the =@url= css-directive. It seems better for cover traffic to
-  slightly underestimate the number of embedded elements. This
-  might generate more traffic than strictly necessary, but here,
-  safe seems better than sorry.
-** end MOVE
 ** TODO link to lxml website
 ** WAIT github links
 * CHECK Tor Browser and Firefox despite --sync problems
@@ -2962,22 +2869,6 @@ similar, little to see
   which are five to six[fn::depending on ~robots.txt~] requests.
 ** TODO tshark for normal (non-tor) retrieval
 ** TODO mention redirects
-* WRITE how to process the data
-  The aim of processing is to extract attributes relevant for machine
-  learning from the original trace files, which are in =pcap= format.
-
-  Of the several tools available for reading =pcap=, =tshark= was
-  chosen. It is the command-line version of the Wireshark protocol
-  analyzer[fn:: \url{http://www.wireshark.org}].
-
-  - tshark internally
-  - python triggers
-  - collects,
-  - sums in the end
-  - displays
-  - =Counter=-class
-** TODO MOVE to [[#classification]]
-** TODO and if include stuff from [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]
 * TODO Non-parallelized-based web server for cover traffic [0/2]
   This approach did not scale to several parallel connections, so it
   was not used. It is included as a reference of what seems to work,
@@ -3002,3 +2893,47 @@ similar, little to see
        cover traffic
    - maybe further work: test that really works worse
 ** TODO github script
+* WRITE how to set up WTF-PAD
+  - helpful notes at scramblesuit
+  - modify for WTF-PAD
+  - failed to work if called from Tor
+  - thus 3/4 separate parts
+    - tor server: listen on ORPort X
+    - WTF-PAD server script: send to X, listen on Y
+    - WTF-PAD client script: send to Y, listen on Z
+    - in tbb/on 2nd tor (a.k.a. client): send traffic to bridge
+      =Bridge 127.0.0.1 Z=
+      - here: =Bridge 134.169.109.51:40300=
+      - or in tbb without the Bridge: =134.169.109.51:40300=
+  - modify capture: localhost
+    - =-i lo=
+    - =port Y=
+  - alternative: client/server on separate hosts
+    - because localhost did not yield much
+      - because histogram based on arrival times, which are small on
+        the same host (loopback interface)
+    - ohne =-i=
+    - =host server_host=
+  - start capture
+  - bug on multiple uses:
+    #+BEGIN_EXAMPLE
+    exceptions.IOError: [Errno 24] Too many open files: '/proc/23634/stat'
+    #+END_EXAMPLE
+    - try temporary fix: increase number of file descriptors, set
+      #+BEGIN_SRC sh
+        username        -    nofile  10000
+      #+END_SRC
+      in =/etc/security/limits.conf=. (Alter 10000 to something else
+      if you retrieve more than 4000 at once. It seems to be about
+      1 per domain-request).
+    - bug report in appendix, needs some code to mitigate
+  - without WTF-PAD
+    - at bridge
+      tor -f torrc.no_wfpad.server (just orport)
+    - at client
+      configure tbb with
+      #+BEGIN_EXAMPLE
+        Bridge bridge.ip:40200
+      #+END_EXAMPLE
+** TODO scripts
+** TODO below [[*host install list][host install list]]
