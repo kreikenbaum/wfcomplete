@@ -315,10 +315,10 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
             (X2, y2, _2) = to_features(counter.outlier_removal(its_counters, 1),
                                        l)
 
-        t = time.time()
         for clf in CLFS:
-            print '{} ({} seconds): {}'.format(_clf_name(clf), t - time.time(),
-                                               _xtest(X, y, X2, y2, clf))
+            t = time.time()
+            print '{}: {}'.format(_clf_name(clf), _xtest(X, y, X2, y2, clf)), 
+            print '({} seconds)', time.time() - t)
 
 def compare_stats(dirs):
     '''@return a dict {dir1: {domain1: {...}, ..., domainN: {...}},
@@ -570,10 +570,20 @@ if __name__ == "__main__":
     # sys.argv = ['', 'disabled/bridge', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5__2016-07-17', 'simple2/20']
     # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge__2016-07-05', 'tamaraw']
     # sys.argv = ['', 'disabled/bridge', '0.22/10aI', '0.22/5aI__2016-07-19', '0.22/5aII__2016-07-18', '0.22/2aI__2016-07-23']
-    # sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15'] # DISABLED
-    # sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aI__2016-07-19'] # TOP
+    # 07-16
+    '0.22/10aI__2016-07-08/', '0.22/30aI__2016-07-13/', '0.22/50aI__2016-07-13/'
+    # 07-21
+    sys.argv = ['', 'disabled/bridge__2016-07-21', '0.22/5aII__2016-07-18/', '0.22/5aI__2016-07-19/', '0.22/10_maybe_aI__2016_07_23/', '0.22/2aI__2016-07-23/', '0.22/30aI__2016-07-25/', '0.22/50aI__2016-07-26/', '0.22/5aI__2016-07-25/']
+    # 08-29
+    sys.argv = ['', 'disabled/bridge__2016-08-29/', '0.22/5bII__2016-08-27/', '0.22/5aI__2016-08-26/', '0.22/5bI__2016-08-27/', '0.22/5aII__2016-08-25/']
+    # DISABLED
+    # sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15', 'disabled/bridge__2016-08-29/']
+    # TOP
+    # sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aI__2016-07-19']
     # sys.argv = ['', 'disabled/bridge__2016-07-06', 'wfpad/bridge__2016-07-05'
     # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
     # counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
     cross_test(sys.argv, with_svm=True) #, cumul=False)
+
+
 
