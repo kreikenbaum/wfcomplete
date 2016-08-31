@@ -72,8 +72,8 @@
 #+LATEX_HEADER: }}
 #+OPTIONS: H:6
 * WAIT Abstract
-* TODO Basics (=basics) [22%]
-** TODO Website Fingerprinting [7/35]
+* TODO Basics (=basics) [23%]
+** TODO Website Fingerprinting [7/32]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -228,7 +228,7 @@ Facebook.com\\
     or not implemented
     [fn::\url{http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp/expertzone/chats/transcripts/08_0814_ez_ie8.mspx}]
     in all major browsers. After \cite{panchenko}, Firefox's built-in
-    request pipelining was enabled [fn::with added request order
+    request pipelining was enabled[fn::with added request order
     randomization] as part of a no-cost defense prototype in the
     Tor-Browser-Bundle
     \cite{experimental}. \cite{ccs2012-fingerprinting} found
@@ -273,10 +273,11 @@ Facebook.com\\
      /onion routers/. A connection through the network is
      created by a SOCKS5\cite{rfc1928} proxy, the /onion proxy/.
 
-     As illustrated in Figure [[tor-network]], a connection is routed through three onion routers, each
-     of which can only see the previous and next hop, due to (same-length-)
-     encryption. Thus, no router has knowledge of both origin and
-     destination of traffic.
+     As illustrated in Figure [[tor-network]], a connection is routed
+     through three onion routers, each of which can only see the
+     previous and next hop, due to
+     encryption[fn::same-length-encryption]. Thus, no router has
+     knowledge of both origin and destination of traffic.
 
      #+CAPTION: Connection through the Tor network. Alice's computer's onion proxy connects to Bob via three onion routers. Source \url{https://www.torproject.org/about/overview.html.en}
      #+NAME: tor-network
@@ -284,11 +285,12 @@ Facebook.com\\
 
      Tor's side-effects which hinder website fingerprinting are:
      - Tor's data cells have a *fixed size of 512 bytes* to prevent cell
-       identification, obfuscating those sizes used by [[#wf1.0][all early methods]],
+       identification, obfuscating packet sizes used by [[#wf1.0][all early methods]],
      - Routing through several globally-distributed hops *increases
        latency*, and
      - Tor *multiplexes all data* cells through a single
-       TCP-connection, yielding an effect similar to [[#Hurdles][HTTP pipelining]].
+       TCP-connection, yielding an effect similar to [[#Hurdles][HTTP
+       pipelining]][fn::but arguably enhanced]
 
      Tor's cryptography will be omitted, because website
      fingerprinting, as all traffic analysis, assumes that a
@@ -321,7 +323,7 @@ Facebook.com\\
     significantly better than random guessing, they conjectured that
     this result could be improved when attacks were specifically
     tailored to Tor.
-*** WRITE features
+*** CHECK features
     :PROPERTIES:
     :CUSTOM_ID: attributes
     :END:
@@ -335,9 +337,9 @@ Facebook.com\\
     =_feature_importances= attribute]
 
     As \cite{oakland2012-peekaboo} noted and experiments with the
-    \cite{panchenko} estimator support (see [[#different-classifiers]]),
-    you can get good accuracy with several classifiers, if proper
-    features are available.
+    \cite{panchenko} estimator support[fn::see
+    [[#different-classifiers]]], you can get good accuracy with several
+    classifiers, if proper features are available.
 
     According to Hayes and Danezis \cite{kfingerprint}, the top-five
     attributes are the number (both absolute and percentage of total)
@@ -356,11 +358,7 @@ Facebook.com\\
     #+CAPTION: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
     #+NAME: CUMUL_traces
     [[./pictures/cumul_aus_paper.pdf]]
-****** TODO or just link here to CUMUL
-****** TODO think about order of this (at cumul, at visual, mention other...)
-      then formulate correctly
-***** TODO really say that several classifiers?
-*** WRITE panchenko version 1
+*** CHECK panchenko version 1
     \cite{ccsw09-fingerprinting} had achieved low accuracy against
     Tor. \cite{panchenko} was the first to successfully
     classify Tor website traces\cite{critique}.
@@ -392,10 +390,13 @@ Facebook.com\\
     kernel.
 *** TODO move to subsection related work
 *** WRITE CUMUL
-    - better attributes
-    - svm
-    - picture
-    - understandeable
+    CUMUL\cite{panchenko2} is a state-of-the-art\cite{kfingerprint}
+    website fingerprinting attack. It offers a cumulative size picture
+    feature, which is easily understandable. See again Figure
+    [[CUMUL_traces]].
+
+    For classification, support vector machines were used.
+
     - faster than knn
 *** WRITE SVM
     Support Vector Machines (short: SVM) are a linear classifier:
@@ -406,9 +407,9 @@ Facebook.com\\
 
     (This section is mostly based on chapters 6 and 7 of Smola and
     Vishwanathan's book \cite{iml}). Given a set {x1, ..., xn} = X
-    with a dot product $<., .>: X \times X \to \mathbb R$. Given further
-    tuples (x1, y1), ..., (xm, ym), with xi \in set, yi \in {-1, 1} as a
-    binary classification task.
+    with a dot product $<., .>: X \times X \to \mathbb R$ and tuples $(x_1,
+    y_1), ..., (x_m, y_m)$, with $x_i \in X, y_i \in {-1, 1}$ as a binary
+    classification task.
 
     The SVM's job is to find a hyperplane[fn::as Hastie et
     al. mention in \cite[ch.4.1]{esl}, this is actually an affine
@@ -886,13 +887,12 @@ Facebook.com\\
       :PROPERTIES:
       :CUSTOM_ID: cache_size
       :END:
-      A webpage is modeled by its HTML size and its number
-      of embedded objects. In a closed world[fn::if the client can
-      only browse to a limited number of URLs], it is possible to
-      cache all page sizes beforehand. If a size is unknown, random variates
-      from the [[#HTTP traffic model][HTTP traffic model]] are used.[fn:: The size of each
-      embedded dummy object is always drawn from the HTTP traffic
-      model.]
+      A webpage is modeled by its HTML size and its number of embedded
+      objects. In a closed world[fn::if the client can only browse to
+      a limited number of URLs], it is possible to cache all sizes
+      beforehand. If a size is unknown, random variates from the [[#HTTP traffic model][HTTP
+      traffic model]] are used.[fn:: The size of each embedded dummy
+      object is always drawn from the HTTP traffic model.]
 
       Using known sizes is called the /cache/ flavor. In the
       /nocache/ flavor, sizes are always guessed.
@@ -903,12 +903,15 @@ Facebook.com\\
        Bloom filters\cite{Bloom70space/timetrade-offs}[fn::
        \cite{Broder02networkapplications} contains a Bloom filter
        overview with applications] are a stochastic data structure to
-       test membership in a set. They work similarly to hash-coding,
-       yet require significantly less space, which they trade for a
-       small /error rate/[fn::This error rate is dependent on the size
-       of the Bloom filter and the number of inserted elements.]: they
-       work flawlessly if an element is inside the set, yet might
-       wrongly state that an element is inside, when it is not.
+       test membership in a set. They work similarly to
+       hash-coding[fn::hash-coding means to have cells with hashes,
+       and to check whether a message is contained by checking its
+       cell[s], see \cite{Bloom70space/timetrade-offs}], yet require
+       significantly less space, which they trade for a small /error
+       rate/[fn::This error rate is dependent on the size of the Bloom
+       filter and the number of inserted elements.]: they work
+       flawlessly if an element is inside the set, yet might wrongly
+       state that an element is inside, when it is not.
 ****** EVA Application: Bloom Sort
        To save approximate sizes, they are sorted into bins based on
        the target distribution. For each bin, a Bloom filter is
@@ -1058,8 +1061,7 @@ Facebook.com\\
 
     Thus, a bridge was introduced into the traffic flow. It was needed
     for WTF-PAD anyways, but other Tor traffic also uses the bridge
-    instance via Tor's =Bridge= directive\cite[see CLIENT OPTIONS]{tor-manual}, to ease
-    comparability.
+    instance via Tor's =Bridge= directive\cite[sec.client options]{tor-manual}, to ease comparability.
 
     One host runs the Tor Browser Bundle and the cover traffic server
     (if needed), the other runs a tor server instance in bridge
@@ -1073,33 +1075,35 @@ Facebook.com\\
 
     Single traces are captured via the Python script ~one_site.py~, see
     appendix [[#1site_desc]].
-**** TODO tbb-logo in setup pic
 **** WAIT github config files upload + mention
 *** KEYWORDS preprocessing
-    The aim of processing is to extract attributes relevant for machine
+    The aim of preprocessing is to extract attributes relevant for machine
     learning from the original trace files, which are in =pcap= format.
-**** KEYWORDS split
-     As mentioned by \cite{arp-personal}, outliers can be removed based
-     on statistical class attributes[fn::\cite{panchenko2} used
-     incoming bytes median and quantiles] on the training data. On test
-     data, outliers should be removed only based on absolute size, as
-     the adversary does not know the trace's class beforehand.
 
-     The data set is split twice. Once for validation of results, once
-     for parameter estimation, where it is repeatedly split for
-     cross-validation.
+    - what else?
+    - def?
+    - from where?
+**** CHECK split
+     As mentioned by \cite{arp-personal}, outliers can be removed
+     based on statistical class attributes[fn::\cite{panchenko2} used
+     incoming bytes median and quantiles] on the training data
+     only. On test data, outliers should be removed only based on
+     absolute size, as the adversary does not know the trace's class
+     beforehand.
+
+     The data set is split twice. Once for later validation of results, once
+     for SVM parameter estimation (where it is repeatedly split for
+     cross-validation).
 **** KEYWORDS scaling
+     - svm
+     - recommended by \cite{sarle2} and \cite{Hsu10apractical}
+     - same scale factor for test and train set
 **** WAIT for [[file:~/Desktop/main.org::*daniel:%20merkmalsraum%20-%20musterraum%20etc%20in%20englisch?][daniel: merkmalsraum - musterraum etc in englisch?]]
      maybe separate sections muster/ merkmalsraum?
 *** KEYWORDS classification
     :PROPERTIES:
     :CUSTOM_ID: classification
     :END:
-**** MOVE to appendix, [[#counter][counter.py]]
-    In encoding packet sizes, this thesis follows \cite{panchenko}'s
-    approach, who recorded "incoming packets as positive, outgoing
-    ones as negative numbers."
-**** MOVE to appendix, [[*setup][setup]]
     Of the several tools available for reading =pcap=-trace files,
     =tshark= was used in this thesis, as it offers TLS packet
     reassembly. It is the command-line version of the Wireshark
@@ -1516,16 +1520,17 @@ similar, little to see
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
     state.
 ** TODO Addon Design and Implementation [0/27]
-*** TODO MOVE to [[#addon_main][Addon Version: Main]] (discard/delete stuff)  Variations of Cover Traffic
+*** TODO Variations of Cover Traffic
     There are two variations how to generate Cover Traffic.
     2. Given a webpage and its size, how much traffic should be generated?
-
+**** MOVE to [[#addon_main][Addon Version: Main]] (discard/delete stuff)
     This leads to the following variations:
 
     1) bloom binning (I) with known sizes (A)
     2) bloom binning (I) with random sizes (B)
     3) one target distribution (II) with original size from bloom (A),
     4) one target distribution (II) with random sizes (B)
+**** end MOVE
 
     | SIZES \ TARGETS | I: bloom binning | II: one distribution |
     |-----------------+------------------+----------------------|
@@ -1662,7 +1667,7 @@ similar, little to see
       this deanonymization problem at the application layer, where its
       origins are. (Separation of Concerns)
 **** TODO http server for testing
-**** TODO Apache mod_wsgi
+**** TODO Apache mod\_wsgi
      =mod_wsgi= is a module for the Apache web
      server[fn:: \url{https://httpd.apache.org/}]. It executes python
      scripts which implement the WSGI standard\cite{pep3333}. An
@@ -1815,13 +1820,6 @@ similar, little to see
     then adding elements via =htmlSizes.add("http://google.com/", 613)=
     and querying via =htmlSizes.query("http://google.com/")=, which
     would yield =400=. (see usage in [[file:cover/js/size-cache.js::let%20numEmbeddeds%20%3D%20new%20BloomSort.BloomSort(NUM_EMBEDDED_SIZES,][size-cache]])
-* MAYBE why privacy
-  - fundamental human need
-  - concentration camp:
-    "solitude in a Camp is more precious and rare than bread." -- primo levi
-* TODO extract dom tags python
-  - diveintopython
-  - see code
 * CHECK MOVE to appendix wsgi.py cover traffic server and generator
   :PROPERTIES:
   :CUSTOM_ID: wsgi
@@ -1945,7 +1943,7 @@ similar, little to see
      - add user to wireshark group in /etc/group
      - log out, log back in
   9. mkdir mnt/data, chown to current user/group
-  10. mod_wsgi: see [[*Apache%20mod_wsgi][Apache mod_wsgi]]
+  10. mod_wsgi: see [[*Apache%20mod\_wsgi][Apache mod_wsgi]]
   11. apt install tor
   12. apt install python-pyptlib python-crypto python-yaml
       python-psutil
@@ -2549,6 +2547,10 @@ similar, little to see
     - otherwise almost verbatim copy
   - quantiles:
     - just take quantiles, use his limits
+
+  In encoding packet sizes, this thesis follows \cite{panchenko}'s
+  approach, who recorded "incoming packets as positive, outgoing
+  ones as negative numbers."
 ** TODO cumul
 * WRITE analyse.py: code to classify etc: transform attributes to vector
   :PROPERTIES:

@@ -2,7 +2,7 @@
 '''Analyses (Panchenko's) features returned from Counter class'''
 
 import numpy as np
-from sklearn import cross_validation, ensemble, multiclass, neighbors, svm, tree
+from sklearn import cross_validation, ensemble, multiclass, neighbors, preprocessing, svm, tree
 import doctest
 import logging
 import sys
@@ -27,6 +27,8 @@ ALL = GOOD[:]
 ALL.extend([ensemble.AdaBoostClassifier(),
             svm.SVC(gamma=2**-4)])
 SVC_MAP = {}
+
+SCALER = None
 
 def _average_bytes(mean_std_dict):
     '''@return the average size over all traces'''
@@ -70,6 +72,7 @@ def _clf_params(clf):
     else:
         return _clf_name(clf)
 
+# td: if ever used, have a look at _scale (needs to reset SCALER)
 def _compare(X, y, X2, y2, clfs=GOOD):
     for clf in clfs:
         _test(X, y, clf)
@@ -211,14 +214,23 @@ def _std(counter_dict):
     return out
 
 def _scale(X, clf):
-    '''@return scaled X if estimator is SVM, else just X'''
+    '''assumption: svc never called on two different data sets in
+    sequence.  That is: _scale(X_train, svc), _scale(X_test, svc),
+    _scale(Y_train, svc), _scale(Y_test, svc), will not
+    happen. (without a _scale(..., non_svc) in between)
+
+    @return scaled X if estimator is SVM, else just X
+
+    '''
     if 'SVC' in str(clf):
         logging.debug("_scaled on svc %s", _clf_name(clf))
-        tmp = np.copy(X)
-        with np.errstate(divide='ignore', invalid='ignore'):
-            tmp /= np.max(np.abs(tmp), axis=0)
-        return np.nan_to_num(tmp)
+        if not SCALER:
+            SCALER = preprocessing.MinMaxScaler()
+            return SCALER.fit_transform(X)
+        else:
+            return SCALER.transform(X)
     else:
+        SCALER = None
         return X
 
 # td merge etc with _scale()
@@ -480,14 +492,6 @@ def tts(counter_dict, test_size=1.0/3):
     return (train, test)
 
     #_test(X, y, svm.SVC(kernel='linear')) #problematic, but best
-    #grid rbf
-#     cstart, cstop = -45, -35
-#     Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
-# #    Gs = np.logspace(gstart, gstop, base=10, num=10*(abs(gstart - gstop)+1))
-#     gamma = 4.175318936560409e-10
-#     for c in Cs:
-# #        for gamma in Gs:
-#         _test(X, y, svm.SVC(C=c, gamma=gamma))
     ### random forest
     ## feature importance
     # forest = ensemble.ExtraTreesClassifier(n_estimators=250)
