@@ -330,7 +330,7 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
         for clf in CLFS:
             t = time.time()
             print '{}: {}'.format(_clf_name(clf), _xtest(X, y, X2, y2, clf)), 
-            print '({} seconds)', time.time() - t)
+            print '({} seconds)'.format(time.time() - t)
 
 def compare_stats(dirs):
     '''@return a dict {dir1: {domain1: {...}, ..., domainN: {...}},
@@ -556,6 +556,11 @@ def tts(counter_dict, test_size=1.0/3):
 #     for row in b[9:]:
 #             writer.writerow(_format_row(row))
 
+    # sys.argv = ['', 'disabled/bridge', '0.15.3-retrofixed/bridge/30.js', '0.15.3-retrofixed/bridge/70.js', '0.15.3-retrofixed/bridge/50.js']
+    # sys.argv = ['', 'disabled/bridge', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5__2016-07-17', 'simple2/20']
+    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge__2016-07-05', 'tamaraw']
+    # sys.argv = ['', 'disabled/bridge', '0.22/10aI', '0.22/5aI__2016-07-19', '0.22/5aII__2016-07-18', '0.22/2aI__2016-07-23']
+
 # defenses = counter.Counter.for_defenses(sys.argv[1:], False)
 # some_30 = top_30(means)
 # timing = {k: _average_duration(v) for (k,v) in defenses.iteritems()}
@@ -564,18 +569,13 @@ def tts(counter_dict, test_size=1.0/3):
 if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
-
     # counters = counter.Counter.all_from_dir(sys.argv))
     # cumul_vs_panchenko(counters)
 
     # if by hand: change to the right directory before importing
     # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
-    # sys.argv = ['', 'disabled/bridge', '0.15.3-retrofixed/bridge/30.js', '0.15.3-retrofixed/bridge/70.js', '0.15.3-retrofixed/bridge/50.js']
-    # sys.argv = ['', 'disabled/bridge', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5__2016-07-17', 'simple2/20']
-    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge__2016-07-05', 'tamaraw']
-    # sys.argv = ['', 'disabled/bridge', '0.22/10aI', '0.22/5aI__2016-07-19', '0.22/5aII__2016-07-18', '0.22/2aI__2016-07-23']
     # 07-16
-    '0.22/10aI__2016-07-08/', '0.22/30aI__2016-07-13/', '0.22/50aI__2016-07-13/'
+    #'0.22/10aI__2016-07-08/', '0.22/30aI__2016-07-13/', '0.22/50aI__2016-07-13/'
     # 07-21
     sys.argv = ['', 'disabled/bridge__2016-07-21', '0.22/5aII__2016-07-18/', '0.22/5aI__2016-07-19/', '0.22/10_maybe_aI__2016_07_23/', '0.22/2aI__2016-07-23/', '0.22/30aI__2016-07-25/', '0.22/50aI__2016-07-26/', '0.22/5aI__2016-07-25/']
     # 08-29
