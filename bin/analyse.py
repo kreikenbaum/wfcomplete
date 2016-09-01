@@ -28,7 +28,7 @@ ALL.extend([ensemble.AdaBoostClassifier(),
             svm.SVC(gamma=2**-4)])
 SVC_MAP = {}
 
-SCALER = None
+scaler = None
 
 def _average_bytes(mean_std_dict):
     '''@return the average size over all traces'''
@@ -222,15 +222,16 @@ def _scale(X, clf):
     @return scaled X if estimator is SVM, else just X
 
     '''
+    global scaler
     if 'SVC' in str(clf):
         logging.debug("_scaled on svc %s", _clf_name(clf))
-        if not SCALER:
-            SCALER = preprocessing.MinMaxScaler()
-            return SCALER.fit_transform(X)
+        if not scaler:
+            scaler = preprocessing.MinMaxScaler()
+            return scaler.fit_transform(X)
         else:
-            return SCALER.transform(X)
+            return scaler.transform(X)
     else:
-        SCALER = None
+        scaler = None
         return X
 
 # td merge etc with _scale()
@@ -574,7 +575,7 @@ if __name__ == "__main__":
 
     # if by hand: change to the right directory before importing
     # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
-    # 07-16
+    # 07-06
     #'0.22/10aI__2016-07-08/', '0.22/30aI__2016-07-13/', '0.22/50aI__2016-07-13/'
     # 07-21
     sys.argv = ['', 'disabled/bridge__2016-07-21', '0.22/5aII__2016-07-18/', '0.22/5aI__2016-07-19/', '0.22/10_maybe_aI__2016_07_23/', '0.22/2aI__2016-07-23/', '0.22/30aI__2016-07-25/', '0.22/50aI__2016-07-26/', '0.22/5aI__2016-07-25/']

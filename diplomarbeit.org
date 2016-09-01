@@ -1,5 +1,5 @@
 #+TITLE: Selective Cover Traffic
-#+TODO: KEYWORDS WRITE CHECK EVA | DANIEL FINAL
+#+TODO: KEYWORDS WRITE CHECK | EVA DANIEL FINAL
 #+TODO: TODO WAIT | DONE
 #+TODO: INTEGRATE |
 * Configuration							    :ARCHIVE:
@@ -72,8 +72,8 @@
 #+LATEX_HEADER: }}
 #+OPTIONS: H:6
 * WAIT Abstract
-* TODO Basics (=basics) [23%]
-** TODO Website Fingerprinting [7/32]
+* TODO Basics (=basics) [25%]
+** TODO Website Fingerprinting [8/33]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -275,9 +275,9 @@ Facebook.com\\
 
      As illustrated in Figure [[tor-network]], a connection is routed
      through three onion routers, each of which can only see the
-     previous and next hop, due to
-     encryption[fn::same-length-encryption]. Thus, no router has
-     knowledge of both origin and destination of traffic.
+     previous and next hop, due to encryption[fn::the messages look
+     different each hop, but have the same length]. Thus, no router
+     has knowledge of both origin and destination of traffic.
 
      #+CAPTION: Connection through the Tor network. Alice's computer's onion proxy connects to Bob via three onion routers. Source \url{https://www.torproject.org/about/overview.html.en}
      #+NAME: tor-network
@@ -327,45 +327,44 @@ Facebook.com\\
     :PROPERTIES:
     :CUSTOM_ID: attributes
     :END:
-    As stressed by \cite{critique}, analysis of which features
+    As stressed by \cite{critique}, analysis of which features/attributes
     contribute the most towards classification will help to defend
     against website fingerprinting. \cite{panchenko} provides a
-    qualitative analysis. Hayes and Danezis \cite{kfingerprint}
-    classify using random forests\cite{DBLP:journals/ml/Breiman01},
-    which provide quantitative attribute importance feedback.[fn::
-    f.ex. in scikit-learn \cite{scikit-learn} via the
-    =_feature_importances= attribute]
+    qualitative analysis. \cite{kfingerprint} classify using random
+    forests[fn::forests of randomized trees, see
+    \cite{DBLP:journals/ml/Breiman01}], which provide quantitative
+    attribute importance feedback.[fn:: f.ex. in scikit-learn
+    \cite{scikit-learn} via the =_feature_importances= attribute]
 
     As \cite{oakland2012-peekaboo} noted and experiments with the
     \cite{panchenko} estimator support[fn::see
     [[#different-classifiers]]], you can get good accuracy with several
-    classifiers, if proper features are available.
+    classifiers, if proper attributes are available.
 
-    According to Hayes and Danezis \cite{kfingerprint}, the top-five
-    attributes are the number (both absolute and percentage of total)
-    of both incoming and outgoing packets. The standard deviation of
-    the packet ordering list [fn:: Panchenko et al \cite{panchenko}
-    call these attributes /Number Markers/] completes the top
-    five. Each added attribute increases accuracy, yet with nearly the
-    same accuracy for 30 as for the total of 150 attributes.
+    According to \cite{kfingerprint}, the top-five attributes are the
+    number (both absolute and percentage of total) of both incoming
+    and outgoing packets. The standard deviation of the packet
+    ordering list[fn:: Panchenko et al \cite{panchenko} call these
+    attributes /Number Markers/] completes the top five. Each added
+    attribute increases accuracy, yet with nearly the same accuracy
+    for 30 as for the total of 150 attributes.
 
-    Both Wang et al\cite{effective} and Panchenko et
-    al\cite{panchenko} also consider the first packets of a
-    transmission/the HTML page as effective attributes.
+    Both \cite{effective} and \cite{panchenko} also consider the first
+    packets of a transmission/the HTML page as effective attributes.
 
-    Panchenko et al's CUMUL\cite{panchenko2} allows for the visual
-    comparison of website traces. See for example Figure [[CUMUL_traces]].
+    CUMUL\cite{panchenko2} allows for the visual comparison of website
+    traces. See for example Figure [[CUMUL_traces]].
     #+CAPTION: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
     #+NAME: CUMUL_traces
     [[./pictures/cumul_aus_paper.pdf]]
+**** TODO feature vs attribute
 *** CHECK panchenko version 1
-    \cite{ccsw09-fingerprinting} had achieved low accuracy against
-    Tor. \cite{panchenko} was the first to successfully
-    classify Tor website traces\cite{critique}.
-
-    They evaluate several HTTP-specific attributes, selecting only
-    those found to have the greatest impact. These were classified
-    using Support Vector Machines.
+    While \cite{ccsw09-fingerprinting} classified one-hop proxies
+    well, it had achieved low accuracy against Tor. \cite{panchenko}
+    was the first to successfully classify Tor website
+    traces\cite{critique}: They evaluate several HTTP-specific
+    attributes, selecting only those found to have the greatest
+    impact. These were classified using Support Vector Machines.
 
     The sites retrieved were from both Herrmann et
     al.'s\cite{ccsw09-fingerprinting} and a new open-world
@@ -574,6 +573,10 @@ Facebook.com\\
    multiplexing and fixed cell sizes.
 *** index? traffic analysis
 
+*** Who could attack via WF
+    As website fingerprinting requires very litte resources, a specific
+    attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
+    state.
 ** TODO Defenses [0/8]
    siehe [[file:~/da/da.org::*2.%20Teil:%20Verteidigungen%20gegen%20Website-Fingerprinting%20(Welche%20Methoden%20existieren?%20Welche%20Problem%20existieren%20derzeit?%20-->%20%C3%9Cberleitung%20zum%20Hauptteil)][2. Teil: Verteidigungen gegen Website-Fingerprinting (Welche        Methoden existieren? Welche Problem existieren derzeit? -->        Überleitung zum Hauptteil)]]
 *** DANIEL Early defenses
@@ -687,7 +690,7 @@ Facebook.com\\
     - padding (sslv2 \to 3)
     - requestpolicy (hintz 2nd way)
     - text-only browsing (hintz 2nd way)
-* TODO Methods (=methods) [5%]
+* TODO Methods (=methods) [55%]
 ** TODO Motivation [0/2]
 *** brainstorm                                                      :ARCHIVE:
    - make wf/ml harder, fudge attributes
@@ -757,7 +760,7 @@ Facebook.com\\
     level, as a whistleblower might need more anonymity protection
     than Jane Doe who just reads the latest news, possibly censored in
     her country.
-** TODO Design and Implementation (=Implementation) [0/16]
+** TODO Design and Implementation (=Implementation) [9/16]
 *** DANIEL Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -883,7 +886,7 @@ Facebook.com\\
      items[fn:kg], the probability of embedded requests is
      computed. For each request to embedded objects, this is the
      probability that embedded-object-sized dummy data is requested.
-***** CHECK Choice: Cache (approximate) sizes using Bloom Filters
+***** EVA Choice: Cache (approximate) sizes using Bloom Filters
       :PROPERTIES:
       :CUSTOM_ID: cache_size
       :END:
@@ -904,9 +907,9 @@ Facebook.com\\
        \cite{Broder02networkapplications} contains a Bloom filter
        overview with applications] are a stochastic data structure to
        test membership in a set. They work similarly to
-       hash-coding[fn::hash-coding means to have cells with hashes,
-       and to check whether a message is contained by checking its
-       cell[s], see \cite{Bloom70space/timetrade-offs}], yet require
+       hash-coding[fn::see \cite{Bloom70space/timetrade-offs} for
+       hash-coding. Shortly: elements are hashed and a certain place
+       is checked for whether it contains this hash.], yet require
        significantly less space, which they trade for a small /error
        rate/[fn::This error rate is dependent on the size of the Bloom
        filter and the number of inserted elements.]: they work
@@ -1016,8 +1019,8 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* TODO Results and Evaluation [0%]
-** WRITE Setup
+* TODO Results and Evaluation [14%]
+** KEYWORDS Setup
 *** EVA sites
 **** EVA modified top-100
      The URLs for retrieval come from the Alexa top million sites
@@ -1059,9 +1062,13 @@ Facebook.com\\
     available. This had the main drawback that WTF-PAD used very
     little padding.[fn::see [[#eval-wtf-pad][sota (practical): WTF-PAD]] for details]
 
-    Thus, a bridge was introduced into the traffic flow. It was needed
-    for WTF-PAD anyways, but other Tor traffic also uses the bridge
-    instance via Tor's =Bridge= directive\cite[sec.client options]{tor-manual}, to ease comparability.
+    Thus, a Tor bridge was introduced into the traffic
+    flow[fn::Bridges relay Tor traffic. They act as a gateway into the
+    network. Their main use is censorship avoidance\cite{tor2014}]. It
+    is required for WTF-PAD anyways, but other Tor traffic also uses
+    the bridge instance via Tor's =Bridge=
+    directive\cite[sec.client~options]{tor-manual}, to ease
+    comparability.
 
     One host runs the Tor Browser Bundle and the cover traffic server
     (if needed), the other runs a tor server instance in bridge
@@ -1076,13 +1083,15 @@ Facebook.com\\
     Single traces are captured via the Python script ~one_site.py~, see
     appendix [[#1site_desc]].
 **** WAIT github config files upload + mention
-*** KEYWORDS preprocessing
+*** WRITE preprocessing
     The aim of preprocessing is to extract attributes relevant for machine
     learning from the original trace files, which are in =pcap= format.
 
-    - what else?
-    - def?
-    - from where?
+    - from pcap
+    - to feature vector
+    - split train/test/validation
+    - outlier removal
+    - scale
 **** CHECK split
      As mentioned by \cite{arp-personal}, outliers can be removed
      based on statistical class attributes[fn::\cite{panchenko2} used
@@ -1091,15 +1100,93 @@ Facebook.com\\
      absolute size, as the adversary does not know the trace's class
      beforehand.
 
-     The data set is split twice. Once for later validation of results, once
-     for SVM parameter estimation (where it is repeatedly split for
-     cross-validation).
+     The data set is split twice. Once for later validation of
+     results, once implicitly for SVM parameter estimation (by
+     five-fold cross-validation).
+
+***** MOVE to or below
+    - problem for level 3 (only): number of splits requires more data
+      than just 40 instances
+      - (train-test)/validation set\cite[sec.2.2.3]{iml} 2/3 to 1/3,
+        - pathological example: microsoftonline.com
+          - train-test split yielded 20-20
+          - removed 17 from 20 in level-3 split
+          - level 2 removed 0 from 20
+          - pics: all, train==lvl1==lvl2, lvl3
+        - happened only in level-3-or which was not used (and gave
+          little advantage, see OR), so little need to recapture
+          traces
+#+BEGIN_latex
+  \begin{figure}[htp]
+  \label{or-levels}
+\includegraphics[width=0.32\textwidth]{./pictures/or/all.eps}
+\includegraphics[width=0.32\textwidth]{./pictures/or/train.eps}
+\includegraphics[width=0.32\textwidth]{./pictures/or/level3.eps}
+  \end{figure}
+#+END_latex
+        - traces available in =data/path= directory
+        - possible solution: validation set bigger
+          - \cite{kfingerprint} captured 70 instances each
+**** KEYWORDS outlier removal
+     :PROPERTIES:
+     :CUSTOM_ID: outlier_removal
+     :END:
+     As described by \cite{panchenko2}, CUMUL's accuracy is enhanced
+     by outlier removal. Their
+     software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/},
+     see =features/feature-scripts/outlier-removal.py=] has 3--4
+     different settings: a minimal, a median-based[fn::in addition to
+     the median-based original by Wang and
+     Goldberg\cite{wpes13-fingerprinting}], and a
+     25%/75%-quantile-based approach, each adding a step to the
+     previous. The paper\cite{panchenko2} mentions only the
+     quantile-based filtering, so that was also used in this thesis.
+
+
+     As seen in Table [[tab:outlier_removal]], a higher level of outlier
+     removal on test data increases accuracy, but as of the previous
+     section, this is not feasible in the real world.
+
+
+     This outlier removal removed on average
+     - [ ] how many? 5%?
+       - evaluation of outlier removal steps
+     - Daniel Arp
+     - results
+       - -1
+         - use global maximum and minimum of median sizes, use that for
+           outlier removal
+         - no advantage over just removing smallest/largest (1)
+       - rw
+         - this might be why results are worse than f.ex. panchenko
+         - includes variant labeled -1: remember highest and lowest
+           quantile values from previous train-or, removes based on
+           these
+ #+CAPTION: Accuracy with SVM classifier after outlier removal. The ~both~ column shows classification accuracy if the outliers are removed from both test and train set at the same time.
+ #+NAME: tab:outlier_removal
+ #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
+ #+INCLUDE: "data/results/alternatives.org::#outlier_removal" :only-contents t
+     - [ ] experiments
+       - accuracy for levels
+         - svc
+         - et
+       - how many removed for levels
+     - after cross-validation split
+     - but can do that before attributes
+       - list of (url, list-id) tuples, one for each counter
+       - randomly choose subset
+     - link to file
+     - document number of filtered traces
+       - both panchenko's own and mine
+     - results different levels of outlier removal
+***** WAIT redo or test with more instances (70?)
+***** on average/per class numbers how many removed
+
 **** KEYWORDS scaling
      - svm
      - recommended by \cite{sarle2} and \cite{Hsu10apractical}
      - same scale factor for test and train set
 **** WAIT for [[file:~/Desktop/main.org::*daniel:%20merkmalsraum%20-%20musterraum%20etc%20in%20englisch?][daniel: merkmalsraum - musterraum etc in englisch?]]
-     maybe separate sections muster/ merkmalsraum?
 *** KEYWORDS classification
     :PROPERTIES:
     :CUSTOM_ID: classification
@@ -1122,79 +1209,6 @@ Facebook.com\\
         - with addon
     - before outlier removal
 **** see also [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]               :ARCHIVE:
-*** KEYWORDS MOVE SUBSET [[*preprocessing][preprocessing]] AFTER SPLIT outlier removal
-    :PROPERTIES:
-    :CUSTOM_ID: outlier_removal
-    :END:
-    As described by Panchenko et al. \cite{panchenko2}, CUMUL is
-    enhanced by outlier removal.[fn::Their
-    software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}],
-    see =features/feature-scripts/outlier-removal.py= has 3--4
-    different settings: a minimal, a median-based[fn::in addition to
-    the median-based original by Wang and
-    Goldberg\cite{wpes13-fingerprinting}], and a
-    25%/75%-quantile-based approach, each adding a step to the
-    previous. The paper\cite{panchenko2} mentions only the
-    quantile-based filtering, so that was also used in this thesis.]
-
-
-    This outlier removal removed on average
-    - [ ] how many? 5%?
-      - evaluation of outlier removal steps
-    - Daniel Arp
-    - results
-      - -1
-        - use global maximum and minimum of median sizes, use that for
-          outlier removal
-        - no advantage over just removing smallest/largest (1)
-      - as seen in Table [[tab:outlier_removal]] mostly dependent on
-        how much outlier removal done on test set
-        - this might be why results are worse than f.ex. panchenko
-        - includes variant labeled -1: remember highest and lowest
-          quantile values from previous train-or, removes based on
-          these
-#+CAPTION: accuracy with SVM classifier after outlier removal
-#+NAME: tab:outlier_removal
-#+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
-#+INCLUDE: "data/results/alternatives.org::#outlier_removal" :only-contents t
-    - [ ] experiments
-      - accuracy for levels
-        - svc
-        - et
-      - how many removed for levels
-    - after cross-validation split
-    - but can do that before attributes
-      - list of (url, list-id) tuples, one for each counter
-      - randomly choose subset
-    - link to file
-    - document number of filtered traces
-      - both panchenko's own and mine
-    - results different levels of outlier removal
-**** MOVE to [[*split][split]]
-    - problem: number of splits requires more data than just 40 instances
-      - (train-test)/validation set\cite[sec.2.2.3]{iml} 2/3 to 1/3,
-        - pathological example: microsoftonline.com
-          - train-test split yielded 20-20
-          - removed 17 from 20 in level-3 split
-          - level 2 removed 0 from 20
-          - pics: all, train==lvl1==lvl2, lvl3
-        - happened only in level-3-or which was not used (and gave
-          little advantage, see OR), so little need to recapture
-          traces
-#+BEGIN_latex
-  \begin{figure}[htp]
-  \label{or-levels}
-\includegraphics[width=0.32\textwidth]{./pictures/or/all.eps}
-\includegraphics[width=0.32\textwidth]{./pictures/or/train.eps}
-\includegraphics[width=0.32\textwidth]{./pictures/or/level3.eps}
-  \end{figure}
-#+END_latex
-        - traces available in =data/path= directory
-        - possible solution: validation set bigger
-          - \cite{kfingerprint} captured 70 instances each
-**** WAIT move to Defenses ??
-**** WAIT redo or test with more instances (70?)
-**** on average/per class numbers how many removed
 ** KEYWORDS Website Fingerprinting [0/8]
 *** KEYWORDS panchenko v1 different classifiers
     :PROPERTIES:
@@ -1513,12 +1527,7 @@ similar, little to see
      - addon-simple does the opposite
    - have a look at [[*practical wf: analyzing traces][practical wf: analyzing traces]]
 * WAIT Conclusion
-* TODO topics [0/35]
-** TODO Website Fingerprinting [0/10]
-*** MOVE to subsection of [[*Website Fingerprinting][Website Fingerprinting {0/34}]] Who could attack via WF
-    As website fingerprinting requires very litte resources, a specific
-    attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
-    state.
+* TODO topics [0/32]
 ** TODO Addon Design and Implementation [0/27]
 *** TODO Variations of Cover Traffic
     There are two variations how to generate Cover Traffic.
@@ -1537,7 +1546,6 @@ similar, little to see
     | A: known sizes  |                  |                      |
     | B: random sizes |                  |                      |
 *** TODO Mozilla Add-On Sdk [0/12]
-**** TODO Debugger
 **** TODO Available Data
      Firefox offers several ways for an add-on to listen for web activity.
 
@@ -1820,42 +1828,10 @@ similar, little to see
     then adding elements via =htmlSizes.add("http://google.com/", 613)=
     and querying via =htmlSizes.query("http://google.com/")=, which
     would yield =400=. (see usage in [[file:cover/js/size-cache.js::let%20numEmbeddeds%20%3D%20new%20BloomSort.BloomSort(NUM_EMBEDDED_SIZES,][size-cache]])
-* CHECK MOVE to appendix wsgi.py cover traffic server and generator
+* WRITE MOVE appendix differences theoretical HTML-num embedded and observed
   :PROPERTIES:
-  :CUSTOM_ID: wsgi
+  :CUSTOM_ID: theory-practice-numEmbedded
   :END:
-  With the technology stack to implement the cover traffic generator
-  being settled, implementation becomes a single-page file, see
-  ~bin/wsgi.py~.
-
-  One detail that inicreases accuracy is that the length of the content gets inflated by the
-  content-headers. To decrease this again, the length (which in turn
-  depends on the required length) needs to be calculated and
-  subtracted from the body-length. Some uncertainty arises because the
-  =Proxy-Connection: keep-alive= header is added in some
-  circumstances. The implementation errs on the side of returning too
-  much data.
-
-  Once the size is computed, a pseudo-random choice from the list of
-  all printable characters is returned to the HTML query.
-
-  To test this algorithm, the first 1000 sizes are retrieved via
-    #+BEGIN_SRC sh
-      for i in $(seq 1000); do
-          curl -D /tmp/curlheaders/$i.head 127.0.0.1:8000/?size=$i > /tmp/curlheaders/$i.body; 
-      done
-    #+END_SRC
-  which outputs the header and body of each query to the files,
-  f.ex. =134.head= and =134.body=.
-
-  This data is then evaluated by hand to check the sizes:
-    #+BEGIN_SRC sh
-      for i in $(seq 1000); do
-          echo "$i: $(cat ${i}.* | wc -c)";
-      done
-    #+END_SRC
-** WAIT link to github wsgi.py
-* TODO differences theoretical HTML-num embedded and observed
   - redirects
     - html had 176 elements, embedded only 100
     - the others were redirects (f.ex. from google.com to
@@ -1869,6 +1845,7 @@ similar, little to see
     but better)
   - growth of websites
   - [[*Further%20work][Further work]]
+** link in [[#HTTP traffic model][HTTP traffic model]] to here when moved
 * TODO truncated distributions
   - html: truncated lognormal instead of lognormal
     truncated at 0.999918739 quantile
@@ -1999,7 +1976,7 @@ similar, little to see
       - some approaches yes, binning no
   - elaborate on [[#number_embedded]]
   - how to set splits and sizes
-  - [[differences theoretical HTML-num embedded and observed]]
+  - [[#theory-practice-numEmbedded][differences theoretical HTML-num embedded and observed]]
   - improve code to include css, (iframes?), js in number of embedded elements
   - web pages got bigger. See if \cite{newtrafficmodel}'s values are
     still accurate.
@@ -2155,8 +2132,9 @@ similar, little to see
   browsing-session scenario is desired, the script could be
   modified to omit terminating the browser instance.
 
-  This script is triggered via several scripts that ensure that the
-  frame buffer is running for the capture.
+  This retrieval is triggered from several scripts that set up the
+  environment[fn::mostly they ensure that the frame buffer is running for
+  the capture].
 
   The script's main version captures all traffic, which needs to be
   filtered later. The script =d2g_one_site.py= contains the bridge's IP
@@ -2229,18 +2207,6 @@ similar, little to see
    returns only after the page has loaded, (and throws an error if
    the page could not be loaded). This obsoletes f.ex. Panchenko et al.'s
    \cite{panchenko} need to test whether a page loaded completely.
-** CHECK MOVE to [[*setup][setup]] Marionette installation
-   Marionette exists as a Python Package. It is thus easily installed
-   via
-   #+BEGIN_SRC sh
-     pip install marionette_client
-   #+END_SRC
-
-   After installation pip via =sudo apt-get install python-pip=). Using
-   a virtualenv is highly recommended in the documentation. If using
-   only Marionette, it proved to be unnecessary. The combined
-   installation of Marionette with Mozmill broke Marionette.
-*** TODO merge with above and split out pip install (also needed for wsgi)
 ** TODO who used which retrieval method
    - who did sth
      - p: 
@@ -2356,6 +2322,19 @@ similar, little to see
 ** overview
    - for the sake of comparability, also bridge for addon tests
      - and easier to filter
+** CHECK Marionette installation
+   Marionette exists as a Python Package. It is thus easily installed
+   via
+   #+BEGIN_SRC sh
+     pip install marionette_client
+   #+END_SRC
+
+   After installation pip via =sudo apt-get install python-pip=). Using
+   a virtualenv is highly recommended in the documentation. If using
+   only Marionette, it proved to be unnecessary. The combined
+   installation of Marionette with Mozmill broke Marionette.
+*** TODO merge with above and split out pip install (also needed for wsgi)
+
 * WRITE modified top-100
   :PROPERTIES:
   :CUSTOM_ID: top-100
@@ -2363,6 +2342,7 @@ similar, little to see
   #+INCLUDE: "./sw/top-100-modified.csv" example
 * KEYWORDS 30 sites
   #+INCLUDE: "./sw/top-30.csv" example
+
 * EVA Mozilla Add-On Sdk
   #+INDEX: XUL
   #+INDEX: XML User-interface Langage
@@ -2919,3 +2899,38 @@ similar, little to see
   [[file:pictures/all_total_out.png]]
   total bytes upstream/outgoing.
 ** TODO compare to HTTP model
+* CHECK wsgi.py cover traffic server and generator
+  :PROPERTIES:
+  :CUSTOM_ID: wsgi
+  :END:
+  With the technology stack to implement the cover traffic generator
+  being settled, implementation becomes a single-page file, see
+  ~bin/wsgi.py~.
+
+  One detail that inicreases accuracy is that the length of the content gets inflated by the
+  content-headers. To decrease this again, the length (which in turn
+  depends on the required length) needs to be calculated and
+  subtracted from the body-length. Some uncertainty arises because the
+  =Proxy-Connection: keep-alive= header is added in some
+  circumstances. The implementation errs on the side of returning too
+  much data.
+
+  Once the size is computed, a pseudo-random choice from the list of
+  all printable characters is returned to the HTML query.
+
+  To test this algorithm, the first 1000 sizes are retrieved via
+    #+BEGIN_SRC sh
+      for i in $(seq 1000); do
+          curl -D /tmp/curlheaders/$i.head 127.0.0.1:8000/?size=$i > /tmp/curlheaders/$i.body;
+      done
+    #+END_SRC
+  which outputs the header and body of each query to the files,
+  f.ex. =134.head= and =134.body=.
+
+  This data is then evaluated by hand to check the sizes:
+    #+BEGIN_SRC sh
+      for i in $(seq 1000); do
+          echo "$i: $(cat ${i}.* | wc -c)";
+      done
+    #+END_SRC
+** WAIT link to github wsgi.py
