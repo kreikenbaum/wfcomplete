@@ -789,9 +789,9 @@ Facebook.com\\
     \cite{newtrafficmodel} models web traffic via statistical
     distributions.
 
-    The size of both HTML documents and embedded objects is modeled by
-    lognormal distributions with different parameters. The
-    number of embedded objects is modeled by a gamma function. See
+    The size of both HTML documents and embedded objects is each
+    modeled by truncated lognormal distributions. The number of
+    embedded objects is modeled by a truncated gamma function. See
     illustration in Figure \ref{distribution}. They offer further
     parameters to fully model web browsing.
 
@@ -966,6 +966,12 @@ Facebook.com\\
       known.
 
       - picture of binning approach
+    This leads to the following variations:
+
+    1) bloom binning (I) with known sizes (A)
+    2) bloom binning (I) with random sizes (B)
+    3) one target distribution (II) with original size from bloom (A),
+    4) one target distribution (II) with random sizes (B)
 **** EVA Addon Version: Simple
      The main version had become quite complex for a Firefox extension
      with more than 500 lines of code. A simplified\cite[ch.7.2]{xp}
@@ -1019,7 +1025,7 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* TODO Results and Evaluation [14%]
+* TODO Results and Evaluation [13%]
 ** KEYWORDS Setup
 *** EVA sites
 **** EVA modified top-100
@@ -1104,29 +1110,7 @@ Facebook.com\\
      results, once implicitly for SVM parameter estimation (by
      five-fold cross-validation).
 
-***** MOVE to or below
-    - problem for level 3 (only): number of splits requires more data
-      than just 40 instances
-      - (train-test)/validation set\cite[sec.2.2.3]{iml} 2/3 to 1/3,
-        - pathological example: microsoftonline.com
-          - train-test split yielded 20-20
-          - removed 17 from 20 in level-3 split
-          - level 2 removed 0 from 20
-          - pics: all, train==lvl1==lvl2, lvl3
-        - happened only in level-3-or which was not used (and gave
-          little advantage, see OR), so little need to recapture
-          traces
-#+BEGIN_latex
-  \begin{figure}[htp]
-  \label{or-levels}
-\includegraphics[width=0.32\textwidth]{./pictures/or/all.eps}
-\includegraphics[width=0.32\textwidth]{./pictures/or/train.eps}
-\includegraphics[width=0.32\textwidth]{./pictures/or/level3.eps}
-  \end{figure}
-#+END_latex
-        - traces available in =data/path= directory
-        - possible solution: validation set bigger
-          - \cite{kfingerprint} captured 70 instances each
+    - validation, train, test data
 **** KEYWORDS outlier removal
      :PROPERTIES:
      :CUSTOM_ID: outlier_removal
@@ -1181,6 +1165,29 @@ Facebook.com\\
      - results different levels of outlier removal
 ***** WAIT redo or test with more instances (70?)
 ***** on average/per class numbers how many removed
+***** td headline
+    - problem for level 3 (only): number of splits requires more data
+      than just 40 instances
+      - (train-test)/validation set\cite[sec.2.2.3]{iml} 2/3 to 1/3,
+        - pathological example: microsoftonline.com
+          - train-test split yielded 20-20
+          - removed 17 from 20 in level-3 split
+          - level 2 removed 0 from 20
+          - pics: all, train==lvl1==lvl2, lvl3
+        - happened only in level-3-or which was not used (and gave
+          little advantage, see OR), so little need to recapture
+          traces
+#+BEGIN_latex
+  \begin{figure}[htp]
+  \label{or-levels}
+\includegraphics[width=0.32\textwidth]{./pictures/or/all.eps}
+\includegraphics[width=0.32\textwidth]{./pictures/or/train.eps}
+\includegraphics[width=0.32\textwidth]{./pictures/or/level3.eps}
+  \end{figure}
+#+END_latex
+        - traces available in =data/path= directory
+        - possible solution: validation set bigger
+          - \cite{kfingerprint} captured 70 instances each
 
 **** KEYWORDS scaling
      - svm
@@ -1191,6 +1198,7 @@ Facebook.com\\
     :PROPERTIES:
     :CUSTOM_ID: classification
     :END:
+**** MOVE to [[*preprocessing][preprocessing]]
     Of the several tools available for reading =pcap=-trace files,
     =tshark= was used in this thesis, as it offers TLS packet
     reassembly. It is the command-line version of the Wireshark
@@ -1199,16 +1207,14 @@ Facebook.com\\
     - sums in the end
     - displays
     - =Counter=-class
-
     - transform to feature vector, or (see below sec [[#outlier_removal]]), etc: counter.py
+**** see also [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]               :ARCHIVE:
+**** end move
     - analysis: analyse.py
-    - validation, train, test data
     - different classifiers: best are svc for both, knn for 1, et for 2
       - re defenses: svc tends to overfit, yielding better results on regular traces, but decaying fast on data collected
         - later
         - with addon
-    - before outlier removal
-**** see also [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]               :ARCHIVE:
 ** KEYWORDS Website Fingerprinting [0/8]
 *** KEYWORDS panchenko v1 different classifiers
     :PROPERTIES:
@@ -1312,7 +1318,7 @@ Facebook.com\\
       - others not tested
       - exception 22.0/5aII: better for svc
         - continue here: inspect which pages, etc, show traces, table
-** KEYWORDS Evaluation of Defenses [0/6]
+** KEYWORDS Evaluation of Defenses [0/7]
 *** KEYWORDS Introduction
     - very dependent on retrieved trace time difference, see [[#time]]
     - svc slightly better on original data, fails against defense
@@ -1365,6 +1371,10 @@ Facebook.com\\
     - reduction
       - et: 79% to 75% accuracy
       - svc: 87% to 41% accuracy
+*** KEYWORDS addon flavors
+    table like [[file:geloescht.org::*Variations%20of%20Cover%20Traffic][Variations of Cover Traffic]] with data
+**** to appendix?
+
 *** KEYWORDS trace comparison three main defenses
 #+BEGIN_LaTeX
 \begin{table}[H]
@@ -1527,26 +1537,10 @@ similar, little to see
      - addon-simple does the opposite
    - have a look at [[*practical wf: analyzing traces][practical wf: analyzing traces]]
 * WAIT Conclusion
-* TODO topics [0/32]
-** TODO Addon Design and Implementation [0/27]
-*** TODO Variations of Cover Traffic
-    There are two variations how to generate Cover Traffic.
-    2. Given a webpage and its size, how much traffic should be generated?
-**** MOVE to [[#addon_main][Addon Version: Main]] (discard/delete stuff)
-    This leads to the following variations:
-
-    1) bloom binning (I) with known sizes (A)
-    2) bloom binning (I) with random sizes (B)
-    3) one target distribution (II) with original size from bloom (A),
-    4) one target distribution (II) with random sizes (B)
-**** end MOVE
-
-    | SIZES \ TARGETS | I: bloom binning | II: one distribution |
-    |-----------------+------------------+----------------------|
-    | A: known sizes  |                  |                      |
-    | B: random sizes |                  |                      |
-*** TODO Mozilla Add-On Sdk [0/12]
-**** TODO Available Data
+* TODO topics [0/25]
+** TODO Addon Design and Implementation [0/20]
+*** TODO Mozilla Add-On Sdk [0/3]
+**** MOVE sub [[*Mozilla Add-On Sdk][Mozilla Add-On Sdk]] TODO Available Data
      Firefox offers several ways for an add-on to listen for web activity.
 
      - contents of main page
@@ -1557,7 +1551,7 @@ similar, little to see
      [[file:docs/lit.org::*%5B%5B./Intercepting%20Page%20Loads%20-%20Mozilla%20|%20MDN.html%5D%5BIntercepting%20Page%20Loads%5D%5D][Intercepting Page Loads*]] lists several
      - load events
      - http observer
-     - webprogersslistener
+     - webprogresslistener
      - xpcom
        - policymanager
        - documentloader
@@ -1565,7 +1559,7 @@ similar, little to see
 ***** end of page load
 ***** TODO as references or as footnote?
       ref, as completely read?
-**** separation of scripts
+**** MOVE sub  [[*Mozilla Add-On Sdk][Mozilla Add-On Sdk]] separation of scripts
      As a security measure, there is a separation between
 
      1) /add-on scripts/, which are run in the browser context, but
@@ -1578,31 +1572,30 @@ similar, little to see
      Bridging this separation, f.ex. accessing page scripts (and vice
      versa) is possible, but needs some extra work.
 ***** WAIT index: page scripts, content scripts, add-on scripts
-**** TODO collect/list all addon sections
-**** TODO interacting with page-scripts
+**** MOVE sub  [[*Mozilla Add-On Sdk][Mozilla Add-On Sdk]] interacting with page-scripts
      By default, content-scripts are isolated from the modifications
-     done by page-scripts.[[Interacting with page scripts]]
+     done by page-scripts.[fn::see
+     \url{developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_page_scripts.html}]
 
-     To access object inside the page-scripts context, you can use
-     =unsafeWindow=.
+     To access objects dynamically created the inside the page-scripts
+     context, you can use =unsafeWindow= instead of =window=.
 
      The reverse is only true for primitive values. If page-scripts
      need to see altered behavior, it is possible to override
      functionality of the page by using =exportFunction=, as in
-
-     exportFunction(open,
-		    unsafeWindow.XMLHttpRequest.prototype,
-		    {defineAs: "open"});
+     #+BEGIN_SRC js
+       exportFunction(open,
+                      unsafeWindow.XMLHttpRequest.prototype,
+                      {defineAs: "open"});
+     #+END_SRC
 
      This exports the (previously-defined) function =open()= to the
      XMLHttpRequest.prototype, where it replaces the built-in
      functionality.
-***** Interacting with page scripts
-=developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_page_scripts.html=
-**** TODO [#C] <<<DOM>>>
-     domain-object-model
-**** TODO unit tests jpm
-     JPM also offers the ability to write unit-tests.
+**** MOVE sub  [[*Mozilla Add-On Sdk][Mozilla Add-On Sdk]] TODO unit tests jpm
+     JPM also offers the ability to write unit-tests. See
+     \url{developer.mozilla.org/en-US/docs/Mozilla/Add-ons/SDK/Low-Level_APIs/test_assert.html}.
+***** TODO test link
 *** KEYWORDS [#B] Design
 **** by
      - generating cover traffic
@@ -1828,30 +1821,7 @@ similar, little to see
     then adding elements via =htmlSizes.add("http://google.com/", 613)=
     and querying via =htmlSizes.query("http://google.com/")=, which
     would yield =400=. (see usage in [[file:cover/js/size-cache.js::let%20numEmbeddeds%20%3D%20new%20BloomSort.BloomSort(NUM_EMBEDDED_SIZES,][size-cache]])
-* WRITE MOVE appendix differences theoretical HTML-num embedded and observed
-  :PROPERTIES:
-  :CUSTOM_ID: theory-practice-numEmbedded
-  :END:
-  - redirects
-    - html had 176 elements, embedded only 100
-    - the others were redirects (f.ex. from google.com to
-      www.google.de)
-    - these could be counted as having 0 embedded elements,
-      - yet still a difference remains
-  - it fits better if you enlarge the sizes by 0 for each redirected
-    element (there are 176 elements in the html filter, including
-    redirects, and only 99 in the embedded filter, if you pad the
-    embedded filter by 0 for each of those, it is not a perfect fit,
-    but better)
-  - growth of websites
-  - [[*Further%20work][Further work]]
-** link in [[#HTTP traffic model][HTTP traffic model]] to here when moved
-* TODO truncated distributions
-  - html: truncated lognormal instead of lognormal
-    truncated at 0.999918739 quantile
-  - embeddedSize: ebd
-  - numEmbeddedObjects: truncated gamma instead of gamma
-* TODO does this hide bursts?
+* TODO MOVE sub [[*Evaluation of Defenses][Evaluation of Defenses {0/7}]] after flavor does this hide bursts?
   - meta-bursts as described in walkie-talkie
   - are those hidden, too, or can the number of bursts be found out
   - easy to implement, maybe do this
@@ -2934,3 +2904,21 @@ similar, little to see
       done
     #+END_SRC
 ** WAIT link to github wsgi.py
+* WRITE differences theoretical HTML-num embedded and observed
+  :PROPERTIES:
+  :CUSTOM_ID: theory-practice-numEmbedded
+  :END:
+  - redirects
+    - html had 176 elements, embedded only 100
+    - the others were redirects (f.ex. from google.com to
+      www.google.de)
+    - these could be counted as having 0 embedded elements,
+      - yet still a difference remains
+  - it fits better if you enlarge the sizes by 0 for each redirected
+    element (there are 176 elements in the html filter, including
+    redirects, and only 99 in the embedded filter, if you pad the
+    embedded filter by 0 for each of those, it is not a perfect fit,
+    but better)
+  - growth of websites
+  - [[*Further%20work][Further work]]
+** link in [[#HTTP traffic model][HTTP traffic model]] to here when moved
