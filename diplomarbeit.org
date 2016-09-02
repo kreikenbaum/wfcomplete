@@ -72,8 +72,8 @@
 #+LATEX_HEADER: }}
 #+OPTIONS: H:6
 * WAIT Abstract
-* TODO Basics (=basics) [25%]
-** TODO Website Fingerprinting [8/33]
+* TODO Basics (=basics) [28%]
+** TODO Website Fingerprinting [9/32]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -234,7 +234,7 @@ Facebook.com\\
     \cite{experimental}. \cite{ccs2012-fingerprinting} found
     fingerprinting to be easier with this defense enabled than
     without.
-*** DANIEL Challenges to website fingerprinting: Tor [0/5]
+*** DANIEL Challenges to website fingerprinting: Tor [3/5]
     The Onion Router\cite{tor-design} (short: /Tor/) is an anonymity
     system: While encryption hides the /content of communication/,
     Tor also attempts to hide some /metadata/: Who communicates with
@@ -268,7 +268,7 @@ Facebook.com\\
      avoidance, covert ops, publishing, safety, online surveillance,
      anonymous tip lines, whistleblowing, blogging private opinions,
      evaluating competition, and troubleshooting IT systems.
-**** CHECK How does Tor Work
+**** EVA How does Tor Work
      The Tor anonymity network consists of volunteer servers, called
      /onion routers/. A connection through the network is
      created by a SOCKS5\cite{rfc1928} proxy, the /onion proxy/.
@@ -323,7 +323,7 @@ Facebook.com\\
     significantly better than random guessing, they conjectured that
     this result could be improved when attacks were specifically
     tailored to Tor.
-*** CHECK features
+*** CHECK Features
     :PROPERTIES:
     :CUSTOM_ID: attributes
     :END:
@@ -336,8 +336,8 @@ Facebook.com\\
     attribute importance feedback.[fn:: f.ex. in scikit-learn
     \cite{scikit-learn} via the =_feature_importances= attribute]
 
-    As \cite{oakland2012-peekaboo} noted and experiments with the
-    \cite{panchenko} estimator support[fn::see
+    As \cite{oakland2012-peekaboo} noted and experiments with
+    \cite{panchenko}'s estimator support[fn::see
     [[#different-classifiers]]], you can get good accuracy with several
     classifiers, if proper attributes are available.
 
@@ -347,29 +347,30 @@ Facebook.com\\
     ordering list[fn:: Panchenko et al \cite{panchenko} call these
     attributes /Number Markers/] completes the top five. Each added
     attribute increases accuracy, yet with nearly the same accuracy
-    for 30 as for the total of 150 attributes.
+    for the best 30 as for the total of 150 attributes.
 
     Both \cite{effective} and \cite{panchenko} also consider the first
     packets of a transmission/the HTML page as effective attributes.
 
-    CUMUL\cite{panchenko2} allows for the visual comparison of website
+    \cite{panchenko2} allows for the visual comparison of website
     traces. See for example Figure [[CUMUL_traces]].
     #+CAPTION: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
     #+NAME: CUMUL_traces
     [[./pictures/cumul_aus_paper.pdf]]
 **** TODO feature vs attribute
-*** CHECK panchenko version 1
+*** CHECK Panchenko Version 1
     While \cite{ccsw09-fingerprinting} classified one-hop proxies
-    well, it had achieved low accuracy against Tor. \cite{panchenko}
-    was the first to successfully classify Tor website
-    traces\cite{critique}: They evaluate several HTTP-specific
-    attributes, selecting only those found to have the greatest
-    impact. These were classified using Support Vector Machines.
+    well, it had achieved low accuracy against Tor
+    due\cite{experimental} to Tor's multiplexing and fixed
+    cell-size. \cite{panchenko} were the first to publish a successful
+    website fingerprinting attack on Tor\cite{critique}: They
+    extracted HTTP-specific attributes from the packet trace,
+    selecting only those found to have the greatest impact. These were
+    classified using Support Vector Machines.
 
-    The sites retrieved were from both Herrmann et
-    al.'s\cite{ccsw09-fingerprinting} and a new open-world
-    dataset. The size of the open-world data set was five foreground
-    sites.
+    The sites retrieved were from both \cite{ccsw09-fingerprinting}'s
+    and a new open-world dataset. The size of the open-world data set
+    was five foreground sites.
 
     The paper achieved closed-world recognition rates of 54.61% and
     open-world true-positive rate of up to 73% for Tor.
@@ -378,15 +379,6 @@ Facebook.com\\
     incoming/outgoing bytes.
 **** TODO version 1: mention here (not below) that furthermore named thus
 **** TODO how many bg sites?
-**** TODO integrate Panchenko et al.'s Attack via Website Fingerprinting
- This was due\cite{experimental} to Tor's
-    multiplexing and fixed cell-size.
-
-    Panchenko et al\cite{panchenko} were the first to publish a
-    successful website fingerprinting attack on Tor. They extracted
-    HTTP-specific attributes from the packet trace and used those in a
-    hand-tuned support vector machine with a radial basis function
-    kernel.
 *** TODO move to subsection related work
 *** WRITE CUMUL
     CUMUL\cite{panchenko2} is a state-of-the-art\cite{kfingerprint}
@@ -902,7 +894,7 @@ Facebook.com\\
 
       To cache sizes, an approximate-size data structure based on
       Bloom filters is used.
-****** CHECK Bloom Filter
+****** EVA Bloom Filter
        Bloom filters\cite{Bloom70space/timetrade-offs}[fn::
        \cite{Broder02networkapplications} contains a Bloom filter
        overview with applications] are a stochastic data structure to
@@ -915,7 +907,7 @@ Facebook.com\\
        filter and the number of inserted elements.]: they work
        flawlessly if an element is inside the set, yet might wrongly
        state that an element is inside, when it is not.
-****** EVA Application: Bloom Sort
+****** CHECK Application: Bloom Sort
        To save approximate sizes, they are sorted into bins based on
        the target distribution. For each bin, a Bloom filter is
        created; an element is added to this filter if its size is
@@ -924,7 +916,8 @@ Facebook.com\\
        To find out the size of an element, all filters are checked. If
        one filter reports containment, its size is chosen. If zero or
        more than one report containment, the size is either not known
-       or saved wrongly. The default distribution is used.
+       or saved wrongly. The default distribution is used. See section
+       [[#bloom-sort]] for a description of the implementation.
 
        This data structure has the advantage that, even if visited
        page sizes were saved, an adversary could not safely detemine
@@ -1025,7 +1018,7 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* TODO Results and Evaluation [13%]
+* TODO Results and Evaluation [20%]
 ** KEYWORDS Setup
 *** EVA sites
 **** EVA modified top-100
@@ -1059,7 +1052,7 @@ Facebook.com\\
      \cite{a-systematic} offers a model to compute open-world results
      from closed-world. It seemed more direct to capture background
      traces.
-*** CHECK capture
+*** EVA capture
     #+CAPTION: setup to capture web page traffic: Tor Browser on /Client/ machine, connects to Tor server on /Bridge/ machine, connects to Tor network, connects to web servers
     #+ATTR_LATEX: :float nil :width 0.5\textwidth
     [[./pictures/Setup.eps]]
@@ -1098,7 +1091,7 @@ Facebook.com\\
     - split train/test/validation
     - outlier removal
     - scale
-**** CHECK split
+**** EVA split
      As mentioned by \cite{arp-personal}, outliers can be removed
      based on statistical class attributes[fn::\cite{panchenko2} used
      incoming bytes median and quantiles] on the training data
@@ -1107,10 +1100,9 @@ Facebook.com\\
      beforehand.
 
      The data set is split twice. Once for later validation of
-     results, once implicitly for SVM parameter estimation (by
-     five-fold cross-validation).
-
-    - validation, train, test data
+     results[fn::code at =tts()= in analyse.py], once implicitly
+     during SVM parameter estimation, which is done via five-fold
+     cross-validation.[fn::code at =_my_grid()= in analyse.py]
 **** KEYWORDS outlier removal
      :PROPERTIES:
      :CUSTOM_ID: outlier_removal
@@ -1123,13 +1115,15 @@ Facebook.com\\
      the median-based original by Wang and
      Goldberg\cite{wpes13-fingerprinting}], and a
      25%/75%-quantile-based approach, each adding a step to the
-     previous. The paper\cite{panchenko2} mentions only the
-     quantile-based filtering, so that was also used in this thesis.
+     previous. \cite{panchenko2} only mentions the
+     quantile-based filtering, so that was mostly used in this thesis.
 
 
      As seen in Table [[tab:outlier_removal]], a higher level of outlier
      removal on test data increases accuracy, but as of the previous
      section, this is not feasible in the real world.
+
+     - similar for extratrees
 
 
      This outlier removal removed on average
@@ -1668,7 +1662,7 @@ similar, little to see
       this deanonymization problem at the application layer, where its
       origins are. (Separation of Concerns)
 **** TODO http server for testing
-**** TODO Apache mod\_wsgi
+**** TODO MOVE below [[*wsgi.py cover traffic server and generator][wsgi.py cover traffic server and generator]] Apache mod\_wsgi
      =mod_wsgi= is a module for the Apache web
      server[fn:: \url{https://httpd.apache.org/}]. It executes python
      scripts which implement the WSGI standard\cite{pep3333}. An
@@ -1686,7 +1680,7 @@ similar, little to see
      - ~/.local/bin/mod_wsgi-express start-server wsgi.py
 
      (here, also --port 7777), as for the script wsgi.py see appendix [[#wsgi]].
-**** CHECK python web server nichol.as
+**** CHECK MOVE above [[#wsgi][wsgi.py cover traffic server and generator]]python web server nichol.as
      The naïve implementation based on Python's BaseHTTPServer did not
      perform flawlessly (see [[*Non-parallelized-based web server for cover traffic][Non-parallelized-based web server for
      cover traffic {0/1}]]), even for the queries of a single
@@ -1695,7 +1689,7 @@ similar, little to see
 
      Luckily, an evaluation of Python web server performance had been
      performed by Nicholas Piël \cite{nicholas}. It shows the apache
-     server with the mod_wsgi module as well-performing. As it was noted
+     server with the mod\_wsgi module as well-performing. As it was noted
      to be very easy to set up, it was chosen for this evaluation.
 *** Evaluation
 **** add-on
@@ -1736,6 +1730,9 @@ similar, little to see
     - size taken from example...
       - maybe change when altered
 *** CHECK bloom-sort
+    :PROPERTIES:
+    :CUSTOM_ID: bloom-sort
+    :END:
     By ordering data into bins, it becomes possible to use bloom filters
     for the estimation of sizes, using one bloom filter for each bin.
 
@@ -2077,7 +2074,7 @@ similar, little to see
 ** WRITE 0.22: should be 0.21.1: reliability fixes
    - retrieved one-too-many on each embedded request
    - fix to /simple/: =endsLoad= was seemingly not triggered
-* CHECK retrieve trace: ~one_site.py~
+* EVA retrieve trace: ~one_site.py~
   :PROPERTIES:
   :CUSTOM_ID: 1site_desc
   :END:
@@ -2294,15 +2291,15 @@ similar, little to see
      - and easier to filter
 ** CHECK Marionette installation
    Marionette exists as a Python Package. It is thus easily installed
-   via
+   via[fn::After installation pip via f.ex. =sudo apt-get install python-pip=]
    #+BEGIN_SRC sh
      pip install marionette_client
    #+END_SRC
 
-   After installation pip via =sudo apt-get install python-pip=). Using
-   a virtualenv is highly recommended in the documentation. If using
-   only Marionette, it proved to be unnecessary. The combined
-   installation of Marionette with Mozmill broke Marionette.
+   Using a virtualenv is highly recommended in the documentation. If
+   using only Marionette, it proved to be unnecessary. The combined
+   installation of Marionette with Mozmill witouth virtualenv broke
+   Marionette.
 *** TODO merge with above and split out pip install (also needed for wsgi)
 
 * WRITE modified top-100
@@ -2329,7 +2326,7 @@ similar, little to see
   addon-script is called =index.js=.
 
   The SDK contains many tools to interact with the browser. URLs can
-  be loaded in the background via the =page-worker= module; the
+  be loaded in the background via several methods; the
   =page-mod= module injects JavaScript code into the page the user is
   browsing to. User-created code can be tested via unit tests.
 
@@ -2338,31 +2335,6 @@ similar, little to see
   the Components
   object[fn:: \url{https://developer.mozilla.org/en/Components_object}],
   which can be accessed via =require("chrome")=.
-** CHECK page-worker
-   <<page-worker>>
-   A =page-worker= creates "a permanent, invisible page and access[es]
-   its
-   DOM."[fn:: \url{developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-worker.html}]
-
-   New pages can be loaded in the background, which would allow for the
-   retrieval of camouflage traffic, as described by \cite{panchenko}.
-
-   A minimal new page-worker is created via
-
-   #+BEGIN_SRC js
-     var pageWorker = require("sdk/page-worker").Page({});
-   #+END_SRC
-
-   The page-worker's page can be set dynamically via
-
-   pageWorker.contentURL = "http://en.wikipedia.org/wiki/Cheese"
-
-   This fetches only the file pointed to. The retrieval of included
-   images, stylesheets, etc, is not automatic.
-
-   A page-worker was used in the initial prototype. The RequestPolicy
-   addon blocked this method of retrieval.
-
 ** TODO page-mod
    <<page-mod>>
    The
@@ -2370,7 +2342,7 @@ similar, little to see
    module injects "scripts in the context of web pages whose URL
    matches a given pattern."
 
-   The pattern can be given as ~"*"~ or =/.*/= to run on every
+   The pattern can be given as \verb|"*"| or =/.*/= to run on every
    user-visited page.
 
    It thus offers the possibility to check for the end of a web page
@@ -2413,12 +2385,13 @@ similar, little to see
    Installing =jpm= is a two-step process. Firstly, install NodeJS
    either via built-in tools[fn:: for example =apt-get install
    nodejs-legacy= in Debian and Ubuntu] or via
-   download[fn:: \url{https://nodejs.org}] then, do a
+   download[fn:: \url{https://nodejs.org}] then,
+   #+BEGIN_SRC sh
+     npm install jpm
+   #+END_SRC
 
-   npm install jpm
-
-   to install jpm[fn::this command installs the software for the current user, global installation is done
-   via =npm install -g jpm=].
+   installs[fn::this command installs the software for the current
+   user, global installation is done via =npm install -g jpm=] jpm.
 
    Once =jpm= is installed, new addons can be created via =jpm init=,
    unit-tested via =jpm test=, live-tested via =jpm run=, the addon
@@ -2433,13 +2406,13 @@ similar, little to see
    [fn:: \url{https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm\#jpm_sign}]
    =jpm sign --api-key $SIGNING_KEY --api-secret $SIGNING_SECRET=.
 
-** CHECK message-passing
+** WRITE message-passing
    There is a mechanism to pass content from the add-on to the
    content scripts, as shown in the example.
 
    A single string can be passed. As this string can be any serialized
-   JSON\cite{rfc7159} object, this effectively only disallows the passing of functions and circular
-   objects).
+   JSON\cite{rfc7159} object, this effectively only disallows the
+   passing of functions and circular objects .
 
    In a content-script, a message can be sent via
    =self.port.emit('message_type', param)= and received via
@@ -2448,6 +2421,7 @@ similar, little to see
    In the Addon-Context, a =worker= object is used and the
    content-script's =self= is replaced by a =worker=. The worker is
    initialized via the =onAttach= parameter of f.ex. the page-mod.
+*** TODO find example and move somewhere here
 * WRITE counter.py: represent trace files
   :PROPERTIES:
   :CUSTOM_ID: counter
