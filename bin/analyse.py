@@ -273,7 +273,7 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
     argv is like sys.argv, cumul triggers CUMUL, else version 1'''
     # call with 1: x-validate test that
     # call with 2+: also train 1 (split), test 2,3,4,...
-    defenses = counter.Counter.for_defenses(argv[1:], False)
+    defenses = counter.for_defenses(argv[1:])
     stats = {k: _bytes_mean_std(v) for (k,v) in defenses.iteritems()}
     sizes = {k: _average_bytes(v) for (k,v) in stats.iteritems()}
     # td: continue here, recompute duration (was not averaged per
@@ -338,7 +338,7 @@ def compare_stats(dirs):
     dir2:..., ..., dirN: ...} with domain mean, standard distribution
     and labels
     '''
-    defenses = counter.Counter.for_defenses(dirs, False)
+    defenses = counter.for_defenses(dirs)
     means = {k: _mean(v) for (k,v) in defenses.iteritems()}
     stds = {k: _std(v) for (k,v) in defenses.iteritems()}
     out = []
@@ -562,7 +562,7 @@ def tts(counter_dict, test_size=1.0/3):
     # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge__2016-07-05', 'tamaraw']
     # sys.argv = ['', 'disabled/bridge', '0.22/10aI', '0.22/5aI__2016-07-19', '0.22/5aII__2016-07-18', '0.22/2aI__2016-07-23']
 
-# defenses = counter.Counter.for_defenses(sys.argv[1:], False)
+# defenses = counter.for_defenses(sys.argv[1:])
 # some_30 = top_30(means)
 # timing = {k: _average_duration(v) for (k,v) in defenses.iteritems()}
 # outlier_removal_levels(defenses[sys.argv[1]]) #td: try out
@@ -578,7 +578,7 @@ if __name__ == "__main__":
     # 07-06
     #'0.22/10aI__2016-07-08/', '0.22/30aI__2016-07-13/', '0.22/50aI__2016-07-13/'
     # 07-21
-    sys.argv = ['', 'disabled/bridge__2016-07-21', '0.22/5aII__2016-07-18/', '0.22/5aI__2016-07-19/', '0.22/10_maybe_aI__2016_07_23/', '0.22/2aI__2016-07-23/', '0.22/30aI__2016-07-25/', '0.22/50aI__2016-07-26/', '0.22/5aI__2016-07-25/']
+    sys.argv = ['', 'disabled/bridge__2016-07-21', '0.22/5aII__2016-07-18/', '0.22/5aI__2016-07-19/', '0.22/10_maybe_aI__2016_07-23/', '0.22/2aI__2016-07-23/', '0.22/30aI__2016-07-25/', '0.22/50aI__2016-07-26/', '0.22/5aI__2016-07-25/']
     # 08-29
     sys.argv = ['', 'disabled/bridge__2016-08-29/', '0.22/5bII__2016-08-27/', '0.22/5aI__2016-08-26/', '0.22/5bI__2016-08-27/', '0.22/5aII__2016-08-25/']
     # DISABLED

@@ -72,8 +72,8 @@
 #+LATEX_HEADER: }}
 #+OPTIONS: H:6
 * WAIT Abstract
-* TODO Basics (=basics) [28%]
-** TODO Website Fingerprinting [9/32]
+* TODO Basics (=basics) [31%]
+** WRITE Website Fingerprinting [10/32]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -86,8 +86,9 @@
     early techniques no longer work]] especially on anonymity networks
     like Tor.
 
-    Finally, [[#wf2.0][current attacks]] will be explored.
+    Finally, [[#wf2.0][current website fingerprinting attacks]] will be explored.
 *** DANIEL Visual Representation of Traces
+    #+INDEX: trace
     :PROPERTIES:
     :CUSTOM_ID: visual
     :END:
@@ -118,7 +119,6 @@ Facebook.com\\
     According to Cai et al. \cite{a-systematic}, the tuples (delay,
     packet size) visualized in Figure \ref{traces} contain all
     relevant information of a trace.
-**** TODO index trace
 *** DANIEL What happens during a (HTTP) website request
     :PROPERTIES:
     :CUSTOM_ID: http
@@ -302,28 +302,28 @@ Facebook.com\\
 ***** WAIT high-resolution picture
 ***** WAIT maybe remove Schenier...phy/
       wait for [[file:~/Desktop/main.org::*entfernen%20der%20autorennamen%20(und%20titel)%20aus%20text,%20nur%20bib-referenz?][entfernen der autorennamen (und titel) aus text, nur bib-referenz?]]
-*** TODO (wf 2.0)
+*** WRITE (wf 2.0)
     :PROPERTIES:
     :CUSTOM_ID: wf2.0
     :END:
     In spite of these difficulties, website fingerprinting was shown
-    to be possible in even when Tor is used.
+    to be possible even when Tor is used.
 
     Similarly to the above attacks, \cite{Liberatore:2006}
-    and\cite{ccsw09-fingerprinting} used packet sizes, but employed
-    machine learning techniques. Liberatore and Levine used both a
+    and\cite{ccsw09-fingerprinting} use packet sizes, but employ
+    machine learning techniques. \cite{Liberatore:2006} use both a
     Naïve Bayes Classifier[fn::described f.ex. in
     \cite[ch.1.3.1]{intro2ir}] and Jaccard's classifier $s_{AB} =
     \frac{|A \cap B|}{|A \cup B|}$[fn::described in
     \cite{ccsw09-fingerprinting}], while \cite{ccsw09-fingerprinting}
-    used a Naïve Bayes Classifier with various metrics and
-    preprocessing.  This resulted in high accuracy against one-hop anonymizing
-    proxies, yet yielded only 3% accuracy against 775 distinct pages
-    retrieved via Tor\cite{tor-design}. As this was still
-    significantly better than random guessing, they conjectured that
-    this result could be improved when attacks were specifically
-    tailored to Tor.
-*** CHECK Features
+    use a Naïve Bayes Classifier with various metrics and
+    preprocessing. This yields high accuracy against one-hop
+    anonymizing proxies, but only 3% accuracy against 775 distinct
+    pages retrieved via Tor\cite{tor-design}. As this is still
+    significantly better than random guessing, they conjecture that
+    this result could be improved with attacks specifically tailored
+    to Tor[fn::as do \cite{Liberatore:2006}].
+*** EVA Features
     :PROPERTIES:
     :CUSTOM_ID: attributes
     :END:
@@ -362,33 +362,32 @@ Facebook.com\\
     While \cite{ccsw09-fingerprinting} classified one-hop proxies
     well, it had achieved low accuracy against Tor
     due\cite{experimental} to Tor's multiplexing and fixed
-    cell-size. \cite{panchenko} were the first to publish a successful
-    website fingerprinting attack on Tor\cite{critique}: They
-    extracted HTTP-specific attributes from the packet trace,
-    selecting only those found to have the greatest impact. These were
-    classified using Support Vector Machines.
+    cell-size. \cite{panchenko} were the first\cite{critique} to
+    publish a successful website fingerprinting attack on Tor: They
+    extracted HTTP-specific attributes from the packet trace, adjusted
+    their weights, and selected only those found to have the greatest
+    impact. These were classified using Support Vector Machines.
 
-    The sites retrieved were from both \cite{ccsw09-fingerprinting}'s
-    and a new open-world dataset. The size of the open-world data set
+    In addition to \cite{ccsw09-fingerprinting}'s data set, a new
+    open-world dataset was used. The size of the open-world data set
     was five foreground sites.
 
-    The paper achieved closed-world recognition rates of 54.61% and
+    \cite{panchenko} achieved closed-world recognition rates of 54.61% and
     open-world true-positive rate of up to 73% for Tor.
 
-    Currently, fixed attributes are weighted heavily in favor of total
+    The attributes are weighted heavily in favor of total
     incoming/outgoing bytes.
 **** TODO version 1: mention here (not below) that furthermore named thus
 **** TODO how many bg sites?
 *** TODO move to subsection related work
-*** WRITE CUMUL
+*** CHECK CUMUL
     CUMUL\cite{panchenko2} is a state-of-the-art\cite{kfingerprint}
-    website fingerprinting attack. It offers a cumulative size picture
-    feature, which is easily understandable. See again Figure
-    [[CUMUL_traces]].
+    website fingerprinting attack. It sums the number of incoming and
+    outgoing bytes, which results in a cumulative size picture
+    feature, which is easily understandable. The reader is reminded of
+    Figure [[CUMUL_traces]].
 
     For classification, support vector machines were used.
-
-    - faster than knn
 *** WRITE SVM
     Support Vector Machines (short: SVM) are a linear classifier:
     they find a linear boundary between points. While this might seem
@@ -396,27 +395,24 @@ Facebook.com\\
     original data, but also on a projected space. This allows for
     complex decision boundaries.
 
-    (This section is mostly based on chapters 6 and 7 of Smola and
-    Vishwanathan's book \cite{iml}). Given a set {x1, ..., xn} = X
-    with a dot product $<., .>: X \times X \to \mathbb R$ and tuples $(x_1,
-    y_1), ..., (x_m, y_m)$, with $x_i \in X, y_i \in {-1, 1}$ as a binary
-    classification task.
+    (This section is mostly based on chapters 6 and 7 of
+    \cite{iml}). Given a set $\{x_1, ..., x_n\} = X$ with a dot product $\langle\cdot,
+    \cdot\rangle: X \times X \to \mathbb R$ and tuples $(x_1, y_1), ..., (x_m, y_m)$,
+    with $x_i \in X, y_i \in \{-1, 1\}$ as a binary classification task.
 
-    The SVM's job is to find a hyperplane[fn::as Hastie et
-    al. mention in \cite[ch.4.1]{esl}, this is actually an affine
-    set, as it need not pass through the origin. Keeping with
-    tradition, it will be called hyperplane in this thesis.[fn::as
-    long as those things formed by quarks are still called atoms...]]
+    The SVM's job is to find a hyperplane[fn::as \cite[ch.4.1]{esl}
+    mention, this is actually an affine set, as it need not pass
+    through the origin. Keeping with tradition, it will be called
+    hyperplane in this thesis.[fn::as long as those things formed by
+    quarks are still called atoms...]]
     #+BEGIN_LaTeX
       \[\{x \in X | \langle w, x \rangle +b = 0\}\]
     #+END_LaTeX
-    such that $<w, xi> +b \ge 0$ whenever $yi = 1$, and $<w, xi> +b < 0$
-    whenever $yi = -1$.
+    such that $\langle w, x_i\rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle +b < 0$
+    whenever $y_i = -1$.
 
     - how works
       - set with dot product
-      - tuples (x1, y1), ..., (xm, ym), with xi \in set, yi \in {-1, 1}
-        - "binary classification task"
       - find hyperplane {x \in X | <w, x> +b = 0} that separates
         tuples, such that
         - <w, xi> +b \ge 0 whenever yi = 1, and
@@ -457,6 +453,7 @@ Facebook.com\\
 **** TODO rbf kernel
 **** TODO link to smola-book
 **** TODO link to basic book (bronstein) for vector space etc
+**** index binary classification task
 *** WRITE wang
     - improved detection
     - many attributes
@@ -549,7 +546,7 @@ Facebook.com\\
     - microsoft hintz-successor(?)
     - bissias
     - wright
-    - fegghi
+    - feghhi\cite{DBLP:journals/tifs/FeghhiL16}
 
    Schneier's books /Applied Cryptography/\cite{applied96}
    and (with Ferguson) /Practical Cryptography/\cite{practical} deal
@@ -569,7 +566,7 @@ Facebook.com\\
     As website fingerprinting requires very litte resources, a specific
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
     state.
-** TODO Defenses [0/8]
+** WRITE Defenses [0/8]
    siehe [[file:~/da/da.org::*2.%20Teil:%20Verteidigungen%20gegen%20Website-Fingerprinting%20(Welche%20Methoden%20existieren?%20Welche%20Problem%20existieren%20derzeit?%20-->%20%C3%9Cberleitung%20zum%20Hauptteil)][2. Teil: Verteidigungen gegen Website-Fingerprinting (Welche        Methoden existieren? Welche Problem existieren derzeit? -->        Überleitung zum Hauptteil)]]
 *** DANIEL Early defenses
     As defense against fingerprinting webpages when retrieved via SSL,
@@ -1091,13 +1088,34 @@ Facebook.com\\
     - split train/test/validation
     - outlier removal
     - scale
+
+    Of the several tools available for reading =pcap=-trace files,
+    =tshark= was used in this thesis, as it offers TLS packet
+    reassembly. It is the command-line version of the Wireshark
+    protocol analyzer[fn:: \url{http://www.wireshark.org}].
+
+    - sums in the end
+    - displays
+    - =Counter=-class
+    - transform to feature vector, or (see below sec [[#outlier_removal]]), etc: counter.py
+    - feature vector: for each packet (discarding timing data),
+      increment/decrement counter by its byte size (incoming
+      positive), add to list
+      - these give some number of steps, normalized == interpolated to
+        yield 100 such steps (for comparability, vectors need to have
+        the same size)
+    - version 1: compute \cite{panchenko}'s attributes
+      - pad variable-length attributes to maximum length of all with 0s
+**** check incoming positive
+**** see also [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]               :ARCHIVE:
 **** EVA split
      As mentioned by \cite{arp-personal}, outliers can be removed
      based on statistical class attributes[fn::\cite{panchenko2} used
-     incoming bytes median and quantiles] on the training data
+     incoming-byte-count median and quantiles] on the training data
      only. On test data, outliers should be removed only based on
      absolute size, as the adversary does not know the trace's class
-     beforehand.
+     beforehand. Splitting off the validation set thus happens before
+     outlier removal.
 
      The data set is split twice. Once for later validation of
      results[fn::code at =tts()= in analyse.py], once implicitly
@@ -1121,9 +1139,10 @@ Facebook.com\\
 
      As seen in Table [[tab:outlier_removal]], a higher level of outlier
      removal on test data increases accuracy, but as of the previous
-     section, this is not feasible in the real world.
+     section, this is not applicable in a real-world scenario.
 
      - similar for extratrees
+     - *table here*
 
 
      This outlier removal removed on average
@@ -1140,7 +1159,8 @@ Facebook.com\\
          - includes variant labeled -1: remember highest and lowest
            quantile values from previous train-or, removes based on
            these
- #+CAPTION: Accuracy with SVM classifier after outlier removal. The ~both~ column shows classification accuracy if the outliers are removed from both test and train set at the same time.
+***** MOVE table up (to MOVE here)
+ #+CAPTION: Accuracy with SVM classifier after outlier removal. The ~both~ column shows classification accuracy if the outliers are removed from both test and training set at the same time.
  #+NAME: tab:outlier_removal
  #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
  #+INCLUDE: "data/results/alternatives.org::#outlier_removal" :only-contents t
@@ -1192,19 +1212,9 @@ Facebook.com\\
     :PROPERTIES:
     :CUSTOM_ID: classification
     :END:
-**** MOVE to [[*preprocessing][preprocessing]]
-    Of the several tools available for reading =pcap=-trace files,
-    =tshark= was used in this thesis, as it offers TLS packet
-    reassembly. It is the command-line version of the Wireshark
-    protocol analyzer[fn:: \url{http://www.wireshark.org}].
-
-    - sums in the end
-    - displays
-    - =Counter=-class
-    - transform to feature vector, or (see below sec [[#outlier_removal]]), etc: counter.py
-**** see also [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]               :ARCHIVE:
-**** end move
     - analysis: analyse.py
+      - tries to mimic \cite{panchenko} and \cite{panchenko2} code
+      - uses toolkit \cite{scikit-learn}
     - different classifiers: best are svc for both, knn for 1, et for 2
       - re defenses: svc tends to overfit, yielding better results on regular traces, but decaying fast on data collected
         - later
@@ -1312,7 +1322,7 @@ Facebook.com\\
       - others not tested
       - exception 22.0/5aII: better for svc
         - continue here: inspect which pages, etc, show traces, table
-** KEYWORDS Evaluation of Defenses [0/7]
+** KEYWORDS Evaluation of Defenses [0/8]
 *** KEYWORDS Introduction
     - very dependent on retrieved trace time difference, see [[#time]]
     - svc slightly better on original data, fails against defense
@@ -1368,7 +1378,12 @@ Facebook.com\\
 *** KEYWORDS addon flavors
     table like [[file:geloescht.org::*Variations%20of%20Cover%20Traffic][Variations of Cover Traffic]] with data
 **** to appendix?
-
+*** KEYWORDS does this hide bursts?
+    - meta-bursts as described in walkie-talkie
+    - are those hidden, too, or can the number of bursts be found out
+    - easy to implement, maybe do this
+    - see that higher overhead per protection
+**** maybe see cumul-graphics
 *** KEYWORDS trace comparison three main defenses
 #+BEGIN_LaTeX
 \begin{table}[H]
@@ -1533,69 +1548,11 @@ similar, little to see
 * WAIT Conclusion
 * TODO topics [0/25]
 ** TODO Addon Design and Implementation [0/20]
-*** TODO Mozilla Add-On Sdk [0/3]
-**** MOVE sub [[*Mozilla Add-On Sdk][Mozilla Add-On Sdk]] TODO Available Data
-     Firefox offers several ways for an add-on to listen for web activity.
-
-     - contents of main page
-       \to links to each domain
-     - page-mod
-       - problems: only when page is loaded, problem for cover traffic
-       - but +: ends of all the loading (and processing)
-     [[file:docs/lit.org::*%5B%5B./Intercepting%20Page%20Loads%20-%20Mozilla%20|%20MDN.html%5D%5BIntercepting%20Page%20Loads%5D%5D][Intercepting Page Loads*]] lists several
-     - load events
-     - http observer
-     - webprogresslistener
-     - xpcom
-       - policymanager
-       - documentloader
-***** each load of page
-***** end of page load
-***** TODO as references or as footnote?
-      ref, as completely read?
-**** MOVE sub  [[*Mozilla Add-On Sdk][Mozilla Add-On Sdk]] separation of scripts
-     As a security measure, there is a separation between
-
-     1) /add-on scripts/, which are run in the browser context, but
-	cannot access the web page, and
-     2) /content scripts/, which are run in the page context. They can
-	access the DOM, but not add-on scripts. nor
-     3) /page scripts/, which are those included in the website via
-	f.ex. =<script>= tags
-
-     Bridging this separation, f.ex. accessing page scripts (and vice
-     versa) is possible, but needs some extra work.
-***** WAIT index: page scripts, content scripts, add-on scripts
-**** MOVE sub  [[*Mozilla Add-On Sdk][Mozilla Add-On Sdk]] interacting with page-scripts
-     By default, content-scripts are isolated from the modifications
-     done by page-scripts.[fn::see
-     \url{developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_page_scripts.html}]
-
-     To access objects dynamically created the inside the page-scripts
-     context, you can use =unsafeWindow= instead of =window=.
-
-     The reverse is only true for primitive values. If page-scripts
-     need to see altered behavior, it is possible to override
-     functionality of the page by using =exportFunction=, as in
-     #+BEGIN_SRC js
-       exportFunction(open,
-                      unsafeWindow.XMLHttpRequest.prototype,
-                      {defineAs: "open"});
-     #+END_SRC
-
-     This exports the (previously-defined) function =open()= to the
-     XMLHttpRequest.prototype, where it replaces the built-in
-     functionality.
-**** MOVE sub  [[*Mozilla Add-On Sdk][Mozilla Add-On Sdk]] TODO unit tests jpm
-     JPM also offers the ability to write unit-tests. See
-     \url{developer.mozilla.org/en-US/docs/Mozilla/Add-ons/SDK/Low-Level_APIs/test_assert.html}.
-***** TODO test link
 *** KEYWORDS [#B] Design
-**** by
-     - generating cover traffic
-**** WRITE browser caching
+**** WRITE MOVE to [[#1site_desc][retrieve trace: ~one_site.py~]] browser caching
      - browsers cache
      - only helps in cover traffic, (unless warm/cold site model is used)
+       - thus by disabling, cover traffic has a harder job at concealing
 ***** WAIT where to put this?
 **** TODO bloom-sort usage
      It is impractical to store the sizes of all URLs. Another
@@ -1662,35 +1619,7 @@ similar, little to see
       this deanonymization problem at the application layer, where its
       origins are. (Separation of Concerns)
 **** TODO http server for testing
-**** TODO MOVE below [[*wsgi.py cover traffic server and generator][wsgi.py cover traffic server and generator]] Apache mod\_wsgi
-     =mod_wsgi= is a module for the Apache web
-     server[fn:: \url{https://httpd.apache.org/}]. It executes python
-     scripts which implement the WSGI standard\cite{pep3333}. An
-     apache httpd serving only WSGI is easily set up via the
-     =mod_wsgi-express= command, which is included in the =mod_wsgi=
-     python package[fn:: \url{https://pypi.python.org/pypi/mod_wsgi}].
 
-     Installation (Ubuntu Server Edition and Linux Mint 17.1 Rebecca)
-
-     - apt-get install apache2-bin apache2-dev python-dev
-     - pip install mod_wsgi
-
-     start via
-
-     - ~/.local/bin/mod_wsgi-express start-server wsgi.py
-
-     (here, also --port 7777), as for the script wsgi.py see appendix [[#wsgi]].
-**** CHECK MOVE above [[#wsgi][wsgi.py cover traffic server and generator]]python web server nichol.as
-     The naïve implementation based on Python's BaseHTTPServer did not
-     perform flawlessly (see [[*Non-parallelized-based web server for cover traffic][Non-parallelized-based web server for
-     cover traffic {0/1}]]), even for the queries of a single
-     addon. This prompted the search for a python-based,
-     adequately-performing technology stack.
-
-     Luckily, an evaluation of Python web server performance had been
-     performed by Nicholas Piël \cite{nicholas}. It shows the apache
-     server with the mod\_wsgi module as well-performing. As it was noted
-     to be very easy to set up, it was chosen for this evaluation.
 *** Evaluation
 **** add-on
 ***** TODO differences to adaptive padding/WTF-PAD
@@ -1818,14 +1747,7 @@ similar, little to see
     then adding elements via =htmlSizes.add("http://google.com/", 613)=
     and querying via =htmlSizes.query("http://google.com/")=, which
     would yield =400=. (see usage in [[file:cover/js/size-cache.js::let%20numEmbeddeds%20%3D%20new%20BloomSort.BloomSort(NUM_EMBEDDED_SIZES,][size-cache]])
-* TODO MOVE sub [[*Evaluation of Defenses][Evaluation of Defenses {0/7}]] after flavor does this hide bursts?
-  - meta-bursts as described in walkie-talkie
-  - are those hidden, too, or can the number of bursts be found out
-  - easy to implement, maybe do this
-  - see that higher overhead per protection
-** maybe see cumul-graphics
-* TODO mention tor browser bundle version etc
-* TODO [#A] which sites well-protected, which less
+
 * KEYWORDS rest of bursts on addon site load finish           :evaluation:mb:
   This should emulate normal browser traffic better than the proposed
   probabilistic schemes by Wang and Goldberg (normal and uniform
@@ -1998,14 +1920,15 @@ similar, little to see
 \appendix
 * appendices (this headline is just for searching)                  :ARCHIVE:
   above, as in this section cuts it out (due to ARCHIVE tag)
-* Accuracy on 30 Sites, Training against 2016-07-06
-  #+INCLUDE: "data/results/alternatives.org::#vs-07-06" :only-contents t
-** TODO format nicely, example
-   #+BEGIN_SRC elisp
-     (/ (fround (* 0.998739 10000)) 10000)
-   #+END_SRC
-* Accuracy on 30 Sites, Training against 2016-07-21
-  #+INCLUDE: "data/results/alternatives.org::#vs-07-21" :only-contents t
+* Testing Results different defenses
+** Accuracy on 30 Sites, Training against 2016-07-06
+   #+INCLUDE: "data/results/alternatives.org::#vs-07-06" :only-contents t
+*** TODO format nicely, example
+    #+BEGIN_SRC elisp
+      (/ (fround (* 0.998739 10000)) 10000)
+    #+END_SRC
+** Accuracy on 30 Sites, Training against 2016-07-21
+   #+INCLUDE: "data/results/alternatives.org::#vs-07-21" :only-contents t
 * Outlier Removal Results with Extra-Trees Classifier
   #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
   #+CAPTION: effect of outlier removal on accuracy of Extra-Trees classifier
@@ -2074,7 +1997,7 @@ similar, little to see
 ** WRITE 0.22: should be 0.21.1: reliability fixes
    - retrieved one-too-many on each embedded request
    - fix to /simple/: =endsLoad= was seemingly not triggered
-* EVA retrieve trace: ~one_site.py~
+* WRITE retrieve trace: ~one_site.py~
   :PROPERTIES:
   :CUSTOM_ID: 1site_desc
   :END:
@@ -2106,6 +2029,9 @@ similar, little to see
   The script's main version captures all traffic, which needs to be
   filtered later. The script =d2g_one_site.py= contains the bridge's IP
   and captures only traffic to and from the bridge.
+
+  - pro: split not necessary
+  - con: unfinished page stopped after 570 seconds
 ** WAIT github link
 * WRITE capture alternatives [0/1]
   Several applications can capture network traffic to files. The most
@@ -2302,13 +2228,14 @@ similar, little to see
    Marionette.
 *** TODO merge with above and split out pip install (also needed for wsgi)
 
-* WRITE modified top-100
-  :PROPERTIES:
-  :CUSTOM_ID: top-100
-  :END:
-  #+INCLUDE: "./sw/top-100-modified.csv" example
-* KEYWORDS 30 sites
-  #+INCLUDE: "./sw/top-30.csv" example
+* lists of sites
+** WRITE modified top-100
+   :PROPERTIES:
+   :CUSTOM_ID: top-100
+   :END:
+   #+INCLUDE: "./sw/top-100-modified.csv" example
+** KEYWORDS 30 sites
+   #+INCLUDE: "./sw/top-30.csv" example
 
 * EVA Mozilla Add-On Sdk
   #+INDEX: XUL
@@ -2422,6 +2349,67 @@ similar, little to see
    content-script's =self= is replaced by a =worker=. The worker is
    initialized via the =onAttach= parameter of f.ex. the page-mod.
 *** TODO find example and move somewhere here
+** TODO Available Data
+   Firefox offers several ways for an add-on to listen for web activity.
+
+   - contents of main page
+     \to links to each domain
+   - page-mod
+     - problems: only when page is loaded, problem for cover traffic
+     - but +: ends of all the loading (and processing)
+   [[file:docs/lit.org::*%5B%5B./Intercepting%20Page%20Loads%20-%20Mozilla%20|%20MDN.html%5D%5BIntercepting%20Page%20Loads%5D%5D][Intercepting Page Loads*]] lists several
+   - load events
+   - http observer
+   - webprogresslistener
+   - xpcom
+     - policymanager
+     - documentloader
+*** each load of page
+*** end of page load
+*** TODO as references or as footnote?
+    ref, as completely read?
+
+
+** separation of scripts
+   As a security measure, there is a separation between
+
+   1) /add-on scripts/, which are run in the browser context, but
+      cannot access the web page, and
+   2) /content scripts/, which are run in the page context. They can
+      access the DOM, but not add-on scripts. nor
+   3) /page scripts/, which are those included in the website via
+      f.ex. =<script>= tags
+
+   Bridging this separation, f.ex. accessing page scripts (and vice
+   versa) is possible, but needs some extra work.
+*** WAIT index: page scripts, content scripts, add-on scripts
+
+** interacting with page-scripts
+   By default, content-scripts are isolated from the modifications
+   done by page-scripts.[fn::see
+   \url{developer.mozilla.org/en-US/Add-ons/SDK/Guides/Content_Scripts/Interacting_with_page_scripts.html}]
+
+   To access objects dynamically created the inside the page-scripts
+   context, you can use =unsafeWindow= instead of =window=.
+
+   The reverse is only true for primitive values. If page-scripts
+   need to see altered behavior, it is possible to override
+   functionality of the page by using =exportFunction=, as in
+   #+BEGIN_SRC js
+     exportFunction(open,
+                    unsafeWindow.XMLHttpRequest.prototype,
+                    {defineAs: "open"});
+   #+END_SRC
+
+   This exports the (previously-defined) function =open()= to the
+   XMLHttpRequest.prototype, where it replaces the built-in
+   functionality.
+
+** TODO unit tests jpm
+   JPM also offers the ability to write unit-tests. See
+   \url{developer.mozilla.org/en-US/docs/Mozilla/Add-ons/SDK/Low-Level_APIs/test_assert.html}.
+*** TODO test link
+
 * WRITE counter.py: represent trace files
   :PROPERTIES:
   :CUSTOM_ID: counter
@@ -2843,6 +2831,17 @@ similar, little to see
   [[file:pictures/all_total_out.png]]
   total bytes upstream/outgoing.
 ** TODO compare to HTTP model
+* CHECK python web server nichol.as
+  The naïve implementation based on Python's BaseHTTPServer did not
+  perform flawlessly (see [[*Non-parallelized-based web server for cover traffic][Non-parallelized-based web server for
+  cover traffic {0/1}]]), even for the queries of a single
+  addon. This prompted the search for a python-based,
+  adequately-performing technology stack.
+
+  Luckily, an evaluation of Python web server performance had been
+  performed by Nicholas Piël \cite{nicholas}. It shows the apache
+  server with the mod\_wsgi module as well-performing. As it was noted
+  to be very easy to set up, it was chosen for this evaluation.
 * CHECK wsgi.py cover traffic server and generator
   :PROPERTIES:
   :CUSTOM_ID: wsgi
@@ -2878,6 +2877,26 @@ similar, little to see
       done
     #+END_SRC
 ** WAIT link to github wsgi.py
+
+* TODO Apache mod\_wsgi
+  =mod_wsgi= is a module for the Apache web
+  server[fn:: \url{https://httpd.apache.org/}]. It executes python
+  scripts which implement the WSGI standard\cite{pep3333}. An
+  apache httpd serving only WSGI is easily set up via the
+  =mod_wsgi-express= command, which is included in the =mod_wsgi=
+  python package[fn:: \url{https://pypi.python.org/pypi/mod_wsgi}].
+
+  Installation (Ubuntu Server Edition and Linux Mint 17.1 Rebecca)
+
+  - apt-get install apache2-bin apache2-dev python-dev
+  - pip install mod_wsgi
+
+  start via
+
+  - ~/.local/bin/mod_wsgi-express start-server wsgi.py
+
+  (here, also --port 7777), as for the script wsgi.py see appendix [[#wsgi]].
+
 * WRITE differences theoretical HTML-num embedded and observed
   :PROPERTIES:
   :CUSTOM_ID: theory-practice-numEmbedded

@@ -59,13 +59,6 @@ def _extract_url(filename):
     '''
     return os.path.basename(filename).split(TIME_SEPARATOR)[0]
 
-def _get_all(defense, outlier_removal=True):
-    '''helper to get counters w/o outlier_removal'''
-    if outlier_removal:
-        return outlier_removal(all_from_dir(defense))
-    else:
-        return all_from_dir(defense)
-
 def _normalize(array):
     '''normalizes array so that its maximum absolute value is +- 1.0
 
@@ -182,6 +175,22 @@ def all_from_json(filename):
         out.append(from_json(entry))
     return out
 
+# td: read up on ordereddict, maybe replace
+def for_defenses(defenses):
+    '''@return dict: {defense1: {domain1: counters1_1, ...  domainN:
+    countersN_1}, ..., defenseM: {domain1: counters1_M, ...  domainN:
+    countersN_M}} for directories} in {@code defenses}'''
+    out = {}
+    if len(defenses) == 0:
+        out['.'] = all_from_dir('.')
+    for d in defenses:
+        if d not in DEFENSES:
+            DEFENSES[d] = all_from_dir(d)
+        else:
+            logging.info('reused defense: %s', d) #debug?
+        out[d] = DEFENSES[d]
+    return out
+
 def from_json(jsonstring):
     '''creates Counter from self.to_json-output'''
     tmp = Counter()
@@ -259,28 +268,6 @@ class Counter(object):
                 _append_features(out, filename)
         else:
             out = all_from_dir('.')
-        return out
-
-    # td: read up on ordereddict, maybe replace
-    @classmethod
-    def for_defenses(cls, defenses, outlier_removal=True):
-        '''@return dict: {defense1: {domain1: counters1_1, ...  domainN:
-        countersN_1}, ..., defenseM: {domain1: counters1_M, ...  domainN:
-        countersN_M}} for directories} in {@code defenses}
-        '''
-        out = {}
-        if len(defenses) == 0:
-            out['.'] = _get_all('.', outlier_removal)
-
-        for d in defenses:
-            if outlier_removal:
-                out[d] = _get_all(d, outlier_removal)
-            else:
-                if d not in DEFENSES:
-                    DEFENSES[d] = _get_all(d, outlier_removal)
-                else:
-                    logging.info('reused defense: %s', d) #debug?
-                out[d] = DEFENSES[d]
         return out
 
     @classmethod
