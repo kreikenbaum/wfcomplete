@@ -2009,6 +2009,286 @@
         var bloom = new BloomFilter(array, 3);
       #+END_SRC
       - better: typed array for performance (=array= is used directly)
+** [[./challenges.pdf][Dingledine - Challenges in deploying low-latency anonymity]]
+*** summary
+    0. [@0] Abstract
+
+       social challenges and technical issues for a low-latency
+       anonymity network
+
+    1. Introduction
+
+       TOR has grown
+
+    2. Background
+
+       Tor design, properties, compare to other
+
+       1. Tor, threat models, and distributed trust
+
+          0. [@0]
+
+             - forward privacy: hides connections
+
+             - location-hidden services, directory servers, circuit, exit policies
+
+          1. Threat models and design philosophy
+
+             - tries to maximize anonymity given practicality and
+               usability as fixed
+
+             - weaker threat model: does not defend against global
+               observer
+
+             - there are known intra-network and end-do-end anonymity
+               breaking attacks
+
+             - "Tor only attempts to defend against external observers
+               who cannot observe both sides of a user’s connections."
+
+          2. Distributed trust
+
+             - "mutually distrustful users" possible
+
+             - increases anonymity for every party involved
+
+               - as otherwise, f.ex. government would be identifyable
+
+             - built-in encryption and authentication for "enclave
+               approach"
+
+       2. Related work
+
+          - Mixmaster and Mixminion: high-delay, high-security
+
+          - single-hop: single point of failure, easy for eavesdropper
+
+          - JAP: web browsing
+
+          - Freedom network: transport IP packets, out of money:
+            collect users' money
+
+          - Tarzan, MorphMix: p2p, not fielded, latter very similar to Tor
+
+    3. Social challenges
+
+       Tor's image impacts its users' security
+
+       1. Communicating Security
+
+          - Perceived security by others is a value to the user, as it
+            attracts more users, which provides a bigger anonymity set
+
+          - how to communicate this? (JAP "anonymity meter" inaccurate)
+
+       2. Reputability and perceived social value
+
+          - better to have reputable users than irreputable
+
+            - public support, political climate
+
+            - want to attract them, also OR-operators
+
+          - better to have more diverse groups than only reputable users (?)
+
+          - good uses often kept private (privacy network)
+
+       3. Sustainability and incentives
+
+          - need to keep OR-operators happy
+
+          - bandwidth limiting, also per billing cycle
+
+       4. Bandwidth and file-sharing
+
+          - problem because it reduces useful traffic "bandwidth"
+
+            - and because of legal implications
+
+          - technically difficult to block
+
+          - little used, because of bandwidth
+
+       5. Tor and blacklists
+
+          - keep abusers from making tor banned
+
+          - example: wikipedia ip-based blocking
+
+          - example: freenode IRC labelled all Tor-IP-users as
+            "anonymous users", stopped problem
+
+    4. Design choices
+
+       technical issues
+
+       1. Transporting the stream vs transporting the packets
+
+          - numerous IP-leve challenges:
+
+            - TCP fingerprinting,
+
+            - application scrubbing,
+
+            - dns leaks and redesign name space
+
+            - unclear crypto (TLS?)
+
+            - even TCP needs tuning of network params
+
+            - exit policies for IP packets harder
+
+       2. Mid-latency
+
+          - some need to resist traffic correlation attacks
+
+          - protect only some transactions
+
+          - usability might suffer
+
+          - (again) allow clients to "label certain circuits as mid-latency"
+
+       3. Enclaves and helper nodes
+
+          - running your own OR
+
+          - need to increase default hop length (entry is itself
+            "sensitive")
+
+          - defend against end-to-end attacks
+
+          - "helper node" to defend against this triangulation attack
+
+          - randomized path length helps, but network (was?) still too
+            small
+
+       4. Location-hidden services
+
+          - hard to completely anonymify
+
+          - hot-swap hidden services would solve some problems, but
+            hard to design see paper (angelos...)
+
+          - also used to connect to your private network via ssh
+
+          - increased robustness if used with dual-IP
+
+       5. Location diversity and ISP-class adversaries
+
+          - how much can ISP see?
+
+          - best to use Tier-1 ISPs "such as AT&T and Abovenet"
+
+          - many open questions
+
+            - global adversary which knows algorithm
+
+            - how to select nodes? (too much data to send)
+
+       6. The Anti-censorship problem
+
+          - tor well suited due to distribution: can volunteer IP
+
+          - how to distribute: trust metric?
+
+    5. Scaling
+
+       how to scale to millions of users
+
+       1. Incentives by Design
+
+          - social: good thing to do
+
+          - useful: deniability, need network to be up
+
+          - easy: rate limiting, packaging, configurable exit policies
+
+          - direct incentives possible:
+
+            - money-based systems have often failed
+
+            - maybe tit-for-tat: better service gives you better service
+
+              - could create anonymity problems, requires further study
+
+       2. Trust and discovery
+
+          - state: sign up new nodes manually (?still?)
+
+          - development direction depends on threat model
+
+            - if small: scale each single nodes' bandwidth
+
+            - else: make adding nodes to Tor easier
+
+       3. Measuring performance and capacity
+
+          - designers want to know much, but this is an anonymity
+            system
+
+          - self-reported bandwidth (?changed now?
+
+       4. Non-clique topologies
+
+          - possible solution: split network
+
+          - danezis proposed expander graphs, but for high-latency nets
+
+          - backbone approach: main routers well-connected
+
+    6. The Future
+
+       1. volunteer-based will work
+
+       2. needs better protocol-aware proxies
+
+       3. need reputation for begin good
+
+       4. architecture scale to meet demand
+*** quotes
+    1) Introduction
+       - Tor is an overlay network for anonymizing TCP streams over the Internet
+    2) Background
+       1. Tor, threat models, and distributed trust
+          1. Threat models and design philosophy
+             - Because of our strategy, Tor has a weaker threat model
+               than many designs in the literature.
+             - Tor does not attempt to defend against a global observer.
+          2. Distributed trust
+             - Our defense lies in having a diverse enough set of
+               nodes to prevent most real-world adversaries from being
+               in the right places to attack users, by distributing
+               each transaction over several nodes in the network.
+               [...]
+               No organization can achieve this security on its
+               own. If a single corporation or government agency were
+               to build a private network to protect its operations,
+               any connections entering or leaving that network would
+               be obviously linkable to the controlling
+               organization. The members and operations of that agency
+               would be easier, not harder, to distinguish.
+    3) Social challenges
+       0) [@0]
+          - In particular, the Tor project’s *image* with respect to its
+            users and the rest of the Internet impacts the security it can
+            provide.
+       1) Communicating security
+          - Usability for anonymity systems contributes to their
+            security, because usability aﬀects the possible anonymity
+            set [1, 4].
+       2) Reputability and perceived social value
+          - Thus, reputability is an anonymity issue [...]
+    4) [@4] Design choices
+       2. [@2] Mid-latency
+          - A trade-off might be worthwhile even if we could only
+            protect certain use cases, such as infrequent
+            short-duration transactions.
+       3. Location diversity and ISP-class adversaries
+          - The key insight from their paper is that while we
+            typically think of a connection as going directly from the
+            Tor client to the first Tor node, actually it traverses
+            many different ASes on each hop.
+*** ref [[file:master.bib::challenges][Dingledine et al.: Challenges]]
 ** [[./tor14design.pdf][Dingledine - Tor: The Second-Generation Onion Router (2014 DRAFT v1)]]
 *** summary
     0) [@0] Abstract
@@ -8147,286 +8427,6 @@
     - tf–idf is the product of two statistics, term frequency and
       inverse document frequency. Various ways for determining the
       exact values of both statistics exist.
-** MOVE [[./challenges.pdf][Dingledine - Challenges in deploying low-latency anonymity]]
-*** summary
-    0. [@0] Abstract
-
-       social challenges and technical issues for a low-latency
-       anonymity network
-
-    1. Introduction
-
-       TOR has grown
-
-    2. Background
-
-       Tor design, properties, compare to other
-
-       1. Tor, threat models, and distributed trust
-
-          0. [@0]
-
-             - forward privacy: hides connections
-
-             - location-hidden services, directory servers, circuit, exit policies
-
-          1. Threat models and design philosophy
-
-             - tries to maximize anonymity given practicality and
-               usability as fixed
-
-             - weaker threat model: does not defend against global
-               observer
-
-             - there are known intra-network and end-do-end anonymity
-               breaking attacks
-
-             - "Tor only attempts to defend against external observers
-               who cannot observe both sides of a user’s connections."
-
-          2. Distributed trust
-
-             - "mutually distrustful users" possible
-
-             - increases anonymity for every party involved
-
-               - as otherwise, f.ex. government would be identifyable
-
-             - built-in encryption and authentication for "enclave
-               approach"
-
-       2. Related work
-
-          - Mixmaster and Mixminion: high-delay, high-security
-
-          - single-hop: single point of failure, easy for eavesdropper
-
-          - JAP: web browsing
-
-          - Freedom network: transport IP packets, out of money:
-            collect users' money
-
-          - Tarzan, MorphMix: p2p, not fielded, latter very similar to Tor
-
-    3. Social challenges
-
-       Tor's image impacts its users' security
-
-       1. Communicating Security
-
-          - Perceived security by others is a value to the user, as it
-            attracts more users, which provides a bigger anonymity set
-
-          - how to communicate this? (JAP "anonymity meter" inaccurate)
-
-       2. Reputability and perceived social value
-
-          - better to have reputable users than irreputable
-
-            - public support, political climate
-
-            - want to attract them, also OR-operators
-
-          - better to have more diverse groups than only reputable users (?)
-
-          - good uses often kept private (privacy network)
-
-       3. Sustainability and incentives
-
-          - need to keep OR-operators happy
-
-          - bandwidth limiting, also per billing cycle
-
-       4. Bandwidth and file-sharing
-
-          - problem because it reduces useful traffic "bandwidth"
-
-            - and because of legal implications
-
-          - technically difficult to block
-
-          - little used, because of bandwidth
-
-       5. Tor and blacklists
-
-          - keep abusers from making tor banned
-
-          - example: wikipedia ip-based blocking
-
-          - example: freenode IRC labelled all Tor-IP-users as
-            "anonymous users", stopped problem
-
-    4. Design choices
-
-       technical issues
-
-       1. Transporting the stream vs transporting the packets
-
-          - numerous IP-leve challenges:
-
-            - TCP fingerprinting,
-
-            - application scrubbing,
-
-            - dns leaks and redesign name space
-
-            - unclear crypto (TLS?)
-
-            - even TCP needs tuning of network params
-
-            - exit policies for IP packets harder
-
-       2. Mid-latency
-
-          - some need to resist traffic correlation attacks
-
-          - protect only some transactions
-
-          - usability might suffer
-
-          - (again) allow clients to "label certain circuits as mid-latency"
-
-       3. Enclaves and helper nodes
-
-          - running your own OR
-
-          - need to increase default hop length (entry is itself
-            "sensitive")
-
-          - defend against end-to-end attacks
-
-          - "helper node" to defend against this triangulation attack
-
-          - randomized path length helps, but network (was?) still too
-            small
-
-       4. Location-hidden services
-
-          - hard to completely anonymify
-
-          - hot-swap hidden services would solve some problems, but
-            hard to design see paper (angelos...)
-
-          - also used to connect to your private network via ssh
-
-          - increased robustness if used with dual-IP
-
-       5. Location diversity and ISP-class adversaries
-
-          - how much can ISP see?
-
-          - best to use Tier-1 ISPs "such as AT&T and Abovenet"
-
-          - many open questions
-
-            - global adversary which knows algorithm
-
-            - how to select nodes? (too much data to send)
-
-       6. The Anti-censorship problem
-
-          - tor well suited due to distribution: can volunteer IP
-
-          - how to distribute: trust metric?
-
-    5. Scaling
-
-       how to scale to millions of users
-
-       1. Incentives by Design
-
-          - social: good thing to do
-
-          - useful: deniability, need network to be up
-
-          - easy: rate limiting, packaging, configurable exit policies
-
-          - direct incentives possible:
-
-            - money-based systems have often failed
-
-            - maybe tit-for-tat: better service gives you better service
-
-              - could create anonymity problems, requires further study
-
-       2. Trust and discovery
-
-          - state: sign up new nodes manually (?still?)
-
-          - development direction depends on threat model
-
-            - if small: scale each single nodes' bandwidth
-
-            - else: make adding nodes to Tor easier
-
-       3. Measuring performance and capacity
-
-          - designers want to know much, but this is an anonymity
-            system
-
-          - self-reported bandwidth (?changed now?
-
-       4. Non-clique topologies
-
-          - possible solution: split network
-
-          - danezis proposed expander graphs, but for high-latency nets
-
-          - backbone approach: main routers well-connected
-
-    6. The Future
-
-       1. volunteer-based will work
-
-       2. needs better protocol-aware proxies
-
-       3. need reputation for begin good
-
-       4. architecture scale to meet demand
-*** quotes
-    1) Introduction
-       - Tor is an overlay network for anonymizing TCP streams over the Internet
-    2) Background
-       1. Tor, threat models, and distributed trust
-          1. Threat models and design philosophy
-             - Because of our strategy, Tor has a weaker threat model
-               than many designs in the literature.
-             - Tor does not attempt to defend against a global observer.
-          2. Distributed trust
-             - Our defense lies in having a diverse enough set of
-               nodes to prevent most real-world adversaries from being
-               in the right places to attack users, by distributing
-               each transaction over several nodes in the network.
-               [...]
-               No organization can achieve this security on its
-               own. If a single corporation or government agency were
-               to build a private network to protect its operations,
-               any connections entering or leaving that network would
-               be obviously linkable to the controlling
-               organization. The members and operations of that agency
-               would be easier, not harder, to distinguish.
-    3) Social challenges
-       0) [@0]
-          - In particular, the Tor project’s *image* with respect to its
-            users and the rest of the Internet impacts the security it can
-            provide.
-       1) Communicating security
-          - Usability for anonymity systems contributes to their
-            security, because usability aﬀects the possible anonymity
-            set [1, 4].
-       2) Reputability and perceived social value
-          - Thus, reputability is an anonymity issue [...]
-    4) [@4] Design choices
-       2. [@2] Mid-latency
-          - A trade-off might be worthwhile even if we could only
-            protect certain use cases, such as infrequent
-            short-duration transactions.
-       3. Location diversity and ISP-class adversaries
-          - The key insight from their paper is that while we
-            typically think of a connection as going directly from the
-            Tor client to the first Tor node, actually it traverses
-            many different ASes on each hop.
-*** ref [[file:master.bib::challenges][Dingledine et al.: Challenges]]
 ** TODO [#A] [[./browser.html][The Design and Implementation of the Tor Browser]]
 *** summary
     1) Introduction
@@ -8553,6 +8553,11 @@
           - low-power, not military actors
 
        1) The Traffic Analysis of SSH
+
+          each character transmits packet, length and timing can
+          reveal keywords to HMM
+
+       2) The Traffic Analysis of SSL
 *** quotes
     3) [@3] Civilian traffic analysis
        - example is finding a job, where people using ‘far links’ are
@@ -16601,6 +16606,11 @@
 
                - range for autoscale =set xrange [*<10:50<*]= f.ex.
 *** quotes
+** PART [[../../../chive/GG/it/LaTeX/Symbols/symbols.pdf][Carlisle - The Great, Big List of \LaTeX Symbols]]
+*** quotes
+    14) [@14] Delimiters
+        - \langle =\ langle=
+        - \rangle =\ rangle=
 ** PART [[./javascript_the_good_parts.pdf][Crockford - JavaScript: The Good Parts]]
 *** summary
     1. Good parts
@@ -22599,11 +22609,6 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
           plt.show()
         #+END_SRC
 *** quotes
-** PART MOVE [[../../../chive/GG/it/LaTeX/Symbols/symbols.pdf][Carlisle - The Great, Big List of \LaTeX Symbols]]
-*** quotes
-    14) [@14] Delimiters
-        - \langle =\ langle=
-        - \rangle =\ rangle=
 ** PART [[./pam2014-tor-nfattack.pdf][On the Effectiveness of Traffic Analysis Against Anonymity Networks Using Flow Records]]
 *** summary
     0) [@0] Abstract
