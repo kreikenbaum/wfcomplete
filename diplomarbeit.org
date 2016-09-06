@@ -1,7 +1,6 @@
 #+TITLE: Selective Cover Traffic
 #+TODO: KEYWORDS WRITE CHECK | EVA DANIEL FINAL
 #+TODO: TODO WAIT | DONE
-#+TODO: INTEGRATE |
 * Configuration							    :ARCHIVE:
 #+LATEX_CLASS: scrreprt
 #+LATEX_CLASS_OPTIONS: [a4paper,10pt]
@@ -72,8 +71,8 @@
 #+LATEX_HEADER: }}
 #+OPTIONS: H:6
 * WAIT Abstract
-* TODO Basics (=basics) [31%]
-** WRITE Website Fingerprinting [10/32]
+* TODO Basics (=basics) [33%]
+** WRITE Website Fingerprinting [10/29]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -88,10 +87,10 @@
 
     Finally, [[#wf2.0][current website fingerprinting attacks]] will be explored.
 *** DANIEL Visual Representation of Traces
-    #+INDEX: trace
     :PROPERTIES:
     :CUSTOM_ID: visual
     :END:
+    #+INDEX: trace
     To do website fingerprinting, you collect the sizes, order, and
     timing of IP packets, called /traces/. To illustrate the task of a
     website fingerprinter, consider this visualization[fn::see
@@ -302,27 +301,25 @@ Facebook.com\\
 ***** WAIT high-resolution picture
 ***** WAIT maybe remove Schenier...phy/
       wait for [[file:~/Desktop/main.org::*entfernen%20der%20autorennamen%20(und%20titel)%20aus%20text,%20nur%20bib-referenz?][entfernen der autorennamen (und titel) aus text, nur bib-referenz?]]
-*** WRITE (wf 2.0)
+*** CHECK (wf 2.0)
     :PROPERTIES:
     :CUSTOM_ID: wf2.0
     :END:
-    In spite of these difficulties, website fingerprinting was shown
-    to be possible even when Tor is used.
-
     Similarly to the above attacks, \cite{Liberatore:2006}
     and\cite{ccsw09-fingerprinting} use packet sizes, but employ
     machine learning techniques. \cite{Liberatore:2006} use both a
     Naïve Bayes Classifier[fn::described f.ex. in
     \cite[ch.1.3.1]{intro2ir}] and Jaccard's classifier $s_{AB} =
-    \frac{|A \cap B|}{|A \cup B|}$[fn::described in
+    \frac{|A \cap B|}{|A \cup B|}$[fn::described f.ex. in
     \cite{ccsw09-fingerprinting}], while \cite{ccsw09-fingerprinting}
     use a Naïve Bayes Classifier with various metrics and
     preprocessing. This yields high accuracy against one-hop
     anonymizing proxies, but only 3% accuracy against 775 distinct
     pages retrieved via Tor\cite{tor-design}. As this is still
-    significantly better than random guessing, they conjecture that
-    this result could be improved with attacks specifically tailored
-    to Tor[fn::as do \cite{Liberatore:2006}].
+    significantly better than random guessing, they conjecture[fn::
+    \cite{Liberatore:2006} mention that they also did some experiments
+    which lead to this conjecture] that this result could be improved
+    with attacks specifically tailored to Tor.
 *** EVA Features
     :PROPERTIES:
     :CUSTOM_ID: attributes
@@ -359,36 +356,35 @@ Facebook.com\\
     [[./pictures/cumul_aus_paper.pdf]]
 **** TODO feature vs attribute
 *** CHECK Panchenko Version 1
+    #+INDEX: version 1
+    #+INDEX: classifier!version 1
     While \cite{ccsw09-fingerprinting} classified one-hop proxies
-    well, it had achieved low accuracy against Tor
-    due\cite{experimental} to Tor's multiplexing and fixed
-    cell-size. \cite{panchenko} were the first\cite{critique} to
-    publish a successful website fingerprinting attack on Tor: They
-    extracted HTTP-specific attributes from the packet trace, adjusted
-    their weights, and selected only those found to have the greatest
-    impact. These were classified using Support Vector Machines.
+    well, it had achieved low accuracy against Tor due to Tor's
+    multiplexing and fixed
+    cell-size\cite{experimental}. \cite{panchenko} were the
+    first\cite{critique} to publish a successful website
+    fingerprinting attack on Tor: They extracted HTTP-specific
+    attributes from the packet trace, adjusted their weights, and
+    selected only those found to have the greatest impact. The
+    attributes are weighted heavily in favor of total
+    incoming/outgoing bytes. Support Vector Machines then classified
+    these features.
 
     In addition to \cite{ccsw09-fingerprinting}'s data set, a new
     open-world dataset was used. The size of the open-world data set
-    was five foreground sites.
+    was five foreground and 4000 background sites.
 
     \cite{panchenko} achieved closed-world recognition rates of 54.61% and
     open-world true-positive rate of up to 73% for Tor.
-
-    The attributes are weighted heavily in favor of total
-    incoming/outgoing bytes.
-**** TODO version 1: mention here (not below) that furthermore named thus
-**** TODO how many bg sites?
 *** TODO move to subsection related work
 *** CHECK CUMUL
     CUMUL\cite{panchenko2} is a state-of-the-art\cite{kfingerprint}
     website fingerprinting attack. It sums the number of incoming and
-    outgoing bytes, which results in a cumulative size picture
-    feature, which is easily understandable. The reader is reminded of
-    Figure [[CUMUL_traces]].
+    outgoing bytes, which results in easily-understandable
+    cumulative-size feature. As a reminder, see Figure [[CUMUL_traces]].
 
     For classification, support vector machines were used.
-*** WRITE SVM
+*** WRITE Support Vector Machines
     Support Vector Machines (short: SVM) are a linear classifier:
     they find a linear boundary between points. While this might seem
     overly limiting, SVMs can compute the boundary not only on the
@@ -566,7 +562,7 @@ Facebook.com\\
     As website fingerprinting requires very litte resources, a specific
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
     state.
-** CHECK Defenses [0/8]
+** WRITE Defenses [0/8]
    siehe [[file:~/da/da.org::*2.%20Teil:%20Verteidigungen%20gegen%20Website-Fingerprinting%20(Welche%20Methoden%20existieren?%20Welche%20Problem%20existieren%20derzeit?%20-->%20%C3%9Cberleitung%20zum%20Hauptteil)][2. Teil: Verteidigungen gegen Website-Fingerprinting (Welche        Methoden existieren? Welche Problem existieren derzeit? -->        Überleitung zum Hauptteil)]]
 *** DANIEL Early defenses
     As defense against fingerprinting webpages when retrieved via SSL,
@@ -905,7 +901,7 @@ Facebook.com\\
        flawlessly if an element is inside the set, yet might wrongly
        state that an element is inside, when it is not.
 ****** CHECK Application: Bloom Sort
-       To save approximate sizes, they are sorted into bins based on
+       To save sizes approximately, they are sorted into bins based on
        the target distribution. For each bin, a Bloom filter is
        created; an element is added to this filter if its size is
        inside the bin.
@@ -1015,7 +1011,7 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* TODO Results and Evaluation [20%]
+* TODO Results and Evaluation [18%]
 ** KEYWORDS Setup
 *** EVA sites
 **** EVA modified top-100
@@ -1079,34 +1075,31 @@ Facebook.com\\
     Single traces are captured via the Python script ~one_site.py~, see
     appendix [[#1site_desc]].
 **** WAIT github config files upload + mention
-*** WRITE preprocessing
-    The aim of preprocessing is to extract attributes relevant for machine
-    learning from the original trace files, which are in =pcap= format.
-
-    - from pcap
-    - to feature vector
-    - split train/test/validation
-    - outlier removal
-    - scale
+*** CHECK preprocessing
+    The aim of preprocessing is to extract attributes relevant for
+    machine learning from the original trace files, which are in
+    =pcap= format. From these, a vector of characteristics, called
+    /features/ [fn::called like this in machine learning; in
+    statistics, these are called /independent variables/ or
+    /predictors/, see\cite[sec.2.1]{esl}] is created.
 
     Of the several tools available for reading =pcap=-trace files,
     =tshark= was used in this thesis, as it offers TLS packet
     reassembly. It is the command-line version of the Wireshark
     protocol analyzer[fn:: \url{http://www.wireshark.org}].
 
-    - sums in the end
-    - displays
-    - =Counter=-class
-    - transform to feature vector, or (see below sec [[#outlier_removal]]), etc: counter.py
+    The program created to distill a feature vector from a trace is
+    called [[#counter][counter.py]]. It creates both CUMUL and version-1 feature
+    vectors.
+**** MOVE to CUMUL
     - feature vector: for each packet (discarding timing data),
       increment/decrement counter by its byte size (incoming
       positive), add to list
       - these give some number of steps, normalized == interpolated to
         yield 100 such steps (for comparability, vectors need to have
         the same size)
-    - version 1: compute \cite{panchenko}'s attributes
-      - pad variable-length attributes to maximum length of all with 0s
-**** check incoming positive
+      - kept 100 steps here
+**** TODO check incoming positive
 **** see also [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]               :ARCHIVE:
 **** EVA split
      As mentioned by \cite{arp-personal}, outliers can be removed
@@ -1148,6 +1141,7 @@ Facebook.com\\
  #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
  #+INCLUDE: "data/results/alternatives.org::#outlier_removal" :only-contents t
 
+     - empty already discarded in counter
 
      This outlier removal removed on average
      - [ ] how many? 5%?
@@ -1211,6 +1205,9 @@ Facebook.com\\
     :PROPERTIES:
     :CUSTOM_ID: classification
     :END:
+    Classification takes as input feature vectors and tries to output
+    the class that this input belongs to.
+
     - analysis: analyse.py
       - tries to mimic \cite{panchenko} and \cite{panchenko2} code
       - uses toolkit \cite{scikit-learn}
@@ -1218,7 +1215,7 @@ Facebook.com\\
       - re defenses: svc tends to overfit, yielding better results on regular traces, but decaying fast on data collected
         - later
         - with addon
-** KEYWORDS Website Fingerprinting [0/8]
+** KEYWORDS Website Fingerprinting [0/6]
 *** KEYWORDS panchenko v1 different classifiers
     :PROPERTIES:
     :CUSTOM_ID: different-classifiers
@@ -1252,6 +1249,7 @@ Facebook.com\\
       - and slightly better results
       - knn is best, outperforms svc on our tests
     - more work for svm parameter estimation
+    - pad variable-length attributes to maximum length of all with 0s
 *** WRITE [#A] panchenko v1 vs cumul
     Panchenko et al proposed two \cite{panchenko} methods
     \cite{panchenko2} for analysing traces, one of which is considered\cite{kfingerprint}
@@ -1425,6 +1423,8 @@ Facebook.com\\
     - wait for [[file:~/da/da.org::*experimente][experimente]] plan 3
 ** WAIT Websites
    - which websites classify well with which classifier, which badly
+     - sina.com classifies very well
+       - huge site
      - algorithm
        1. clf.train on whole disabled set, with or level 2
        2. clf.predict on addon set
@@ -1446,7 +1446,7 @@ Facebook.com\\
    - results:
 #+CAPTION: classification accuracy on 30 classes, different classifiers
 #+ATTR_LATEX: :align l||p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}|p{0.08\textwidth}
-| id   | no, ET | W, ET | s@5, ET | 22@5, ET | no, OVR-SVM | W, OVR-SVM | s@5, OVR-SVM | 22@5, OVR-SVM |
+| id   | no, ET |  W, ET | s@5, ET | 22@5, ET | no, OVR-SVM | W, OVR-SVM | s@5, OVR-SVM | 22@5, OVR-SVM |
 | <4>  |    <6> |    <6> |    <6> |    <6> |    <6> |    <6> |    <6> |    <6> |
 |------+--------+--------+--------+--------+--------+--------+--------+--------|
 | msn.com |    1.0 |  0.875 |  0.525 | 0.1230 |   0.95 |    0.3 |  0.025 |    0.0 |
@@ -1506,8 +1506,7 @@ Facebook.com\\
 
 similar, little to see
 
-- 
-
+*** TODO less data in table, maybe just two classifiers
 ** brainstorm                                                       :ARCHIVE:
    - describe setup
      - which sites, why
@@ -1552,7 +1551,6 @@ similar, little to see
 * TODO topics [0/25]
 ** TODO Addon Design and Implementation [0/20]
 *** KEYWORDS [#B] Design
-***** WAIT where to put this?
 **** TODO bloom-sort usage
      It is impractical to store the sizes of all URLs. Another
      possibility is to use Bloom Filters to aggregate groups of URLs
@@ -1580,7 +1578,7 @@ similar, little to see
 
      In addition to using the observed sizes for the bloom filter, the
      number of groups was increased to 5.
-***** TODO error rate computing
+***** TODO MOVE include in [[*MAYBE Error estimation of Bloom Sort][MAYBE Error estimation of Bloom Sort]] error rate computing
       - sources of error
         - filter tells that is has element when it has not
       - how does error appear
@@ -1589,7 +1587,6 @@ similar, little to see
       - rates of error
         - "add" the error rates of the filters? (times population density?)
 ***** maybe graphics?
-***** WAIT check "see previous section"
 *** TODO Implementation [0/5]
 **** TODO js coding best practices
      JavaScript\cite{ecma} is arguably a language with some great
@@ -1644,14 +1641,6 @@ similar, little to see
       - harder to break
         - more effort: one classifier for each cover scheme
 ** TODO Bloom Filters
-*** TODO what is a bloom filter
-    A Bloom Filter is a data structure . It
-    has a fixed size and a certain one-way error rate. If an item is in
-    the set, the Bloom Filter is guaranteed to report this. If an item
-    is not in the set, there is a certain probability, ,
-    of reporting that it belongs.
-
-    
 *** TODO bloom usage and implementation
     - bloom sort
       - error rate computation
@@ -1747,12 +1736,12 @@ similar, little to see
     and querying via =htmlSizes.query("http://google.com/")=, which
     would yield =400=. (see usage in [[file:cover/js/size-cache.js::let%20numEmbeddeds%20%3D%20new%20BloomSort.BloomSort(NUM_EMBEDDED_SIZES,][size-cache]])
 
-* KEYWORDS rest of bursts on addon site load finish           :evaluation:mb:
+* KEYWORDS MOVE into [[*does this hide bursts?][does this hide bursts?]] rest of bursts on addon site load finish :evaluation:mb:
   This should emulate normal browser traffic better than the proposed
   probabilistic schemes by Wang and Goldberg (normal and uniform
   distribution). It might be that Wang and Goldberg's deterministic
   padding to common values performs better, but that seems require a
-  priori knowledge of website burst sizes.
+  priori knowledge of web page characteristics.
 
   - increased overhead while only slightly increasing protection
 * TODO addon weaknesses/uncertainties
@@ -1788,11 +1777,10 @@ similar, little to see
   3. apt install emacs tmux unison
   4. download tbb
      1. apt install firefox
-     2. starting failed with error
-     3. apt install xpra
+     2. apt install xpra
         - installs needed x-libraries
         - and is faster
-     4. test via (local)
+        - test via (local)
         #+BEGIN_SRC sh
           xpra start ssh:mkreik@duckstein:37 --start=firefox
         #+END_SRC
@@ -1800,7 +1788,7 @@ similar, little to see
         #+BEGIN_SRC sh
           xpra stop
         #+END_SRC
-     5. download tbb, gpg check, cp to hosts, test
+     3. download tbb, gpg check, cp to hosts, test
   5. apt install python-pip; pip install --upgrade pip
   6. pip install marionette_client
   7. apt install xvfb
@@ -1812,7 +1800,6 @@ similar, little to see
   11. apt install tor
   12. apt install python-pyptlib python-crypto python-yaml
       python-psutil
-  13. apt install unison
 ** TODO mention unison (in bib)
 * WAIT Discussion
   intel model: interdependences (html bigger \to more embedded) not mentioned
@@ -2029,8 +2016,11 @@ similar, little to see
   filtered later. The script =d2g_one_site.py= contains the bridge's IP
   and captures only traffic to and from the bridge.
 
+  The script stops the browser after 9--10 minutes of retrieving one
+  page. A drawback is that this has not happened often enough that the
+  code for this stopping has not been thoroughly tested.
+
   - pro: split not necessary
-  - con: unfinished page stopped after 570 seconds
 
   - browsers cache
     - only helps in cover traffic, (unless warm/cold site model is used)
@@ -2918,3 +2908,8 @@ similar, little to see
   - growth of websites
   - [[*Further%20work][Further work]]
 ** link in [[#HTTP traffic model][HTTP traffic model]] to here when moved
+* KEYWORDS data set sizes
+  - size per paper dataset
+  - ow table
+  - cw table
+  - (maybe also instances)
