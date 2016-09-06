@@ -70,9 +70,9 @@
 #+LATEX_HEADER:   \end{tabular}
 #+LATEX_HEADER: }}
 #+OPTIONS: H:6
-* WAIT Abstract
-* TODO Basics (=basics) [33%]
-** WRITE Website Fingerprinting [10/29]
+* WAIT Summary
+* TODO Basics (=basics) [30%]
+** WRITE Website Fingerprinting [9/29]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -178,7 +178,7 @@ Facebook.com\\
     object sizes. Cheng and Avnur \cite{ssl-traffic-analysis}
     additionally proposed a hidden markov model for page
     /transitions/, for hard-to-identify pages.
-*** EVA Hurdles to website fingerprinting: HTTP protocol evolution
+*** CHECK Hurdles to website fingerprinting: HTTP protocol evolution
     :PROPERTIES:
     :CUSTOM_ID: Hurdles
     :END:
@@ -201,11 +201,13 @@ Facebook.com\\
 \end{figure}
 #+END_LaTeX
 
-    Before, it was trivial to find out the number of bytes of
-    each TCP connection; this made it harder to extract the files'
+    Before, it was trivial to find out the number of bytes of each
+    file's connection; this made it harder to extract the files'
     sizes. You had to determine the start and end of each
-    request.[fn::which was still possible to estimate by splitting when
-    the client sent a new request data packet, see f.ex. \cite{realistic}].
+    request.[fn::f.ex. by checking gaps in the transmission; the more
+    difficult problem of estimating web page retrieval splits seems
+    possible over Tor, see f.ex. \cite{realistic} and
+    \cite{DBLP:journals/tifs/FeghhiL16}].
 
 
     In addition to persistent connections, HTTP/1.1 allowed pipelining
@@ -377,11 +379,19 @@ Facebook.com\\
     \cite{panchenko} achieved closed-world recognition rates of 54.61% and
     open-world true-positive rate of up to 73% for Tor.
 *** TODO move to subsection related work
-*** CHECK CUMUL
+*** WRITE CUMUL
     CUMUL\cite{panchenko2} is a state-of-the-art\cite{kfingerprint}
     website fingerprinting attack. It sums the number of incoming and
     outgoing bytes, which results in easily-understandable
     cumulative-size feature. As a reminder, see Figure [[CUMUL_traces]].
+
+    - feature vector: for each packet (discarding timing data),
+      increment/decrement counter by its byte size (incoming
+      positive), add to list
+      - these give some number of steps, normalized == interpolated to
+        yield 100 such steps (for comparability, vectors need to have
+        the same size)
+      - kept 100 steps here
 
     For classification, support vector machines were used.
 *** WRITE Support Vector Machines
@@ -578,14 +588,16 @@ Facebook.com\\
     As for reducing transferred data: As the sizes and interconnection
     of HTML and embedded content is what makes a webpage easily
     identifyable, using a text-only non-javascript browser such as
-    Lynx[fn::available at \url{http://lynx.invisible-island.net/}], disabling f.ex. images, or reducing cross-site requests via
+    Lynx[fn::available at \url{http://lynx.invisible-island.net/}],
+    disabling f.ex. images, or reducing cross-site requests via
     f.ex. the
     RequestPolicy[fn::\url{https://requestpolicycontinued.github.io/}]
     extension, might mitigate the threat of website fingerprinting for
     those who consider this trade-off acceptable. Yet, this reduces
     usability and thus conflicts with one of Tor's design
     goals\cite{tor-design}. It is also mostly deterministic, so that
-    an adversary could simply train on modified data.
+    an adversary could simply train on modified data. This addon is
+    explicitly named in
 
     The third approach --- while valid --- would require modifying the
     server. This would conflict with Tor's design goal of
@@ -675,7 +687,7 @@ Facebook.com\\
     - padding (sslv2 \to 3)
     - requestpolicy (hintz 2nd way)
     - text-only browsing (hintz 2nd way)
-* TODO Methods (=methods) [55%]
+* TODO Methods (=methods) [52%]
 ** TODO Motivation [0/2]
 *** brainstorm                                                      :ARCHIVE:
    - make wf/ml harder, fudge attributes
@@ -745,7 +757,7 @@ Facebook.com\\
     level, as a whistleblower might need more anonymity protection
     than Jane Doe who just reads the latest news, possibly censored in
     her country.
-** TODO Design and Implementation (=Implementation) [9/16]
+** TODO Design and Implementation (=Implementation) [9/17]
 *** DANIEL Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -918,7 +930,14 @@ Facebook.com\\
        positive errors.
 ****** MAYBE Error estimation of Bloom Sort
        - error both ways, and difference bin-size to real size
-****** brainstorm                                                   :ARCHIVE:
+      - sources of error
+        - filter tells that is has element when it has not
+      - how does error appear
+        - collision: one of several, the other might be true
+        - replacement: simulates being another url
+      - rates of error
+        - "add" the error rates of the filters? (times population density?)
+****** KEYWORDS brainstorm                                          :ARCHIVE:
        - stochastic fixed-width data structure
        - works flawlessly if element is inside
          - might fail if not
@@ -1091,14 +1110,6 @@ Facebook.com\\
     The program created to distill a feature vector from a trace is
     called [[#counter][counter.py]]. It creates both CUMUL and version-1 feature
     vectors.
-**** MOVE to CUMUL
-    - feature vector: for each packet (discarding timing data),
-      increment/decrement counter by its byte size (incoming
-      positive), add to list
-      - these give some number of steps, normalized == interpolated to
-        yield 100 such steps (for comparability, vectors need to have
-        the same size)
-      - kept 100 steps here
 **** TODO check incoming positive
 **** see also [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]               :ARCHIVE:
 **** EVA split
@@ -1384,6 +1395,14 @@ Facebook.com\\
     - are those hidden, too, or can the number of bursts be found out
     - easy to implement, maybe do this
     - see that higher overhead per protection
+**** MOVE to [[*Why HTTP-shaped cover traffic][Why HTTP-shaped cover traffic]]
+  This should emulate normal browser traffic better than the proposed
+  probabilistic schemes by Wang and Goldberg (normal and uniform
+  distribution). It might be that Wang and Goldberg's deterministic
+  padding to common values performs better, but that seems require a
+  priori knowledge of web page characteristics.
+**** END MOVE
+  - increased overhead while only slightly increasing protection
 **** maybe see cumul-graphics
 *** KEYWORDS trace comparison three main defenses
 #+BEGIN_LaTeX
@@ -1578,14 +1597,6 @@ similar, little to see
 
      In addition to using the observed sizes for the bloom filter, the
      number of groups was increased to 5.
-***** TODO MOVE include in [[*MAYBE Error estimation of Bloom Sort][MAYBE Error estimation of Bloom Sort]] error rate computing
-      - sources of error
-        - filter tells that is has element when it has not
-      - how does error appear
-        - collision: one of several, the other might be true
-        - replacement: simulates being another url
-      - rates of error
-        - "add" the error rates of the filters? (times population density?)
 ***** maybe graphics?
 *** TODO Implementation [0/5]
 **** TODO js coding best practices
@@ -1736,14 +1747,6 @@ similar, little to see
     and querying via =htmlSizes.query("http://google.com/")=, which
     would yield =400=. (see usage in [[file:cover/js/size-cache.js::let%20numEmbeddeds%20%3D%20new%20BloomSort.BloomSort(NUM_EMBEDDED_SIZES,][size-cache]])
 
-* KEYWORDS MOVE into [[*does this hide bursts?][does this hide bursts?]] rest of bursts on addon site load finish :evaluation:mb:
-  This should emulate normal browser traffic better than the proposed
-  probabilistic schemes by Wang and Goldberg (normal and uniform
-  distribution). It might be that Wang and Goldberg's deterministic
-  padding to common values performs better, but that seems require a
-  priori knowledge of web page characteristics.
-
-  - increased overhead while only slightly increasing protection
 * TODO addon weaknesses/uncertainties
   - all HTTP gets treated the same
     - redirects
@@ -1803,11 +1806,12 @@ similar, little to see
 ** TODO mention unison (in bib)
 * WAIT Discussion
   intel model: interdependences (html bigger \to more embedded) not mentioned
-* TODO Acknowledgements
+* TODO MOVE above [[*Summary][Summary]] Acknowledgements
   - Dr. med. Dr. phil. Eva
   - Daniel Arp
   - Prof. Dr. Konrad Rieck
   - Tao Wang
+  - H.H. K.K.
   - ...
   - Elena
 * TODO Further work
@@ -2719,7 +2723,10 @@ similar, little to see
   which are five to six[fn::depending on ~robots.txt~] requests.
 ** TODO tshark for normal (non-tor) retrieval
 ** TODO mention redirects
-* TODO Non-parallelized-based web server for cover traffic [0/2]
+* TODO MOVE to end of [[*Cover Traffic Server][Cover Traffic Server]] Non-parallelized web server for cover traffic [0/2]
+  :PROPERTIES:
+  :CUSTOM_ID: server-non-para
+  :END:
   This approach did not scale to several parallel connections, so it
   was not used. It is included as a reference of what seems to work,
   but did not.
@@ -2824,72 +2831,72 @@ similar, little to see
   [[file:pictures/all_total_out.png]]
   total bytes upstream/outgoing.
 ** TODO compare to HTTP model
-* CHECK python web server nichol.as
-  The naïve implementation based on Python's BaseHTTPServer did not
-  perform flawlessly (see [[*Non-parallelized-based web server for cover traffic][Non-parallelized-based web server for
-  cover traffic {0/1}]]), even for the queries of a single
-  addon. This prompted the search for a python-based,
-  adequately-performing technology stack.
+* Cover Traffic Server
+** CHECK which python web server to choose
+   The naïve implementation based on Python's BaseHTTPServer did not
+   perform flawlessly (see [[#server-non-para]]), even for the queries of
+   a single addon. This prompted the search for a python-based,
+   adequately-performing technology stack.
 
-  Luckily, an evaluation of Python web server performance had been
-  performed by Nicholas Piël \cite{nicholas}. It shows the apache
-  server with the mod\_wsgi module as well-performing. As it was noted
-  to be very easy to set up, it was chosen for this evaluation.
-* CHECK wsgi.py cover traffic server and generator
-  :PROPERTIES:
-  :CUSTOM_ID: wsgi
-  :END:
-  With the technology stack to implement the cover traffic generator
-  being settled, implementation becomes a single-page file, see
-  ~bin/wsgi.py~.
+   \cite{nicholas} evaluates of Python web server performance. It
+   shows the apache server with the mod\_wsgi module as
+   well-performing. As it was noted to be very easy to set up, it was
+   chosen for this evaluation.
+** CHECK wsgi.py cover traffic server and generator
+   :PROPERTIES:
+   :CUSTOM_ID: wsgi
+   :END:
+   With the technology stack to implement the cover traffic generator
+   being settled, implementation becomes a single-page file, see
+   ~bin/wsgi.py~.
 
-  One detail that inicreases accuracy is that the length of the content gets inflated by the
-  content-headers. To decrease this again, the length (which in turn
-  depends on the required length) needs to be calculated and
-  subtracted from the body-length. Some uncertainty arises because the
-  =Proxy-Connection: keep-alive= header is added in some
-  circumstances. The implementation errs on the side of returning too
-  much data.
+   One detail that inicreases accuracy is that the length of the content gets inflated by the
+   content-headers. To decrease this again, the length (which in turn
+   depends on the required length) needs to be calculated and
+   subtracted from the body-length. Some uncertainty arises because the
+   =Proxy-Connection: keep-alive= header is added in some
+   circumstances. The implementation errs on the side of returning too
+   much data.
 
-  Once the size is computed, a pseudo-random choice from the list of
-  all printable characters is returned to the HTML query.
+   Once the size is computed, a pseudo-random choice from the list of
+   all printable characters is returned to the HTML query.
 
-  To test this algorithm, the first 1000 sizes are retrieved via
-    #+BEGIN_SRC sh
-      for i in $(seq 1000); do
-          curl -D /tmp/curlheaders/$i.head 127.0.0.1:8000/?size=$i > /tmp/curlheaders/$i.body;
-      done
-    #+END_SRC
-  which outputs the header and body of each query to the files,
-  f.ex. =134.head= and =134.body=.
+   To test this algorithm, the first 1000 sizes are retrieved via
+     #+BEGIN_SRC sh
+       for i in $(seq 1000); do
+           curl -D /tmp/curlheaders/$i.head 127.0.0.1:8000/?size=$i > /tmp/curlheaders/$i.body;
+       done
+     #+END_SRC
+   which outputs the header and body of each query to the files,
+   f.ex. =134.head= and =134.body=.
 
-  This data is then evaluated by hand to check the sizes:
-    #+BEGIN_SRC sh
-      for i in $(seq 1000); do
-          echo "$i: $(cat ${i}.* | wc -c)";
-      done
-    #+END_SRC
-** WAIT link to github wsgi.py
+   This data is then evaluated by hand to check the sizes:
+     #+BEGIN_SRC sh
+       for i in $(seq 1000); do
+           echo "$i: $(cat ${i}.* | wc -c)";
+       done
+     #+END_SRC
+*** WAIT link to github wsgi.py
 
-* TODO Apache mod\_wsgi
-  =mod_wsgi= is a module for the Apache web
-  server[fn:: \url{https://httpd.apache.org/}]. It executes python
-  scripts which implement the WSGI standard\cite{pep3333}. An
-  apache httpd serving only WSGI is easily set up via the
-  =mod_wsgi-express= command, which is included in the =mod_wsgi=
-  python package[fn:: \url{https://pypi.python.org/pypi/mod_wsgi}].
+** CHECK Apache mod\_wsgi
+   =mod_wsgi= is a module for the Apache web
+   server[fn:: \url{https://httpd.apache.org/}]. It executes python
+   scripts which implement the WSGI standard\cite{pep3333}. An
+   apache httpd serving only WSGI is easily set up via the
+   =mod_wsgi-express= command, which is included in the =mod_wsgi=
+   python package[fn:: \url{https://pypi.python.org/pypi/mod_wsgi}].
 
-  Installation (Ubuntu Server Edition and Linux Mint 17.1 Rebecca)
+   Installation (Ubuntu Server Edition and Linux Mint 17.1 Rebecca)
 
-  - apt-get install apache2-bin apache2-dev python-dev
-  - pip install mod_wsgi
+   - apt-get install apache2-bin apache2-dev python-dev
+   - pip install mod_wsgi
 
-  start via
+   start via
 
-  - ~/.local/bin/mod_wsgi-express start-server wsgi.py
+   - ~/.local/bin/mod_wsgi-express start-server wsgi.py
 
-  (here, also --port 7777), as for the script wsgi.py see appendix [[#wsgi]].
-
+   (here, also --port 7777), as for the script wsgi.py see github.
+*** TODO github link wsgi.py
 * WRITE differences theoretical HTML-num embedded and observed
   :PROPERTIES:
   :CUSTOM_ID: theory-practice-numEmbedded

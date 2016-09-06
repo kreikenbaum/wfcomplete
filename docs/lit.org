@@ -8573,6 +8573,13 @@
           reveal keywords to HMM
 
        2) The Traffic Analysis of SSL
+
+          - leaks much information, especially sizes
+
+          - combine with HMM to model link structure, as browsing is
+            not random
+
+       3) Web Privacy
 *** quotes
     3) [@3] Civilian traffic analysis
        - example is finding a job, where people using ‘far links’ are
@@ -8585,12 +8592,34 @@
          ‘specialists’, i.e. those people in the organization that
          have a unique position or skills, that others would find
          difficult to fill.
+    4) Contemporary Computer and Communications Security
+       2) [@2] The Traffic Analysis of SSL
+          - a hidden Markov model can be used to trace the most likely
+            browsing paths a user may have taken,. This approach
+            provides much faster and more reliable results than
+            considering users that browse at random, or web-sites that
+            have no structure at all.
 *** TODO ref [[file:master.bib::introta][Danezis & Clayton 2007: Introducing Traffic Analysis]]
-** TODO [#A] [[./1410.2087v3.pdf][Fegghi - A Web Traffic Analysis Attack Using Only Timing Information]]
-*** expansion of [[*%5B%5B./ieee-icc15.pdf%5D%5BFeghhi%20-%20A%20First-Hop%20Traffic%20Analysis%20Attack%20Against%20Tor%5D%5D][Feghhi - A First-Hop Traffic Analysis Attack Against Tor*]]
-    join both
-*** ref [[file:master.bib::DBLP:journals/tifs/FeghhiL16][Feghhi & Leith 2016: Web Traffic Analysis]]
 ** TODO [#A] [[./wright-passive.pdf][Defending Anonymous Communications Against Passive Logging Attacks]]
+*** summary
+    0) [@0] Abstract
+
+       - passive logging via anonymous communication networks
+
+       - better: non-uniform placement, practice harder than theory
+
+       - worse: dynamic membership makes more vulnerable
+
+       - frequent communication with the same site happens
+
+    1) Introduction
+*** quotes
+*** ref [[file:master.bib::wright03][Wright et al. 2003: Defending Anonymous Communication]]
+** TODO [#B] [[./1410.2087v3.pdf][Feghhi - A Web Traffic Analysis Attack Using Only Timing Information]]
+*** summary
+    0) [@0] Abstract
+*** quotes
+*** ref [[file:master.bib::DBLP:journals/tifs/FeghhiL16][Feghhi & Leith 2016: Web Traffic Analysis]]
 ** TODO [#B] [[./csbuflo.pdf][Cai - CS-BuFLO: A Congestion Sensitive Website Fingerprinting Defense]]
 *** summary
     0) [@0] Abstract:
@@ -8787,12 +8816,30 @@
          empty (out)
 
     4) Two Hash-Coding Methods with Allowable Errors
+
+       - version 1: as error-free, but more smaller cells
+
+         - message transformed to code, codes may overlap
+
+         - as before, first bit == 1 signifies cell is in use
+
+       - version 2 (current bloom method): bit field, set bits of hash to 1
+
+         - half the bits 1: problematic to add new ones
+
+    5) Computational Factors
 *** quotes
+    4) [@4] Two Hash-Coding Methods with Allowable Errors
+       - The increased a priori likelihood of each bit accessed being
+         a 1 outweighs the effect of adding the additional bit to be
+         tested when half the bits in the hash field are 1 and half
+         are 0, as will be shown later in this paper.
 *** ref [[file:master.bib::Bloom70space/timetrade-offs][Bloom 1970: Space Time Trade]]
 ** TODO [#B] PART [[./hastie.pdf][Hastie - The Elements of Statistical Learning]]
 *** TODO skim chapters 2.8, 2.9, 3.3, 7 (esp 7.10), 9, 12 and 13, 15, 16
     (leave out 11,14,17)
     - Radial basis functions are discussed in more detail in Section 6.7.
+      - also recommended in 2.8.3: how to determine all parameters
 *** summary
     1) Introduction
 
@@ -8923,6 +8970,21 @@
              - see chapter 5
 
           2) Kernel Methods and Local Regression
+
+             - local neighborhood optimized
+
+             - f.ex. gaussian kernel, see [[(esl-2.40)]]
+
+             - RSS in this case
+               #+BEGIN_SRC latex
+                 RSS(f_\theta, x_0) = \sum_{i=1}^N K_\lambda(x_0, x_i)(y_i -f_\theta(x_i))^2 (ref:esl-2.42)
+               #+END_SRC
+
+               - f_\theta(x) = \theta_0 yields Nadaraya-Watson estimate (esl-2.41)
+
+               - f_\theta(x) = \theta_0 + \theta_1 x: local linear regression
+
+          3) Basis Functions and Dictionary Methods
 
     4) [@4] Linear Methods for Classification
 
@@ -9132,6 +9194,15 @@
           - Thus it is not surprising that the analysis of high-dimensional
             data requires either modification of procedures designed for the
             N > p scenario, or entirely new procedures
+       8) [@8] Classes of Restricted Estimators
+          2) [@2] Kernel Methods and Local Regression
+             - the Gaussian kernel has a weight function based on the
+               Gaussian density function
+               #+BEGIN_SRC latex
+                 K_\lambda(x_0, x) = 1/\lambda exp[-||x - x_0||^2 / 2\lambda] (ref:esl-2.40)
+               #+END_SRC
+               and assigns weights to points that die exponentially with
+               their squared Euclidean distance from x_0.
     4) [@4] Linear Methods for Classification
        1) Introduction
           - Strictly speaking, a hyperplane passes through the origin,
@@ -9150,7 +9221,7 @@
             #+END_SRC
             where L(y, f (x)) is a loss function, J(f ) is a penalty
             functional, ...
-    9) [@9] Additive Models, Trees, and Related Methods
+    9) Additive Models, Trees, and Related Methods
        1) Generalized Additive Models
           - the *binary response* μ(X) = Pr(Y = 1|X)
 
@@ -12112,7 +12183,23 @@
 
           3) HTTP Message Format
 
-             continue at p.104
+             request and response messages
+
+             1) HTTP Request Message
+
+                - request
+                  method url version
+                  =GET /somedir/page.html HTTP/1.1=
+
+                - header[s]
+                  name: value
+                  =Accept: text/html, image/gif, image/jpeg=
+
+                - CRLF (empty line)
+
+                - body if method requires it (POST) f.ex.
+
+             2) HTTP Response Message
 *** quotes
 *** ref [[file:master.bib::DBLP:books/daglib/0001977][Kurose & Ross 2001: Computer]]
 ** TODO PART [#B] [[./minion-design.pdf][Mixminion: Design of a Type III Anonymous Remailer Protocol]]
@@ -19587,6 +19674,8 @@
       #+END_SRC
 ** PART [[./2009-diss.pdf][Rieck - Machine Learning for Application-Layer Intrusion Detection]]
 *** summary
+    0) [@0] Acknowlegements
+
     0) [@0] Summary
 
        - IDS use attack signatures
@@ -22407,7 +22496,7 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 
         6) Refactoring
 
-           - when there is duplicate code
+           - duplicate code: system asking for refactoring
 
            - both before or after programming feature
 
@@ -22506,7 +22595,17 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 
            - you and customer: good feeling that (both sets of) tests run
 
-        6) Refactoring (p.66)
+        6) Refactoring
+
+           - collective ownership and coding standards
+
+           - pairs are more courageous to refactor
+
+           - simple design makes it easier
+
+           - testing and c.i. assure correctness
+
+        7) Pair Programming
 *** quotes
     00) [@00] unsorted
         - Use XP when requirements are vague or changing
@@ -23014,3 +23113,19 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
           - \npthousandthpartsep Change the thousand separator (only
             after the decimal sign).
 ** [[./comp.ai.neural-nets FAQ, Part 3 of 7 GeneralizationSection What are cross-validation and bootstrapping.html][comp.ai.neural-nets FAQ, Part 3 of 7: Generalization Section - What are cross-validation and bootstrapping?]]
+** Beck - Extreme Programming planen
+*** summary
+    0) [@0] Vorwort
+
+       - Krieg: Pendel zwischen Rüstung und Mobilität
+
+       - IT: Pendel zwischen Prozess und Mobilität
+
+       - xp: mehr mobilität
+
+    0) [@0] Einleitung
+
+       - Planung wichtig, Pläne nicht (Eisenhower)
+
+       - jeden Tag ein neues Problem zu lösen
+*** quotes
