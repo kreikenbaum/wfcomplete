@@ -16,6 +16,7 @@
 #+LATEX_HEADER: \npdecimalsign{.}
 #+LATEX_HEADER: \nprounddigits{4}
 #+LATEX_HEADER: \npthousandthpartsep{}
+#+LATEX_HEADER: \makeindex
 #+LATEX_HEADER: \renewcommand*{\maketitle}{\thispagestyle{empty}
 #+LATEX_HEADER:
 #+LATEX_HEADER: \hspace{20cm}
@@ -70,9 +71,17 @@
 #+LATEX_HEADER:   \end{tabular}
 #+LATEX_HEADER: }}
 #+OPTIONS: H:6
+* TODO Acknowledgements
+  - Dr. med. Dr. phil. Eva
+  - Daniel Arp
+  - Prof. Dr. Konrad Rieck
+  - Tao Wang
+  - H.H. K.K.
+  - ...
+  - Elena
 * WAIT Summary
-* TODO Basics (=basics) [30%]
-** WRITE Website Fingerprinting [9/29]
+* TODO Basics (=basics) [34%]
+** WRITE Website Fingerprinting [10/28]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -223,11 +232,11 @@ Facebook.com\\
 \end{figure}
 #+END_LaTeX
 
-    Pipelining was
-    disabled[fn::\url{https://bugzilla.mozilla.org/show_bug.cgi?id=264354},
+    Pipelining was disabled[fn::Firefox:
+    \url{https://bugzilla.mozilla.org/show_bug.cgi?id=264354}, Chrome:
     \url{https://www.chromium.org/developers/design-documents/network-stack/http-pipelining}]
-    or not implemented
-    [fn::\url{http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp/expertzone/chats/transcripts/08_0814_ez_ie8.mspx}]
+    or not implemented [fn::in Internet Explorer
+    \url{http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp/expertzone/chats/transcripts/08_0814_ez_ie8.mspx}]
     in all major browsers. After \cite{panchenko}, Firefox's built-in
     request pipelining was enabled[fn::with added request order
     randomization] as part of a no-cost defense prototype in the
@@ -303,12 +312,12 @@ Facebook.com\\
 ***** WAIT high-resolution picture
 ***** WAIT maybe remove Schenier...phy/
       wait for [[file:~/Desktop/main.org::*entfernen%20der%20autorennamen%20(und%20titel)%20aus%20text,%20nur%20bib-referenz?][entfernen der autorennamen (und titel) aus text, nur bib-referenz?]]
-*** CHECK (wf 2.0)
+*** CHECK Website Fingerprinting 2.0
     :PROPERTIES:
     :CUSTOM_ID: wf2.0
     :END:
     Similarly to the above attacks, \cite{Liberatore:2006}
-    and\cite{ccsw09-fingerprinting} use packet sizes, but employ
+    and\cite{ccsw09-fingerprinting} use only packet sizes, but employ
     machine learning techniques. \cite{Liberatore:2006} use both a
     Naïve Bayes Classifier[fn::described f.ex. in
     \cite[ch.1.3.1]{intro2ir}] and Jaccard's classifier $s_{AB} =
@@ -357,7 +366,7 @@ Facebook.com\\
     #+NAME: CUMUL_traces
     [[./pictures/cumul_aus_paper.pdf]]
 **** TODO feature vs attribute
-*** CHECK Panchenko Version 1
+*** EVA Panchenko Version 1
     #+INDEX: version 1
     #+INDEX: classifier!version 1
     While \cite{ccsw09-fingerprinting} classified one-hop proxies
@@ -378,20 +387,25 @@ Facebook.com\\
 
     \cite{panchenko} achieved closed-world recognition rates of 54.61% and
     open-world true-positive rate of up to 73% for Tor.
-*** TODO move to subsection related work
-*** WRITE CUMUL
+*** CHECK CUMUL
     CUMUL\cite{panchenko2} is a state-of-the-art\cite{kfingerprint}
     website fingerprinting attack. It sums the number of incoming and
     outgoing bytes, which results in easily-understandable
     cumulative-size feature. As a reminder, see Figure [[CUMUL_traces]].
 
-    - feature vector: for each packet (discarding timing data),
-      increment/decrement counter by its byte size (incoming
-      positive), add to list
-      - these give some number of steps, normalized == interpolated to
-        yield 100 such steps (for comparability, vectors need to have
-        the same size)
-      - kept 100 steps here
+    CUMUL keeps a cumulative list of sizes: For each new packet in a
+    trace, its byte size is added[fn::\cite{panchenko2} treat incoming
+    byte sizes as positive and outgoing as negative values] to the
+    last cumulative size, and appended to the list.
+
+    To normalize list length, values are interpolated from the list
+    values to $n$ equidistant points. As of \cite{panchenko2},
+    "$n=100$ yields the best trade-off between classification
+    accuracy and computational efficiency."
+
+    This list is then standardized in size, and the total number of
+    both bytes and packets, both incoming and outgoing is prepended to
+    yield the feature vector.
 
     For classification, support vector machines were used.
 *** WRITE Support Vector Machines
@@ -596,8 +610,9 @@ Facebook.com\\
     those who consider this trade-off acceptable. Yet, this reduces
     usability and thus conflicts with one of Tor's design
     goals\cite{tor-design}. It is also mostly deterministic, so that
-    an adversary could simply train on modified data. This addon is
-    explicitly named in
+    an adversary could simply train on modified data. As of
+    \cite{tor-browser-design-impl}, this addon uses domain-based
+    filters, which is undesirable in the Tor Browser Bundle.
 
     The third approach --- while valid --- would require modifying the
     server. This would conflict with Tor's design goal of
@@ -687,7 +702,7 @@ Facebook.com\\
     - padding (sslv2 \to 3)
     - requestpolicy (hintz 2nd way)
     - text-only browsing (hintz 2nd way)
-* TODO Methods (=methods) [52%]
+* TODO Methods (=methods) [42%]
 ** TODO Motivation [0/2]
 *** brainstorm                                                      :ARCHIVE:
    - make wf/ml harder, fudge attributes
@@ -757,7 +772,7 @@ Facebook.com\\
     level, as a whistleblower might need more anonymity protection
     than Jane Doe who just reads the latest news, possibly censored in
     her country.
-** TODO Design and Implementation (=Implementation) [9/17]
+** TODO Design and Implementation (=Implementation) [7/17]
 *** DANIEL Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -837,7 +852,7 @@ Facebook.com\\
 
     Providing an accurate estimate of embedded objects /per web page/
     is [[Further work][further work]].
-*** EVA Why HTTP-shaped cover traffic
+*** CHECK Why HTTP-shaped cover traffic
     HTTP-shaped cover traffic might prove more effective, as this
     would make it harder to separate cover and real traffic. In
     addition, it works at the layer where the problem
@@ -853,6 +868,12 @@ Facebook.com\\
     \cite{kfingerprint}, \cite{effective}, \cite{panchenko},
     \cite{wtfpad}) and was surprisingly effective for all its
     simplicity, albeit at a high overhead.
+
+    This should emulate normal browser traffic better than the
+    proposed probabilistic schemes by Wang and Goldberg (normal and
+    uniform distribution). It might be that Wang and Goldberg's
+    deterministic padding to common values performs better, but that
+    seems to require a priori knowledge of web page characteristics.
 *** EVA How to generate cover traffic
     When the user requests a page, be it by clicking on a hyperlink, a
     bookmark, or entering an address via the location bar, the addon
@@ -899,13 +920,13 @@ Facebook.com\\
 
       To cache sizes, an approximate-size data structure based on
       Bloom filters is used.
-****** EVA Bloom Filter
+****** CHECK Bloom Filter
        Bloom filters\cite{Bloom70space/timetrade-offs}[fn::
        \cite{Broder02networkapplications} contains a Bloom filter
-       overview with applications] are a stochastic data structure to
-       test membership in a set. They work similarly to
+       overview with applications] are a stochastic fixed-width data
+       structure to test membership in a set. They work similarly to
        hash-coding[fn::see \cite{Bloom70space/timetrade-offs} for
-       hash-coding. Shortly: elements are hashed and a certain place
+       hash-coding. Shortly: elements are hashed and certain places
        is checked for whether it contains this hash.], yet require
        significantly less space, which they trade for a small /error
        rate/[fn::This error rate is dependent on the size of the Bloom
@@ -913,15 +934,16 @@ Facebook.com\\
        flawlessly if an element is inside the set, yet might wrongly
        state that an element is inside, when it is not.
 ****** CHECK Application: Bloom Sort
-       To save sizes approximately, they are sorted into bins based on
-       the target distribution. For each bin, a Bloom filter is
-       created; an element is added to this filter if its size is
-       inside the bin.
+       Sizes can be saved approximately based on Bloom filters: they
+       are sorted into bins based on the target distribution. For each
+       bin, a Bloom filter is created; an element is added to this
+       filter if its size is inside the bin.
 
-       To find out the size of an element, all filters are checked. If
-       one filter reports containment, its size is chosen. If zero or
-       more than one report containment, the size is either not known
-       or saved wrongly. The default distribution is used. See section
+       To approximate the size of an element, all filters are
+       checked. If one filter reports containment, its size is
+       chosen. If zero report containment, the size is not known, if
+       two or more report containment, it is saved wrongly. In both
+       cases, the default distribution is used. See appendix
        [[#bloom-sort]] for a description of the implementation.
 
        This data structure has the advantage that, even if visited
@@ -938,17 +960,6 @@ Facebook.com\\
       - rates of error
         - "add" the error rates of the filters? (times population density?)
 ****** KEYWORDS brainstorm                                          :ARCHIVE:
-       - stochastic fixed-width data structure
-       - works flawlessly if element is inside
-         - might fail if not
-       - based on this: bloomsort: combine filters
-         - sort into bins
-           - based on target distribution
-           - one Bloom filter per bin
-         - check size: check all filters
-           - if one returns: fine
-           - if none returns: ok: clear that not inserted, default value
-           - if two return: error, fall back to default value
          - error estimation?
          - +: fixed size
          - -: error both ways, and difference bin-size to real size
@@ -1212,13 +1223,17 @@ Facebook.com\\
      - recommended by \cite{sarle2} and \cite{Hsu10apractical}
      - same scale factor for test and train set
 **** WAIT for [[file:~/Desktop/main.org::*daniel:%20merkmalsraum%20-%20musterraum%20etc%20in%20englisch?][daniel: merkmalsraum - musterraum etc in englisch?]]
-*** KEYWORDS classification
+*** WRITE classification
     :PROPERTIES:
     :CUSTOM_ID: classification
     :END:
-    Classification takes as input feature vectors and tries to output
-    the class that this input belongs to.
+    After outlier removal, splits and possibly scaling, classification
+    takes as input feature vectors and tries to output the class that
+    this input belongs to. The program to control this is
+    [[#analyse][=analyse.py=]].
 
+    Support Vector Machines require an additional parameter estimation
+    step
     - analysis: analyse.py
       - tries to mimic \cite{panchenko} and \cite{panchenko2} code
       - uses toolkit \cite{scikit-learn}
@@ -1226,6 +1241,7 @@ Facebook.com\\
       - re defenses: svc tends to overfit, yielding better results on regular traces, but decaying fast on data collected
         - later
         - with addon
+    - mention esl 6.7 after reading
 ** KEYWORDS Website Fingerprinting [0/6]
 *** KEYWORDS panchenko v1 different classifiers
     :PROPERTIES:
@@ -1389,20 +1405,17 @@ Facebook.com\\
       - svc: 87% to 41% accuracy
 *** KEYWORDS addon flavors
     table like [[file:geloescht.org::*Variations%20of%20Cover%20Traffic][Variations of Cover Traffic]] with data
+
+    - As described in [[#addon_main][Addon Version: Main]], there are different flavors
+      of the main version. This is a short comparison.
 **** to appendix?
 *** KEYWORDS does this hide bursts?
     - meta-bursts as described in walkie-talkie
     - are those hidden, too, or can the number of bursts be found out
     - easy to implement, maybe do this
     - see that higher overhead per protection
-**** MOVE to [[*Why HTTP-shaped cover traffic][Why HTTP-shaped cover traffic]]
-  This should emulate normal browser traffic better than the proposed
-  probabilistic schemes by Wang and Goldberg (normal and uniform
-  distribution). It might be that Wang and Goldberg's deterministic
-  padding to common values performs better, but that seems require a
-  priori knowledge of web page characteristics.
-**** END MOVE
-  - increased overhead while only slightly increasing protection
+
+    - increased overhead while only slightly increasing protection
 **** maybe see cumul-graphics
 *** KEYWORDS trace comparison three main defenses
 #+BEGIN_LaTeX
@@ -1569,8 +1582,10 @@ similar, little to see
 * WAIT Conclusion
 * TODO topics [0/25]
 ** TODO Addon Design and Implementation [0/20]
-*** KEYWORDS [#B] Design
-**** TODO bloom-sort usage
+**** TODO MOVE to appendix determining bloom-sort parameters
+     :PROPERTIES:
+     :CUSTOM_ID: bloom-params
+     :END:
      It is impractical to store the sizes of all URLs. Another
      possibility is to use Bloom Filters to aggregate groups of URLs
      with similar values, as described in [[*bloom-sort][bloom-sort]].
@@ -1599,18 +1614,6 @@ similar, little to see
      number of groups was increased to 5.
 ***** maybe graphics?
 *** TODO Implementation [0/5]
-**** TODO js coding best practices
-     JavaScript\cite{ecma} is arguably a language with some great
-     parts, but also several bad ones\cite{javascript}. Approaches to
-     mitigate these include
-
-     - "use strict";
-     - unit tests
-     - mention "good parts"?
-       - for what exactly?
-       - and javascript garden
-     - jshint
-***** mention bad parts?
 **** Unit Testing
 **** WAIT Cover add-on
      Defends against website fingerprinting by injecting artificial
@@ -1625,8 +1628,6 @@ similar, little to see
       of burdening all of Tor with extra bells and whistles, this solves
       this deanonymization problem at the application layer, where its
       origins are. (Separation of Concerns)
-**** TODO http server for testing
-
 *** Evaluation
 **** add-on
 ***** TODO differences to adaptive padding/WTF-PAD
@@ -1666,8 +1667,8 @@ similar, little to see
 
     To achieve this, sensible separation criteria (called /splits/) for
     the bins need to be found. Afterwards, each bin needs to be assigned
-    a value (called /size/) for all contained elements. See section
-    [[*bloom-sort%20usage][bloom-sort usage]] on determining the sizes and splits.
+    a value (called /size/) for all contained elements. See appendix
+    [[#bloom-params]] on determining the sizes and splits.
 
     This data-structure, called /bloom-sort/ is initialized with an
     array of splits, and an array of sizes. The sizes-array needs to
@@ -1760,7 +1761,7 @@ similar, little to see
   - if protects against this, should also protect against worse
   - additional (?defense?) as proposed in critique
 ** TODO follow critique at all?
-* WRITE sampling web sites                                             :eval:
+* WRITE MOVE integrate to [[*sites][sites]] sampling web sites                          :eval:
   - top 10 found wanting: different results from top-100
   - top-100 represented all as of ...
   - needed: representation with fewer classes
@@ -1771,10 +1772,14 @@ similar, little to see
       - write which addon version (top-100, so 0.18.2@bI?)
     - easier to distinguish than average, as intentionally very different sites
       - harder to conceal
-* misc: tex bibliography
+* MOVE just above appendix misc: tex bibliography
 \bibliography{docs/master}
 \bibliographystyle{plain}
-* TODO host install list
+* TODO index
+* TODO MOVE to appendix at least above [[*how to set up WTF-PAD][how to set up WTF-PAD]] host install list
+  This is a list of all that need to be done on a fresh Ubuntu server
+  installation to get all parts to work.
+
   1. apt update
   2. apt upgrade
   3. apt install emacs tmux unison
@@ -1799,21 +1804,13 @@ similar, little to see
      - add user to wireshark group in /etc/group
      - log out, log back in
   9. mkdir mnt/data, chown to current user/group
-  10. mod_wsgi: see [[*Apache%20mod\_wsgi][Apache mod_wsgi]]
+  10. mod_wsgi: see appendix [[#mod_wsgi][Apache =mod_wsgi=]]
   11. apt install tor
   12. apt install python-pyptlib python-crypto python-yaml
       python-psutil
 ** TODO mention unison (in bib)
 * WAIT Discussion
   intel model: interdependences (html bigger \to more embedded) not mentioned
-* TODO MOVE above [[*Summary][Summary]] Acknowledgements
-  - Dr. med. Dr. phil. Eva
-  - Daniel Arp
-  - Prof. Dr. Konrad Rieck
-  - Tao Wang
-  - H.H. K.K.
-  - ...
-  - Elena
 * TODO Further work
 ** eval
   - bigger world sizes
@@ -1912,15 +1909,18 @@ similar, little to see
   above, as in this section cuts it out (due to ARCHIVE tag)
 * Testing Results different defenses
 ** Accuracy on 30 Sites, Training against 2016-07-06
-   #+INCLUDE: "data/results/alternatives.org::#vs-07-06" :only-contents t
-*** TODO format nicely, example
-    #+BEGIN_SRC elisp
-      (/ (fround (* 0.998739 10000)) 10000)
-    #+END_SRC
+
+
+
+#+CAPTION: Testing results of various defenses and other dates when trained on capture data from 2016-07-06. The columns headers show either the classifier, or overhead.
+#+NAME: some_name_test
+#+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{3}{4}|
+#+INCLUDE: "data/results/alternatives.org::#vs-07-06" :only-contents t
 ** Accuracy on 30 Sites, Training against 2016-07-21
+   #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
    #+INCLUDE: "data/results/alternatives.org::#vs-07-21" :only-contents t
 * Outlier Removal Results with Extra-Trees Classifier
-  #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
+  #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{3}{4}|
   #+CAPTION: effect of outlier removal on accuracy of Extra-Trees classifier
   #+INCLUDE: "data/results/alternatives.org::#outlier_removal_et" :only-contents t
 * WRITE Versions
@@ -2723,33 +2723,6 @@ similar, little to see
   which are five to six[fn::depending on ~robots.txt~] requests.
 ** TODO tshark for normal (non-tor) retrieval
 ** TODO mention redirects
-* TODO MOVE to end of [[*Cover Traffic Server][Cover Traffic Server]] Non-parallelized web server for cover traffic [0/2]
-  :PROPERTIES:
-  :CUSTOM_ID: server-non-para
-  :END:
-  This approach did not scale to several parallel connections, so it
-  was not used. It is included as a reference of what seems to work,
-  but did not.
-
-  The python module =TrafficHTTPServer= can be started on the
-  command-line via
-
-  python TrafficHTTPServer.py portname
-
-  with portname set to 8000 by default. It generates cover traffic of the
-  size given by the =size= parameter, for example the command
-
-  =wget http://localhost:8000/?size=10=
-
-  retrieves a document with 10 bytes content from a TrafficHTTPServer
-  running at localhost port 8000.
-** WRITE Problems
-   - did not scale: did not respond immediately for parallel
-     connections
-     - obviously delays problematic as they in effect create less
-       cover traffic
-   - maybe further work: test that really works worse
-** TODO github script
 * WRITE how to set up WTF-PAD
   - helpful notes at scramblesuit
   - modify for WTF-PAD
@@ -2793,7 +2766,6 @@ similar, little to see
         Bridge bridge.ip:40200
       #+END_EXAMPLE
 ** TODO scripts
-** TODO below [[*host install list][host install list]]
 * distribution of version 1's (main) attributes
   These distribution histograms show how Panchenko's main attributes
   are distributed. They are stacked histograms with classes
@@ -2878,7 +2850,10 @@ similar, little to see
      #+END_SRC
 *** WAIT link to github wsgi.py
 
-** CHECK Apache mod\_wsgi
+** CHECK Apache =mod_wsgi=
+   :PROPERTIES:
+   :CUSTOM_ID: mod_wsgi
+   :END:
    =mod_wsgi= is a module for the Apache web
    server[fn:: \url{https://httpd.apache.org/}]. It executes python
    scripts which implement the WSGI standard\cite{pep3333}. An
@@ -2897,6 +2872,34 @@ similar, little to see
 
    (here, also --port 7777), as for the script wsgi.py see github.
 *** TODO github link wsgi.py
+** TODO Non-parallelized web server for cover traffic [0/2]
+   :PROPERTIES:
+   :CUSTOM_ID: server-non-para
+   :END:
+   This approach did not scale to several parallel connections, so it
+   was not used. It is included as a reference of what seems to work,
+   but did not.
+
+   The python module =TrafficHTTPServer= can be started on the
+   command-line via
+
+   python TrafficHTTPServer.py portname
+
+   with portname set to 8000 by default. It generates cover traffic of the
+   size given by the =size= parameter, for example the command
+
+   =wget http://localhost:8000/?size=10=
+
+   retrieves a document with 10 bytes content from a TrafficHTTPServer
+   running at localhost port 8000.
+*** WRITE Problems
+    - did not scale: did not respond immediately for parallel
+      connections
+      - obviously delays problematic as they in effect create less
+        cover traffic
+    - maybe further work: test that really works worse
+*** TODO github script
+
 * WRITE differences theoretical HTML-num embedded and observed
   :PROPERTIES:
   :CUSTOM_ID: theory-practice-numEmbedded
