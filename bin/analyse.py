@@ -398,6 +398,19 @@ def outlier_removal_levels(defense, clf=None):
             print "level train: {}, test: {}".format(train_lvl, test_lvl)
             _verbose_test_11(X, y, clf)
 
+def site_sizes(stats):
+    '''@return {'url1': [size0, ..., sizeN-1], ..., urlM: [...]}
+
+    stats = {k: _bytes_mean_std(v) for (k,v) in defenses.iteritems()}'''
+    a = stats.keys()
+    a.sort()
+    out = {}
+    for url in stats[a[0]].keys():
+        out[url] = []
+        for defense in a:
+            out[url].append(stats[defense][url][0])
+    return out
+
 def to_features(counters, max_lengths=None):
     '''transforms counter data to panchenko.v1-feature vector pair (X,y)
 
@@ -567,28 +580,27 @@ def tts(counter_dict, test_size=1.0/3):
 # timing = {k: _average_duration(v) for (k,v) in defenses.iteritems()}
 # outlier_removal_levels(defenses[sys.argv[1]]) #td: try out
 
+# PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
+# counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
+
+# 07-06
+#'0.22/10aI__2016-07-08/', '0.22/30aI__2016-07-13/', '0.22/50aI__2016-07-13/'
+# 07-21
+# sys.argv = ['', 'disabled/bridge__2016-07-21', '0.22/5aII__2016-07-18/', '0.22/5aI__2016-07-19/', '0.22/10_maybe_aI__2016_07-23/', '0.22/2aI__2016-07-23/', '0.22/30aI__2016-07-25/', '0.22/50aI__2016-07-26/', '0.22/5aI__2016-07-25/']
+# 08-29
+# sys.argv = ['', 'disabled/bridge__2016-08-29/', '0.22/5bII__2016-08-27/', '0.22/5aI__2016-08-26/', '0.22/5bI__2016-08-27/', '0.22/5aII__2016-08-25/']
+# DISABLED
+# sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15', 'disabled/bridge__2016-08-29/']
+# TOP
+# sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aI__2016-07-19']
+# sys.argv = ['', 'disabled/bridge__2016-07-06', 'wfpad/bridge__2016-07-05'
+
+# if by hand: change to the right directory before importing
+# import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
 if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
-    # counters = counter.Counter.all_from_dir(sys.argv))
-    # cumul_vs_panchenko(counters)
 
-    # if by hand: change to the right directory before importing
-    # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
-    # 07-06
-    #'0.22/10aI__2016-07-08/', '0.22/30aI__2016-07-13/', '0.22/50aI__2016-07-13/'
-    # 07-21
-    sys.argv = ['', 'disabled/bridge__2016-07-21', '0.22/5aII__2016-07-18/', '0.22/5aI__2016-07-19/', '0.22/10_maybe_aI__2016_07-23/', '0.22/2aI__2016-07-23/', '0.22/30aI__2016-07-25/', '0.22/50aI__2016-07-26/', '0.22/5aI__2016-07-25/']
-    # 08-29
-    sys.argv = ['', 'disabled/bridge__2016-08-29/', '0.22/5bII__2016-08-27/', '0.22/5aI__2016-08-26/', '0.22/5bI__2016-08-27/', '0.22/5aII__2016-08-25/']
-    # DISABLED
-    # sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15', 'disabled/bridge__2016-08-29/']
-    # TOP
-    # sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aI__2016-07-19']
-    # sys.argv = ['', 'disabled/bridge__2016-07-06', 'wfpad/bridge__2016-07-05'
-    # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
-    # counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
+
     cross_test(sys.argv, with_svm=True) #, cumul=False)
-
-
 
