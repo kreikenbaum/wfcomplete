@@ -72,16 +72,15 @@
 #+LATEX_HEADER: }}
 #+OPTIONS: H:6
 * TODO Acknowledgements
-  - Dr. med. Dr. phil. Eva
+  Elena H.H. K.K.
+
   - Daniel Arp
   - Prof. Dr. Konrad Rieck
   - Tao Wang
-  - H.H. K.K.
-  - ...
-  - Elena
+  - Dr. Dr. Eva
 * WAIT Summary
-* TODO Basics (=basics) [34%]
-** WRITE Website Fingerprinting [10/28]
+* TODO Basics (=basics) [42%]
+** WRITE Website Fingerprinting [13/28]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -187,7 +186,7 @@ Facebook.com\\
     object sizes. Cheng and Avnur \cite{ssl-traffic-analysis}
     additionally proposed a hidden markov model for page
     /transitions/, for hard-to-identify pages.
-*** CHECK Hurdles to website fingerprinting: HTTP protocol evolution
+*** EVA Hurdles to website fingerprinting: HTTP protocol evolution
     :PROPERTIES:
     :CUSTOM_ID: Hurdles
     :END:
@@ -312,7 +311,7 @@ Facebook.com\\
 ***** WAIT high-resolution picture
 ***** WAIT maybe remove Schenier...phy/
       wait for [[file:~/Desktop/main.org::*entfernen%20der%20autorennamen%20(und%20titel)%20aus%20text,%20nur%20bib-referenz?][entfernen der autorennamen (und titel) aus text, nur bib-referenz?]]
-*** CHECK Website Fingerprinting 2.0
+*** EVA Website Fingerprinting 2.0
     :PROPERTIES:
     :CUSTOM_ID: wf2.0
     :END:
@@ -367,7 +366,7 @@ Facebook.com\\
     [[./pictures/cumul_aus_paper.pdf]]
 **** TODO feature vs attribute
 *** EVA Panchenko Version 1
-    #+INDEX: version 1
+    #+INDEX: Version_1
     #+INDEX: classifier!version 1
     While \cite{ccsw09-fingerprinting} classified one-hop proxies
     well, it had achieved low accuracy against Tor due to Tor's
@@ -387,7 +386,7 @@ Facebook.com\\
 
     \cite{panchenko} achieved closed-world recognition rates of 54.61% and
     open-world true-positive rate of up to 73% for Tor.
-*** CHECK CUMUL
+*** EVA CUMUL
     CUMUL\cite{panchenko2} is a state-of-the-art\cite{kfingerprint}
     website fingerprinting attack. It sums the number of incoming and
     outgoing bytes, which results in easily-understandable
@@ -403,11 +402,11 @@ Facebook.com\\
     "$n=100$ yields the best trade-off between classification
     accuracy and computational efficiency."
 
-    This list is then standardized in size, and the total number of
-    both bytes and packets, both incoming and outgoing is prepended to
-    yield the feature vector.
+    This list is then normalized to $[-1, 1]$. Additional features are
+    the total number of both bytes and packets, both incoming and
+    outgoing.
 
-    For classification, support vector machines were used.
+    Support vector machines classify these.
 *** WRITE Support Vector Machines
     Support Vector Machines (short: SVM) are a linear classifier:
     they find a linear boundary between points. While this might seem
@@ -488,7 +487,7 @@ Facebook.com\\
     - as seen in table in appendix: similar results to extratrees,
       randomforest, decisiontrees
       - one or the other slightly better
-*** WRITE extremely randomized trees
+*** WRITE Extremely Randomized Trees
     - more random: (here only classifiction)
       - M trees, independent
       - split training set S into K subsets
@@ -702,7 +701,7 @@ Facebook.com\\
     - padding (sslv2 \to 3)
     - requestpolicy (hintz 2nd way)
     - text-only browsing (hintz 2nd way)
-* TODO Methods (=methods) [42%]
+* TODO Methods (=methods) [55%]
 ** TODO Motivation [0/2]
 *** brainstorm                                                      :ARCHIVE:
    - make wf/ml harder, fudge attributes
@@ -772,7 +771,7 @@ Facebook.com\\
     level, as a whistleblower might need more anonymity protection
     than Jane Doe who just reads the latest news, possibly censored in
     her country.
-** TODO Design and Implementation (=Implementation) [7/17]
+** TODO Design and Implementation (=Implementation) [9/16]
 *** DANIEL Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -852,12 +851,13 @@ Facebook.com\\
 
     Providing an accurate estimate of embedded objects /per web page/
     is [[Further work][further work]].
-*** CHECK Why HTTP-shaped cover traffic
+*** EVA Why HTTP-shaped cover traffic
     HTTP-shaped cover traffic might prove more effective, as this
     would make it harder to separate cover and real traffic. In
     addition, it works at the layer where the problem
-    originates[fn::For a deeper treatment of separation-of-concerns,
-    \cite[ch.1.7]{DBLP:books/daglib/0001977} is recommended].
+    originates[fn::For a treatment of /separation of concerns/,
+    \cite[ch.1.7]{DBLP:books/daglib/0001977} is recommended], as it
+    mimics the HTTP-specific request-response interaction.
 
 
     There are several approaches on how to generate HTTP-shaped
@@ -866,15 +866,12 @@ Facebook.com\\
     a.k.a. decoy pages a.k.a. multi-tab browsing], has been evaluated
     several times (\cite{ccs2012-fingerprinting}, \cite{a-systematic},
     \cite{kfingerprint}, \cite{effective}, \cite{panchenko},
-    \cite{wtfpad}) and was surprisingly effective for all its
+    \cite{wtfpad}) and is surprisingly effective for all its
     simplicity, albeit at a high overhead.
-
-    This should emulate normal browser traffic better than the
-    proposed probabilistic schemes by Wang and Goldberg (normal and
-    uniform distribution). It might be that Wang and Goldberg's
-    deterministic padding to common values performs better, but that
-    seems to require a priori knowledge of web page characteristics.
 *** EVA How to generate cover traffic
+    The cover add-on defends against website fingerprinting by
+    injecting artificial cover traffic into the communication.
+
     When the user requests a page, be it by clicking on a hyperlink, a
     bookmark, or entering an address via the location bar, the addon
     always creates additional traffic simultaneous to the first HTTP
@@ -920,7 +917,7 @@ Facebook.com\\
 
       To cache sizes, an approximate-size data structure based on
       Bloom filters is used.
-****** CHECK Bloom Filter
+****** EVA Bloom Filter
        Bloom filters\cite{Bloom70space/timetrade-offs}[fn::
        \cite{Broder02networkapplications} contains a Bloom filter
        overview with applications] are a stochastic fixed-width data
@@ -942,9 +939,9 @@ Facebook.com\\
        To approximate the size of an element, all filters are
        checked. If one filter reports containment, its size is
        chosen. If zero report containment, the size is not known, if
-       two or more report containment, it is saved wrongly. In both
-       cases, the default distribution is used. See appendix
-       [[#bloom-sort]] for a description of the implementation.
+       two or more report containment, it is saved wrongly. In the
+       latter cases, the default distribution is used. See [[#bloom-sort]]
+       for a description of the implementation.
 
        This data structure has the advantage that, even if visited
        page sizes were saved, an adversary could not safely detemine
@@ -959,10 +956,9 @@ Facebook.com\\
         - replacement: simulates being another url
       - rates of error
         - "add" the error rates of the filters? (times population density?)
-****** KEYWORDS brainstorm                                          :ARCHIVE:
-         - error estimation?
-         - +: fixed size
-         - -: error both ways, and difference bin-size to real size
+      - error estimation?
+        - +: fixed size
+        - -: error both ways, and difference bin-size to real size
 ***** WRITE Choice: how to set cover traffic target values
       Once the /page's values/ are thus set[fn:kg], there are two
       tactics on how to set /target/ values.
@@ -1042,7 +1038,7 @@ Facebook.com\\
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
 * TODO Results and Evaluation [15%]
-** KEYWORDS Setup
+** WRITE Setup
 *** WRITE sites
     - top 10 found wanting: different results from top-100
     - top-100 represented all as of ...
@@ -1129,8 +1125,8 @@ Facebook.com\\
     protocol analyzer[fn:: \url{http://www.wireshark.org}].
 
     The program created to distill a feature vector from a trace is
-    called [[#counter][counter.py]]. It creates both CUMUL and version-1 feature
-    vectors.
+    called [[#counter][counter.py]]. It creates both CUMUL\cite{panchenko2} and
+    Version_1\cite{panchenko} feature vectors.
 **** TODO check incoming positive
 **** see also [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]               :ARCHIVE:
 **** EVA split
@@ -1239,11 +1235,17 @@ Facebook.com\\
     :END:
     After outlier removal, splits and possibly scaling, classification
     takes as input feature vectors and tries to output the class that
-    this input belongs to. The program to control this is
-    [[#analyse][=analyse.py=]].
+    this input belongs to. This is triggered by [[#analyse][=analyse.py=]].
 
-    Support Vector Machines require an additional parameter estimation
-    step
+    Support Vector Machines need additional parameters as input. These
+    are determined in an additional parameter estimation
+    step. \cite{Hsu10apractical} recommend grid-search, which is used
+    by \cite{panchenko2} and \cite{panchenko}.
+
+
+    - grid search
+      - tested with parameters from list, choose best accuracy
+      - on training set
     - analysis: analyse.py
       - tries to mimic \cite{panchenko} and \cite{panchenko2} code
       - uses toolkit \cite{scikit-learn}
@@ -1252,6 +1254,7 @@ Facebook.com\\
         - later
         - with addon
     - mention esl 6.7 after reading
+**** WAIT hastie on parameter estimation live vs meta
 ** KEYWORDS Website Fingerprinting [0/6]
 *** KEYWORDS panchenko v1 different classifiers
     :PROPERTIES:
@@ -1593,20 +1596,12 @@ similar, little to see
 * TODO topics [0/25]
 ** TODO Addon Design and Implementation [0/20]
 *** TODO Implementation [0/5]
-**** Unit Testing
-**** WAIT Cover add-on
-     Defends against website fingerprinting by injecting artificial
-     cover traffic into the communication.
-***** when stable
-      also cover against website fingerprinting by injecting really
-      artificial cover traffic
-
-      for every request, do one as well,
-***** why as an add-on
-      This is one of the few low-latency communication methods, Instead
-      of burdening all of Tor with extra bells and whistles, this solves
-      this deanonymization problem at the application layer, where its
-      origins are. (Separation of Concerns)
+**** MOVE to [[*Design and Implementation (=Implementation)][Design and Implementation (=Implementation) {8/17}]] below [[*How to generate cover traffic][How to generate cover traffic]] why as an add-on
+     Web browsing is the (main) target of website
+     fingerprinting. Instead of burdening all of Tor with extra bells
+     and whistles, this solves this deanonymization problem at the
+     application layer, where its origins are. (Separation of
+     Concerns)
 *** Evaluation
 **** add-on
 ***** TODO differences to adaptive padding/WTF-PAD
@@ -1727,13 +1722,15 @@ similar, little to see
     and querying via =htmlSizes.query("http://google.com/")=, which
     would yield =400=. (see usage in [[file:cover/js/size-cache.js::let%20numEmbeddeds%20%3D%20new%20BloomSort.BloomSort(NUM_EMBEDDED_SIZES,][size-cache]])
 
-* TODO addon weaknesses/uncertainties
+* TODO MOVE to [[*addon][addon]] (further work) addon weaknesses/uncertainties
   - all HTTP gets treated the same
     - redirects
     - iframes
     - normal pages
   - request sizes not altered
-    - can clearly see each cover request (as each should have size < 500)
+    - can clearly distinguish each cover request (as each should have
+      size < 500)
+      - countable, better: randomized request size
   - sizes have grown since 2007
 * TODO strong assumptions on feasibility
   - as critiqued in \cite{critique}
@@ -1870,8 +1867,6 @@ similar, little to see
    perfectly represent reality. It would be more exact to analyse the
    HTML page and at least return the domains of all embedded elements.
 \appendix
-\bibliography{docs/master}
-\bibliographystyle{plain}
 * appendices (this headline is just for searching)                  :ARCHIVE:
   above, as in this section cuts it out (due to ARCHIVE tag)
 * Testing Results different defenses
@@ -2605,7 +2600,7 @@ similar, little to see
    If the host is known (as defined below), an embedded page is
    assumed and the (existant) related =CoverTraffic=-Object is told
    that an embedded element was loaded.
-* CHECK Cached: Size of HTML-Documents            :appendix:
+* CHECK Cached: Size of HTML-Documents
   :PROPERTIES:
   :CUSTOM_ID: find sizes of HTML-documents
   :END:
@@ -2656,19 +2651,19 @@ similar, little to see
 * CHECK Tor Browser and Firefox despite --sync problems
   In case someone experiences graphics errors when using Tor via
   X-forwarding, there are several solutions. The first thing to check
-  is --- of course --- that firefox on the same system yields the
-  same error.
+  is that the corresponding firefox version on the same system yields
+  the same error.
 
-  The first workaround would be to use the =--sync= command-line
-  option to both firefox and the TBB. As this introduces huge lag, it
-  is less than optimal. A second solution is to install
-  XPRA[fn::\url{http://xpra.org/}. When it is installed (best via the
-  developer's repository) on both client and server, you can start it
-  via
+  If so, the first workaround would be to use the =--sync=
+  command-line option to both firefox and the TBB. As this introduces
+  huge lag, it is less than optimal. A second solution is to install
+  XPRA[fn::\url{http://xpra.org/}]. When it is installed[fn:: best
+  install via the developer's repository] on both client and server,
+  you can start it via
   #+BEGIN_SRC sh
     xpra start ssh:user@host:DISPLAY_ID --start=/path/to/start-tor-browser
   #+END_SRC
-  This issue was seemingly fixed in firefox 48, as of the bug report.
+  This issue was seemingly fixed in Firefox 50, as of the bug report.
 ** TODO [#C] bug report: quote other's error messages, link to bug report
 * TODO single files of a website
   The complete data of google.com can be retrieved via
@@ -2954,3 +2949,5 @@ similar, little to see
   In addition to using the observed sizes for the bloom filter, the
   number of groups was increased to 5.
 ** maybe graphics?
+\bibliography{docs/master}
+\bibliographystyle{plain}
