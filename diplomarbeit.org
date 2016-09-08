@@ -366,8 +366,8 @@ Facebook.com\\
     [[./pictures/cumul_aus_paper.pdf]]
 **** TODO feature vs attribute
 *** EVA Panchenko Version 1
-    #+INDEX: Version_1
-    #+INDEX: classifier!version 1
+    #+INDEX: Version~1
+    #+INDEX: classifier!Version~1
     While \cite{ccsw09-fingerprinting} classified one-hop proxies
     well, it had achieved low accuracy against Tor due to Tor's
     multiplexing and fixed
@@ -415,7 +415,7 @@ Facebook.com\\
     complex decision boundaries.
 
     (This section is mostly based on chapters 6 and 7 of
-    \cite{iml}). Given a set $\{x_1, ..., x_n\} = X$ with a dot product $\langle\cdot,
+    \cite{iml}). Given a set $X = \{x_1, ..., x_n\}$ with a dot product $\langle\cdot,
     \cdot\rangle: X \times X \to \mathbb R$ and tuples $(x_1, y_1), ..., (x_m, y_m)$,
     with $x_i \in X, y_i \in \{-1, 1\}$ as a binary classification task.
 
@@ -425,20 +425,12 @@ Facebook.com\\
     hyperplane in this thesis.[fn::as long as those things formed by
     quarks are still called atoms...]]
     #+BEGIN_LaTeX
-      \[\{x \in X | \langle w, x \rangle +b = 0\}\]
+      \[\{x \in X \mid \langle w, x \rangle +b = 0\}\]
     #+END_LaTeX
-    such that $\langle w, x_i\rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle +b < 0$
+    such that $\langle w, x_i \rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle +b < 0$
     whenever $y_i = -1$.
 
     - how works
-      - set with dot product
-      - find hyperplane {x \in X | <w, x> +b = 0} that separates
-        tuples, such that
-        - <w, xi> +b \ge 0 whenever yi = 1, and
-        - <w, xi> +b < 0 whenever yi = -1
-        - hastie et al\cite[sec.4.1]{esl}: hyperplane passes through
-          origin, so strictly speaking: affine plane. Nevertheless
-          hyperplane
       - hard margin classifier: assume that linearly separable
       - soft margin classifier: does not assume, tries to limit error
         in addition to maximizing margin
@@ -465,15 +457,12 @@ Facebook.com\\
       - each soft margin SVM has an error term C which states how
         much to penalize outliers
       - rbf kernel also has a gamma term which gives the grade of the
-        gaussian
-
-    LibSVM is a library for support vector machine classification and
-    regression. It is used under-the-hood in scikit-learn.
+        gaussian rbf
 **** TODO rbf kernel
 **** TODO link to smola-book
 **** TODO link to basic book (bronstein) for vector space etc
 **** index binary classification task
-*** WRITE wang
+*** WRITE Wang's KNN
     - improved detection
     - many attributes
     - weighting/learning weights
@@ -539,10 +528,7 @@ Facebook.com\\
       - maps attributes to classes (or probabilities)
       - classifier
 *** WRITE attacks
-   - hintz
-   - herrmann (bayes)
-   - panchenko (svm)
-   - cumul + k-forest + wang-knn
+   - k-forest
 *** WRITE Related Work
     :PROPERTIES:
     :CUSTOM_ID: wfRelated
@@ -579,8 +565,6 @@ Facebook.com\\
    Panchenko et al.\cite{panchenko}, it was considered "less
    effective"\cite{tor-design} against Tor, due to stream/circuit
    multiplexing and fixed cell sizes.
-*** index? traffic analysis
-
 *** Who could attack via WF
     As website fingerprinting requires very litte resources, a specific
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
@@ -701,7 +685,7 @@ Facebook.com\\
     - padding (sslv2 \to 3)
     - requestpolicy (hintz 2nd way)
     - text-only browsing (hintz 2nd way)
-* TODO Methods (=methods) [55%]
+* TODO Methods (=methods) [52%]
 ** TODO Motivation [0/2]
 *** brainstorm                                                      :ARCHIVE:
    - make wf/ml harder, fudge attributes
@@ -771,7 +755,7 @@ Facebook.com\\
     level, as a whistleblower might need more anonymity protection
     than Jane Doe who just reads the latest news, possibly censored in
     her country.
-** TODO Design and Implementation (=Implementation) [9/16]
+** TODO Design and Implementation (=Implementation) [9/17]
 *** DANIEL Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -933,7 +917,7 @@ Facebook.com\\
 ****** CHECK Application: Bloom Sort
        Sizes can be saved approximately based on Bloom filters: they
        are sorted into bins based on the target distribution. For each
-       bin, a Bloom filter is created; an element is added to this
+       bin, a Bloom filter is created. An element is added to this
        filter if its size is inside the bin.
 
        To approximate the size of an element, all filters are
@@ -980,9 +964,9 @@ Facebook.com\\
       - picture of binning approach
     This leads to the following variations:
 
-    1) bloom binning (I) with known sizes (A)
-    2) bloom binning (I) with random sizes (B)
-    3) one target distribution (II) with original size from bloom (A),
+    1) Bloom binning (I) with known sizes (A)
+    2) Bloom binning (I) with random sizes (B)
+    3) one target distribution (II) with original size from Bloom (A),
     4) one target distribution (II) with random sizes (B)
 **** EVA Addon Version: Simple
      The main version had become quite complex for a Firefox extension
@@ -1004,6 +988,12 @@ Facebook.com\\
      - de facto: HTML-sized request for each request (target-size),
        (remembering negative sizes, subtracting them)
      - drawback: not configurable
+**** WRITE Why as an add-on
+     Web browsing is the (main) target of website
+     fingerprinting. Instead of burdening all of Tor with extra bells
+     and whistles, this solves this deanonymization problem at the
+     application layer, where its origins are. (Separation of
+     Concerns)
 *** WRITE Server
     - where there are several possibilities how to generate cover
       traffic,
@@ -1028,7 +1018,7 @@ Facebook.com\\
       - later: .onion (link to related work)
     - http traffic distribution
 *** WRITE Related Work?
-    - bloom paper
+    - Bloom paper
     - network applications
 *** WRITE integrate into above
     This implementation currently omits some possibly embedded
@@ -1101,8 +1091,8 @@ Facebook.com\\
     One host runs the Tor Browser Bundle and the cover traffic server
     (if needed), the other runs a tor server instance in bridge
     mode. For WTF-PAD, an additional server transport program is run
-    at the bridge, and a client transport at the client[fn::I could
-    not get WTF-PAD to run via the built-in =ServerTransportPlugin= and
+    at the bridge, and a client transport at the client[fn::WTF-PAD
+    did not run via the built-in =ServerTransportPlugin= and
     =ClientTransportPlugin= directives].
 
     This setup utilises the same bridge for WTF-PAD and the browser
@@ -1125,9 +1115,8 @@ Facebook.com\\
     protocol analyzer[fn:: \url{http://www.wireshark.org}].
 
     The program created to distill a feature vector from a trace is
-    called [[#counter][counter.py]]. It creates both CUMUL\cite{panchenko2} and
-    Version_1\cite{panchenko} feature vectors.
-**** TODO check incoming positive
+    called [[#counter][=counter.py=]]. It creates both CUMUL\cite{panchenko2} and
+    Version\nbsp1\cite{panchenko} feature vectors.
 **** see also [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]               :ARCHIVE:
 **** EVA split
      As mentioned by \cite{arp-personal}, outliers can be removed
@@ -1254,6 +1243,11 @@ Facebook.com\\
         - later
         - with addon
     - mention esl 6.7 after reading
+    - scikit-learn\cite{scikit-learn} using libsvm\cite{libsvm}
+
+    LibSVM\cite{libsvm} is a library for support vector machine
+    classification and regression. It is also used under-the-hood in
+    scikit-learn.
 **** WAIT hastie on parameter estimation live vs meta
 ** KEYWORDS Website Fingerprinting [0/6]
 *** KEYWORDS panchenko v1 different classifiers
@@ -1596,12 +1590,6 @@ similar, little to see
 * TODO topics [0/25]
 ** TODO Addon Design and Implementation [0/20]
 *** TODO Implementation [0/5]
-**** MOVE to [[*Design and Implementation (=Implementation)][Design and Implementation (=Implementation) {8/17}]] below [[*How to generate cover traffic][How to generate cover traffic]] why as an add-on
-     Web browsing is the (main) target of website
-     fingerprinting. Instead of burdening all of Tor with extra bells
-     and whistles, this solves this deanonymization problem at the
-     application layer, where its origins are. (Separation of
-     Concerns)
 *** Evaluation
 **** add-on
 ***** TODO differences to adaptive padding/WTF-PAD
@@ -1626,103 +1614,19 @@ similar, little to see
       - when this started, walkie-talkie and juarez had not yet published
       - harder to break
         - more effort: one classifier for each cover scheme
-** TODO MOVE to appendix Bloom Filters
-*** TODO bloom usage and implementation
-    - bloom sort
-      - error rate computation
-    - size taken from example...
-      - maybe change when altered
-*** CHECK bloom-sort
-    :PROPERTIES:
-    :CUSTOM_ID: bloom-sort
-    :END:
-    By ordering data into bins, it becomes possible to use bloom filters
-    for the estimation of sizes, using one bloom filter for each bin.
-
-    To achieve this, sensible separation criteria (called /splits/) for
-    the bins need to be found. Afterwards, each bin needs to be assigned
-    a value (called /size/) for all contained elements. See appendix
-    [[#bloom-params]] on determining the sizes and splits.
-
-    This data-structure, called /bloom-sort/ is initialized with an
-    array of splits, and an array of sizes. The sizes-array needs to
-    have one more element than the splits-array, as the bins are bounded
-    on the left by 0, and on the right by infinity.
-
-    #+BEGIN_SRC js
-      /**
-       ,* @param {sizes Array} array of values for each bin, must be sorted
-       ,* @param {splits Array} array of bin borders, must be sorted
-      ,*/
-      function BloomSort(sizes, splits) {
-          this.sizes = sizes;
-          this.splits = splits;
-          this.filters = [];
-          for ( let i = 0; i < sizes.length; i++ ) {
-              this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH);
-          }
-      }
-    #+END_SRC
-
-    Thus, you get
-
-    -\infty \le size0 \le split0 \le size1 \le split1 \le ... \le split(n-1) \le sizen < \infty
-
-    Given the splits, it becomes possible to add the elements to their
-    bins:
-
-    #+BEGIN_SRC js
-      BloomSort.prototype.add = function(id, size) {
-          this.filters[_.sortedIndex(this.splits, size)].add(id);
-      };
-    #+END_SRC
-
-    where =_.sortedIndex()= gives the index at which =size= would be
-    inserted into the sorted =this.splits= array.
-
-    The retrieval of element sizes looks into each bloom filter,
-    checking whether it might contain the element =id=. If one bloom
-    filter reports containment, its corresponding element- =size= is
-    returned. If several or no bloom filters report containment, an
-    exception is thrown. The exception is used to allow all possible
-    return values, not blocking one of them, say =-1=, for the error
-    condition.
-    #+BEGIN_SRC js
-      /** determines size of element, raises exception if unclear */
-      BloomSort.prototype.query = function(id) {
-          let pos = -1;
-          for ( let i = 0; i < this.filters.length; i++ ) {
-              if ( this.filters[i].test(id) ) {
-                  if ( pos === -1 ) {
-                      pos = i;
-                  } else {
-                      throw {
-                          name: 'BloomError',
-                          message: 'Contains multiple entries'
-                      };
-                  }
-              }
-          }
-          if ( pos === -1 ) {
-              throw {
-                  name: 'BloomError',
-                  message: 'Contains no entries'
-              };
-          }
-          return this.sizes[pos];
-      };
-    #+END_SRC
-
-    It can be used by initializing with
-    #+BEGIN_SRC js
-    let htmlSizes = new BloomSort.BloomSort([400, 1000, 20000], [700, 10000]);
-    #+END_SRC
-
-    then adding elements via =htmlSizes.add("http://google.com/", 613)=
-    and querying via =htmlSizes.query("http://google.com/")=, which
-    would yield =400=. (see usage in [[file:cover/js/size-cache.js::let%20numEmbeddeds%20%3D%20new%20BloomSort.BloomSort(NUM_EMBEDDED_SIZES,][size-cache]])
-
-* TODO MOVE to [[*addon][addon]] (further work) addon weaknesses/uncertainties
+* TODO strong assumptions on feasibility
+  - as critiqued in \cite{critique}
+  - if protects against this, should also protect against worse
+  - additional (?defense?) as proposed in critique
+** TODO follow critique at all?
+* TODO index
+* WAIT Discussion
+  intel model: interdependences (html bigger \to more embedded) not mentioned
+* TODO Further work
+** eval
+  - bigger world sizes
+  - more elaborate tests with different world sizes / open world / etc
+** addon
   - all HTTP gets treated the same
     - redirects
     - iframes
@@ -1732,52 +1636,6 @@ similar, little to see
       size < 500)
       - countable, better: randomized request size
   - sizes have grown since 2007
-* TODO strong assumptions on feasibility
-  - as critiqued in \cite{critique}
-  - if protects against this, should also protect against worse
-  - additional (?defense?) as proposed in critique
-** TODO follow critique at all?
-* TODO index
-* TODO MOVE to appendix at least above [[*how to set up WTF-PAD][how to set up WTF-PAD]] host install list
-  This is a list of all that need to be done on a fresh Ubuntu server
-  installation to get all parts to work.
-
-  1. apt update
-  2. apt upgrade
-  3. apt install emacs tmux unison
-  4. download tbb
-     1. apt install firefox
-     2. apt install xpra
-        - installs needed x-libraries
-        - and is faster
-        - test via (local)
-        #+BEGIN_SRC sh
-          xpra start ssh:mkreik@duckstein:37 --start=firefox
-        #+END_SRC
-        and kill by hand (on duckstein) via
-        #+BEGIN_SRC sh
-          xpra stop
-        #+END_SRC
-     3. download tbb, gpg check, cp to hosts, test
-  5. apt install python-pip; pip install --upgrade pip
-  6. pip install marionette_client
-  7. apt install xvfb
-  8. apt install tshark
-     - add user to wireshark group in /etc/group
-     - log out, log back in
-  9. mkdir mnt/data, chown to current user/group
-  10. mod_wsgi: see appendix [[#mod_wsgi][Apache =mod_wsgi=]]
-  11. apt install tor
-  12. apt install python-pyptlib python-crypto python-yaml
-      python-psutil
-** TODO mention unison (in bib)
-* WAIT Discussion
-  intel model: interdependences (html bigger \to more embedded) not mentioned
-* TODO Further work
-** eval
-  - bigger world sizes
-  - more elaborate tests with different world sizes / open world / etc
-** addon
   - how to distinguish HTML/embedded
   - redirects + iframes included in model's number of embedded objects
   - source cover traffic: user gives domain as starting point
@@ -1789,12 +1647,12 @@ similar, little to see
   - does a new connection to another site create a measurable tor-response
     (with variable-length packets)?
   - provable protection
-  - size of bloom filter
-  - number of bloom filters,
+  - size of Bloom filter
+  - number of Bloom filters,
   - which and how many items to prepopulate
     - country-specific f.ex. google.com
     - leave out redirect from prepopulation
-  - automatic update of bloom-filter
+  - automatic update of Bloom-filter
     - with currently visited sites
   - loading further items
   - The choice of cover traffic domains was explicitly taken out of
@@ -2176,14 +2034,14 @@ similar, little to see
      - and easier to filter
 ** CHECK Marionette installation
    Marionette exists as a Python Package. It is thus easily installed
-   via[fn::After installation pip via f.ex. =sudo apt-get install python-pip=]
+   via[fn::After installing pip (f.ex. Debian: =sudo apt-get install python-pip=)]
    #+BEGIN_SRC sh
      pip install marionette_client
    #+END_SRC
 
    Using a virtualenv is highly recommended in the documentation. If
    using only Marionette, it proved to be unnecessary. The combined
-   installation of Marionette with Mozmill witouth virtualenv broke
+   installation of Marionette and Mozmill without virtualenv broke
    Marionette.
 *** TODO merge with above and split out pip install (also needed for wsgi)
 
@@ -2271,7 +2129,7 @@ similar, little to see
    Installing =jpm= is a two-step process. Firstly, install NodeJS
    either via built-in tools[fn:: for example =apt-get install
    nodejs-legacy= in Debian and Ubuntu] or via
-   download[fn:: \url{https://nodejs.org}] then,
+   download[fn:: \url{https://nodejs.org}]. Secondly,
    #+BEGIN_SRC sh
      npm install jpm
    #+END_SRC
@@ -2287,11 +2145,9 @@ similar, little to see
    version 47, Mozilla enforces that all addons be
    signed\cite{addon-signing}. If they are distributed via Mozilla's
    Addon Marketplace[fn:: \url{https://addons.mozilla.org}], they are
-   checked and signed automatically. Otherwise, you can request an
-   API key for signing and sign via the command
-   [fn:: \url{https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm\#jpm_sign}]
+   checked and signed automatically. Otherwise, you can request an API
+   key for signing and sign via the command\cite[sec.2.7]{moz-sdk-jpm}
    =jpm sign --api-key $SIGNING_KEY --api-secret $SIGNING_SECRET=.
-
 ** WRITE message-passing
    There is a mechanism to pass content from the add-on to the
    content scripts, as shown in the example.
@@ -2507,7 +2363,7 @@ similar, little to see
   format it for gnuplot (inserting appropriate newlines via =sed= and
   removing extra characters via =tr=), and =gnuplot= s it to a png
   file with the name of the trace file as prefix.
-* modules [0/15]
+* modules [0/16]
     #+CAPTION: Modules/Classes of the Addon
     #+ATTR_LATEX: :float nil :width 0.5\textwidth
     [[./pictures/model.eps]]
@@ -2520,7 +2376,7 @@ similar, little to see
 *** methods
     - loads
     - endsLoad
-** CHECK CoverTraffic(Loader=default)
+** WRITE CoverTraffic(Loader=default)
    <<CoverTraffic>> The =CoverTraffic= module provides requests for a
    single host contacted. This module uses a
    constructor, as it requires several instances, one for each host.
@@ -2528,12 +2384,13 @@ similar, little to see
    The cover traffic provided tries to mimic the [[#HTTP traffic model][HTTP traffic
    models]] parameters.
 
-   There are two strategies implemented which have to be set by
-   modifying the source code.
+   There are two strategies implemented which can be adjusted in the
+   add-on's preference pane[fn::In the browser, go to settings,
+   Add-ons, select the addon's ~Preferences~ button].
 
    One strategy deals with size estimation: for each page, the size
    of its HTML request and the number of embedded elements are
-   stored in a statistic data structure depending on bloom filters,
+   stored in a statistic data structure depending on Bloom filters,
    called [[SizeCache]]. If the size is known, it can be used or
    randomly guessed from the HTTP traffic model.
 
@@ -2560,6 +2417,7 @@ similar, little to see
 *** WAIT check if still two strategies
 *** TODO link to number of embedded elements and HTML request
 *** TODO link to sizecache
+*** WRITE [#A] see if description better than design, then integrate
 ** TODO Loader(Source=default2)
    loads new cover page (mockable)
 ** TODO Stats - Static functions
@@ -2580,12 +2438,12 @@ similar, little to see
    +uniform01() secure random float in the range [0,1)
 ** CHECK SizeCache
    <<SizeCache>> The SizeCache element stores approximations for
-   both the HTMLsizes (=htmlSize()=) and number of embedded objects
+   both the HTML sizes (=htmlSize()=) and number of embedded objects
    (=numberEmbeddedObject()=) per URL, using a [[bloomsort][BloomSort]] data
    structure for each.
 
    Exceptions from the BloomSort are passed on. This module is a
-   facade \cite{gof} that initializes the bloom filters and
+   facade \cite[sec.4.10]{gof} that initializes the Bloom filters and
    simplifies access.
 ** CHECK User
    The [[user.js][User]] module handles user action. It is the main controller.
@@ -2918,36 +2776,132 @@ similar, little to see
   - ow table
   - cw table
   - (maybe also instances)
-* TODO determining bloom-sort parameters
-  :PROPERTIES:
-  :CUSTOM_ID: bloom-params
-  :END:
-  It is impractical to store the sizes of all URLs. Another
-  possibility is to use Bloom Filters to aggregate groups of URLs
-  with similar values, as described in [[*bloom-sort][bloom-sort]].
+* TODO Bloom Filters
+** TODO bloom usage and implementation
+   - bloom sort
+     - error rate computation
+   - size taken from example...
+     - maybe change when altered
+** CHECK bloom-sort
+   :PROPERTIES:
+   :CUSTOM_ID: bloom-sort
+   :END:
+    By ordering data into bins, it becomes possible to use Bloom filters
+    for the estimation of sizes, using one Bloom filter for each bin.
 
-  Each groups gets borders (/splits/) and a size which represents each
-  contained element.
+    To achieve this, sensible separation criteria (called /splits/) for
+    the bins need to be found. Afterwards, each bin needs to be assigned
+    a value (called /size/) for all contained elements. See appendix
+    [[#bloom-params]] on determining the sizes and splits.
 
-  Determining the optimal number of groups, splits and sizes is a
-  topic of [[*Further%20work][Further work]]. Here, initially the quantiles of the
-  HTTP-model (see [[#HTTP traffic model][HTTP traffic model]]) were used. When the data were
-  to be inserted, it turned out that especially the numbers of
-  embedded elements did not match the theoretically proposed groups:
+    This data-structure, called /bloom-sort/ is initialized with an
+    array of splits, and an array of sizes. The sizes-array needs to
+    have one more element than the splits-array, as the bins are bounded
+    on the left by 0, and on the right by infinity.
 
-  For three groups, the splits would be given by the 33 1/3 and 66
-  2/3 quantiles, as 0.0107 and 1.481. As the number of embedded
-  elements is a whole number, two thirds of the information would
-  be if an element is 0, the next group would contain all other
-  elements: The (representative) sizes of the groups were given as
-  7.915E-05, 0.188, and 8.260 (quantiles 16 1/6, 50, and 83 5/6).
+    #+BEGIN_SRC js
+      /**
+       ,* @param {sizes Array} array of values for each bin, must be sorted
+       ,* @param {splits Array} array of bin borders, must be sorted
+      ,*/
+      function BloomSort(sizes, splits) {
+          this.sizes = sizes;
+          this.splits = splits;
+          this.filters = [];
+          for ( let i = 0; i < sizes.length; i++ ) {
+              this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH);
+          }
+      }
+    #+END_SRC
 
-  The data to be inserted (see [[#number_embedded][Cached: Number of Embedded Objects]])
-  had the splits (quantiles) at 10 2/3 and 36 2/3 and the sizes at
-  6, 20, and 59 2/3.
+    Thus, you get
 
-  In addition to using the observed sizes for the bloom filter, the
-  number of groups was increased to 5.
-** maybe graphics?
+    -\infty \le size0 \le split0 \le size1 \le split1 \le ... \le split(n-1) \le sizen < \infty
+
+    Given the splits, it becomes possible to add the elements to their
+    bins:
+
+    #+BEGIN_SRC js
+      BloomSort.prototype.add = function(id, size) {
+          this.filters[_.sortedIndex(this.splits, size)].add(id);
+      };
+    #+END_SRC
+
+    where =_.sortedIndex()= gives the index at which =size= would be
+    inserted into the sorted =this.splits= array.
+
+    The retrieval of element sizes looks into each Bloom filter,
+    checking whether it might contain the element =id=. If one Bloom
+    filter reports containment, its corresponding element- =size= is
+    returned. If several or no Bloom filters report containment, an
+    exception is thrown. The exception is used to allow all possible
+    return values, not blocking one of them, say =-1=, for the error
+    condition.
+    #+BEGIN_SRC js
+      /** determines size of element, raises exception if unclear */
+      BloomSort.prototype.query = function(id) {
+          let pos = -1;
+          for ( let i = 0; i < this.filters.length; i++ ) {
+              if ( this.filters[i].test(id) ) {
+                  if ( pos === -1 ) {
+                      pos = i;
+                  } else {
+                      throw {
+                          name: 'BloomError',
+                          message: 'Contains multiple entries'
+                      };
+                  }
+              }
+          }
+          if ( pos === -1 ) {
+              throw {
+                  name: 'BloomError',
+                  message: 'Contains no entries'
+              };
+          }
+          return this.sizes[pos];
+      };
+    #+END_SRC
+
+    It can be used by initializing with
+    #+BEGIN_SRC js
+    let htmlSizes = new BloomSort.BloomSort([400, 1000, 20000], [700, 10000]);
+    #+END_SRC
+
+    then adding elements via =htmlSizes.add("http://google.com/", 613)=
+    and querying via =htmlSizes.query("http://google.com/")=, which
+    would yield =400=. (see usage in [[file:cover/js/size-cache.js::let%20numEmbeddeds%20%3D%20new%20BloomSort.BloomSort(NUM_EMBEDDED_SIZES,][size-cache]])
+** TODO determining bloom-sort parameters
+   :PROPERTIES:
+   :CUSTOM_ID: bloom-params
+   :END:
+   It is impractical to store the sizes of all URLs. Another
+   possibility is to use Bloom Filters to aggregate groups of URLs
+   with similar values, as described in [[*bloom-sort][bloom-sort]].
+
+   Each groups gets borders (/splits/) and a size which represents each
+   contained element.
+
+   Determining the optimal number of groups, splits and sizes is a
+   topic of [[*Further%20work][Further work]]. Here, initially the quantiles of the
+   HTTP-model (see [[#HTTP traffic model][HTTP traffic model]]) were used. When the data were
+   to be inserted, it turned out that especially the numbers of
+   embedded elements did not match the theoretically proposed groups:
+
+   For three groups, the splits would be given by the 33 1/3 and 66
+   2/3 quantiles, as 0.0107 and 1.481. As the number of embedded
+   elements is a whole number, two thirds of the information would
+   be if an element is 0, the next group would contain all other
+   elements: The (representative) sizes of the groups were given as
+   7.915E-05, 0.188, and 8.260 (quantiles 16 1/6, 50, and 83 5/6).
+
+   The data to be inserted (see [[#number_embedded][Cached: Number of Embedded Objects]])
+   had the splits (quantiles) at 10 2/3 and 36 2/3 and the sizes at
+   6, 20, and 59 2/3.
+
+   In addition to using the observed sizes for the Bloom filter, the
+   number of groups was increased to 5.
+*** maybe graphics?
 \bibliography{docs/master}
 \bibliographystyle{plain}
+\input{diplomarbeit.ind}
