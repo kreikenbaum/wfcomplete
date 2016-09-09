@@ -46,7 +46,7 @@ def _bytes_mean_std(counter_dict):
     '''
     out = {}
     for (domain, counter_list) in counter_dict.iteritems():
-        total = [counter.get_total_both() for counter in counter_list]
+        total = [counter.get_total_in() for counter in counter_list]
         out[domain] = (np.mean(total), np.std(total))
     return out
 

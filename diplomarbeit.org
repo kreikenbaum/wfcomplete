@@ -834,7 +834,7 @@ Facebook.com\\
     not recongnize embedded iframes etc. as HTML.
 
     Providing an accurate estimate of embedded objects /per web page/
-    is [[Further work][further work]].
+    would be [[#future-work][future work]].
 *** EVA Why HTTP-shaped cover traffic
     HTTP-shaped cover traffic might prove more effective, as this
     would make it harder to separate cover and real traffic. In
@@ -922,10 +922,10 @@ Facebook.com\\
 
        To approximate the size of an element, all filters are
        checked. If one filter reports containment, its size is
-       chosen. If zero report containment, the size is not known, if
+       chosen. If zero report containment, the size is not known; if
        two or more report containment, it is saved wrongly. In the
-       latter cases, the default distribution is used. See [[#bloom-sort]]
-       for a description of the implementation.
+       latter cases, the default distribution is used.[fn::See [[#bloom-sort]]
+       for implementation details.]
 
        This data structure has the advantage that, even if visited
        page sizes were saved, an adversary could not safely detemine
@@ -1030,16 +1030,6 @@ Facebook.com\\
 * TODO Results and Evaluation [15%]
 ** WRITE Setup
 *** WRITE sites
-    - top 10 found wanting: different results from top-100
-    - top-100 represented all as of ...
-    - needed: representation with fewer classes
-    - solutions: percentiles of both addon and non-addon sizes joined
-    - link to code
-    - solution: 30 sites
-      - tables of sites with average non-addon size and average addon-size
-        - write which addon version (top-100, so 0.18.2@bI?)
-      - easier to distinguish than average, as intentionally very different sites
-        - harder to conceal
 **** EVA modified top-100
      The URLs for retrieval come from the Alexa top million sites
      list[fn:: Current version available at
@@ -1048,7 +1038,10 @@ Facebook.com\\
      \cite{wpes13-fingerprinting}, similar sites were removed. Also
      removed were those sites which failed to respond to python's
      =urllib=\cite[sec.20.5]{python-lib-ref}. The list of sites with
-     their Alexa index can be found in appendix [[#top-100]].
+     their Alexa index can be found in appendix
+     [[#top-100]]. \cite{ccs2012-fingerprinting} showed that accuracy on
+     this list closely resembles accuracy on 100 randomly-chosen
+     sites.
 **** EVA 30 sites
      :PROPERTIES:
      :CUSTOM_ID: 30sites
@@ -1058,11 +1051,13 @@ Facebook.com\\
      used the top-10 of these sites, but those differed from all sites
      distributions, f.ex. in size, as mentioned in \cite{web-is-doom}.
 
-     To solve this, sites that are the most apart in the top 100 by
-     incoming byte size were chosen.[fn::the method to do this is
-     =top30()= in [[#analyse][analyse.py]], the traces were from addon version
-     0.18.2]. Due to them being well apart, these sites should be easy
-     to classify, and thus harder to keep apart via defenses.
+     To solve this, the top 100 sites's traces[fn::both for no defense
+     and with addon version 18.2 (see [[*0.18: configurability][0.18: configurability]])] were
+     ordered by incoming byte size, and percentiles were
+     chosen.[fn::the method to do this is =top30()= in [[#analyse][analyse.py]], the
+     traces were from addon version 0.18.2]. Due to them being well
+     apart, these sites should be easy to classify, and thus harder to
+     keep apart via defenses.
 **** EVA open-world
      For open-world evaluation, sites from the same top-1m data were
      used, starting after the last of the modified top-100 pages. The
@@ -1105,8 +1100,8 @@ Facebook.com\\
     The aim of preprocessing is to extract attributes relevant for
     machine learning from the original trace files, which are in
     =pcap= format. From these, a vector of characteristics, called
-    /features/ [fn::called like this in machine learning; in
-    statistics, these are called /independent variables/ or
+    /features/ [fn::They are called /features/ and /attributes/ in
+    machine learning; statistics calls them /independent variables/ or
     /predictors/, see\cite[sec.2.1]{esl}] is created.
 
     Of the several tools available for reading =pcap=-trace files,
@@ -1151,12 +1146,13 @@ Facebook.com\\
      removal on test data increases accuracy, but as of the previous
      section, this is not applicable in a real-world scenario.
 
-     - similar for extratrees
-     - *table here*
- #+CAPTION: Accuracy with SVM classifier after outlier removal. The ~both~ column shows classification accuracy if the outliers are removed from both test and training set at the same time.
- #+NAME: tab:outlier_removal
- #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
- #+INCLUDE: "data/results/alternatives.org::#outlier_removal" :only-contents t
+#+CAPTION: Accuracy with SVM classifier after outlier removal. The ~both~ column shows classification accuracy if the outliers are removed from both test and training set at the same time.
+#+NAME: tab:outlier_removal
+#+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
+#+INCLUDE: "data/results/alternatives.org::#outlier_removal" :only-contents t
+
+     The results are similar for the Extra-Trees classifier, see
+     appendix [[*Outlier Removal Results with Extra-Trees Classifier][Outlier Removal Results with Extra-Trees Classifier]].
 
      - empty already discarded in counter
 
@@ -1353,10 +1349,6 @@ Facebook.com\\
 #+NAME: tab:site_sizes_relative
 #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
 #+INCLUDE: "data/results/alternatives.org::#size_rel" :only-contents t
-    - [ ] experiment
-      - values: absolute
-      - also per-domain size growth
-    - also after outlier removal?
 **** continue: [[file:bin/analyse.py::total%20=%20%5Bcounter.get_total_both()%20for%20counter%20in%20counter_list%5D][here, set to _in, redo analysis]] with four disableds
 **** WAIT for [[file:~/da/da.org::*experimente][experimente disabled]]
 *** KEYWORDS (for [[file:~/da/da.org::*klassifikation][klassifikation {0/12}]]) svc vs extratrees
@@ -1598,43 +1590,45 @@ similar, little to see
      - addon-simple does the opposite
    - have a look at [[*practical wf: analyzing traces][practical wf: analyzing traces]]
 * WAIT Conclusion
-* TODO topics [0/25]
-** TODO Addon Design and Implementation [0/20]
-*** TODO Implementation [0/5]
-*** Evaluation
-**** add-on
-***** TODO differences to adaptive padding/WTF-PAD
+** WAIT Discussion
+   intel model: interdependences (html bigger \to more embedded) not mentioned
+* TODO topics [0/4]
+** Evaluation
+*** add-on
+**** TODO differences to adaptive padding/WTF-PAD
 - delay of some possible (f.ex. images)
-- knowledge of packets
-- end of transmission detectable
+  - also pre-cache some as cover traffic
 - different target distributions
 - multiple distributions
 - optionally no cooperator necessary
     dummy packets chosen as response to real request (as in web traffic)
 - add evaluation values
-- similarities: no delay
+- end of page load easily detectable
+  - wfpad can see end of each transmission
+- similarities: 
   - also has app_hint
+  - no delay
 - currently uses exit nodes
 - this has no gap traffic, aims less at global adversary, more at ISP
-****** TODO understand adaptive padding histogram
-***** TODO differences to panchenkos
-      - attribute extraction via python class directly from pcap
-        - packet data saveable to JSON
-***** TODO why several covers
-      - competition
-      - when this started, walkie-talkie and juarez had not yet published
-      - harder to break
-        - more effort: one classifier for each cover scheme
+***** TODO understand adaptive padding histogram
+**** TODO differences to panchenkos
+     - attribute extraction via python class directly from pcap
+       - packet data saveable to JSON
+**** TODO why several covers
+     - competition
+     - when this started, walkie-talkie and juarez had not yet published
+     - harder to break
+       - more effort: one classifier for each cover scheme
 * TODO strong assumptions on feasibility
   - as critiqued in \cite{critique}
   - if protects against this, should also protect against worse
   - additional (?defense?) as proposed in critique
 ** TODO follow critique at all?
-* TODO index
-* WAIT Discussion
-  intel model: interdependences (html bigger \to more embedded) not mentioned
-* TODO Further work
+* TODO MOVE sub [[*Conclusion][Conclusion]] Future Work
 ** eval
+   :PROPERTIES:
+   :CUSTOM_ID: future-work
+   :END:
   - bigger world sizes
   - more elaborate tests with different world sizes / open world / etc
 ** addon
@@ -1736,6 +1730,7 @@ similar, little to see
    perfectly represent reality. It would be more exact to analyse the
    HTML page and at least return the domains of all embedded elements.
 \appendix
+\part{Appendix}
 * appendices (this headline is just for searching)                  :ARCHIVE:
   above, as in this section cuts it out (due to ARCHIVE tag)
 * Testing Results different defenses
@@ -2011,13 +2006,13 @@ similar, little to see
    - (currently closed world)
 *** TODO more complete list?
 ** WRITE filtering tshark files [0/4]
-   Although this requirement could later be removed (see [[*Further%20work][further
-   work]]), the addon currently needs a generator of cover traffic to
-   work. While it can be set in the add-on's preferences, this
-   generator ran on the same host as the tor client. Thus, the
+   Although this requirement could later be removed (see [[#future-work][section
+   future work]]), the addon currently needs a generator of cover
+   traffic to work. While it can be set in the add-on's preferences,
+   this generator ran on the same host as the tor client. Thus, the
    capture files also contained traffic of the cover traffic
-   server. As they do not belong to the Tor traffic, are not what
-   the adversary sees, and might distort the result, they were
+   server. As they do not belong to the Tor traffic, are not what the
+   adversary sees, and might distort the result, they were
    filtered. (Even though the accuracy results were not greatly
    changed by this).
 
@@ -2040,7 +2035,7 @@ similar, little to see
 ** overview
    - for the sake of comparability, also bridge for addon tests
      - and easier to filter
-** CHECK Marionette installation
+** Marionette installation
    Marionette exists as a Python Package. It is thus easily installed
    via[fn::After installing pip (f.ex. Debian: =sudo apt-get install python-pip=)]
    #+BEGIN_SRC sh
@@ -2155,7 +2150,9 @@ similar, little to see
    Addon Marketplace[fn:: \url{https://addons.mozilla.org}], they are
    checked and signed automatically. Otherwise, you can request an API
    key for signing and sign via the command\cite[sec.2.7]{moz-sdk-jpm}
-   =jpm sign --api-key $SIGNING_KEY --api-secret $SIGNING_SECRET=.
+   #+BEGIN_SRC sh
+     jpm sign --api-key $SIGNING_KEY --api-secret $SIGNING_SECRET
+   #+END_SRC
 ** WRITE message-passing
    There is a mechanism to pass content from the add-on to the
    content scripts, as shown in the example.
@@ -2371,7 +2368,7 @@ similar, little to see
   format it for gnuplot (inserting appropriate newlines via =sed= and
   removing extra characters via =tr=), and =gnuplot= s it to a png
   file with the name of the trace file as prefix.
-* modules [0/16]
+* modules [0/15]
     #+CAPTION: Modules/Classes of the Addon
     #+ATTR_LATEX: :float nil :width 0.5\textwidth
     [[./pictures/model.eps]]
@@ -2444,7 +2441,7 @@ similar, little to see
    provides randomization methods
    +string(length:number) pseudo-random string
    +uniform01() secure random float in the range [0,1)
-** CHECK SizeCache
+** SizeCache
    <<SizeCache>> The SizeCache element stores approximations for
    both the HTML sizes (=htmlSize()=) and number of embedded objects
    (=numberEmbeddedObject()=) per URL, using a [[bloomsort][BloomSort]] data
@@ -2463,9 +2460,10 @@ similar, little to see
    If it is a new request to the host, loading of an HTML page is
    assumed and a new =CoverTraffic=-Object is generated.
 
-   If the host is known (as defined below), an embedded page is
-   assumed and the (existant) related =CoverTraffic=-Object is told
-   that an embedded element was loaded.
+   If the host is known (as defined in [[#distinguish_HTML_embedded][How to distinguish HTML and
+   embedded objects]]), an embedded page is assumed and the (existant)
+   related =CoverTraffic=-Object is told that an embedded element was
+   loaded.
 * CHECK Cached: Size of HTML-Documents
   :PROPERTIES:
   :CUSTOM_ID: find sizes of HTML-documents
@@ -2777,7 +2775,7 @@ similar, little to see
     embedded filter by 0 for each of those, it is not a perfect fit,
     but better)
   - growth of websites
-  - [[*Further%20work][Further work]]
+  - [[#future-work][Further work]]
 ** link in [[#HTTP traffic model][HTTP traffic model]] to here when moved
 * KEYWORDS data set sizes
   - size per paper dataset
@@ -2891,7 +2889,7 @@ similar, little to see
    contained element.
 
    Determining the optimal number of groups, splits and sizes is a
-   topic of [[*Further%20work][Further work]]. Here, initially the quantiles of the
+   topic of [[#future-work][Further work]]. Here, initially the quantiles of the
    HTTP-model (see [[#HTTP traffic model][HTTP traffic model]]) were used. When the data were
    to be inserted, it turned out that especially the numbers of
    embedded elements did not match the theoretically proposed groups:
