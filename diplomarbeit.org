@@ -79,8 +79,8 @@
   - Tao Wang
   - Dr. Dr. Eva
 * WAIT Summary
-* TODO Basics (=basics) [42%]
-** WRITE Website Fingerprinting [13/28]
+* TODO Basics (=basics) [39%]
+** WRITE Website Fingerprinting [13/31]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -408,6 +408,8 @@ Facebook.com\\
 
     Support vector machines classify these.
 *** WRITE Support Vector Machines
+    #+INDEX: Support Vector Machine
+    #+INDEX: SVM
     Support Vector Machines (short: SVM) are a linear classifier:
     they find a linear boundary between points. While this might seem
     overly limiting, SVMs can compute the boundary not only on the
@@ -429,13 +431,12 @@ Facebook.com\\
     #+END_LaTeX
     such that $\langle w, x_i \rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle +b < 0$
     whenever $y_i = -1$.
-
-    - how works
+**** WRITE hard vs soft margin
       - hard margin classifier: assume that linearly separable
       - soft margin classifier: does not assume, tries to limit error
         in addition to maximizing margin
       - optimization problem
-    - multi-class strategies aka ovr vs ovo (vs ecoc)
+**** WRITE multi-class strategies aka ovr vs ovo (vs ecoc)
       - svm binary classifier
       - multi-class: train one for each class (ovr) or one for each
         class-combination (ovo)
@@ -445,21 +446,21 @@ Facebook.com\\
         - error-correcting codes, mention esl p.625
           - or web-dl original paper
           - used by k-forest
-    - kernel trick (see figure [[hastie_kerneltrick]])
-      - instead of dot product <.,.> use =kernel= k(., .)
-      - same effect as mapping each point in set to dot product
-        space, and applying <.,.> there, k(x, x') = <\Phi(x), \Phi(x')>
-        - but need not compute complete mapping
+**** WRITE kernel trick
+     - see figure [[hastie_kerneltrick]]
+        - instead of dot product <.,.> use =kernel= k(., .)
+        - same effect as mapping each point in set to dot product
+          space, and applying <.,.> there, k(x, x') = <\Phi(x), \Phi(x')>
+          - but need not compute complete mapping
       #+CAPTION: Kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left side shows linear boundaries on $X$ and $Y$ --- the right side linear boundaries computed with added input data $X^2$, $Y^2$ and $XY$
       #+NAME: hastie_kerneltrick
       [[./pictures/hastie.png]]
-    - parameter estimation
-      - each soft margin SVM has an error term C which states how
-        much to penalize outliers
-      - rbf kernel also has a gamma term which gives the grade of the
-        gaussian rbf
-**** TODO rbf kernel
-**** TODO link to smola-book
+      - rbf kernel
+**** parameter estimation
+     - each soft margin SVM has an error term C which states how
+       much to penalize outliers
+     - rbf kernel also has a gamma term which gives the grade of the
+       gaussian rbf
 **** TODO link to basic book (bronstein) for vector space etc
 **** index binary classification task
 *** WRITE Wang's KNN
@@ -685,7 +686,7 @@ Facebook.com\\
     - padding (sslv2 \to 3)
     - requestpolicy (hintz 2nd way)
     - text-only browsing (hintz 2nd way)
-* TODO Methods (=methods) [52%]
+* TODO Methods (=methods) [57%]
 ** TODO Motivation [0/2]
 *** brainstorm                                                      :ARCHIVE:
    - make wf/ml harder, fudge attributes
@@ -755,7 +756,7 @@ Facebook.com\\
     level, as a whistleblower might need more anonymity protection
     than Jane Doe who just reads the latest news, possibly censored in
     her country.
-** TODO Design and Implementation (=Implementation) [9/17]
+** TODO Design and Implementation (=Implementation) [10/17]
 *** DANIEL Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -914,7 +915,7 @@ Facebook.com\\
        filter and the number of inserted elements.]: they work
        flawlessly if an element is inside the set, yet might wrongly
        state that an element is inside, when it is not.
-****** CHECK Application: Bloom Sort
+****** EVA Application: Bloom Sort
        Sizes can be saved approximately based on Bloom filters: they
        are sorted into bins based on the target distribution. For each
        bin, a Bloom filter is created. An element is added to this
@@ -1027,9 +1028,9 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* TODO Results and Evaluation [15%]
-** WRITE Setup
-*** WRITE sites
+* TODO Results and Evaluation [23%]
+** Setup
+*** EVA sites
 **** EVA modified top-100
      The URLs for retrieval come from the Alexa top million sites
      list[fn:: Current version available at
@@ -1067,6 +1068,8 @@ Facebook.com\\
      from closed-world. It seemed more direct to capture background
      traces.
 *** EVA capture
+    #+INDEX: Bridge
+    #+INDEX: Tor!Bridge
     #+CAPTION: setup to capture web page traffic: Tor Browser on /Client/ machine, connects to Tor server on /Bridge/ machine, connects to Tor network, connects to web servers
     #+ATTR_LATEX: :float nil :width 0.5\textwidth
     [[./pictures/Setup.eps]]
@@ -1096,7 +1099,7 @@ Facebook.com\\
     Single traces are captured via the Python script ~one_site.py~, see
     appendix [[#1site_desc]].
 **** WAIT github config files upload + mention
-*** CHECK preprocessing
+*** EVA preprocessing
     The aim of preprocessing is to extract attributes relevant for
     machine learning from the original trace files, which are in
     =pcap= format. From these, a vector of characteristics, called
@@ -1154,7 +1157,14 @@ Facebook.com\\
      The results are similar for the Extra-Trees classifier, see
      appendix [[*Outlier Removal Results with Extra-Trees Classifier][Outlier Removal Results with Extra-Trees Classifier]].
 
-     - empty already discarded in counter
+     - describe stages
+       1. minimal: just remove traces with (almost) no packets
+       2. median: remove those smaller than 0.2*median and largen 1.8*median
+       3. quantile: calculate 1/4 and 3/4 quantiles q1, q3 of
+          incomingSize, remove if incomingSize < (q1-1.5 * (q3-q1)) or
+          incomingSize > (q3+1.5 * (q3-q1)
+     - testing stage: save previous highest and lowest limit
+       (lvl. 2. or 3), remove now if below lowest or above highest
 
      This outlier removal removed on average
      - [ ] how many? 5%?
@@ -1222,15 +1232,16 @@ Facebook.com\\
     takes as input feature vectors and tries to output the class that
     this input belongs to. This is triggered by [[#analyse][=analyse.py=]].
 
-    Support Vector Machines need additional parameters as input. These
-    are determined in an additional parameter estimation
-    step. \cite{Hsu10apractical} recommend grid-search, which is used
-    by \cite{panchenko2} and \cite{panchenko}.
+    Radial Basis Function Support Vector Machines need additional
+    parameters as input. These are determined in an additional
+    parameter estimation step. \cite{Hsu10apractical} recommend
+    grid-search, which is used by \cite{panchenko2} and
+    \cite{panchenko}. This happens on the training set.
+
+    After SVM-parameters have been determined, several classifiers
+    from a list are applied
 
 
-    - grid search
-      - tested with parameters from list, choose best accuracy
-      - on training set
     - analysis: analyse.py
       - tries to mimic \cite{panchenko} and \cite{panchenko2} code
       - uses toolkit \cite{scikit-learn}
@@ -1245,7 +1256,7 @@ Facebook.com\\
     classification and regression. It is also used under-the-hood in
     scikit-learn.
 **** WAIT hastie on parameter estimation live vs meta
-** KEYWORDS Website Fingerprinting [0/6]
+** Website Fingerprinting [0/5]
 *** KEYWORDS panchenko v1 different classifiers
     :PROPERTIES:
     :CUSTOM_ID: different-classifiers
@@ -1328,7 +1339,9 @@ Facebook.com\\
     :PROPERTIES:
     :CUSTOM_ID: time
     :END:
-      - table: overhead and accuracy, training on 07-06, testing on each
+    - redo table
+#+INCLUDE: "data/results/alternatives.org::#tab:time" :only-contents t
+    - table: overhead and accuracy, training on 07-06, testing on each
   |-----------------+-------+-------+-------|
   |                 | Extra-Trees | SVC(scale) | overhead % |
   | <15>            |   <5> |   <5> |   <5> |
@@ -1592,10 +1605,116 @@ similar, little to see
 * WAIT Conclusion
 ** WAIT Discussion
    intel model: interdependences (html bigger \to more embedded) not mentioned
-* TODO topics [0/4]
-** Evaluation
-*** add-on
-**** TODO differences to adaptive padding/WTF-PAD
+** TODO Future Work
+*** eval
+    :PROPERTIES:
+    :CUSTOM_ID: future-work
+    :END:
+   - bigger world sizes
+   - more elaborate tests with different world sizes / open world / etc
+*** addon
+   - all HTTP gets treated the same
+     - redirects
+     - iframes
+     - normal pages
+   - request sizes not altered
+     - can clearly distinguish each cover request (as each should have
+       size < 500)
+       - countable, better: randomized request size
+   - sizes have grown since 2007
+   - how to distinguish HTML/embedded
+   - redirects + iframes included in model's number of embedded objects
+   - source cover traffic: user gives domain as starting point
+   - how to generate
+     - how often, which parameters
+     - just triggered by start and until end, or for each load
+   - background if non-active (IPP self-similar)
+     - 802.16 model
+   - does a new connection to another site create a measurable tor-response
+     (with variable-length packets)?
+   - provable protection
+   - size of Bloom filter
+   - number of Bloom filters,
+   - which and how many items to prepopulate
+     - country-specific f.ex. google.com
+     - leave out redirect from prepopulation
+   - automatic update of Bloom-filter
+     - with currently visited sites
+   - loading further items
+   - The choice of cover traffic domains was explicitly taken out of
+     the research focus. Currently, all cover traffic is dynamically
+     generated by a web server written in Python.
+
+     There exists basic code to use a list of webpages, given their
+     sizes. It could be augmented by following links.
+     - update from visited URLs
+   - no morphing (delay, segmentation)
+     - justify why good idea
+   - bloomsort save/restore
+   - number of embedded elements lacks <style> tags and some in <link>
+     - does not honor reloads/cacheing
+       - or does it? (maybe only called on cacheing)
+     - but better than too many?
+       - some approaches yes, binning no
+   - elaborate on [[#number_embedded]]
+   - how to set splits and sizes
+   - [[#theory-practice-numEmbedded][differences theoretical HTML-num embedded and observed]]
+   - improve code to include css, (iframes?), js in number of embedded elements
+   - web pages got bigger. See if \cite{newtrafficmodel}'s values are
+     still accurate.
+     - or only rely on quantiles of observed data
+       - but these are hard to gather
+	 - use networkmanager code to do that
+     - cite web-doom
+   - User class: should aggregate smarter, not by-host, but by-page
+     with every page-embedded element as just that.
+     - indexed by host as workaround, can do better later
+       - hard to find out which is HTML, which is non-HTML-traffic
+       - so all is lumped together per domain
+	 - first request seen as HTML
+	 - other requests as non-HTML
+     - == determine if HTML page by suffix (not clear as of ... and
+       ... (link to SO))
+   - bursts maybe less hidden (number of)
+   - time not hidden (no delays of single files)
+   - firefox e10n multiprocess
+   - delay some requests (f.ex. images)
+*** TODO also helps against global observer if .onion generator is used
+    - murdoch/danezis: correlation
+    - this creates additional traffic which might hinder correlation attacks
+    - further work
+    - if cover traffic server is used by enough clients at once
+    - or is unobservable (hidden service)
+    - information-theoretical / stochastical analysis
+    - quote perry critique
+**** TODO first read murdoch/danezis paper
+*** onion host for cover traffic
+    As indicated f.ex. by Wang and Goldberg,
+    \cite{wpes13-fingerprinting}, network load already is a bottleneck
+    on Tor, with the key bottleneck being exit nodes\cite{wtfpad}. The
+    exit nodes might be spared the extra traffic by using =.onion=
+    traffic generators (or, alternatively, hosts). A traffic generator
+    could be further optimized by using tor proposals ... (see todo) to
+    reduce latency, if this does not reduce privacy.
+**** TODO tor proposals as of tor.sx
+**** TODO read/skim and cite "on performance..."
+*** more thorough evaluation
+    - only two panchenko approaches
+    - assumption: can split traces
+*** TODO always also link in text
+**** TODO check with darp
+*** TODO links to original, back to further work
+*** Exactly distinguishing HTML and embedded requests
+    The current version of the [[user.js][User module]] separates
+    CoverTraffic by DNS-domainname. As it often happens that one HTML
+    page has embedded elements from different domains, this does not
+    perfectly represent reality. It would be more exact to analyse the
+    HTML page and at least return the domains of all embedded elements.
+ \appendix
+ \part{Appendix}
+* Evaluation
+** add-on
+*** TODO MOVE into [[#eval-wtf-pad][sota (practical): WTF-PAD]] differences to adaptive padding/WTF-PAD
 - delay of some possible (f.ex. images)
   - also pre-cache some as cover traffic
 - different target distributions
@@ -1610,127 +1729,20 @@ similar, little to see
   - no delay
 - currently uses exit nodes
 - this has no gap traffic, aims less at global adversary, more at ISP
-***** TODO understand adaptive padding histogram
-**** TODO differences to panchenkos
-     - attribute extraction via python class directly from pcap
-       - packet data saveable to JSON
-**** TODO why several covers
-     - competition
-     - when this started, walkie-talkie and juarez had not yet published
-     - harder to break
-       - more effort: one classifier for each cover scheme
+**** TODO understand adaptive padding histogram
+*** TODO differences to panchenkos
+    - attribute extraction via python class directly from pcap
+      - packet data saveable to JSON
+*** TODO why several covers
+    - competition
+    - when this started, walkie-talkie and juarez had not yet published
+    - harder to break
+      - more effort: one classifier for each cover scheme
 * TODO strong assumptions on feasibility
   - as critiqued in \cite{critique}
   - if protects against this, should also protect against worse
   - additional (?defense?) as proposed in critique
 ** TODO follow critique at all?
-* TODO MOVE sub [[*Conclusion][Conclusion]] Future Work
-** eval
-   :PROPERTIES:
-   :CUSTOM_ID: future-work
-   :END:
-  - bigger world sizes
-  - more elaborate tests with different world sizes / open world / etc
-** addon
-  - all HTTP gets treated the same
-    - redirects
-    - iframes
-    - normal pages
-  - request sizes not altered
-    - can clearly distinguish each cover request (as each should have
-      size < 500)
-      - countable, better: randomized request size
-  - sizes have grown since 2007
-  - how to distinguish HTML/embedded
-  - redirects + iframes included in model's number of embedded objects
-  - source cover traffic: user gives domain as starting point
-  - how to generate
-    - how often, which parameters
-    - just triggered by start and until end, or for each load
-  - background if non-active (IPP self-similar)
-    - 802.16 model
-  - does a new connection to another site create a measurable tor-response
-    (with variable-length packets)?
-  - provable protection
-  - size of Bloom filter
-  - number of Bloom filters,
-  - which and how many items to prepopulate
-    - country-specific f.ex. google.com
-    - leave out redirect from prepopulation
-  - automatic update of Bloom-filter
-    - with currently visited sites
-  - loading further items
-  - The choice of cover traffic domains was explicitly taken out of
-    the research focus. Currently, all cover traffic is dynamically
-    generated by a web server written in Python.
-
-    There exists basic code to use a list of webpages, given their
-    sizes. It could be augmented by following links.
-    - update from visited URLs
-  - no morphing (delay, segmentation)
-    - justify why good idea
-  - bloomsort save/restore
-  - number of embedded elements lacks <style> tags and some in <link>
-    - does not honor reloads/cacheing
-      - or does it? (maybe only called on cacheing)
-    - but better than too many?
-      - some approaches yes, binning no
-  - elaborate on [[#number_embedded]]
-  - how to set splits and sizes
-  - [[#theory-practice-numEmbedded][differences theoretical HTML-num embedded and observed]]
-  - improve code to include css, (iframes?), js in number of embedded elements
-  - web pages got bigger. See if \cite{newtrafficmodel}'s values are
-    still accurate.
-    - or only rely on quantiles of observed data
-      - but these are hard to gather
-	- use networkmanager code to do that
-    - cite web-doom
-  - User class: should aggregate smarter, not by-host, but by-page
-    with every page-embedded element as just that.
-    - indexed by host as workaround, can do better later
-      - hard to find out which is HTML, which is non-HTML-traffic
-      - so all is lumped together per domain
-	- first request seen as HTML
-	- other requests as non-HTML
-    - == determine if HTML page by suffix (not clear as of ... and
-      ... (link to SO))
-  - bursts maybe less hidden (number of)
-  - time not hidden (no delays of single files)
-  - firefox e10n multiprocess
-  - delay some requests (f.ex. images)
-** TODO also helps against global observer if .onion generator is used
-   - murdoch/danezis: correlation
-   - this creates additional traffic which might hinder correlation attacks
-   - further work
-   - if cover traffic server is used by enough clients at once
-   - or is unobservable (hidden service)
-   - information-theoretical / stochastical analysis
-   - quote perry critique
-*** TODO first read murdoch/danezis paper
-** onion host for cover traffic
-   As indicated f.ex. by Wang and Goldberg,
-   \cite{wpes13-fingerprinting}, network load already is a bottleneck
-   on Tor, with the key bottleneck being exit nodes\cite{wtfpad}. The
-   exit nodes might be spared the extra traffic by using =.onion=
-   traffic generators (or, alternatively, hosts). A traffic generator
-   could be further optimized by using tor proposals ... (see todo) to
-   reduce latency, if this does not reduce privacy.
-*** TODO tor proposals as of tor.sx
-*** TODO read/skim and cite "on performance..."
-** more thorough evaluation
-   - only two panchenko approaches
-   - assumption: can split traces
-** TODO always also link in text
-*** TODO check with darp
-** TODO links to original, back to further work
-** Exactly distinguishing HTML and embedded requests
-   The current version of the [[user.js][User module]] separates
-   CoverTraffic by DNS-domainname. As it often happens that one HTML
-   page has embedded elements from different domains, this does not
-   perfectly represent reality. It would be more exact to analyse the
-   HTML page and at least return the domains of all embedded elements.
-\appendix
-\part{Appendix}
 * appendices (this headline is just for searching)                  :ARCHIVE:
   above, as in this section cuts it out (due to ARCHIVE tag)
 * Testing Results different defenses
@@ -1810,7 +1822,7 @@ similar, little to see
 ** WRITE 0.22: should be 0.21.1: reliability fixes
    - retrieved one-too-many on each embedded request
    - fix to /simple/: =endsLoad= was seemingly not triggered
-* WRITE retrieve trace: ~one_site.py~
+* MOVE to [[*Evaluation Scripts][Evaluation Scripts]] WRITE retrieve trace: ~one_site.py~
   :PROPERTIES:
   :CUSTOM_ID: 1site_desc
   :END:
@@ -2005,7 +2017,7 @@ similar, little to see
        - 100 \to 800 once a 20 \to 40 twice
    - (currently closed world)
 *** TODO more complete list?
-** WRITE filtering tshark files [0/4]
+** WRITE filtering pcap files [0/4]
    Although this requirement could later be removed (see [[#future-work][section
    future work]]), the addon currently needs a generator of cover
    traffic to work. While it can be set in the add-on's preferences,
@@ -2230,113 +2242,114 @@ similar, little to see
    \url{developer.mozilla.org/en-US/docs/Mozilla/Add-ons/SDK/Low-Level_APIs/test_assert.html}.
 *** TODO test link
 
-* WRITE counter.py: represent trace files
-  :PROPERTIES:
-  :CUSTOM_ID: counter
-  :END:
-  Once the website traces are stored in pcap-files, attribute vectors
-  need to be extracted. A attribute vector is represented by a Python
-  class =Counter=, which can be created from a pcap file, or
-  persisted to a JSON\cite{rfc7159} file containing timing and
-  packet size information (to save time and space).
+* Evaluation Scripts
+** WRITE counter.py: represent trace files
+   :PROPERTIES:
+   :CUSTOM_ID: counter
+   :END:
+   Once the website traces are stored in pcap-files, attribute vectors
+   need to be extracted. A attribute vector is represented by a Python
+   class =Counter=, which can be created from a pcap file, or
+   persisted to a JSON\cite{rfc7159} file containing timing and
+   packet size information (to save time and space).
 
-  To create a counter, you can use =counter.Counter.from(filename1,
-  filename2, ...)=. This is also called indirectly when using
-  =counter.py= from the command line, as in
+   To create a counter, you can use =counter.Counter.from(filename1,
+   filename2, ...)=. This is also called indirectly when using
+   =counter.py= from the command line, as in
 
-  python /path/to/counter.py
+   python /path/to/counter.py
 
-  This extracts data from all pcap files in the current directory and
-  subdirectories (excluding Address Resolution Protocol messages and
-  ACKs). The filename of the pcap files needs to be =url@timestamp=,
-  for example =craigslist.org@1445352269=. The part up to the
-  separator =@= is treated as the URL. If JSON-files of the name
-  =url.json= (for example =craigslist.com.json=) exist, those are
-  preferred instead of the pcap files.
+   This extracts data from all pcap files in the current directory and
+   subdirectories (excluding Address Resolution Protocol messages and
+   ACKs). The filename of the pcap files needs to be =url@timestamp=,
+   for example =craigslist.org@1445352269=. The part up to the
+   separator =@= is treated as the URL. If JSON-files of the name
+   =url.json= (for example =craigslist.com.json=) exist, those are
+   preferred instead of the pcap files.
 
-  In the interactive shell, there is a dictionary called
-  =COUNTERS=, with the domain names as keys and an array with
-  =Counter=s as values. If there were no JSON files in the
-  directory, these are created automatically via the =save()=-method.
+   In the interactive shell, there is a dictionary called
+   =COUNTERS=, with the domain names as keys and an array with
+   =Counter=s as values. If there were no JSON files in the
+   directory, these are created automatically via the =save()=-method.
 
-  To extract the attributes from a single =Counter=, the
-  =panchenko()= and =cumul()=-methods can be used; to inspect
-  single attributes of Panchenko et al.'s first
-  attack\cite{panchenko} you can call
-  =get('attribute_name')=[fn::for example
-  =COUNTERS['cnn.com'][0].get('duration')')=].
+   To extract the attributes from a single =Counter=, the
+   =panchenko()= and =cumul()=-methods can be used; to inspect
+   single attributes of Panchenko et al.'s first
+   attack\cite{panchenko} you can call
+   =get('attribute_name')=[fn::for example
+   =COUNTERS['cnn.com'][0].get('duration')')=].
 
-  =panchenko()= yields a attribute vector with default padding of
-  Panchenko's variable-length attributes. Since Panchenko et
-  al\cite{panchenko} gave explicit size conversions, the sizes have
-  not been normalized further. The default padding is computed to
-  be large enough for all traces.
+   =panchenko()= yields a attribute vector with default padding of
+   Panchenko's variable-length attributes. Since Panchenko et
+   al\cite{panchenko} gave explicit size conversions, the sizes have
+   not been normalized further. The default padding is computed to
+   be large enough for all traces.
 
-  =cumul()= yields a CUMUL\cite{panchenko2} vector of length
-  104.[fn::as reported by Panchenko et al to be optimal}
+   =cumul()= yields a CUMUL\cite{panchenko2} vector of length
+   104.[fn::as reported by Panchenko et al to be optimal}
 
-  outlier removal
-  - effected by =outlier_removal= in the [[#counter][counter.py]] module
-    - numpy instead of his original code for code clarity
-    - otherwise almost verbatim copy
-  - quantiles:
-    - just take quantiles, use his limits
+   outlier removal
+   - effected by =outlier_removal= in the [[#counter][counter.py]] module
+     - numpy instead of his original code for code clarity
+     - otherwise almost verbatim copy
+   - quantiles:
+     - just take quantiles, use his limits
 
-  In encoding packet sizes, this thesis follows \cite{panchenko}'s
-  approach, who recorded "incoming packets as positive, outgoing
-  ones as negative numbers."
-** TODO cumul
-* WRITE analyse.py: code to classify etc: transform attributes to vector
-  :PROPERTIES:
-  :CUSTOM_ID: analyse
-  :END:
-  Once the =Counter=s data is obtained, it needs to be transformed
-  to input for scikit-learn's\cite{scikit-learn} classifiers.
+   In encoding packet sizes, this thesis follows \cite{panchenko}'s
+   approach, who recorded "incoming packets as positive, outgoing
+   ones as negative numbers."
+*** TODO cumul
+** WRITE analyse.py: code to classify etc: transform attributes to vector
+   :PROPERTIES:
+   :CUSTOM_ID: analyse
+   :END:
+   Once the =Counter=s data is obtained, it needs to be transformed
+   to input for scikit-learn's\cite{scikit-learn} classifiers.
 
-  The code to convert these attributes to classification input can be
-  found in =analyse.py= (see appendix [[#analyse]]). This determines the maximum
-  length of all variable-length attributes, 0-pads Panchenko's attributes
-  with zeroes to the same length, and converts them to an array fit
-  for input into scikit-learn's classifiers. When called from the
-  command line, as
+   The code to convert these attributes to classification input can be
+   found in =analyse.py= (see appendix [[#analyse]]). This determines the maximum
+   length of all variable-length attributes, 0-pads Panchenko's attributes
+   with zeroes to the same length, and converts them to an array fit
+   for input into scikit-learn's classifiers. When called from the
+   command line, as
 
-  python -i /path/to/analyse.py
+   python -i /path/to/analyse.py
 
-  , it will extract the attribute vectors from JSON or pcap files in
-  the current directory, and run 5-fold cross-validated classifiers
-  against the data.
+   , it will extract the attribute vectors from JSON or pcap files in
+   the current directory, and run 5-fold cross-validated classifiers
+   against the data.
 
-  =Counter= input attributes are transformed into scikit-learn input
-  in the =to_features()= function, which normalizes all vectors to
-  have the same size (padding with 0s), and creates the attribute
-  matrix =X= with numeric class labels =y= (and class names in
-  =y_domain=).
+   =Counter= input attributes are transformed into scikit-learn input
+   in the =to_features()= function, which normalizes all vectors to
+   have the same size (padding with 0s), and creates the attribute
+   matrix =X= with numeric class labels =y= (and class names in
+   =y_domain=).
 
-  If you wish to run LibSVM on the command-line, there is also
-  =to_libsvm(X, y, fname='libsvm_in')=, which can be called with the
-  output of =to_features=. It writes lines in X with labels in y to the
-  file 'libsvm_in' (by default).
+   If you wish to run LibSVM on the command-line, there is also
+   =to_libsvm(X, y, fname='libsvm_in')=, which can be called with the
+   output of =to_features=. It writes lines in X with labels in y to the
+   file 'libsvm_in' (by default).
 
-      , yet one part
-     of functionality required a specific module which was not
-     integrated.
+       , yet one part
+      of functionality required a specific module which was not
+      integrated.
 
-     Its input format is very simple: First a number determining the
-     class of the data, then a colon, finally all the data for an
-     instance, separated by whitespace.
+      Its input format is very simple: First a number determining the
+      class of the data, then a colon, finally all the data for an
+      instance, separated by whitespace.
 
-** TODO ref stackoverflow why 0 padding
-*** TODO or better, some statistics text
-** TODO see also =to_features_cumul=
-** TODO scikit-learn
-   The python module scikit-learn\cite{scikit-learn} is described as a
-   collection of "tools for data mining and data analysis".
+*** TODO ref stackoverflow why 0 padding
+**** TODO or better, some statistics text
+*** TODO see also =to_features_cumul=
+*** TODO scikit-learn
+    The python module scikit-learn\cite{scikit-learn} is described as a
+    collection of "tools for data mining and data analysis".
 
-   It combines python's ease-of-use with the efficiency of libraries
-   written in C, such as LibSVM. It offers many different classifiers
-   and regressors, such as K-NN, SVM, decision trees, linear
-   approximation, random trees, etc.
-*** TODO regressor? wording
+    It combines python's ease-of-use with the efficiency of libraries
+    written in C, such as LibSVM. It offers many different classifiers
+    and regressors, such as K-NN, SVM, decision trees, linear
+    approximation, random trees, etc.
+**** TODO regressor? wording
 
 * TODO Remove same-host cover traffic server from traces: =7777.sh=
   <<7777>>
@@ -2512,7 +2525,7 @@ similar, little to see
   several tags, f.ex. the =src= element of =img= tags.
 ** TODO link to lxml website
 ** WAIT github links
-* CHECK Tor Browser and Firefox despite --sync problems
+* MOVE to [[*setup][setup]] CHECK Tor Browser and Firefox despite --sync problems
   In case someone experiences graphics errors when using Tor via
   X-forwarding, there are several solutions. The first thing to check
   is that the corresponding firefox version on the same system yields
@@ -2777,11 +2790,6 @@ similar, little to see
   - growth of websites
   - [[#future-work][Further work]]
 ** link in [[#HTTP traffic model][HTTP traffic model]] to here when moved
-* KEYWORDS data set sizes
-  - size per paper dataset
-  - ow table
-  - cw table
-  - (maybe also instances)
 * TODO Bloom Filters
 ** TODO bloom usage and implementation
    - bloom sort
