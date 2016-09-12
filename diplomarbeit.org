@@ -1,6 +1,7 @@
 #+TITLE: Selective Cover Traffic
 #+TODO: KEYWORDS WRITE CHECK | EVA DANIEL FINAL
 #+TODO: TODO WAIT | DONE
+#+TODO: | APPENDIX_CHECKED
 * Configuration							    :ARCHIVE:
 #+LATEX_CLASS: scrreprt
 #+LATEX_CLASS_OPTIONS: [a4paper,10pt]
@@ -79,8 +80,8 @@
   - Tao Wang
   - Dr. Dr. Eva
 * WAIT Summary
-* TODO Basics (=basics) [39%]
-** WRITE Website Fingerprinting [13/31]
+* TODO Basics (=basics) [40%]
+** WRITE Website Fingerprinting [13/30]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -408,29 +409,30 @@ Facebook.com\\
 
     Support vector machines classify these.
 *** WRITE Support Vector Machines
-    #+INDEX: Support Vector Machine
-    #+INDEX: SVM
-    Support Vector Machines (short: SVM) are a linear classifier:
-    they find a linear boundary between points. While this might seem
-    overly limiting, SVMs can compute the boundary not only on the
-    original data, but also on a projected space. This allows for
-    complex decision boundaries.
+**** CHECK Introduction
+     #+INDEX: Support Vector Machine
+     #+INDEX: SVM
+     Support Vector Machines (short: SVM) are a linear classifier:
+     they find a linear boundary between points. While this might seem
+     overly limiting, SVMs can compute the boundary not only on the
+     original data, but also on a projected space. This allows for
+     complex decision boundaries.
 
-    (This section is mostly based on chapters 6 and 7 of
-    \cite{iml}). Given a set $X = \{x_1, ..., x_n\}$ with a dot product $\langle\cdot,
-    \cdot\rangle: X \times X \to \mathbb R$ and tuples $(x_1, y_1), ..., (x_m, y_m)$,
-    with $x_i \in X, y_i \in \{-1, 1\}$ as a binary classification task.
+     (This section is mostly based on chapters 6 and 7 of
+     \cite{iml}). Given a set $X = \{x_1, ..., x_n\}$ with a dot product $\langle\cdot,
+     \cdot\rangle: X \times X \to \mathbb R$ and tuples $(x_1, y_1), ..., (x_m, y_m)$,
+     with $x_i \in X, y_i \in \{-1, 1\}$ as a binary classification task.
 
-    The SVM's job is to find a hyperplane[fn::as \cite[ch.4.1]{esl}
-    mention, this is actually an affine set, as it need not pass
-    through the origin. Keeping with tradition, it will be called
-    hyperplane in this thesis.[fn::as long as those things formed by
-    quarks are still called atoms...]]
-    #+BEGIN_LaTeX
-      \[\{x \in X \mid \langle w, x \rangle +b = 0\}\]
-    #+END_LaTeX
-    such that $\langle w, x_i \rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle +b < 0$
-    whenever $y_i = -1$.
+     The SVM's job is to find a hyperplane[fn::as \cite[ch.4.1]{esl}
+     mention, this is actually an affine set, as it need not pass
+     through the origin. Keeping with tradition, it will be called
+     hyperplane in this thesis.[fn::as long as those things formed by
+     quarks are still called atoms...]]
+     #+BEGIN_LaTeX
+       \[\{x \in X \mid \langle w, x \rangle +b = 0\}\]
+     #+END_LaTeX
+     such that $\langle w, x_i \rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle +b < 0$
+     whenever $y_i = -1$.
 **** WRITE hard vs soft margin
       - hard margin classifier: assume that linearly separable
       - soft margin classifier: does not assume, tries to limit error
@@ -892,7 +894,9 @@ Facebook.com\\
       :END:
       A webpage is modeled by its HTML size and its number of embedded
       objects. In a closed world[fn::if the client can only browse to
-      a limited number of URLs], it is possible to cache all sizes
+      a limited number of URLs], it is possible to cache all
+      sizes[fn::See appendices [[#find sizes of HTML-documents]] and
+      [[#number_embedded]] for how the sizes were determined]
       beforehand. If a size is unknown, random variates from the [[#HTTP traffic model][HTTP
       traffic model]] are used.[fn:: The size of each embedded dummy
       object is always drawn from the HTTP traffic model.]
@@ -1028,8 +1032,8 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* TODO Results and Evaluation [23%]
-** Setup
+* TODO Results and Evaluation [24%]
+** WRITE Setup
 *** EVA sites
 **** EVA modified top-100
      The URLs for retrieval come from the Alexa top million sites
@@ -1129,7 +1133,7 @@ Facebook.com\\
      results[fn::code at =tts()= in analyse.py], once implicitly
      during SVM parameter estimation, which is done via five-fold
      cross-validation.[fn::code at =_my_grid()= in analyse.py]
-**** KEYWORDS outlier removal
+**** WRITE outlier removal
      :PROPERTIES:
      :CUSTOM_ID: outlier_removal
      :END:
@@ -1165,37 +1169,21 @@ Facebook.com\\
           incomingSize > (q3+1.5 * (q3-q1)
      - testing stage: save previous highest and lowest limit
        (lvl. 2. or 3), remove now if below lowest or above highest
+         - no advantage over just removing smallest/largest (1)
 
      This outlier removal removed on average
-     - [ ] how many? 5%?
+       - how many removed for levels
+         - both panchenko's own and mine
        - evaluation of outlier removal steps
-     - Daniel Arp
      - results
-       - -1
-         - use global maximum and minimum of median sizes, use that for
-           outlier removal
-         - no advantage over just removing smallest/largest (1)
        - rw
          - this might be why results are worse than f.ex. panchenko
          - includes variant labeled -1: remember highest and lowest
            quantile values from previous train-or, removes based on
            these
-     - [ ] experiments
-       - accuracy for levels
-         - svc
-         - et
-       - how many removed for levels
-     - after cross-validation split
-     - but can do that before attributes
-       - list of (url, list-id) tuples, one for each counter
-       - randomly choose subset
      - link to file
-     - document number of filtered traces
-       - both panchenko's own and mine
-     - results different levels of outlier removal
-***** WAIT redo or test with more instances (70?)
 ***** on average/per class numbers how many removed
-***** td headline
+***** KEYWORDS td headline
     - problem for level 3 (only): number of splits requires more data
       than just 40 instances
       - (train-test)/validation set\cite[sec.2.2.3]{iml} 2/3 to 1/3,
@@ -1238,24 +1226,10 @@ Facebook.com\\
     grid-search, which is used by \cite{panchenko2} and
     \cite{panchenko}. This happens on the training set.
 
-    After SVM-parameters have been determined, several classifiers
-    from a list are applied
+    After SVM-parameters have been determined, several classifiers are
+    trained on the training data and evaluated on the test data.
 
-
-    - analysis: analyse.py
-      - tries to mimic \cite{panchenko} and \cite{panchenko2} code
-      - uses toolkit \cite{scikit-learn}
-    - different classifiers: best are svc for both, knn for 1, et for 2
-      - re defenses: svc tends to overfit, yielding better results on regular traces, but decaying fast on data collected
-        - later
-        - with addon
-    - mention esl 6.7 after reading
-    - scikit-learn\cite{scikit-learn} using libsvm\cite{libsvm}
-
-    LibSVM\cite{libsvm} is a library for support vector machine
-    classification and regression. It is also used under-the-hood in
-    scikit-learn.
-**** WAIT hastie on parameter estimation live vs meta
+    - hastie on parameter estimation live vs meta
 ** Website Fingerprinting [0/5]
 *** KEYWORDS panchenko v1 different classifiers
     :PROPERTIES:
@@ -1357,14 +1331,14 @@ Facebook.com\\
 #+NAME: tab:sizes
 #+ATTR_LATEX: :align |r||n{7}{4}|n{1}{4}|
 #+INCLUDE: "data/results/alternatives.org::#size_all" :only-contents t
-    - some grew a lot, some not at all, see [[tab:site_sizes_relative]]
+    - some grew a lot, some not at all, see Table [[tab:site_sizes_relative]]
 #+CAPTION: Growth of trace sizes [byte] by date by domain. Relative.
 #+NAME: tab:site_sizes_relative
-#+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
+#+ATTR_LATEX: :align |r||n{3}{1}|n{3}{1}|n{3}{1}|n{3}{1}|n{3}{1}|
 #+INCLUDE: "data/results/alternatives.org::#size_rel" :only-contents t
 **** continue: [[file:bin/analyse.py::total%20=%20%5Bcounter.get_total_both()%20for%20counter%20in%20counter_list%5D][here, set to _in, redo analysis]] with four disableds
 **** WAIT for [[file:~/da/da.org::*experimente][experimente disabled]]
-*** KEYWORDS (for [[file:~/da/da.org::*klassifikation][klassifikation {0/12}]]) svc vs extratrees
+*** MOVE integrate to [[#different-classifiers][panchenko v1 different classifiers]] KEYWORDS (for [[file:~/da/da.org::*klassifikation][klassifikation {0/12}]]) svc vs extratrees
     - svc very good on unaddoned data, (if trained and or on all)
       - extratrees with 5--10% lower accuracy, but excels against
         defenses
@@ -1373,6 +1347,11 @@ Facebook.com\\
       - others not tested
       - exception 22.0/5aII: better for svc
         - continue here: inspect which pages, etc, show traces, table
+    - different classifiers: best are svc for both, knn for 1, et for 2
+      - re defenses: svc tends to overfit, yielding better results on
+        regular traces, but decaying fast on data collected
+        - later
+        - with addon
 ** KEYWORDS Evaluation of Defenses [0/8]
 *** KEYWORDS Introduction
     - very dependent on retrieved trace time difference, see [[#time]]
@@ -1426,6 +1405,21 @@ Facebook.com\\
     - reduction
       - et: 79% to 75% accuracy
       - svc: 87% to 41% accuracy
+
+- delay of some possible (f.ex. images)
+  - also pre-cache some as cover traffic
+- different target distributions
+- multiple distributions
+- optionally no cooperator necessary
+    dummy packets chosen as response to real request (as in web traffic)
+- add evaluation values
+- end of page load easily detectable
+  - wfpad can see end of each transmission
+- similarities:
+  - also has app_hint
+  - no delay
+- currently uses exit nodes
+- this has no gap traffic, aims less at global adversary, more at ISP
 *** KEYWORDS addon flavors
     table like [[file:geloescht.org::*Variations%20of%20Cover%20Traffic][Variations of Cover Traffic]] with data
 
@@ -1712,32 +1706,6 @@ similar, little to see
     HTML page and at least return the domains of all embedded elements.
  \appendix
  \part{Appendix}
-* Evaluation
-** add-on
-*** TODO MOVE into [[#eval-wtf-pad][sota (practical): WTF-PAD]] differences to adaptive padding/WTF-PAD
-- delay of some possible (f.ex. images)
-  - also pre-cache some as cover traffic
-- different target distributions
-- multiple distributions
-- optionally no cooperator necessary
-    dummy packets chosen as response to real request (as in web traffic)
-- add evaluation values
-- end of page load easily detectable
-  - wfpad can see end of each transmission
-- similarities: 
-  - also has app_hint
-  - no delay
-- currently uses exit nodes
-- this has no gap traffic, aims less at global adversary, more at ISP
-**** TODO understand adaptive padding histogram
-*** TODO differences to panchenkos
-    - attribute extraction via python class directly from pcap
-      - packet data saveable to JSON
-*** TODO why several covers
-    - competition
-    - when this started, walkie-talkie and juarez had not yet published
-    - harder to break
-      - more effort: one classifier for each cover scheme
 * TODO strong assumptions on feasibility
   - as critiqued in \cite{critique}
   - if protects against this, should also protect against worse
@@ -1822,49 +1790,6 @@ similar, little to see
 ** WRITE 0.22: should be 0.21.1: reliability fixes
    - retrieved one-too-many on each embedded request
    - fix to /simple/: =endsLoad= was seemingly not triggered
-* MOVE to [[*Evaluation Scripts][Evaluation Scripts]] WRITE retrieve trace: ~one_site.py~
-  :PROPERTIES:
-  :CUSTOM_ID: 1site_desc
-  :END:
-  If the Browser Bundle runs when started manually, webpages can be
-  retrieved automatically. This is done via the ~one_site.py~ script.
-
-  The script
-
-  1. starts the Tor Browser Bundle's =firefox= binary, enabling
-     remote-control via the [[Marionette][=-marionette=]] command-line argument,
-     waiting up to 60 seconds for its initialization
-  2. starts the =tshark= capture
-  3. loads the page (given as first parameter) via Marionette
-  4. waits up to 600 seconds for the page load to finish
-  5. waits 3 more seconds (for the last cover traffic to finish)
-  6. ends the capture
-  7. ends Firefox
-
-  This setup (restart after each trace) avoids caching issues with
-  website fingerprinting, as the Tor Browser Bundle cleans the
-  cache between restarts (as mentioned f.ex. in \cite{critique}). If a
-  browsing-session scenario is desired, the script could be
-  modified to omit terminating the browser instance.
-
-  This retrieval is triggered from several scripts that set up the
-  environment[fn::mostly they ensure that the frame buffer is running for
-  the capture].
-
-  The script's main version captures all traffic, which needs to be
-  filtered later. The script =d2g_one_site.py= contains the bridge's IP
-  and captures only traffic to and from the bridge.
-
-  The script stops the browser after 9--10 minutes of retrieving one
-  page. A drawback is that this has not happened often enough that the
-  code for this stopping has not been thoroughly tested.
-
-  - pro: split not necessary
-
-  - browsers cache
-    - only helps in cover traffic, (unless warm/cold site model is used)
-    - thus by disabling, cover traffic has a harder job at concealing
-** WAIT github link
 * WRITE capture alternatives [0/1]
   Several applications can capture network traffic to files. The most
   well-known and oldest of these is tcpdump
@@ -1903,7 +1828,7 @@ similar, little to see
    was developed at MIT\cite{chickenfoot}. The most recent GitHub
    release[fn:: \url{https://github.com/bolinfest/chickenfoot}] is for
    Firefox 4.
-** EVA Marionette
+** APPENDIX_CHECKED Marionette
    <<Marionette>> Marionette is the next generation mozilla testing
    framework. It is works just like Selenium and was designed to be
    integrated into it. It was chosen for this thesis, as it made the
@@ -2060,6 +1985,23 @@ similar, little to see
    Marionette.
 *** TODO merge with above and split out pip install (also needed for wsgi)
 
+** WAIT Tor Browser and Firefox despite --sync problems
+   In case someone experiences graphics errors when using Tor via
+   X-forwarding, there are several solutions. The first thing to check
+   is that the corresponding Firefox version on the same system yields
+   the same error.
+
+   If so, the first workaround would be to use the =--sync=
+   command-line option to both firefox and the TBB. As this introduces
+   huge lag, it is less than optimal. A second solution is to install
+   XPRA[fn::\url{http://xpra.org/}]. When it is installed[fn:: best
+   install via the developer's repository] on both client and server,
+   you can start it via
+   #+BEGIN_SRC sh
+     xpra start ssh:user@host:DISPLAY_ID --start=/path/to/start-tor-browser
+   #+END_SRC
+   This issue was seemingly fixed in Firefox 50, as of the bug report.
+*** WAIT [#C] bug report: quote other's error messages, link to bug report
 * lists of sites
 ** WRITE modified top-100
    :PROPERTIES:
@@ -2069,7 +2011,7 @@ similar, little to see
 ** KEYWORDS 30 sites
    #+INCLUDE: "./sw/top-30.csv" example
 
-* EVA Mozilla Add-On Sdk
+* APPENDIX_CHECKED Mozilla Add-On Sdk
   #+INDEX: XUL
   #+INDEX: XML User-interface Langage
   The Add-on SDK by Mozilla facilitates the development of
@@ -2137,7 +2079,7 @@ similar, little to see
 *** link page-mod
     http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
 *** use real script (via import?)
-** CHECK Installation and Use of Jpm (the build tool)
+** APPENDIX_CHECKED Installation and Use of Jpm (the build tool)
    The =jpm=-tool builds (SDK-based) Firefox browser extensions. It is available as a
    NodeJS-Module via the built-in NodeJS Package Manager =npm=.
 
@@ -2243,6 +2185,49 @@ similar, little to see
 *** TODO test link
 
 * Evaluation Scripts
+** WRITE retrieve trace: ~one_site.py~
+   :PROPERTIES:
+   :CUSTOM_ID: 1site_desc
+   :END:
+   If the Browser Bundle runs when started manually, webpages can be
+   retrieved automatically. This is done via the ~one_site.py~ script.
+
+   The script
+
+   1. starts the Tor Browser Bundle's =firefox= binary, enabling
+      remote-control via the [[Marionette][=-marionette=]] command-line argument,
+      waiting up to 60 seconds for its initialization
+   2. starts the =tshark= capture
+   3. loads the page (given as first parameter) via Marionette
+   4. waits up to 600 seconds for the page load to finish
+   5. waits 3 more seconds (for the last cover traffic to finish)
+   6. ends the capture
+   7. ends Firefox
+
+   This setup (restart after each trace) avoids caching issues with
+   website fingerprinting, as the Tor Browser Bundle cleans the
+   cache between restarts (as mentioned f.ex. in \cite{critique}). If a
+   browsing-session scenario is desired, the script could be
+   modified to omit terminating the browser instance.
+
+   This retrieval is triggered from several scripts that set up the
+   environment[fn::mostly they ensure that the frame buffer is running for
+   the capture].
+
+   The script's main version captures all traffic, which needs to be
+   filtered later. The script =d2g_one_site.py= contains the bridge's IP
+   and captures only traffic to and from the bridge.
+
+   The script stops the browser after 9--10 minutes of retrieving one
+   page. A drawback is that this has not happened often enough that the
+   code for this stopping has not been thoroughly tested.
+
+   - pro: split not necessary
+
+   - browsers cache
+     - only helps in cover traffic, (unless warm/cold site model is used)
+     - thus by disabling, cover traffic has a harder job at concealing
+*** WAIT github link
 ** WRITE counter.py: represent trace files
    :PROPERTIES:
    :CUSTOM_ID: counter
@@ -2298,6 +2283,10 @@ similar, little to see
    In encoding packet sizes, this thesis follows \cite{panchenko}'s
    approach, who recorded "incoming packets as positive, outgoing
    ones as negative numbers."
+
+   - differences to panchenkos
+     - attribute extraction via python class directly from pcap
+       - packet data saveable to JSON
 *** TODO cumul
 ** WRITE analyse.py: code to classify etc: transform attributes to vector
    :PROPERTIES:
@@ -2325,19 +2314,14 @@ similar, little to see
    matrix =X= with numeric class labels =y= (and class names in
    =y_domain=).
 
-   If you wish to run LibSVM on the command-line, there is also
-   =to_libsvm(X, y, fname='libsvm_in')=, which can be called with the
-   output of =to_features=. It writes lines in X with labels in y to the
-   file 'libsvm_in' (by default).
+   Scikit-learn internally uses LibSVM\cite{libsvm}, a library for
+   support vector machine classification and regression. To run
+   LibSVM\cite{libsvm} on the command-line, there is ~to_libsvm(X, y,
+   fname='libsvm_in')~, which can be called with the output of
+   =to_features=. It writes lines in X with labels in y to the file
+   'libsvm_in' (by default).
 
-       , yet one part
-      of functionality required a specific module which was not
-      integrated.
-
-      Its input format is very simple: First a number determining the
-      class of the data, then a colon, finally all the data for an
-      instance, separated by whitespace.
-
+    - tries to mimic \cite{panchenko} and \cite{panchenko2} code
 *** TODO ref stackoverflow why 0 padding
 **** TODO or better, some statistics text
 *** TODO see also =to_features_cumul=
@@ -2350,7 +2334,6 @@ similar, little to see
     and regressors, such as K-NN, SVM, decision trees, linear
     approximation, random trees, etc.
 **** TODO regressor? wording
-
 * TODO Remove same-host cover traffic server from traces: =7777.sh=
   <<7777>>
   #+INCLUDE: "./bin/7777.sh" src sh
@@ -2381,7 +2364,7 @@ similar, little to see
   format it for gnuplot (inserting appropriate newlines via =sed= and
   removing extra characters via =tr=), and =gnuplot= s it to a png
   file with the name of the trace file as prefix.
-* modules [0/15]
+* modules [1/15]
     #+CAPTION: Modules/Classes of the Addon
     #+ATTR_LATEX: :float nil :width 0.5\textwidth
     [[./pictures/model.eps]]
@@ -2463,7 +2446,7 @@ similar, little to see
    Exceptions from the BloomSort are passed on. This module is a
    facade \cite[sec.4.10]{gof} that initializes the Bloom filters and
    simplifies access.
-** CHECK User
+** APPENDIX_CHECKED User
    The [[user.js][User]] module handles user action. It is the main controller.
 
    On each loading of a object via HTTP(S), it receives a message
@@ -2477,20 +2460,20 @@ similar, little to see
    embedded objects]]), an embedded page is assumed and the (existant)
    related =CoverTraffic=-Object is told that an embedded element was
    loaded.
-* CHECK Cached: Size of HTML-Documents
+* WAIT Cached: Size of HTML-Documents
   :PROPERTIES:
   :CUSTOM_ID: find sizes of HTML-documents
   :END:
-  The statistical size generation works with application-level
-  sizes on the network, as the authors of the HTTP traffic
-  model\cite{newtrafficmodel} analysed logfiles of the Squid
-  proxy[fn:: \url{http://www.squid-cache.org}].
+  The HTTP traffic model\cite{newtrafficmodel}'s statistical size
+  generation works with application-level sizes on the network, as the
+  authors of analysed logfiles of the Squid proxy[fn::
+  \url{http://www.squid-cache.org}].
 
   The HTML-sizes could not be trivially obtained from the
   =Content-Length= in the browser, as there are additional headers
   and size-reduction via compression. The sizes were determined by
   retrieving the files with =wget= via squid. This is implemented
-  via the [[./bin/html_top_100.sh]] script (see appendix).
+  via the =html_top_100.sh= script.
 
   It empties squid's =access.log= file and cache by restarting
   it. Afterwards, the top-100 files are retrieved with =wget= via
@@ -2508,7 +2491,7 @@ similar, little to see
   values, choosing the lower one. This increases traffic, but the
   opposite might be too little traffic, thus easier website
   fingerprinting, which should be avoided.
-** TODO mention somewhere (cache)
+** WAIT github link for =html_top_100= script
 * WRITE Cached: Number of Embedded Objects
   :PROPERTIES:
   :CUSTOM_ID: number_embedded
@@ -2525,23 +2508,6 @@ similar, little to see
   several tags, f.ex. the =src= element of =img= tags.
 ** TODO link to lxml website
 ** WAIT github links
-* MOVE to [[*setup][setup]] CHECK Tor Browser and Firefox despite --sync problems
-  In case someone experiences graphics errors when using Tor via
-  X-forwarding, there are several solutions. The first thing to check
-  is that the corresponding firefox version on the same system yields
-  the same error.
-
-  If so, the first workaround would be to use the =--sync=
-  command-line option to both firefox and the TBB. As this introduces
-  huge lag, it is less than optimal. A second solution is to install
-  XPRA[fn::\url{http://xpra.org/}]. When it is installed[fn:: best
-  install via the developer's repository] on both client and server,
-  you can start it via
-  #+BEGIN_SRC sh
-    xpra start ssh:user@host:DISPLAY_ID --start=/path/to/start-tor-browser
-  #+END_SRC
-  This issue was seemingly fixed in Firefox 50, as of the bug report.
-** TODO [#C] bug report: quote other's error messages, link to bug report
 * TODO single files of a website
   The complete data of google.com can be retrieved via
 
@@ -2595,6 +2561,7 @@ similar, little to see
   12. apt install python-pyptlib python-crypto python-yaml
       python-psutil
 ** TODO mention unison (in bib)
+** todo format as source block
 * WRITE how to set up WTF-PAD
   - helpful notes at scramblesuit
   - modify for WTF-PAD
@@ -2676,17 +2643,17 @@ similar, little to see
   total bytes upstream/outgoing.
 ** TODO compare to HTTP model
 * Cover Traffic Server
-** CHECK which python web server to choose
+** CHECK Which Python Web Server to Choose
    The naïve implementation based on Python's BaseHTTPServer did not
    perform flawlessly (see [[#server-non-para]]), even for the queries of
    a single addon. This prompted the search for a python-based,
    adequately-performing technology stack.
 
    \cite{nicholas} evaluates of Python web server performance. It
-   shows the apache server with the mod\_wsgi module as
+   shows the apache server with the ~mod_wsgi~ module as
    well-performing. As it was noted to be very easy to set up, it was
    chosen for this evaluation.
-** CHECK wsgi.py cover traffic server and generator
+** WAIT wsgi.py cover traffic server and generator
    :PROPERTIES:
    :CUSTOM_ID: wsgi
    :END:
@@ -2694,13 +2661,13 @@ similar, little to see
    being settled, implementation becomes a single-page file, see
    ~bin/wsgi.py~.
 
-   One detail that inicreases accuracy is that the length of the content gets inflated by the
-   content-headers. To decrease this again, the length (which in turn
-   depends on the required length) needs to be calculated and
-   subtracted from the body-length. Some uncertainty arises because the
-   =Proxy-Connection: keep-alive= header is added in some
-   circumstances. The implementation errs on the side of returning too
-   much data.
+   One implementation detail is that the length of the content gets
+   inflated by the content-headers. To decrease this again, the length
+   (which in turn depends on the required length) needs to be
+   calculated and subtracted from the body-length. Some uncertainty
+   arises because the =Proxy-Connection: keep-alive= header is added
+   in some circumstances. The implementation errs on the side of
+   returning too much data.
 
    Once the size is computed, a pseudo-random choice from the list of
    all printable characters is returned to the HTML query.
@@ -2721,7 +2688,6 @@ similar, little to see
        done
      #+END_SRC
 *** WAIT link to github wsgi.py
-
 ** CHECK Apache =mod_wsgi=
    :PROPERTIES:
    :CUSTOM_ID: mod_wsgi
@@ -2734,23 +2700,24 @@ similar, little to see
    python package[fn:: \url{https://pypi.python.org/pypi/mod_wsgi}].
 
    Installation (Ubuntu Server Edition and Linux Mint 17.1 Rebecca)
+   #+BEGIN_SRC sh
+     apt-get install apache2-bin apache2-dev python-dev
+     pip install mod_wsgi
+   #+END_SRC
 
-   - apt-get install apache2-bin apache2-dev python-dev
-   - pip install mod_wsgi
-
-   start via
-
-   - ~/.local/bin/mod_wsgi-express start-server wsgi.py
+   start via =~/.local/bin/mod_wsgi-express start-server wsgi.py=
 
    (here, also --port 7777), as for the script wsgi.py see github.
 *** TODO github link wsgi.py
-** TODO Non-parallelized web server for cover traffic [0/2]
+** WAIT Non-parallelized web server for cover traffic [0/2]
    :PROPERTIES:
    :CUSTOM_ID: server-non-para
    :END:
-   This approach did not scale to several parallel connections, so it
-   was not used. It is included as a reference of what seems to work,
-   but did not.
+   This approach did not scale to several parallel connections,
+   causing delays of several seconds under medium load, so it was not
+   used[fn::/unplanned/ delays are problematic as cover traffic does
+   not appear when it should]. It is included as a reference of what
+   seems to work, but did not.
 
    The python module =TrafficHTTPServer= can be started on the
    command-line via
@@ -2764,14 +2731,7 @@ similar, little to see
 
    retrieves a document with 10 bytes content from a TrafficHTTPServer
    running at localhost port 8000.
-*** WRITE Problems
-    - did not scale: did not respond immediately for parallel
-      connections
-      - obviously delays problematic as they in effect create less
-        cover traffic
-    - maybe further work: test that really works worse
-*** TODO github script
-
+*** WAIT link to github script
 * WRITE differences theoretical HTML-num embedded and observed
   :PROPERTIES:
   :CUSTOM_ID: theory-practice-numEmbedded
@@ -2829,9 +2789,7 @@ similar, little to see
     #+END_SRC
 
     Thus, you get
-
-    -\infty \le size0 \le split0 \le size1 \le split1 \le ... \le split(n-1) \le sizen < \infty
-
+    \[-\infty \le \text{size}_0 \le \text{split}_0 \le \text{size}_1 \le \text{split}_1 \le ... \le \text{split}_{n-1} \le \text{size}_n < \infty\]
     Given the splits, it becomes possible to add the elements to their
     bins:
 
@@ -2877,14 +2835,15 @@ similar, little to see
       };
     #+END_SRC
 
-    It can be used by initializing with
+    It is initialized with
     #+BEGIN_SRC js
     let htmlSizes = new BloomSort.BloomSort([400, 1000, 20000], [700, 10000]);
     #+END_SRC
 
     then adding elements via =htmlSizes.add("http://google.com/", 613)=
     and querying via =htmlSizes.query("http://google.com/")=, which
-    would yield =400=. (see usage in [[file:cover/js/size-cache.js::let%20numEmbeddeds%20%3D%20new%20BloomSort.BloomSort(NUM_EMBEDDED_SIZES,][size-cache]])
+    would yield =400=. See usage in [[file:cover/js/size-cache.js::let%20numEmbeddeds%20%3D%20new%20BloomSort.BloomSort(NUM_EMBEDDED_SIZES,][size-cache]].
+*** WAIT github link
 ** TODO determining bloom-sort parameters
    :PROPERTIES:
    :CUSTOM_ID: bloom-params
@@ -2919,3 +2878,5 @@ similar, little to see
 \bibliography{docs/master}
 \bibliographystyle{plain}
 \input{diplomarbeit.ind}
+
+
