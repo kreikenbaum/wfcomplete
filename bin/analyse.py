@@ -590,7 +590,7 @@ def tts(counter_dict, test_size=1.0/3):
 # 08-29
 # sys.argv = ['', 'disabled/bridge__2016-08-29/', '0.22/5bII__2016-08-27/', '0.22/5aI__2016-08-26/', '0.22/5bI__2016-08-27/', '0.22/5aII__2016-08-25/']
 # DISABLED
-# sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15', 'disabled/bridge__2016-08-29/']
+# sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15', 'disabled/bridge__2016-08-29', 'disabled/bridge__2016-09-09'] # also has 100-class at -08-30
 # TOP
 # sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aI__2016-07-19']
 # sys.argv = ['', 'disabled/bridge__2016-07-06', 'wfpad/bridge__2016-07-05']

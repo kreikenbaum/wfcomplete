@@ -82,7 +82,7 @@
   - Tao Wang
   - Dr. Dr. Eva
 * WAIT Summary
-* WRITE Basics (=basics) [37%]
+* WRITE Basics (=basics) [35%]
 ** WRITE Website Fingerprinting [6/30]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
@@ -579,9 +579,9 @@ Facebook.com\\
     As website fingerprinting requires very litte resources, a specific
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
     state.
-** WRITE Defenses [0/8]
+** WRITE Defenses [2/8]
    siehe [[file:~/da/da.org::*2.%20Teil:%20Verteidigungen%20gegen%20Website-Fingerprinting%20(Welche%20Methoden%20existieren?%20Welche%20Problem%20existieren%20derzeit?%20-->%20%C3%9Cberleitung%20zum%20Hauptteil)][2. Teil: Verteidigungen gegen Website-Fingerprinting (Welche        Methoden existieren? Welche Problem existieren derzeit? -->        Überleitung zum Hauptteil)]]
-*** DANIEL Early defenses
+*** WRITE Early defenses
     As defense against fingerprinting webpages when retrieved via SSL,
     Cheng and Avnur\cite{ssl-traffic-analysis} mainly proposed using
     proxies[fn::as well as HTML and protocol modification]. Addressing
@@ -616,6 +616,9 @@ Facebook.com\\
     As of Wang and Goldberg\cite{wang2015walkie}, defenses designed
     against website fingerprinting can be divided into specific and
     general defenses.
+
+    - buflo etc do not only add noise, do not reduce transferred data,
+      and do not transfer everything in one connection
 *** WRITE Defenses Against Specific Attributes
     The first website fingerprinters considered only packet
     lengths. This made it seem sensible to alter the lengths of
@@ -697,8 +700,8 @@ Facebook.com\\
     - padding (sslv2 \to 3)
     - requestpolicy (hintz 2nd way)
     - text-only browsing (hintz 2nd way)
-* TODO Methods (=methods) [61%]
-** EVA Motivation [0/2]
+* WRITE Methods (=methods) [61%]
+** EVA Motivation [2/2]
 *** brainstorm                                                      :ARCHIVE:
    - make wf/ml harder, fudge attributes
      - problems WTF-PAD: modify all of tor,
@@ -729,7 +732,7 @@ Facebook.com\\
      - select based on web site
      - and target
      - simultaneous to real traffic
-*** EVA Introduction
+*** DANIEL Introduction
     As emphasized both by \cite{wang2015walkie} and \cite{wtfpad},
     deterministic approaches have the major shortcoming of introducing
     delay into the traffic, which conflicts with Tor's design goal of
@@ -748,7 +751,8 @@ Facebook.com\\
     overhead to non-web-based traffic, and adapts a method that tries
     to do more (hiding from a global adversary), instead of hiding
     which site was browsed to from a local passive observer.[fn::only
-    the second of these is included in Tor's design goals]
+    the second of these is included in Tor's design goals, see
+    \cite[sec.3.1]{tor-design}]
 
     Additionally, when this thesis was started, both \cite{wang2015walkie} and
     \cite{wtfpad} had not been published yet.
@@ -767,7 +771,7 @@ Facebook.com\\
     level, as a whistleblower might need more anonymity protection
     than Jane Doe who just reads the latest news, possibly censored in
     her country.
-** TODO Design and Implementation (=Implementation) [10/17]
+** WRITE Design and Implementation (=Implementation) [10/17]
 *** DANIEL Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -1041,8 +1045,8 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* TODO Results and Evaluation [21%]
-** KEYWORDS Setup
+* KEYWORDS Results and Evaluation [21%]
+** CHECK Setup
 *** EVA sites
 **** EVA modified top-100
      The URLs for retrieval come from the Alexa top million sites
@@ -1254,7 +1258,7 @@ Facebook.com\\
     - additional (?defense?) as proposed in critique
 **** TODO follow critique at all?
      - yes, shows Tor project's official position
-** KEYWORDS Website Fingerprinting [0/4]
+** KEYWORDS Website Fingerprinting [0/5]
 *** WRITE panchenko v1 different classifiers
     :PROPERTIES:
     :CUSTOM_ID: different-classifiers
@@ -1333,26 +1337,35 @@ Facebook.com\\
         - on disabled
         - accuracy, overhead, time
 
-*** KEYWORDS trace growth, time difference, effect
+*** WRITE trace growth, time difference, effect
     :PROPERTIES:
     :CUSTOM_ID: time
     :END:
+    The trace sizes changed significantly over time. What at first
+    seemed like a size increase was reduced by the last measurement to
+    fluctuations of 25%. As seen in Table [[tab:site_sizes_relative]],
+    this is highly dependent on the url. \url{google.com}, f.ex. shows
+    two distinct sizes, which could be related to whether doodles were
+    active at these times.
+
     - Table [[tab:time]]
-#+CAPTION: Overhead and accuracy, training 07-06, testing on each, sorted by overhead
+#+CAPTION[Overhead and accuracy for training 07-06, testing on various times]: Overhead and accuracy at different times, training 07-06, testing on listed times, sorted by overhead.
 #+NAME: tab:time
 #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{3}{2}|
 #+INCLUDE: "data/results/alternatives.org::#tab:time" :only-contents t
     - accuracy decrease: much for svc, little for et
-    - noticeable trace growth
+    - noticeable trace growth, see Table [[tab:sizes]]
 #+CAPTION: Overall growth of trace sizes [byte] by date.
 #+NAME: tab:sizes
 #+ATTR_LATEX: :align |r||n{7}{4}|n{1}{4}|
 #+INCLUDE: "data/results/alternatives.org::#size_all" :only-contents t
     - some grew a lot, some not at all, see Table [[tab:site_sizes_relative]]
-#+CAPTION: Growth of trace sizes [byte] by date by domain. Relative.
+#+CAPTION[Relative growth of trace sizes by date by domain]: Relative growth of trace (byte) sizes by date by domain.
 #+NAME: tab:site_sizes_relative
 #+ATTR_LATEX: :align |r||n{3}{1}|n{3}{1}|n{3}{1}|n{3}{1}|n{3}{1}|
 #+INCLUDE: "data/results/alternatives.org::#size_rel" :only-contents t
+       - google,
+       - cloudflare captcha test
 **** continue: [[file:bin/analyse.py::total%20=%20%5Bcounter.get_total_both()%20for%20counter%20in%20counter_list%5D][here, set to _in, redo analysis]] with four disableds
 **** WAIT for [[file:~/da/da.org::*experimente][experimente disabled]]
 *** KEYWORDS (for [[file:~/da/da.org::*klassifikation][klassifikation {0/12}]]) svc vs extratrees
@@ -1529,7 +1542,7 @@ Facebook.com\\
    \hline
    \multicolumn{3}{c}{buzzfeed.com} \\
 \includegraphics[width=0.3 \textwidth]{./pictures/buzzfeed.com__wfpad.eps}
-& \includegraphics[width=0. 3 \textwidth]{./pictures/buzzfeed.com__simple2@5.eps}
+& \includegraphics[width=0.3 \textwidth]{./pictures/buzzfeed.com__simple2@5.eps}
 & \includegraphics[width=0.3 \textwidth]{./pictures/buzzfeed.com__0.22@5aI.eps}
 \\
    \multicolumn{3}{c}{weibo.com} \\
