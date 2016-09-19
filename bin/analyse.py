@@ -290,6 +290,7 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
             logging.info('reused svc: %s for defense: %s',
                          SVC_MAP[defense0],
                          defense0) #debug?
+            CLFS.append(SVC_MAP[defense0])
         else:
             t = time.time()
             clf,_ = _my_grid_helper(counter.outlier_removal(train, 2), cumul)
@@ -587,10 +588,16 @@ def tts(counter_dict, test_size=1.0/3):
 #'0.22/10aI__2016-07-08/', '0.22/30aI__2016-07-13/', '0.22/50aI__2016-07-13/'
 # 07-21
 # sys.argv = ['', 'disabled/bridge__2016-07-21', '0.22/5aII__2016-07-18/', '0.22/5aI__2016-07-19/', '0.22/10_maybe_aI__2016_07-23/', '0.22/2aI__2016-07-23/', '0.22/30aI__2016-07-25/', '0.22/50aI__2016-07-26/', '0.22/5aI__2016-07-25/']
+## flavors
 # 08-29
 # sys.argv = ['', 'disabled/bridge__2016-08-29/', '0.22/5bII__2016-08-27/', '0.22/5aI__2016-08-26/', '0.22/5bI__2016-08-27/', '0.22/5aII__2016-08-25/']
+# 09-13
+# sys.argv = ['', 'disabled/bridge__2016-09-09', '0.22/20aI__2016-09-10', '0.22/20aII__2016-09-10', '0.22/20bI__2016-09-13', '0.22/20bII__2016-09-12']
+## retro
+# 09-18
+# sys.argv = ['', 'disabled/bridge__2016-09-18', '0.15.3-retrofixed/bridge/100__2016_09_15', '0.15.3-retrofixed/bridge/50__2016_09_16']
 # DISABLED
-# sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15', 'disabled/bridge__2016-08-29', 'disabled/bridge__2016-09-09'] # also has 100-class at -08-30
+# sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15', 'disabled/bridge__2016-08-29', 'disabled/bridge__2016-09-09', 'disabled/bridge__2016-09-18'] # also has 100-class at -08-30
 # TOP
 # sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aI__2016-07-19']
 # sys.argv = ['', 'disabled/bridge__2016-07-06', 'wfpad/bridge__2016-07-05']

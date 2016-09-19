@@ -419,7 +419,7 @@ class Counter(object):
         '''@return CUMUL feature vector: inCount, outCount, outSize, inSize++'''
         c_abs = []
         # cumulated packetsizes
-        c_rel = [] #td: good idea to have same name as method?
+        c_rel = []
         inSize = 0
         outSize = 0
         inCount = 0
