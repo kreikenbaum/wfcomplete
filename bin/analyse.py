@@ -217,7 +217,8 @@ def _scale(X, clf):
     '''assumption: svc never called on two different data sets in
     sequence.  That is: _scale(X_train, svc), _scale(X_test, svc),
     _scale(Y_train, svc), _scale(Y_test, svc), will not
-    happen. (without a _scale(..., non_svc) in between)
+    happen. (without a _scale(..., non_svc) in between). The first is
+    treated as training data, the next as test.
 
     @return scaled X if estimator is SVM, else just X
 
@@ -234,7 +235,6 @@ def _scale(X, clf):
         scaler = None
         return X
 
-# td merge etc with _scale()
 def _test(X, y, clf, nj=JOBS_NUM):
     '''tests estimator with X, y, @return result (ndarray)'''
     X = _scale(X, clf)
@@ -356,9 +356,13 @@ def compare_stats(dirs):
     return out
 
 def gen_class_stats_list(defenses,
-                         defense0='disabled/bridge__2016-07-06',
+                         defense0='auto',
                          clfs=[GOOD[0]]):
     '''@return list of _misclassification_rates() with defense name'''
+    if defense0 == 'auto':
+        defense0 = [x for x in defenses if 'disabled' in x][0]
+        if defense0 in SVC_MAP:
+            clfs.append(SVC_MAP[defense0])
     out = []
     for clf in clfs:
         for c in defenses:
@@ -548,28 +552,20 @@ def tts(counter_dict, test_size=1.0/3):
     # sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
 
 ### CLASSIFICATION RESULTS PER CLASS
-## defense_per_class is generated via gen_class_stats_list
-## write gen_class_stats_list to csv file, transpose via
-# with open('/tmp/names.csv', 'w') as csvfile:
-#     writer = csv.DictWriter(csvfile, fieldnames=defense_per_class[0].keys())
-#     writer.writeheader()
-#     for d in defense_per_class:
-#             writer.writerow(d)
-## read and transpose
-# read = []
-# with open('/tmp/names.csv') as csvfile:
-#     reader = csv.reader(csvfile)
-#     for row in reader:
-#             read.append(row)
-# a = np.array(read)
-# b = a.transpose()
-# with open('/tmp/names.csv', 'w') as csvfile:
-#     writer = csv.writer(csvfile)
-#     writer.writerow(b[8])
-#     for row in b[:8]:
-#             writer.writerow(_format_row(row))
-#     for row in b[9:]:
-#             writer.writerow(_format_row(row))
+def class_stats_to_table(class_stats):
+    '''prints table from data in class_stats (gen_class_stats_list output)'''
+    rows = class_stats[0].keys()
+    rows.remove('id')
+    cols = [j['id'] for j in class_stats]
+    print '| |',
+    for col in cols:
+        print '{} |'.format(col),
+    print ''
+    for row in rows:
+        print '| {}'.format(row),
+        for col in class_stats:
+            print '| {}'.format(col[row]),
+        print '|'
 
     # sys.argv = ['', 'disabled/bridge', '0.15.3-retrofixed/bridge/30.js', '0.15.3-retrofixed/bridge/70.js', '0.15.3-retrofixed/bridge/50.js']
     # sys.argv = ['', 'disabled/bridge', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5__2016-07-17', 'simple2/20']
@@ -584,6 +580,9 @@ def tts(counter_dict, test_size=1.0/3):
 # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
 # counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
 
+# 0.22
+#['0.22/10aI__2016-07-08', '0.22/30aI__2016-07-13', '0.22/50aI__2016-07-13', '0.22/5aII__2016-07-18', '0.22/5aI__2016-07-19', '0.22/10_maybe_aI__2016-07-23', '0.22/5aI__2016-07-25', '0.22/30aI__2016-07-25', '0.22/50aI__2016-07-26', '0.22/2aI__2016-07-23', '0.22/5aI__2016-08-26', '0.22/5aII__2016-08-25', '0.22/5bI__2016-08-27', '0.22/5bII__2016-08-27', '0.22/20aI__2016-09-10', '0.22/20aII__2016-09-10', '0.22/20bII__2016-09-12', '0.22/20bI__2016-09-13']
+
 # 07-06
 #'0.22/10aI__2016-07-08/', '0.22/30aI__2016-07-13/', '0.22/50aI__2016-07-13/'
 # 07-21
@@ -591,7 +590,7 @@ def tts(counter_dict, test_size=1.0/3):
 ## flavors
 # 08-29
 # sys.argv = ['', 'disabled/bridge__2016-08-29/', '0.22/5bII__2016-08-27/', '0.22/5aI__2016-08-26/', '0.22/5bI__2016-08-27/', '0.22/5aII__2016-08-25/']
-# 09-13
+# 09-09
 # sys.argv = ['', 'disabled/bridge__2016-09-09', '0.22/20aI__2016-09-10', '0.22/20aII__2016-09-10', '0.22/20bI__2016-09-13', '0.22/20bII__2016-09-12']
 ## retro
 # 09-18
@@ -610,4 +609,3 @@ if __name__ == "__main__":
 
 
     cross_test(sys.argv, with_svm=True) #, cumul=False)
-
