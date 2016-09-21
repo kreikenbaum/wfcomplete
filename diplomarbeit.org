@@ -82,8 +82,8 @@
   - Tao Wang
   - Dr. Dr. Eva
 * WAIT Summary
-* WRITE Basics (=basics) [35%]
-** WRITE Website Fingerprinting [13/30]
+* WRITE Basics (=basics) [33%]
+** WRITE Website Fingerprinting [12/30]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -366,7 +366,7 @@ Facebook.com\\
 
     \cite{panchenko2} allows for the visual comparison of website
     traces. See for example Figure [[CUMUL_traces]].
-    #+CAPTION: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}
+    #+CAPTION[CUMUL features example]: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}.
     #+NAME: CUMUL_traces
     [[./pictures/cumul_aus_paper.pdf]]
 **** TODO feature vs attribute
@@ -374,7 +374,7 @@ Facebook.com\\
     #+INDEX: Version~1
     #+INDEX: classifier!Version~1
     While \cite{ccsw09-fingerprinting} classified one-hop proxies
-    well, it had achieved low accuracy against Tor due to Tor's
+    well, they had achieved low accuracy against Tor due to Tor's
     multiplexing and fixed
     cell-size\cite{experimental}. \cite{panchenko} were the
     first\cite{critique} to publish a successful website
@@ -387,7 +387,7 @@ Facebook.com\\
 
     In addition to \cite{ccsw09-fingerprinting}'s data set, a new
     open-world dataset was used. The size of the open-world data set
-    was five foreground and 4000 background sites.
+    was five foreground and 5000 background sites.
 
     \cite{panchenko} achieved closed-world recognition rates of 54.61%
     and open-world true-positive rate of up to 73% for Tor. While the
@@ -395,10 +395,10 @@ Facebook.com\\
     inapplicable\cite{critique} to pose a real threat, they still
     consider this paper "the first work to successfully apply website
     traffic fingerprinting to Tor"\cite{critique}.
-*** EVA CUMUL
+*** CHECK CUMUL
     CUMUL\cite{panchenko2} is a state-of-the-art\cite{kfingerprint}
     website fingerprinting attack. It sums the number of incoming and
-    outgoing bytes, which results in easily-understandable
+    outgoing bytes, which results in an easily-understandable
     cumulative-size feature. As a reminder, see Figure [[CUMUL_traces]].
 
     CUMUL keeps a cumulative list of sizes: For each new packet in a
@@ -585,22 +585,27 @@ Facebook.com\\
     As website fingerprinting requires very litte resources, a specific
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
     state.
-** WRITE Defenses [1/8]
-*** WRITE Introduction
-    - siehe [[file:~/da/da.org::*2.%20Teil:%20Verteidigungen%20gegen%20Website-Fingerprinting%20(Welche%20Methoden%20existieren?%20Welche%20Problem%20existieren%20derzeit?%20-->%20%C3%9Cberleitung%20zum%20Hauptteil)][2. Teil: Verteidigungen gegen Website-Fingerprinting (Welche        Methoden existieren? Welche Probleme existieren derzeit? -->        Überleitung zum Hauptteil)]]
-    - ta
-    - total defense
-    - path: early, specific, general, deterministic and stochastic
-*** WRITE Early defenses
+** WRITE Defenses [1/7]
+*** CHECK Introduction
+    As soon as it became clear that anonymized (web) traffic could be
+    analysed to guess the destination, defenses were proposed.
+
+    The next sections explode early defense proposals, then address
+    defenses tailored to specific attacks, and /general defenses/ that
+    hope to defend against all possible attacks. Last are stochastic
+    defenses, that add randomness to achieve meaningful reduction in
+    accuracy with less bandwith and time overhead than deterministic
+    ones.
+*** CHECK Early defenses
     As defense against fingerprinting webpages when retrieved via SSL,
-    Cheng and Avnur\cite{ssl-traffic-analysis} mainly proposed using
+    \cite{ssl-traffic-analysis} mainly proposed using
     proxies[fn::as well as HTML- and protocol modification]. Addressing
-    the weaknesses when using proxies, Hintz\cite{hintz02} proposed
+    weaknesses when using proxies, \cite{hintz02} proposed
     the following defenses: adding noise to traffic, reducing
     transferred data, and transferring everything in one connection.
 
-    The first approach of adding noise to traffic was followed by
-    almost all researchers afterwards.
+    The first approach of adding noise to traffic was used by
+    many researchers afterwards.
 
     As for the second approach of reducing transferred data: As the
     sizes and interconnection of HTML and embedded content is what
@@ -609,27 +614,24 @@ Facebook.com\\
     \url{http://lynx.invisible-island.net/}], disabling f.ex. images,
     or reducing cross-site requests via f.ex. the
     RequestPolicy[fn::\url{https://requestpolicycontinued.github.io/}]
-    extension, might all mitigate the threat of website fingerprinting
+    extension might all mitigate the threat of website fingerprinting
     for those who consider this trade-off acceptable. Yet, this
     reduces usability and thus conflicts with one of Tor's design
     goals\cite{tor-design}. It is also mostly deterministic, so that
     an adversary could simply train on modified
     data.[fn::Additionally, Request policy uses domain-based filters,
     which is considered undesirable in the Tor Browser
-    Bundle\cite{tor-browser-design-impl}].
+    Bundle\cite[sec.2.3]{tor-browser-design-impl}].
 
     The third approach of transferring everything in one connection
     --- while valid --- would require modifying the HTTP
     protocol. This would conflict with Tor's design goal of
     deployability.\cite{tor-design}
-
-
-    - buflo etc do not only add noise, do not reduce transferred data,
-      and do not transfer everything in one connection
-    - traffic flow security
-*** WRITE Specific vs General Defenses
+*** EVA Specific vs General Defenses
     As of \cite{wang2015walkie}, defenses designed against website
     fingerprinting can be divided into specific and general defenses.
+    Both types can either add noise, modify existing traffic, or
+    combine both.
 
     The first website fingerprinters considered only packet
     lengths. This made it seem sensible to alter the lengths of
@@ -650,25 +652,26 @@ Facebook.com\\
     To stop the arms race between attacks and defenses - the attacks
     finding new attribute combinations to use, the defenses
     obfuscating these - the idea of a /general defense/ was presented
-    first by \cite{oakland2012-peekaboo}. They proposed a
-    traffic-flow security\cite[ch.10.3]{applied96} solution: fixed-rate
+    first by \cite{oakland2012-peekaboo} in the context of website
+    fingerprinting. They proposed a traffic-flow
+    security\cite[ch.10.3]{applied96} solution: fixed-rate
     transmission of data, modified here to be only for the estimated
     duration of web site retrieval.
 
     This idea was improved on by \cite{a-systematic} while
     \cite{effective} proposed the (offline) defense of morphing all
     traffic to supersequences of traffic patterns.
-*** DANIEL Stochastic Defenses
-    The latest defenses were proposed by Juarez et al\cite{wtfpad} and
-    Wang and Goldberg\cite{wang2015walkie}: These both used a
-    stochastic approach to generate additional traffic, with Wang and
-    Goldberg additionally modifying the browser to send "half-duplex",
-    either exclusively sending or exclusively receiving data at the
-    same time. Juarez et al. adapted the ideas from Shmatikov and
-    Wang\cite{ShWa-Timing06} to distinguish active and non-active
-    periods, with a certain probability of sending dummy packets in
-    each, omitting the sending when the browser generated packets
-    itself.
+*** CHECK Stochastic Defenses
+    Previous general defenses[fn::apart from \cite{panchenko}'s
+    decoys] were deterministic. The latest defenses by \cite{wtfpad}
+    and \cite{wang2015walkie} both use a stochastic approach to
+    generate additional traffic, with the latter\cite{wang2015walkie}
+    additionally modifying the browser to send "half-duplex", either
+    exclusively sending or exclusively receiving data at the same
+    time. \cite{wtfpad} adapted the ideas from \cite{ShWa-Timing06} to
+    distinguish active and non-active periods, with a certain
+    probability of sending dummy packets in each, omitting the sending
+    when the browser generated packets itself.
 *** WRITE WTF-PAD
     - Juarez\cite{wtfpad}
     - Website Traffic Fingerprinting Protection with Adaptive Defense (WTF-PAD)
@@ -689,12 +692,12 @@ Facebook.com\\
     - browser modification
     - only detectable metric: number of bursts
       - (and also total data, which is a powerful metric)
-*** WRITE tamaraw
+*** MOVE above [[*Stochastic Defenses][Stochastic Defenses]] WRITE tamaraw
     - evolution of BuFLO\cite{oakland2012-peekaboo}
     - different rate up-/downstream
     - longer sending cloaks end of transmission
     - tunable overhead
-*** brainstorm                                                      :ARCHIVE:
+*** MOVE sub Defenses.[[*Introduction][Introduction]] brainstorm                                   :ARCHIVE:
     - obfuscate attributes
     - specific attributes
     - general obfuscation
@@ -1015,17 +1018,17 @@ Facebook.com\\
 
      This halved the number of lines of code[fn::+simplified
      debugging]. The version is called /simple/.
-**** WRITE MAYBE Add-on Version: Retro (if not, edit super)
+**** WRITE Add-on Version: Retro
      All other add-on versions reached overheads as low as 20%, but not
      lower.
 
-     - very low overhead at one test: around 10 %
+     - very low overhead at one test: negative
      - previous version 0.15.3, added change 0.20 to 0.21: remembers
        negative request sizes, and randomly subtracts them for further
        requests
      - de facto: HTML-sized request for each request (target-size),
        (remembering negative sizes, subtracting them)
-     - drawback: not configurable
+     - drawback: not very configurable
 **** WRITE Why as an add-on
      Web browsing is the (main) target of website
      fingerprinting. Instead of burdening all of Tor with extra bells
@@ -1065,10 +1068,10 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* KEYWORDS Results and Evaluation [25%]
+* KEYWORDS Results and Evaluation [29%]
 ** EVA Setup
 *** EVA sites
-**** CHECK modified top-100
+**** EVA modified top-100
      The URLs for retrieval come from the Alexa top million sites
      list[fn:: Current version available at
      \url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}],
@@ -1381,9 +1384,12 @@ Facebook.com\\
        - google,
        - cloudflare captcha test
 
-    - summary: compare to normal in time
-      - mostly for more exact overhead
-      - also for more exact accuracy
+       - summary: compare to normal in time
+         - mostly for more exact overhead
+         - also for more exact accuracy
+         - due to time difference accuracy lag (and some time to
+           capture), all defenses compared to closest-in-time
+           no-defense retrieval
 **** continue: [[file:bin/analyse.py::total%20=%20%5Bcounter.get_total_both()%20for%20counter%20in%20counter_list%5D][here, set to _in, redo analysis]] with four disableds
 **** WAIT for [[file:~/da/da.org::*experimente][experimente disabled]]
 *** KEYWORDS (for [[file:~/da/da.org::*klassifikation][klassifikation {0/12}]]) svc vs extratrees
@@ -1419,9 +1425,6 @@ Facebook.com\\
       - given in 0.22? (td: tests)
       - graph: accuracy vs overhead
         - mention (somewhere else that tamaraw fell through)
-    - problem: variants
-      - a.k.a. scenarios (a/b I/II bursts)
-      - reevaluate if make a difference
     - problem: bursts
       - at simple
       - at normal
@@ -1434,6 +1437,7 @@ Facebook.com\\
     - all around same curve
     - which classifier classifies which page well?
     - 5aII higher accuracy at svc than at et
+      - mention still, still accurate, or obsolete, because svm increased
 *** KEYWORDS [#A] sota (practical): WTF-PAD
     :PROPERTIES:
     :CUSTOM_ID: eval-wtf-pad
@@ -1468,19 +1472,20 @@ Facebook.com\\
   - no delay
 - currently uses exit nodes
 - this has no gap traffic, aims less at global adversary, more at ISP
-*** KEYWORDS add-on flavors
+*** MOVE up below add-on WRITE add-on flavors
     table like [[file:geloescht.org::*Variations%20of%20Cover%20Traffic][Variations of Cover Traffic]] with data
 
     - As described in [[#addon_main][Add-on Version: Main]], there are different flavors
       of the main version. This is a short comparison.
-**** to appendix?
+    - use tables [[file:data/results/alternatives.org::*table%2009-09][table 09-09]] and [[file:data/results/alternatives.org::*table%2008-29][table 08-29]]
+    - seems like aI is best (at least not much worse than others)
 *** KEYWORDS does this hide bursts?
     - meta-bursts as described in walkie-talkie
     - are those hidden, too, or can the number of bursts be found out
     - easy to implement, maybe do this
     - see that higher overhead per protection
-
     - increased overhead while only slightly increasing protection
+      - show in table, where?
 **** maybe see cumul-graphics
 *** KEYWORDS trace comparison three main defenses
 #+BEGIN_LaTeX
@@ -1637,8 +1642,10 @@ similar, little to see
 *** eval
    - bigger world sizes
    - more elaborate tests with different world sizes / open world / etc
-*** addon
+*** KEYWORDS addon
    - all HTTP gets treated the same
+     a.k.a. how to distinguish HTML/embedded
+     a.k.a. redirects + iframes included in model's number of embedded objects
      - redirects
      - iframes
      - normal pages
@@ -1646,20 +1653,18 @@ similar, little to see
      - can clearly distinguish each cover request (as each should have
        size < 500)
        - countable, better: randomized request size
-   - sizes have grown since 2007
-   - how to distinguish HTML/embedded
-   - redirects + iframes included in model's number of embedded objects
-   - source cover traffic: user gives domain as starting point
    - how to generate
      - how often, which parameters
      - just triggered by start and until end, or for each load
    - background if non-active (IPP self-similar)
      - 802.16 model
-   - does a new connection to another site create a measurable tor-response
-     (with variable-length packets)?
+   - does a new connection to another site create a measurable
+     tor-response (with variable-length packets)?
    - provable protection
-   - size of Bloom filter
-   - number of Bloom filters,
+   - Bloom
+     - size of Bloom filter
+     - number of Bloom filters,
+     - bloomsort save/restore
    - which and how many items to prepopulate
      - country-specific f.ex. google.com
      - leave out redirect from prepopulation
@@ -1672,11 +1677,13 @@ similar, little to see
 
      There exists basic code to use a list of webpages, given their
      sizes. It could be augmented by following links.
+     a.k.a. source cover traffic: user gives domain as starting point
      - update from visited URLs
    - no morphing (delay, segmentation)
      - justify why good idea
-   - bloomsort save/restore
    - number of embedded elements lacks <style> tags and some in <link>
+     a.k.a. improve code to include css, (iframes?), js in number of
+     embedded elements
      - does not honor reloads/cacheing
        - or does it? (maybe only called on cacheing)
      - but better than too many?
@@ -1684,9 +1691,10 @@ similar, little to see
    - elaborate on [[#number_embedded]]
    - how to set splits and sizes
    - [[#theory-practice-numEmbedded][differences theoretical HTML-num embedded and observed]]
-   - improve code to include css, (iframes?), js in number of embedded elements
    - web pages got bigger. See if \cite{newtrafficmodel}'s values are
      still accurate.
+
+     a.k.a. sizes have grown since 2007
      - or only rely on quantiles of observed data
        - but these are hard to gather
 	 - use networkmanager code to do that
@@ -1698,7 +1706,7 @@ similar, little to see
        - so all is lumped together per domain
 	 - first request seen as HTML
 	 - other requests as non-HTML
-     - == determine if HTML page by suffix (not clear as of ... and
+     a.k.a. determine if HTML page by suffix (not clear as of ... and
        ... (link to SO))
    - bursts maybe less hidden (number of)
    - time not hidden (no delays of single files)
@@ -1737,7 +1745,7 @@ similar, little to see
     HTML page and at least return the domains of all embedded elements.
 \appendix
 \part{Appendix}
-*** WRITE assumptions on feasibility
+*** MOVE include to [[*more thorough evaluation][more thorough evaluation]] WRITE assumptions on feasibility
     As critiqued in \cite{critique}, the evaluation in this thesis
     makes copies the approach of
     - wg
@@ -2691,9 +2699,9 @@ similar, little to see
    technology stack.
 
    \cite{nicholas} evaluates Python web server performance. He shows
-   the apache server with the ~mod_wsgi~ module as well-performing. As
-   it was noted to be very easy to set up, it was chosen for this
-   evaluation.
+   the Apache web server[fn:: \url{https://httpd.apache.org/}] with
+   the ~mod_wsgi~ module as well-performing. As it was noted to be
+   very easy to set up, it was chosen for this evaluation.
 ** WAIT wsgi.py cover traffic server and generator
    :PROPERTIES:
    :CUSTOM_ID: wsgi
@@ -2733,12 +2741,11 @@ similar, little to see
    :PROPERTIES:
    :CUSTOM_ID: mod_wsgi
    :END:
-   =mod_wsgi= is a module for the Apache web
-   server[fn:: \url{https://httpd.apache.org/}]. It executes python
-   scripts which implement the WSGI standard\cite{pep3333}. An
-   apache httpd serving only WSGI is easily set up via the
-   =mod_wsgi-express= command, which is included in the =mod_wsgi=
-   python package[fn:: \url{https://pypi.python.org/pypi/mod_wsgi}].
+   =mod_wsgi= is a module for Apache. It executes python scripts which
+   implement the WSGI standard\cite{pep3333}. An apache httpd serving
+   only WSGI is easily set up via the =mod_wsgi-express= command,
+   which is included in the =mod_wsgi= python package[fn::
+   \url{https://pypi.python.org/pypi/mod_wsgi}].
 
    To install on Debian-based systems[fn::tested on Ubuntu Server
    Edition and Linux Mint 17.1 Rebecca], do
@@ -2919,7 +2926,12 @@ similar, little to see
    number of groups was increased to 5.
 *** maybe graphics?
 * KEYWORDS Data Set Sizes
+The following Table [[tab:data-set-size]] lists the size of the data sets
+per website fingerprinting study.
+
+#+CAPTION[Sizes of data sets]: Sizes of data sets per study.
 #+ATTR_LATEX: :align |r||l|l|
+#+NAME: tab:data-set-size
 |-----------------------+--------------------------+---------------------------|
 | dataset               | foreground               | background                |
 | <21>                  |                          |                           |
@@ -2929,17 +2941,18 @@ similar, little to see
 | \cite{wtfpad}         | 100@20-40                | ?                         |
 | \cite{Liberatore:2006} | 109,479/(2000mostcommon) |                           |
 | \cite{wpes13-fingerprinting} | 100@40                   |                           |
-| \cite{cumul} RND-WWW  | 1125@40                  | 118,884@1                 |
-| \cite{cumul} TOR-EXIT |                          | 211,148 (total urls)      |
+| \cite{panchenko2} RND-WWW | 1125@40                  | 118,884@1                 |
+| \cite{panchenko2} TOR-EXIT |                          | 211,148 (total urls)      |
 | \cite{ccsw09-fingerprinting} | 775@20                   | --- (none)                |
 | \cite{panchenko}      | 5@(35train+25test)       | (4000train+1000test)@1    |
 | \cite{wpes14-csbuflo} | 200@20                   |                           |
 |-----------------------+--------------------------+---------------------------|
+
 - seldom more than 100 fg sites
 - as mentioned by f.ex. \cite{panchenko} (where exactly?), small cw-set
   for testing defenses
 - caption, name, ...
 
 \bibliography{docs/master}
-\bibliographystyle{plain}
+\bibliographystyle{apalike}
 \input{diplomarbeit.ind}
