@@ -78,12 +78,14 @@
   - parents H.H. K.K.
   - Elena
   - Daniel Arp
+    - so much, surely missed some
+    - binning approach
   - Prof. Dr. Konrad Rieck
   - Tao Wang
   - Dr. Dr. Eva
 * WAIT Summary
-* WRITE Basics (=basics) [33%]
-** WRITE Website Fingerprinting [12/30]
+* WRITE Basics (=basics) [35%]
+** WRITE Website Fingerprinting [13/30]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -370,7 +372,7 @@ Facebook.com\\
     #+NAME: CUMUL_traces
     [[./pictures/cumul_aus_paper.pdf]]
 **** TODO feature vs attribute
-*** CHECK Panchenko Version 1
+*** EVA Panchenko Version 1
     #+INDEX: Version~1
     #+INDEX: classifier!Version~1
     While \cite{ccsw09-fingerprinting} classified one-hop proxies
@@ -406,14 +408,14 @@ Facebook.com\\
     byte sizes as positive and outgoing as negative values] to the
     last cumulative size, and appended to the list.
 
-    To normalize list length, values are interpolated from the list
-    values to $n$ equidistant points. As of \cite{panchenko2},
-    "$n=100$ yields the best trade-off between classification
-    accuracy and computational efficiency."
+    To obtain a fixed size feature vector, values are interpolated
+    from the list values to $n$ equidistant points. As of
+    \cite{panchenko2}, "$n=100$ yields the best trade-off between
+    classification accuracy and computational efficiency."
 
-    This list is then normalized to $[-1, 1]$. Additional features are
-    the total number of both bytes and packets, both incoming and
-    outgoing.
+    This vector is then normalized to $[-1, 1]$. As additional
+    features, the total number of both bytes and packets, both
+    incoming and outgoing are appended to this list.
 
     Support vector machines classify these.
 *** WRITE Support Vector Machines
@@ -441,16 +443,15 @@ Facebook.com\\
      #+END_LaTeX
      such that $\langle w, x_i \rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle +b < 0$
      whenever $y_i = -1$.
-**** WRITE hard vs soft margin
+**** CHECK hard vs soft margin
      A support vector machine tries to find a hyperplane between two
      groups of points and maximize the margin between this line and
-     the next points. What happens if the points lie such that such a
-     line cannot be found?
+     the next points. What happens if the points lie such that a line
+     cannot be found?
 
-      - hard margin classifier: assume that linearly separable
-      - soft margin classifier: does not assume, tries to limit error
-        in addition to maximizing margin
-      - optimization problem
+     To solve this, a /soft-margin classifier/ introduces an error
+     term, which it tries to reduce while maximizing the distance of
+     the closest point to the hyperplane.
 **** WRITE multi-class strategies aka ovr vs ovo (vs ecoc)
       - svm binary classifier
       - multi-class: train one for each class (ovr) or one for each
@@ -585,10 +586,16 @@ Facebook.com\\
     As website fingerprinting requires very litte resources, a specific
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
     state.
-** WRITE Defenses [1/7]
-*** CHECK Introduction
+** WRITE Defenses [1/8]
+*** WRITE Introduction
     As soon as it became clear that anonymized (web) traffic could be
     analysed to guess the destination, defenses were proposed.
+
+    The general idea is to obfuscate characteristics of the
+    data. Defenses progressed from obfuscating specific attributes
+    that were used for fingerprinting, to trying to obfuscate the
+    whole of traffic, including attributes not previously thought of.
+
 
     The next sections explode early defense proposals, then address
     defenses tailored to specific attacks, and /general defenses/ that
@@ -596,6 +603,16 @@ Facebook.com\\
     defenses, that add randomness to achieve meaningful reduction in
     accuracy with less bandwith and time overhead than deterministic
     ones.
+
+
+    - obfuscate attributes
+    - specific attributes
+    - general obfuscation
+      - deterministic
+        - fixed data rate
+        - supersequence if known
+      - stochastic
+    - [ ] traffic analysis assumes crypto is perfect
 *** CHECK Early defenses
     As defense against fingerprinting webpages when retrieved via SSL,
     \cite{ssl-traffic-analysis} mainly proposed using
@@ -603,9 +620,6 @@ Facebook.com\\
     weaknesses when using proxies, \cite{hintz02} proposed
     the following defenses: adding noise to traffic, reducing
     transferred data, and transferring everything in one connection.
-
-    The first approach of adding noise to traffic was used by
-    many researchers afterwards.
 
     As for the second approach of reducing transferred data: As the
     sizes and interconnection of HTML and embedded content is what
@@ -627,6 +641,11 @@ Facebook.com\\
     --- while valid --- would require modifying the HTTP
     protocol. This would conflict with Tor's design goal of
     deployability.\cite{tor-design}
+
+    The first approach of adding noise to traffic was used by many
+    researchers afterwards. Others tried to ---additionally or
+    exclusively--- alter traffic by reducing the data rate and
+    altering packet sizes.
 *** EVA Specific vs General Defenses
     As of \cite{wang2015walkie}, defenses designed against website
     fingerprinting can be divided into specific and general defenses.
@@ -661,6 +680,11 @@ Facebook.com\\
     This idea was improved on by \cite{a-systematic} while
     \cite{effective} proposed the (offline) defense of morphing all
     traffic to supersequences of traffic patterns.
+*** WRITE tamaraw
+    - evolution of BuFLO\cite{oakland2012-peekaboo}
+    - different rate up-/downstream
+    - longer sending cloaks end of transmission
+    - tunable overhead
 *** CHECK Stochastic Defenses
     Previous general defenses[fn::apart from \cite{panchenko}'s
     decoys] were deterministic. The latest defenses by \cite{wtfpad}
@@ -668,10 +692,10 @@ Facebook.com\\
     generate additional traffic, with the latter\cite{wang2015walkie}
     additionally modifying the browser to send "half-duplex", either
     exclusively sending or exclusively receiving data at the same
-    time. \cite{wtfpad} adapted the ideas from \cite{ShWa-Timing06} to
-    distinguish active and non-active periods, with a certain
-    probability of sending dummy packets in each, omitting the sending
-    when the browser generated packets itself.
+    time. The former, \cite{wtfpad} adapted the ideas from
+    \cite{ShWa-Timing06} to distinguish active and non-active periods,
+    with a certain probability of sending dummy packets in each,
+    omitting the sending when the browser generated packets itself.
 *** WRITE WTF-PAD
     - Juarez\cite{wtfpad}
     - Website Traffic Fingerprinting Protection with Adaptive Defense (WTF-PAD)
@@ -692,20 +716,6 @@ Facebook.com\\
     - browser modification
     - only detectable metric: number of bursts
       - (and also total data, which is a powerful metric)
-*** MOVE above [[*Stochastic Defenses][Stochastic Defenses]] WRITE tamaraw
-    - evolution of BuFLO\cite{oakland2012-peekaboo}
-    - different rate up-/downstream
-    - longer sending cloaks end of transmission
-    - tunable overhead
-*** MOVE sub Defenses.[[*Introduction][Introduction]] brainstorm                                   :ARCHIVE:
-    - obfuscate attributes
-    - specific attributes
-    - general obfuscation
-      - deterministic
-        - fixed data rate
-        - supersequence if known
-      - stochastic
-    - [ ] traffic analysis assumes crypto is perfect
 *** WRITE Related Work
     - hintz: 3 ways to do it
     - wright: morph
@@ -985,10 +995,10 @@ Facebook.com\\
       #+INDEX: flavor!I
       #+INDEX: II
       #+INDEX: flavor!II
-      Once the /page's values/ are thus set[fn:kg], there are two
-      tactics on how to set /target/ values.
+      Once the /page's values/ are thus determined[fn:kg], there are
+      two tactics on how to set /target/ values.
 
-      One tactic is to group the webpages by their values into bins and
+      One tactic (=I=) is to group the webpages by their values into bins and
       to set the bin border as the target value, as all webpages in the
       bin must have a size less than or equal the border. This approach
       approximates that taken by Wang et al. in \cite{effective} with
@@ -997,10 +1007,10 @@ Facebook.com\\
       chosen.[fn:: The optimal size for the biggest bin is a parameter
       that should be evaluated as well, see [[#future-work][Future Work]].]
 
-      The other tactic is to have a single target distribution from
-      which values are sampled each time, the [[#HTTP traffic model][HTTP traffic model]]. This
-      is also the fallback approach if the web page's values are not
-      known.
+      The other tactic (=II=) is to have a single target distribution
+      from which values are sampled each time, the [[#HTTP traffic model][HTTP traffic
+      model]]. This is also the fallback approach if the web page's
+      values are not known.
 
       - picture of binning approach
     This leads to the following variations:
@@ -1068,7 +1078,7 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* KEYWORDS Results and Evaluation [29%]
+* KEYWORDS Results and Evaluation [25%]
 ** EVA Setup
 *** EVA sites
 **** EVA modified top-100
@@ -1269,7 +1279,14 @@ Facebook.com\\
 
     After SVM-parameters have been determined, several classifiers are
     trained on the training data and evaluated on the test data.
-** KEYWORDS Website Fingerprinting [0/6]
+** KEYWORDS Website Fingerprinting [0/9]
+*** WAIT panchenko 1
+    - original wf attack
+    - HTTP/HTML-specific features
+    - mostly fixed-size, with Number and Size Markers variable-sized
+      - lead to longer feature vectors than CUMUL'default
+      - longer time
+**** WAIT for [[file:~/da/da.org::*klassifikation][klassifikation {0/10}]] panchenko 1 without scaling on best
 *** KEYWORDS panchenko v1 different classifiers
     :PROPERTIES:
     :CUSTOM_ID: different-classifiers
@@ -1406,6 +1423,8 @@ Facebook.com\\
         regular traces, but decaying fast on data collected
         - later
         - with add-on
+*** KEYWORDS which features help most in classification
+    - see [[file:data/results/alternatives.org::*feature%20importances%20ET][feature importances ET]]
 ** KEYWORDS Evaluation of Defenses [0/8]
 *** KEYWORDS Introduction
     - very dependent on retrieved trace time difference, see [[#time]]
@@ -1438,6 +1457,25 @@ Facebook.com\\
     - which classifier classifies which page well?
     - 5aII higher accuracy at svc than at et
       - mention still, still accurate, or obsolete, because svm increased
+*** WRITE add-on flavors
+    table like [[file:geloescht.org::*Variations%20of%20Cover%20Traffic][Variations of Cover Traffic]] with data
+
+    - As described in [[#addon_main][Add-on Version: Main]], there are different flavors
+      of the main version. This is a short comparison.
+    - use Tables [[tab:0829]] and [[tab:0909]] 
+      - maybe update 0909, then select certain features
+#+CAPTION[Classification accuracy and overhead for flavors of the main addon]: Classification accuracy and overhead for flavors of the main addon, at 5% FACTOR.
+#+NAME: tab:0829
+#+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{3}{1}|
+#+INCLUDE: "data/results/alternatives.org::#vs-08-29" :only-contents t
+
+
+#+CAPTION[Classification accuracy and overhead for flavors of the main addon]: Classification accuracy and overhead for flavors of the main addon, at 20% FACTOR.
+#+NAME: tab:0909
+#+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{3}{1}|
+#+INCLUDE: "data/results/alternatives.org::#vs-09-09" :only-contents t
+    - seems like aI is best (at least not much worse than others)
+    - 
 *** KEYWORDS [#A] sota (practical): WTF-PAD
     :PROPERTIES:
     :CUSTOM_ID: eval-wtf-pad
@@ -1472,13 +1510,6 @@ Facebook.com\\
   - no delay
 - currently uses exit nodes
 - this has no gap traffic, aims less at global adversary, more at ISP
-*** MOVE up below add-on WRITE add-on flavors
-    table like [[file:geloescht.org::*Variations%20of%20Cover%20Traffic][Variations of Cover Traffic]] with data
-
-    - As described in [[#addon_main][Add-on Version: Main]], there are different flavors
-      of the main version. This is a short comparison.
-    - use tables [[file:data/results/alternatives.org::*table%2009-09][table 09-09]] and [[file:data/results/alternatives.org::*table%2008-29][table 08-29]]
-    - seems like aI is best (at least not much worse than others)
 *** KEYWORDS does this hide bursts?
     - meta-bursts as described in walkie-talkie
     - are those hidden, too, or can the number of bursts be found out
@@ -1589,8 +1620,15 @@ Facebook.com\\
 \end{table}
 #+END_LaTeX
 
-similar, little to see
-
+- similar, little to see
+- no-addon classifies equally well for both classifiers
+  - wfpad
+    - xvideos classifies 0.7 with et, 0.975 with svm
+    - apple 0.925 with et, 0.675 with svm
+  - simple
+    - msn.com 0.35 et, 0.75 svm
+    - sina.com.cn 0.95 et, 0.55 svm
+  - todo rest
 *** TODO less data in table, maybe just two classifiers
 ** brainstorm                                                       :ARCHIVE:
    - describe setup
@@ -1734,18 +1772,6 @@ similar, little to see
 *** more thorough evaluation
     - only two panchenko approaches
     - assumption: can split traces
-*** TODO always also link in text
-**** TODO check with darp
-*** TODO links to original, back to further work
-*** Exactly distinguishing HTML and embedded requests
-    The current version of the [[user.js][User module]] separates
-    CoverTraffic by DNS-domainname. As it often happens that one HTML
-    page has embedded elements from different domains, this does not
-    perfectly represent reality. It would be more exact to analyse the
-    HTML page and at least return the domains of all embedded elements.
-\appendix
-\part{Appendix}
-*** MOVE include to [[*more thorough evaluation][more thorough evaluation]] WRITE assumptions on feasibility
     As critiqued in \cite{critique}, the evaluation in this thesis
     makes copies the approach of
     - wg
@@ -1759,6 +1785,17 @@ similar, little to see
     - additional (?defense?) as proposed in critique
 **** TODO follow critique at all?
      - yes, shows Tor project's official position
+*** TODO always also link in text
+**** TODO check with darp
+*** TODO links to original, back to further work
+*** Exactly distinguishing HTML and embedded requests
+    The current version of the [[user.js][User module]] separates
+    CoverTraffic by DNS-domainname. As it often happens that one HTML
+    page has embedded elements from different domains, this does not
+    perfectly represent reality. It would be more exact to analyse the
+    HTML page and at least return the domains of all embedded elements.
+\appendix
+\part{Appendix}
 * appendices (begin above this headline; this is for searching)     :ARCHIVE:
   above, as in this section cuts it out (due to ARCHIVE tag)
 * Testing Results different defenses
@@ -2691,7 +2728,7 @@ similar, little to see
   total bytes upstream/outgoing.
 ** TODO compare to HTTP model
 * Cover Traffic Server
-** CHECK Which Python Web Server to Choose
+** APPENDIX_DONE Which Python Web Server to Choose
    The naïve implementation based on Python's
    =BaseHTTPServer=\cite[20.18]{python-lib-ref} had drawbacks (see
    [[#server-non-para]]), even for the queries of a single addon. This
@@ -2737,7 +2774,7 @@ similar, little to see
        done
      #+END_SRC
 *** WAIT link to github wsgi.py
-** CHECK Apache =mod_wsgi=
+** MOVE one up CHECK Apache =mod_wsgi=
    :PROPERTIES:
    :CUSTOM_ID: mod_wsgi
    :END:
@@ -2892,7 +2929,7 @@ similar, little to see
 
     then adding elements via =htmlSizes.add("http://google.com/", 613)=
     and querying via =htmlSizes.query("http://google.com/")=, which
-    would yield =400=. See usage in [[file:cover/js/size-cache.js::let%20numEmbeddeds%20%3D%20new%20BloomSort.BloomSort(NUM_EMBEDDED_SIZES,][size-cache]].
+    would yield =400=. See usage in =size-cache=.
 *** WAIT github link
 ** TODO determining Bloom-sort parameters
    :PROPERTIES:
@@ -2954,5 +2991,5 @@ per website fingerprinting study.
 - caption, name, ...
 
 \bibliography{docs/master}
-\bibliographystyle{apalike}
+\bibliographystyle{plain}
 \input{diplomarbeit.ind}

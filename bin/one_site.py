@@ -44,11 +44,11 @@ def _open_with_timeout(browser, page, timeout=600, burst_wait=3):
     while thread.is_alive():
         time.sleep(.1)
         if time.time() - start > timeout:
-            _clean_up(browser, pcap)
+            _kill(browser, pcap)
             os.rename(file_name, file_name+'timeout')
             raise SystemExit("download aborted after timeout")
     time.sleep(burst_wait)
-    _clean_up(browser, pcap)
+    _kill(browser, pcap)
 
 
 def _open_browser(exe='/home/mkreik/bin/tor-browser_en-US/Browser/firefox -marionette', tryThisLong = 60):
@@ -73,7 +73,7 @@ def _open_browser(exe='/home/mkreik/bin/tor-browser_en-US/Browser/firefox -mario
     while thread.is_alive():
         time.sleep(.1)
         if time.time() - start > tryThisLong:
-            _clean_up(browser)
+            _kill(browser)
             raise SystemExit("browser connection not working")
     print 'slept for {0:.3f} seconds'.format(time.time() - start)
     return browser
@@ -93,7 +93,7 @@ def _wait_browser_ready(browser):
             time.sleep(.1)
     client.close()
 
-def _clean_up(*processes):
+def _kill(*processes):
     '''cleans up after processes'''
     for p in processes:
         if p is not None:
