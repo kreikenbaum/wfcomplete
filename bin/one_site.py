@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-
-# starts tor-firefox -marionette and tshark, calls url parameter, stops both
+'''starts tor-firefox -marionette and tshark, calls url parameter, stops both'''
 
 # some help was
 # http://stackoverflow.com/questions/6344993/problems-parsing-an-url-with-python
@@ -14,29 +13,36 @@ import time
 import urlparse
 from marionette import Marionette
 
-def browse_to(page):
-    '''creates a browser instance, packet dump, browses to page, kills both'''
+def browse_to(page, bridge=None):
+    '''creates a browser instance, packet dump, browses to page, kills both.
+    If bridge is not none, it is an IP-address. Just capture traffic to that.'''
     browser = _open_browser()
-    _open_with_timeout(browser, page)
+    _open_with_timeout(browser, page, bridge=bridge)
 
 # cheap hack
 def _avoid_safe_mode(exedir):
     '''avoids safe mode by removing the line which contains count of failures'''
-    os.system("sed -i '/toolkit\.startup\.recent_crashes/d' " +
+    os.system(r"sed -i '/toolkit\.startup\.recent_crashes/d' " +
               os.path.join(exedir,
                            "TorBrowser/Data/Browser/profile.default/prefs.js"))
 
-def _open_with_timeout(browser, page, timeout=600, burst_wait=3):
-    '''navigates browser to url while capturing the packet dump, aborts after timeout'''
+def _open_with_timeout(browser, page, timeout=600, burst_wait=3, bridge=None):
+    '''navigates browser to url while capturing the packet dump, aborts
+    after timeout. If bridge, that is the IP address of the connected
+    bridge, just capture traffic to there (need to set this by hand)
+
+    '''
     client = Marionette('localhost', port=2828, socket_timeout=(timeout-30))
     client.start_session()
     client.timeouts('page load', timeout * 1000) # not working
 
     (url, domain) = _normalize_url(page)
 
-    thread = threading.Thread(target=client.navigate, args=(url,))
+    (tshark_process, file_name) = _open_packet_dump(domain, bridge)
+#    thread = threading.Thread(target=client.navigate, args=(url,))
+    thread = threading.Thread(target=_navigate_or_fail,
+                              args=(client, url, file_name))
     thread.daemon = True
-    (pcap, file_name) = _open_packet_dump(domain)
     thread.start()
 
     #td: this is code duplication for both _open functions
@@ -44,35 +50,45 @@ def _open_with_timeout(browser, page, timeout=600, burst_wait=3):
     while thread.is_alive():
         time.sleep(.1)
         if time.time() - start > timeout:
-            _kill(browser, pcap)
-            os.rename(file_name, file_name+'timeout')
+            _kill(browser, tshark_process)
+            os.rename(file_name, file_name + '_timeout')
             raise SystemExit("download aborted after timeout")
     time.sleep(burst_wait)
-    _kill(browser, pcap)
+    _kill(browser, tshark_process)
 
+def _navigate_or_fail(client, url, file_name):
+    '''navigates client to url, on failure renames file'''
+    try:
+        client.navigate(url)
+    except:
+        os.rename(file_name, '{}_{}'.format(file_name, sys.exc_info()[1]))
+        raise
 
-def _open_browser(exe='/home/mkreik/bin/tor-browser_en-US/Browser/firefox -marionette', tryThisLong = 60):
+def _open_browser(exe='/home/mkreik/bin/tor-browser_en-US/Browser/firefox -marionette', open_timeout=60):
     '''returns an initialized browser instance with marionette'''
     env_with_debug = os.environ.copy()
-    env_with_debug["MOZ_DISABLE_AUTO_SAFE_MODE"] = 'set';
+    env_with_debug["MOZ_DISABLE_AUTO_SAFE_MODE"] = 'set'
     exewholepath, exeargs = exe.split(' ', 1)
-    (exedir, exefile) = os.path.split(exewholepath)
+    (exedir, _) = os.path.split(exewholepath)
     env_with_debug["LD_LIBRARY_PATH"] = '/lib:/usr/lib:' + (
         exedir + '/TorBrowser/Tor')
     _avoid_safe_mode(exedir)
     #print 'lpath: %s' % env_with_debug["LD_LIBRARY_PATH"]
-#    browser = subprocess.Popen(args=['/home/mkreik/bin/tor-browser_en-US/Browser/firefox','-marionette'], cwd=exedir, stdout=subprocess.PIPE, env=env_with_debug);
-    browser = subprocess.Popen(args=[exewholepath,exeargs], cwd=exedir, stdout=subprocess.PIPE, env=env_with_debug);
+# maybe remove lines below
+#    browser =
+#    subprocess.Popen(args=['/home/mkreik/bin/tor-browser_en-US/Browser/firefox','-marionette'],
+#    cwd=exedir, stdout=subprocess.PIPE, env=env_with_debug);
+    browser = subprocess.Popen(args=[exewholepath, exeargs], cwd=exedir, stdout=subprocess.PIPE, env=env_with_debug)
 
     thread = threading.Thread(target=_wait_browser_ready,
-                              kwargs={'browser': browser});
+                              kwargs={'browser': browser})
     thread.daemon = True
     thread.start()
 
     start = time.time()
     while thread.is_alive():
         time.sleep(.1)
-        if time.time() - start > tryThisLong:
+        if time.time() - start > open_timeout:
             _kill(browser)
             raise SystemExit("browser connection not working")
     print 'slept for {0:.3f} seconds'.format(time.time() - start)
@@ -95,9 +111,9 @@ def _wait_browser_ready(browser):
 
 def _kill(*processes):
     '''cleans up after processes'''
-    for p in processes:
-        if p is not None:
-            p.terminate()
+    for process in processes:
+        if process is not None:
+            process.terminate()
 
 def _normalize_url(url='google.com'):
     '''normalizes the url by adding the "http://' scheme if none exists'''
@@ -106,10 +122,16 @@ def _normalize_url(url='google.com'):
 
     return (url, urlparse.urlparse(url).netloc)
 
-def _open_packet_dump(page):
+def _open_packet_dump(page, bridge):
     '''@returns a (tshark_subprocess_instance, filename) tuple'''
-    loc = os.path.join('/mnt/data', page + '@' + str(time.time()).split('.')[0]);
-    return (subprocess.Popen(['tshark', '-w' + loc]), loc);
+    loc = os.path.join('/mnt/data', page + '@' + str(time.time()).split('.')[0])
+    if not bridge:
+        return (subprocess.Popen(['tshark', '-w' + loc]), loc)
+    else:
+        return (subprocess.Popen(['tshark', '-w' + loc, 'host ' + bridge]), loc)
 
 if __name__ == "__main__":
-    browse_to(sys.argv[1])
+    if len(sys.argv) == 2:
+        browse_to(sys.argv[1])
+    else:
+        browse_to(sys.argv[1], sys.argv[2])
