@@ -396,7 +396,7 @@ Facebook.com\\
     inapplicable\cite{critique} to pose a real threat, they still
     consider this paper "the first work to successfully apply website
     traffic fingerprinting to Tor"\cite{critique}.
-*** CHECK CUMUL
+*** EVA CUMUL
     CUMUL\cite{panchenko2} is a state-of-the-art\cite{kfingerprint}
     website fingerprinting attack. It sums the number of incoming and
     outgoing bytes, which results in an easily-understandable
@@ -418,7 +418,7 @@ Facebook.com\\
 
     Support vector machines classify these.
 *** WRITE Support Vector Machines
-**** EVA Introduction
+**** WRITE Introduction
      #+INDEX: Support Vector Machine
      #+INDEX: SVM
      Support Vector Machines (short: SVM) are a linear classifier:
@@ -440,17 +440,22 @@ Facebook.com\\
      #+BEGIN_LaTeX
        \[\{x \in X \mid \langle w, x \rangle +b = 0\}\]
      #+END_LaTeX
-     such that $\langle w, x_i \rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle +b < 0$
-     whenever $y_i = -1$.
-**** CHECK hard vs soft margin
+     such that $\langle w, x_i \rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle
+     +b < 0$ whenever $y_i = -1$. With normalization, this can be
+     compressed to the form \[y_i \cdot (<w, xi> +b) \ge 1.\]
+**** KEYWORDS hard vs soft margin
      A support vector machine tries to find a hyperplane between two
      groups of points and maximize the margin between this line and
      the next points. What happens if the points lie such that a line
      cannot be found?
 
      To solve this, a /soft-margin classifier/ introduces an error
-     term, which it tries to reduce while maximizing the distance of
+     term $\xi$, which it tries to reduce while maximizing the distance of
      the closest point to the hyperplane.
+
+     This yields the equations $y_i(<w, xi> +b) \ge 1 - \xi_i.$
+
+     - error term
 **** WRITE multi-class strategies aka ovr vs ovo (vs ecoc)
       - svm binary classifier
       - multi-class: train one for each class (ovr) or one for each
@@ -478,6 +483,10 @@ Facebook.com\\
        gaussian rbf
 **** TODO link to basic book (bronstein) for vector space etc
 **** index binary classification task
+**** need more preparation than other classifiers
+     - outlier removal
+     - scaling
+     - parameter estimation
 *** WRITE Wang's KNN
     - improved detection
     - many attributes
@@ -641,12 +650,11 @@ Facebook.com\\
     The third approach of transferring everything in one connection
     --- while valid --- would require modifying the HTTP
     protocol. This would conflict with Tor's design goal of
-    deployability.\cite{tor-design}
+    deployability\cite{tor-design}.
 
-    The first approach of adding noise to traffic was used by many
-    researchers afterwards. Others tried to ---additionally or
-    exclusively--- alter traffic by reducing the data rate and
-    altering packet sizes.
+    Several researchers used the first approach of adding noise to
+    traffic. Others --- additionally or exclusively --- alter traffic by
+    reducing the data rate, altering packet sizes, etc.
 *** EVA Specific vs General Defenses
     As of \cite{wang2015walkie}, defenses designed against website
     fingerprinting can be divided into specific and general defenses.
@@ -687,8 +695,7 @@ Facebook.com\\
     - longer sending cloaks end of transmission
     - tunable overhead
 *** CHECK Stochastic Defenses
-    Previous general defenses[fn::apart from \cite{panchenko}'s
-    decoys] were deterministic. The latest defenses by \cite{wtfpad}
+    Previous general defenses were mostly deterministic. The latest defenses by \cite{wtfpad}
     and \cite{wang2015walkie} both use a stochastic approach to
     generate additional traffic, with the latter\cite{wang2015walkie}
     additionally modifying the browser to send "half-duplex", either
@@ -725,7 +732,7 @@ Facebook.com\\
     - padding (sslv2 \to 3)
     - requestpolicy (hintz 2nd way)
     - text-only browsing (hintz 2nd way)
-* WRITE Methods (=methods) [61%]
+* WRITE Methods (=methods) [59%]
 ** EVA Motivation [2/2]
 *** brainstorm                                                      :ARCHIVE:
    - make wf/ml harder, fudge attributes
@@ -796,7 +803,7 @@ Facebook.com\\
     level, as a whistleblower might need more anonymity protection
     than Jane Doe who just reads the latest news, possibly censored in
     her country.
-** WRITE Design and Implementation (=Implementation) [10/17]
+** WRITE Design and Implementation (=Implementation) [10/18]
 *** DANIEL Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -907,7 +914,8 @@ Facebook.com\\
     possibilities, the simple version, and an older version with very
     low, but non-adjustable overhead. Version evolution is described
     in appendix [[#versions]].
-**** EVA Add-on Version: Main
+**** WRITE Add-on Version: Main
+***** EVA Introduction
      :PROPERTIES:
      :CUSTOM_ID: addon_main
      :END:
@@ -1079,8 +1087,8 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* KEYWORDS Results and Evaluation [25%]
-** EVA Setup
+* KEYWORDS Results and Evaluation [22%]
+** KEYWORDS Setup
 *** EVA sites
 **** EVA modified top-100
      The URLs for retrieval come from the Alexa top million sites
@@ -1152,7 +1160,8 @@ Facebook.com\\
     Single traces are captured via the Python script ~one_site.py~, see
     appendix [[#1site_desc]].
 **** WAIT github config files upload + mention
-*** EVA preprocessing
+*** KEYWORDS preprocessing
+**** EVA Introduction
     The aim of preprocessing is to extract attributes relevant for
     machine learning from the original trace files, which are in
     =pcap= format. From these, a vector of characteristics, called
@@ -1288,7 +1297,7 @@ Facebook.com\\
       - lead to longer feature vectors than CUMUL'default
       - longer time
 **** WAIT for [[file:~/da/da.org::*klassifikation][klassifikation {0/10}]] panchenko 1 without scaling on best
-*** KEYWORDS panchenko v1 different classifiers
+*** WAIT panchenko v1 different classifiers
     :PROPERTIES:
     :CUSTOM_ID: different-classifiers
     :END:
@@ -1408,8 +1417,6 @@ Facebook.com\\
          - due to time difference accuracy lag (and some time to
            capture), all defenses compared to closest-in-time
            no-defense retrieval
-**** continue: [[file:bin/analyse.py::total%20=%20%5Bcounter.get_total_both()%20for%20counter%20in%20counter_list%5D][here, set to _in, redo analysis]] with four disableds
-**** WAIT for [[file:~/da/da.org::*experimente][experimente disabled]]
 *** KEYWORDS (for [[file:~/da/da.org::*klassifikation][klassifikation {0/12}]]) svc vs extratrees
     - svc very good on unadd-oned data, (if trained and or on all)
       - extratrees with 5--10% lower accuracy, but excels against
@@ -1426,6 +1433,8 @@ Facebook.com\\
         - with add-on
 *** KEYWORDS which features help most in classification
     - see [[file:data/results/alternatives.org::*feature%20importances%20ET][feature importances ET]]
+    - mention that ET classifies differently from SVM
+      - but easily accessible
 ** KEYWORDS Evaluation of Defenses [0/8]
 *** KEYWORDS Introduction
     - very dependent on retrieved trace time difference, see [[#time]]
@@ -1458,7 +1467,7 @@ Facebook.com\\
     - which classifier classifies which page well?
     - 5aII higher accuracy at svc than at et
       - mention still, still accurate, or obsolete, because svm increased
-*** WRITE add-on flavors
+*** CHECK add-on flavors
     As described in [[#addon_main][Add-on Version: Main]], there are different flavors
     of the main version. These were evaluated with overhead factors of
     5% and 20%. See Tables [[tab:flavors0829]] and [[tab:flavors0909]]
@@ -1468,10 +1477,10 @@ Facebook.com\\
     with almost equal accuracy for the SVM-classifier, but slightly
     overhead-related accuracy for the Extra-Trees classifier. In both
     experiments, the =aI= flavor performed at the top or almost, with
-    the =aII= flavor producing slightly lower overhead for the
-    low-overhead setting.
+    the =aII= flavor producing slightly lower overhead for comparable
+    accuracy in the low-overhead setting.
 
-    As expected, the non-caching =b= flavors produced significantly
+    As expected, the non-caching =b= flavors produce significantly
     higher ovherhead for a small additional reduction of classifier
     accuracy.
 
@@ -1485,8 +1494,6 @@ Facebook.com\\
 #+NAME: tab:flavors0909
 #+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{3}{1}|
 #+INCLUDE: "data/results/alternatives.org::#flavors-09-09" :only-contents t
-    - seems like aI is best (at least not much worse than others)
-    - 
 *** KEYWORDS [#A] sota (practical): WTF-PAD
     :PROPERTIES:
     :CUSTOM_ID: eval-wtf-pad
@@ -1566,28 +1573,10 @@ Facebook.com\\
       - does with add-on look like bigger page?
     - wait for [[file:~/da/da.org::*experimente][experimente]] plan 3
 ** KEYWORDS Websites
+   :PROPERTIES:
+   :CUSTOM_ID: websites
+   :END:
    - which websites classify well with which classifier, which badly
-     - sina.com classifies very well
-       - huge site
-     - algorithm
-       1. clf.train on whole disabled set, with or level 2
-       2. clf.predict on addon set
-       3. for each class (number) in y2
-          1. create list of classes it was mapped to
-          2. compute score of how much it was mapped to itself
-          3. compute score of top three other classes
-             1. count occurrence number
-             2. sort
-       4. look up names
-     - implemented up to 3.2.
-   - google.com
-     - check that not a robot
-     - td: estimate probability if matches traces
-   - aliexpress.com
-     - https of akamai
-     - td: check with recapture both
-   - wait for redo in [[file:~/da/da.org::*klassifikation][klassifikation {0/12}.plan.2]] (size increase per class
-     per defense)
    - results in Tables [[tab:class_accuracy-07-06]],
      [[tab:class_accuracy-simple]], [[tab:class_accuracy-main]], and
      [[tab:class_accuracy-09-18]].
@@ -1596,7 +1585,7 @@ Facebook.com\\
 #+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}|
 #+INCLUDE: "data/results/alternatives.org::#class-accuracy-07-06" :only-contents t
 
-#+CAPTION: Classification accuracy of simple addon on 30 classes, 2 classifiers.
+#+CAPTION: Classification accuracy of "simple" addon on 30 classes, 2 classifiers.
 #+NAME: tab:class_accuracy-simple
 #+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}|
 #+INCLUDE: "data/results/alternatives.org::#class-accuracy-simple" :only-contents t
@@ -1606,7 +1595,7 @@ Facebook.com\\
 #+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}|
 #+INCLUDE: "data/results/alternatives.org::#class-accuracy-main" :only-contents t
 
-#+CAPTION: Classification accuracy of retro on 30 classes, 2 classifiers.
+#+CAPTION: Classification accuracy of "retrofixed" addon on 30 classes, 2 classifiers.
 #+NAME: tab:class_accuracy-09-18
 #+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}|
 #+INCLUDE: "data/results/alternatives.org::#class-accuracy-09-18" :only-contents t
@@ -1637,16 +1626,49 @@ Facebook.com\\
 \end{table}
 #+END_LaTeX
 
-- similar, little to see
-- no-addon classifies equally well for both classifiers
+  - similar, little to see
+  - no-addon classifies equally well for both classifiers
+  - all: \ge 0.15 accuracy difference
+    - next: 0.25 diff
   - wfpad
-    - xvideos classifies 0.7 with et, 0.975 with svm
     - apple 0.925 with et, 0.675 with svm
+    - go.com: et 0.875, svm 0.725
+    - yahoo.com: et 0.75, svm 0.575
+    - youtube: et 0.575, svm 0.425
+    - 
+    - ettoday: 0.825 et, 1.00 svm
+    - microsoftonline.com: et 0.6, svm 0.775
+    - pornhub: et 0.6, svc 0.975
+    - xvideos classifies 0.7 with et, 0.975 with svm
   - simple
-    - msn.com 0.35 et, 0.75 svm
     - sina.com.cn 0.95 et, 0.55 svm
-  - todo rest
-*** TODO split class table simple and 0.22 to just two classifiers
+    - 
+    - apple et 0.5250, svm 0.9250
+    - buzzfeed et 0.475, svm 0.8
+    - ettoday.com et 0.2821, svm 0.5385
+    - facebook.com et 0.65, svm 0.9
+    - msn.com 0.35 et, 0.75 svm
+    - xnxx.com et 0.5750, svm 0.8250
+  - 5aI
+    - sina.com.cn et: 0.953846153846, svm: 0.276923076923
+    - 
+    - buzzfeed.com et: 0.230769230769, svm: 0.507692307692
+    - youtube.com et: 0.234375, svm: 0.6878
+    - xvideos.com et: 0.0923076923077, svm: 0.430769230769
+    - blogspot.com  et: 0.0153846153846 , svm: 0.215384615385
+    - apple.com     et:  0.123076923077 , svm: 0.430769230769
+    - xnxx.com      et: 0.0769230769231 , svm: 0.369230769231
+    - yahoo.com     et:  0.538461538462 , svm: 0.753846153846
+    - wordpress.com et:          0.0625 , svm:       0.296875
+    - soso.com      et:         0.15625 , svm:       0.390625
+*** WAIT which retro better, use just that, then addto list
+*** google.com
+     - check that not a robot (not captcha page with either addon or without)
+     - td: estimate probability if matches traces
+     - maybe see what it gets classified as
+*** aliexpress.com
+     - https of akamai
+     - td: check with recapture both
 ** brainstorm                                                       :ARCHIVE:
    - describe setup
      - which sites, why
@@ -2760,12 +2782,11 @@ Facebook.com\\
    :PROPERTIES:
    :CUSTOM_ID: mod_wsgi
    :END:
-   =mod_wsgi= is a module for Apache. It executes python scripts which
-   implement the WSGI standard\cite{pep3333}. An apache httpd serving
-   only WSGI is easily set up via the =mod_wsgi-express= command,
-   which is included in the =mod_wsgi= python package[fn::
-   \url{https://pypi.python.org/pypi/mod_wsgi}].
-
+   =mod_wsgi= is a module for the Apache web server. It executes
+   python scripts which implement the WSGI standard\cite{pep3333}. An
+   apache httpd serving only WSGI is easily set up via the
+   =mod_wsgi-express= command, which is included in the =mod_wsgi=
+   python package[fn:: \url{https://pypi.python.org/pypi/mod_wsgi}].
    To install on Debian-based systems[fn::tested on Ubuntu Server
    Edition and Linux Mint 17.1 Rebecca], do
    #+BEGIN_SRC sh
@@ -2775,10 +2796,9 @@ Facebook.com\\
 
    and start a server via =~/.local/bin/mod_wsgi-express start-server
    wsgi.py=[fn::to listen on a non-standard port, the =--port=
-   parameter is used, here: =--port 7777=]. As for the script wsgi.py
-   see github.
+   parameter is used, here: =--port 7777=].
 *** TODO github link wsgi.py
-** WAIT wsgi.py cover traffic server and generator
+** CHECK wsgi.py cover traffic server and generator
    :PROPERTIES:
    :CUSTOM_ID: wsgi
    :END:
@@ -2860,7 +2880,7 @@ Facebook.com\\
      - error rate computation
    - size taken from example...
      - maybe change when altered
-** CHECK Bloom-sort
+** WRITE Bloom-sort
    :PROPERTIES:
    :CUSTOM_ID: bloom-sort
    :END:
@@ -2947,6 +2967,8 @@ Facebook.com\\
     then adding elements via =htmlSizes.add("http://google.com/", 613)=
     and querying via =htmlSizes.query("http://google.com/")=, which
     would yield =400=. See usage in =size-cache=.
+
+    - link to main bloom-sort, create custom-id there
 *** WAIT github link
 ** TODO determining Bloom-sort parameters
    :PROPERTIES:
