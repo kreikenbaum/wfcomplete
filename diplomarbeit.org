@@ -84,8 +84,8 @@
   - Tao Wang
   - Dr. Dr. Eva
 * WAIT Summary
-* WRITE Basics (=basics) [35%]
-** WRITE Website Fingerprinting [13/30]
+* WRITE Basics (=basics) [36%]
+** WRITE Website Fingerprinting [13/31]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -418,7 +418,7 @@ Facebook.com\\
 
     Support vector machines classify these.
 *** WRITE Support Vector Machines
-**** WRITE Introduction
+**** CHECK Introduction
      #+INDEX: Support Vector Machine
      #+INDEX: SVM
      Support Vector Machines (short: SVM) are a linear classifier:
@@ -427,10 +427,10 @@ Facebook.com\\
      original data, but also on a projected space. This allows for
      complex decision boundaries.
 
-     (This section is mostly based on chapters 6 and 7 of
-     \cite{iml}). Given a set $X = \{x_1, ..., x_n\}$ with a dot product $\langle\cdot,
-     \cdot\rangle: X \times X \to \mathbb R$ and tuples $(x_1, y_1), ..., (x_m, y_m)$,
-     with $x_i \in X, y_i \in \{-1, 1\}$ as a binary classification task.
+     (The SVM part is mostly based on \cite[ch.6f]{iml}). Given a set
+     $X = \{x_1, ..., x_n\}$ with a dot product $\langle\cdot, \cdot\rangle: X \times X \to
+     \mathbb R$ and tuples $(x_1, y_1), ..., (x_m, y_m)$, with $x_i \in
+     X, y_i \in \{-1, 1\}$ as a binary classification task.
 
      The SVM's job is to find a hyperplane[fn::as \cite[ch.4.1]{esl}
      mention, this is actually an affine set, as it need not pass
@@ -443,21 +443,33 @@ Facebook.com\\
      such that $\langle w, x_i \rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle
      +b < 0$ whenever $y_i = -1$. With normalization, this can be
      compressed to the form \[y_i \cdot (<w, xi> +b) \ge 1.\]
-**** KEYWORDS hard vs soft margin
+
+    #+CAPTION[Example binary linearclassification]: Example binary linear classification from \cite[Figure 1.5]{iml}.
+    #+ATTR_LATEX: :width 0.4\textwidth
+    [[./pictures/iml_fig1.5.png]]
+**** CHECK soft margin classifiers
      A support vector machine tries to find a hyperplane between two
-     groups of points and maximize the margin between this line and
-     the next points. What happens if the points lie such that a line
+     groups of points and maximize the margin between this and
+     the closest points. What happens if the points lie such that a line
      cannot be found?
 
      To solve this, a /soft-margin classifier/ introduces an error
-     term $\xi$, which it tries to reduce while maximizing the distance of
-     the closest point to the hyperplane.
+     term $\xi \ge 0$, which it tries to reduce while maximizing the
+     distance of the closest point to the hyperplane.
 
-     This yields the equations $y_i(<w, xi> +b) \ge 1 - \xi_i.$
+     This yields the equations $y_i(<w, xi> +b) \ge 1 - \xi_i.$ for the
+     optimization problem
 
-     - error term
+     \[min_{w, b, \xi} 1/2 ||w||^2 + C/m \sum_{i=1..m} \xi_i.\]
 **** WRITE multi-class strategies aka ovr vs ovo (vs ecoc)
-      - svm binary classifier
+     #+INDEX: binary classification
+     #+INDEX: multi-class classification
+     #+INDEX: classification!binary
+     #+INDEX: classification!multi-class
+     The SVMs as described above solve the Binary Classification
+     problem \cite[sec.1.1.3]{iml}: they propose a boundary between
+     two classes of objects.
+
       - multi-class: train one for each class (ovr) or one for each
         class-combination (ovo)
         - ovr better efficiency, scales linearly
@@ -466,23 +478,30 @@ Facebook.com\\
         - error-correcting codes, mention esl p.625
           - or web-dl original paper
           - used by k-forest
+      - also one-class-svm: see Schölkopf, B., Platt, J.,
+        Shawe-Taylor, J., Smola, A., and
+        Williamson, R. (1999). Estimating the support of a
+        high-dimensional distribution. TR 87, Microsoft Research.
+        as of rieck phdthesis
 **** WRITE kernel trick
      - see figure [[hastie_kerneltrick]]
-        - instead of dot product <.,.> use =kernel= k(., .)
-        - same effect as mapping each point in set to dot product
-          space, and applying <.,.> there, k(x, x') = <\Phi(x), \Phi(x')>
-          - but need not compute complete mapping
-      #+CAPTION: Kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left side shows linear boundaries on $X$ and $Y$ --- the right side linear boundaries computed with added input data $X^2$, $Y^2$ and $XY$
-      #+NAME: hastie_kerneltrick
-      [[./pictures/hastie.png]]
-      - rbf kernel
-**** parameter estimation
+       - instead of dot product $\langle.,.\rangle$ use =kernel= $k(., .)$
+       - same effect as mapping each point in set to dot product
+         space, and applying $\langle.,.\rangle$ there, $k(x, x') = \langle\Phi(x), \Phi(x')\rangle$
+         - but need not compute complete mapping
+       #+CAPTION: Kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left side shows linear boundaries on $X$ and $Y$ --- the right side linear boundaries computed with added input data $X^2$, $Y^2$ and $XY$
+       #+NAME: hastie_kerneltrick
+       [[./pictures/hastie.png]]
+     - rbf kernel
+     - effect: no longer needs to find a straight line (yes, but in
+       transfomed space, so could be others, too)
+**** KEYWORDS parameter estimation
      - each soft margin SVM has an error term C which states how
        much to penalize outliers
+       - see [[*soft margin classifiers][soft margin classifiers]]
      - rbf kernel also has a gamma term which gives the grade of the
        gaussian rbf
 **** TODO link to basic book (bronstein) for vector space etc
-**** index binary classification task
 **** need more preparation than other classifiers
      - outlier removal
      - scaling
@@ -554,8 +573,7 @@ Facebook.com\\
       - no classifier fits all
       - maps attributes to classes (or probabilities)
       - classifier
-*** WRITE attacks
-   - k-forest
+*** KEYWORDS k-forest
 *** WRITE Related Work
     :PROPERTIES:
     :CUSTOM_ID: wfRelated
@@ -596,7 +614,7 @@ Facebook.com\\
     As website fingerprinting requires very litte resources, a specific
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
     state.
-** WRITE Defenses [1/8]
+** WRITE Defenses [2/8]
 *** WRITE Introduction
     As soon as it became clear that anonymized (web) traffic could be
     analysed to guess the destination, defenses were proposed.
@@ -609,19 +627,14 @@ Facebook.com\\
 
     The next sections explode early defense proposals, then address
     defenses tailored to specific attacks, and /general defenses/ that
-    hope to defend against all possible attacks. Last are stochastic
-    defenses, that add randomness to achieve meaningful reduction in
-    accuracy with less bandwith and time overhead than deterministic
-    ones.
+    hope to defend against all possible attacks. Last are general
+    stochastic defenses that add randomness to achieve meaningful
+    reduction in accuracy with less bandwith and time overhead than
+    deterministic ones.
 
-
-    - obfuscate attributes
-    - specific attributes
-    - general obfuscation
       - deterministic
         - fixed data rate
         - supersequence if known
-      - stochastic
     - [ ] traffic analysis assumes crypto is perfect
 *** CHECK Early defenses
     As defense against fingerprinting webpages when retrieved via SSL,
@@ -638,7 +651,7 @@ Facebook.com\\
     \url{http://lynx.invisible-island.net/}], disabling f.ex. images,
     or reducing cross-site requests via f.ex. the
     RequestPolicy[fn::\url{https://requestpolicycontinued.github.io/}]
-    extension might all mitigate the threat of website fingerprinting
+    extension all might mitigate the threat of website fingerprinting
     for those who consider this trade-off acceptable. Yet, this
     reduces usability and thus conflicts with one of Tor's design
     goals\cite{tor-design}. It is also mostly deterministic, so that
@@ -690,11 +703,13 @@ Facebook.com\\
     \cite{effective} proposed the (offline) defense of morphing all
     traffic to supersequences of traffic patterns.
 *** WRITE tamaraw
-    - evolution of BuFLO\cite{oakland2012-peekaboo}
+    - fixed-rate sending, other fixed-rate receiving
     - different rate up-/downstream
+      aka throttle if more data, send dummies if less
+    - evolution of BuFLO\cite{oakland2012-peekaboo}
     - longer sending cloaks end of transmission
     - tunable overhead
-*** CHECK Stochastic Defenses
+*** EVA Stochastic Defenses
     Previous general defenses were mostly deterministic. The latest defenses by \cite{wtfpad}
     and \cite{wang2015walkie} both use a stochastic approach to
     generate additional traffic, with the latter\cite{wang2015walkie}
@@ -716,10 +731,11 @@ Facebook.com\\
       - else (if another packet): restart timer with new values from histogram
     - built using Tor's pluggable transport\cite{tor-spec-pt}
       censorship avoidance layer
-*** WRITE walkie-talkie
+*** WRITE Walkie-Talkie
     - Wang and Goldberg\cite{wang2015walkie}
-    - half-duplex (cite kurose?)
+    - half-duplex
       - send XOR receive
+      - kurose 3.4.1: unidirectional
     - with additional traffic
     - browser modification
     - only detectable metric: number of bursts
@@ -1177,7 +1193,6 @@ Facebook.com\\
     The program created to distill a feature vector from a trace is
     called [[#counter][=counter.py=]]. It creates both CUMUL\cite{panchenko2} and
     Version\nbsp1\cite{panchenko} feature vectors.
-**** see also [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]               :ARCHIVE:
 **** EVA split
      As mentioned by \cite{arp-personal}, outliers can be removed
      based on statistical class attributes[fn::\cite{panchenko2} used
@@ -1432,9 +1447,12 @@ Facebook.com\\
         - later
         - with add-on
 *** KEYWORDS which features help most in classification
-    - see [[file:data/results/alternatives.org::*feature%20importances%20ET][feature importances ET]]
+    - include somehow [[file:data/results/alternatives.org::*feature%20importances%20ET][feature importances ET]]
     - mention that ET classifies differently from SVM
       - but easily accessible
+      - point to
+        - general: [[*(for%20%5B%5Bfile:~/da/da.org::*klassifikation%5D%5Bklassifikation%20{0/12}%5D%5D)%20svc%20vs%20extratrees][(for klassifikation {0/12}) svc vs extratrees]]
+        - specific: [[#websites][Websites]]
 ** KEYWORDS Evaluation of Defenses [0/8]
 *** KEYWORDS Introduction
     - very dependent on retrieved trace time difference, see [[#time]]
@@ -1481,7 +1499,7 @@ Facebook.com\\
     accuracy in the low-overhead setting.
 
     As expected, the non-caching =b= flavors produce significantly
-    higher ovherhead for a small additional reduction of classifier
+    higher overhead, but yield a further small reduction of classifier
     accuracy.
 
 #+CAPTION[Classification accuracy and overhead for flavors of the main addon]: Classification accuracy and overhead for flavors of the main addon, at 5% overhead factor.
@@ -2458,6 +2476,7 @@ Facebook.com\\
     and regressors, such as K-NN, SVM, decision trees, linear
     approximation, random trees, etc.
 **** TODO regressor? wording
+** see also [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]                 :ARCHIVE:
 * TODO Remove same-host cover traffic server from traces: =7777.sh=
   <<7777>>
   #+INCLUDE: "./bin/7777.sh" src sh
@@ -2778,7 +2797,7 @@ Facebook.com\\
    the Apache web server[fn:: \url{https://httpd.apache.org/}] with
    the ~mod_wsgi~ module as well-performing. As it was noted to be
    very easy to set up, it was chosen for this evaluation.
-** CHECK Apache =mod_wsgi=
+** APPENDIX_DONE Apache =mod_wsgi=
    :PROPERTIES:
    :CUSTOM_ID: mod_wsgi
    :END:
@@ -2820,7 +2839,8 @@ Facebook.com\\
    To test this algorithm, the first 1000 sizes are retrieved via
      #+BEGIN_SRC sh
        for i in $(seq 1000); do
-           curl -D /tmp/curlheaders/$i.head 127.0.0.1:8000/?size=$i > /tmp/curlheaders/$i.body;
+           curl -D /tmp/curlheaders/$i.head 127.0.0.1:8000/?size=$i > \
+                /tmp/curlheaders/$i.body;
        done
      #+END_SRC
    which outputs the header and body of each query to the files,
@@ -2833,7 +2853,7 @@ Facebook.com\\
        done
      #+END_SRC
 *** WAIT link to github wsgi.py
-** WAIT Non-parallelized web server for cover traffic [0/2]
+** CHECK Non-parallelized web server for cover traffic [0/2]
    :PROPERTIES:
    :CUSTOM_ID: server-non-para
    :END:
