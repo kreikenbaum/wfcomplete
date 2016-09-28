@@ -5464,25 +5464,6 @@
 *** quotes
 *** ref [[file:master.bib::panchenko2][Panchenko et al. 2016: Website Fingerprinting Internet Scale]]
 ** [[./acmccs-wpes11-fingerprinting.pdf][Panchenko - Website Fingerprinting in Onion Routing Based Anonymization Networks]]
-*** TODO move somewhere words
-    - local eavesdropper
-
-    - closed-world assumption:
-      the victim retrieves only web pages from the predefined set and
-      the attacker knows the set of possible web pages.
-
-    - cross-validation:
-      the data is split into n evenly large parts, the /folds/. Then,
-      the entire process of training and testing is repeated n times,
-      using one of the n folds as test data and the remaining n − 1
-      folds as training data in turn. The results are averaged and
-      therefore more solid and meaningful.
-
-    - detection-rate: correct / all (in %)
-
-    - true-positive: correct censored / all censored (in %)
-
-    - false positive: uncensored as censored / all uncensored (in %)
 *** summary
     0. [@0] Abstract
 
@@ -5737,6 +5718,8 @@
             fingerprinting, using the anonymization network that he assumes
             his victim uses as well.
        1) Closed-World Dataset
+          - the victim retrieves only web pages from the predefined
+            set and the attacker knows the set of possible web pages.
           - For each fetch of a URL, we store the sizes of packets in the
             observed order while recording incoming packets as positive,
             outgoing ones as negative numbers.
@@ -5744,6 +5727,13 @@
        0) [@0]
           - We once more achieve alarming detection rates motivating the
             need for additional countermeasures for anonymization networks
+       1) Experiments
+          - the data is split into n evenly large parts, the
+           /folds/. Then, the entire process of training and testing
+           is repeated n times, using one of the n folds as test data
+           and the remaining n − 1 folds as training data in
+           turn. The results are averaged and therefore more solid
+           and meaningful.
        2) [@2] Results
           - we disregard web pages with a redirect statement and add the
             URLs of the final web pages instead.
@@ -6158,58 +6148,61 @@
 
          - detectable
 *** quotes
-   0) [@0] unsorted
-      - Many mix networks are specifically intended to provide anonymity
-        against attackers who control the communication medium.
-      - Traffic analysis is an especially serious threat for low-latency
-        mix networks because it is very difficult to hide statistical
-        characteristics of the packet stream and satisfy the stringent
-        latency requirements imposed by interactive applications.
-      - The standard measure of success is the /crossover error rate/, at
-        which the attacker’s false positive rate is equal to his false
-        negative rate.
-      - (Maximum crossover error rate is 0.5, which corresponds to
-        random guessing.)
-      - recognized as a serious threat to low-latency mix networks, but
-        few defenses have been proposed to date.
-      - (ends 2?)
-      - An active attacker can also impose his own unique timing
-        signature (by dropping packets or introducing artificial bursts)
-        onto the flow he is interested in, and then attempt to identify
-        this signature on other network links.
-      - (ends 3)
-      - samples from the statistical distribution of inter-packet
-        intervals. If the next packet arrives before the chosen interval
-        expires, it is forwarded and a new value is sampled. To avoid
-        skewing resulting intervals towards short values, the
-        distribution is modified slightly to increase the probability of
-        drawing a longer interval next time.
-      - rough statistical distribution of inter packet intervals for a
-        “normal” flow [...] can be pre-computed from traffic
-        repositories such as NLANR [21]
-      - increasing the range represented by each bin exponentially with
-        the bin index works well.
-      - (ends 4.Data structures)
-      - We do not model TCP acknowledgements, re-transmissions,
-        exponential backoff in response to dropped packets, and other
-        TCP features that may be exploited by a sophisticated attacker.
-      - (ends 5.0)
-      - We conjecture that long-term attacks cannot be prevented without
-        assuming that some senders or mixes emit cover traffic in
-        perfect synchrony, which cannot be achieved by any real system.
-      - The attacker chooses t [threshold for correlation r(d)] so that
-        the false positive and false negative rates are equal. This is
-        the attacker’s crossover error rate. High crossover rate means
-        that the defense is effective.
-      - (ends 5.1)
-   9) [@9] Challenges and future directions
-      - We made the standard, unrealistic assumption that all
-        connections start at the same time. In reality, attacks based
-        on correlating start and end times of connections may prove
-        very successful.
-      - it is very difficult to hide connection start and end times
-        using dummy traffic because the mix network handles dummy and
-        real packets differently
+    1) Introduction
+       - Many mix networks are specifically intended to provide anonymity
+         against attackers who control the communication medium.
+       - Traffic analysis is an especially serious threat for low-latency
+         mix networks because it is very difficult to hide statistical
+         characteristics of the packet stream and satisfy the stringent
+         latency requirements imposed by interactive applications.
+       - The standard measure of success is the /crossover error rate/, at
+         which the attacker’s false positive rate is equal to his false
+         negative rate.
+       - (Maximum crossover error rate is 0.5, which corresponds to
+         random guessing.)
+    2) Related work
+       - recognized as a serious threat to low-latency mix networks, but
+         few defenses have been proposed to date.
+    3) Model and metrics
+       - An active attacker can also impose his own unique timing
+         signature (by dropping packets or introducing artificial bursts)
+         onto the flow he is interested in, and then attempt to identify
+         this signature on other network links.
+    4) Adaptive padding
+       0) [@0]
+          - samples from the statistical distribution of inter-packet
+            intervals. If the next packet arrives before the chosen interval
+            expires, it is forwarded and a new value is sampled. To avoid
+            skewing resulting intervals towards short values, the
+            distribution is modified slightly to increase the probability of
+            drawing a longer interval next time.
+          - rough statistical distribution of inter packet intervals for a
+            “normal” flow [...] can be pre-computed from traffic
+            repositories such as NLANR [21]
+       1) Data structures
+          - increasing the range represented by each bin exponentially with
+            the bin index works well.
+    5) Experimental evaluation
+       0) [@0] 
+          - We do not model TCP acknowledgements, re-transmissions,
+            exponential backoff in response to dropped packets, and other
+            TCP features that may be exploited by a sophisticated attacker.
+        1) Attack model
+          - We conjecture that long-term attacks cannot be prevented without
+           assuming that some senders or mixes emit cover traffic in
+           perfect synchrony, which cannot be achieved by any real system.
+         - The attacker chooses t [threshold for correlation r(d)] so
+           that the false positive and false negative rates are
+           equal. This is the attacker’s crossover error rate. High
+           crossover rate means that the defense is effective.
+    9) [@9] Challenges and future directions
+       - We made the standard, unrealistic assumption that all
+         connections start at the same time. In reality, attacks based
+         on correlating start and end times of connections may prove
+         very successful.
+       - it is very difficult to hide connection start and end times
+         using dummy traffic because the mix network handles dummy and
+         real packets differently
 *** ref [[file:master.bib::ShWa-Timing06][Shmatikov & Wang 2006: Timing Analysis Low]]
 ** [[./Tor%20Project:%20obfsproxy.html][Tor - obfsproxy]]
 *** summary
@@ -8440,7 +8433,279 @@
 ** TODO [#A] vorlesungsnotizen sv2/3 zu stufen der mustererkennung :hannover_laptop:
    [2016-09-07 Mi]
    [[file:~/da/git/diplomarbeit.org::*preprocessing][preprocessing]]
-** TODO MOVE [#B] [[./browser.html][The Design and Implementation of the Tor Browser]]
+** TODO [#A] [[./TAIntro-book.pdf][Danezis - Introducing Traffic Analysis]]
+*** summary
+    1) Introduction
+
+       - TA used by bletchley park@german air force, japan@pearl
+         harbour, google, amateurs@CIA
+
+    2) Military roots
+
+       - history: ww1, ww2, iraq, etc
+
+       - military finds info
+
+       - easier to gather, can be done by machines
+
+       - fingerprint f.ex. radio devices, also license plates, etc
+
+       - Signals Intelligence (SIGINT): military branch including TA
+
+       - 3 ways:
+
+         - frequency hopping: hard to jam, but easy to detect
+           communication
+
+         - direct sequence spread spectrum: transform
+           high-power-low-bw, to low-power-high-bw signal
+
+         - burst communication: very short burst
+
+           - "meteor scatter"
+
+           - needs high availability of communication at other endpoint
+
+    3) Civilian traffic analysis
+
+       - social networks
+
+         - also called power law networks (number of connections
+           governed by power laws)
+
+         - resilent vs random failures, easy to disrupt by specific targeting
+
+         - reconfigure when attacked: random connections, and again
+           when calm: towards efficiency
+
+       - target groups
+
+         - select specialists, not leaders
+
+         - Saddam Hussein caught by surveilling individuals with close
+           ties to him
+
+       - detect islamists, RAF, cannabis farms,
+
+       - social structure similar to hub-spokes of Google PageRank
+
+    4) Contemporary Computer and Communications Security
+
+       0) [@0]
+
+          - jamming \equiv censoring, abuse, spam \equiv deception
+
+          - low-power, not military actors
+
+       1) The Traffic Analysis of SSH
+
+          each character transmits packet, length and timing can
+          reveal keywords to HMM
+
+       2) The Traffic Analysis of SSL
+
+          - leaks much information, especially sizes
+
+          - combine with HMM to model link structure, as browsing is
+            not random
+
+       3) Web Privacy
+
+          - can see if f.ex. item of competitor's web site is cached
+
+       4) Network Device Identification and Mapping
+
+          - clock skew identifies devices
+
+            - alters with heat, which alters with workload
+
+          - IP-IPID field says how many windows devices
+
+            - ipv6 might use mac address
+
+              - possible to cloak
+
+              - but that would naively reveal that it is cloaked
+
+          - nmap determines many things
+
+            - snort scans for nmap, but that can be circumvented
+
+       5) Detecting Stepping Stones
+
+          detect retransmission of data (attack one host, then the next)
+
+    5) Exploiting Location Data
+
+       - reveal social relationships
+
+       - for some users: predict next move and location from location
+         and time
+
+    6) Resisting Traffic Analysis on the Internet
+
+       - started by Chaum
+
+       - 20 years of research
+
+       - Mixmaster and Mixminion for email
+
+       - Tor and JAP for "web browsing"
+
+       - increase latency and traffic volume
+
+       - intersection attacks: find out who is communicating with whom
+
+         - simplest attack: packet counting (into network ==? out of network)
+
+         - template model: "match stream with other streams"
+
+       - infiltrate network
+
+         - predecessor attack: crowds: real sender will appear as
+           predecessor more often
+
+       - weaker adversaries
+
+         - low-cost: streams influence one another
+
+         - clock-drift etc as mentioned above
+
+         - (clock-drift with VMs?)
+
+       - other ta helper: timing
+
+       - discover node's role by looking at traffic patterns: weather
+         station sends hourly ...
+
+    7) Data Retention
+*** quotes
+    3) [@3] Civilian traffic analysis
+       - example is finding a job, where people using ‘far links’ are
+         on average more successful, than those who limit themselves
+         to their local contacts.
+       - defensive strategies is that nodes connect to other random
+         nodes in order to get resilience, while connecting according
+         to a power law strategy to get efficient routing.
+       - It was found to be more effective to arrest the
+         ‘specialists’, i.e. those people in the organization that
+         have a unique position or skills, that others would find
+         difficult to fill.
+    4) Contemporary Computer and Communications Security
+       2) [@2] The Traffic Analysis of SSL
+          - a hidden Markov model can be used to trace the most likely
+            browsing paths a user may have taken,. This approach
+            provides much faster and more reliable results than
+            considering users that browse at random, or web-sites that
+            have no structure at all.
+    5) Exploiting Location Data
+       - So the evidence from these preliminary studies is highly
+         suggestive that whatever the wireless medium used, mobile
+         phone, wireless LAN or bluetooth, sensitive information about
+         your identity, your relations to others and your intentions
+         can be inferred merely though traffic analysis.
+*** TODO ref [[file:master.bib::introta][Danezis & Clayton 2007: Introducing Traffic Analysis]]
+** TODO [#A] [[./wright-passive.pdf][Defending Anonymous Communications Against Passive Logging Attacks]]
+*** summary
+    0) [@0] Abstract
+
+       - passive logging via anonymous communication networks
+
+       - better: non-uniform placement, practice harder than theory
+
+       - worse: dynamic membership makes more vulnerable
+
+       - frequent communication with the same site happens
+
+    1) Introduction
+
+       - previous work: predecessor attack
+
+         - find out often-visited communication path initiator
+
+         - has some assumptions
+
+         - shown that possible to find out
+
+       - assumptions relaxed
+
+    2) Background
+
+       1) Our Prior Work
+
+          - restrict to: anonymity protocol with active set chosen at
+            random
+
+          - bounds to deanonymize given c of n hostile nodes
+
+       2) Related Work
+
+          - only few anonymity protocols provide security analysis
+            /over time/
+
+          - very little on user's web surfing: repeated sites over time
+
+       3) The Predecessor Attack on Recent Protocols
+
+          - p5 protocol assues users does not leave, protected
+
+          - tarzan more secure than original onion routing
+
+          - two others
+
+    3) Paths Based on Non-Uniform Peer Selection
+*** quotes
+    2) [@2] Background
+       2. [@2] Related Work
+          - Reiter and Rubin's seminal work (crowds: anonymity for web
+            transactions)
+*** ref [[file:master.bib::wright03][Wright et al. 2003: Defending Anonymous Communication]]
+** TODO [#A] PART [[./Masterthesis.pdf][Malte Hübner - Automatische Erkennung von anormalen Android-Anwendungen]]
+*** TODO ch. 2
+*** summary
+    2) [@2] Grundlagen
+
+       machinelles Lernen und Android
+
+       1) Methoden zur Anomalieerkennung
+
+          ml, anomalieerkennung, eingabedaten, einbettung daten in
+          vektorraeume
+
+          1) Anomalieerkennung als Teilgebiet des maschinellen Lernens
+
+             - maschinelles lernen: maschinell + lernen + def mitchell
+
+               - algorithmus m + modell \Theta + vorhersagefkt f_{\theta}
+
+               - anwendungsgebiete (texterkennung, dna-analysen)
+
+               - verwandt: ki, data mining, statistik
+
+             - Anomalieerkennung (cont p.7)
+
+               - normale Android-Programme sind gutartig
+
+               - Ziel: Abweichen feststellen
+
+               - Ueberwachtes Lernen: Klassen der instanzen werden mit
+                 angegeben
+
+                 - m: (X \times Y)^n \to \Theta
+
+                 - f_{\Theta} : X \to Y
+
+               - Unueberwachtes Lernen: Klassen erkennen
+
+                 - m: X^n \to \Theta
+
+                 - f_\Theta: X \to Y
+
+          2) Eingabedaten für SVMs und andere Methoden in Eingabe-,
+             Vektor- und Merkmalsräumen
+*** quotes
+*** ref: [[file:master.bib::malte][Hübner 2014: Automatische Erkennung Android Anwendungen]]
+** TODO [#B] [[./browser.html][The Design and Implementation of the Tor Browser]]
 *** summary
     1) Introduction
 
@@ -8587,214 +8852,6 @@
                utilization during their evaluations, in addition to
                the other shortcomings and shortcuts mentioned earlier.
 *** ref [[file:master.bib::tor-browser-design-impl][Perry et al. 2015: Design Implementation Tor Browser]]
-** TODO [#A] [[./TAIntro-book.pdf][Danezis - Introducing Traffic Analysis]]
-*** summary
-    1) Introduction
-
-       - TA used by bletchley park@german air force, japan@pearl
-         harbour, google, amateurs@CIA
-
-    2) Military roots
-
-       - history: ww1, ww2, iraq, etc
-
-       - military finds info
-
-       - easier to gather, can be done by machines
-
-       - fingerprint f.ex. radio devices, also license plates, etc
-
-       - Signals Intelligence (SIGINT): military branch including TA
-
-       - 3 ways:
-
-         - frequency hopping: hard to jam, but easy to detect
-           communication
-
-         - direct sequence spread spectrum: transform
-           high-power-low-bw, to low-power-high-bw signal
-
-         - burst communication: very short burst
-
-           - "meteor scatter"
-
-           - needs high availability of communication at other endpoint
-
-    3) Civilian traffic analysis
-
-       - social networks
-
-         - also called power law networks (number of connections
-           governed by power laws)
-
-         - resilent vs random failures, easy to disrupt by specific targeting
-
-         - reconfigure when attacked: random connections, and again
-           when calm: towards efficiency
-
-       - target groups
-
-         - select specialists, not leaders
-
-         - Saddam Hussein caught by surveilling individuals with close
-           ties to him
-
-       - detect islamists, RAF, cannabis farms,
-
-       - social structure similar to hub-spokes of Google PageRank
-
-    4) Contemporary Computer and Communications Security
-
-       0) [@0]
-
-          - jamming \equiv censoring, abuse, spam \equiv deception
-
-          - low-power, not military actors
-
-       1) The Traffic Analysis of SSH
-
-          each character transmits packet, length and timing can
-          reveal keywords to HMM
-
-       2) The Traffic Analysis of SSL
-
-          - leaks much information, especially sizes
-
-          - combine with HMM to model link structure, as browsing is
-            not random
-
-       3) Web Privacy
-
-          - can see if f.ex. item of competitor's web site is cached
-
-       4) Network Device Identification and Mapping
-
-          - clock skew identifies devices
-
-            - alters with heat, which alters with workload
-
-          - IP-IPID field says how many windows devices
-
-            - ipv6 might use mac address
-
-              - possible to cloak
-
-              - but that would naively reveal that it is cloaked
-
-          - nmap determines many things
-
-            - snort scans for nmap, but that can be circumvented
-
-       5) Detecting Stepping Stones
-
-          detect retransmission of data (attack one host, then the next)
-
-    5) Exploiting Location Data
-
-       - reveal social relationships
-
-       - for some users: predict next move and location from location
-         and time
-
-    6) Resisting Traffic Analysis on the Internet
-*** quotes
-    3) [@3] Civilian traffic analysis
-       - example is finding a job, where people using ‘far links’ are
-         on average more successful, than those who limit themselves
-         to their local contacts.
-       - defensive strategies is that nodes connect to other random
-         nodes in order to get resilience, while connecting according
-         to a power law strategy to get efficient routing.
-       - It was found to be more effective to arrest the
-         ‘specialists’, i.e. those people in the organization that
-         have a unique position or skills, that others would find
-         difficult to fill.
-    4) Contemporary Computer and Communications Security
-       2) [@2] The Traffic Analysis of SSL
-          - a hidden Markov model can be used to trace the most likely
-            browsing paths a user may have taken,. This approach
-            provides much faster and more reliable results than
-            considering users that browse at random, or web-sites that
-            have no structure at all.
-    5) Exploiting Location Data
-       - So the evidence from these preliminary studies is highly
-         suggestive that whatever the wireless medium used, mobile
-         phone, wireless LAN or bluetooth, sensitive information about
-         your identity, your relations to others and your intentions
-         can be inferred merely though traffic analysis.
-*** TODO ref [[file:master.bib::introta][Danezis & Clayton 2007: Introducing Traffic Analysis]]
-** TODO [#A] [[./wright-passive.pdf][Defending Anonymous Communications Against Passive Logging Attacks]]
-*** summary
-    0) [@0] Abstract
-
-       - passive logging via anonymous communication networks
-
-       - better: non-uniform placement, practice harder than theory
-
-       - worse: dynamic membership makes more vulnerable
-
-       - frequent communication with the same site happens
-
-    1) Introduction
-
-       - previous work: predecessor attack
-
-         - find out often-visited communication path initiator
-
-         - has some assumptions
-
-         - shown that possible to find out
-
-       - assumptions relaxed
-
-    2) Background
-
-       1) Our Prior Work
-
-          - restrict to: anonymity protocol with active set chosen at
-            random
-
-          - bounds to deanonymize given c of n hostile nodes
-
-       2) Related Work
-
-          - only few anonymity protocols provide security analysis
-            /over time/
-
-          - very little on user's web surfing: repeated sites over time
-
-       3) The Predecessor Attack on Recent Protocols
-*** quotes
-    2) [@2] Background
-       2. [@2] Related Work
-          - Reiter and Rubin's seminal work (crowds: anonymity for web
-            transactions)
-*** ref [[file:master.bib::wright03][Wright et al. 2003: Defending Anonymous Communication]]
-** TODO [#A] PART [[./Masterthesis.pdf][Malte Hübner - Automatische Erkennung von anormalen Android-Anwendungen]]
-*** TODO ch. 2
-*** summary
-    2) [@2] Grundlagen
-
-       machinelles Lernen und Android
-
-       1) Methoden zur Anomalieerkennung
-
-          ml, anomalieerkennung, eingabedaten, einbettung daten in
-          vektorraeume
-
-          1) Anomalieerkennung als Teilgebiet des maschinellen Lernens
-
-             - maschinelles lernen: maschinell + lernen + def mitchell
-
-               - algorithmus m + modell \Theta + vorhersagefkt f_{\theta}
-
-               - anwendungsgebiete (texterkennung, dna-analysen)
-
-               - verwandt: ki, data mining, statistik
-
-             - Anomalieerkennung (cont p.7)
-*** quotes
-*** ref: [[file:master.bib::malte][Hübner 2014: Automatische Erkennung Android Anwendungen]]
 ** TODO [#B] [[./1410.2087v3.pdf][Feghhi - A Web Traffic Analysis Attack Using Only Timing Information]]
 *** summary
     0) [@0] Abstract
@@ -8820,148 +8877,6 @@
     2) ANATOMY OF A WEB PAGE FETCH
 *** quotes
 *** ref [[file:master.bib::DBLP:journals/tifs/FeghhiL16][Feghhi & Leith 2016: Web Traffic Analysis]]
-** TODO MOVE [#C] [[./csbuflo.pdf][Cai - CS-BuFLO: A Congestion Sensitive Website Fingerprinting Defense]]
-*** summary
-    0) [@0] Abstract:
-
-       - fingerprint infers, even if tor,
-
-       - previous defenses are ineffective,
-
-       - spec of cs-buflo,
-
-       - implementation
-
-    1) Introduction
-
-       - several website fingerprinting attacks, several defenses
-
-       - 80%, which of 128 pages
-
-       - BuFLO: over 400% bandwidth overhead
-
-       - DLSVM fingerprinting attack greater than 75% success rate
-         against numerous defenses, including application-level
-         defenses, such as HTTPOS and randomized pipelining
-
-       - CS-BuFLO, congestion avoidance, TCP-friendly,
-
-       - here: adapt its transmission rate dynamically, and improve
-         its stream padding: less bandwidth, hiding more
-
-       - adapting too quickly can reveal info, solve: limit adaptation
-
-       - alexa 200: 91% of web use
-
-       - CS-BuFLO: 2.8 times as much bandwidth as SSH, only a 20% success rate
-
-       - CS-BuFLO ratio 2.8. BuFLO ratio of 2.2.
-
-    2) RELATED WORK
-
-       - dyer: lists stuff like padM, padE, ...
-
-       - wright: morphing
-
-       - dyer defeats
-
-       - Lu extends morphing
-
-       - Dyer BuFLO
-
-       - Fu: CPU load changes, recommend randomized intervals
-
-       - HTTPOS
-
-       - Tor randomized
-
-       - Cai defeated
-
-       - many attacks agains https, ipsec, vpn, etc
-
-       - herrmann: tunnels attack, fails on tor
-
-       - panchenko
-
-       - dyer vng++
-
-       - cai string edit distance
-
-       - wang improved
-
-       - danezis, yu, cai hmm to extend to web site fp
-
-    3) WEBSITE FINGERPRINTING ATTACKS
-
-       - (Eve) monitors communication (Alice) to proxy (Walter)
-
-         - traffic encrypted, Eve sees timing, direction and size of packets
-
-       - f.ex. government which would not block, but monitor
-         international communication
-
-       - closed-world: 100-800 pages, metric: average success rate
-
-       - open-world: victims visit websites, Eve tries to guess of
-         "website of interest" is visited: metric: FPR/FNR
-
-       - cai(4): bootstrap cw to ow, compare attacks and defenses
-
-    4) Congestion-Sensitive BuFLO
-
-       0) [@0]
-
-          - better security and efficiency than BuFLO
-
-          - white-list: hide all features, selective reveal stuff to
-            reduce overhead
-
-       1) Review of BuFLO
-
-          - buflo "shortcomings"
-
-            - completely hides or completely reveals
-
-            - large overhead for small websites
-
-            - not TCP-friendly
-
-            - must be tuned to user's connection
-
-            - lu: seems to yield load information
-
-          - can be mitigated/improved upon
-
-       2) Overview of Congestion-Sensitive BuFLO
-
-          - interacts with TCP
-
-          - target average inter-packet rate \rho*, updated infrequently
-
-          - extra data after website has finished loading
-
-       3) Rate Adaptation
-
-          - adapts receiving to sending
-
-          - limit information leaked by
-
-            - adjusting only at (?all?) 2^k bytes
-
-            - use median of bandwidth, stable metric
-
-            - (only collect during uninterrupted bursts)
-
-            - round up to power of two
-
-       4) Congestion-Sensitivity
-*** quotes
-    - Our experiments find that Congestion-Sensitive BuFLO has high
-      overhead (around 2.3-2.8x)
-    - it is not currently known whether there exists any efficient and
-      secure defense against website fingerprinting attacks.
-    - all previously-proposed defenses provide little security.
-*** ref [[file:master.bib::wpes14-csbuflo][Cai et al. 2014: CS BuFLO]]
 ** TODO [#B] [[./10.1.1.20.2080.bloom_orig.pdf][Bloom - Space/Time Trade-offs in Hash Coding with Allowable Errors]]
 *** summary
     0) [@0] Abstract
@@ -9044,11 +8959,11 @@
          are 0, as will be shown later in this paper.
 *** ref [[file:master.bib::Bloom70space/timetrade-offs][Bloom 1970: Space Time Trade]]
 ** TODO [#B] PART [[./hastie.pdf][Hastie - The Elements of Statistical Learning]]
-*** TODO skim chapters 2.8, 2.9, 3.3, 6.7, 7 (esp 7.10), 9, 12 and 13, 15, 16
+*** TODO Sections 5.8, 14.5.4, 18.5 and Chapter 12
+*** TODO skim chapters 2.9, 3.3, 6.7, 7 (esp 7.10), 9, 12 and 13, 15, 16
     (leave out 11,14,17)
     - Radial basis functions are discussed in more detail in Section 6.7.
       - also recommended in 2.8.3: how to determine all parameters
-*** TODO Sections 5.8, 14.5.4, 18.5 and Chapter 12
 *** summary
     1) Introduction
 
@@ -9195,6 +9110,18 @@
 
           3) Basis Functions and Dictionary Methods
 
+             - f(x) = \sum \theta_i h_i(x)
+
+               - h_i could be spline parts, polynomials, etc
+
+                 - radial basis functions: h_i = K_{\lambda_i}(\mu_i, x)
+
+                   - f.ex. Gaussian = e^{-||x - \mu||^2}/ (2\lambda)
+
+                 - neural network as composed of basis functions
+
+       9) Model Selection and the Bias–Variance Tradeoff
+
     4) [@4] Linear Methods for Classification
 
        1) Introduction
@@ -9318,7 +9245,7 @@
 
            cont p.436
 
-        3) [@3] Support Vector Machines and Kernels
+        3) Support Vector Machines and Kernels
 
            0) [@0]
 
@@ -9444,6 +9371,15 @@
                #+END_SRC
                and assigns weights to points that die exponentially with
                their squared Euclidean distance from x_0.
+          3) Basis Functions and Dictionary Methods
+             - Radial basis functions have centroids μ m and scales λ
+               m that have to be determined. The spline basis
+               functions have knots. In general we would like the data
+               to dictate them as well. Including these as parameters
+               changes the regression problem from a straightforward
+               linear problem to a combinatorially hard nonlinear
+               problem. In practice, shortcuts such as greedy
+               algorithms or two stage processes are used.
     4) [@4] Linear Methods for Classification
        1) Introduction
           - Strictly speaking, a hyperplane passes through the origin,
@@ -12580,6 +12516,148 @@
 
           Save the current figure.
 ** TODO [#B] [[./wurster-nspw-08.pdf][The Developer is the Enemy]]
+** TODO [#C] [[./csbuflo.pdf][Cai - CS-BuFLO: A Congestion Sensitive Website Fingerprinting Defense]]
+*** summary
+    0) [@0] Abstract:
+
+       - fingerprint infers, even if tor,
+
+       - previous defenses are ineffective,
+
+       - spec of cs-buflo,
+
+       - implementation
+
+    1) Introduction
+
+       - several website fingerprinting attacks, several defenses
+
+       - 80%, which of 128 pages
+
+       - BuFLO: over 400% bandwidth overhead
+
+       - DLSVM fingerprinting attack greater than 75% success rate
+         against numerous defenses, including application-level
+         defenses, such as HTTPOS and randomized pipelining
+
+       - CS-BuFLO, congestion avoidance, TCP-friendly,
+
+       - here: adapt its transmission rate dynamically, and improve
+         its stream padding: less bandwidth, hiding more
+
+       - adapting too quickly can reveal info, solve: limit adaptation
+
+       - alexa 200: 91% of web use
+
+       - CS-BuFLO: 2.8 times as much bandwidth as SSH, only a 20% success rate
+
+       - CS-BuFLO ratio 2.8. BuFLO ratio of 2.2.
+
+    2) RELATED WORK
+
+       - dyer: lists stuff like padM, padE, ...
+
+       - wright: morphing
+
+       - dyer defeats
+
+       - Lu extends morphing
+
+       - Dyer BuFLO
+
+       - Fu: CPU load changes, recommend randomized intervals
+
+       - HTTPOS
+
+       - Tor randomized
+
+       - Cai defeated
+
+       - many attacks agains https, ipsec, vpn, etc
+
+       - herrmann: tunnels attack, fails on tor
+
+       - panchenko
+
+       - dyer vng++
+
+       - cai string edit distance
+
+       - wang improved
+
+       - danezis, yu, cai hmm to extend to web site fp
+
+    3) WEBSITE FINGERPRINTING ATTACKS
+
+       - (Eve) monitors communication (Alice) to proxy (Walter)
+
+         - traffic encrypted, Eve sees timing, direction and size of packets
+
+       - f.ex. government which would not block, but monitor
+         international communication
+
+       - closed-world: 100-800 pages, metric: average success rate
+
+       - open-world: victims visit websites, Eve tries to guess of
+         "website of interest" is visited: metric: FPR/FNR
+
+       - cai(4): bootstrap cw to ow, compare attacks and defenses
+
+    4) Congestion-Sensitive BuFLO
+
+       0) [@0]
+
+          - better security and efficiency than BuFLO
+
+          - white-list: hide all features, selective reveal stuff to
+            reduce overhead
+
+       1) Review of BuFLO
+
+          - buflo "shortcomings"
+
+            - completely hides or completely reveals
+
+            - large overhead for small websites
+
+            - not TCP-friendly
+
+            - must be tuned to user's connection
+
+            - lu: seems to yield load information
+
+          - can be mitigated/improved upon
+
+       2) Overview of Congestion-Sensitive BuFLO
+
+          - interacts with TCP
+
+          - target average inter-packet rate \rho*, updated infrequently
+
+          - extra data after website has finished loading
+
+       3) Rate Adaptation
+
+          - adapts receiving to sending
+
+          - limit information leaked by
+
+            - adjusting only at (?all?) 2^k bytes
+
+            - use median of bandwidth, stable metric
+
+            - (only collect during uninterrupted bursts)
+
+            - round up to power of two
+
+       4) Congestion-Sensitivity
+*** quotes
+    - Our experiments find that Congestion-Sensitive BuFLO has high
+      overhead (around 2.3-2.8x)
+    - it is not currently known whether there exists any efficient and
+      secure defense against website fingerprinting attacks.
+    - all previously-proposed defenses provide little security.
+*** ref [[file:master.bib::wpes14-csbuflo][Cai et al. 2014: CS BuFLO]]
 ** TODO [#C] [[./webtraffic-imc11.pdf][Towards Understanding Modern Web Traffic]]
 *** summary
     0) [@0] ABSTRACT
@@ -14461,72 +14539,78 @@
 
     2) Connections
 
-       - link layer: 3 ways to TLS-handshake
+       0) [@0]
 
-         1. "certificates up-front"
+          - link layer: 3 ways to TLS-handshake
 
-            both send two-certificate chain
+            1. "certificates up-front"
 
-            - init: short-term X.509 cert + self-signed identity X.509
+               both send two-certificate chain
 
-            - resp: similar
+               - init: short-term X.509 cert + self-signed identity X.509
 
-            - MAY ONLY INCLUDE: TLS_DHE_RSA_WITH_AES_256_CBC_SHA,
-              TLS_DHE_RSA_WITH_AES_128_CBC_SHA,
-              SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA
+               - resp: similar
 
-              - jeder zwei x.509 Zertifikate: eines fuer connection,
-                eines fuer identity
+               - MAY ONLY INCLUDE: TLS_DHE_RSA_WITH_AES_256_CBC_SHA,
+                 TLS_DHE_RSA_WITH_AES_128_CBC_SHA,
+                 SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA
 
-         2. "renegotiation" (tor >= 0.2.0.21)
+                 - jeder zwei x.509 Zertifikate: eines fuer connection,
+                   eines fuer identity
 
-            - init: no cert
+            2. "renegotiation" (tor >= 0.2.0.21)
 
-            - responder single certificate,
+               - init: no cert
 
-            - initiator renegotiates
+               - responder single certificate,
 
-              - MUST HAVE ONE NOT IN ABOVE
+               - initiator renegotiates
 
-         3. "in-protocol" (tor >= 0.2.3.6-alpha)
+                 - MUST HAVE ONE NOT IN ABOVE
 
-            distinguish vs v2 via one of:
-            - self-signed cert
-            - commonName ends other than ".net"
-            - public key modulus >= 1024 bits
-            then: send VERSIONS cell, ...
+            3. "in-protocol" (tor >= 0.2.3.6-alpha)
 
-       - several security /accessibility features:
-         - fixed protocol list
-         - fixed choice of response
-         - no server without valid certificates
+               distinguish vs v2 via one of:
+
+               - self-signed cert
+
+               - commonName ends other than ".net"
+
+               - public key modulus >= 1024 bits
+
+               then: send VERSIONS cell, ...
+
+          - several security /accessibility features:
+            - fixed protocol list
+            - fixed choice of response
+            - no server without valid certificates
     3) Cell Packet Format
        ...
     5) [@5]
        5) [@5] Routing relay cells
           checks circID, crypts payload, inspect payload (6.1), work it
-    6) [@6] Application connections and stream management
-       1) Relay cells
-    7) FLow control
-       1) Link throttling
 *** quotes
-   - Tor relays are also identified by "nicknames"; these are specified in
-     dir-spec.txt.
-   - <<O1>> All implementations MUST support the SSLv3 ciphersuite
-     "SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA", and SHOULD support the TLS
-     ciphersuite "TLS_DHE_RSA_WITH_AES_128_CBC_SHA" if it is
-     available.
-   - In all of the above handshake variants, certificates sent in the
-     clear SHOULD NOT include any strings to identify the host as a
-     Tor relay. In the "renegotiation" and "backwards-compatible
-     renegotiation" steps, the initiator SHOULD choose a list of
-     ciphersuites and TLS extensions to mimic one used by a popular
-     web browser.
-   - TLS connections are not permanent.
-   - Each client or relay should do appropriate bandwidth throttling to
-     keep its user happy. [...]
-     The mainline Tor implementation uses token buckets (one for
-     reads, one for writes) for the rate limiting.
+    0. [@0] older version
+       - Tor relays are also identified by "nicknames"; these are specified in
+         dir-spec.txt.
+    2. [@2] Connections
+       - <<O1>> All implementations MUST support the SSLv3 ciphersuite
+         "SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA", and SHOULD support the TLS
+         ciphersuite "TLS_DHE_RSA_WITH_AES_128_CBC_SHA" if it is
+         available.
+       - In all of the above handshake variants, certificates sent in the
+         clear SHOULD NOT include any strings to identify the host as a
+         Tor relay. In the "renegotiation" and "backwards-compatible
+         renegotiation" steps, the initiator SHOULD choose a list of
+         ciphersuites and TLS extensions to mimic one used by a popular
+         web browser.
+       - TLS connections are not permanent.
+    7. [@7] Flow control
+       1. Link throttling
+          - Each client or relay should do appropriate bandwidth throttling to
+            keep its user happy. [...]
+            The mainline Tor implementation uses token buckets (one for
+            reads, one for writes) for the rate limiting.
 *** ref [[file:master.bib::tor-spec][Dingledine & Mathewson 2016: Tor Protocol Specification]]
 ** TODO [#C] [[./python-doc-tutorial.pdf][Python Tutorial]]
    :PROPERTIES:
@@ -16419,10 +16503,18 @@
       - changes over time until consensus, until either rejected or
         accepted
 
-   4) What should go in a proposal:
-      - header: filename, title, author, created, status, [target,
-        implemented-in]
+   4) How new proposals get added: (new section)
+
+      - devel list, format draft, rough developer consensus to investigate
+      
+   5) What should go in a proposal:
+
+      - header: filename, title, author, created, status
+
+        - optional: target, implemented-in
+
       - overview
+
       - free form
         - motivation
         - design
@@ -16431,20 +16523,23 @@
         - compatibility
         - implementation
         - performance and scalability
-   5) status: open, accepted, finished, closed, rejected, draft,
+   6) status: open, accepted, finished, closed, rejected, draft,
       needs-revision, dead, needs-research, meta
-   6) numbers from 100 for actual proposals, meta and special 0 to 99
+   7) numbers from 100 for actual proposals, meta and special 0 to 99
 *** quotes
-   3) How to change the specs now:
-    - no proposal is ever the canonical documentation for an
-      implemented feature
-    - {It's still okay to make small changes directly to the spec if
-      the code can be written more or less immediately, or cosmetic
-      changes if no code change is required.  This document reflects
-      the current developers' _intent_, not a permanent promise to
-      always use this process in the future: we reserve the right to
-      get really excited and run off and implement something in a
-      caffeine-or-m&m-fueled all-night hacking session.}
+   3) [@3] How to change the specs now:
+      - no proposal is ever the canonical documentation for an
+        implemented feature
+      - {It's still okay to make small changes directly to the spec if
+        the code can be written more or less immediately, or cosmetic
+        changes if no code change is required.  This document reflects
+        the current developers' _intent_, not a permanent promise to
+        always use this process in the future: we reserve the right to
+        get really excited and run off and implement something in a
+        caffeine-or-m&m-fueled all-night hacking session.}
+   4) How new proposals get added: (new section)
+      - To get your proposal in, send it to the tor-dev mailing list.
+
 ** TODO chaum-mix.pdf: Untraceable Electronic Mail, Return Addresses and Digital Pseudonyms
 *** TODO refactor
 *** summary
@@ -18272,6 +18367,18 @@
                   Set, respectively, the alignment string of the
                   table, its font size and its width. They only apply
                   on regular tables.
+
+                - :float :placement
+
+                  The :float specifies the float environment for the
+                  table. Possible values are =sideways=,
+                  =multicolumn=, =t= and =nil=. When unspecified, a
+                  table with a caption will have a table
+                  environment. Moreover, the =:placement= attribute
+                  can specify the positioning of the float. Note:
+                  =:placement= is ignored for =:float= sideways
+                  tables.
+
               - Images in LATEX export
                 #+BEGIN_SRC latex
                   ,#+ATTR_LATEX: :width 5cm :options angle=90

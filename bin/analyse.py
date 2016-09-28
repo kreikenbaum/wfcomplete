@@ -177,15 +177,18 @@ def _my_grid(X, y,
         logging.info('grid result: {}'.format(best))
         return best, results
 
-def _my_grid_helper(counter_dict, cumul=True, outlier_removal=True,nj=JOBS_NUM):
+def _my_grid_helper(counter_dict, outlier_removal=True, nj=JOBS_NUM,cumul=True):
     '''@return grid-search on counter_dict result (clf, results)'''
     if outlier_removal:
         counter_dict = counter.outlier_removal(counter_dict)
     if cumul:
         (X, y, _) = to_features_cumul(counter_dict)
+        return _my_grid(X, y, num_jobs=nj)
     else:
         (X, y, _) = to_features(counter_dict)
-    return _my_grid(X, y, num_jobs=nj)
+        return _my_grid(X, y, num_jobs=nj,
+                        cs=np.logspace(15, 19, 3, base=2),
+                        gammas=np.logspace(-17, -21, 3, base=2))
 
 def _new_search_range(best_param):
     '''returns new array of parameters to search in

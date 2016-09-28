@@ -84,8 +84,8 @@
   - Tao Wang
   - Dr. Dr. Eva
 * WAIT Summary
-* WRITE Basics (=basics) [36%]
-** WRITE Website Fingerprinting [13/31]
+* WRITE Basics (=basics) [34%]
+** WRITE Website Fingerprinting [13/33]
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -427,7 +427,7 @@ Facebook.com\\
      original data, but also on a projected space. This allows for
      complex decision boundaries.
 
-     (The SVM part is mostly based on \cite[ch.6f]{iml}). Given a set
+     (These parts are mostly based on \cite[ch.6f]{iml}). Given a set
      $X = \{x_1, ..., x_n\}$ with a dot product $\langle\cdot, \cdot\rangle: X \times X \to
      \mathbb R$ and tuples $(x_1, y_1), ..., (x_m, y_m)$, with $x_i \in
      X, y_i \in \{-1, 1\}$ as a binary classification task.
@@ -453,14 +453,14 @@ Facebook.com\\
      the closest points. What happens if the points lie such that a line
      cannot be found?
 
-     To solve this, a /soft-margin classifier/ introduces an error
-     term $\xi \ge 0$, which it tries to reduce while maximizing the
+     To solve this, a /soft-margin classifier/ introduces slack
+     variables $\xi \ge 0$, which it tries to reduce while maximizing the
      distance of the closest point to the hyperplane.
 
-     This yields the equations $y_i(<w, xi> +b) \ge 1 - \xi_i.$ for the
+     This yields the equations $y_i( \langle w, xi \rangle +b) \ge 1 - \xi_i$ for the
      optimization problem
 
-     \[min_{w, b, \xi} 1/2 ||w||^2 + C/m \sum_{i=1..m} \xi_i.\]
+     \[\min_{w, b, \xi} 1/2 ||w||^2 + C/m \sum_{i=1..m} \xi_i.\]
 **** WRITE multi-class strategies aka ovr vs ovo (vs ecoc)
      #+INDEX: binary classification
      #+INDEX: multi-class classification
@@ -469,6 +469,9 @@ Facebook.com\\
      The SVMs as described above solve the Binary Classification
      problem \cite[sec.1.1.3]{iml}: they propose a boundary between
      two classes of objects.
+
+     In website fingerprinting[fn::as in f.ex. handwriting
+     recognition], there are most often more classes than two.
 
       - multi-class: train one for each class (ovr) or one for each
         class-combination (ovo)
@@ -484,6 +487,10 @@ Facebook.com\\
         high-dimensional distribution. TR 87, Microsoft Research.
         as of rieck phdthesis
 **** WRITE kernel trick
+     The above all give a linear boundary between classes. What if
+     this does not model reality? Solution: svm can not only use the
+     dot product, but any kernel function.
+
      - see figure [[hastie_kerneltrick]]
        - instead of dot product $\langle.,.\rangle$ use =kernel= $k(., .)$
        - same effect as mapping each point in set to dot product
@@ -495,12 +502,19 @@ Facebook.com\\
      - rbf kernel
      - effect: no longer needs to find a straight line (yes, but in
        transfomed space, so could be others, too)
-**** KEYWORDS parameter estimation
+**** WRITE parameter estimation
      - each soft margin SVM has an error term C which states how
        much to penalize outliers
        - see [[*soft margin classifiers][soft margin classifiers]]
-     - rbf kernel also has a gamma term which gives the grade of the
+     - rbf kernel also has a gamma term which gives the width of the
        gaussian rbf
+     - formula rbf kernel
+     - pic from scikit-learn Figure 42.328: RBF SVM parameters
+    #+CAPTION[Example svm-rbf classification with different parameters for C and \gamma]: Example svm-rbf classification with different parameters for C and \gamma. Source \cite[Figure 42.328]{scikit-learn}
+    #+ATTR_LATEX: :float wrap :width 0.4\textwidth
+    [[./pictures/skl-fig-42.328.png]]
+***** TODO formula rbf kernel
+***** TODO picture first from sklearn, better from rieck
 **** TODO link to basic book (bronstein) for vector space etc
 **** need more preparation than other classifiers
      - outlier removal
@@ -574,6 +588,10 @@ Facebook.com\\
       - maps attributes to classes (or probabilities)
       - classifier
 *** KEYWORDS k-forest
+    - random forest
+    - \cite{kfingerprint}
+    - many different attributes evaluated
+    - different multi-class metric
 *** WRITE Related Work
     :PROPERTIES:
     :CUSTOM_ID: wfRelated
@@ -641,15 +659,15 @@ Facebook.com\\
     \cite{ssl-traffic-analysis} mainly proposed using
     proxies[fn::as well as HTML- and protocol modification]. Addressing
     weaknesses when using proxies, \cite{hintz02} proposed
-    the following defenses: adding noise to traffic, reducing
-    transferred data, and transferring everything in one connection.
+    three defenses: (1.) adding noise to traffic, (2.) reducing
+    transferred data, and (3.) transferring everything in one connection.
 
-    As for the second approach of reducing transferred data: As the
+    As for the (2.) approach of reducing transferred data: As the
     sizes and interconnection of HTML and embedded content is what
     makes a webpage easily identifyable, either using a text-only
     non-javascript browser such as Lynx[fn::available at
-    \url{http://lynx.invisible-island.net/}], disabling f.ex. images,
-    or reducing cross-site requests via f.ex. the
+    \url{http://lynx.invisible-island.net/}], disabling f.ex.\space{}images,
+    or reducing cross-site requests via f.ex.\space{}the
     RequestPolicy[fn::\url{https://requestpolicycontinued.github.io/}]
     extension all might mitigate the threat of website fingerprinting
     for those who consider this trade-off acceptable. Yet, this
@@ -660,14 +678,14 @@ Facebook.com\\
     which is considered undesirable in the Tor Browser
     Bundle\cite[sec.2.3]{tor-browser-design-impl}].
 
-    The third approach of transferring everything in one connection
+    The (3.) approach of transferring everything in one connection
     --- while valid --- would require modifying the HTTP
     protocol. This would conflict with Tor's design goal of
     deployability\cite{tor-design}.
 
     Several researchers used the first approach of adding noise to
     traffic. Others --- additionally or exclusively --- alter traffic by
-    reducing the data rate, altering packet sizes, etc.
+    reducing the data rate, splitting and merging packets, etc.
 *** EVA Specific vs General Defenses
     As of \cite{wang2015walkie}, defenses designed against website
     fingerprinting can be divided into specific and general defenses.
@@ -676,7 +694,7 @@ Facebook.com\\
 
     The first website fingerprinters considered only packet
     lengths. This made it seem sensible to alter the lengths of
-    packets by padding, as evaluated f.ex. by
+    packets by padding, as evaluated f.ex.\space{}by
     \cite{ssl-traffic-analysis}.
 
     As more and more attributes were used to classify the traces,
@@ -827,7 +845,7 @@ Facebook.com\\
 
     All of website fingerprinting is an application-layer
     problem[fn::for an introduction to protocol layering etc, see
-    f.ex. \cite[ch.1.7]{DBLP:books/daglib/0001977}]. It exploits
+    f.ex.\space{}\cite[ch.1.7]{DBLP:books/daglib/0001977}]. It exploits
     attributes of HTTP, so a same-level application-layer solution
     would be to generate additional HTTP-shaped traffic to make the
     classifier misclassify.
@@ -1098,12 +1116,12 @@ Facebook.com\\
     - network applications
 *** WRITE integrate into above
     This implementation currently omits some possibly embedded
-    elements, f.ex. those embedded in css files and =style= tags via
+    elements, f.ex.\space{}those embedded in css files and =style= tags via
     the =@url= css-directive. It seems better for cover traffic to
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* KEYWORDS Results and Evaluation [22%]
+* KEYWORDS Results and Evaluation [25%]
 ** KEYWORDS Setup
 *** EVA sites
 **** EVA modified top-100
@@ -1206,7 +1224,7 @@ Facebook.com\\
      results[fn::code at =tts()= in analyse.py], once implicitly
      during SVM parameter estimation, which is done via five-fold
      cross-validation.[fn::code at =_my_grid()= in analyse.py]
-**** WRITE outlier removal
+**** KEYWORDS outlier removal
      :PROPERTIES:
      :CUSTOM_ID: outlier_removal
      :END:
@@ -1248,13 +1266,18 @@ Facebook.com\\
        - how many removed for levels
          - both panchenko's own and mine
        - evaluation of outlier removal steps
-     - results
-       - rw
-         - this might be why results are worse than f.ex. panchenko
-         - includes variant labeled -1: remember highest and lowest
-           quantile values from previous train-or, removes based on
-           these
-     - link to file
+       - results
+         - rw
+           - this might be why results are worse than f.ex. panchenko
+           - includes variant labeled -1: remember highest and lowest
+             quantile values from previous train-or, removes based on
+             these
+       - link to file
+     problem with previous code: did not label download problems
+     - some sites had mostly problems (cat.kr f.ex.)
+     - outlier removal only last resort, better to remove when
+       retrieval turned out faulty
+     - link to [[file:data/results/alternatives.org::*sizes%20TOP-0721][sizes TOP-0721]]
 ***** on average/per class numbers how many removed
 ***** WRITE disadvantage of few instances with much outlier removal
     - problem for level 3 (only): number of splits requires more data
@@ -1402,12 +1425,11 @@ Facebook.com\\
     :END:
     The trace sizes changed significantly over time, see Table
     [[tab:time]]. What at first seemed like a size increase was reduced by
-    the last measurement to mere fluctuations of 25%. As seen in Table
+    the last measurement to mere fluctuations of up to 25%. As seen in Table
     [[tab:site_sizes_relative]], this fluctuation is highly dependent on
     the url. \url{google.com}, f.ex. shows two distinct sizes, which
     could be related to whether doodles were active at these times.
 
-    - Table [[tab:time]]
 #+CAPTION[Overhead and accuracy for training 07-06, testing on various times]: Overhead and accuracy at different times, training 07-06, testing on listed times, sorted by date.
 #+NAME: tab:time
 #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{3}{2}|
@@ -1432,6 +1454,7 @@ Facebook.com\\
          - due to time difference accuracy lag (and some time to
            capture), all defenses compared to closest-in-time
            no-defense retrieval
+**** TODO [#C] google doodle
 *** KEYWORDS (for [[file:~/da/da.org::*klassifikation][klassifikation {0/12}]]) svc vs extratrees
     - svc very good on unadd-oned data, (if trained and or on all)
       - extratrees with 5--10% lower accuracy, but excels against
@@ -1446,14 +1469,27 @@ Facebook.com\\
         regular traces, but decaying fast on data collected
         - later
         - with add-on
-*** KEYWORDS which features help most in classification
+*** WRITE which features help most in classification
     - include somehow [[file:data/results/alternatives.org::*feature%20importances%20ET][feature importances ET]]
     - mention that ET classifies differently from SVM
       - but easily accessible
-      - point to
+      - compare
         - general: [[*(for%20%5B%5Bfile:~/da/da.org::*klassifikation%5D%5Bklassifikation%20{0/12}%5D%5D)%20svc%20vs%20extratrees][(for klassifikation {0/12}) svc vs extratrees]]
         - specific: [[#websites][Websites]]
-** KEYWORDS Evaluation of Defenses [0/8]
+    - all 100 CUMUL-values in the 1% \pm 0.5%
+      - increasing with the first CUMUL-element at 0.5%, the last at 1.5%
+    - both outgoing byte and outgoing packet count at 3%
+    - graph
+      - data from feature_importances
+      - xlabel: cumul feature number
+      - ylabel: feature contribution [in %]
+      - line graph
+      - caption: first four are
+        - inCount
+        - outCount
+        - outSize
+        - inSize
+** KEYWORDS Evaluation of Defenses [1/8]
 *** KEYWORDS Introduction
     - very dependent on retrieved trace time difference, see [[#time]]
     - svc slightly better on original data, fails against defense
@@ -1485,23 +1521,23 @@ Facebook.com\\
     - which classifier classifies which page well?
     - 5aII higher accuracy at svc than at et
       - mention still, still accurate, or obsolete, because svm increased
-*** CHECK add-on flavors
+*** EVA add-on flavors
     As described in [[#addon_main][Add-on Version: Main]], there are different flavors
     of the main version. These were evaluated with overhead factors of
     5% and 20%. See Tables [[tab:flavors0829]] and [[tab:flavors0909]]
     respectively.
 
     The results point to major accuracy reduction for all variants,
-    with almost equal accuracy for the SVM-classifier, but slightly
-    overhead-related accuracy for the Extra-Trees classifier. In both
-    experiments, the =aI= flavor performed at the top or almost, with
-    the =aII= flavor producing slightly lower overhead for comparable
-    accuracy in the low-overhead setting.
+    with almost equal accuracy for all variants with SVM-classifier,
+    but slightly overhead-related accuracy for the Extra-Trees
+    classifier. In both experiments, the =aI= flavor performed at the
+    top or almost, with the =aII= flavor producing slightly lower
+    overhead for comparable accuracy in the low-overhead setting.
 
-    As expected, the non-caching =b= flavors produce significantly
+    The size-guessing =b= flavors produce significantly
     higher overhead, but yield a further small reduction of classifier
     accuracy.
-
+**** MOVE before "the results point..."
 #+CAPTION[Classification accuracy and overhead for flavors of the main addon]: Classification accuracy and overhead for flavors of the main addon, at 5% overhead factor.
 #+NAME: tab:flavors0829
 #+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{3}{1}|
@@ -1590,103 +1626,106 @@ Facebook.com\\
       - small page, small page with add-on, bigger page
       - does with add-on look like bigger page?
     - wait for [[file:~/da/da.org::*experimente][experimente]] plan 3
-** KEYWORDS Websites
-   :PROPERTIES:
-   :CUSTOM_ID: websites
-   :END:
-   - which websites classify well with which classifier, which badly
-   - results in Tables [[tab:class_accuracy-07-06]],
-     [[tab:class_accuracy-simple]], [[tab:class_accuracy-main]], and
-     [[tab:class_accuracy-09-18]].
-#+CAPTION: Classification accuracy of wfpad on 30 classes, 2 classifiers.
-#+NAME: tab:class_accuracy-07-06
-#+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}|
-#+INCLUDE: "data/results/alternatives.org::#class-accuracy-07-06" :only-contents t
+*** KEYWORDS Websites
+    :PROPERTIES:
+    :CUSTOM_ID: websites
+    :END:
+    - which websites classify well with which classifier, which badly
+    - results in Tables [[tab:class_accuracy-07-06]],
+      [[tab:class_accuracy-simple]], [[tab:class_accuracy-main]], and
+      [[tab:class_accuracy-09-18]].
+ #+CAPTION: Classification accuracy of wfpad on 30 classes, 2 classifiers.
+ #+NAME: tab:class_accuracy-07-06
+ #+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}|
+ #+INCLUDE: "data/results/alternatives.org::#class-accuracy-07-06" :only-contents t
 
-#+CAPTION: Classification accuracy of "simple" addon on 30 classes, 2 classifiers.
-#+NAME: tab:class_accuracy-simple
-#+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}|
-#+INCLUDE: "data/results/alternatives.org::#class-accuracy-simple" :only-contents t
+ #+CAPTION: Classification accuracy of "simple" addon on 30 classes, 2 classifiers.
+ #+NAME: tab:class_accuracy-simple
+ #+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}|
+ #+INCLUDE: "data/results/alternatives.org::#class-accuracy-simple" :only-contents t
 
-#+CAPTION: Classification accuracy of the main addon version 0.22 on 30 classes, 2 classifiers.
-#+NAME: tab:class_accuracy-main
-#+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}|
-#+INCLUDE: "data/results/alternatives.org::#class-accuracy-main" :only-contents t
+ #+CAPTION: Classification accuracy of the main addon version 0.22 on 30 classes, 2 classifiers.
+ #+NAME: tab:class_accuracy-main
+ #+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}|
+ #+INCLUDE: "data/results/alternatives.org::#class-accuracy-main" :only-contents t
 
-#+CAPTION: Classification accuracy of "retrofixed" addon on 30 classes, 2 classifiers.
-#+NAME: tab:class_accuracy-09-18
-#+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}|
-#+INCLUDE: "data/results/alternatives.org::#class-accuracy-09-18" :only-contents t
+ #+CAPTION: Classification accuracy of "retrofixed" addon on 30 classes, 2 classifiers.
+ #+NAME: tab:class_accuracy-09-18
+ #+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}||n{1}{3}|n{1}{3}|
+ #+INCLUDE: "data/results/alternatives.org::#class-accuracy-09-18" :only-contents t
 
-# maybe later replace top tex-line in above table with =defense & \multicolumn{2}{l}{disabled} & \multicolumn{2}{l}{wfpad} &  \multicolumn{2}{l}{simple2/5} & \multicolumn{2}{l}{0.22/5aI} \\=
+ # maybe later replace top tex-line in above table with =defense & \multicolumn{2}{l}{disabled} & \multicolumn{2}{l}{wfpad} &  \multicolumn{2}{l}{simple2/5} & \multicolumn{2}{l}{0.22/5aI} \\=
 
-- CUMUL-traces for buzzfeed.com (svc fails) and weibo.com (svc wins)
+ - CUMUL-traces for buzzfeed.com (svc fails) and weibo.com (svc wins)
 
-#+BEGIN_LaTeX
-\begin{table}[H]
-\begin{longtable}{c c c}
-   WTF-PAD & Simple Addon & Addon 0.22 \\
-\endfirsthead
-   WTF-PAD & Simple Addon & Addon 0.22 \\
-\endhead
-   \hline
-   \multicolumn{3}{c}{buzzfeed.com} \\
-\includegraphics[width=0.3 \textwidth]{./pictures/buzzfeed.com__wfpad.eps}
-& \includegraphics[width=0.3 \textwidth]{./pictures/buzzfeed.com__simple2@5.eps}
-& \includegraphics[width=0.3 \textwidth]{./pictures/buzzfeed.com__0.22@5aI.eps}
-\\
-   \multicolumn{3}{c}{weibo.com} \\
-\includegraphics[width=0.3 \textwidth]{./pictures/weibo.com__wfpad.eps}
-& \includegraphics[width=0.3 \textwidth]{./pictures/weibo.com__simple2@5.eps}
-& \includegraphics[width=0.3 \textwidth]{./pictures/weibo.com__0.22@5aI.eps}
-\end{longtable}
-\caption{CUMUL traces of defenses with different classifier results}
-\end{table}
-#+END_LaTeX
+ #+BEGIN_LaTeX
+ \begin{table}[H]
+ \begin{longtable}{c c c}
+    WTF-PAD & Simple Addon & Addon 0.22 \\
+ \endfirsthead
+    WTF-PAD & Simple Addon & Addon 0.22 \\
+ \endhead
+    \hline
+    \multicolumn{3}{c}{buzzfeed.com} \\
+ \includegraphics[width=0.3 \textwidth]{./pictures/buzzfeed.com__wfpad.eps}
+ & \includegraphics[width=0.3 \textwidth]{./pictures/buzzfeed.com__simple2@5.eps}
+ & \includegraphics[width=0.3 \textwidth]{./pictures/buzzfeed.com__0.22@5aI.eps}
+ \\
+    \multicolumn{3}{c}{weibo.com} \\
+ \includegraphics[width=0.3 \textwidth]{./pictures/weibo.com__wfpad.eps}
+ & \includegraphics[width=0.3 \textwidth]{./pictures/weibo.com__simple2@5.eps}
+ & \includegraphics[width=0.3 \textwidth]{./pictures/weibo.com__0.22@5aI.eps}
+ \end{longtable}
+ \caption{CUMUL traces of defenses with different classifier results}
+ \end{table}
+ #+END_LaTeX
 
-  - similar, little to see
-  - no-addon classifies equally well for both classifiers
-  - all: \ge 0.15 accuracy difference
-    - next: 0.25 diff
-  - wfpad
-    - apple 0.925 with et, 0.675 with svm
-    - go.com: et 0.875, svm 0.725
-    - yahoo.com: et 0.75, svm 0.575
-    - youtube: et 0.575, svm 0.425
-    - 
-    - ettoday: 0.825 et, 1.00 svm
-    - microsoftonline.com: et 0.6, svm 0.775
-    - pornhub: et 0.6, svc 0.975
-    - xvideos classifies 0.7 with et, 0.975 with svm
-  - simple
-    - sina.com.cn 0.95 et, 0.55 svm
-    - 
-    - apple et 0.5250, svm 0.9250
-    - buzzfeed et 0.475, svm 0.8
-    - ettoday.com et 0.2821, svm 0.5385
-    - facebook.com et 0.65, svm 0.9
-    - msn.com 0.35 et, 0.75 svm
-    - xnxx.com et 0.5750, svm 0.8250
-  - 5aI
-    - sina.com.cn et: 0.953846153846, svm: 0.276923076923
-    - 
-    - buzzfeed.com et: 0.230769230769, svm: 0.507692307692
-    - youtube.com et: 0.234375, svm: 0.6878
-    - xvideos.com et: 0.0923076923077, svm: 0.430769230769
-    - blogspot.com  et: 0.0153846153846 , svm: 0.215384615385
-    - apple.com     et:  0.123076923077 , svm: 0.430769230769
-    - xnxx.com      et: 0.0769230769231 , svm: 0.369230769231
-    - yahoo.com     et:  0.538461538462 , svm: 0.753846153846
-    - wordpress.com et:          0.0625 , svm:       0.296875
-    - soso.com      et:         0.15625 , svm:       0.390625
-*** WAIT which retro better, use just that, then addto list
-*** google.com
-     - check that not a robot (not captcha page with either addon or without)
-     - td: estimate probability if matches traces
-     - maybe see what it gets classified as
-*** aliexpress.com
-     - https of akamai
-     - td: check with recapture both
+   - similar, little to see
+   - no-addon classifies equally well for both classifiers
+   - all: \ge 0.15 accuracy difference
+     - next: 0.25 diff
+   - wfpad
+     - apple 0.925 with et, 0.675 with svm
+     - go.com: et 0.875, svm 0.725
+     - yahoo.com: et 0.75, svm 0.575
+     - youtube: et 0.575, svm 0.425
+     - 
+     - ettoday: 0.825 et, 1.00 svm
+     - microsoftonline.com: et 0.6, svm 0.775
+     - pornhub: et 0.6, svc 0.975
+     - xvideos classifies 0.7 with et, 0.975 with svm
+   - simple
+     - sina.com.cn 0.95 et, 0.55 svm
+     - 
+     - apple et 0.5250, svm 0.9250
+     - buzzfeed et 0.475, svm 0.8
+     - ettoday.com et 0.2821, svm 0.5385
+     - facebook.com et 0.65, svm 0.9
+     - msn.com 0.35 et, 0.75 svm
+     - xnxx.com et 0.5750, svm 0.8250
+   - 5aI
+     - sina.com.cn et: 0.953846153846, svm: 0.276923076923
+     - 
+     - buzzfeed.com et: 0.230769230769, svm: 0.507692307692
+     - youtube.com et: 0.234375, svm: 0.6878
+     - xvideos.com et: 0.0923076923077, svm: 0.430769230769
+     - blogspot.com  et: 0.0153846153846 , svm: 0.215384615385
+     - apple.com     et:  0.123076923077 , svm: 0.430769230769
+     - xnxx.com      et: 0.0769230769231 , svm: 0.369230769231
+     - yahoo.com     et:  0.538461538462 , svm: 0.753846153846
+     - wordpress.com et:          0.0625 , svm:       0.296875
+     - soso.com      et:         0.15625 , svm:       0.390625
+
+   - also depending on defense: apple.com with wfpad better detected by
+     et, with simple (and main) better detected by svm
+**** WAIT which retro better, use just that, then addto list
+**** google.com
+      - check that not a robot (not captcha page with either addon or without)
+      - td: estimate probability if matches traces
+      - maybe see what it gets classified as
+**** aliexpress.com
+      - https of akamai
+      - td: check with recapture both
 ** brainstorm                                                       :ARCHIVE:
    - describe setup
      - which sites, why
@@ -1734,7 +1773,7 @@ Facebook.com\\
    :PROPERTIES:
    :CUSTOM_ID: future-work
    :END:
-*** eval
+*** evaluation
    - bigger world sizes
    - more elaborate tests with different world sizes / open world / etc
 *** KEYWORDS addon
@@ -1816,7 +1855,7 @@ Facebook.com\\
     - information-theoretical / stochastical analysis
     - quote perry critique
 **** TODO first read murdoch/danezis paper
-*** onion host for cover traffic
+**** a.k.a onion host for cover traffic
     As indicated f.ex. by Wang and Goldberg,
     \cite{wpes13-fingerprinting}, network load already is a bottleneck
     on Tor, with the key bottleneck being exit nodes\cite{wtfpad}. The
@@ -1824,9 +1863,9 @@ Facebook.com\\
     traffic generators (or, alternatively, hosts). A traffic generator
     could be further optimized by using tor proposals ... (see todo) to
     reduce latency, if this does not reduce privacy.
-**** TODO tor proposals as of tor.sx
-**** TODO read/skim and cite "on performance..."
-*** more thorough evaluation
+***** TODO tor proposals as of tor.sx
+***** TODO read/skim and cite "on performance..."
+*** MOVE integrate [[*evaluation][evaluation]] to more thorough evaluation
     - only two panchenko approaches
     - assumption: can split traces
     As critiqued in \cite{critique}, the evaluation in this thesis
@@ -1842,9 +1881,6 @@ Facebook.com\\
     - additional (?defense?) as proposed in critique
 **** TODO follow critique at all?
      - yes, shows Tor project's official position
-*** TODO always also link in text
-**** TODO check with darp
-*** TODO links to original, back to further work
 *** Exactly distinguishing HTML and embedded requests
     The current version of the [[user.js][User module]] separates
     CoverTraffic by DNS-domainname. As it often happens that one HTML
@@ -2817,7 +2853,7 @@ Facebook.com\\
    wsgi.py=[fn::to listen on a non-standard port, the =--port=
    parameter is used, here: =--port 7777=].
 *** TODO github link wsgi.py
-** CHECK wsgi.py cover traffic server and generator
+** APPENDIX_DONE wsgi.py cover traffic server and generator
    :PROPERTIES:
    :CUSTOM_ID: wsgi
    :END:
