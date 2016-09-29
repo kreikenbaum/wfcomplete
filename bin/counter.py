@@ -11,6 +11,7 @@ import os
 import subprocess
 import sys
 
+DURATION_LIMIT=8 * 60 * 1000
 #HOME_IP = '134.76.96.47' #td: get ips
 HOME_IP = '134.169.109.25'
 #LOGLEVEL = logging.DEBUG
@@ -217,15 +218,23 @@ class Counter(object):
         '''creates Counter from panchenko's test data
         >>> Counter.from_panchenko_data('c.com 1234 1235:300').get_total_both()
         300
+        >>> Counter.from_panchenko_data('c.com 1234 1235:300').name
+        c.com@1234
+        >>> Counter.from_panchenko_data('c.com 1234 1235:300').packets
+        [300]
         '''
+#  >>> Counter.from_panchenko_data('c.com 1234 1235:300').timing
+# [[0.001, 300]]'
         tmp = Counter()
 
         elements = line.split()
-        Counter.name = elements[0]
+        #start_time = int(elements[1])
+        #tmp.name = '{}@{}'.format(elements[0], start_time)
+        tmp.name = elements[0]
         for element in elements[2:]:
             (time, value) = element.split(':')
             tmp.packets.append(int(value))
-            # could also append timing, but not used
+            #tmp.timing.append([(int(time) - start_time) / 1000.0, int(value)])
         return tmp
 
     @staticmethod
@@ -306,7 +315,11 @@ class Counter(object):
 
     def get_duration(self):
         '''@return duration of this trace'''
-        return self.timing[-1][0]
+        try:
+            return self.timing[-1][0]
+        except IndexError:
+            # panchenko
+            return DURATION_LIMIT
 
     def get_total_in(self):
         '''returns total incoming bytes'''
@@ -503,7 +516,11 @@ def p_or_quantiles(counter_list):
     [2, 2, 2, 2, 2, 2]
     '''
     counter_total_in = [counter.get_total_in() for counter in counter_list]
-    q1 = np.percentile(counter_total_in, 25)
+    try:
+        q1 = np.percentile(counter_total_in, 25)
+    except IndexError:
+        # empty input
+        return []
     q3 = np.percentile(counter_total_in, 75)
 
     out = []
@@ -530,7 +547,7 @@ def p_or_toolong(counter_list):
 
     The capturing software seemingly did not remove the others, even
     though it should have.'''
-    return [x for x in counter_list if x.get_duration() < 8 * 60 * 1000]
+    return [x for x in counter_list if x.get_duration() < DURATION_LIMIT]
 
 def outlier_removal(counter_dict, level=2):
     '''apply outlier removal to input of form
