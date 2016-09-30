@@ -516,11 +516,7 @@ def p_or_quantiles(counter_list):
     [2, 2, 2, 2, 2, 2]
     '''
     counter_total_in = [counter.get_total_in() for counter in counter_list]
-    try:
-        q1 = np.percentile(counter_total_in, 25)
-    except IndexError:
-        # empty input
-        return []
+    q1 = np.percentile(counter_total_in, 25)
     q3 = np.percentile(counter_total_in, 75)
 
     out = []
@@ -569,7 +565,7 @@ def outlier_removal(counter_dict, level=2):
                 raise ValueError
             logging.debug('%15s: outlier_removal(%d) removed %d from %d',
                           k, level, (len(v) - len(out[k])), len(v))
-        except ValueError: ## somewhere, list got to []
+        except ValueError, IndexError: ## somewhere, list got to []
             logging.warn('%s discarded in outlier removal', k)
     return out
 
