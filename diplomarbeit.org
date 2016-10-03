@@ -441,7 +441,7 @@ Facebook.com\\
      #+END_LaTeX
      such that $\langle w, x_i \rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle
      +b < 0$ whenever $y_i = -1$. With normalization, this can be
-     compressed to the form \[y_i \cdot (<w, xi> +b) \ge 1.\]
+     compressed to the form \[y_i \cdot (\langle w, xi \rangle +b) \ge 1.\]
 
     #+CAPTION[Example binary linearclassification]: Example binary linear classification from \cite[Figure 1.5]{iml}.
     #+ATTR_LATEX: :width 0.4\textwidth
@@ -456,11 +456,11 @@ Facebook.com\\
      variables $\xi \ge 0$, which it tries to reduce while maximizing the
      distance of the closest point to the hyperplane.
 
-     This yields the equations $y_i( \langle w, xi \rangle +b) \ge 1 - \xi_i$ for the
+     This alters the equations to $y_i( \langle w, xi \rangle +b) \ge 1 - \xi_i$ for the
      optimization problem
 
      \[\min_{w, b, \xi} 1/2 ||w||^2 + C/m \sum_{i=1..m} \xi_i.\]
-**** WRITE multi-class strategies aka ovr vs ovo (vs ecoc)
+**** WRITE Multi-Class Strategies aka ovr vs ovo (vs ecoc)
      #+INDEX: binary classification
      #+INDEX: multi-class classification
      #+INDEX: classification!binary
@@ -471,6 +471,12 @@ Facebook.com\\
 
      In website fingerprinting[fn::as in f.ex.\space{}handwriting
      recognition], there are most often more classes than two.
+
+     Several strategies exist to classify more than two classes. The
+     main strategies are to train one classifier for each class
+     (One-Vs-Rest) and one for each class-class combination
+     (One-Vs-One).
+
 
       - multi-class: train one for each class (ovr) or one for each
         class-combination (ovo)
@@ -587,10 +593,11 @@ Facebook.com\\
       - maps features to classes (or probabilities)
       - classifier
 *** KEYWORDS k-forest
-    - random forest
-    - \cite{kfingerprint}
     - many different features evaluated
+    - classifier is random forest
+    - \cite{kfingerprint}
     - different multi-class metric
+    - attribute importances
 *** WRITE Related Work
     :PROPERTIES:
     :CUSTOM_ID: wfRelated
@@ -667,22 +674,23 @@ Facebook.com\\
     non-javascript browser such as Lynx[fn::available at
     \url{http://lynx.invisible-island.net/}], disabling f.ex.\space{}images,
     or reducing cross-site requests via f.ex.\space{}the
-    RequestPolicy[fn::\url{https://requestpolicycontinued.github.io/}]
-    extension all might mitigate the threat of website fingerprinting
-    for those who consider this trade-off acceptable. Yet, this
-    reduces usability and thus conflicts with one of Tor's design
+    RequestPolicy[fn::RequestPolicy
+    \url{https://requestpolicycontinued.github.io/} uses domain-based
+    filters, which is considered undesirable in the Tor Browser
+    Bundle\cite[sec.2.3]{tor-browser-design-impl}] extension all might
+    mitigate the threat of website fingerprinting for those who
+    consider this trade-off acceptable. Yet, this reduces usability
+    and thus conflicts with one of Tor's design
     goals\cite{tor-design}. It is also mostly deterministic, so that
     an adversary could simply train on modified
-    data.[fn::Additionally, Request policy uses domain-based filters,
-    which is considered undesirable in the Tor Browser
-    Bundle\cite[sec.2.3]{tor-browser-design-impl}].
+    data.
 
     The (3.) approach of transferring everything in one connection
     --- while valid --- would require modifying the HTTP
     protocol. This would conflict with Tor's design goal of
     deployability\cite{tor-design}.
 
-    Several researchers used the first approach of adding noise to
+    Several researchers used the (1.) approach of adding noise to
     traffic. Others --- additionally or exclusively --- alter traffic by
     reducing the data rate, splitting and merging packets, etc.
 *** EVA Specific vs General Defenses
@@ -768,7 +776,7 @@ Facebook.com\\
 * WRITE Methods (=methods) [59%]
 ** EVA Motivation [2/2]
 *** brainstorm                                                      :ARCHIVE:
-   - make wf/ml harder, fudge attributes
+   - make wf/ml harder, fudge features
      - problems WTF-PAD: modify all of tor,
        - yet problem is browser traffic
          - and traffic is app-dependent
@@ -822,7 +830,7 @@ Facebook.com\\
     Additionally, when this thesis was started, both \cite{wang2015walkie} and
     \cite{wtfpad} had not been published yet.
 *** EVA Aim: selective cover traffic
-    As detailed in section [[#attributes]], there are key attributes that
+    As detailed in section [[#features]], there are key features that
     are hard to cloak except by extra traffic, especially the total
     number of bytes up-/ and downstream.[fn::For Tor, the number of
     bytes is an almost exact multiple of the total number of packets,
@@ -844,9 +852,9 @@ Facebook.com\\
 
     All of website fingerprinting is an application-layer
     problem[fn::for an introduction to protocol layering etc, see
-    f.ex.\space{}\cite[ch.1.7]{DBLP:books/daglib/0001977}]. It exploits
-    attributes of HTTP, so a same-level application-layer solution
-    would be to generate additional HTTP-shaped traffic to make the
+    f.ex.\space{}\cite[ch.1.7]{DBLP:books/daglib/0001977}]. It exploits HTTP
+    characteristics, so a same-level application-layer solution would
+    be to generate additional HTTP-shaped traffic to make the
     classifier misclassify.
 
     When a new webpage is opened by the user, the browser creates a
@@ -1123,6 +1131,9 @@ Facebook.com\\
 * KEYWORDS Results and Evaluation [23%]
 ** KEYWORDS Setup
 *** WRITE Introduction
+    The following sections describe how and which data was captured,
+    how features were extracted from the raw data, and how these were
+    analysed
     - sites for capture
     - how data was captured
     - how data was further massaged
@@ -1200,7 +1211,7 @@ Facebook.com\\
 **** WAIT github config files upload + mention
 *** KEYWORDS preprocessing
 **** EVA Introduction
-    The aim of preprocessing is to extract attributes relevant for
+    The aim of preprocessing is to extract features relevant for
     machine learning from the original trace files, which are in
     =pcap= format. From these, a vector of characteristics, called
     /features/ [fn::They are called /features/ and /attributes/ in
@@ -1220,7 +1231,7 @@ Facebook.com\\
      :CUSTOM_ID: split
      :END:
      As mentioned by \cite{arp-personal}, outliers can be removed
-     based on statistical class attributes[fn::\cite{panchenko2} used
+     based on statistical class features[fn::\cite{panchenko2} used
      incoming-byte-count median and quantiles] on the training data
      only. On test data, outliers should be removed only based on
      absolute size, as the adversary does not know the trace's class
@@ -1343,14 +1354,14 @@ Facebook.com\\
     - why:
       - main purpose is addon test
       - would like to match state-of-the-art as exactly as possible
-      - quote \cite{xp}
+      - quite certain that matches, but \cite{xp}
         #+BEGIN_QUOTE
 Optimism is an occupational hazard of programming. Feedback is the
 treatment.
         #+END_QUOTE
     - wang: data sets until study (2014)
       - data format: one file per trace, named class_id-trace_num
-        - lines are time(float) \t packet/cell length
+        - lines are time(float) \t packet length/cell
         - [ *positive out, neg in* ]
     - panchenko: 2016 data set plus code
       - data format: one file per class, named by url
@@ -1401,7 +1412,7 @@ treatment.
       - and slightly better results
       - knn is best, outperforms svc on our tests
     - more work for svm parameter estimation
-    - pad variable-length attributes to maximum length of all with 0s
+    - pad variable-length features to maximum length of all with 0s
 **** WAIT retest p1 without scale, see "panchenko 1 without scaling on best" in [[file:~/da/da.org::*klassifikation][klassifikation {0/10}]]
 *** WRITE [#A] panchenko v1 vs cumul
     Panchenko et al proposed two \cite{panchenko} methods
@@ -1409,7 +1420,7 @@ treatment.
     considered\cite{kfingerprint} state-of-the art.
 
     They both use support vector machines as classifier, but differ in
-    the attributes they select.
+    the features they select.
 
     Since CUMUL\cite{panchenko2} is Panchenko et al.'s newer approach
     after their first classifier\cite{panchenko} (called /version 1/
@@ -1500,6 +1511,11 @@ treatment.
         - later
         - with add-on
 *** WRITE which features help most in classification
+    #+CAPTION: Importance of CUMUL features
+    #+ATTR_LATEX: :float wrap :width 0.4\textwidth
+    [[./pictures/feature_importances.eps]]
+
+
     - include somehow [[file:data/results/alternatives.org::*feature%20importances%20ET][feature importances ET]]
     - mention that ET classifies differently from SVM
       - but easily accessible
@@ -1519,7 +1535,7 @@ treatment.
         - outCount
         - outSize
         - inSize
-** KEYWORDS Evaluation of Defenses [1/8]
+** KEYWORDS Evaluation of Defenses [1/10]
 *** KEYWORDS Introduction
     - very dependent on retrieved trace time difference, see [[#time]]
     - svc slightly better on original data, fails against defense
@@ -1557,17 +1573,6 @@ treatment.
     5% and 20%. See Tables [[tab:flavors0829]] and [[tab:flavors0909]]
     respectively.
 
-    The results point to major accuracy reduction for all variants,
-    with almost equal accuracy for all variants with SVM-classifier,
-    but slightly overhead-related accuracy for the Extra-Trees
-    classifier. In both experiments, the =aI= flavor performed at the
-    top or almost, with the =aII= flavor producing slightly lower
-    overhead for comparable accuracy in the low-overhead setting.
-
-    The size-guessing =b= flavors produce significantly
-    higher overhead, but yield a further small reduction of classifier
-    accuracy.
-**** MOVE before "the results point..."
 #+CAPTION[Classification accuracy and overhead for flavors of the main addon]: Classification accuracy and overhead for flavors of the main addon, at 5% overhead factor.
 #+NAME: tab:flavors0829
 #+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{3}{1}|
@@ -1578,6 +1583,17 @@ treatment.
 #+NAME: tab:flavors0909
 #+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{3}{1}|
 #+INCLUDE: "data/results/alternatives.org::#flavors-09-09" :only-contents t
+
+    The results point to major accuracy reduction for all variants,
+    with almost equal accuracy for all variants with SVM-classifier,
+    but slightly overhead-related accuracy for the Extra-Trees
+    classifier. In both experiments, the =aI= flavor performed at the
+    top or almost, with the =aII= flavor producing slightly lower
+    overhead for comparable accuracy in the low-overhead setting.
+
+    The size-guessing =b= flavors produce significantly
+    higher overhead, but yield a further small reduction of classifier
+    accuracy.
 *** KEYWORDS [#A] sota (practical): WTF-PAD
     :PROPERTIES:
     :CUSTOM_ID: eval-wtf-pad
@@ -1656,10 +1672,13 @@ treatment.
       - small page, small page with add-on, bigger page
       - does with add-on look like bigger page?
     - wait for [[file:~/da/da.org::*experimente][experimente]] plan 3
-*** KEYWORDS Websites
+*** WRITE Websites
     :PROPERTIES:
     :CUSTOM_ID: websites
     :END:
+    Some websites classified better by the Extra-Trees classifier,
+    some with Support Vector Machines.
+
     - which websites classify well with which classifier, which badly
     - results in Tables [[tab:class_accuracy-07-06]],
       [[tab:class_accuracy-simple]], [[tab:class_accuracy-main]], and
@@ -1803,9 +1822,6 @@ treatment.
    :PROPERTIES:
    :CUSTOM_ID: future-work
    :END:
-*** evaluation
-   - bigger world sizes
-   - more elaborate tests with different world sizes / open world / etc
 *** KEYWORDS addon
    - all HTTP gets treated the same
      a.k.a. how to distinguish HTML/embedded
@@ -1895,7 +1911,7 @@ treatment.
     reduce latency, if this does not reduce privacy.
 ***** TODO tor proposals as of tor.sx
 ***** TODO read/skim and cite "on performance..."
-*** MOVE integrate [[*evaluation][evaluation]] to more thorough evaluation
+*** more thorough evaluation
     - only two panchenko approaches
     - assumption: can split traces
     As critiqued in \cite{critique}, the evaluation in this thesis
@@ -1909,6 +1925,8 @@ treatment.
         - but feghhi and wang
     - if protects against this, should also protect against worse
     - additional (?defense?) as proposed in critique
+    - bigger world sizes
+    - more elaborate tests with different world sizes / open world / etc
 **** TODO follow critique at all?
      - yes, shows Tor project's official position
 *** Exactly distinguishing HTML and embedded requests
@@ -1939,7 +1957,7 @@ treatment.
   :CUSTOM_ID: versions
   :END:
 ** WRITE 0.17 bursts at end - bursts on addon site load finish
-   - wang: burst distinguishing attribute left with
+   - wang: burst distinguishing feature left with
      w/t\cite{wang2015walkie}
    - solution: count how many embedded, add those as bursts at the
      end
@@ -2440,8 +2458,8 @@ treatment.
    :PROPERTIES:
    :CUSTOM_ID: counter
    :END:
-   Once the website traces are stored in pcap-files, attribute vectors
-   need to be extracted. A attribute vector is represented by a Python
+   Once the website traces are stored in pcap-files, feature vectors
+   need to be extracted. A feature vector is represented by a Python
    class =Counter=, which can be created from a pcap file, or
    persisted to a JSON\cite{rfc7159} file containing timing and
    packet size information (to save time and space).
@@ -2465,15 +2483,15 @@ treatment.
    =Counter=s as values. If there were no JSON files in the
    directory, these are created automatically via the =save()=-method.
 
-   To extract the attributes from a single =Counter=, the
+   To extract the features from a single =Counter=, the
    =panchenko()= and =cumul()=-methods can be used; to inspect
-   single attributes of Panchenko et al.'s first
+   single features of Panchenko et al.'s first
    attack\cite{panchenko} you can call
-   =get('attribute_name')=[fn::for example
+   =get('feature_name')=[fn::for example
    =COUNTERS['cnn.com'][0].get('duration')')=].
 
-   =panchenko()= yields a attribute vector with default padding of
-   Panchenko's variable-length attributes. Since Panchenko et
+   =panchenko()= yields a feature vector with default padding of
+   Panchenko's variable-length features. Since Panchenko et
    al\cite{panchenko} gave explicit size conversions, the sizes have
    not been normalized further. The default padding is computed to
    be large enough for all traces.
@@ -2493,22 +2511,22 @@ treatment.
    ones as negative numbers."
 
    - differences to panchenkos
-     - attribute extraction via python class directly from pcap
+     - feature extraction via python class directly from pcap
        - packet data saveable to JSON
 *** TODO cumul
-** WRITE analyse.py: code to classify etc: transform attributes to vector
+** WRITE analyse.py: code to classify etc
    :PROPERTIES:
    :CUSTOM_ID: analyse
    :END:
    Once the =Counter=s data is obtained, it needs to be transformed
    to input for scikit-learn's\cite{scikit-learn} classifiers.
 
-   The code to convert these attributes to classification input can be
-   found in =analyse.py= (see appendix [[#analyse]]). This determines the maximum
-   length of all variable-length attributes, 0-pads Panchenko's attributes
-   with zeroes to the same length, and converts them to an array fit
-   for input into scikit-learn's classifiers. When called from the
-   command line, as
+   The code to classify input can be found in =analyse.py= (see
+   appendix [[#analyse]]). For Panchenko 1, this determines the maximum
+   length of all variable-length attributes, 0-pads variable-length
+   attributes with zeroes to the same length, and converts them to an
+   array fit for input into scikit-learn's classifiers. When called
+   from the command line, as
 
    python -i /path/to/analyse.py
 
@@ -2925,8 +2943,8 @@ treatment.
    :END:
    This approach did not scale to several parallel connections,
    causing delays of several seconds under medium load, so it was not
-   used[fn::/unplanned/ delays are problematic as cover traffic does
-   not appear when it should]. It is included as a reference of what
+   used, as /unplanned/ delays are problematic as cover traffic does
+   not appear when it should. It is included as a reference of what
    seems to work, but did not.
 
    The python module =TrafficHTTPServer= can be started on the

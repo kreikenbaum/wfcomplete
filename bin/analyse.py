@@ -26,7 +26,8 @@ GOOD = [ensemble.ExtraTreesClassifier(n_estimators=250),
 ALL = GOOD[:]
 ALL.extend([ensemble.AdaBoostClassifier(),
             svm.SVC(gamma=2**-4)])
-SVC_MAP = {}
+SVC_TTS_MAP = {}
+SVC_ALL_MAP = {}
 
 scaler = None
 
@@ -144,7 +145,7 @@ def _misclassification_rates(train, test, clf=GOOD[0]):
 def _my_grid(X, y,
              cs=np.logspace(11, 17, 4, base=2),
              gammas=np.logspace(-3, 3, 4, base=2),
-             results={}, num_jobs=JOBS_NUM):
+             results={}, num_jobs=JOBS_NUM, folds=5):
     '''grid-search on fixed params
 
     @param results are previously computed results {(c, g): accuracy, ...}
@@ -158,7 +159,7 @@ def _my_grid(X, y,
             if (c,g) in results:
                 current = results[(c,g)]
             else:
-                current = _test(X, y, clf, num_jobs)
+                current = _test(X, y, clf, num_jobs, folds=folds)
                 results[(c, g)] = current
             if not best or bestres.mean() < current.mean():
                 best = clf
@@ -177,13 +178,14 @@ def _my_grid(X, y,
         logging.info('grid result: {}'.format(best))
         return best, results
 
-def _my_grid_helper(counter_dict, outlier_removal=True, nj=JOBS_NUM,cumul=True):
+def _my_grid_helper(counter_dict, outlier_removal=True, nj=JOBS_NUM,
+                    cumul=True, folds=5):
     '''@return grid-search on counter_dict result (clf, results)'''
     if outlier_removal:
         counter_dict = counter.outlier_removal(counter_dict)
     if cumul:
         (X, y, _) = to_features_cumul(counter_dict)
-        return _my_grid(X, y, num_jobs=nj)
+        return _my_grid(X, y, num_jobs=nj, folds=folds)
     else:
         (X, y, _) = to_features(counter_dict)
         return _my_grid(X, y, num_jobs=nj,
@@ -238,10 +240,10 @@ def _scale(X, clf):
         scaler = None
         return X
 
-def _test(X, y, clf, nj=JOBS_NUM):
+def _test(X, y, clf, nj=JOBS_NUM, folds=5):
     '''tests estimator with X, y, @return result (ndarray)'''
     X = _scale(X, clf)
-    return cross_validation.cross_val_score(clf, X, y, cv=5, n_jobs=nj)
+    return cross_validation.cross_val_score(clf, X, y, cv=folds, n_jobs=nj)
 
 # unused, but could be useful
 def _times_mean_std(counter_dict):
@@ -285,22 +287,27 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
 
     defense0 = argv[1] if len(argv) > 1 else '.'
 
+    # no-split, best result of 10-fold tts
+    clf,res = _my_grid_helper(counter.outlier_removal(defenses[defense0], 2),
+                              cumul, folds=10)
+    print '10-fold result: {}'.format(max(res.values()))
+
     # training set
     (train, test) = tts(defenses[defense0])
     CLFS = GOOD[:]
     if with_svm:
-        if defense0 in SVC_MAP and cumul:
+        if defense0 in SVC_TTS_MAP and cumul:
             logging.info('reused svc: %s for defense: %s',
-                         SVC_MAP[defense0],
+                         SVC_TTS_MAP[defense0],
                          defense0) #debug?
-            CLFS.append(SVC_MAP[defense0])
+            CLFS.append(SVC_TTS_MAP[defense0])
         else:
             t = time.time()
             clf,_ = _my_grid_helper(counter.outlier_removal(train, 2), cumul)
             print 'parameter search took: {}'.format(time.time() -t)
             if cumul:
-                SVC_MAP[defense0] = clf
-                CLFS.append(SVC_MAP[defense0])
+                SVC_TTS_MAP[defense0] = clf
+                CLFS.append(SVC_TTS_MAP[defense0])
             else:
                 CLFS.append(clf)
 
@@ -364,8 +371,8 @@ def gen_class_stats_list(defenses,
     '''@return list of _misclassification_rates() with defense name'''
     if defense0 == 'auto':
         defense0 = [x for x in defenses if 'disabled' in x][0]
-        if defense0 in SVC_MAP:
-            clfs.append(SVC_MAP[defense0])
+        if defense0 in SVC_TTS_MAP:
+            clfs.append(SVC_TTS_MAP[defense0])
     out = []
     for clf in clfs:
         for c in defenses:
@@ -441,6 +448,7 @@ def to_features(counters, max_lengths=None):
         class_number += 1
     return (np.array(X_in), np.array(out_y), domain_names)
 
+# td: refactor: code duplication with to_features
 def to_features_cumul(counters):
     '''transforms counter data to CUMUL-feature vector pair (X,y)'''
     X_in = []
@@ -598,8 +606,11 @@ def class_stats_to_table(class_stats):
 ## retro
 # 09-18
 # sys.argv = ['', 'disabled/bridge__2016-09-18', '0.15.3-retrofixed/bridge/100__2016_09_15', '0.15.3-retrofixed/bridge/50__2016_09_16']
+## simple
+# sys.argv = ['5__2016-09-23_100/'...]
 # DISABLED
-# sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15', 'disabled/bridge__2016-08-29', 'disabled/bridge__2016-09-09', 'disabled/bridge__2016-09-18'] # also has 100-class at -08-30
+# sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15', 'disabled/bridge__2016-08-29', 'disabled/bridge__2016-09-09', 'disabled/bridge__2016-09-18', 'disabled/bridge__2016-09-30'] # also has 100-class at -08-30
+# sys.argv = ['', 'disabled/bridge__2016-08-30_100', 'disabled/bridge__2016-09-21_100', 'disabled/bridge__2016-09-26_100', 'disabled/bridge__2016-09-26_100_with_errs']
 # TOP
 # sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aI__2016-07-19']
 # sys.argv = ['', 'disabled/bridge__2016-07-06', 'wfpad/bridge__2016-07-05']
