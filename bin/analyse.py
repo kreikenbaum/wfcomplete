@@ -27,7 +27,7 @@ ALL = GOOD[:]
 ALL.extend([ensemble.AdaBoostClassifier(),
             svm.SVC(gamma=2**-4)])
 SVC_TTS_MAP = {}
-SVC_ALL_MAP = {}
+ALL_MAP = {}
 
 scaler = None
 
@@ -272,6 +272,52 @@ def _xtest(X_train, y_train, X_test, y_test, clf):
     clf.fit(_scale(X_train, clf), y_train)
     return clf.score(_scale(X_test, clf), y_test)
 
+def class_stats_to_table(class_stats):
+    '''prints table from data in class_stats (gen_class_stats_list output)'''
+    rows = class_stats[0].keys()
+    rows.remove('id')
+    cols = [j['id'] for j in class_stats]
+    print '| |',
+    for col in cols:
+        print '{} |'.format(col),
+    print ''
+    for row in rows:
+        print '| {}'.format(row),
+        for col in class_stats:
+            print '| {}'.format(col[row]),
+        print '|'
+
+def compare_stats(dirs):
+    '''@return a dict {dir1: {domain1: {...}, ..., domainN: {...}},
+    dir2:..., ..., dirN: ...} with domain mean, standard distribution
+    and labels'''
+    defenses = counter.for_defenses(dirs)
+    means = {k: _mean(v) for (k,v) in defenses.iteritems()}
+    stds = {k: _std(v) for (k,v) in defenses.iteritems()}
+    out = []
+    for d in dirs:
+        logging.info('version: %s', d)
+        el = {"plugin-version": d,
+              "plugin-enabled": False if 'disabled' in d else True}
+        for site in defenses[d]:
+            tmp = dict(el)
+            tmp['website'] = site
+            tmp['mean'] = means[d][site]
+            tmp['std'] = stds[d][site]
+            out.append(tmp)
+    return out
+
+def simulated_original(counters, name=None, folds=10):
+    '''simulates original panchenko: does 10-fold cv on _all_ data, just
+picks best result'''
+    if name is not None and name in ALL_MAP:
+        res = ALL_MAP[name]
+    else:
+        _,res = _my_grid_helper(counter.outlier_removal(counters, 2),
+                                cumul=True, folds=folds)
+        ALL_MAP[name] = res
+    print '10-fold result: {}'.format(max(res.values()))
+
 def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
     '''cross test on dirs: 1st has training data, rest have test
 
@@ -290,7 +336,7 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
     # no-split, best result of 10-fold tts
     clf,res = _my_grid_helper(counter.outlier_removal(defenses[defense0], 2),
                               cumul, folds=10)
-    print '10-fold result: {}'.format(max(res.values()))
+    print '10-fold result: {}'.format(max(map(np.mean, res.values())))
 
     # training set
     (train, test) = tts(defenses[defense0])
@@ -343,27 +389,6 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
             t = time.time()
             print '{}: {}'.format(_clf_name(clf), _xtest(X, y, X2, y2, clf)), 
             print '({} seconds)'.format(time.time() - t)
-
-def compare_stats(dirs):
-    '''@return a dict {dir1: {domain1: {...}, ..., domainN: {...}},
-    dir2:..., ..., dirN: ...} with domain mean, standard distribution
-    and labels
-    '''
-    defenses = counter.for_defenses(dirs)
-    means = {k: _mean(v) for (k,v) in defenses.iteritems()}
-    stds = {k: _std(v) for (k,v) in defenses.iteritems()}
-    out = []
-    for d in dirs:
-        logging.info('version: %s', d)
-        el = {"plugin-version": d,
-              "plugin-enabled": False if 'disabled' in d else True}
-        for site in defenses[d]:
-            tmp = dict(el)
-            tmp['website'] = site
-            tmp['mean'] = means[d][site]
-            tmp['std'] = stds[d][site]
-            out.append(tmp)
-    return out
 
 def gen_class_stats_list(defenses,
                          defense0='auto',
@@ -563,20 +588,6 @@ def tts(counter_dict, test_size=1.0/3):
     # sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
 
 ### CLASSIFICATION RESULTS PER CLASS
-def class_stats_to_table(class_stats):
-    '''prints table from data in class_stats (gen_class_stats_list output)'''
-    rows = class_stats[0].keys()
-    rows.remove('id')
-    cols = [j['id'] for j in class_stats]
-    print '| |',
-    for col in cols:
-        print '{} |'.format(col),
-    print ''
-    for row in rows:
-        print '| {}'.format(row),
-        for col in class_stats:
-            print '| {}'.format(col[row]),
-        print '|'
 
     # sys.argv = ['', 'disabled/bridge', '0.15.3-retrofixed/bridge/30.js', '0.15.3-retrofixed/bridge/70.js', '0.15.3-retrofixed/bridge/50.js']
     # sys.argv = ['', 'disabled/bridge', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5__2016-07-17', 'simple2/20']
@@ -598,16 +609,20 @@ def class_stats_to_table(class_stats):
 # sys.argv = ['', 'disabled/bridge__2016-07-06', '0.22/10aI__2016-07-08/', 'wfpad/bridge__2016-07-05', '0.22/30aI__2016-07-13/', '0.22/50aI__2016-07-13/']
 # 07-21
 # sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aII__2016-07-18/', '0.22/5aI__2016-07-19/', '0.22/10_maybe_aI__2016-07-23/', '0.22/2aI__2016-07-23/', '0.22/30aI__2016-07-25/', '0.22/50aI__2016-07-26/', '0.22/5aI__2016-07-25/']
-## flavors
+## FLAVORS
 # 08-29
 # sys.argv = ['', 'disabled/bridge__2016-08-29/', '0.22/5bII__2016-08-27/', '0.22/5aI__2016-08-26/', '0.22/5bI__2016-08-27/', '0.22/5aII__2016-08-25/']
 # 09-09
 # sys.argv = ['', 'disabled/bridge__2016-09-09', '0.22/20aI__2016-09-10', '0.22/20aII__2016-09-10', '0.22/20bI__2016-09-13', '0.22/20bII__2016-09-12']
-## retro
+## RETRO
 # 09-18
 # sys.argv = ['', 'disabled/bridge__2016-09-18', '0.15.3-retrofixed/bridge/100__2016_09_15', '0.15.3-retrofixed/bridge/50__2016_09_16']
-## simple
-# sys.argv = ['5__2016-09-23_100/'...]
+## SIMPLE
+# 2016-09-23
+# sys.argv = ['', 'disabled/bridge__2016-09-21_100', 'simple2/5__2016-09-23_100/']
+# sys.argv = ['', 'disabled/bridge__2016-09-26_100', 'simple2/5__2016-09-23_100/']
+# sys.argv = ['', 'disabled/bridge__2016-09-26_100_with_errs', 'simple2/5__2016-09-23_100/']
+
 # DISABLED
 # sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15', 'disabled/bridge__2016-08-29', 'disabled/bridge__2016-09-09', 'disabled/bridge__2016-09-18', 'disabled/bridge__2016-09-30'] # also has 100-class at -08-30
 # sys.argv = ['', 'disabled/bridge__2016-08-30_100', 'disabled/bridge__2016-09-21_100', 'disabled/bridge__2016-09-26_100', 'disabled/bridge__2016-09-26_100_with_errs']
