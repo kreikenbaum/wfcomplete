@@ -316,7 +316,7 @@ picks best result'''
         _,res = _my_grid_helper(counter.outlier_removal(counters, 2),
                                 cumul=True, folds=folds)
         ALL_MAP[name] = res
-    print '10-fold result: {}'.format(max(res.values()))
+    print '10-fold result: {}'.format(max(map(np.mean, res.values())))
 
 def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
     '''cross test on dirs: 1st has training data, rest have test
@@ -334,9 +334,10 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
     defense0 = argv[1] if len(argv) > 1 else '.'
 
     # no-split, best result of 10-fold tts
-    clf,res = _my_grid_helper(counter.outlier_removal(defenses[defense0], 2),
-                              cumul, folds=10)
-    print '10-fold result: {}'.format(max(map(np.mean, res.values())))
+    simulated_original(defenses[defense0], defense0)
+    # clf,res = _my_grid_helper(counter.outlier_removal(defenses[defense0], 2),
+    #                           cumul, folds=10)
+    # print '10-fold result: {}'.format(max(map(np.mean, res.values())))
 
     # training set
     (train, test) = tts(defenses[defense0])
