@@ -511,7 +511,7 @@ def top_30(mean_per_dir):
     all_means = []
     for (defense, p_means) in mean_per_dir.items():
         all_means.extend(p_means.values())
-    percentiles = np.percentile(vals,
+    percentiles = np.percentile(all_means,
                                 np.linspace(0, 100, 31),
                                 interpolation='lower')
     out = set()

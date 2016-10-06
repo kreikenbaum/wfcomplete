@@ -17,6 +17,7 @@ HOME_IP = '134.169.109.25'
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
 LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
+MIN_CLASS_SIZE=30
 
 TIME_SEPARATOR = '@'
 
@@ -95,6 +96,18 @@ def _pad(row, upto=300):
     row.extend([0] * (upto - len(row)))
     return row
 
+def _remove_small_classes(counter_dict):
+    '''@return dict with removed traces if there are less than
+MIN_CLASS_SIZE per url'''
+    out = {}
+    for (k, v) in counter_dict.iteritems():
+        if len(v) < MIN_CLASS_SIZE:
+            logging.warn('class {} had only {} instances, removed'.format(
+                k, len(v)))
+        else:
+            out[k] = v
+    return out
+
 def _test(num, val=600, millisecs=10):
     '''@return Counter with num packets of size val each millisecs apart'''
     return from_json('{{"packets": {}, "timing": {}}}'.format(
@@ -139,7 +152,7 @@ def _sum_stream(packets):
 
 # td: separate json parsing and pcap-parsing
 # td: use glob.iglob? instead of os.walk?
-def all_from_dir(dirname):
+def all_from_dir(dirname, remove_small=True):
     '''all packets traces in subdirectories of the name domain@tstamp are
     parsed to Counters. If there are JSON files created by
     =save()=, use those instead of the pcap files for their
@@ -167,6 +180,8 @@ def all_from_dir(dirname):
                 _append_features(out, fullname)
     if not out:
         raise Exception('no counters in path "{}"'.format(dirname))
+    if remove_small:
+        return _remove_small_classes(out)
     return out
 
 def all_from_json(filename):
