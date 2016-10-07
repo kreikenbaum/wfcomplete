@@ -191,6 +191,19 @@ def all_from_json(filename):
         out.append(from_json(entry))
     return out
 
+def all_to_wang(counter_dict):
+    '''writes all counters in counter_dict to directory <code>batch</code>. also writes a list number url to ./batch_list'''
+    os.mkdir("batch")
+    batch_list = open("batch_list", "w")
+    url_id = 0
+    for (url, data) in counter_dict.iteritems():
+        batch_list.write("{}: {}\n".format(url_id, url))
+        for (counter_id, datum) in enumerate(data):
+            datum.to_wang(os.path.join(
+                "batch", "{}-{}".format(url_id, counter_id)))
+        url_id += 1
+    batch_list.close()
+
 # td: read up on ordereddict, maybe replace
 def for_defenses(defenses):
     '''@return dict: {defense1: {domain1: counters1_1, ...  domainN:
@@ -234,7 +247,7 @@ class Counter(object):
         >>> Counter.from_panchenko_data('c.com 1234 1235:300').get_total_both()
         300
         >>> Counter.from_panchenko_data('c.com 1234 1235:300').name
-        c.com@1234
+        c.com@1.234
         >>> Counter.from_panchenko_data('c.com 1234 1235:300').packets
         [300]
         '''
@@ -243,9 +256,9 @@ class Counter(object):
         tmp = Counter()
 
         elements = line.split()
-        #start_time = int(elements[1])
-        #tmp.name = '{}@{}'.format(elements[0], start_time)
-        tmp.name = elements[0]
+        start_time = int(elements[1])/1000.
+        tmp.name = '{}@{}'.format(elements[0], start_time)
+        #tmp.name = elements[0]
         for element in elements[2:]:
             (time, value) = element.split(':')
             tmp.packets.append(int(value))
@@ -442,6 +455,13 @@ class Counter(object):
     def to_json(self):
         '''prints packet trace to json, for reimport'''
         return json.dumps(self.__dict__)
+
+    def to_wang(self, filename):
+        '''writes this counter to filename in Wang et al's format (who is Al,
+by the way? ;-)'''
+        with open(filename, 'w') as f:
+            for (time, size) in self.timing:
+                f.write("{}\t{}\n".format(time, -size))
 
     def cumul(self, num_features=100):
         '''@return CUMUL feature vector: inCount, outCount, outSize, inSize++'''
