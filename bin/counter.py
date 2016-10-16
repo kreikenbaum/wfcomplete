@@ -191,6 +191,17 @@ def all_from_json(filename):
         out.append(from_json(entry))
     return out
 
+def all_from_panchenko(dirname='.'):
+    '''creates list of Counters from filename, calling from_panchenko_data()'''
+    out = {}
+    os.chdir(dirname)
+    for filename in glob.glob('*'):
+        with open(filename) as f:
+            out[filename] = []
+            for line in f:
+                out[filename].append(Counter.from_panchenko_data(line))
+    return out
+
 def all_to_wang(counter_dict):
     '''writes all counters in counter_dict to directory <code>batch</code>. also writes a list number url to ./batch_list'''
     os.mkdir("batch")
@@ -203,6 +214,14 @@ def all_to_wang(counter_dict):
                 "batch", "{}-{}".format(url_id, counter_id)))
         url_id += 1
     batch_list.close()
+
+def dir_to_wang(dirname, remove_small=True):
+    '''creates input to wang's classifier (in a =batch/= directory) for traces in dirname'''
+    previous_dir = os.getcwd()
+    os.chdir(dirname)
+    counter_dict = all_from_dir('.', remove_small)
+    all_to_wang(counter_dict)
+    os.chdir(previous_dir)
 
 # td: read up on ordereddict, maybe replace
 def for_defenses(defenses):
@@ -265,18 +284,7 @@ class Counter(object):
             #tmp.timing.append([(int(time) - start_time) / 1000.0, int(value)])
         return tmp
 
-    @staticmethod
-    def all_from_panchenko(dirname='.'):
-        '''creates list of Counters from filename, calling from_panchenko_data()'''
-        out = {}
-        os.chdir(dirname)
-        for filename in glob.glob('*'):
-            with open(filename) as f:
-                out[filename] = []
-                for line in f:
-                    out[filename].append(Counter.from_panchenko_data(line))
-        return out
-
+    # tdref: does this need to be a static method?
     @staticmethod
     def save(counter_dict, prefix=''):
         '''saves counters as json data to file, each is prefixed with prefix'''
@@ -289,6 +297,7 @@ class Counter(object):
                     file_.write(counter.to_json())
                     file_.write('\n')
 
+    # td: can this methodbe removed/refactored?
     @staticmethod
     def from_(*args):
         '''helper method to handle empty argument'''
@@ -307,8 +316,8 @@ class Counter(object):
             out = all_from_dir('.')
         return out
 
-    @classmethod
-    def from_pcap(cls, filename):
+    @staticmethod
+    def from_pcap(filename):
         '''creates Counter from pcap file'''
         tmp = Counter(filename)
 
@@ -623,4 +632,3 @@ if __name__ == "__main__":
         for t in itertools.chain.from_iterable(COUNTERS.values()):
          # was [trace for domain in COUNTERS.values() for trace in domain]:
             print t.timing
-    

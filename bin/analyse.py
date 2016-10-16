@@ -601,7 +601,7 @@ def tts(counter_dict, test_size=1.0/3):
 # outlier_removal_levels(defenses[sys.argv[1]]) #td: try out
 
 # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
-# counters = counter.Counter.all_from_panchenko(PANCHENKO_PATH)
+# counters = counter.all_from_panchenko(PANCHENKO_PATH)
 
 # 0.22
 #['0.22/10aI__2016-07-08', '0.22/30aI__2016-07-13', '0.22/50aI__2016-07-13', '0.22/5aII__2016-07-18', '0.22/5aI__2016-07-19', '0.22/10_maybe_aI__2016-07-23', '0.22/5aI__2016-07-25', '0.22/30aI__2016-07-25', '0.22/50aI__2016-07-26', '0.22/2aI__2016-07-23', '0.22/5aI__2016-08-26', '0.22/5aII__2016-08-25', '0.22/5bI__2016-08-27', '0.22/5bII__2016-08-27', '0.22/20aI__2016-09-10', '0.22/20aII__2016-09-10', '0.22/20bII__2016-09-12', '0.22/20bI__2016-09-13']
@@ -633,6 +633,15 @@ def tts(counter_dict, test_size=1.0/3):
 
 # if by hand: change to the right directory before importing
 # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
+
+# # create wang' batch directories. call this in data/ directory
+# for root, dirs, files in os.walk('.'):
+#     # plots or already processed
+#     if (not re.search('/(plots|path|batch|results)', root) and
+#         not dirs and files):
+#         print root
+#         counter.dir_to_wang(root, remove_small=False)
+
 if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)

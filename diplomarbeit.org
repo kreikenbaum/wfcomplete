@@ -432,10 +432,6 @@ Facebook.com\\
      #+NAME: fig:linear_boundary
      [[./pictures/iml_fig1.5.png]]
 
-     While this might seem overly limiting, SVMs can compute the
-     boundary not only on the original data, but also on a projected
-     space. This allows for complex decision boundaries.
-
      (These parts are mostly based on \cite[ch.6f]{iml}). Given a set
      $X = \{x_1, ..., x_n\}$ with a dot product $\langle\cdot, \cdot\rangle: X \times X \to
      \mathbb R$ and tuples $(x_1, y_1), ..., (x_m, y_m)$, with $x_i \in
@@ -452,22 +448,23 @@ Facebook.com\\
      such that $\langle w, x_i \rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle
      +b < 0$ whenever $y_i = -1$. With normalization, this can be
      compressed to the form \[y_i \cdot (\langle w, xi \rangle +b) \ge 1.\]
-**** WRITE Soft Margin Classifiers
+**** CHECK Soft Margin Classifiers
+     #+INDEX: margin
+     #+INDEX: SVM!margin
+     #+INDEX: Support Vector Machine!margin
      A support vector machine tries to find a hyperplane between two
-     groups of points and maximize the margin between this and
-     the closest points. What happens if the points lie such that a line
+     groups of points and maximize its distance to the closest points,
+     called /margin/. What happens if the points lie such that a line
      cannot be found?
 
      To solve this, a /soft-margin classifier/ introduces slack
      variables $\xi \ge 0$, which it tries to reduce while maximizing the
-     distance of the closest point to the hyperplane.
+     margin.
 
      This alters the equations to $y_i( \langle w, xi \rangle +b) \ge 1 - \xi_i$ for the
      optimization problem
 
      \[\min_{w, b, \xi} 1/2 ||w||^2 + C/m \sum_{i=1..m} \xi_i.\]
-
-     - define/describe margin (here, before?)
 **** WRITE Multi-Class Strategies aka ovr vs ovo (vs ecoc)
      #+INDEX: binary classification
      #+INDEX: multi-class classification
@@ -501,6 +498,10 @@ Facebook.com\\
         as of rieck phdthesis
       - mention Error-Correcting Output-Codes (ref sklearn)
 **** WRITE kernel trick
+     Linear boundaries seem overly limiting. Yet, SVMs can compute the
+     boundary not only on the original data, but also on a projected
+     space. This allows for complex decision boundaries.
+
      The above all give a linear boundary between classes. What if
      this does not model reality? Solution: svm can not only use the
      dot product, but any kernel function.
@@ -601,14 +602,15 @@ Facebook.com\\
       - no classifier fits all
       - maps features to classes (or probabilities)
       - classifier
-*** KEYWORDS k-fingerprinting
-    - many different features evaluated
+*** WRITE k-fingerprinting
+    - similar accuracy to wang-knn and CUMUL
+    - about 150 different features evaluated
     - classifier is random forest
-    - \cite{kfingerprint}
     - different multi-class metric leaf label, knn with hamming
       distance
       - leaf labels, see scikit-learn sec 42.9.9.apply
-    - attribute importances
+    - feature importances
+    - \cite{kfingerprint}
 *** WRITE Related Work
     :PROPERTIES:
     :CUSTOM_ID: wfRelated
@@ -701,9 +703,9 @@ Facebook.com\\
     protocol. This would conflict with Tor's design goal of
     deployability\cite{tor-design}.
 
-    Several researchers used the (1.) approach of adding noise to
-    traffic. Others --- additionally or exclusively --- alter traffic by
-    reducing the data rate, splitting and merging packets, etc.
+    Several researchers used the (1.) approach of /adding noise to
+    traffic/. Others --- additionally or exclusively --- /alter traffic/
+    by reducing the data rate, splitting and merging packets, etc.
 *** EVA Specific vs General Defenses
     As of \cite{wang2015walkie}, defenses designed against website
     fingerprinting can be divided into specific and general defenses.
@@ -1143,8 +1145,8 @@ Facebook.com\\
 ** KEYWORDS Setup
 *** CHECK Introduction
     The following sections describe [[#sites][which]] and [[#capture][how]] data was captured,
-    [[#feature-extraction][how features were extracted from the raw data]], and how these were
-    analysed.
+    [[#feature-extraction][how classification input was extracted from the raw data]], and [[*Classification][how
+    this input was assigned to classes/websites]].
 *** WRITE Sites
     :PROPERTIES:
     :CUSTOM_ID: sites
@@ -1157,6 +1159,9 @@ Facebook.com\\
      - increase to 30
      - open-world: rest
 **** WRITE modified top-100
+     :PROPERTIES:
+     :CUSTOM_ID: top100
+     :END:
      The URLs for retrieval come from the Alexa top million sites
      list[fn:: Current version available at
      \url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}],
@@ -1178,7 +1183,6 @@ Facebook.com\\
            taobao.com, xinhuanet.com, soso.com, sina.com.cn, qq.com,
            sohu.com, weibo.com, jd.com, sogou.com
          - other chinese site ok: hao123.com
-
 **** EVA 30 sites
      :PROPERTIES:
      :CUSTOM_ID: 30sites
@@ -1203,7 +1207,7 @@ Facebook.com\\
      \cite{a-systematic} offers a model to compute open-world results
      from closed-world. It seemed more direct to capture background
      traces.
-*** EVA Capture
+*** WRITE Capture
     :PROPERTIES:
     :CUSTOM_ID: capture
     :END:
@@ -1237,6 +1241,9 @@ Facebook.com\\
 
     Single traces are captured via the Python script ~one_site.py~, see
     appendix [[#1site_desc]].
+
+    - label erroneous traces
+    - also metioned in [[#top100]]
 **** WAIT github config files upload + mention
 *** KEYWORDS Feature Extraction
 **** EVA Introduction
@@ -1278,7 +1285,7 @@ Facebook.com\\
      :PROPERTIES:
      :CUSTOM_ID: outlier_removal
      :END:
-     As described by \cite{panchenko2}, CUMUL's accuracy is increased
+     As of \cite{panchenko2}, CUMUL's accuracy is increased
      by outlier removal. Their
      software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/},
      see =features/feature-scripts/outlier-removal.py=] has 3--4
@@ -1357,7 +1364,8 @@ Facebook.com\\
         - traces available in =data/path= directory
         - possible solution: validation set bigger
           - \cite{kfingerprint} captured 70 instances each
-
+          - \cite{effective} used 90: 60 for train, 30 for test
+        - this was before labelling erroneous traces
 **** KEYWORDS scaling
      - svm
      - recommended by \cite{sarle2} and \cite{Hsu10apractical}
@@ -1367,6 +1375,8 @@ Facebook.com\\
     :PROPERTIES:
     :CUSTOM_ID: classification
     :END:
+**** KEYWORDS Introduction
+**** EVA CUMUL Re-Implementation
     After outlier removal, splits and possibly scaling, classification
     takes as input feature vectors and tries to output the class that
     this input belongs to. This is triggered by [[#analyse][=analyse.py=]].
@@ -1382,7 +1392,7 @@ Facebook.com\\
 
     After SVM-parameters have been determined, several classifiers are
     trained on the training data and evaluated on the test data.
-*** KEYWORDS Original Classification Methods: Panchenko and Wang's
+*** MOVE sub [[#classification][Classification]] above own KEYWORDS Original Classification Methods: Panchenko and Wang's
     - why:
       - main purpose is addon test
       - would like to match state-of-the-art as exactly as possible
@@ -1408,7 +1418,7 @@ treatment.
         - *positive in, neg out*
         - line is trace, =class start_time packet_time:packet_size ...=
           - times are milliseconds since epoch
-** KEYWORDS Website Fingerprinting [0/9]
+** KEYWORDS Website Fingerprinting [0/10]
 *** WAIT Panchenko 1
     - original wf attack
     - HTTP/HTML-specific features
@@ -1537,6 +1547,7 @@ treatment.
            capture), all defenses compared to closest-in-time
            no-defense retrieval
 **** TODO [#C] google doodle
+**** TODO after removal of erroneous captures
 *** KEYWORDS SVM vs Extra-Trees
     :PROPERTIES:
     :CUSTOM_ID: svm_vs_et
@@ -2277,10 +2288,9 @@ treatment.
    :PROPERTIES:
    :CUSTOM_ID: top-100
    :END:
-   #+INCLUDE: "./sw/top-100-modified.csv" example
+   #+INCLUDE: "./sw/top/top-100-modified.csv" example
 ** KEYWORDS 30 sites
-   #+INCLUDE: "./sw/top-30.csv" example
-
+   #+INCLUDE: "./sw/top/top-30.csv" example
 * APPENDIX_DONE Mozilla Add-On Sdk
   #+INDEX: XUL
   #+INDEX: XML User-interface Langage
@@ -2567,20 +2577,20 @@ treatment.
 
    The code to classify input can be found in =analyse.py= (see
    appendix [[#analyse]]). For Panchenko 1, this determines the maximum
-   length of all variable-length attributes, 0-pads variable-length
-   attributes with zeroes to the same length, and converts them to an
+   length of all variable-length features, 0-pads variable-length
+   features with zeroes to the same length, and converts them to an
    array fit for input into scikit-learn's classifiers. When called
    from the command line, as
 
    python -i /path/to/analyse.py
 
-   , it will extract the attribute vectors from JSON or pcap files in
+   , it will extract the feature vectors from JSON or pcap files in
    the current directory, and run 5-fold cross-validated classifiers
    against the data.
 
-   =Counter= input attributes are transformed into scikit-learn input
+   =Counter= input features are transformed into scikit-learn input
    in the =to_features()= function, which normalizes all vectors to
-   have the same size (padding with 0s), and creates the attribute
+   have the same size (padding with 0s), and creates the feature
    matrix =X= with numeric class labels =y= (and class names in
    =y_domain=).
 
@@ -2630,7 +2640,7 @@ treatment.
   and respectively for craigslist, in the directories containing the
   pcap files.
 
-  These commands first extract each =Counter='s =timing= attribute
+  These commands first extract each =Counter='s =timing= feature
   (the last line of the output of counter.py at git commit 791af76),
   format it for gnuplot (inserting appropriate newlines via =sed= and
   removing extra characters via =tr=), and =gnuplot= s it to a png
@@ -2775,7 +2785,7 @@ treatment.
   ~retrieve-100-embedded.sh~.
 
   To extract, python's lxml module to parse the HTML's
-  DOM extracts the URLs of embedded files from the attributes of
+  DOM extracts the URLs of embedded files from the features of
   several tags, f.ex.\space{}the =src= element of =img= tags.
 ** TODO link to lxml website
 ** WAIT github links
@@ -2876,8 +2886,8 @@ treatment.
         Bridge bridge.ip:40200
       #+END_EXAMPLE
 ** TODO scripts
-* distribution of version 1's (main) attributes
-  These distribution histograms show how Panchenko's main attributes
+* distribution of version 1's (main) features
+  These distribution histograms show how Panchenko's main features
   are distributed. They are stacked histograms with classes
   separated by colors. They are compared (visually) to the HTTP
   Traffic Model\cite{newtrafficmodel}.
@@ -2896,7 +2906,7 @@ treatment.
   Conceptually, the
 
   [[file:pictures/all_length_0.png]]
-  the length of the Size Marker attribute vector.
+  the length of the Size Marker feature vector.
 
   [[file:pictures/all_num_sizes_in.png]]
   number of different packet sizes downstream/incoming.
@@ -2985,9 +2995,9 @@ treatment.
    :PROPERTIES:
    :CUSTOM_ID: server-non-para
    :END:
-   This approach did not scale to several parallel connections,
+   The following approach did not scale to several parallel connections,
    causing delays of several seconds under medium load, so it was not
-   used, as /unplanned/ delays are problematic as cover traffic does
+   used, as /unplanned/ delays are problematic because cover traffic does
    not appear when it should. It is included as a reference of what
    seems to work, but did not.
 
