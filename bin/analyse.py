@@ -634,14 +634,14 @@ def tts(counter_dict, test_size=1.0/3):
 # if by hand: change to the right directory before importing
 # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
 
-# # create wang' batch directories. call this in data/ directory
+## * create wang' batch directories. call this in data/ directory
+##   on update, alter [[diplomarbeit.org::*How to get Wang-kNN to work]]
 # for root, dirs, files in os.walk('.'):
 #     # plots or already processed
 #     if (not re.search('/(plots|path|batch|results)', root) and
 #         not dirs and files):
 #         print root
 #         counter.dir_to_wang(root, remove_small=False)
-
 if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)

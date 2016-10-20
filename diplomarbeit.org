@@ -84,8 +84,31 @@
   - Tao Wang
   - Dr. Dr. Eva
 * WAIT Summary
-* WRITE Basics (=basics) [35%]
+* WRITE Basics (=basics) [34%]
+** CHECK Introduction
+   Imagine someone looking over your shoulder while you are at your
+   computer, noting every single page, or at least every web domain
+   you visit. This is the current state of data retention laws in
+   Europe, even though it has been ruled unconstitutional... To
+   protect against this, and much more serious curtailing of free
+   information/speech online, tech-savvy users have resorted to the
+   Tor anonymity network.
+
+   Unfortunately, Tor's protection has become compromised under
+   laboratory conditions. \cite{panchenko} were the first to show that
+   just looking at the encrypted and location-anonymized packets of
+   Tor, it is possible to determine the target page browser to with
+   high probability. The [[#wf][next section]] explains how this works: how
+   data packets are captured, how relevant identifying data is
+   extracted, etc.
+
+   Fortunately, as soon as these weaknesses became known, defenses
+   were proposed. These will be describe in [[#defenses][the following section]],
+   showing different classes of defenses and examining some in detail.
 ** WRITE Website Fingerprinting [13/32]
+   :PROPERTIES:
+   :CUSTOM_ID: wf
+   :END:
 *** DANIEL Introduction
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
@@ -176,7 +199,7 @@ Facebook.com\\
     Against HTTPS[fn::HTTP over SSL\cite{sslv3}, the attacks were
     carried out against SSL 3.0], which reveals the domain being
     browsed to but hides the URLs accessed[fn::a web site/domain is
-    f.ex.\space{}wikipedia.org, while an example page/URL is
+    f.ex.\space{}\url{wikipedia.org}, while an example page/URL is
     https://en.wikipedia.org/w/index.php?title=Quantile_function],
     successful attacks to determine the web page[fn::cryptographers
     talk of attempts to circumvent a protocol as
@@ -425,23 +448,24 @@ Facebook.com\\
      #+INDEX: classification!binary
      Support Vector Machines (short: SVM) are a /linear classifier/:
      they find a linear boundary between points, see Figure
-     [[fig:linear_boundary]].
+     [[fig:linear_boundary]] for a simple example.
 
-     #+CAPTION[Example binary linearclassification]: Example binary linear classification from \cite[Figure 1.5]{iml}.
+     #+CAPTION[Example binary linear classification]: Example binary linear classification from \cite[Figure 1.5]{iml}.
      #+ATTR_LATEX: :width 0.4\textwidth
      #+NAME: fig:linear_boundary
      [[./pictures/iml_fig1.5.png]]
 
-     (These parts are mostly based on \cite[ch.6f]{iml}). Given a set
-     $X = \{x_1, ..., x_n\}$ with a dot product $\langle\cdot, \cdot\rangle: X \times X \to
-     \mathbb R$ and tuples $(x_1, y_1), ..., (x_m, y_m)$, with $x_i \in
-     X, y_i \in \{-1, 1\}$ as a /binary classification/ task.
+     (This and the following parts are mostly based on
+     \cite[ch.6f]{iml}). Given a set $X = \{x_1, ..., x_n\}$ with a
+     dot product $\langle\cdot, \cdot\rangle: X \times X \to \mathbb R$ and tuples $(x_1, y_1),
+     ..., (x_m, y_m)$, with $x_i \in X, y_i \in \{-1, 1\}$ as a /binary
+     classification/ task.
 
      The SVM's job is to find a hyperplane[fn::as \cite[ch.4.1]{esl}
      mention, this is actually an affine set, as it need not pass
      through the origin. Keeping with tradition, it will be called
      hyperplane in this thesis (as long as those things formed by
-     quarks are still called atoms...).]
+     quarks are still called atoms \ldots).]
      #+BEGIN_LaTeX
        \[\{x \in X \mid \langle w, x \rangle +b = 0\}\]
      #+END_LaTeX
@@ -497,14 +521,14 @@ Facebook.com\\
         high-dimensional distribution. TR 87, Microsoft Research.
         as of rieck phdthesis
       - mention Error-Correcting Output-Codes (ref sklearn)
-**** WRITE kernel trick
+**** WRITE Kernel Trick
      Linear boundaries seem overly limiting. Yet, SVMs can compute the
      boundary not only on the original data, but also on a projected
      space. This allows for complex decision boundaries.
 
      The above all give a linear boundary between classes. What if
-     this does not model reality? Solution: svm can not only use the
-     dot product, but any kernel function.
+     this does not model reality? The solution to this is that a SVM
+     can not only use the dot product, but any kernel function.
 
      - see figure [[hastie_kerneltrick]]
        - instead of dot product $\langle.,.\rangle$ use =kernel= $k(., .)$
@@ -652,6 +676,9 @@ Facebook.com\\
     attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
     state.
 ** WRITE Defenses [2/8]
+   :PROPERTIES:
+   :CUSTOM_ID: defenses
+   :END:
 *** WRITE Introduction
     As soon as it became clear that anonymized (web) traffic could be
     analysed to guess the destination, defenses were proposed.
@@ -1141,9 +1168,9 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* KEYWORDS Results and Evaluation [17%]
+* KEYWORDS Results and Evaluation [19%]
 ** KEYWORDS Setup
-*** CHECK Introduction
+*** EVA Introduction
     The following sections describe [[#sites][which]] and [[#capture][how]] data was captured,
     [[#feature-extraction][how classification input was extracted from the raw data]], and [[*Classification][how
     this input was assigned to classes/websites]].
@@ -1170,19 +1197,29 @@ Facebook.com\\
      removed were those sites which failed to respond to python's
      =urllib=\cite[sec.20.5]{python-lib-ref}. The list of sites with
      their Alexa index can be found in appendix
-     [[#top-100]]. \cite{ccs2012-fingerprinting} showed that accuracy on
-     this list closely resembles accuracy on 100 randomly-chosen
-     sites.[fn::\cite{wpes13-fingerprinting} also
-     "justify"\cite{wpes13-fingerprinting} the use of the top-100
-     sites]
+     [[#top-100]].
 
-     - code allows to see retrieval errors
-       - removed sites with more than 1/4 errors
-         - almost exclusively chinese sites: cntv.cn, tmall.com,
-           baidu.com, china.com, tianya.cn, alipay.com, 163.com,
-           taobao.com, xinhuanet.com, soso.com, sina.com.cn, qq.com,
-           sohu.com, weibo.com, jd.com, sogou.com
-         - other chinese site ok: hao123.com
+     As the Marionette framework (see Appendix [[#Marionette]]) detects
+     web site retrieval errors, evaluation was run with both included
+     and excluded sites. Where more than 1/4 of all retrievals were
+     erroneous, these sites were dropped from the list, as well. These
+     included mostly chinese sites: \url{cntv.cn}, \url{tmall.com},
+     \url{baidu.com}, \url{china.com}, \url{tianya.cn},
+     \url{alipay.com}, \url{163.com}, \url{taobao.com},
+     \url{xinhuanet.com}, \url{soso.com}, \url{sina.com.cn},
+     \url{qq.com}, \url{sohu.com}, \url{weibo.com}, \url{jd.com}, and
+     \url{sogou.com}. The site \url{hao123.com} seemed to yield some
+     errors, but less than the above, so it was retained.
+
+     As users would not retrieve sites over Tor when retrieval
+     resulted in mostly errors, striking these sites seemed
+     reasonable.
+
+     As for whether using top sites seems reasonable:
+     \cite{ccs2012-fingerprinting} showed that accuracy on a top-100
+     list closely resembles accuracy on 100 randomly-chosen
+     sites.[fn::\cite{wpes13-fingerprinting} also
+     "justify"\cite{wpes13-fingerprinting} the use of top-100 sites]
 **** EVA 30 sites
      :PROPERTIES:
      :CUSTOM_ID: 30sites
@@ -1300,29 +1337,18 @@ Facebook.com\\
      As seen in Table [[tab:outlier_removal]], a higher level of outlier
      removal on test data increases accuracy[fn:: The results are
      similar for the Extra-Trees classifier, see appendix [[*Outlier Removal Results with Extra-Trees Classifier][Outlier
-     Removal Results with Extra-Trees Classifier]].], but as of [[#split][the
-     previous section]], this is not applicable in a real-world
-     scenario.
+     Removal Results with Extra-Trees Classifier]].], but as of section
+     [[#split]] this is not applicable in a real-world scenario.
 
 #+CAPTION: Accuracy with SVM classifier after outlier removal. The ~both~ column shows classification accuracy if the outliers are removed from both test and training set at the same time.
 #+NAME: tab:outlier_removal
 #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
 #+INCLUDE: "data/results/alternatives.org::#outlier_removal" :only-contents t
 
-     The alternative denoted as =-1= saves the highest and lowest
+     The additional alternative denoted as =-1= saves the highest and lowest
      values of previous outlier removal on training data and applies
      it to the test data. As see in the table, it does not show any
      accuracy gain.
-
-
-     - describe stages
-       2. median: remove those smaller than 0.2*median and largen 1.8*median
-       3. quantile: calculate 1/4 and 3/4 quantiles q1, q3 of
-          incomingSize, remove if incomingSize < (q1-1.5 * (q3-q1)) or
-          incomingSize > (q3+1.5 * (q3-q1)
-     - testing stage: save previous highest and lowest limit
-       (lvl. 2. or 3), remove now if below lowest or above highest
-         - no advantage over just removing smallest/largest (1)
 
      This outlier removal removed on average
        - how many removed for levels
@@ -1376,6 +1402,32 @@ Facebook.com\\
     :CUSTOM_ID: classification
     :END:
 **** KEYWORDS Introduction
+**** KEYWORDS Original Classification Methods: Panchenko and Wang's
+     - why:
+       - main purpose is addon test
+       - would like to match state-of-the-art as exactly as possible
+       - quite certain that matches, but \cite{xp}
+         #+BEGIN_QUOTE
+ Optimism is an occupational hazard of programming. Feedback is the
+ treatment.
+         #+END_QUOTE
+         - and has some optimizations
+           - link to tts
+           - or-variants
+           - several classifiers: extra-trees
+     - wang: data sets until study (2014)
+       - web site at \url{https://cs.uwaterloo.ca/~t55wang/wf.html}
+         - attack code at \url{https://cs.uwaterloo.ca/~t55wang/knn.zip}
+         - attack data at \url{https://cs.uwaterloo.ca/~t55wang/knndata.zip}
+       - data format: one file per trace, named =class_id-trace_num=
+         - lines are time(float) \t packet length/cell
+         - [ *positive out, neg in* ]
+       - feature extraction in =fextractor.py=
+     - panchenko: 2016 data set plus code
+       - data format: one file per class, named by url
+         - *positive in, neg out*
+         - line is trace, =class start_time packet_time:packet_size ...=
+           - times are milliseconds since epoch
 **** EVA CUMUL Re-Implementation
     After outlier removal, splits and possibly scaling, classification
     takes as input feature vectors and tries to output the class that
@@ -1392,32 +1444,6 @@ Facebook.com\\
 
     After SVM-parameters have been determined, several classifiers are
     trained on the training data and evaluated on the test data.
-*** MOVE sub [[#classification][Classification]] above own KEYWORDS Original Classification Methods: Panchenko and Wang's
-    - why:
-      - main purpose is addon test
-      - would like to match state-of-the-art as exactly as possible
-      - quite certain that matches, but \cite{xp}
-        #+BEGIN_QUOTE
-Optimism is an occupational hazard of programming. Feedback is the
-treatment.
-        #+END_QUOTE
-        - and has some optimizations
-          - link to tts
-          - or-variants
-          - several classifiers: extra-trees
-    - wang: data sets until study (2014)
-      - web site at \url{https://cs.uwaterloo.ca/~t55wang/wf.html}
-        - attack code at \url{https://cs.uwaterloo.ca/~t55wang/knn.zip}
-        - attack data at \url{https://cs.uwaterloo.ca/~t55wang/knndata.zip}
-      - data format: one file per trace, named =class_id-trace_num=
-        - lines are time(float) \t packet length/cell
-        - [ *positive out, neg in* ]
-      - feature extraction in =fextractor.py=
-    - panchenko: 2016 data set plus code
-      - data format: one file per class, named by url
-        - *positive in, neg out*
-        - line is trace, =class start_time packet_time:packet_size ...=
-          - times are milliseconds since epoch
 ** KEYWORDS Website Fingerprinting [0/10]
 *** WAIT Panchenko 1
     - original wf attack
@@ -2110,7 +2136,10 @@ treatment.
    release[fn:: \url{https://github.com/bolinfest/chickenfoot}] is for
    Firefox 4.
 ** APPENDIX_DONE Marionette
-   <<Marionette>> Marionette is the next generation mozilla testing
+   :PROPERTIES:
+   :CUSTOM_ID: Marionette
+   :END:
+   Marionette is the next generation mozilla testing
    framework. It is works just like Selenium and was designed to be
    integrated into it. It was chosen for this thesis, as it made the
    Tor Browser Bundle easily accessible.
@@ -3190,3 +3219,13 @@ per website fingerprinting study.
 \bibliography{docs/master}
 \bibliographystyle{plain}
 \input{diplomarbeit.ind}
+* WRITE How to get Wang-kNN to work
+  in directory with traces (json/pcap/...)
+
+  0. [@0] convert traces to \cite{effective}'s =batch=-directory,
+     using counter.py#dir\_to\_wang
+  1. python fextract.py
+  2. ./flearner 0 1 SITE_NUM INST_NUM TEST_NUM
+     - site_num: number or URLs/sites
+     - inst_num: number of /training/ instances
+     - test_num: number of /testing/ instances

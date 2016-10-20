@@ -768,7 +768,7 @@ int main(int argc, char** argv) {
 	float * weight = new float[FEAT_NUM];
 	float * value = new float[FEAT_NUM];
 
-	int TRIAL_NUM = 1;
+	int TRIAL_NUM = 20;
 	int SUBROUND_NUM = 5;
 	float maxacc = 0;
 	alg_init_weight(feat, weight);
