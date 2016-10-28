@@ -1182,7 +1182,7 @@ Facebook.com\\
     safe seems better than sorry.
 * KEYWORDS Results and Evaluation [15%]
 ** WRITE Introduction
-   The following sections describe [[#setup][how data was captured]],
+   The following sections describe [[#setup][capturing methodology]], 
 
    - wf: how efficient each
      - my eval
@@ -1194,7 +1194,7 @@ Facebook.com\\
        - qualitative
          - pix
        - quantitative
-** KEYWORDS Setup
+** WRITE Setup
    :PROPERTIES:
    :CUSTOM_ID: setup
    :END:
@@ -1425,7 +1425,7 @@ Facebook.com\\
      - same scale factor for test and train set
      - uses \cite[User Guide, sec. 42.30.7]{scikit-learn}'s =MinMaxScaler=
 **** WAIT for [[file:~/Desktop/main.org::*daniel:%20merkmalsraum%20-%20musterraum%20etc%20in%20englisch?][daniel: merkmalsraum - musterraum etc in englisch?]]
-*** KEYWORDS Classification
+*** WRITE Classification
     :PROPERTIES:
     :CUSTOM_ID: classification
     :END:
@@ -1433,7 +1433,7 @@ Facebook.com\\
      - feature vectors extracted
      - outlier removal
      - classification
-**** KEYWORDS Original Classification Methods: Panchenko and Wang's
+**** WRITE Original Classification Methods: Panchenko and Wang's
      - why:
        - main purpose is addon test
        - would like to match state-of-the-art as exactly as possible
@@ -1454,11 +1454,15 @@ Facebook.com\\
          - lines are time(float) \t packet length/cell
          - [ *positive out, neg in* ]
        - feature extraction in =fextractor.py=
+       - seems to compare different URLs whether they match: data
+         format contains different classes
      - panchenko: 2016 data set plus code
        - data format: one file per class, named by url
          - *positive in, neg out*
          - line is trace, =class start_time packet_time:packet_size ...=
            - times are milliseconds since epoch
+       - seems to compare whether sites are in the matched set or
+         outside: data contains only two classes
 **** EVA CUMUL Re-Implementation
     After outlier removal, splits and possibly scaling, classification
     takes as input feature vectors and tries to output the class that
@@ -3264,10 +3268,24 @@ per website fingerprinting study.
      - test_num: number of /testing/ instances
 ** TODO github flearn_params.sh, link
 * How to get Panchenko-SVM to work
-  1. outlier removal
-     ...?
-  2. generate open world foreground data
-     #+BEGIN_SRC sh
-       python ./feature-scripts/generate-feature.py -in ./foreground-data/ -out ./output/ -setting OW_FG -dataSet FG -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -instances 1
-     #+END_SRC
+** algo
+   1. outlier removal
+      ...?
+   2. generate libsvm input
+      - open world
+        - foreground
+        #+BEGIN_SRC sh
+          python ./feature-scripts/generate-feature.py -in ./foreground-data/ -out ./output/ -setting OW_FG -dataSet FG -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -instances 1
+        #+END_SRC
+        - background
+      - closed world
+        #+BEGIN_SRC sh
+          python ./feature-scripts/generate-feature.py -in ./foreground-data/ -out ./output/ -setting CW -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -dataSet CW -instances 40
+        #+END_SRC
+   3. train svm
+      #+BEGIN_SRC sh
+        svm-train ./output/CW_TCP
+      #+END_SRC
+      f.ex. for closed world-data
+** OW-data just has *two* classes: fg (=1) and bg (=0)
 
