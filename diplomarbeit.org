@@ -96,17 +96,17 @@
    "normal people" and even military have resorted
    to the Tor anonymity network\cite{who-uses-tor}.
 
-   Unfortunately, Tor's anonymity protection has become compromised under
-   laboratory conditions. \cite{panchenko} were the first to show that
-   just looking at the encrypted and location-anonymized packets of
-   Tor, it is possible to determine the target web page with
-   high probability. The [[#wf][next section]] explains how this works: how
-   data packets are captured, how relevant identifying data is
-   extracted, etc.
+   Unfortunately, Tor's anonymity protection has been compromised
+   under laboratory conditions. \cite{panchenko} were the first to
+   show that just looking at the encrypted and location-anonymized
+   packets of Tor, the target web page can be determined with high
+   accuracy. The [[#wf][next section]] explains how this works: how data
+   packets are captured, how relevant identifying data is extracted,
+   etc.
 
    Fortunately, as soon as these weaknesses became known, defenses
    were proposed. These will be describe in [[#defenses][the subsequent section]],
-   showing different classes of defenses and examining some in detail.
+   showing different classes of defenses and examining them in detail.
 ** WRITE Website Fingerprinting [14/32]
    :PROPERTIES:
    :CUSTOM_ID: wf
@@ -508,14 +508,11 @@ Facebook.com\\
      In website fingerprinting[fn::as in f.ex.\space{}handwriting
      recognition], there are most often more classes than two.
 
-     Several strategies exist to classify more than two classes. The
-     main strategies are to train one classifier for each class
-     (One-Vs-Rest) and one for each class-class combination
-     (One-Vs-One).
+     Several strategies exist to distinguish more than two
+     classes. The main are to train one classifier for each class
+     (called /One-Vs-Rest/) and one for each class-class combination
+     (called /One-Vs-One/).
 
-
-      - multi-class: train one for each class (ovr) or one for each
-        class-combination (ovo)
         - ovr better efficiency, scales linearly
           - used by panchenko et al
         - ovo evaluates fewer samples per fitting
@@ -581,8 +578,10 @@ Facebook.com\\
       randomforest, decisiontrees
       - one or the other slightly better
 *** WRITE Extremely Randomized Trees
-    #+INDEX: Extra-Trees
     #+INDEX: Classifier!Extra-Trees
+    #+INDEX: Classifier!Extremely Randomized Trees
+    #+INDEX: Extra-Trees
+    #+INDEX: Extremely Randomized Trees
     - more random: (here only classifiction)
       - M trees, independent
       - split training set S into K subsets
@@ -820,7 +819,7 @@ Facebook.com\\
     - padding (sslv2 \to 3)
     - requestpolicy (hintz 2nd way)
     - text-only browsing (hintz 2nd way)
-* WRITE Methods (=methods) [56%]
+* WRITE Methods (=methods) [54%]
 ** WRITE Introduction
    - short what could be done better
    - longer: approach / variants
@@ -894,7 +893,7 @@ Facebook.com\\
     level, as a whistleblower might need more anonymity protection
     than Jane Doe who just reads the latest news, possibly censored in
     her country.
-** WRITE Design and Implementation (=Implementation) [10/18]
+** WRITE Design and Implementation (=Implementation) [10/19]
 *** DANIEL Introduction
     This thesis' aim is to create cover traffic to hinder website
     fingerprinting[fn::and, coincidentally, correlation attacks]. The
@@ -947,7 +946,10 @@ Facebook.com\\
     including redirects. How the number of embedded elements is used
     in this thesis differs from how it should be used, see next
     section.
-**** TODO [#C] footnote for other web traffic work
+**** TODO footnote for other web traffic work
+***** wang paper (see todos)
+**** TODO redo graph: side-by-side, remove "probablity density of"
+     - (Byte) to [Byte]
 *** EVA How to Distinguish HTML and Embedded Objects
     :PROPERTIES:
     :CUSTOM_ID: distinguish_HTML_embedded
@@ -1178,9 +1180,10 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* KEYWORDS Results and Evaluation [18%]
+* KEYWORDS Results and Evaluation [15%]
 ** WRITE Introduction
-   - setup: how to capture
+   The following sections describe [[#setup][how data was captured]],
+
    - wf: how efficient each
      - my eval
      - panchenko
@@ -1192,10 +1195,14 @@ Facebook.com\\
          - pix
        - quantitative
 ** KEYWORDS Setup
+   :PROPERTIES:
+   :CUSTOM_ID: setup
+   :END:
 *** EVA Introduction
     The following sections describe [[#sites][which]] and [[#capture][how]] data was captured,
-    [[#feature-extraction][how classification input was extracted from the raw data]], and [[*Classification][how
-    this input was assigned to classes/websites]].
+    [[#feature-extraction][how classification input was extracted from the raw data]], and
+    [[*Classification][how this input was assigned to
+    classes/websites]].
 *** WRITE Sites
     :PROPERTIES:
     :CUSTOM_ID: sites
@@ -1217,20 +1224,19 @@ Facebook.com\\
      retrieved on September 30th, 2015. As in
      \cite{wpes13-fingerprinting}, similar sites were removed. Also
      removed were those sites which failed to respond to python's
-     =urllib=\cite[sec.20.5]{python-lib-ref}.
+     =urllib=[fn::\cite[sec.20.5]{python-lib-ref}].
 
-     The Marionette framework (see Appendix [[#Marionette]]) detects web
-     site retrieval errors, evaluation was run with erroneous
-     retrievals both included and excluded. Where more than 1/4 of all
-     retrievals were erroneous, these sites were dropped from the
-     list, as well. These included mostly Chinese sites:
-     \url{cntv.cn}, \url{tmall.com}, \url{baidu.com}, \url{china.com},
-     \url{tianya.cn}, \url{alipay.com}, \url{163.com},
-     \url{taobao.com}, \url{xinhuanet.com}, \url{soso.com},
-     \url{sina.com.cn}, \url{qq.com}, \url{sohu.com}, \url{weibo.com},
-     \url{jd.com}, and \url{sogou.com}. The site \url{hao123.com}
-     seemed to yield some errors, but less than the ratio, so it was
-     retained.
+     The Marionette framework (see Appendix [[#Marionette]]) detects
+     retrieval errors. Evaluation was run with erroneous captures both
+     included and excluded. Sites with more than 25% erroneous
+     captures are removed from the list. These include mostly Chinese
+     sites: \url{cntv.cn}, \url{tmall.com}, \url{baidu.com},
+     \url{china.com}, \url{tianya.cn}, \url{alipay.com},
+     \url{163.com}, \url{taobao.com}, \url{xinhuanet.com},
+     \url{soso.com}, \url{sina.com.cn}, \url{qq.com}, \url{sohu.com},
+     \url{weibo.com}, \url{jd.com}, and \url{sogou.com}. The site
+     \url{hao123.com} seemed to yield some errors, but less than the
+     ratio, so it was retained.
 
      As users would not retrieve sites over Tor when retrieval
      resulted in mostly errors, striking these sites seemed
@@ -1419,11 +1425,14 @@ Facebook.com\\
      - same scale factor for test and train set
      - uses \cite[User Guide, sec. 42.30.7]{scikit-learn}'s =MinMaxScaler=
 **** WAIT for [[file:~/Desktop/main.org::*daniel:%20merkmalsraum%20-%20musterraum%20etc%20in%20englisch?][daniel: merkmalsraum - musterraum etc in englisch?]]
-*** EVA Classification
+*** KEYWORDS Classification
     :PROPERTIES:
     :CUSTOM_ID: classification
     :END:
-**** KEYWORDS Introduction
+**** WRITE Introduction
+     - feature vectors extracted
+     - outlier removal
+     - classification
 **** KEYWORDS Original Classification Methods: Panchenko and Wang's
      - why:
        - main purpose is addon test
@@ -1466,7 +1475,8 @@ Facebook.com\\
 
     After SVM-parameters have been determined, several classifiers are
     trained on the training data and evaluated on the test data.
-** KEYWORDS Website Fingerprinting [0/10]
+** KEYWORDS Website Fingerprinting [0/11]
+*** KEYWORDS Introduction
 *** WAIT Panchenko 1
     - original wf attack
     - HTTP/HTML-specific features
@@ -1638,7 +1648,7 @@ Facebook.com\\
         - outCount
         - outSize
         - inSize
-** KEYWORDS Evaluation of Defenses [1/10]
+** KEYWORDS Evaluation of Defenses [1/11]
 *** KEYWORDS Introduction
     - very dependent on retrieved trace time difference, see [[#time]]
     - svc slightly better on original data, fails against defense
@@ -1697,6 +1707,7 @@ Facebook.com\\
     The size-guessing =b= flavors produce significantly
     higher overhead, but yield a further small reduction of classifier
     accuracy.
+*** KEYWORDS Add-on overhead
 *** KEYWORDS [#A] sota (practical): WTF-PAD
     :PROPERTIES:
     :CUSTOM_ID: eval-wtf-pad
@@ -2335,7 +2346,7 @@ Facebook.com\\
    This issue was seemingly fixed in Firefox 50, as of the bug report.
 *** WAIT [#C] bug report: quote other's error messages, link to bug report
 * lists of sites
-** WRITE modified top-100
+** KEYWORDS modified top-100
    :PROPERTIES:
    :CUSTOM_ID: top-100
    :END:
@@ -2977,7 +2988,7 @@ Facebook.com\\
 * Cover Traffic Server
 ** APPENDIX_DONE Which Python Web Server to Choose
    The naïve implementation based on Python's
-   =BaseHTTPServer=\cite[20.18]{python-lib-ref} had drawbacks (see
+   =BaseHTTPServer=[fn::\cite[20.18]{python-lib-ref}] had drawbacks (see
    [[#server-non-para]]), even for the queries of a single addon. This
    prompted the search for a python-based, adequately-performing
    technology stack.
@@ -3054,16 +3065,15 @@ Facebook.com\\
 
    The python module =TrafficHTTPServer= can be started on the
    command-line via
+   #+BEGIN_SRC sh
+     python TrafficHTTPServer.py [port]
+   #+END_SRC
 
-   python TrafficHTTPServer.py portname
-
-   with portname set to 8000 by default. It generates cover traffic of the
-   size given by the =size= parameter, for example the command
-
-   =wget http://localhost:8000/?size=10=
-
-   retrieves a document with 10 bytes content from a TrafficHTTPServer
-   running at localhost port 8000.
+   with =port= set to 8000 by default. It generates cover traffic of
+   the size given by the =size= parameter. For example the URL
+   =http://localhost:8000/?size=1000= provides 1000 bytes of
+   pseudo-random[fn::minus the static HTTP header] content from a
+   =TrafficHTTPServer= running at localhost port 8000.
 *** WAIT link to github script
 * WRITE differences theoretical HTML-num embedded and observed
   :PROPERTIES:
@@ -3253,3 +3263,11 @@ per website fingerprinting study.
      - inst_num: number of /training/ instances
      - test_num: number of /testing/ instances
 ** TODO github flearn_params.sh, link
+* How to get Panchenko-SVM to work
+  1. outlier removal
+     ...?
+  2. generate open world foreground data
+     #+BEGIN_SRC sh
+       python ./feature-scripts/generate-feature.py -in ./foreground-data/ -out ./output/ -setting OW_FG -dataSet FG -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -instances 1
+     #+END_SRC
+
