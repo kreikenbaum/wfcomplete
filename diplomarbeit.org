@@ -112,6 +112,7 @@
    :CUSTOM_ID: wf
    :END:
 *** DANIEL Introduction
+    #+INDEX: attack
     Website fingerprinting\cite{hintz02} aims to deduce which web page
     a user is visiting via an anonymizing proxy. It does so based on
     order, size, and timing of data packets.
@@ -123,7 +124,9 @@
     early techniques no longer work]] especially on anonymity networks
     like Tor.
 
-    Finally, [[#wf2.0][current website fingerprinting attacks]] will be explored.
+    Finally, [[#wf2.0][current website fingerprinting attacks]][fn::the attempt to
+    break a cryptologically secured system is called an /attack/]will
+    be explored.
 *** DANIEL Visual Representation of Traces
     :PROPERTIES:
     :CUSTOM_ID: visual
@@ -241,17 +244,17 @@ Facebook.com\\
 #+END_LaTeX
 
     Before, it was trivial to find out the number of bytes of each
-    file's connection; this made it harder to extract the files'
-    sizes. You had to determine the start and end of each
-    request.[fn::f.ex.\space{}by checking gaps in the transmission; the more
-    difficult problem of estimating web page retrieval splits seems
-    possible over Tor, see f.ex.\space{}\cite{realistic} and
+    file's connection. Persistent connections made it harder to
+    extract the files' sizes. You had to determine the start and end
+    of each request.[fn::f.ex.\space{}by checking gaps in the transmission;
+    the more difficult problem of estimating web page retrieval splits
+    seems possible over Tor, see f.ex.\space{}\cite{realistic} and
     \cite{DBLP:journals/tifs/FeghhiL16}].
 
 
-    In addition to persistent connections, HTTP/1.1 allowed pipelining
-    several HTTP requests in a single connection without waiting for
-    the files to arrive in between, see Figure \ref{http_pipelining}.
+    In addition to this, HTTP/1.1 allowed pipelining several HTTP
+    requests in a single connection without waiting for the files to
+    arrive in between, see Figure \ref{http_pipelining}.
 
 #+BEGIN_LaTeX
 \begin{figure}[htb]
@@ -272,13 +275,14 @@ Facebook.com\\
     randomization] as part of a no-cost defense prototype in the
     Tor-Browser-Bundle
     \cite{experimental}. \cite{ccs2012-fingerprinting} found
-    fingerprinting to be easier with this defense enabled than
+    fingerprinting to be slightly easier with this defense enabled than
     without.
 *** DANIEL Challenges to Website Fingerprinting: Tor [3/5]
-    The Onion Router\cite{tor-design} (short: /Tor/) is an anonymity
-    system: While encryption hides the /content of communication/,
-    Tor also attempts to hide some /metadata/: Who communicates with
-    whom, for how long, when, how frequent, ...?
+    #+INDEX: Tor
+    /The Onion Router/\cite{tor-design} (Tor) is an anonymity system:
+    While encryption only hides the /content of communication/, Tor
+    also attempts to hide some /metadata/: Who communicates with whom,
+    for how long, when, how frequent, ...?
 
     This metadata is important, as it can reveal "[a] lot of good
     information"\cite{applied96}.
@@ -309,6 +313,9 @@ Facebook.com\\
      anonymous tip lines, whistleblowing, blogging private opinions,
      evaluating competition, and troubleshooting IT systems.
 **** EVA How does Tor Work
+     :PROPERTIES:
+     :CUSTOM_ID: tor-how-work
+     :END:
      The Tor anonymity network consists of volunteer servers, called
      /onion routers/. A connection through the network is
      created by a SOCKS5\cite{rfc1928} proxy, the /onion proxy/.
@@ -330,7 +337,7 @@ Facebook.com\\
        latency*, and
      - Tor *multiplexes all data* cells through a single
        TCP-connection, yielding an effect similar to [[#Hurdles][HTTP
-       pipelining]][fn::but arguably enhanced]
+       pipelining]][fn::but arguably enhanced].
 
      Tor's cryptography will be omitted, because website
      fingerprinting, as all traffic analysis, assumes that a
@@ -346,21 +353,21 @@ Facebook.com\\
     :PROPERTIES:
     :CUSTOM_ID: wf2.0
     :END:
-    Similarly to the above attacks, \cite{Liberatore:2006}
-    and\cite{ccsw09-fingerprinting} use only packet sizes, but employ
-    machine learning techniques. \cite{Liberatore:2006} use both a
-    Naïve Bayes Classifier[fn::described f.ex.\space{}in
-    \cite[ch.1.3.1]{intro2ir}] and Jaccard's classifier $s_{AB} =
-    \frac{|A \cap B|}{|A \cup B|}$[fn::described f.ex.\space{}in
-    \cite{ccsw09-fingerprinting}], while \cite{ccsw09-fingerprinting}
-    use a Naïve Bayes Classifier with various metrics and
-    preprocessing. This yields high accuracy against one-hop
-    anonymizing proxies, but only 3% accuracy against 775 distinct
-    pages retrieved via Tor\cite{tor-design}. As this is still
-    significantly better than random guessing, they conjecture[fn::
-    \cite{Liberatore:2006} mention that they also did some experiments
-    which lead to this conjecture] that this result could be improved
-    with attacks specifically tailored to Tor.
+    Similarly to the above website fingerprinting attacks,
+    \cite{Liberatore:2006} and\cite{ccsw09-fingerprinting} use only
+    packet sizes, but employ machine learning
+    techniques. \cite{Liberatore:2006} use both a Naïve Bayes
+    Classifier[fn::described f.ex.\space{}in \cite[ch.1.3.1]{intro2ir}] and
+    Jaccard's classifier $s_{AB} = \frac{|A \cap B|}{|A \cup B|}$[fn::described
+    f.ex.\space{}in \cite{ccsw09-fingerprinting}], while
+    \cite{ccsw09-fingerprinting} use a Naïve Bayes Classifier with
+    various metrics and preprocessing. This yields high accuracy
+    against one-hop anonymizing proxies, but only 3% accuracy against
+    775 distinct pages retrieved via Tor\cite{tor-design}. As this is
+    still significantly better than random guessing, they
+    conjecture[fn:: \cite{Liberatore:2006} mention that they also did
+    some experiments which lead to this conjecture] that this result
+    could be improved with attacks specifically tailored to Tor.
 *** EVA Features
     :PROPERTIES:
     :CUSTOM_ID: features
@@ -398,6 +405,10 @@ Facebook.com\\
 *** EVA Panchenko Version 1
     #+INDEX: Version~1
     #+INDEX: classifier!Version~1
+    #+INDEX: closed-world
+    #+INDEX: open-world
+    #+INDEX: world!closed
+    #+INDEX: world!open
     While \cite{ccsw09-fingerprinting} classified one-hop proxies
     well, they had achieved low accuracy against Tor due to Tor's
     multiplexing and fixed
@@ -414,12 +425,17 @@ Facebook.com\\
     open-world dataset was used. The size of the open-world data set
     was five foreground and 5000 background sites.
 
-    \cite{panchenko} achieved closed-world recognition rates of 54.61%
-    and open-world true-positive rate of up to 73% for Tor. While the
-    Tor Project considers these and better rates both insufficient and
-    inapplicable\cite{critique} to pose a real threat, they still
-    consider this paper "the first work to successfully apply website
-    traffic fingerprinting to Tor"\cite{critique}.
+    \cite{panchenko} achieved closed-world[fn::the /closed-world/
+    assumption means that the web browser only visits /k/ web pages,
+    while in the /open-world/ scenario, /k/ web pages out of an
+    arbitrarily large number are to be detected. Thus, the
+    closed-world scenario is a simplification.\cite{panchenko2}]
+    recognition rates of 54.61% and open-world true-positive rate of
+    up to 73% for Tor. While the Tor Project considers these and
+    better rates both insufficient and inapplicable\cite{critique} to
+    pose a real threat, they still consider this paper "the first work
+    to successfully apply website traffic fingerprinting to
+    Tor"\cite{critique}.
 *** EVA CUMUL
     CUMUL\cite{panchenko2} is a state-of-the-art\cite{kfingerprint}
     website fingerprinting attack. It sums the number of incoming and
@@ -443,6 +459,8 @@ Facebook.com\\
     Support vector machines classify these.
 *** WRITE Support Vector Machines
 **** CHECK Introduction
+     #+INDEX: Classifier!Support Vector Machine
+     #+INDEX: Classifier!SVM
      #+INDEX: Support Vector Machine
      #+INDEX: SVM
      #+INDEX: linear classifier
@@ -476,8 +494,6 @@ Facebook.com\\
      be compressed to the form \[y_i \cdot (\langle w, xi \rangle +b) \ge 1.\]
 **** EVA Soft Margin Classifiers
      #+INDEX: margin
-     #+INDEX: SVM!margin
-     #+INDEX: Support Vector Machine!margin
      A support vector machine tries to find a hyperplane between two
      groups of points and maximize its distance to the closest points,
      called /margin/. What happens if the points lie such that a line
@@ -1182,7 +1198,9 @@ Facebook.com\\
     safe seems better than sorry.
 * KEYWORDS Results and Evaluation [15%]
 ** WRITE Introduction
-   The following sections describe [[#setup][capturing methodology]], 
+   The following sections describe [[#setup][how data was collected and
+   analysed]], [[#eval-wf][validate our website fingerprinting approach]], and
+   [[#eval-defense][evaluate various defenses]].
 
    - wf: how efficient each
      - my eval
@@ -1481,6 +1499,9 @@ Facebook.com\\
     trained on the training data and evaluated on the test data.
 ** KEYWORDS Website Fingerprinting [0/11]
 *** KEYWORDS Introduction
+    :PROPERTIES:
+    :CUSTOM_ID: eval-wf
+    :END:
 *** WAIT Panchenko 1
     - original wf attack
     - HTTP/HTML-specific features
@@ -1654,9 +1675,10 @@ Facebook.com\\
         - inSize
 ** KEYWORDS Evaluation of Defenses [1/11]
 *** KEYWORDS Introduction
-    - very dependent on retrieved trace time difference, see [[#time]]
-    - svc slightly better on original data, fails against defense
-      - still panchenko's accuracy only with combined test-train-OR
+    :PROPERTIES:
+    :CUSTOM_ID: eval-defense
+    :END:
+    - structure!
 *** KEYWORDS [#A] Add-on
     #+CAPTION: Different defense versions with CUMUL, SVM classifier
     #+ATTR_LATEX: :float nil :width \textwidth
@@ -1936,6 +1958,10 @@ Facebook.com\\
 * WAIT Conclusion
 ** WAIT Discussion
    intel model: interdependences (html bigger \to more embedded) not mentioned
+   - wf
+    - very dependent on retrieved trace time difference, see [[#time]]
+    - svc slightly better on original data, fails against defense
+      - still panchenko's accuracy only with combined test-train-OR
 ** TODO Future Work
    :PROPERTIES:
    :CUSTOM_ID: future-work
@@ -3252,9 +3278,6 @@ per website fingerprinting study.
   for testing defenses
 - caption, name, ...
 
-\bibliography{docs/master}
-\bibliographystyle{plain}
-\input{diplomarbeit.ind}
 * WRITE How to get Wang-kNN to work
   in directory with traces (json/pcap/...)
 
@@ -3267,7 +3290,7 @@ per website fingerprinting study.
      - inst_num: number of /training/ instances
      - test_num: number of /testing/ instances
 ** TODO github flearn_params.sh, link
-* How to get Panchenko-SVM to work
+* KEYWORDS How to get Panchenko-SVM to work
 ** algo
    1. outlier removal
       ...?
@@ -3284,8 +3307,15 @@ per website fingerprinting study.
         #+END_SRC
    3. train svm
       #+BEGIN_SRC sh
-        svm-train ./output/CW_TCP
+        svm-train ./output/CW_TCP ./output/CW_TCP.model
       #+END_SRC
       f.ex. for closed world-data
+   4. use svm
+      #+BEGIN_SRC sh
+        ../libsvm-3.20-src/svm-predict CW_TCP  CW_TCP.model CW_TCP.output
+      #+END_SRC
 ** OW-data just has *two* classes: fg (=1) and bg (=0)
-
+\bibliography{docs/master}
+\bibliographystyle{plain}
+\input{diplomarbeit.ind}
+* END: above index, bibliography, etc                               :ARCHIVE:
