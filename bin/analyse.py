@@ -14,8 +14,8 @@ JOBS_NUM = 2 # 1 (version1 to 4-6 (cumul onduckstein)), maybe also -4, ...
 # panchenko grid takes about 16% mem/cpu: 3-4 should be fine, 5 ok'ish, 6 limit
 LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 #LOGLEVEL = logging.DEBUG
-LOGLEVEL = logging.INFO
-#LOGLEVEL = logging.WARN
+#LOGLEVEL = logging.INFO
+LOGLEVEL = logging.WARN
 TIME_SEPARATOR = '@'
 
 ### classifiers
@@ -264,8 +264,9 @@ def _verbose_test_11(X, y, clf):
     scale = True if 'SVC' in str(clf) else False
     print _clf_params(clf),
     res = _test(X, y, clf)
-    print 'time: {}'.format(time.time() -t)
-    print '{}, {}'.format(res.mean(), res)
+    print res.mean()
+    logging.info('time: %s', time.time() - t)
+    logging.debug('res: %s', res)
 
 def _xtest(X_train, y_train, X_test, y_test, clf):
     '''cross_tests with estimator'''
@@ -351,7 +352,7 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
         else:
             t = time.time()
             clf,_ = _my_grid_helper(counter.outlier_removal(train, 2), cumul)
-            print 'parameter search took: {}'.format(time.time() -t)
+            logging.debug('parameter search took: %s', time.time() -t)
             if cumul:
                 SVC_TTS_MAP[defense0] = clf
                 CLFS.append(SVC_TTS_MAP[defense0])

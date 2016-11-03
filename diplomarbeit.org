@@ -86,15 +86,9 @@
 * WAIT Summary
 * WRITE Basics (=basics) [37%]
 ** CHECK Introduction
-   Imagine someone looking over your shoulder while you are at your
-   computer, noting every single page, or at least every web domain
-   you visit. This is the current state of data retention laws in
-   Europe, even though it has been ruled unconstitutional... To
-   protect against this, much more serious curtailing of free
-   information/speech online, and other kinds of
-   metadata-information-gathering, journalists, whistleblowers,
-   "normal people" and even military have resorted
-   to the Tor anonymity network\cite{who-uses-tor}.
+   To protect against metadata-information-gathering, journalists,
+   whistleblowers, "normal people" and even military have resorted to
+   the Tor anonymity network\cite{who-uses-tor}.
 
    Unfortunately, Tor's anonymity protection has been compromised
    under laboratory conditions. \cite{panchenko} were the first to
@@ -347,7 +341,7 @@ Facebook.com\\
      for a high-level introduction to traffic analysis, see
      \cite{introta}].
 ***** WAIT high-resolution picture
-***** WAIT maybe remove Schenier...phy/
+***** WAIT maybe remove Schneier...phy/
       wait for [[file:~/Desktop/main.org::*entfernen%20der%20autorennamen%20(und%20titel)%20aus%20text,%20nur%20bib-referenz?][entfernen der autorennamen (und titel) aus text, nur bib-referenz?]]
 *** DANIEL Website Fingerprinting 2.0
     :PROPERTIES:
@@ -514,7 +508,7 @@ Facebook.com\\
      optimization problem
 
      \[\min_{w, b, \xi} 1/2 ||w||^2 + C/m \sum_{i=1..m} \xi_i.\]
-**** WRITE Multi-Class Strategies aka ovr vs ovo (vs ecoc)
+**** WRITE Multi-Class Strategies
      #+INDEX: binary classification
      #+INDEX: multi-class classification
      #+INDEX: classification!binary
@@ -527,9 +521,9 @@ Facebook.com\\
      recognition], there are most often more classes than two.
 
      Several strategies exist to distinguish more than two
-     classes. The main are to train one classifier for each class
-     (called /One-Vs-Rest/) and one for each class-class combination
-     (called /One-Vs-One/).
+     classes. The main are to train one classifier for each class ---
+     called /One-Vs-Rest/ (OVR) --- and one for each class-class
+     combination --- called /One-Vs-One/ (OVO).
 
         - ovr better efficiency, scales linearly
           - used by panchenko et al
@@ -537,11 +531,6 @@ Facebook.com\\
         - error-correcting codes, mention esl p.625
           - or web-dl original paper
           - used by k-forest
-      - also one-class-svm: see Schölkopf, B., Platt, J.,
-        Shawe-Taylor, J., Smola, A., and
-        Williamson, R. (1999). Estimating the support of a
-        high-dimensional distribution. TR 87, Microsoft Research.
-        as of rieck phdthesis
       - mention Error-Correcting Output-Codes (ref sklearn)
 **** WRITE Kernel Trick
      Linear boundaries seem overly limiting. Yet, SVMs can compute the
@@ -965,7 +954,7 @@ Facebook.com\\
     in this thesis differs from how it should be used, see next
     section.
 **** TODO footnote for other web traffic work
-***** wang paper (see todos)
+***** wang paper (see [[file:~/da/da.org::*web%20studies%20in%20%5B%5Bfile:~/da/git/docs/lit.org::*%255B%255B./cacr2015-09.pdf%255D%255BWang%2520-%2520On%2520Realistically%2520Attacking%2520Tor%2520with%2520Website%2520Fingerprinting%255D%255D%5D%5BWang%20-%20On%20Realistically%20Attacking%20Tor%20with%20Website%20Fingerprinting*%5D%5D%206.2][web studies in Wang - On Realistically Attacking Tor with Website Fingerprinting* 6.2]])
 **** TODO redo graph: side-by-side, remove "probablity density of"
      - (Byte) to [Byte]
 *** DANIEL How to Distinguish HTML and Embedded Objects
@@ -1201,8 +1190,8 @@ Facebook.com\\
 * KEYWORDS Results and Evaluation [17%]
 ** CHECK Introduction
    The following sections describe [[#setup][how data was collected and
-   analysed]], [[#eval-wf][validate our website fingerprinting approach]], and
-   [[#eval-defense][evaluate various defenses]].
+   analysed]], [[#eval-wf][evaluate a few website fingerprinting approaches]], and
+   [[#eval-defense][various defenses]].
 ** WRITE Setup
    :PROPERTIES:
    :CUSTOM_ID: setup
@@ -1376,60 +1365,6 @@ Facebook.com\\
      values of previous outlier removal on training data and applies
      it to the test data. As see in the table, it does not show any
      accuracy gain.
-**** MOVE to [[#eval-wf]]
-     As seen in Table [[tab:outlier_removal]], a higher level of outlier
-     removal on test data increases accuracy[fn:: The results are
-     similar for the Extra-Trees classifier, see appendix [[*Outlier Removal Results with Extra-Trees Classifier][Outlier
-     Removal Results with Extra-Trees Classifier]].], but as of section
-     [[#split]] this is not applicable in a real-world scenario.
-
-#+CAPTION: Accuracy with SVM classifier after outlier removal. The ~both~ column shows classification accuracy if the outliers are removed from both test and training set at the same time.
-#+NAME: tab:outlier_removal
-#+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
-#+INCLUDE: "data/results/alternatives.org::#outlier_removal" :only-contents t
-
-     This outlier removal removed on average
-       - how many removed for levels
-         - both panchenko's own and mine
-       - evaluation of outlier removal steps
-       - results
-         - rw
-           - this might be why results are worse than f.ex.\space{}panchenko
-           - includes variant labeled -1: remember highest and lowest
-             quantile values from previous train-or, removes based on
-             these
-       - link to file
-     problem with previous code: did not label download problems
-     - some sites had mostly problems (cat.kr f.ex.)
-     - outlier removal only last resort, better to remove when
-       retrieval turned out faulty
-     - link to [[file:data/results/alternatives.org::*sizes%20TOP-0721][sizes TOP-0721]]
-***** on average/per class numbers how many removed
-***** WRITE disadvantage of few instances with much outlier removal
-    - problem for level 3 (only): number of splits requires more data
-      than just 40 instances
-      - (train-test)/validation set\cite[sec.2.2.3]{iml} 2/3 to 1/3,
-        - pathological example: microsoftonline.com
-          - train-test split yielded 20-20
-          - removed 17 from 20 in level-3 split
-          - level 2 removed 0 from 20
-          - pics: all, train==lvl1==lvl2, lvl3
-        - happened only in level-3-or which was not used (and gave
-          little advantage, see OR), so little need to recapture
-          traces
-#+BEGIN_latex
-  \begin{figure}[htp]
-  \label{or-levels}
-\includegraphics[width=0.32\textwidth]{./pictures/or/all.eps}
-\includegraphics[width=0.32\textwidth]{./pictures/or/train.eps}
-\includegraphics[width=0.32\textwidth]{./pictures/or/level3.eps}
-  \end{figure}
-#+END_latex
-        - traces available in =data/path= directory
-        - possible solution: validation set bigger
-          - \cite{kfingerprint} captured 70 instances each
-          - \cite{effective} used 90: 60 for train, 30 for test
-        - this was before labelling erroneous traces
 **** WRITE scaling
      - recommended by \cite{sarle2} and \cite{Hsu10apractical}
      - same scale factor for test and train set
@@ -1489,7 +1424,7 @@ Facebook.com\\
 
     After SVM-parameters have been determined, several classifiers are
     trained on the training data and evaluated on the test data.
-** KEYWORDS Website Fingerprinting [0/11]
+** KEYWORDS Website Fingerprinting [0/13]
 *** WRITE Introduction
     :PROPERTIES:
     :CUSTOM_ID: eval-wf
@@ -1623,7 +1558,7 @@ Facebook.com\\
     - some grew a lot, some not at all, see Table [[tab:site_sizes_relative]]
 #+CAPTION[Relative growth of trace sizes by date by domain]: Relative growth of trace (byte) sizes by date by domain.
 #+NAME: tab:site_sizes_relative
-#+ATTR_LATEX: :align |r||n{3}{1}|n{3}{1}|n{3}{1}|n{3}{1}|n{3}{1}|
+#+ATTR_LATEX: :align |r||n{3}{3}|n{3}{3}|n{3}{3}|n{3}{3}|n{3}{3}|
 #+INCLUDE: "data/results/alternatives.org::#size_rel" :only-contents t
        - google,
        - cloudflare captcha test
@@ -1638,13 +1573,14 @@ Facebook.com\\
 **** TODO [#C] google doodle
 **** TODO after removal of erroneous captures
      - due to retrieval errors?
-*** KEYWORDS SVM vs Extra-Trees
+*** KEYWORDS CUMUL: SVM vs Extra-Trees
     :PROPERTIES:
     :CUSTOM_ID: svm_vs_et
     :END:
     - svc very good on unadd-oned data, (if trained and or on all)
-      - extratrees with 5--10% lower accuracy, but excels against
-        defenses
+      - extratrees with 5--10% lower accuracy, but less against
+        defenses (?)
+        - td: reevaluate with panchenko's approach
         - similar results, but mostly bit less good: knn,
           randomforest, even decisiontrees
       - others not tested
@@ -1680,6 +1616,60 @@ Facebook.com\\
         - outCount
         - outSize
         - inSize
+*** WRITE outlier removal
+     As seen in Table [[tab:outlier_removal]], a higher level of outlier
+     removal on test data increases accuracy[fn:: The results are
+     similar for the Extra-Trees classifier, see appendix [[*Outlier Removal Results with Extra-Trees Classifier][Outlier
+     Removal Results with Extra-Trees Classifier]].], but as of section
+     [[#split]] this is not applicable in a real-world scenario.
+
+#+CAPTION: Accuracy with SVM classifier after outlier removal. The ~both~ column shows classification accuracy if the outliers are removed from both test and training set at the same time.
+#+NAME: tab:outlier_removal
+#+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
+#+INCLUDE: "data/results/alternatives.org::#outlier_removal" :only-contents t
+
+     This outlier removal removed on average
+       - how many removed for levels
+         - both panchenko's own and mine
+       - evaluation of outlier removal steps
+       - results
+         - rw
+           - this might be why results are worse than f.ex.\space{}panchenko
+           - includes variant labeled -1: remember highest and lowest
+             quantile values from previous train-or, removes based on
+             these
+       - link to file
+     problem with previous code: did not label download problems
+     - some sites had mostly problems (cat.kr f.ex.)
+     - outlier removal only last resort, better to remove when
+       retrieval turned out faulty
+     - link to [[file:data/results/alternatives.org::*sizes%20TOP-0721][sizes TOP-0721]]
+**** on average/per class numbers how many removed
+**** WRITE disadvantage of few instances with much outlier removal
+    - problem for level 3 (only): number of splits requires more data
+      than just 40 instances
+      - (train-test)/validation set\cite[sec.2.2.3]{iml} 2/3 to 1/3,
+        - pathological example: microsoftonline.com
+          - train-test split yielded 20-20
+          - removed 17 from 20 in level-3 split
+          - level 2 removed 0 from 20
+          - pics: all, train==lvl1==lvl2, lvl3
+        - happened only in level-3-or which was not used (and gave
+          little advantage, see OR), so little need to recapture
+          traces
+#+BEGIN_latex
+  \begin{figure}[htp]
+  \label{or-levels}
+\includegraphics[width=0.32\textwidth]{./pictures/or/all.eps}
+\includegraphics[width=0.32\textwidth]{./pictures/or/train.eps}
+\includegraphics[width=0.32\textwidth]{./pictures/or/level3.eps}
+  \end{figure}
+#+END_latex
+        - traces available in =data/path= directory
+        - possible solution: validation set bigger
+          - \cite{kfingerprint} captured 70 instances each
+          - \cite{effective} used 90: 60 for train, 30 for test
+        - this was before labelling erroneous traces
 ** KEYWORDS Evaluation of Defenses [1/11]
 *** KEYWORDS Introduction
     :PROPERTIES:
@@ -1963,6 +1953,7 @@ Facebook.com\\
      - addon-simple does the opposite
    - have a look at [[*practical wf: analyzing traces][practical wf: analyzing traces]]
 * WAIT Conclusion
+** KEYWORDS Introduction
 ** WAIT Discussion
    intel model: interdependences (html bigger \to more embedded) not mentioned
    - wf
@@ -1973,6 +1964,7 @@ Facebook.com\\
    :PROPERTIES:
    :CUSTOM_ID: future-work
    :END:
+*** KEYWORDS Introduction
 *** KEYWORDS addon
    - all HTTP gets treated the same
      a.k.a. how to distinguish HTML/embedded
