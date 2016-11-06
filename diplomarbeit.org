@@ -84,7 +84,7 @@
   - Tao Wang
   - Dr. Dr. Eva
 * WAIT Summary
-* WRITE Basics (=basics) [38%]
+* WRITE Basics (=basics) [40%]
 ** CHECK Introduction
    To protect online communication, journalists, whistleblowers,
    "normal people", and among others even military have
@@ -100,9 +100,9 @@
    etc.
 
    Fortunately, as soon as these weaknesses became known, defenses
-   were proposed. These will be describe in [[#defenses][the subsequent section]],
-   showing different classes of defenses and examining them in detail.
-** WRITE Website Fingerprinting [14/33]
+   were proposed. [[#Defenses][The subsequent section]] shows different classes of
+   defenses and examines them in detail.
+** WRITE Website Fingerprinting [15/33]
    :PROPERTIES:
    :CUSTOM_ID: wf
    :END:
@@ -512,7 +512,7 @@ Facebook.com\\
      optimization problem
 
      \[\min_{w, b, \xi} 1/2 ||w||^2 + C/m \sum_{i=1..m} \xi_i.\]
-**** CHECK Multi-Class Strategies
+**** EVA Multi-Class Strategies
      #+INDEX: binary classification
      #+INDEX: multi-class classification
      #+INDEX: classification!binary
@@ -535,11 +535,11 @@ Facebook.com\\
      boundary not only on the original data, but also on a projected
      space. This allows for complex decision boundaries.
 
-     The above all give a linear boundary between classes. What if
-     this does not model reality? The solution to this is that a SVM
-     can not only use the dot product, but any kernel function.
+     The above all find a linear boundary between classes. What if
+     this does not model reality, as f.ex. example in Figure
+     [[hastie_kerneltrick]]? The solution to this is that a SVM can not
+     only use the dot product, but any kernel function.
 
-     - see figure [[hastie_kerneltrick]]
        - instead of dot product $\langle.,.\rangle$ use =kernel= $k(., .)$
        - same effect as mapping each point in set to dot product
          space, and applying $\langle.,.\rangle$ there, $k(x, x') = \langle\Phi(x), \Phi(x')\rangle$
@@ -1200,7 +1200,7 @@ Facebook.com\\
     [[#feature-extraction][how classification input was extracted from the raw data]], and
     [[*Classification][how this input was assigned to
     classes/websites]].
-*** CHECK Sites
+*** WRITE Sites
     :PROPERTIES:
     :CUSTOM_ID: sites
     :END:
@@ -1217,8 +1217,8 @@ Facebook.com\\
      100 different web pages to test website fingerprinting
      classifiers.
 
-     The URLs for retrieval come from the Alexa top million sites
-     list[fn:: Current version available at
+     Here, the URLs for retrieval come from the Alexa top million
+     sites list[fn:: Current version available at
      \url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}],
      retrieved on September 30th, 2015. As in
      \cite{wpes13-fingerprinting}, similar sites were removed. Also
@@ -1246,9 +1246,10 @@ Facebook.com\\
      mirrors accuracy on 100 randomly-chosen sites.
 
      The list of sites with their Alexa index can be found in appendix
-     [[#top-100]]. Due to the multiple error, the 100-site list used by
-     \cite{effective} was also used.[fn::available at \url{}]
-***** TODO knnsitelist url
+     [[#top-100]]. Due to the these multiple drawbacks, the 100-site list
+     used by \cite{effective} was also used as an
+     alternative.[fn::available at
+     \url{https://crysp.uwaterloo.ca/software/webfingerprint/knnsitelist.txt}]
 **** DANIEL 30 sites
      :PROPERTIES:
      :CUSTOM_ID: 30sites
@@ -1393,8 +1394,8 @@ Facebook.com\\
      both \cite{panchenko2} and \cite{effective}.
 
      Additionally, the reimplementation has some aspects lacking in
-     \cite{panchenko2}, namely those mentioned in [[#split][split]] and [[#outlier_removal][outlier
-     removal]].
+     \cite{panchenko2}, namely those mentioned in [[#split][split]] and the
+     prototype in [[#outlier_removal][outlier removal]].
  
          - and has some optimizations
            - several classifiers: extra-trees
@@ -1415,8 +1416,6 @@ Facebook.com\\
            - times are milliseconds since epoch
        - seems to compare whether sites are in the matched set or
          outside: data contains only two classes
-       - 10-fold cv with /no/ previous splitting of train and test data
-         for parameter estimation (unlike [[#split][split]])
 **** DANIEL CUMUL Re-Implementation
     After outlier removal, splits and possibly scaling, classification
     takes as input feature vectors and tries to output the class that
@@ -1685,7 +1684,7 @@ Facebook.com\\
           - \cite{kfingerprint} captured 70 instances each
           - \cite{effective} used 90: 60 for train, 30 for test
         - this was before labelling erroneous traces
-** KEYWORDS Evaluation of Defenses [1/11]
+** KEYWORDS Evaluation of Defenses [1/12]
 *** KEYWORDS Introduction
     :PROPERTIES:
     :CUSTOM_ID: eval-defense
@@ -1694,12 +1693,11 @@ Facebook.com\\
     - addon
       - main
         - flavors
-        - factor
       - simple
-        - factor
       - retro
-        - factor
     - wtf-pad
+    - factor to overhead evaluation
+    - overhead
     - look at cumul-traces (?include this?)
     - summary
 *** KEYWORDS [#A] Add-on
@@ -1938,6 +1936,7 @@ Facebook.com\\
 **** aliexpress.com
       - https of akamai
       - td: check with recapture both
+*** KEYWORDS relation FACTOR to overhead
 ** brainstorm                                                       :ARCHIVE:
    - describe setup
      - which sites, why
@@ -3307,13 +3306,10 @@ per website fingerprinting study.
   in directory with traces (json/pcap/...)
 
   0. [@0] convert traces to \cite{effective}'s =batch=-directory,
-     using counter.py#dir\_to\_wang
-  1. python fextract.py
-  2. determine number of sites and instances, see flearn_params.sh
-  3. ./flearner 0 1 SITE_NUM INST_NUM TEST_NUM
-     - site_num: number or URLs/sites
-     - inst_num: number of /training/ instances
-     - test_num: number of /testing/ instances
+     using =counter.py#dir_to_wang= (for convenience, use
+     =wang_batch.py=)
+  1. python /path/to/fextract.py
+  2. /path/to/flearner 0 1 $(flearn_params.sh)
 ** TODO github flearn_params.sh, link
 * WRITE How to get Panchenko-SVM to work
 ** algo

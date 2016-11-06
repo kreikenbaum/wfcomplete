@@ -247,6 +247,17 @@ def from_json(jsonstring):
         setattr(tmp, key, value)
     return tmp
 
+def save(counter_dict, prefix=''):
+    '''saves counters as json data to file, each is prefixed with prefix'''
+    for k, per_domain in counter_dict.iteritems():
+        if not per_domain:
+            continue
+        with open(k + '.json', 'w') as file_:
+            logging.debug('writing json for %s', k)
+            for counter in per_domain:
+                file_.write(counter.to_json())
+                file_.write('\n')
+
 class Counter(object):
     '''single trace file'''
     def __init__(self, name=None):
@@ -283,19 +294,6 @@ class Counter(object):
             tmp.packets.append(int(value))
             #tmp.timing.append([(int(time) - start_time) / 1000.0, int(value)])
         return tmp
-
-    # tdref: does this need to be a static method?
-    @staticmethod
-    def save(counter_dict, prefix=''):
-        '''saves counters as json data to file, each is prefixed with prefix'''
-        for k, per_domain in counter_dict.iteritems():
-            if not per_domain:
-                continue
-            with open(k + '.json', 'w') as file_:
-                logging.debug('writing json for %s', k)
-                for counter in per_domain:
-                    file_.write(counter.to_json())
-                    file_.write('\n')
 
     # td: can this methodbe removed/refactored?
     @staticmethod
@@ -624,11 +622,11 @@ if __name__ == "__main__":
         sys.exit(1)
 
     if not json_only:
-        Counter.save(COUNTERS)
+        save(COUNTERS)
         print 'counters saved to DOMAIN.json files'
-    ## if non-interactive, print timing data
-    from ctypes import pythonapi
-    if not os.environ.get('PYTHONINSPECT') and not pythonapi.Py_InspectFlag > 0:
-        for t in itertools.chain.from_iterable(COUNTERS.values()):
-         # was [trace for domain in COUNTERS.values() for trace in domain]:
-            print t.timing
+    # ## if non-interactive, print timing data
+    # from ctypes import pythonapi
+    # if not os.environ.get('PYTHONINSPECT') and not pythonapi.Py_InspectFlag > 0:
+    #     for t in itertools.chain.from_iterable(COUNTERS.values()):
+    #      # was [trace for domain in COUNTERS.values() for trace in domain]:
+    #         print t.timing
