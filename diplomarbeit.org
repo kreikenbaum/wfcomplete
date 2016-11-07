@@ -84,8 +84,8 @@
   - Tao Wang
   - Dr. Dr. Eva
 * WAIT Summary
-* WRITE Basics (=basics) [40%]
-** CHECK Introduction
+* WRITE Basics (=basics) [43%]
+** EVA Introduction
    To protect online communication, journalists, whistleblowers,
    "normal people", and among others even military\cite{who-uses-tor}
    have resorted to the Tor\cite{tor-design} anonymity network.
@@ -492,6 +492,9 @@ Facebook.com\\
      +b < 0$ whenever $y_i = -1$. With added normalization, this can
      be compressed to the form \[y_i \cdot (\langle w, xi \rangle +b) \ge 1.\]
 **** EVA Soft Margin Classifiers
+     :PROPERTIES:
+     :CUSTOM_ID: soft-margin-svm
+     :END:
      #+INDEX: margin
      A support vector machine tries to find a hyperplane between two
      groups of points and maximize its distance to the closest points,
@@ -530,16 +533,14 @@ Facebook.com\\
      fewer classifiers, while One-Vs-One trains more, but evaluates
      fewer samples per fitting.\cite[sec.4.12.3]{scikit-learn}.
 **** WRITE Kernel Trick
-     Linear boundaries seem overly limiting. Yet, SVMs can compute the
-     boundary not only on the original data, but also on a projected
+     Lines do not always distinguish classes correctly, as
+     f.ex. example in Figure [[hastie_kerneltrick]]. Yet, SVMs can compute
+     these not only on the original data, but also on a projected
      space. This allows for complex decision boundaries.
 
-     The above all find a linear boundary between classes. What if
-     this does not model reality, as f.ex. example in Figure
-     [[hastie_kerneltrick]]? The solution to this is that a SVM can not
-     only use the dot product, but any kernel function.
+     A SVM can not only use the dot product $\langle.,.\rangle$, but any kernel
+     function $k(., .)$ instead.
 
-       - instead of dot product $\langle.,.\rangle$ use =kernel= $k(., .)$
        - same effect as mapping each point in set to dot product
          space, and applying $\langle.,.\rangle$ there, $k(x, x') = \langle\Phi(x), \Phi(x')\rangle$
          - but need not compute complete mapping
@@ -549,18 +550,24 @@ Facebook.com\\
      - rbf kernel
      - effect: no longer needs to find a straight line (yes, but in
        transfomed space, so could be others, too)
-**** WRITE parameter estimation
+**** KEYWORDS parameter estimation
+     Each [[#soft-margin-svm][soft margin classifier]] has an error term C which states how
+     much to penalize outliers. The radial basis function kernels used
+     by \cite{panchenko2} also have a \gamma term which varies the width of
+     the area, see Figure [[fig:C-gamma-effect]].
+
     #+CAPTION[Example svm-rbf classification with different parameters for C and \gamma]: Example svm-rbf classification with different parameters for C and \gamma. Source \cite[Figure 42.328]{scikit-learn}
     #+ATTR_LATEX: :float wrap :width 0.4\textwidth :placement {l}{0.42\textwidth}
+    #+NAME: fig:C-gamma-effect
     [[./pictures/skl-fig-42.328.png]]
      - each soft margin SVM has an error term C which states how
        much to penalize outliers
        - see [[*Soft Margin Classifiers][Soft Margin Classifiers]]
-     - rbf kernel also has a gamma term which gives the width of the
-       gaussian rbf
-       - picture
      - formula rbf kernel
      - pic from scikit-learn Figure 42.328: RBF SVM parameters
+     - meta-problem: svm expects these as input, otherwise
+       "computationally hard" problem
+       - cite
 ***** TODO formula rbf kernel
 ***** TODO picture first from sklearn, better from rieck
 **** TODO link to basic book (bronstein) for vector space etc
@@ -1185,7 +1192,7 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* KEYWORDS Results and Evaluation [21%]
+* KEYWORDS Results and Evaluation [20%]
 ** EVA Introduction
    The following sections describe [[#setup][how data was collected and
    analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
@@ -1199,7 +1206,7 @@ Facebook.com\\
     [[#feature-extraction][how classification input was extracted from the raw data]], and
     [[*Classification][how this input was assigned to
     classes/websites]].
-*** WRITE Sites
+*** CHECK Sites
     :PROPERTIES:
     :CUSTOM_ID: sites
     :END:
@@ -1207,7 +1214,7 @@ Facebook.com\\
      The following subsections describe [[#top100][the 100 sites selected for
      testing]], how a [[#30sites][subset of these was chosen]], and the
      [[#sites-bg][background-data]] sites.
-**** WRITE Modified Top-100
+**** EVA Alexa Top-100
      :PROPERTIES:
      :CUSTOM_ID: top100
      :END:
@@ -1245,10 +1252,7 @@ Facebook.com\\
      mirrors accuracy on 100 randomly-chosen sites.
 
      The list of sites with their Alexa index can be found in appendix
-     [[#top-100]]. Due to the these multiple drawbacks, the 100-site list
-     used by \cite{effective} was also used as an
-     alternative.[fn::available at
-     \url{https://crysp.uwaterloo.ca/software/webfingerprint/knnsitelist.txt}]
+     [[#top-100]].
 **** DANIEL 30 sites
      :PROPERTIES:
      :CUSTOM_ID: 30sites
@@ -1276,6 +1280,20 @@ Facebook.com\\
      \cite{a-systematic} offers a model to compute open-world results
      from closed-world. It seemed more direct to capture background
      traces.
+**** CHECK Wang et al's Top-100
+     Due to low accuracy obtained both by kNN\cite{effective} and the
+     CUMUL-reimplementation on [[#top100][the Alexa site set]], the 100-site list
+     used by \cite{effective} was also used as an
+     alternative.[fn::available at
+     \url{https://crysp.uwaterloo.ca/software/webfingerprint/knnsitelist.txt}]
+
+     It provides 120 blocked web pages, with some marked as /BAD/. All
+     of these pages were retrieved 50 times, and the number of
+     erroneous retrievals was marked. As seen in Table
+     [[tab:knnsitelist-errors]], there was a clear limit, with most pages
+     staying below 4 errors, and the next at 17 of 50, this was
+     selected as the cut-off. This provides 100 sites plus one spare
+     (101 sites). The list can be found in appendix [[#knnsitelist]].
 *** DANIEL Capture
     :PROPERTIES:
     :CUSTOM_ID: capture
@@ -1364,7 +1382,7 @@ Facebook.com\\
 
      An alternative saves the highest and lowest values of previous
      outlier removal on training data and applies it to the test
-     data. It did not improve on the minimal setting, see
+     data. It did not improve on the minimal setting, see section
      [[#wf-outlier-removal]].
 **** WRITE scaling
      - recommended by \cite{sarle2} and \cite{Hsu10apractical}
@@ -1683,7 +1701,7 @@ Facebook.com\\
           - \cite{kfingerprint} captured 70 instances each
           - \cite{effective} used 90: 60 for train, 30 for test
         - this was before labelling erroneous traces
-** KEYWORDS Evaluation of Defenses [1/12]
+** KEYWORDS Evaluation of Defenses [0/12]
 *** WRITE Introduction
     :PROPERTIES:
     :CUSTOM_ID: eval-defense
@@ -1700,7 +1718,7 @@ Facebook.com\\
       - show how generation differs
     - examine different websites, differences
     - summary
-*** KEYWORDS [#A] Add-on
+*** WRITE [#A] Add-on
     :PROPERTIES:
     :CUSTOM_ID: def-addon
     :END:
@@ -1711,17 +1729,21 @@ Facebook.com\\
     #+CAPTION: Different defense versions with CUMUL, Extra-Trees classifier
     #+ATTR_LATEX: :float nil :width \textwidth
     [[./pictures/extratrees_oh_vs_acc.eps]]
+**** WAIT relation FACTOR to overhead
     - problem: tunable: factor correlation to overhead
       - not given for 0.15, retro, 0.18-0.21
       - old graph: cluster for retro, etc
       - given in 0.22? (td: tests)
       - graph: accuracy vs overhead
         - mention (somewhere else that tamaraw fell through)
-    - problem: bursts
-      - at simple
-      - at normal
     - factor at simple
       - 0.18 over-engineered?
+***** WAIT compute overhead at [[file:~/da/da.org::*size%20overhead%20for%20all%20defenses][size overhead for all defenses]]
+**** KEYWORDS bursts
+    - problem: bursts
+      - at simple
+      - at main
+**** KEYWORDS summary
     - optimal defenses: 22 and simple2@10
       - td: battle those
       - td: pix vs disabled
@@ -1730,37 +1752,36 @@ Facebook.com\\
     - which classifier classifies which page well?
     - 5aII higher accuracy at svc than at et
       - mention still, still accurate, or obsolete, because svm increased
-**** KEYWORDS relation FACTOR to overhead
-*** DANIEL Add-on Flavors
-    :PROPERTIES:
-    :CUSTOM_ID: results-flavors
-    :END:
-    As described in [[#addon_main][Add-on Version: Main]], there are different flavors
-    of the main version. These were evaluated with overhead factors of
-    5% and 20%. See Tables [[tab:flavors0829]] and [[tab:flavors0909]]
-    respectively.
+**** MOVE UP DANIEL Main Add-on Flavors
+     :PROPERTIES:
+     :CUSTOM_ID: results-flavors
+     :END:
+     As described in [[#addon_main][Add-on Version: Main]], there are different flavors
+     of the main version. These were evaluated with overhead factors of
+     5% and 20%. See Tables [[tab:flavors0829]] and [[tab:flavors0909]]
+     respectively.
 
-#+CAPTION[Classification accuracy and overhead for 5%-flavor of the main addon]: Classification accuracy and overhead for flavors of the main addon, at 5% overhead factor.
-#+NAME: tab:flavors0829
-#+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{3}{1}|
-#+INCLUDE: "data/results/alternatives.org::#flavors-08-29" :only-contents t
+ #+CAPTION[Classification accuracy and overhead for 5%-flavor of the main addon]: Classification accuracy and overhead for flavors of the main addon, at 5% overhead factor.
+ #+NAME: tab:flavors0829
+ #+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{3}{1}|
+ #+INCLUDE: "data/results/alternatives.org::#flavors-08-29" :only-contents t
 
 
-#+CAPTION[Classification accuracy and overhead for 20%-flavor of the main addon]: Classification accuracy and overhead for flavors of the main addon, at 20% overhead factor.
-#+NAME: tab:flavors0909
-#+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{3}{1}|
-#+INCLUDE: "data/results/alternatives.org::#flavors-09-09" :only-contents t
+ #+CAPTION[Classification accuracy and overhead for 20%-flavor of the main addon]: Classification accuracy and overhead for flavors of the main addon, at 20% overhead factor.
+ #+NAME: tab:flavors0909
+ #+ATTR_LATEX: :align |r||n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{1}{3}|n{3}{1}|
+ #+INCLUDE: "data/results/alternatives.org::#flavors-09-09" :only-contents t
 
-    The results point to major accuracy reduction for all variants,
-    with almost equal accuracy for all variants with SVM-classifier,
-    but slightly overhead-related accuracy for the Extra-Trees
-    classifier. In both experiments, the =aI= flavor performed at the
-    top or almost, with the =aII= flavor producing slightly lower
-    overhead for comparable accuracy in the low-overhead setting.
+     The results point to major accuracy reduction for all variants,
+     with almost equal accuracy for all variants with SVM-classifier,
+     but slightly overhead-related accuracy for the Extra-Trees
+     classifier. In both experiments, the =aI= flavor performed at the
+     top or almost, with the =aII= flavor producing slightly lower
+     overhead for comparable accuracy in the low-overhead setting.
 
-    The size-guessing =b= flavors produce significantly
-    higher overhead, but yield a further small reduction of classifier
-    accuracy.
+     The size-guessing =b= flavors produce significantly
+     higher overhead, but yield a further small reduction of classifier
+     accuracy.
 *** KEYWORDS [#A] sota (practical): WTF-PAD
     :PROPERTIES:
     :CUSTOM_ID: eval-wtf-pad
@@ -2407,14 +2428,24 @@ Facebook.com\\
    #+END_SRC
    This issue was seemingly fixed in Firefox 50, as of the bug report.
 *** WAIT [#C] bug report: quote other's error messages, link to bug report
-* lists of sites
-** KEYWORDS modified top-100
+* Lists of Sites
+** KEYWORDS Modified Top-100
    :PROPERTIES:
    :CUSTOM_ID: top-100
    :END:
-   #+INCLUDE: "./sw/top/top-100-modified.csv" example
-** KEYWORDS 30 sites
+   #+INCLUDE: "./sw/top/top-100-modified.csv.old" example
+** KEYWORDS 30 Sites
    #+INCLUDE: "./sw/top/top-30.csv" example
+** KEYWORDS =knnsitelist= Kept Sites
+   :PROPERTIES:
+   :CUSTOM_ID: knnsitelist
+   :END:
+   #+INCLUDE: "./sw/top/top-100-modified.csv" example
+
+ #+CAPTION: Removed sites from knnsitelist with number of retrieval errors
+ #+NAME: tab:knnsitelist-errors
+ #+ATTR_LATEX: :align |l||r|
+ #+INCLUDE: "./data/results/alternatives.org::#knnsitelist-removed" :only-contents t
 * APPENDIX_DONE Mozilla Add-On Sdk
   #+INDEX: XUL
   #+INDEX: XML User-interface Langage
@@ -2440,15 +2471,12 @@ Facebook.com\\
   the Components
   object[fn:: \url{https://developer.mozilla.org/en/Components_object}],
   which can be accessed via =require("chrome")=.
-** TODO page-mod
-   <<page-mod>>
+** CHECK page-mod
    The
-   page-mod[fn:: \url{http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html}]
+   =page-mod=[fn::\url{http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html}]
    module injects "scripts in the context of web pages whose URL
-   matches a given pattern."
-
-   The pattern can be given as \verb|"*"| or =/.*/= to run on every
-   user-visited page.
+   matches a given pattern."  This pattern can be given as \verb|"*"|
+   or =/.*/= to run on every user-visited page.
 
    It thus offers the possibility to check for the end of a web page
    load by the user.
@@ -2478,11 +2506,8 @@ Facebook.com\\
    =window.onload= event, when the complete page, including
    JavaScript, CSS, and images has loaded.
 
-   A page-mod offers many other options such as f.ex.\space{}stylesheets,
-   script parameters, etc.
-*** link page-mod
-    http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html
-*** use real script (via import?)
+   A page-mod offers many other options such as f.ex.\space{}stylesheet
+   modification, script method parameters, etc.
 ** APPENDIX_DONE Installation and Use of Jpm (the build tool)
    The =jpm=-tool builds (SDK-based) Firefox browser extensions. It is available as a
    NodeJS-Module via the built-in NodeJS Package Manager =npm=.

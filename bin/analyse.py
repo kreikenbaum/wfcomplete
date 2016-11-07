@@ -31,10 +31,7 @@ ALL_MAP = {}
 
 scaler = None
 
-def _average_bytes(mean_std_dict):
-    '''@return the average size over all traces'''
-    return np.mean([x[0] for x in mean_std_dict.values()])
-
+# td: check if correct to use like this (or rather like _size_increase)
 def _average_duration(counter_dict):
     '''@return the average duration over all traces'''
     ms = times_mean_std(counter_dict)
@@ -319,6 +316,20 @@ picks best result'''
         ALL_MAP[name] = res
     print '10-fold result: {}'.format(max(map(np.mean, res.values())))
 
+def _size_increase_helper(two_defenses):
+    return _size_increase(two_defenses[two_defenses.keys()[0]],
+                          two_defenses[two_defenses.keys()[1]])
+
+def _size_increase(base, compare):
+    '''@return how much bigger/smaller is =compare= than =base= (in %)'''
+    diff = {}
+    if base.keys() != compare.keys():
+        raise Exception("keys are different")
+    for (k,v) in base.iteritems():
+        diff[k] = float(compare[k][0]) / v[0]
+#        import pdb; pdb.set_trace()
+    return 100 * np.mean(diff.values())
+
 def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
     '''cross test on dirs: 1st has training data, rest have test
 
@@ -327,8 +338,6 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
     # call with 2+: also train 1 (split), test 2,3,4,...
     defenses = counter.for_defenses(argv[1:])
     stats = {k: _bytes_mean_std(v) for (k,v) in defenses.iteritems()}
-    sizes = {k: _average_bytes(v) for (k,v) in stats.iteritems()}
-    # td: continue here, recompute duration (was not averaged per
     # domain), compare
     # durations = {k: _average_duration(v) for (k,v) in defenses.iteritems()}
 
@@ -374,7 +383,7 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
         if defense == defense0:
             continue
         print '\ntrain: {} VS {} (overhead {}%)'.format(
-            defense0, defense, 100.0*(sizes[defense]/sizes[defense0] -1))
+            defense0, defense, _size_increase(stats[defense0], stats[defense])
         if cumul:
             (X2, y2, _) = to_features_cumul(its_counters)
         else:
