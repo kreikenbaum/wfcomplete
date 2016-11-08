@@ -536,10 +536,9 @@ Facebook.com\\
      Lines do not always distinguish classes correctly, as
      f.ex. example in Figure [[hastie_kerneltrick]]. Yet, SVMs can compute
      these not only on the original data, but also on a projected
-     space. This allows for complex decision boundaries.
-
-     A SVM can not only use the dot product $\langle.,.\rangle$, but any kernel
-     function $k(., .)$ instead.
+     space. This allows for complex decision boundaries. To compute
+     these, a SVM can not only use the dot product $\langle.,.\rangle$, but any
+     kernel function $k(., .)$ instead.
 
        - same effect as mapping each point in set to dot product
          space, and applying $\langle.,.\rangle$ there, $k(x, x') = \langle\Phi(x), \Phi(x')\rangle$
@@ -560,16 +559,16 @@ Facebook.com\\
     #+ATTR_LATEX: :float wrap :width 0.4\textwidth :placement {l}{0.42\textwidth}
     #+NAME: fig:C-gamma-effect
     [[./pictures/skl-fig-42.328.png]]
-     - each soft margin SVM has an error term C which states how
-       much to penalize outliers
-       - see [[*Soft Margin Classifiers][Soft Margin Classifiers]]
-     - formula rbf kernel
-     - pic from scikit-learn Figure 42.328: RBF SVM parameters
+
+    Both of these have to be provided externally for the SVM to work
+    correctly.
      - meta-problem: svm expects these as input, otherwise
-       "computationally hard" problem
-       - cite
+       "combinatorially hard" problem
+       - compare \cite[sec.2.8.3]{esl}
+     - formula rbf kernel
 ***** TODO formula rbf kernel
 ***** TODO picture first from sklearn, better from rieck
+***** include [[file:docs/lit.org::*PART%20%5B#A%5D%20Sch%C3%B6lkopf%20-%20Learning%20with%20Kernels][PART {#A} Schölkopf - Learning with Kernels]] p. 217
 **** TODO link to basic book (bronstein) for vector space etc
 **** need more preparation than other classifiers
      - outlier removal
@@ -1192,7 +1191,7 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* KEYWORDS Results and Evaluation [20%]
+* KEYWORDS Results and Evaluation [26%]
 ** EVA Introduction
    The following sections describe [[#setup][how data was collected and
    analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
@@ -1280,7 +1279,7 @@ Facebook.com\\
      \cite{a-systematic} offers a model to compute open-world results
      from closed-world. It seemed more direct to capture background
      traces.
-**** CHECK Wang et al's Top-100
+**** EVA Wang et al's Top-100
      Due to low accuracy obtained both by kNN\cite{effective} and the
      CUMUL-reimplementation on [[#top100][the Alexa site set]], the 100-site list
      used by \cite{effective} was also used as an
@@ -1291,9 +1290,9 @@ Facebook.com\\
      of these pages were retrieved 50 times, and the number of
      erroneous retrievals was marked. As seen in Table
      [[tab:knnsitelist-errors]], there was a clear limit, with most pages
-     staying below 4 errors, and the next at 17 of 50, this was
-     selected as the cut-off. This provides 100 sites plus one spare
-     (101 sites). The list can be found in appendix [[#knnsitelist]].
+     staying below 4 errors, and the next at 17. This was selected as
+     the cut-off; it provides 100 sites plus one spare (101
+     sites). The list can be found in appendix [[#knnsitelist]].
 *** DANIEL Capture
     :PROPERTIES:
     :CUSTOM_ID: capture
@@ -1361,11 +1360,11 @@ Facebook.com\\
      beforehand. Splitting off the validation set thus happens before
      outlier removal.
 
-     The data set is split twice. Once for later validation of
+     The data set is thus split twice. Once for later validation of
      results[fn::code at =tts()= in analyse.py], once implicitly
      during SVM parameter estimation, which is done via five-fold
      cross-validation.[fn::code at =_my_grid()= in analyse.py]
-**** CHECK outlier removal
+**** EVA Outlier Removal
      :PROPERTIES:
      :CUSTOM_ID: outlier_removal
      :END:
@@ -1385,7 +1384,7 @@ Facebook.com\\
      data. It did not improve on the minimal setting, see section
      [[#wf-outlier-removal]].
 **** WRITE scaling
-     - recommended by \cite{sarle2} and \cite{Hsu10apractical}
+     - recommended for SVMs by \cite{sarle2} and \cite{Hsu10apractical}
      - same scale factor for test and train set
      - uses \cite[User Guide, sec. 42.30.7]{scikit-learn}'s =MinMaxScaler=
 **** WAIT for [[file:~/Desktop/main.org::*daniel:%20merkmalsraum%20-%20musterraum%20etc%20in%20englisch?][daniel: merkmalsraum - musterraum etc in englisch?]]
@@ -1729,30 +1728,7 @@ Facebook.com\\
     #+CAPTION: Different defense versions with CUMUL, Extra-Trees classifier
     #+ATTR_LATEX: :float nil :width \textwidth
     [[./pictures/extratrees_oh_vs_acc.eps]]
-**** WAIT relation FACTOR to overhead
-    - problem: tunable: factor correlation to overhead
-      - not given for 0.15, retro, 0.18-0.21
-      - old graph: cluster for retro, etc
-      - given in 0.22? (td: tests)
-      - graph: accuracy vs overhead
-        - mention (somewhere else that tamaraw fell through)
-    - factor at simple
-      - 0.18 over-engineered?
-***** WAIT compute overhead at [[file:~/da/da.org::*size%20overhead%20for%20all%20defenses][size overhead for all defenses]]
-**** KEYWORDS bursts
-    - problem: bursts
-      - at simple
-      - at main
-**** KEYWORDS summary
-    - optimal defenses: 22 and simple2@10
-      - td: battle those
-      - td: pix vs disabled
-    - different factors
-    - all around same curve
-    - which classifier classifies which page well?
-    - 5aII higher accuracy at svc than at et
-      - mention still, still accurate, or obsolete, because svm increased
-**** MOVE UP DANIEL Main Add-on Flavors
+**** DANIEL Main Add-on Flavors
      :PROPERTIES:
      :CUSTOM_ID: results-flavors
      :END:
@@ -1782,6 +1758,29 @@ Facebook.com\\
      The size-guessing =b= flavors produce significantly
      higher overhead, but yield a further small reduction of classifier
      accuracy.
+**** WAIT relation FACTOR to overhead
+    - problem: tunable: factor correlation to overhead
+      - not given for 0.15, retro, 0.18-0.21
+      - old graph: cluster for retro, etc
+      - given in 0.22? (td: tests)
+      - graph: accuracy vs overhead
+        - mention (somewhere else that tamaraw fell through)
+    - factor at simple
+      - 0.18 over-engineered?
+***** WAIT compute overhead at [[file:~/da/da.org::*size%20overhead%20for%20all%20defenses][size overhead for all defenses]]
+**** KEYWORDS bursts
+    - problem: bursts
+      - at simple
+      - at main
+**** KEYWORDS summary
+    - optimal defenses: 22 and simple2@10
+      - td: battle those
+      - td: pix vs disabled
+    - different factors
+    - all around same curve
+    - which classifier classifies which page well?
+    - 5aII higher accuracy at svc than at et
+      - mention still, still accurate, or obsolete, because svm increased
 *** KEYWORDS [#A] sota (practical): WTF-PAD
     :PROPERTIES:
     :CUSTOM_ID: eval-wtf-pad
@@ -2471,15 +2470,13 @@ Facebook.com\\
   the Components
   object[fn:: \url{https://developer.mozilla.org/en/Components_object}],
   which can be accessed via =require("chrome")=.
-** CHECK page-mod
+** WRITE page-mod
    The
    =page-mod=[fn::\url{http://developer.mozilla.org/en-US/Add-ons/SDK/High-Level_APIs/page-mod.html}]
-   module injects "scripts in the context of web pages whose URL
-   matches a given pattern."  This pattern can be given as \verb|"*"|
-   or =/.*/= to run on every user-visited page.
-
-   It thus offers the possibility to check for the end of a web page
-   load by the user.
+   module injects "scripts in [...] web pages whose URL matches a
+   given pattern." They can be run on every user-visited page. It thus
+   offers the possibility to check for the end of a web page load by
+   the user.
 
    A page-mod example is
 
@@ -2496,9 +2493,9 @@ Facebook.com\\
      });
    #+END_SRC
 
-   , which is run on every page, applies the =getLinks.js= script and
-   listens for its feedback, which is then used via
-   =addToCandidates()=.
+   , which is run (=include: /.*/=) on every page, applies the
+   =getLinks.js= script and listens for its feedback, which is then
+   used via =addToCandidates()=.
 
    The page-mod has a =contentScriptWhen= parameter, which specifies
    when to attach the script to the page. Valid values are =start=,

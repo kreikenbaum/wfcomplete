@@ -100,6 +100,7 @@ def extract(times, sizes, features):
 for site in range(0, 100):
     #print site
     for instance in range(0, 90):
+        #print instance
         fname = str(site) + "-" + str(instance)
         #Set up times, sizes
         try:

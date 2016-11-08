@@ -383,7 +383,7 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
         if defense == defense0:
             continue
         print '\ntrain: {} VS {} (overhead {}%)'.format(
-            defense0, defense, _size_increase(stats[defense0], stats[defense])
+            defense0, defense, _size_increase(stats[defense0], stats[defense]))
         if cumul:
             (X2, y2, _) = to_features_cumul(its_counters)
         else:
@@ -395,7 +395,6 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
                 l)
             (X2, y2, _2) = to_features(counter.outlier_removal(its_counters, 1),
                                        l)
-
         for clf in CLFS:
             t = time.time()
             print '{}: {}'.format(_clf_name(clf), _xtest(X, y, X2, y2, clf)), 
