@@ -97,7 +97,7 @@ def extract(times, sizes, features):
             features.append("X")
 
 #this takes quite a while
-for site in range(0, 100):
+for site in range(0, 120):
     #print site
     for instance in range(0, 90):
         #print instance

@@ -3,6 +3,7 @@
 
 import numpy as np
 from sklearn import cross_validation, ensemble, multiclass, neighbors, preprocessing, svm, tree
+from scipy.stats.mstats import gmean
 import doctest
 import logging
 import sys
@@ -328,7 +329,18 @@ def _size_increase(base, compare):
     for (k,v) in base.iteritems():
         diff[k] = float(compare[k][0]) / v[0]
 #        import pdb; pdb.set_trace()
-    return 100 * np.mean(diff.values())
+    return 100 * (gmean(diff.values()) -1)
+
+def size_test(argv, outlier_removal=True):
+    '''1. collect traces
+    2. create stats
+    3. evaluate for each vs first'''
+    defenses = counter.for_defenses(argv[1:])
+    stats = {k: _bytes_mean_std(v) for (k,v) in defenses.iteritems()}
+    defense0 = argv[1]
+    for d in argv[2:]:
+        print '{}: {}'.format(d,
+                              _size_increase(stats[defense0], stats[d]))
 
 def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
     '''cross test on dirs: 1st has training data, rest have test
@@ -636,7 +648,7 @@ def tts(counter_dict, test_size=1.0/3):
 # sys.argv = ['', 'disabled/bridge__2016-09-09', '0.22/20aI__2016-09-10', '0.22/20aII__2016-09-10', '0.22/20bI__2016-09-13', '0.22/20bII__2016-09-12']
 
 # 10-07 neu
-# "0.22/22@20aI__2016-10-07", "0.22/22@20aI__2016-10-07_with_errors", "0.22/22@20aII__2016-10-07", "0.22/22@20aII__2016-10-07_with_errors", "0.22/22@20bI__2016-10-08", "0.22/22@20bI__2016-10-08_with_errors", "0.22/22@20bII__2016-10-08", "0.22/22@20bII__2016-10-08_with_errors", "0.22/22@5aI__2016-10-09", "0.22/22@5aI__2016-10-09_with_errors", "0.22/22@5aII__2016-10-09", "0.22/22@5aII__2016-10-09_with_errors", "0.22/22@5bI__2016-10-10", "0.22/22@5bI__2016-10-10_with_errors", "0.22/22@5bII__2016-10-10", "0.22/22@5bII__2016-10-10_with_errors"
+# sys.argv = ['', "disabled/bridge__2016-10-06_with_errors", "0.22/22@20aI__2016-10-07", "0.22/22@20aI__2016-10-07_with_errors", "0.22/22@20aII__2016-10-07", "0.22/22@20aII__2016-10-07_with_errors", "0.22/22@20bI__2016-10-08", "0.22/22@20bI__2016-10-08_with_errors", "0.22/22@20bII__2016-10-08", "0.22/22@20bII__2016-10-08_with_errors", "0.22/22@5aI__2016-10-09", "0.22/22@5aI__2016-10-09_with_errors", "0.22/22@5aII__2016-10-09", "0.22/22@5aII__2016-10-09_with_errors", "0.22/22@5bI__2016-10-10", "0.22/22@5bI__2016-10-10_with_errors", "0.22/22@5bII__2016-10-10", "0.22/22@5bII__2016-10-10_with_errors"]
 
 ### RETRO
 # 09-18

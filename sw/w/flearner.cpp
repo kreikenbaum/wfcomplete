@@ -635,6 +635,7 @@ int main(int argc, char** argv) {
 		NEIGHBOUR_NUM = NEIGHBOUR_list[NEIGHBOUR_ind % 12];
 	}
 
+        //        printf("checkpoint 0\n");
         if(argc == 6){
           SITE_NUM = atoi(argv[3]);
           INST_NUM = atoi(argv[4]);
@@ -657,6 +658,7 @@ int main(int argc, char** argv) {
 		opentestfeat[i] = new float[FEAT_NUM];
 	}
 
+        //        printf("checkpoint 1\n");
 	for (int cur_site = 0; cur_site < SITE_NUM; cur_site++) {
 		int real_inst = 0;
 		for (int cur_inst = 0; cur_inst < INST_NUM; cur_inst++) {
@@ -693,6 +695,7 @@ int main(int argc, char** argv) {
 			}
 			
 		}
+                //                printf("checkpoint 1.10\n");
 		for (int cur_inst = 0; cur_inst < TEST_NUM; cur_inst++) {
 			int gotfile = 0;
 			ifstream fread;
@@ -728,6 +731,7 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
+        //        printf("checkpoint 2\n");
 
 	for (int cur_site = 0; cur_site < OPENTEST_NUM; cur_site++) {
 			int gotfile = 0;

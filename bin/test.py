@@ -48,23 +48,41 @@ class TestAnalyse(unittest.TestCase):
 
     def setUp(self):
         self.base_mock = {'a': (10, -1), 'b': (10, -1)}
+        self.base_mock2 = {'a': (10, -1), 'b': (10, -1), 'c': (10, -1)}
 
-    def test__size_increase(self):
+    def test__size_increase_equal(self):
         self.assertEqual(analyse._size_increase(self.base_mock,
                                                 {'a': (10, -1), 'b': (10, -1)}),
                          100)
+    def test__size_increase_same_half(self):
         self.assertEqual(analyse._size_increase(self.base_mock,
                                                 {'a': (5, -1), 'b': (5, -1)}),
                          50)
+
+    def test__size_increase_same_double(self):
         self.assertEqual(analyse._size_increase(self.base_mock,
                                                 {'a': (20, -1), 'b': (20, -1)}),
                          200)
-        self.assertEqual(analyse._size_increase(self.base_mock,
+
+    def test__size_increase_one_double(self):
+        self.assertAlmostEqual(analyse._size_increase(self.base_mock,
                                                 {'a': (10, -1), 'b': (20, -1)}),
-                         150)
+                         100*pow(2, 1./2))
+
+    def test__size_increase_both_different(self):
         self.assertEqual(analyse._size_increase(self.base_mock,
-                                                {'a': (5, -1), 'b': (15, -1)}),
+                                                {'a': (5, -1), 'b': (20, -1)}),
                          100)
+
+    def test__size_increase_three_one(self):
+        self.assertAlmostEqual(analyse._size_increase(
+            self.base_mock2, {'a': (10, -1), 'b': (10, -1), 'c': (20, -1)}),
+                               100.*pow(2, 1./3))
+
+    def test__size_increase_three_one_reverted(self):
+        self.assertAlmostEqual(analyse._size_increase(
+            {'a': (10, -1), 'b': (10, -1), 'c': (20, -1)}, self.base_mock2),
+                               100.*pow(1./2, 1./3))
 
 if __name__ == '__main__':
     unittest.main()
