@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 global warned
 warned = False
 

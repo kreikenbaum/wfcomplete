@@ -325,10 +325,14 @@ def _size_increase(base, compare):
     '''@return how much bigger/smaller is =compare= than =base= (in %)'''
     diff = {}
     if base.keys() != compare.keys():
-        raise Exception("keys are different")
-    for (k,v) in base.iteritems():
-        diff[k] = float(compare[k][0]) / v[0]
-#        import pdb; pdb.set_trace()
+        keys = set(base.keys())
+        keys = keys.intersection(compare.keys())
+        logging.warn("keys are different, just used {} common keys"
+                     .format(len(keys)))
+    else:
+        keys = base.keys()
+    for k in keys:
+        diff[k] = float(compare[k][0]) / base[k][0]
     return 100 * (gmean(diff.values()) -1)
 
 def size_test(argv, outlier_removal=True):
@@ -339,8 +343,7 @@ def size_test(argv, outlier_removal=True):
     stats = {k: _bytes_mean_std(v) for (k,v) in defenses.iteritems()}
     defense0 = argv[1]
     for d in argv[2:]:
-        print '{}: {}'.format(d,
-                              _size_increase(stats[defense0], stats[d]))
+        print '{}: {}'.format(d, _size_increase(stats[defense0], stats[d]))
 
 def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
     '''cross test on dirs: 1st has training data, rest have test
@@ -601,20 +604,15 @@ def tts(counter_dict, test_size=1.0/3):
     #     variable2 = gdl.metric(x[xbounds2[0]:xbounds2[1]],
     #                            y[ybounds2[0]:ybounds2[1]])
     #     return math.sqrt(fixedm + variable1 + variable2)
-    # sys.argv = ['', 'disabled/06-09@10', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
-    # sys.argv = ['', 'disabled/wfpad', 'wfpad']
 #    (X, y ,y_dom) = to_features_cumul(counters)
 
 ### OLDER DATA (without bridge)
-    # sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
-    # sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
+# sys.argv = ['', 'disabled/06-09@10', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
+# sys.argv = ['', 'disabled/wfpad', 'wfpad']
+# sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
+# sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
 
 ### CLASSIFICATION RESULTS PER CLASS
-
-    # sys.argv = ['', 'disabled/bridge', '0.15.3-retrofixed/bridge/30.js', '0.15.3-retrofixed/bridge/70.js', '0.15.3-retrofixed/bridge/50.js']
-    # sys.argv = ['', 'disabled/bridge', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5__2016-07-17', 'simple2/20']
-    # sys.argv = ['', 'disabled/bridge', 'wfpad/bridge__2016-07-05', 'tamaraw']
-    # sys.argv = ['', 'disabled/bridge', '0.22/10aI', '0.22/5aI__2016-07-19', '0.22/5aII__2016-07-18', '0.22/2aI__2016-07-23']
 
 # defenses = counter.for_defenses(sys.argv[1:])
 # some_30 = top_30(means)
@@ -633,38 +631,44 @@ def tts(counter_dict, test_size=1.0/3):
 #         print root
 #         counter.dir_to_wang(root, remove_small=False)
 
-# 0.22
+### variants
+## RETRO
+# ['0.15.3-retrofixed/bridge/100__2016_09_15', '0.15.3-retrofixed/bridge/50__2016_09_16']
+# ['0.15.3-retrofixed/bridge/200__2016-10-02/', '0.15.3-retrofixed/bridge/200__2016-10-02_with_errs/']
+## MAIN 0.22
 #['0.22/10aI__2016-07-08', '0.22/30aI__2016-07-13', '0.22/50aI__2016-07-13', '0.22/5aII__2016-07-18', '0.22/5aI__2016-07-19', '0.22/10_maybe_aI__2016-07-23', '0.22/5aI__2016-07-25', '0.22/30aI__2016-07-25', '0.22/50aI__2016-07-26', '0.22/2aI__2016-07-23', '0.22/5aI__2016-08-26', '0.22/5aII__2016-08-25', '0.22/5bI__2016-08-27', '0.22/5bII__2016-08-27', '0.22/20aI__2016-09-10', '0.22/20aII__2016-09-10', '0.22/20bII__2016-09-12', '0.22/20bI__2016-09-13']
+## SIMPLE
+#['simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5__2016-07-17', 'simple2/20']
 
 # 07-06
+# sys.argv = ['', 'disabled/bridge__2016-07-06', '0.15.3-retrofixed/bridge/30', '0.15.3-retrofixed/bridge/70', '0.15.3-retrofixed/bridge/50']
+# sys.argv = ['', 'disabled/bridge__2016-07-06', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/20']
+# sys.argv = ['', 'disabled/bridge__2016-07-06', 'wfpad/bridge__2016-07-05', 'tamaraw']
+# sys.argv = ['', 'disabled/bridge__2016-07-06', '0.22/10aI', '0.22/5aI__2016-07-19', '0.22/5aII__2016-07-18', '0.22/2aI__2016-07-23']
 # sys.argv = ['', 'disabled/bridge__2016-07-06', '0.22/10aI__2016-07-08/', 'wfpad/bridge__2016-07-05', '0.22/30aI__2016-07-13/', '0.22/50aI__2016-07-13/']
 # 07-21
 # sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aII__2016-07-18/', '0.22/5aI__2016-07-19/', '0.22/10_maybe_aI__2016-07-23/', '0.22/2aI__2016-07-23/', '0.22/30aI__2016-07-25/', '0.22/50aI__2016-07-26/', '0.22/5aI__2016-07-25/']
-
-### FLAVORS
-# 08-29
-# sys.argv = ['', 'disabled/bridge__2016-08-29/', '0.22/5bII__2016-08-27/', '0.22/5aI__2016-08-26/', '0.22/5bI__2016-08-27/', '0.22/5aII__2016-08-25/']
-# 09-09
+# 08-14/15
+# sys.argv = ['', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15']
+# 08-29 (also just FLAVORS)
+# sys.argv = ['', 'disabled/bridge__2016-08-29', '0.22/5aI__2016-08-26', '0.22/5aII__2016-08-25', '0.22/5bI__2016-08-27', '0.22/5bII__2016-08-27']
+# 09-09 (also just FLAVORS)
 # sys.argv = ['', 'disabled/bridge__2016-09-09', '0.22/20aI__2016-09-10', '0.22/20aII__2016-09-10', '0.22/20bI__2016-09-13', '0.22/20bII__2016-09-12']
-
-# 10-07 neu
-# sys.argv = ['', "disabled/bridge__2016-10-06_with_errors", "0.22/22@20aI__2016-10-07", "0.22/22@20aI__2016-10-07_with_errors", "0.22/22@20aII__2016-10-07", "0.22/22@20aII__2016-10-07_with_errors", "0.22/22@20bI__2016-10-08", "0.22/22@20bI__2016-10-08_with_errors", "0.22/22@20bII__2016-10-08", "0.22/22@20bII__2016-10-08_with_errors", "0.22/22@5aI__2016-10-09", "0.22/22@5aI__2016-10-09_with_errors", "0.22/22@5aII__2016-10-09", "0.22/22@5aII__2016-10-09_with_errors", "0.22/22@5bI__2016-10-10", "0.22/22@5bI__2016-10-10_with_errors", "0.22/22@5bII__2016-10-10", "0.22/22@5bII__2016-10-10_with_errors"]
-
-### RETRO
-# 09-18
+# 09-18 (also just RETRO)
 # sys.argv = ['', 'disabled/bridge__2016-09-18', '0.15.3-retrofixed/bridge/100__2016_09_15', '0.15.3-retrofixed/bridge/50__2016_09_16']
-
-### SIMPLE
-# 2016-09-23
+#'disabled/bridge__2016-09-30'
+# 09-23 (also just SIMPLE)
 # sys.argv = ['', 'disabled/bridge__2016-09-21_100', 'simple2/5__2016-09-23_100/']
 # sys.argv = ['', 'disabled/bridge__2016-09-26_100', 'simple2/5__2016-09-23_100/']
 # sys.argv = ['', 'disabled/bridge__2016-09-26_100_with_errs', 'simple2/5__2016-09-23_100/']
+# 10-06 (also just FLAVORS)
+# sys.argv = ['', "disabled/bridge__2016-10-06_with_errors", "0.22/22@20aI__2016-10-07", "0.22/22@20aI__2016-10-07_with_errors", "0.22/22@20aII__2016-10-07", "0.22/22@20aII__2016-10-07_with_errors", "0.22/22@20bI__2016-10-08", "0.22/22@20bI__2016-10-08_with_errors", "0.22/22@20bII__2016-10-08", "0.22/22@20bII__2016-10-08_with_errors", "0.22/22@5aI__2016-10-09", "0.22/22@5aI__2016-10-09_with_errors", "0.22/22@5aII__2016-10-09", "0.22/22@5aII__2016-10-09_with_errors", "0.22/22@5bI__2016-10-10", "0.22/22@5bI__2016-10-10_with_errors", "0.22/22@5bII__2016-10-10", "0.22/22@5bII__2016-10-10_with_errors"]
 
 ### DISABLED
-# sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15', 'disabled/bridge__2016-08-29', 'disabled/bridge__2016-09-09', 'disabled/bridge__2016-09-18', 'disabled/bridge__2016-09-30'] # also has 100-class at -08-30
+# 30
+# sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15', 'disabled/bridge__2016-08-29', 'disabled/bridge__2016-09-09', 'disabled/bridge__2016-09-18', 'disabled/bridge__2016-09-30', "disabled/bridge__2016-10-06_with_errors", "disabled/bridge__2016-10-16", "disabled/bridge__2016-10-16_with_errors"]
+## 100
 # sys.argv = ['', 'disabled/bridge__2016-08-30_100', 'disabled/bridge__2016-09-21_100', 'disabled/bridge__2016-09-26_100', 'disabled/bridge__2016-09-26_100_with_errs']
-# neu
-# "disabled/bridge__2016-10-06_with_errors", "disabled/bridge__2016-10-16", "disabled/bridge__2016-10-16_with_errors"
 
 ### TOP
 # sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aI__2016-07-19']

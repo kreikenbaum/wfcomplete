@@ -531,42 +531,53 @@ Facebook.com\\
      called /One-Vs-Rest/ (OVR) --- and one for each class-class
      combination --- called /One-Vs-One/ (OVO). One-Vs-Rest trains
      fewer classifiers, while One-Vs-One trains more, but evaluates
-     fewer samples per fitting.\cite[sec.4.12.3]{scikit-learn}.
+     fewer samples per fitting.\cite[sec.4.12.3]{scikit-user-guide}.
 **** WRITE Kernel Trick
-     Lines do not always distinguish classes correctly, as
-     f.ex. example in Figure [[hastie_kerneltrick]]. Yet, SVMs can compute
-     these not only on the original data, but also on a projected
-     space. This allows for complex decision boundaries. To compute
-     these, a SVM can not only use the dot product $\langle.,.\rangle$, but any
-     kernel function $k(., .)$ instead.
+     Straight lines do not always distinguish classes correctly, as
+     f.ex. example in Figure [[hastie_kerneltrick]]. This would seem a
+     drawback to using SVMs, yet they can compute these not only on
+     the original data, but also on a projected space. This allows for
+     complex decision boundaries. By using the kernel
+     trick\cite[sec.2.2.2]{kernels}[fn::A kernel is a function with
+     specific properties. The dot product is such a kernel. The kernel
+     trick enables a algorithm with one kernel to use any other
+     kernel], a SVM can not only use the dot product $\langle.,.\rangle$, but any other
+     kernel $k(., .)$ instead.
 
-       - same effect as mapping each point in set to dot product
-         space, and applying $\langle.,.\rangle$ there, $k(x, x') = \langle\Phi(x), \Phi(x')\rangle$
-         - but need not compute complete mapping
        #+CAPTION: Kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left side shows linear boundaries on $X$ and $Y$ --- the right side linear boundaries computed with added input data $X^2$, $Y^2$ and $XY$
        #+NAME: hastie_kerneltrick
        [[./pictures/hastie.png]]
-     - rbf kernel
+
+     - (gaussian) rbf kernel
+       - formula (gaussian) \cite[sec.2.3]{kernels}
+         \[k(x, y) = \exp \left ( - { \|x - y\|^2 \over 2 \gamma^2 }  \right )\]
+       - used by panchenko \cite{panchenko2}
+       - recommended by \cite{Hsu10apractical}
      - effect: no longer needs to find a straight line (yes, but in
        transfomed space, so could be others, too)
 **** WRITE parameter estimation
      Each [[#soft-margin-svm][soft margin classifier]] has an error term C which states how
-     much to penalize outliers. The radial basis function kernels used
-     by \cite{panchenko2} also have a \gamma term which varies the width of
+     much to penalize outliers. The gaussian RBF kernel used
+     by \cite{panchenko2} also has a \gamma term which varies the width of
      the area, see Figure [[fig:C-gamma-effect]].
 
-    #+CAPTION[Example svm-rbf classification with different parameters for C and \gamma]: Example svm-rbf classification with different parameters for C and \gamma. Source \cite[Figure 42.328]{scikit-learn}
-    #+ATTR_LATEX: :float wrap :width 0.4\textwidth :placement {l}{0.42\textwidth}
-    #+NAME: fig:C-gamma-effect
-    [[./pictures/skl-fig-42.328.png]]
+     #+CAPTION[Example svm-rbf classification with different parameters for C and \gamma]: Example svm-rbf classification with different parameters for C and \gamma. Source \cite[Figure 42.328]{scikit-user-guide}
+     #+ATTR_LATEX: :width 0.4\textwidth
+     #+NAME: fig:C-gamma-effect
+     [[./pictures/skl-fig-42.328.png]]
 
-    These parameters have to be provided externally for the SVM to
-    achieve high accuracy. \cite[sec.3.2]{Hsu10apractical} recommend
-    grid-search with cross-validation to find optimal parameters.
-     - grid-search: test runs with different values
-       - choose those that yield best result
-     - cross-validation: split data set into k folds, use k-1 for
-       training and 1 for testing
+     These parameters have to be provided externally for the SVM to
+     achieve high accuracy. \cite[sec.3.2]{Hsu10apractical} recommend
+     grid-search with cross-validation to find optimal parameters.
+
+     In grid-search, several parameters of $C$ and $\gamma$ are evaluated,
+     and the best one is chosen.
+
+     In cross-validation, the data set is split into $k$ /folds/, of
+     equal size. Of those, $k-1$ are used for training the classifier,
+     while the last is used for evaluation. This is done $k$ times,
+     and the result is averaged.
+
      - meta-problem: svm expects these as input, otherwise
        "combinatorially hard" problem
        - compare \cite[sec.2.8.3]{esl}
@@ -656,7 +667,7 @@ Facebook.com\\
     - classifier is random forest
     - different multi-class metric leaf label, knn with hamming
       distance
-      - leaf labels, see scikit-learn sec 42.9.9.apply
+      - leaf labels, see \cite[sec.42.9.9]{scikit-user-guide} apply
     - feature importances
     - \cite{kfingerprint}
 *** WRITE Related Work
@@ -1159,6 +1170,13 @@ Facebook.com\\
      - de facto: HTML-sized request for each request (target-size),
        (remembering negative sizes, subtracting them)
      - drawback: not very configurable
+**** KEYWORDS bursts
+    - problem: bursts recognizing factor
+      - \cite[sec.5.C]{dyer}
+      - \cite[sec.4.2]{effective}
+    - solution
+      - at simple
+      - at main
 **** WRITE Why as an add-on
      Web browsing is the (main) target of website
      fingerprinting. Instead of burdening all of Tor with extra bells
@@ -1390,23 +1408,21 @@ Facebook.com\\
      outlier removal on training data and applies it to the test
      data. It did not improve on the minimal setting, see section
      [[#wf-outlier-removal]].
-**** CHECK scaling
-     While most other classifiers gave slightly better results with
-     original input data, \cite{sarle2} and \cite{Hsu10apractical}
-     recommend that input data for Support Vector Machines be
-     normalized. This means that over all input vectors, the maximum
-     value for each attribute is set to one, while the minimum is set
-     to zero.
+**** CHECK Scaling
+     \cite{sarle2} and \cite{Hsu10apractical} both recommend that
+     input data for Support Vector Machines be normalized. This means
+     that over all input vectors, the maximum value for each feature
+     is set to one, while the minimum is set to zero.
 
-     To easily use the same scale for both training and test data, the
-     \cite[User Guide, sec. 42.30.7]{scikit-learn}'s =MinMaxScaler=
-     was applied.
+     This thesis' code uses \cite[sec.42.30.7]{scikit-user-guide}'s
+     =MinMaxScaler= for the same scale on both training and test
+     data.
 *** WRITE Classification
     :PROPERTIES:
     :CUSTOM_ID: classification
     :END:
 **** WRITE Introduction
-     - feature vectors extracted
+     Once feature vectors are extracted and polished,
      - outlier removal
      - classification
 **** WRITE Original Classification Methods: Panchenko and Wang's
@@ -1782,9 +1798,9 @@ Facebook.com\\
       - 0.18 over-engineered?
 ***** WAIT compute overhead at [[file:~/da/da.org::*size%20overhead%20for%20all%20defenses][size overhead for all defenses]]
 **** KEYWORDS bursts
-    - problem: bursts
-      - at simple
-      - at main
+     - effectiveness
+     - wait for eval of all
+       - maybe capture one/two more burst-traffic schemes
 **** KEYWORDS summary
     - optimal defenses: 22 and simple2@10
       - td: battle those
@@ -3358,29 +3374,35 @@ per website fingerprinting study.
 ** algo
    1. outlier removal
       - creates new input dir
-        #+BEGIN_SRC sh
-          python ./feature-scripts/outlier-removal.py -in ./foreground-data/ -out ./output/out-removal/ -setting CW -randomInstances NO -instances 40 -referenceFormat tcp -outlierRemoval Simple -ignoreOutlier YES
-        #+END_SRC
-        for foreground-data f.ex.
+        - closed world
+          #+BEGIN_SRC sh
+            python ./feature-scripts/outlier-removal.py -in ./foreground-data/ -out ./foreground-data-OR/ -setting CW -randomInstances NO -instances 40 -referenceFormat tcp -outlierRemoval Simple -ignoreOutlier YES
+          #+END_SRC
+        - open world
+          - foreground
+
+          - background
+
    2. generate libsvm input
+      - closed world
+        #+BEGIN_SRC sh
+          python ./feature-scripts/generate-feature.py -in ./foreground-data-OR/ -out ./output/ -setting CW -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -dataSet CW -instances 40
+        #+END_SRC
       - open world
         - foreground
         #+BEGIN_SRC sh
-          python ./feature-scripts/generate-feature.py -in ./foreground-data/ -out ./output/ -setting OW_FG -dataSet FG -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -instances 1
+          python ./feature-scripts/generate-feature.py -in ./foreground-data-OR/ -out ./output/ -setting OW_FG -dataSet FG -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -instances 1
         #+END_SRC
         - background
-      - closed world
-        #+BEGIN_SRC sh
-          python ./feature-scripts/generate-feature.py -in ./foreground-data/ -out ./output/ -setting CW -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -dataSet CW -instances 40
-        #+END_SRC
+
    3. train svm
       #+BEGIN_SRC sh
-        svm-train ./output/CW_TCP ./output/CW_TCP.model
+        ./libsvm-3.20-src/svm-train -v 10 ./output/CW_TCP ./output/CW_TCP.model
       #+END_SRC
       f.ex. for closed world-data
    4. use svm
       #+BEGIN_SRC sh
-        ../libsvm-3.20-src/svm-predict CW_TCP  CW_TCP.model CW_TCP.output
+        ./libsvm-3.20-src/svm-predict ./output/CW_TCP  ./output/CW_TCP.model ./output/CW_TCP.output
       #+END_SRC
 ** OW-data just has *two* classes: fg (=1) and bg (=0)
 \bibliography{docs/master}

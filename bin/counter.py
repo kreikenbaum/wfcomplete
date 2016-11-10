@@ -114,6 +114,7 @@ def _test(num, val=600, millisecs=10):
         [val]*num, _test_timing(num, val, millisecs)))
 
 def _test_timing(num, val, millisecs):
+    '''used for _test above'''
     out = []
     for i in range(num):
         out.append([i * millisecs, val])
@@ -277,22 +278,24 @@ class Counter(object):
         >>> Counter.from_panchenko_data('c.com 1234 1235:300').get_total_both()
         300
         >>> Counter.from_panchenko_data('c.com 1234 1235:300').name
-        c.com@1.234
+        'c.com@1.234'
         >>> Counter.from_panchenko_data('c.com 1234 1235:300').packets
         [300]
+        >>> Counter.from_panchenko_data('c.com 1234 1235:300').to_panchenko()
+        'c.com 1234 1235:300'
         '''
 #  >>> Counter.from_panchenko_data('c.com 1234 1235:300').timing
-# [[0.001, 300]]'
+# [[1, 300]]'
         tmp = Counter()
 
         elements = line.split()
         start_time = int(elements[1])/1000.
         tmp.name = '{}@{}'.format(elements[0], start_time)
-        #tmp.name = elements[0]
         for element in elements[2:]:
             (time, value) = element.split(':')
             tmp.packets.append(int(value))
-            #tmp.timing.append([(int(time) - start_time) / 1000.0, int(value)])
+            tmp.timing.append([int(int(time) - start_time * 1000),
+                               int(value)])
         return tmp
 
     # td: can this methodbe removed/refactored?
@@ -464,11 +467,25 @@ class Counter(object):
         return json.dumps(self.__dict__)
 
     def to_wang(self, filename):
-        '''writes this counter to filename in Wang et al's format (who is Al,
-by the way? ;-)'''
+        '''writes this counter to filename in Wang et al's format
+
+        >>> '''
         with open(filename, 'w') as f:
             for (time, size) in self.timing:
                 f.write("{}\t{}\n".format(time, -size))
+
+    def to_panchenko(self):
+        '''@return line for this counter in Panchenko et al's format
+
+        >>> a = _test(1); a.name = 'tps@1'; a.to_panchenko()
+        'tps 1000 1000:600'
+        '''
+        (out, _) = self.name.split('@')
+        start = int(float(_) * 1000)
+        out += ' {}'.format(start)
+        for (time, val) in self.timing:
+            out += ' {}:{}'.format(int(time) + start, val)
+        return out
 
     def cumul(self, num_features=100):
         '''@return CUMUL feature vector: inCount, outCount, outSize, inSize++'''
