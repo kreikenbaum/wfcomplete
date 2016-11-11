@@ -11,7 +11,7 @@ import time
 
 import counter
 
-JOBS_NUM = 2 # 1 (version1 to 4-6 (cumul onduckstein)), maybe also -4, ...
+JOBS_NUM = -3 # 1 (version1 to 4-6 (cumul onduckstein)), maybe also -4, ...
 # panchenko grid takes about 16% mem/cpu: 3-4 should be fine, 5 ok'ish, 6 limit
 LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 #LOGLEVEL = logging.DEBUG
@@ -647,7 +647,7 @@ def tts(counter_dict, test_size=1.0/3):
 # sys.argv = ['', 'disabled/bridge__2016-07-06', '0.22/10aI', '0.22/5aI__2016-07-19', '0.22/5aII__2016-07-18', '0.22/2aI__2016-07-23']
 # sys.argv = ['', 'disabled/bridge__2016-07-06', '0.22/10aI__2016-07-08/', 'wfpad/bridge__2016-07-05', '0.22/30aI__2016-07-13/', '0.22/50aI__2016-07-13/']
 # 07-21
-# sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aII__2016-07-18/', '0.22/5aI__2016-07-19/', '0.22/10_maybe_aI__2016-07-23/', '0.22/2aI__2016-07-23/', '0.22/30aI__2016-07-25/', '0.22/50aI__2016-07-26/', '0.22/5aI__2016-07-25/']
+# sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aII__2016-07-18/', '0.22/5aI__2016-07-19/', '0.22/10_maybe_aI__2016-07-23/', '0.22/2aI__2016-07-23/', '0.22/30aI__2016-07-25/', '0.22/50aI__2016-07-26/', '0.22/5aI__2016-07-25/', '0.15.3/bridge']
 # 08-14/15
 # sys.argv = ['', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15']
 # 08-29 (also just FLAVORS)
