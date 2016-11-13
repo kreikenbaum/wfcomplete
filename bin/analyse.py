@@ -184,7 +184,7 @@ def _my_grid_helper(counter_dict, outlier_removal=True, nj=JOBS_NUM,
     if cumul:
         (X, y, _) = to_features_cumul(counter_dict)
         return _my_grid(X, y, num_jobs=nj, folds=folds)
-    else:
+    else: # panchenko 1
         (X, y, _) = to_features(counter_dict)
         return _my_grid(X, y, num_jobs=nj,
                         cs=np.logspace(15, 19, 3, base=2),

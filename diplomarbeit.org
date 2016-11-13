@@ -554,7 +554,7 @@ Facebook.com\\
      \left ( - { \|x - y\|^2 \over 2 \gamma^2 } \right )\] This is also
      used by \cite{panchenko2}. While the algorithms still finds a
      straight line in a projected space, the resulting decision
-     boundaries are much more varied.
+     boundaries in the original feature space are more varied.
 **** WRITE parameter estimation
      Each [[#soft-margin-svm][soft margin classifier]] has an error term C which states how
      much to penalize outliers. The gaussian RBF kernel used
@@ -573,15 +573,15 @@ Facebook.com\\
      In grid-search, several parameters of $C$ and $\gamma$ are evaluated,
      and the best one is chosen.
 
-     In cross-validation, the data set is split into $k$ /folds/, of
-     equal size. Of those, $k-1$ are used for training the classifier,
-     while the last is used for evaluation. This is done $k$ times,
-     and the result is averaged.
+     In cross-validation, the data set is split into $k$ disjoint
+     subsets, called /folds/, of equal size. Of those, $k-1$ are used
+     for training the classifier, while the last is used for
+     evaluation. This is done $k$ times, and the result is averaged.
 
-     - meta-problem: svm expects these as input, otherwise
-       "combinatorially hard" problem
-       - compare \cite[sec.2.8.3]{esl}
-     - formula rbf kernel
+     It might be possible to evaluate these meta-parameters together
+     with the main classification problem, but analogously to
+     \cite[sec.2.8.3]{esl}, this would become "combinatorially hard".
+
      - \cite[sec.7.8.1]{kernels} different approaches, also
        cross-validation
 ***** TODO formula rbf kernel
@@ -1353,7 +1353,7 @@ Facebook.com\\
     Single traces are captured via the Python script ~one_site.py~, see
     appendix [[#1site_desc]].
 **** WAIT github config files upload + mention
-*** CHECK Feature Extraction
+*** WRITE Feature Extraction
 **** DANIEL Introduction
      :PROPERTIES:
      :CUSTOM_ID: feature-extraction
@@ -1361,9 +1361,9 @@ Facebook.com\\
     The aim of preprocessing is to extract features relevant for
     machine learning from the original trace files, which are in
     =pcap= format. From these, a vector of characteristics, called
-    /features/ [fn::They are called /features/ and /attributes/ in
-    machine learning; statistics calls them /independent variables/ or
-    /predictors/, see\cite[sec.2.1]{esl}] is created.
+    /features/ is created[fn::They are called /features/ and
+    /attributes/ in machine learning; statistics calls them
+    /independent variables/ or /predictors/, see\cite[sec.2.1]{esl}].
 
     Of the several tools available for reading =pcap=-trace files,
     =tshark= was used in this thesis, as it offers TLS packet
@@ -1418,19 +1418,21 @@ Facebook.com\\
      =MinMaxScaler= to use the same scale on both training and test
      data.
      - \cite[sec.2.3.1]{rieckdiss}
-       \[φ̄_{i} (x) = {\phi_i(x) - min_i \over max_i - min_i}  (ref:rieck-2.3)\]
+       \[\overline{\phi}_{i} (x) = {\phi_i(x) - min_i \over max_i - min_i}  (ref:rieck-2.3)\]
 *** WRITE Classification
     :PROPERTIES:
     :CUSTOM_ID: classification
     :END:
 **** KEYWORDS Introduction
-     Once feature vectors are extracted and polished,
+     Once feature vectors are extracted from the collected traces,
+     they can be classified. \cite{panchenko2} was both reimplemented
+     and classified using the original
+     implementation. \cite{effective}'s original implementation was
+     used to double-check results.
      - outlier removal (?)
      - classification
        - my code
        - original code
-         - wang: knn
-         - panchenko
          - both: see appendix
            - for technical details
            - for code changes to wang's methods
