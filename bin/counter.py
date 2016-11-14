@@ -273,6 +273,24 @@ class Counter(object):
         return 'counter (packet, time): {}'.format(self.timing)
 
     @staticmethod
+    def from_(*args):
+        '''helper method to handle empty argument'''
+        logging.info('args: %s, length: %d', args, len(args))
+        if len(args) == 2:
+            try:
+                os.chdir(args[1])
+                out = all_from_dir('.')
+            except OSError:
+                pass # ok, was a filename
+        elif len(args) > 1:
+            out = {}
+            for filename in args[1:]:
+                _append_features(out, filename)
+        else:
+            out = all_from_dir('.')
+        return out
+
+    @staticmethod
     def from_panchenko_data(line):
         '''creates Counter from panchenko's test data
         >>> Counter.from_panchenko_data('c.com 1234 1235:300').get_total_both()
@@ -298,25 +316,6 @@ class Counter(object):
                                int(value)])
         return tmp
 
-    # td: can this methodbe removed/refactored?
-    @staticmethod
-    def from_(*args):
-        '''helper method to handle empty argument'''
-        logging.info('args: %s, length: %d', args, len(args))
-        if len(args) == 2:
-            try:
-                os.chdir(args[1])
-                out = all_from_dir('.')
-            except OSError:
-                pass # ok, was a filename
-        elif len(args) > 1:
-            out = {}
-            for filename in args[1:]:
-                _append_features(out, filename)
-        else:
-            out = all_from_dir('.')
-        return out
-
     @staticmethod
     def from_pcap(filename):
         '''creates Counter from pcap file'''
@@ -337,6 +336,21 @@ class Counter(object):
                 if not 'Len=0' in rest and not proto == 'ARP':
                     tmp.extract_line(src, size, time)
                 logging.debug('from %s to %s: %s bytes', src, dst, size)
+        return tmp
+
+    @staticmethod
+    def from_wang(filename, its_url=None, its_time=None):
+        '''creates Counter from wang file (in batch dir, named "url-inst")'''
+        tmp = Counter(filename)
+        if not its_time and not its_url:
+            (its_url, its_time) = filename.split('-')
+        tmp.name = '{}@{}'.format(its_url, its_time)
+
+        with open(filename) as f:
+            for line in f:
+                (secs, negcount) = line.split('\t')
+                tmp.packets.append(-negcount)
+                tmp.timing.append([secs, -negcount])
         return tmp
 
     def variable_lengths(self):
@@ -467,9 +481,7 @@ class Counter(object):
         return json.dumps(self.__dict__)
 
     def to_wang(self, filename):
-        '''writes this counter to filename in Wang et al's format
-
-        >>> '''
+        '''writes this counter to filename in Wang et al's format'''
         with open(filename, 'w') as f:
             for (time, size) in self.timing:
                 f.write("{}\t{}\n".format(time, -size))
@@ -628,6 +640,7 @@ def outlier_removal(counter_dict, level=2):
             logging.warn('%s discarded in outlier removal', k)
     return out
 
+# example dir: os.chdir('../data/0.18.2/json-100/b_i_noburst')
 if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)

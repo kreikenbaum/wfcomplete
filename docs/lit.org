@@ -8646,9 +8646,9 @@
       exact values of both statistics exist.
 ** TODO [#A] vorlesungsnotizen sv2/3 :hannover_laptop:
 *** [#A] zu stufen der mustererkennung
-** TODO PART [#A] Schölkopf - Learning with Kernels
-*** [#A] also p. 217 - parameter choice, then use in [[file:~/da/git/diplomarbeit.org::*parameter%20estimation][parameter estimation]]
-**** For further details, see section 12.2 (in p.217)
+** TODO PART [#B] Schölkopf - Learning with Kernels
+*** [#B] chapter 7.4 (p.200)
+*** [#C] chapter 6: optmization
 *** summary
     1) A Tutorial Introduction
 
@@ -8786,7 +8786,7 @@
 
           - detail SVC method
 
-          - asdf
+          - contents
 
             1. separating hyperplanes
 
@@ -8826,7 +8826,24 @@
 
             - also hardware inaccuracies better to be glossed over
 
-       3) Optimal Margin Hyperplanes (cont. p.196)
+       3) Optimal Margin Hyperplanes
+
+          - given /set of examples/ (x_1, y_1), ..., (x_m, y_m), x_i \in
+            H, \y_i \in {\pm 1}
+
+          - find /decision function/ f_{*w*,b}(*x*) = sgn(\lang *w* , *x*\rang +b) with
+            f_{*w*,b}(x_i) = y_i
+
+          - solve the /primal optimization problem/, cf. [[(kernels-7.11)]]
+
+          - translate to dual problem, cf [[(kernels-7.17)]]
+
+            - maximize w.r.t. \alpha, minimized w.r.t. w and b
+
+          - alternate formulation: hyperplane bisects shortest line
+            between convex hulls of both classes of training points
+
+       4) Nonlinear Support Vector Classifiers
 
        8) [@8] Experiments
 
@@ -8952,12 +8969,12 @@
        2) The Role of the Margin
           - For a hyperplane {x \in H \mid \langw, x \rang +b = 0}, we call
             #+BEGIN_SRC latex
-              \rho_{(w, b)}(x, y) := y(\lang w, x\rang> + b) / \|w\| (ref:kernels-7.4)
+              \rho_{(*w*, b)}(*x*, *y*) := y(\lang *w*, *x*\rang> + b) / \| *w* \| (ref:kernels-7.4)
             #+END_SRC
             the /geometrical margin of the point (x, y) \in H \times
-            {\pm1}. The minimum value
+            {\pm1}/. The minimum value
             #+BEGIN_SRC latex
-            \rho_{(w, b)} := min_{i=1,...,m} \rho_{(w, b)}(x_i, y_i) (ref:kernels-7.5)
+            \rho_{(*w*, b)} := min_{i=1,...,m} \rho_{(*w*, b)}(x_i, y_i) (ref:kernels-7.5)
             #+END_SRC
             shall be called the /geometrical margin of (x_1, y_1),
             ... (x_m, y_m)/. If the latter is omitted, it is
@@ -8965,10 +8982,10 @@
           - perceptron algorithm [439] is one of the simplest
             conceivable iterative procedures for computing a
             separating hyperplane.
-          - Consider the set of decisdion functions f(x) = sgn( \lang w,
-            x, \rang with \|w\| \le \Lambda and \|x\| \le R, for some R, \Lambda
+          - Consider the set of decisdion functions f(x) = sgn( \lang *w*,
+            *x*, \rang with \| *w* \| \le \Lambda and \| *x* \| \le R, for some R, \Lambda
             > 0. Moverover let \rho > 0, and \nu denote the fraction of
-            training examples with margin smaller than \rho / \|w\|,
+            training examples with margin smaller than \rho / \| *w* \|,
             referred to as the /margin error/.
 
             For all distributions P generating the data, with
@@ -8979,6 +8996,40 @@
             #+BEGIN_SRC latex
               \nu + \sqrt{{c \over m} \left( {R^2 \Lambda^2 \over \rho^2} ln^2 m +
                 ln(1 / \delta)  (ref:kernels-7.7)
+            #+END_SRC
+       3) Optimal Margin Hyperplanes
+          - minimize_{*w* \in H, b \in \R} \tau(*w*) = 1/2 \| *w* \|^2   (ref:kernels-7.10)
+            subject to
+            #+BEGIN_SRC latex
+              y_i(\lang x_i, *w* \rang+b) \ge 1 for all i=1,...,m (ref:kernels-7.11)
+            #+END_SRC
+          - the Lagrangian
+            #+BEGIN_LaTeX
+            L({\bf w}, b, {\bf \alpha})
+            =  {1 \over 2} \| {\bf w} \|^2
+            - \sum_{i=1}^m \alpha_i(y_i(\lang {\bf x}_i, {\bf w} \rang) +b) -1)
+            (ref:kernels-7.12)
+            #+END_LaTeX
+            with Lagrange multipliers \alpha_i \ge 0.
+          - The patterns *x*_i for which \alpha_i >0 are called /Support
+            Vectors/. [...] they lie examctly on the margin.
+          - The expectation of the number of Support Vectors obtained
+            durin gtaining on a training set of size m, divided by m,
+            is an /upper bound/ on the expected probability of test
+            error of the SVM trained on training sets of size m-1.
+          - dual form of the optimization problem
+            maximize_{*\alpha* \in \R^m}
+            #+BEGIN_SRC latex
+              W({\bf \alpha}) \sum_{i=1}^m \alpha_i
+              - 1/2 \sum_{i,j=1}^m \alpha_i \alpha_j y_i y_j \langle {\bf x}_i, {\bf x}_j \rangle
+              (ref:kernels-7.17)
+            #+END_SRC
+            subject to \alpha_i \ge 0, i = 1,..., m
+            and \sum_{i=1}^m \alpha_i y_i = 0.
+          - [decision function]
+            #+BEGIN_SRC latex
+              f(*x*) = sgn (\sum_{i=1}^m \alpha_i y_i \langle *x*, *x*_i \rangle +b)
+              (ref:kernels-7.20)
             #+END_SRC
        8) [@8] Experiments
           - typically, the smaller set will require a slightly
@@ -9027,8 +9078,92 @@
          Abrechnungszwecken erforderlich
 
     3) Begründung
+
+       - Terrorismus-, und Kriminalitätsbekämpfung
+
+       - Erhöhung Aufklärungsquote um 0,006 Prozentpunkte
+
+         - ebenso MPI: Wegfall kein Effekt auf Aufklärungsquote
+
+    4) IP-Vorratsdatenspeicherung
 *** quotes
 ** TODO [#A] [[./rfc3986.html][Berners-Lee - Uniform Resource Identifier (URI): Generic Syntax]]
+*** summary
+    0) [@0] Abstract
+       
+       - URI: compact identifier ("abstract or physical")
+
+    1) Introduction
+
+       supersedes URL, URN docs
+
+       1) Overview of URIs
+
+          0) [@0]
+
+             - uniform: same form for different things, extensible
+
+             - resource: electronic doc, image, information source,
+               service, book, corporation, "human beings",
+               mathematical operator, mathematical relation
+
+             - identifier: distinguish from set, not necessarily access
+
+             - does not limit nature, reasons, or systems for resource
+               access
+
+             - does not require persistence
+
+             - global scope, but context may change
+               (f.ex. =http://localhost=)
+
+          1) Generic Syntax
+
+             - scheme: starts, specifies how identifiers are assigned
+
+          2) Examples: several schemes, see quotes
+
+          3) URI, URL, and URN
+
+             - URL provides way to access/locate
+
+             - URN: globally unique and persistent
+
+             - maybe both at the same time
+
+       2) Design Considerations
+
+          1) Transcription
+
+             - URI sequence of characters, not always octets
+
+               - might be transcribed, needs to be enterable on keyboards
+
+               - needs to be remembered
+
+             - non-ascii possible by percent-encoded octets, if
+               allowed by scheme
+
+          2) Separating Identification from Interaction
+*** quotes
+    0) [@0] Abstract
+       - A Uniform Resource Identifier (URI) is a compact sequence of
+         characters that identifies an abstract or physical resource.
+    1) Introduction
+       1) Overview of URIs
+          0) [@0]
+             - These terms should not be mistaken as an assumption
+               that an identifier defines or embodies the identity of
+               what is referenced
+             - URIs that identify in relation to the end-user's local
+               context should only be used when the context itself is
+               a defining aspect of the resource, such as when an
+               on-line help manual refers to a file on the end- user's
+               file system (e.g., "file:///etc/hosts").
+          2) [@2] Examples
+             - news:comp.infosystems.www.servers.unix
+             - urn:oasis:names:specification:docbook:dtd:xml:4.1.2
+
 ** TODO [#A] PART libsvm READMEs
 *** grid
 *** [[../sw/p/libsvm-3.20-src/README][./README]]
@@ -9059,7 +9194,7 @@
            #+BEGIN_SRC python
              python grid.py -log2c -5,5,1 -log2g -4,0,1 -v 5 -m 300 heart_scale
            #+END_SRC
-** TODO [#B] [[./wright-passive.pdf][Defending Anonymous Communications Against Passive Logging Attacks]]
+** TODO [#B] [[./wright-passive.pdf][Wright - Defending Anonymous Communications Against Passive Logging Attacks]]
 *** summary
     0) [@0] Abstract
 
@@ -14149,7 +14284,7 @@ When a media query is true, the corresponding style sheet or style rules are app
 ** TODO [#C] [[./webtiming.pdf][Felten - Timing Attacks on Web Privacy]]
 *** ref [[file:master.bib::DBLP:conf/ccs/FeltenS00][Felten & Schneider 2000: Timing Web]]
 ** TODO [#C] [[./p5-extended.pdf][Sherwood - P5 : A Protocol for Scalable Anonymous Communication]]
-** TODO [#C] [[./oakland05torta.pdf][Low-Cost Traffic Analysis of Tor]]
+** TODO [#C] [[./oakland05torta.pdf][Murdoch - Low-Cost Traffic Analysis of Tor]]
 *** summary
 *** quotes
 *** ref [[file:master.bib::torta05][Murdoch & Danezis 2005: Low Cost Traffic Analysis Tor]]
@@ -14761,7 +14896,7 @@ When a media query is true, the corresponding style sheet or style rules are app
       timeout duration has elapsed. Parameters url – The URL to
       navigate to.
 ** TODO [[./Tor Project: Overview.html][Tor: Overview]]
-** TODO [[shell:ristretto ./malamud][Malamud:Privacy and Private States]]
+** TODO [[shell:ristretto ./malamud][Malamud - Privacy and Private States]]
 *** summary
 *** quotes
     - Primo Levi observed that "solitude in a Camp is more precious
@@ -19888,6 +20023,11 @@ When a media query is true, the corresponding style sheet or style rules are app
             #+END_SRC
 ** PART [[../../../chive/GG/it/LaTeX/a026.pdf][Jürgens - LATEX — eine Einführung und ein bisschen mehr ...]]
 *** summary
+    4) [@4] Ein erstes Beispiel
+
+       - text bold durch =\textbf{fetter text}= (math-mode bold durch
+         ${\bf x}$)
+
     14) [@14] Erstellen von Verzeichnissen
 
         - Inhalt: =\tableofcontents=

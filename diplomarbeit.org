@@ -85,7 +85,7 @@
   - Dr. Dr. Eva
     - was zum Dank?
 * WAIT Summary
-* WRITE Basics (=basics) [43%]
+* WRITE Basics (=basics) [45%]
 ** EVA Introduction
    To protect online communication, journalists, whistleblowers,
    "normal people", and among others even military\cite{who-uses-tor}
@@ -102,7 +102,7 @@
    Fortunately, as soon as these weaknesses became known, defenses
    were proposed. [[#defenses][The subsequent section]] shows different classes of
    defenses and examines them in detail.
-** WRITE Website Fingerprinting [15/33]
+** WRITE Website Fingerprinting [15/31]
    :PROPERTIES:
    :CUSTOM_ID: wf
    :END:
@@ -534,29 +534,33 @@ Facebook.com\\
      fewer classifiers, while One-Vs-One trains more, but evaluates
      fewer samples per fitting.\cite[sec.4.12.3]{scikit-user-guide}.
 **** CHECK Kernel Trick
+     #+INDEX: kernel
+     #+INDEX: radial basis function
+     #+INDEX: RBF
      Straight lines do not always distinguish classes correctly, as
      f.ex. example in Figure [[hastie_kerneltrick]]. This would seem a
-     drawback to using SVMs, yet they can compute these not only on
-     the original data, but also on a projected space. This allows for
-     complex decision boundaries. By using the kernel
-     trick\cite[sec.2.2.2]{kernels}[fn::A kernel is a function with
-     specific properties. The dot product is such a kernel. The kernel
-     trick enables a algorithm with a kernel to use any other
-     kernel], a SVM can not only use the dot product $\langle.,.\rangle$, but another
-     kernel $k(., .)$ instead.
+     drawback to using Support Vector Machines, yet they can compute
+     these not only on the original data, but also on a projected
+     space. This allows for complex decision boundaries. By using the
+     kernel trick\cite[sec.2.2.2]{kernels}[fn::A kernel is a function
+     with specific properties. The dot product is such a kernel. The
+     kernel trick enables a algorithm with a kernel to use any other
+     kernel], a SVM can not only use the dot product $\langle.,.\rangle$, but
+     another kernel $k(., .)$ instead.
 
      #+CAPTION: Kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left side shows linear boundaries on $X$ and $Y$ --- the right side linear boundaries computed with added input data $X^2$, $Y^2$ and $XY$
      #+NAME: hastie_kerneltrick
      [[./pictures/hastie.png]]
 
      The kernel used by default by \cite{Hsu10apractical} for SVMs is
-     the (gaussian) rbf kernel\cite[sec.2.3]{kernels} \[k(x, y) = \exp
-     \left ( - { \|x - y\|^2 \over 2 \gamma^2 } \right )\] This is also
-     used by \cite{panchenko2}. While the algorithms still finds a
-     straight line in a projected space, the resulting decision
-     boundaries in the original feature space are more varied.
-**** WRITE parameter estimation
-     Each [[#soft-margin-svm][soft margin classifier]] has an error term C which states how
+     the (gaussian) /radial basis function/ (short: RBF)
+     kernel\cite[sec.2.3]{kernels} \[k(x, y) = \exp \left ( - { \|x -
+     y\|^2 \over 2 \gamma^2 } \right )\] This is also used by
+     \cite{panchenko2}. While the algorithms still finds a straight
+     line in a projected space, the resulting decision boundaries in
+     the original feature space are more varied.
+**** CHECK Parameter Estimation
+     Each [[#soft-margin-svm][soft margin classifier]] has an error term $C$ which states how
      much to penalize outliers. The gaussian RBF kernel used
      by \cite{panchenko2} also has a \gamma term which varies the width of
      the area, see Figure [[fig:C-gamma-effect]].
@@ -581,12 +585,6 @@ Facebook.com\\
      It might be possible to evaluate these meta-parameters together
      with the main classification problem, but analogously to
      \cite[sec.2.8.3]{esl}, this would become "combinatorially hard".
-
-     - \cite[sec.7.8.1]{kernels} different approaches, also
-       cross-validation
-***** TODO formula rbf kernel
-***** TODO picture first from sklearn, better from rieck
-***** include [[file:docs/lit.org::*PART%20%5B#A%5D%20Sch%C3%B6lkopf%20-%20Learning%20with%20Kernels][PART {#A} Schölkopf - Learning with Kernels]] p. 217
 **** TODO link to basic book (bronstein) for vector space etc
 **** need more preparation than other classifiers
      - outlier removal
@@ -1356,7 +1354,7 @@ Facebook.com\\
     Single traces are captured via the Python script ~one_site.py~, see
     appendix [[#1site_desc]].
 **** WAIT github config files upload + mention
-*** WRITE Feature Extraction
+*** CHECK Feature Extraction
 **** DANIEL Introduction
      :PROPERTIES:
      :CUSTOM_ID: feature-extraction
@@ -1411,17 +1409,20 @@ Facebook.com\\
      outlier removal on training data and applies it to the test
      data. It did not improve on the minimal setting, see section
      [[#wf-outlier-removal]].
-**** WRITE Scaling
+**** CHECK Scaling
      \cite{sarle2} and \cite{Hsu10apractical} both recommend that
      input data for Support Vector Machines be normalized. This means
      that over all input vectors, the maximum value for each feature
-     is set to one, while the minimum is set to zero.
+     is set to one, while the minimum is set to zero.[fn::There are
+     alternate ways of normalization. Cf. both \cite{sarle2} and
+     \cite{Hsu10apractical}.]
 
      This thesis' code applies \cite[sec.42.30.7]{scikit-user-guide}'s
      =MinMaxScaler= to use the same scale on both training and test
-     data.
-     - \cite[sec.2.3.1]{rieckdiss}
-       \[\overline{\phi}_{i} (x) = {\phi_i(x) - min_i \over max_i - min_i}  (ref:rieck-2.3)\]
+     data. The formula for this is \cite[sec.2.3.1]{rieckdiss}
+     \[\overline{\varphi}_{i} (x)
+     = {\varphi_i(x) - \min_{x \in X} \varphi_i(x) \over
+     \max_{x \in X} \varphi_i(x) - \min_{x \in X} \varphi_i(x)}.\]
 *** WRITE Classification
     :PROPERTIES:
     :CUSTOM_ID: classification
@@ -1830,7 +1831,7 @@ Facebook.com\\
     - all around same curve
     - which classifier classifies which page well?
     - mention Extra-Trees accuracy?
-*** KEYWORDS [#A] sota (practical): WTF-PAD
+*** WAIT [#A] sota (practical): WTF-PAD
     :PROPERTIES:
     :CUSTOM_ID: eval-wtf-pad
     :END:
@@ -1864,6 +1865,7 @@ Facebook.com\\
   - no delay
 - currently uses exit nodes
 - this has no gap traffic, aims less at global adversary, more at ISP
+**** WAIT for [[file:~/da/da.org::*cumul%20traces%20for%20interesting%20sites][cumul traces for interesting sites]]
 *** KEYWORDS Does This Hide Bursts?
     - meta-bursts as described in walkie-talkie
     - are those hidden, too, or can the number of bursts be found out
