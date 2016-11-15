@@ -670,6 +670,10 @@ def tts(counter_dict, test_size=1.0/3):
 ## 100
 # sys.argv = ['', 'disabled/bridge__2016-08-30_100', 'disabled/bridge__2016-09-21_100', 'disabled/bridge__2016-09-26_100', 'disabled/bridge__2016-09-26_100_with_errs']
 
+# NEW
+# ['./disabled/bridge__2016-11-04_100@50_100_classes', '0.22/10aI__2016-11-04_50_of_100']
+
+
 ### TOP
 # sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aI__2016-07-19']
 # sys.argv = ['', 'disabled/bridge__2016-07-06', 'wfpad/bridge__2016-07-05']

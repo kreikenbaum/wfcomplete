@@ -37,6 +37,7 @@ def _append_features(keys, filename):
     if not keys.has_key(domain):
         keys[domain] = []
     counter = Counter.from_pcap(filename)
+    counter.check()
     if counter.packets and not counter.warned:
         keys[domain].append(counter)
     else:
@@ -174,7 +175,7 @@ def all_from_dir(dirname, remove_small=True):
         length = len(filenames)
         for i, filename in enumerate(filenames):
             fullname = os.path.join(dirpath, filename)
-            if TIME_SEPARATOR in fullname: # file like google.com@1445350513
+            if TIME_SEPARATOR in filename: # file like google.com@1445350513
                 logging.info('processing (%d/%d) %s ',
                              i+1, length, fullname)
                 json_only = False
@@ -271,6 +272,12 @@ class Counter(object):
 
     def __str__(self):
         return 'counter (packet, time): {}'.format(self.timing)
+
+    def check(self):
+        '''if counter looks wrong, discard and/or set warned flag'''
+        if min(self.packets) > 0 or max(self.packets) < 0:
+            self.warned = True
+            return None
 
     @staticmethod
     def from_(*args):
