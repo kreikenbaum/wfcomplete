@@ -8646,395 +8646,6 @@
       exact values of both statistics exist.
 ** TODO [#A] vorlesungsnotizen sv2/3 :hannover_laptop:
 *** [#A] zu stufen der mustererkennung
-** TODO PART MOVE [#B] Schölkopf - Learning with Kernels
-*** [#B] chapter 7.4 (p.200)
-*** [#C] chapter 6: optmization
-*** summary
-    1) A Tutorial Introduction
-
-       1) Data Representation and Similarity
-
-          - patterns do not exist in dot product space, need to map
-            them there via map \Phi
-
-            - pattern space X
-
-            - dot product / feature space H
-
-          - pro:
-
-            - dot product as similarity measure,
-
-            - geometric interpretation,
-
-            - free to choose mapping, vary similarities
-
-       2) A Simple Pattern Recognition Algorithm
-
-          - algo
-
-            1. find geometric mean of each class in H
-
-            2. find middle between these
-
-            3. create orthogonal hyperplane through this middle point
-
-          - check if new point is left or right of hyperplane
-            (?middle?)
-
-          - simple equates (with other conditions) to Bayes classifier
-
-       3) [#C] Some Insights From Statistical Learning Theory
-
-    2) [@2] Kernels
-
-       0) [@0]
-
-          1. why kernels
-
-          2. which kernels yield \Phi, how to construct?
-
-          3. examples, properties
-
-          4. dissimilarity kernels
-
-       1) Product Features
-
-          - sometimes effective to classifiy more than just linear data
-
-          - huge dimensions of H if computed
-
-            - yet can use kernel to compute directly
-
-            - easy example:
-              #+BEGIN_SRC latex
-                \langle \Phi(x),  \Phi(x') \rangle
-                = [x]_1^2[x']_1^2 + [x]_2^2[x']_2^2 + 2[x]_1[x]_2[x']_1[x']_2
-                = \langle x, x'\rangle^2
-              #+END_SRC
-
-              - always nth power easily taken by nth power of dot product
-
-              - all powers up to d-th: k(x, x') = (<x, x'>+1)^d
-
-              - scaling factor so that all values in [-1, 1]
-
-       2) The Representation of Similarities in Linear Spaces
-
-          0) [@0]
-
-             - which kernels have mappings
-
-          1) Positive Definite Kernels
-
-             - gram matrix, positive (semi-)definite matrix/kernel: see quotes
-
-             - actually positive semidefinite, but used like that here
-
-             - dot product is kernel
-
-             - kernels are not necessarily dot product: non-linear
-
-             - but cauchy-schwarz transfers, see [[(kernels-2.19)]]
-
-          2) The Reproducing Kernel Map
-
-             - every pd kernel can create a feature map, and vice
-               versa
-
-             - kernel trick (see quotes): possible to replace any
-               kernel with another
-
-               - default input domain and dot product replaced by
-                 others
-
-       3) Examples and Properties of Kernels
-
-          - polynomial, gaussian,
-
-          - sigmoid
-            #+BEGIN_SRC latex
-              k(x, x') = tanh(\kappa \langle x, x'\rangle + \varphi)
-            #+END_SRC
-
-          - inhomogenous polynomial, B_n-Spline of Odd Order
-
-          - invariance of kernels: invariance to rotation:
-
-            k(x, x') = k(Ux, Ux') if U^{T} = U^{-1}
-
-          - RBF kernels: k(x, x') = f(d(x, x'))
-            with d: metric, f: \R^+_0\to\R^b+_0
-
-            - all mappings in same part of feature space
-
-            - gaussian kernel produces feature space of infinite
-              dimension if domain has infinite cardinality (as of
-              [[(kernels-2.74)]])
-
-       5) [@5] Summary
-
-          - kernel trick crucial
-
-          - basis is always linear space
-
-          - also for dissimilarities (ch2.4): use instead of metrics
-
-    7) [@7] Pattern Recognition
-
-       0) [@0]
-
-          - detail SVC method
-
-          - contents
-
-            1. separating hyperplanes
-
-            2. how big to choose margin
-
-            3. optimal margin hyperplane
-
-            4. kernel trick: hyperplane in nonlinear feature space
-
-            5. slack variables: outliers and noise
-
-            6. multi-class SV
-
-            7. variations to SV
-
-            8. experiments and applications
-
-       1) Separating Hyperplanes
-
-          - hyperplane (see [[(kernels-7.2)]]) which separates input data
-
-          - if this works, linearly separable (see quotes)
-
-       2) The Role of the Margin
-
-          - how far next point to hyperplane
-
-          - if margin big: intuition that classifies well
-
-            - "proof": assume test points around training points with
-              random offset up to r>0, if r < \rho, then all points are
-              classified correctly
-
-            - margin error bound theorem: the bigger the margin while
-              the smaller \|w\| and \|w|, the lower the chance of
-              misclassification.
-
-            - also hardware inaccuracies better to be glossed over
-
-       3) Optimal Margin Hyperplanes
-
-          - given /set of examples/ (x_1, y_1), ..., (x_m, y_m), x_i \in
-            H, \y_i \in {\pm 1}
-
-          - find /decision function/ f_{*w*,b}(*x*) = sgn(\lang *w* , *x*\rang +b) with
-            f_{*w*,b}(x_i) = y_i
-
-          - solve the /primal optimization problem/, cf. [[(kernels-7.11)]]
-
-          - translate to dual problem, cf [[(kernels-7.17)]]
-
-            - maximize w.r.t. \alpha, minimized w.r.t. w and b
-
-          - alternate formulation: hyperplane bisects shortest line
-            between convex hulls of both classes of training points
-
-       4) Nonlinear Support Vector Classifiers
-
-       8) [@8] Experiments
-
-          1) Digit Recognition Using Different Kernels
-
-             - scaling avoids roundoff errors
-
-             - comparison SVC kernels: most important to choose
-               correct parameters, not which method to choose
-
-             - cross-validation: split training set
-
-               - but may be problematic, because parameters on
-                 training and complete may be different...
-
-             - parameter estimation approaches
-
-               - parameters which previously worked well
-
-               - set \nu-SVC error to rate of previous other methods
-
-               - mimic this for C-SVC: start with high C, lower until
-                 error closes to 5%
-
-                 - problem: more training runs
-
-               - estimate error from sphere, maximum length, etc
-
-               - theoretical tools such as VC bounds (see sec 5.5)
-
-             - comparison to others on USPS digits: virtual SVC worked
-               best on specific set
-
-          2) Universality of the Support Vector Set
-*** quotes
-    1) A Tutorial Introduction
-       0) [@0]
-          - [...] introduce kernels informally as similarity measures
-            that arise from a particular representation of patterns
-       1) Data Representation and Similarity
-          - For reasons that will become clear later (cf Remark 2.16),
-            the function /k/ is called a /kernel/ [359, 4, 42, 62,
-            223].
-       2) A Simple Pattern Recognition Algorithm
-          - The hyperplane will then only depend on a subset of
-            training patterns called /Support Vectors/.
-    2) [@2] Kernels
-       0) [@0]
-          - kernel arises as a similarity measure that can be thought
-            of as a dot product in a so-called feature space.
-       2) [@2] The Representation of Similarities in Linear Spaces
-          1) Positive Definite Kernels
-             - Given a function k: X^2 \to \K (where \K = \C or \K = \R) and
-               patterns x_1, ..., x_m \i X, the m \times m matrix K with
-               elements
-
-               K_{ij} := k(x_i, x_j)
-
-               is called the /Gram matrix/ (or /kernel matrix/) of k
-               with repect to x_1, ..., x_m.
-             - A complex m \times m matrix K satisfying
-
-               \sum_{i,j} c_i \overline{c_i} K_{ij} \ge 0
-
-               for all c_i \in \C is called /positive (semi-!)
-               definite/. Similarly, a real symmetric m \times m matrix K
-               satisfying [the above] for all c_i \in \R is called
-               /positive (semi-!) definite/.
-             - Let X be a nonempty set. A function k on X \times X which
-               for all m \in \N and all x_1, ... x_m \in X gives rise to a
-               positive definite Gram matrix is called a /positive
-               definite (pd) kernel/. Often, we shall refer to it
-               simply as a /kernel/.
-             - If k is a positive definite kernel and x_1, x_2 \in X, then
-               #+BEGIN_SRC latex
-                 |k(x_1, x_2|^2 \le k(x_1, x_1) \cdot k(x_2, x_2) (ref:kernels-2.19)
-               #+END_SRC
-          2) The Reproducing Kernel Map
-             - Given an algorithm which is formulated in terms of a
-               positive definite kernel k, one can construct an
-               alternative algorithm by replacing k by another
-               positive definite kernel \overline{k}
-             - /any/ algorithm that only depends on dot products,
-               i.e., any algorithm that is rotationally inariant, can
-               be kernelized [479, 480].
-       3) Examples and Properties of Kernels
-          - Suppose that x_1, ..., x_m \subset X are distinct points and \sigma
-            \neq 0. The matrix K given by
-            #+BEGIN_SRC latex
-              K_{ij} := exp \left ( - { \|x_i - x_j\|^2 \over 2 \sigma^2 } )
-              (ref:kernels-2.74)
-            #+END_SRC
-            has full rank. In other words, the points \Phi(x_1), ...,
-            \Phi(x_m) are linearly independent (provided no two x_i are
-            the same). They span an m-dimensional subspace of H.
-    6) [@6] Optimization
-       3) [@3] Constrained Problems
-          1) Optimality Conditions
-             - Some of the most important sufficient criteria are the
-               Kuhn-Tucker[fn::An earlier version is due to
-               Karush [283]. This is why often one uses the
-               abbreviation KKT (Karush-Kuhn-Tucker) rather than KT to
-               denote the optimality conditions.] saddle point
-               conditions[312].
-    7) Pattern Recognition
-       1) Separating Hyperplanes
-          - The pair (w, b) \in H \times \R is called a /canonical/ form of
-            the hyperplane [...] with respect to x_1, ..., x_m \in H, if
-            it is scaled such that
-            #+BEGIN_SRC latex
-              min_{i=1,...,m} |\langle w, x_i \rang +b| =1 (ref:kernels-7.2)
-            #+END_SRC
-          - they are oriented differently; they correspond to two
-            /decision functions/,
-            #+BEGIN_SRC latex
-              f_{w, b}: H \to {\pm 1}
-                       x \mapsto f_{w,b}(x) = sign(\langle w, x \rangle +b) (ref:kernels-7.3)
-            #+END_SRC
-          - solution f_{w, b} which /correctly classifies/ the labelled
-            examples (x_i, y_i) \in H \times {\pm 1}; in other words, which
-            satisfies f_{w, b}(x_i) = y_i for all i (in this case, the
-            training set is said to be /separable/)
-       2) The Role of the Margin
-          - For a hyperplane {x \in H \mid \langw, x \rang +b = 0}, we call
-            #+BEGIN_SRC latex
-              \rho_{(*w*, b)}(*x*, *y*) := y(\lang *w*, *x*\rang> + b) / \| *w* \| (ref:kernels-7.4)
-            #+END_SRC
-            the /geometrical margin of the point (x, y) \in H \times
-            {\pm1}/. The minimum value
-            #+BEGIN_SRC latex
-            \rho_{(*w*, b)} := min_{i=1,...,m} \rho_{(*w*, b)}(x_i, y_i) (ref:kernels-7.5)
-            #+END_SRC
-            shall be called the /geometrical margin of (x_1, y_1),
-            ... (x_m, y_m)/. If the latter is omitted, it is
-            understood that the training set is meant.
-          - perceptron algorithm [439] is one of the simplest
-            conceivable iterative procedures for computing a
-            separating hyperplane.
-          - Consider the set of decisdion functions f(x) = sgn( \lang *w*,
-            *x*, \rang with \| *w* \| \le \Lambda and \| *x* \| \le R, for some R, \Lambda
-            > 0. Moverover let \rho > 0, and \nu denote the fraction of
-            training examples with margin smaller than \rho / \| *w* \|,
-            referred to as the /margin error/.
-
-            For all distributions P generating the data, with
-            probability at least 1 - \delta over the drawing of the m
-            training patterns, and for any \rho > 0 and \delta \in (0, 1), the
-            probability that a test pattern odrawn from P will be
-            misclassified is bounded from above, by
-            #+BEGIN_SRC latex
-              \nu + \sqrt{{c \over m} \left( {R^2 \Lambda^2 \over \rho^2} ln^2 m +
-                ln(1 / \delta)  (ref:kernels-7.7)
-            #+END_SRC
-       3) Optimal Margin Hyperplanes
-          - minimize_{*w* \in H, b \in \R} \tau(*w*) = 1/2 \| *w* \|^2   (ref:kernels-7.10)
-            subject to
-            #+BEGIN_SRC latex
-              y_i(\lang x_i, *w* \rang+b) \ge 1 for all i=1,...,m (ref:kernels-7.11)
-            #+END_SRC
-          - the Lagrangian
-            #+BEGIN_LaTeX
-            L({\bf w}, b, {\bf \alpha})
-            =  {1 \over 2} \| {\bf w} \|^2
-            - \sum_{i=1}^m \alpha_i(y_i(\lang {\bf x}_i, {\bf w} \rang) +b) -1)
-            (ref:kernels-7.12)
-            #+END_LaTeX
-            with Lagrange multipliers \alpha_i \ge 0.
-          - The patterns *x*_i for which \alpha_i >0 are called /Support
-            Vectors/. [...] they lie examctly on the margin.
-          - The expectation of the number of Support Vectors obtained
-            durin gtaining on a training set of size m, divided by m,
-            is an /upper bound/ on the expected probability of test
-            error of the SVM trained on training sets of size m-1.
-          - dual form of the optimization problem
-            maximize_{*\alpha* \in \R^m}
-            #+BEGIN_SRC latex
-              W({\bf \alpha}) \sum_{i=1}^m \alpha_i
-              - 1/2 \sum_{i,j=1}^m \alpha_i \alpha_j y_i y_j \langle {\bf x}_i, {\bf x}_j \rangle
-              (ref:kernels-7.17)
-            #+END_SRC
-            subject to \alpha_i \ge 0, i = 1,..., m
-            and \sum_{i=1}^m \alpha_i y_i = 0.
-          - [decision function]
-            #+BEGIN_SRC latex
-              f(*x*) = sgn (\sum_{i=1}^m \alpha_i y_i \langle *x*, *x*_i \rangle +b)
-              (ref:kernels-7.20)
-            #+END_SRC
-       8) [@8] Experiments
-          - typically, the smaller set will require a slightly
-            stronger regularization
-*** ref [[file:master.bib::kernels][Bernhard & Smola 2002: Learning Kernels]]
 ** TODO [#A] [[./Vorratsdatenspeicherung – Wikipedia.html][Wikipedia - Vorratsdatenspeicherung]]
 *** summary
     0) [@0]
@@ -9091,121 +8702,24 @@
 
          - erlauben, sehr vieles nachzuverfolgen
 
-       - Loesungsvorschlag ohne IT-Vorratsdatenspeicherung : spezielle
+       - Lösungsvorschlag ohne IT-Vorratsdatenspeicherung : spezielle
          IT-Forensik
+
+    5) Vorratsdatenspeicherungsentwurf des Bundesjustizministeriums
+
+       - Anlassbezogenes "Einfrieren" ohne richterlichen Beschluss
+
+       - zum "Auftauen", Zugriff auf die Daten: Richter
+
+       - Benachrichtigung des Anschlussinhabers
+
+    6) Europäische Richtlinie
 *** quotes
     4) [@4] IP-Vorratsdatenspeicherung
        - Der Bundesdatenschutzbeauftragte Peter Schaar warnte im
          September 2011, dass Internetanbieter wie Google anhand der
          IP-Adresse jeden Klick protokollierten und die Zuordnung von
          IP-Adressen deshalb „höchst sensibel“ sei.[33]
-** TODO [#A] [[./rfc3986.html][Berners-Lee - Uniform Resource Identifier (URI): Generic Syntax]]
-*** summary
-    0) [@0] Abstract
-       
-       - URI: compact identifier ("abstract or physical")
-
-    1) Introduction
-
-       supersedes URL, URN docs
-
-       1) Overview of URIs
-
-          0) [@0]
-
-             - uniform: same form for different things, extensible
-
-             - resource: electronic doc, image, information source,
-               service, book, corporation, "human beings",
-               mathematical operator, mathematical relation
-
-             - identifier: distinguish from set, not necessarily access
-
-             - does not limit nature, reasons, or systems for resource
-               access
-
-             - does not require persistence
-
-             - global scope, but context may change
-               (f.ex. =http://localhost=)
-
-          1) Generic Syntax
-
-             - scheme: starts, specifies how identifiers are assigned
-
-          2) Examples: several schemes, see quotes
-
-          3) URI, URL, and URN
-
-             - URL provides way to access/locate
-
-             - URN: globally unique and persistent
-
-             - maybe both at the same time
-
-       2) Design Considerations
-
-          1) Transcription
-
-             - URI sequence of characters, not always octets
-
-               - might be transcribed, needs to be enterable on keyboards
-
-               - needs to be remembered
-
-             - non-ascii possible by percent-encoded octets, if
-               allowed by scheme
-
-          2) Separating Identification from Interaction
-*** quotes
-    0) [@0] Abstract
-       - A Uniform Resource Identifier (URI) is a compact sequence of
-         characters that identifies an abstract or physical resource.
-    1) Introduction
-       1) Overview of URIs
-          0) [@0]
-             - These terms should not be mistaken as an assumption
-               that an identifier defines or embodies the identity of
-               what is referenced
-             - URIs that identify in relation to the end-user's local
-               context should only be used when the context itself is
-               a defining aspect of the resource, such as when an
-               on-line help manual refers to a file on the end- user's
-               file system (e.g., "file:///etc/hosts").
-          2) [@2] Examples
-             - news:comp.infosystems.www.servers.unix
-             - urn:oasis:names:specification:docbook:dtd:xml:4.1.2
-
-** TODO [#A] PART libsvm READMEs
-*** grid
-*** [[../sw/p/libsvm-3.20-src/README][./README]]
-**** quotes
-     - Installation and Data Format
-       - The format of training and testing data file is:
-
-         <label> <index1>:<value1> <index2>:<value2> ...
-     - `svm-train' Usage
-       - -t kernel_type : set type of kernel function (default 2)
-	 2 -- radial basis function: exp(-gamma*|u-v|^2)
-       - -g gamma : set gamma in kernel function (default 1/num_features)
-       - -c cost : set the parameter C of C-SVC, epsilon-SVR, and nu-SVR (default 1)
-       - -m cachesize : set cache memory size in MB (default 100)
-       - -v n: n-fold cross validation mode
-*** [[../sw/p/libsvm-3.20-src/tools/README][./tools/README]]
-**** quotes
-     2) [@2] Part II: Parameter Selection Tools
-        1) Introduction
-           - grid.py is a parameter selection tool for C-SVM
-             classification using the RBF (radial basis function)
-             kernel.
-           - Usage: grid.py [grid_options] [svm_options] dataset
-           - grid_options
-             - -resume [pathname] : resume the grid task using an
-               existing output file (default pathname is dataset.out)
-        2) Example
-           #+BEGIN_SRC python
-             python grid.py -log2c -5,5,1 -log2g -4,0,1 -v 5 -m 300 heart_scale
-           #+END_SRC
 ** TODO [#B] [[./wright-passive.pdf][Wright - Defending Anonymous Communications Against Passive Logging Attacks]]
 *** summary
     0) [@0] Abstract
@@ -11966,6 +11480,1274 @@ E. Casalicchio and M. Colajanni. A client-aware dispatching
 ** TODO [#B] [[./george-thesis.pdf][Danezis - Better Anonymous Communications]]
 *** TODO [#B] skim
 *** ref [[file:master.bib::george-thesis][Danezis 2004: Better Anonymous Communications]]
+** TODO PART [#B] Schölkopf - Learning with Kernels
+*** [#B] chapter 7.4 (p.200)
+*** [#C] chapter 6: optmization
+*** summary
+    1) A Tutorial Introduction
+
+       1) Data Representation and Similarity
+
+          - patterns do not exist in dot product space, need to map
+            them there via map \Phi
+
+            - pattern space X
+
+            - dot product / feature space H
+
+          - pro:
+
+            - dot product as similarity measure,
+
+            - geometric interpretation,
+
+            - free to choose mapping, vary similarities
+
+       2) A Simple Pattern Recognition Algorithm
+
+          - algo
+
+            1. find geometric mean of each class in H
+
+            2. find middle between these
+
+            3. create orthogonal hyperplane through this middle point
+
+          - check if new point is left or right of hyperplane
+            (?middle?)
+
+          - simple equates (with other conditions) to Bayes classifier
+
+       3) [#C] Some Insights From Statistical Learning Theory
+
+    2) [@2] Kernels
+
+       0) [@0]
+
+          1. why kernels
+
+          2. which kernels yield \Phi, how to construct?
+
+          3. examples, properties
+
+          4. dissimilarity kernels
+
+       1) Product Features
+
+          - sometimes effective to classifiy more than just linear data
+
+          - huge dimensions of H if computed
+
+            - yet can use kernel to compute directly
+
+            - easy example:
+              #+BEGIN_SRC latex
+                \langle \Phi(x),  \Phi(x') \rangle
+                = [x]_1^2[x']_1^2 + [x]_2^2[x']_2^2 + 2[x]_1[x]_2[x']_1[x']_2
+                = \langle x, x'\rangle^2
+              #+END_SRC
+
+              - always nth power easily taken by nth power of dot product
+
+              - all powers up to d-th: k(x, x') = (<x, x'>+1)^d
+
+              - scaling factor so that all values in [-1, 1]
+
+       2) The Representation of Similarities in Linear Spaces
+
+          0) [@0]
+
+             - which kernels have mappings
+
+          1) Positive Definite Kernels
+
+             - gram matrix, positive (semi-)definite matrix/kernel: see quotes
+
+             - actually positive semidefinite, but used like that here
+
+             - dot product is kernel
+
+             - kernels are not necessarily dot product: non-linear
+
+             - but cauchy-schwarz transfers, see [[(kernels-2.19)]]
+
+          2) The Reproducing Kernel Map
+
+             - every pd kernel can create a feature map, and vice
+               versa
+
+             - kernel trick (see quotes): possible to replace any
+               kernel with another
+
+               - default input domain and dot product replaced by
+                 others
+
+       3) Examples and Properties of Kernels
+
+          - polynomial, gaussian,
+
+          - sigmoid
+            #+BEGIN_SRC latex
+              k(x, x') = tanh(\kappa \langle x, x'\rangle + \varphi)
+            #+END_SRC
+
+          - inhomogenous polynomial, B_n-Spline of Odd Order
+
+          - invariance of kernels: invariance to rotation:
+
+            k(x, x') = k(Ux, Ux') if U^{T} = U^{-1}
+
+          - RBF kernels: k(x, x') = f(d(x, x'))
+            with d: metric, f: \R^+_0\to\R^b+_0
+
+            - all mappings in same part of feature space
+
+            - gaussian kernel produces feature space of infinite
+              dimension if domain has infinite cardinality (as of
+              [[(kernels-2.74)]])
+
+       5) [@5] Summary
+
+          - kernel trick crucial
+
+          - basis is always linear space
+
+          - also for dissimilarities (ch2.4): use instead of metrics
+
+    7) [@7] Pattern Recognition
+
+       0) [@0]
+
+          - detail SVC method
+
+          - contents
+
+            1. separating hyperplanes
+
+            2. how big to choose margin
+
+            3. optimal margin hyperplane
+
+            4. kernel trick: hyperplane in nonlinear feature space
+
+            5. slack variables: outliers and noise
+
+            6. multi-class SV
+
+            7. variations to SV
+
+            8. experiments and applications
+
+       1) Separating Hyperplanes
+
+          - hyperplane (see [[(kernels-7.2)]]) which separates input data
+
+          - if this works, linearly separable (see quotes)
+
+       2) The Role of the Margin
+
+          - how far next point to hyperplane
+
+          - if margin big: intuition that classifies well
+
+            - "proof": assume test points around training points with
+              random offset up to r>0, if r < \rho, then all points are
+              classified correctly
+
+            - margin error bound theorem: the bigger the margin while
+              the smaller \|w\| and \|w|, the lower the chance of
+              misclassification.
+
+            - also hardware inaccuracies better to be glossed over
+
+       3) Optimal Margin Hyperplanes
+
+          - given /set of examples/ (x_1, y_1), ..., (x_m, y_m), x_i \in
+            H, \y_i \in {\pm 1}
+
+          - find /decision function/ f_{*w*,b}(*x*) = sgn(\lang *w* , *x*\rang +b) with
+            f_{*w*,b}(x_i) = y_i
+
+          - solve the /primal optimization problem/, cf. [[(kernels-7.11)]]
+
+          - translate to dual problem, cf [[(kernels-7.17)]]
+
+            - maximize w.r.t. \alpha, minimized w.r.t. w and b
+
+          - alternate formulation: hyperplane bisects shortest line
+            between convex hulls of both classes of training points
+
+       4) Nonlinear Support Vector Classifiers
+
+       8) [@8] Experiments
+
+          1) Digit Recognition Using Different Kernels
+
+             - scaling avoids roundoff errors
+
+             - comparison SVC kernels: most important to choose
+               correct parameters, not which method to choose
+
+             - cross-validation: split training set
+
+               - but may be problematic, because parameters on
+                 training and complete may be different...
+
+             - parameter estimation approaches
+
+               - parameters which previously worked well
+
+               - set \nu-SVC error to rate of previous other methods
+
+               - mimic this for C-SVC: start with high C, lower until
+                 error closes to 5%
+
+                 - problem: more training runs
+
+               - estimate error from sphere, maximum length, etc
+
+               - theoretical tools such as VC bounds (see sec 5.5)
+
+             - comparison to others on USPS digits: virtual SVC worked
+               best on specific set
+
+          2) Universality of the Support Vector Set
+*** quotes
+    1) A Tutorial Introduction
+       0) [@0]
+          - [...] introduce kernels informally as similarity measures
+            that arise from a particular representation of patterns
+       1) Data Representation and Similarity
+          - For reasons that will become clear later (cf Remark 2.16),
+            the function /k/ is called a /kernel/ [359, 4, 42, 62,
+            223].
+       2) A Simple Pattern Recognition Algorithm
+          - The hyperplane will then only depend on a subset of
+            training patterns called /Support Vectors/.
+    2) [@2] Kernels
+       0) [@0]
+          - kernel arises as a similarity measure that can be thought
+            of as a dot product in a so-called feature space.
+       2) [@2] The Representation of Similarities in Linear Spaces
+          1) Positive Definite Kernels
+             - Given a function k: X^2 \to \K (where \K = \C or \K = \R) and
+               patterns x_1, ..., x_m \i X, the m \times m matrix K with
+               elements
+
+               K_{ij} := k(x_i, x_j)
+
+               is called the /Gram matrix/ (or /kernel matrix/) of k
+               with repect to x_1, ..., x_m.
+             - A complex m \times m matrix K satisfying
+
+               \sum_{i,j} c_i \overline{c_i} K_{ij} \ge 0
+
+               for all c_i \in \C is called /positive (semi-!)
+               definite/. Similarly, a real symmetric m \times m matrix K
+               satisfying [the above] for all c_i \in \R is called
+               /positive (semi-!) definite/.
+             - Let X be a nonempty set. A function k on X \times X which
+               for all m \in \N and all x_1, ... x_m \in X gives rise to a
+               positive definite Gram matrix is called a /positive
+               definite (pd) kernel/. Often, we shall refer to it
+               simply as a /kernel/.
+             - If k is a positive definite kernel and x_1, x_2 \in X, then
+               #+BEGIN_SRC latex
+                 |k(x_1, x_2|^2 \le k(x_1, x_1) \cdot k(x_2, x_2) (ref:kernels-2.19)
+               #+END_SRC
+          2) The Reproducing Kernel Map
+             - Given an algorithm which is formulated in terms of a
+               positive definite kernel k, one can construct an
+               alternative algorithm by replacing k by another
+               positive definite kernel \overline{k}
+             - /any/ algorithm that only depends on dot products,
+               i.e., any algorithm that is rotationally inariant, can
+               be kernelized [479, 480].
+       3) Examples and Properties of Kernels
+          - Suppose that x_1, ..., x_m \subset X are distinct points and \sigma
+            \neq 0. The matrix K given by
+            #+BEGIN_SRC latex
+              K_{ij} := exp \left ( - { \|x_i - x_j\|^2 \over 2 \sigma^2 } )
+              (ref:kernels-2.74)
+            #+END_SRC
+            has full rank. In other words, the points \Phi(x_1), ...,
+            \Phi(x_m) are linearly independent (provided no two x_i are
+            the same). They span an m-dimensional subspace of H.
+    6) [@6] Optimization
+       3) [@3] Constrained Problems
+          1) Optimality Conditions
+             - Some of the most important sufficient criteria are the
+               Kuhn-Tucker[fn::An earlier version is due to
+               Karush [283]. This is why often one uses the
+               abbreviation KKT (Karush-Kuhn-Tucker) rather than KT to
+               denote the optimality conditions.] saddle point
+               conditions[312].
+    7) Pattern Recognition
+       1) Separating Hyperplanes
+          - The pair (w, b) \in H \times \R is called a /canonical/ form of
+            the hyperplane [...] with respect to x_1, ..., x_m \in H, if
+            it is scaled such that
+            #+BEGIN_SRC latex
+              min_{i=1,...,m} |\langle w, x_i \rang +b| =1 (ref:kernels-7.2)
+            #+END_SRC
+          - they are oriented differently; they correspond to two
+            /decision functions/,
+            #+BEGIN_SRC latex
+              f_{w, b}: H \to {\pm 1}
+                       x \mapsto f_{w,b}(x) = sign(\langle w, x \rangle +b) (ref:kernels-7.3)
+            #+END_SRC
+          - solution f_{w, b} which /correctly classifies/ the labelled
+            examples (x_i, y_i) \in H \times {\pm 1}; in other words, which
+            satisfies f_{w, b}(x_i) = y_i for all i (in this case, the
+            training set is said to be /separable/)
+       2) The Role of the Margin
+          - For a hyperplane {x \in H \mid \langw, x \rang +b = 0}, we call
+            #+BEGIN_SRC latex
+              \rho_{(*w*, b)}(*x*, *y*) := y(\lang *w*, *x*\rang> + b) / \| *w* \| (ref:kernels-7.4)
+            #+END_SRC
+            the /geometrical margin of the point (x, y) \in H \times
+            {\pm1}/. The minimum value
+            #+BEGIN_SRC latex
+            \rho_{(*w*, b)} := min_{i=1,...,m} \rho_{(*w*, b)}(x_i, y_i) (ref:kernels-7.5)
+            #+END_SRC
+            shall be called the /geometrical margin of (x_1, y_1),
+            ... (x_m, y_m)/. If the latter is omitted, it is
+            understood that the training set is meant.
+          - perceptron algorithm [439] is one of the simplest
+            conceivable iterative procedures for computing a
+            separating hyperplane.
+          - Consider the set of decisdion functions f(x) = sgn( \lang *w*,
+            *x*, \rang with \| *w* \| \le \Lambda and \| *x* \| \le R, for some R, \Lambda
+            > 0. Moverover let \rho > 0, and \nu denote the fraction of
+            training examples with margin smaller than \rho / \| *w* \|,
+            referred to as the /margin error/.
+
+            For all distributions P generating the data, with
+            probability at least 1 - \delta over the drawing of the m
+            training patterns, and for any \rho > 0 and \delta \in (0, 1), the
+            probability that a test pattern odrawn from P will be
+            misclassified is bounded from above, by
+            #+BEGIN_SRC latex
+              \nu + \sqrt{{c \over m} \left( {R^2 \Lambda^2 \over \rho^2} ln^2 m +
+                ln(1 / \delta)  (ref:kernels-7.7)
+            #+END_SRC
+       3) Optimal Margin Hyperplanes
+          - minimize_{*w* \in H, b \in \R} \tau(*w*) = 1/2 \| *w* \|^2   (ref:kernels-7.10)
+            subject to
+            #+BEGIN_SRC latex
+              y_i(\lang x_i, *w* \rang+b) \ge 1 for all i=1,...,m (ref:kernels-7.11)
+            #+END_SRC
+          - the Lagrangian
+            #+BEGIN_LaTeX
+            L({\bf w}, b, {\bf \alpha})
+            =  {1 \over 2} \| {\bf w} \|^2
+            - \sum_{i=1}^m \alpha_i(y_i(\lang {\bf x}_i, {\bf w} \rang) +b) -1)
+            (ref:kernels-7.12)
+            #+END_LaTeX
+            with Lagrange multipliers \alpha_i \ge 0.
+          - The patterns *x*_i for which \alpha_i >0 are called /Support
+            Vectors/. [...] they lie examctly on the margin.
+          - The expectation of the number of Support Vectors obtained
+            durin gtaining on a training set of size m, divided by m,
+            is an /upper bound/ on the expected probability of test
+            error of the SVM trained on training sets of size m-1.
+          - dual form of the optimization problem
+            maximize_{*\alpha* \in \R^m}
+            #+BEGIN_SRC latex
+              W({\bf \alpha}) \sum_{i=1}^m \alpha_i
+              - 1/2 \sum_{i,j=1}^m \alpha_i \alpha_j y_i y_j \langle {\bf x}_i, {\bf x}_j \rangle
+              (ref:kernels-7.17)
+            #+END_SRC
+            subject to \alpha_i \ge 0, i = 1,..., m
+            and \sum_{i=1}^m \alpha_i y_i = 0.
+          - [decision function]
+            #+BEGIN_SRC latex
+              f(*x*) = sgn (\sum_{i=1}^m \alpha_i y_i \langle *x*, *x*_i \rangle +b)
+              (ref:kernels-7.20)
+            #+END_SRC
+       8) [@8] Experiments
+          - typically, the smaller set will require a slightly
+            stronger regularization
+*** ref [[file:master.bib::kernels][Bernhard & Smola 2002: Learning Kernels]]
+** TODO [#B] [[./rfc3986.html][Berners-Lee - Uniform Resource Identifier (URI): Generic Syntax]]
+*** summary
+    0) [@0] Abstract
+       
+       - URI: compact identifier ("abstract or physical")
+
+    1) Introduction
+
+       supersedes URL, URN docs
+
+       1) Overview of URIs
+
+          0) [@0]
+
+             - uniform: same form for different things, extensible
+
+             - resource: electronic doc, image, information source,
+               service, book, corporation, "human beings",
+               mathematical operator, mathematical relation
+
+             - identifier: distinguish from set, not necessarily access
+
+             - does not limit nature, reasons, or systems for resource
+               access
+
+             - does not require persistence
+
+             - global scope, but context may change
+               (f.ex. =http://localhost=)
+
+          1) Generic Syntax
+
+             - scheme: starts, specifies how identifiers are assigned
+
+          2) Examples: several schemes, see quotes
+
+          3) URI, URL, and URN
+
+             - URL provides way to access/locate
+
+             - URN: globally unique and persistent
+
+             - maybe both at the same time
+
+       2) Design Considerations
+
+          1) Transcription
+
+             - URI sequence of characters, not always octets
+
+               - might be transcribed, needs to be enterable on keyboards
+
+               - needs to be remembered
+
+             - non-ascii possible by percent-encoded octets, if
+               allowed by scheme
+
+          2) Separating Identification from Interaction
+
+             - URIs are not necessarily accessible
+
+             - /resolution/ of an URI determines access mechanism
+
+             - /dereference/ URI via access mechanism: do sth with URI
+
+               - /retrieval/: use URI to retrieve "representation of
+                 its associated resource"
+
+               - /representation/: octets plus state metadata
+
+          3) Hierarchical Identifiers
+
+             - documents often organized on trees
+
+             - relative referencing of URIs allows for different
+               scheme-access (f.ex. file, ftp and http for tree of
+               HTML docs)
+
+       3) Syntax Notation: ABNF as of RFC2234, see appendix a
+
+    2) Characters
+*** quotes
+    0) [@0] Abstract
+       - A Uniform Resource Identifier (URI) is a compact sequence of
+         characters that identifies an abstract or physical resource.
+    1) Introduction
+       1) Overview of URIs
+          0) [@0]
+             - These terms should not be mistaken as an assumption
+               that an identifier defines or embodies the identity of
+               what is referenced
+             - URIs that identify in relation to the end-user's local
+               context should only be used when the context itself is
+               a defining aspect of the resource, such as when an
+               on-line help manual refers to a file on the end- user's
+               file system (e.g., "file:///etc/hosts").
+          2) [@2] Examples
+             - news:comp.infosystems.www.servers.unix
+             - urn:oasis:names:specification:docbook:dtd:xml:4.1.2
+** TODO [#B] PART [[/usr/share/doc/texlive-doc/generic/pgf/pgfmanual.pdf][Tantau - The TikZ and PGF Packages]]
+*** TODO [#B] look through for basic pgf understanding, usage, ...
+*** summary
+    7) [@7] Guidelines on Graphics
+
+       0) [@0]
+
+          - general guidelines for scientific papers
+
+          - Edward Tufte
+
+          - break rules, but be *aware* that you are breaking them
+
+       1) Planning the Time Needed for the Creation of Graphics
+
+          - as much time as for text of the same length
+
+          - revise graphics repeatedly
+
+       3) [@3] Linking Graphics With the Main Text
+
+          - stand-alone happens to "fill" pages
+
+          - if so:
+
+            - caption to make self-clear
+
+            - add as much context as possible
+
+            - reference in text
+
+            - spell out, f.ex. "Figure 2.1"
+
+              - periods are precious
+
+       4) Consistency Between Graphics and Text
+
+          - just as with text: same font, same line width, create at right size
+
+       5) Labels in Graphics
+
+          - readable: same font, same style
+
+          - in place
+
+          - maybe grey out unimportant labels
+
+       6) Plots and Charts
+
+          - consider using a table instead, if comparing a few data
+            points
+
+          - use 3d effects only if it makes sense
+
+          - use appropriate colors: bright for emphasis
+
+       7) Attention and Distraction
+
+          - /avoid distractions/ and *steer attention*
+
+          - constrasts attract the eye
+
+          - differentiate curves in plots by colors, not dashing patterns
+
+          - no background color, images, no clip art
+*** quotes
+    7) [@7] Guidelines on Graphics
+       3) [@3] Linking Graphics With the Main Text
+          - Do not feel afraid of a 5-line caption.
+       6) [@6] Plots and Charts
+          - The first question you should ask yourself when creating a
+            plot is: Are there enough data points to merit a plot? If
+            the answer is “not really,” use a table.
+** TODO [#B] Beck - extreme Programming explained
+*** TODO continue on page 99
+*** summary
+    1) Risk: The Basic Problem
+
+       There are several risks in Software Development. XP addresses them.
+
+    2) A Development Episode
+
+       Two programmers complement each other in test case design,
+       interaction, test refactoring, test writing, coding,
+       refactoring, integration, often switching keyboard control.
+
+    3) Economics of Software Development
+
+       There are interest payments.
+
+       - factors: cash flows in/out, interest rates, project mortality
+
+       - earn by: (spending less), (earning more),
+
+         - spending later/earning sooner
+
+         - keeping the project alive
+
+       - choices: abandon the project, switch direction, defer action or grow
+
+       - example: could add feature, cost 10$, estimated return 15$ \pm 100%
+
+         - strategy to wait: $7.87 (blackbox options theory calculator)
+
+    4) Four Variables
+
+       Cost, Time, Quality, Scope - pick three
+
+    5) Cost of Change
+
+       - exponential cost increase is no longer true, due to
+
+         - object-orientation, message-passing
+
+         - simple design
+
+         - automated tests
+
+         - practice in modifying the system
+
+       - easily change system later, defer decisions
+
+    6) Learning to Drive
+
+       - small changes, adjust course
+
+       - driver is customer
+
+    7) Four Values
+
+       communication, simplicity, feedback, courage
+
+       1) Communication
+
+          - problem arise when people don't communicate
+
+          - some steps make you communicate: unit testing, pair
+            programming, task estimation
+
+          - coach to reintroduce non-communicating members
+
+       2) Simplicity
+
+          - "what is the simplest thing that could possibly work?"
+
+          - simplicity is hard
+
+          - makes communication easier
+
+       3) Feedback
+
+          - from the system
+
+            - minutes/days: unit tests (+ programmers give feedback to
+              customer stories?)
+
+            - weeks/months: functional tests ("simplified use cases")
+              (+customers review schedule)
+
+          - deploy early
+
+          - "when all tests run, you're done"
+
+       4) Courage
+
+          - just do it
+
+          - change system if it is broken
+
+            - or if you have an idea how to improve
+
+          - supported by
+
+            - simplicity (easy to change), and
+
+            - communication: (agree before that bad solution, improvement)
+
+            - feedback: feel safer if you have tests
+
+          - supports simplicity: try to simplify asap
+
+       5) The Values in Practice
+
+          - next: how to implement xp
+
+    8) Basic Priciples
+
+       - Rapid feedback: helps in learning
+
+       - Assume simplicity: 98% when it helps give you free resources
+         for other 2%
+
+       - Incremental change: small changes at a time
+
+       - Embracing change
+
+       - Quality work: makes work more fun
+
+       - (less central principles)
+
+       - teach learning: self-responsibility
+
+       - small initial investment: start small, focuses, enough to
+         solve one interesting problem
+
+       - play to win
+
+       - Concrete experiments: test every abstract decision's
+         (code+requirements)
+
+       - open, honest communication
+
+       - work with people's instinct, not against them:
+
+       - accepted responsibility: of your own choosing (still part of team...)
+
+       - local adaptation: adapt this to local conditions
+
+       - travel light: keep only tests and code
+
+       - honest measurement
+
+         - to measurable scale ("two weeks" instead of "14.176 hours")
+
+         - with sensible metrics (not lines of code, f.ex.)
+
+    9) Back to Basics
+
+       1) Coding
+
+          - code to test thoughts: computer does exactly what you tell
+            it to do
+
+          - code to communicate (intent, algorithms, expansion, tests)
+
+       2) Testing
+
+          - faster than just coding
+
+          - write all tests that you think could break
+
+          - balance this with "tolerable error rates" (1 complaint/month f.ex.)
+
+          - unit tests *and* functional tests
+
+       3) Listening
+
+          - understand "customer", business people, etc
+
+          - active listening, tell them what's hard and what's easy
+
+          - structure communication
+
+            - which things, when, which detail
+
+            - not things that don't help, before understanding, too detailed
+
+       4) Designing
+
+          - just three above make coding harder in the long run
+
+          - solution: design
+
+            - good design
+
+              - organize logic
+
+              - separates parts of system
+
+              - "logic near the data it operates on"
+
+              - "allows extension with changes in only one place"
+
+    10) A Quick Overview
+
+        practices that complement each other
+
+        1) The Planning Game
+
+           - business people decide
+
+             - scope: how much of a problem must be solved: (too
+               much/not enough)
+
+             - priority: A or B, what first
+
+             - composition of releases
+
+             - date of releases: important dates for business
+
+           - technical people decide
+
+             - estimates: how long to implement feature
+
+             - consequences: f.ex. database
+
+             - process: work and team organization
+
+             - detailed scheduling: in release, f.ex. high-risk stuff
+               first
+
+        2) Small Releases
+
+           small, self-contained releases
+
+        3) Metaphor
+
+           - f.ex. computer appears as desktop
+
+           - "words used to identify technical entities should be
+             consistently taken from the chosen metphor"
+
+        4) Simple Design
+
+           - Rules
+
+             1. Runs all tests
+
+             2. No duplicate logic
+
+             3. "States every intention important to programmers"
+
+             4. Fewest possible pieces (classes, methods,...)
+
+           - Tufte book: design graph, then take away everything that does
+             not add information
+
+        5) Testing
+
+           - functional and unit tests
+
+           - increases confidence in program over time
+
+           - test "production methods that could possibly break"
+
+           - try out without tests, then "throw away your code and
+             start over with tests"
+
+        6) Refactoring
+
+           - duplicate code: system asking for refactoring
+
+           - both before or after programming feature
+
+        7) Pair Programming
+
+           - keyboarder: mainly implementation, other: strategy
+
+           - pairing is dynamic
+
+        8) Collective Ownership
+
+           - should add value to any portion of the code, "if it makes
+             their life easier"
+
+        9) Continous Integration
+
+           - integrate/test after a few hours, a day at most
+
+           - dedicated integration machine: get tests to 100%
+
+        10) 40-Hour Week
+
+            - keep programmers fresh and "full of fire and ideas"
+
+            - overtime: at most one week
+
+            - vacation: (minimum) two-week vacation per year, another
+              week or two for shorter breaks
+
+        11) On-Site Customer
+
+            - customer: real user when in production
+
+            - have time to do normal work, (although physically
+              separated)
+
+            - real project: single customer grudgingly to three
+              customers
+
+        12) Coding Standards
+
+            - need a code standard
+
+              - least amount of work possible
+
+                - Once and Only rule (no duplicate code)
+
+              - voluntarily adopted by team
+
+    11) How Could This Work?
+
+        look at each practice's flaws, how canceled out by another's
+        strengths
+
+        1) The Planning Game
+
+           - customers update plan, based on programmers estimates
+
+           - rough idea plan at beginning (couple of years possible)
+
+           - short releases
+
+           - customer in team
+
+        2) Short Releases
+
+           - ci packages anyways
+
+           - testing reduces defect rate
+
+           - planning game sets most important stories
+
+           - simple design, enough for this one release, not all time
+
+        3) Metaphor
+
+           - need concrete feedback from real code and tests
+
+           - customer needs to be ok talking like this
+
+           - refactor to refine understanding of metaphor in practice
+
+        4) Simple Design
+
+           - refactor to simplify design
+
+           - clear metaphor, so that development coverges (?)
+
+           - programming with partner: simple, not stupid design
+
+        5) Testing
+
+           - simple design, less tests
+
+           - partner ensure that you write tests
+
+           - you and customer: good feeling that (both sets of) tests run
+
+        6) Refactoring
+
+           - collective ownership and coding standards
+
+           - pairs are more courageous to refactor
+
+           - simple design makes it easier
+
+           - testing and c.i. assure correctness
+
+        7) Pair Programming
+
+           - coding standards, well-rested, simple design, metaphor
+             help understanding
+
+           - write tests together before coding to "align their
+             understanding"
+
+        8) Collective Ownership
+
+           - c.i. reduces chance of conflict
+
+           - test and pair programming reduce breakage
+
+           - coding standards
+
+        9) Continuous Integration
+
+           - runs fast, as do tests
+
+           - pairs halve change streams
+
+           - refactoring makes single changes smaller
+
+        10) 40-Hour Week
+
+            - planning game select "more valuable work"
+
+              - better to estimate in combination with testing
+
+            - all practices increase speed
+
+        11) On-Site Customer
+
+            produce value by writing test, and making priority decisions
+
+        12) Coding Standards
+
+            - xp makes you winning team, so you can bend your style
+
+        13) Conclusion
+
+            testing stands well on its own, the others support each other
+
+    12) Management Strategy
+
+        - application of basic principles (see ch. 8): manager
+
+          - highlights what needs to be done
+
+          - trusts programmers to deliver quality work
+
+          - suggests incremental improvements all along the way
+
+          - adapts XP locally
+
+          - does not impose lengthy meetings, etc
+
+          - measures honestly
+
+        - metrics
+
+          - main management tool, use "Big Visible Chart"
+
+          - set metrics for points which mostly need improvement (at
+            most 3-4 metrics)
+
+        - coaching
+
+          - coach is most experienced programmer
+
+          - helps newbies in development, sets refactoring goals,
+            explains to upper management, helps with individual
+            technical skills
+
+          - toys (f.ex. timer) and food
+
+        - tracking: update metrics, need to know planning game by heart
+
+        - intervention: unloved roles
+
+          - personnel changes: sooner rather than later
+
+          - change process: let team decide possibilities, measure effect
+
+          - kill the project
+
+    13) Facilities Strategy
+
+        - try out whatevery works
+
+        - xp rather has too much communal space than too little
+
+    14) Splitting Business and Technical Responsibility
+
+        - if Business dominates: too much risk for too little return
+
+        - if Dev dominates: the same
+
+        - split responsibility, inform other party
+
+        - business chooses: scope/timing of releases, relative
+          priorities and exact scope of features
+
+        - dev contributes: time estimates, alternatives and
+          consequences, dev process and set of practices (and how to
+          review)
+
+        - technology stack is business decision, dev shows
+          consequences (including costs to keep system alive)
+
+        - mostly easy, if hard: reduce risk as far as possible, then
+          rough it
+
+    15) Planning Strategy
+
+        0) [@0]
+
+           - plan to next horizons: increasing granularity as they get closer
+
+           - aim: team, set scope, estimate cost, confidence, feedback
+
+        1) The Planning Game
+
+           - rules should help in developing mutual trust
+
+           - goal: maximize value of software (-development, -risk incurred)
+
+           - strategy: produce most valuable first (while reducing risk)
+
+           - pieces: story cards (number, description, notes, tracking)
+
+           - players: business and development (both collectives)
+
+             - business f.ex. expert users
+
+           - moves
+
+             1) exploration
+
+                - business writes a story,
+
+                - developers estimate a story
+
+                - (or, if impossible, ask for /split/ or /clarification/)
+
+             2) commitment
+
+                - sort by value (business): (1) essential, (2) significant
+                  business value, (3) nice to have
+
+                - sort by risk (development): (1) estimate precisely,
+                  (2) estimate reasonably well, (3) can not estimate at all
+
+                - set velocity (development): Ideal Engineering Time/month
+
+                - choose scope (business): set date and choose cards,
+                  or choose cards and calculate date
+
+             3) steer
+
+                - iteration: business selects story
+
+                - recovery: development realizes velocity off, asks
+                  business for correction: most important stories
+
+                - new story: b writes, d estimates, b removes equivalent stories
+
+                - reestimate: d can reestimate
+
+        2) Iteration Planning
+
+           1) Exploration: write task (part of story), or split/merge
+
+           2) Commitment
+
+              - programmer accepts task
+
+              - estimate: programmer estimates ideal engineering days (=IEdays)
+
+              - set load factors: programmer chooses load factor
+                (=IEdays/iteration) based on previous ierations
+
+              - balance: developers with too much (7-8 or 2-3 for new
+                members) give up some (if team has too much, reestimate)
+
+           3) Steering
+
+              - implement take task card, find partner, write test,
+                make work, integrate and if all tests release
+
+              - record progress: one team member asks programmers
+                "every two or three days" how much spent and much left
+
+              - recovery: if overcommitted: (1) reduce task scope, (2)
+                c reduces story scope, (3) shed nonessential tasks,
+                (4) better help, (5) ask c to defer stories
+
+              - verify: check functional tests
+
+           4) notes on iteration planning:
+
+              - here: take task first then estimate
+
+              - unnecessary for two programmers, necessary for 10
+
+        3) Planning in a Week (fixed-price tender)
+
+           - previous experience
+
+           - rough plan
+
+    16) Development Strategy
+
+        Normal programming plus iteration planning, CI, collective
+        ownership, and pair programming.
+
+        1) Continuous Integration
+
+           - daily integration of all code
+
+           - needs to be fast:
+
+             - "reasonably complete" tests run in a matter of minutes
+
+             - refactoring provides small classes and methods, easier
+               to integrate
+
+           - "dramatically reduces" project risk
+
+           - one thing on your mind, until finished
+
+        2) Collective Ownership
+
+           - would fail without tests and ci
+
+           - complex code gets simplified, if possible (otherwise
+             simplification gets thrown away, but more people
+             understand why needs to be complex)
+
+             - complex code avoided in the first place
+*** quotes
+    00) [@00] unsorted
+        - Use XP when requirements are vague or changing
+        - Since feedback from system in production is vastly higher
+          quality than any other kind of feedback, giving a project too
+          much time will hurt it.
+    0) [@0] Foreword by Erich Gamma
+       - Delivering software is hard, and delivering quality software
+         in time is even harder.
+    0) [@0] Preface
+       - In short, XP promises to reduce project risk, improve
+         responsiveness to business changes, improve productivity
+         throughout the life of a system, and add fun to building
+         software in teams --- all at the same time. Really. Quit
+         laughing. Now you'll have to read the rest of the book to see
+         if I'm crazy.
+    1) Risk: The Basic Problem
+       - loneliness that is often at the heart of job dissatisfaction
+    6) [@6] Learning to Drive
+       - The driver of a software project is the customer.
+       - Our job as programmers is to give the customer a steering
+         wheel and give them feedback about exactly where we are on
+         the road.
+    7) Four Values
+       - Short-term individual goals often conflict with long-term
+         social goals.
+       - Optimism is an occupational hazard of programming. Feedback
+         is the treatment.
+    8) Basic Priciples
+       - Even the adoption of XP must be taken in little steps.
+       - Most software development I see is played not to lose.
+    9) Back to Basics
+       1) Coding
+          - For a system to live, it must retain its source code.
+       2) Testing
+          - The English Positivist philosophers Locke, Berkeley, and
+            Hume said that anything that can't be measured doesn't
+            exist. When it comes to code, I agree with them
+            completely.
+          - You are responsible for writing every test that you can
+            imagine won't run immediately.
+          - If you keep writing the tests, your confidence in the
+            system increases over time.
+          - Programming and testing together is also faster than just
+            programming.
+       3) Listening
+          - programmers don't know anything that business people think
+            is interesting
+    10) A Quick Overview
+        1) Refactoring
+           - When the system requires that you duplicate code, it is
+             asking for refactoring.
+        2) 40-Hour Week
+           - Overtime is a symptom of a serious problem on the
+             porject.
+           - If you come in Monday and say, "To meet our goals, we'll
+             have to work late again," then you already have a problem
+             that can't be solved by working more hours.
+    12) [@12] Management Strategy
+        - People inevitably get off on tangents.
+        - If a metric gets close to 100%, replace it with another that
+          starts comfortably down in the single digits.
+        - Gathering real development data twice a week is plenty.
+        - As soon as you can't think of any scenario in which the
+          offender would be a help rather than a hindrance, you should
+          make the move.
+    14) [@14] Splitting Business and Technical Responsibility
+        - Cutting edge implies risk.
+    15) Planning Strategy
+        1) The Planning Game
+           - A simple method for estimating stories is to ask yourself
+             "How long would this take me to implement if this story
+             was all I had to implement, and I had no interruptions or
+             meetings?" In XP we call this /Ideal Engineering Time/.
+    16) Development Strategy
+        1) Continuous Integration
+           - At the end of every development episode, the code is
+             integrated with the latest release and all the tests must
+             run at 100%.
+           - Constant refactoring has the effect of breaking the
+             system in to lots of little objects and lots of little
+             methods.
+           - Learn/test/code/release. It's almost like breathing. You
+             form an idea, you express it, you add it to the
+             system. now your mind is clear, ready for the next idea.
+        2) Collective Ownership
+           - On an XP project you are never stuck with someone else's
+             stupidity. You see something in the way, you get it out
+             of the way.
+*** ref [[file:master.bib::xp][Beck 1999: Extreme Programming Explained]]
 ** TODO [#C] [[./wurster-nspw-08.pdf][The Developer is the Enemy]]
 *** summary
     0) [@0] ABSTRACT
@@ -21642,7 +22424,283 @@ When a media query is true, the corresponding style sheet or style rules are app
        2) Outlook for the web
 *** quotes
 *** ref [[file:master.bib::web-is-doom][Cremin 2016: Doom]]
-** PART [[~/da/git/docs/python-doc-reference.pdf][Rossum - The Python Language Reference]]
+** PART [[./random.pdf][Saucier - Computer Generation of Statistical Distributions]]
+*** summary
+    1) SUMMARY
+
+       many different distributions, C++, easy to use
+
+    2) INTRODUCTION
+
+       - simulations useful to
+
+         - supplement theory (may be understood and too hard to
+           analyse or just not well understood)
+
+         - supplement experiment (too costly)
+
+       - getting faster exponentially
+
+    3) METHODS FOR GENERATING RANDOM NUMBER DISTRIBUTIONS
+
+    5) [@5] PROBABILITY DISTRIBUTION FUNCTIONS
+
+       1) Continuous Distributions
+
+          27) [@27] Weibull
+
+              - a is just additive, can be left out, leaving
+                two-parameter form  X = b \cdot (−ln(U ))^{1/a}
+
+              - b is just multiplicative, can be multiplied-on later,
+                leaving one-parameter form X = (−ln(U ))^{1/a}
+*** quotes
+    5) [@5] PROBABILITY DISTRIBUTION FUNCTIONS
+       1) Continuous Distributions
+          8) [@8] Exponential
+
+             - (1) Generate U ~ U(0, 1)
+               (2) Return X = a − b ln U
+
+             - Source Code:
+               #+BEGIN_SRC C++
+                 double exponential( double a, double b )
+                 {
+                   assert( b > 0. );
+                   return a - b * log( uniform( 0., 1. ) );
+                 }
+               #+END_SRC
+
+          11) [@11] Gamma
+
+              - Density Function:
+                f(x) = 1/Gamma(c) *b^{-c} *(x-a)^{c-1} *e^{-(x-a)/b}
+                if x>a, else 0
+
+              - Input: scale parameter b > 0; shape parameter c > 0
+
+                c == \kappa, b == \theta
+
+              - Algorithm:
+
+                Case 1: c < 1
+                Let β = 1 + c/e.
+                1. Generate U_{1} ~ U(0, 1) and set P = β U_{1} .
+                   If P > 1, go to step 3; otherwise, go to step 2.
+                2. Set Y = P^{1/c} and generate U_{2} ~ U(0, 1).
+                   If U_{2} ≤ e^{−Y} , return X = Y ; otherwise, go back to step 1.
+                3. Set Y = − ln [( β − P)/c] and generate U_{2} ~ U(0, 1).
+                   If U_{2} ≤ Y^{c−1}, return X = Y ; otherwise, go back to step 1.
+
+              - Source Code:
+                #+BEGIN_SRC C++
+                  #include <math.h>
+                  double gamma( double a, double b, double c )
+                  {
+                    assert( b > 0. && c > 0. );
+                    const double A = 1. / sqrt( 2. * c - 1. );
+                    const double B = c - log( 4. );
+                    const double Q = c + 1. / A;
+                    const double T = 4.5;
+                    const double D = 1. + log( T );
+                    const double C = 1. + c / M_E;
+                    if ( c < 1. ) {
+                      while ( true ) {
+                        double p = C * uniform( 0., 1. );
+                        if ( p > 1. ) {
+                          double y = -log( ( C - p ) / c );
+                          if ( uniform( 0., 1. ) <= pow( y, c - 1. ) ) return a + b * y;
+                        }
+                        else {
+                          double y = pow( p, 1. / c );
+                          if ( uniform( 0., 1. ) <= exp( -y ) ) return a + b * y;
+                        }
+                      }
+                    }
+                    else if ( c == 1.0 ) return exponential( a, b );
+                    else {
+                      while ( true ) {
+                        double p1 = uniform( 0., 1. );
+                        double p2 = uniform( 0., 1. );
+                        double v = A * log( p1 / ( 1. - p1 ) );
+                        double y = c * exp( v );
+                        double z = p1 * p1 * p2;
+                        double w = B + Q * v - y;
+                        if ( w + D - T * z >= 0. || w >= log( z ) ) return a + b * y;
+                      }
+                    }
+                  }
+                #+END_SRC
+
+          15) [@15] Lognormal
+              - Distribution Function:
+
+                F(x) = 1/2 [1+erf[(ln(x-a)-\mu)/(\sqrt{2} \cdot \sigma)]]	for x > a
+                       0 					else
+              - Input:
+
+                Location parameter a, any real number, merely shifts
+                the origin; shape parameter σ > 0; scale parameter μ
+                is any real number
+
+              - Mean:
+                a + e^(\mu + \sigma^2/2)
+
+              - Variance:
+                e^(2*mu+sig^2) * (e^(sig^2)-1)
+
+              - (1) Generate V ~ N ( μ , σ^2 )
+                (2) Return X = a + e^{V}
+
+              - Source Code:
+                #+BEGIN_SRC C++
+                  double lognormal( double a, double mu, double sigma )
+                  {
+                    return a + exp( normal( mu, sigma ) );
+                  }
+                #+END_SRC
+
+          16) Normal (Gaussian)
+
+              - Algorithm:
+
+                1. Independently generate U 1 ~ U(−1, 1) and U 2 ~ U(−1, 1)
+
+                2. Set U = U 1 2 + U 2 2 (note that the square root is
+                   not necessary here)
+
+                3. If U < 1, return X = μ + σ U_{1} √(−2 ln U/U);
+                   otherwise, go back to step 1
+
+              - Source Code:
+
+                #+BEGIN_SRC c++
+                  double normal( double mu, double sigma )
+                  {
+                    assert( sigma > 0. );
+                    double p, p1, p2;
+                    do {
+                      p1 = uniform( -1., 1. );
+                      p2 = uniform( -1., 1. );
+                      p = p1 * p1 + p2 * p2;
+                    } while ( p >= 1. );
+                    return mu + sigma * p1 * sqrt( -2. * log( p ) / p );
+                  }
+                #+END_SRC
+
+          27) [@27] Weibull
+
+              - Algorithm:
+
+                1. Generate U ~ U(0, 1)
+                2. Return X = a + b(− ln U) 1/c
+
+              - Source Code:
+
+                #+BEGIN_SRC c++
+                  double weibull( double a, double b, double c )
+                  {
+                    assert( b > 0. && c > 0. );
+                    return a + b * pow( -log( uniform( 0., 1. ) ), 1. / c );
+                  }
+                #+END_SRC
+
+              - Notes:
+                1. When c = 1, this becomes the exponential
+                   distribution with scale b.
+                2. When c = 2 for general b, it becomes the Rayleigh
+                   distribution.
+       2) Discrete Distributions
+          2) [@2] Binomial
+             - Density Function:
+               - (^{n}_{k})p^{k} (1-p)^{n-k} [for k \in {0, 1, ..., n}]
+               - 0 [otherwise]
+             - where the binomial coefficient  (^{n}_{i}) = n! / (i!(n-1)!)
+             - Notes:
+               1. For large n, the binomial can be approximated by
+                  N(np,np), provided np > 5 and 0. 1 ≤ p ≤ 0. 9 — and
+                  for all values of p when np > 25.
+          3) Geometric
+             - "The geometric distribution represents the probability
+               of obtaining k failures before the first success in
+               independent Bernoulli trials, where the probability of
+               success in a single trial is p."
+             - Algorithm:
+               1. Generate U ~ U(0, 1)
+               2. Return X = int ( ln U/ ln (1 − p) )
+             - Source Code:
+               #+BEGIN_SRC c++
+                 int geometric( double p )
+                 {
+                   assert( 0. < p && p < 1. );
+                   return int( log( uniform( 0., 1. ) ) / log( 1. - p ) );
+                 }
+               #+END_SRC
+          5) [@5] Multinomial
+             - The multinomial distribution is a generalization of the
+               binomial so that instead of two possible outcomes,
+               success or failure, there are now m disjoint events
+               that can occur, with corresponding probability p_{i},
+               where i ∈ 1, 2, ..., m, and where p_{1} + p_{2} + ... + p_{m} = 1.
+*** ref [[file:master.bib::compgen][Saucier 2000: Computer Generation Statistical Distributions]]
+** PART [[./comp.ai.neural-nets FAQ, Part 2 of 7: Learning.html][Sarle - comp.ai.neural-nets FAQ, Part 2 of 7: Learning]]
+*** summary
+    - Should I normalize/standardize/rescale the data?
+
+      - *rescale*: add/subtract, then divide/multiply, example: Celsius
+        to Fahrenheit
+
+      - *normalize*: divide by norm of vector: make length 1
+
+      - *standardize*: subtract location, divide by scale,
+        f.ex. normal distribution subtract mean, divide by std \to
+        standard normal
+
+      - but used interchangeably
+
+      - following: input instance as row, input variables as columns
+
+      - Should I standardize the input variables (column vectors)?
+
+        - how are they used?
+
+          - if combined via distance function, then "standardizing
+            inputs can be crucial"
+
+          - if combined linearly, can speed up training, "and reduce
+            the chances of getting stuck in local optima"
+
+          - if random values as starters (NN-specific), should be
+            scale with input scale
+*** quotes
+    - Should I normalize/standardize/rescale the data?
+      - Should I standardize the input variables (column vectors)?
+        - In particular, scaling the inputs to [-1,1] will work better
+          than [0,1], although any scaling that sets to zero the mean
+          or median or other measure of central tendency is likely to
+          be as good, and robust estimators of location and scale
+          (Iglewicz, 1983) will be even better for input variables
+          with extreme outliers.
+*** ref [[file:master.bib::sarle2][Sarle 2002]]
+** PART [[./python-doc-howto-sorting.pdf][van Rossum - Sorting HOW TO]]
+*** summary
+    1) Sorting Basics
+
+       - =sorted(an_iterable)= returns sorted list, =list.sort()=
+         sorts in-place, returns =None=
+
+    2) Key Functions
+
+       - accept any lambda, f.ex.
+         #+BEGIN_SRC python
+           >>> student_tuples = [('john', 'A', 15),('jane', 'B', 12),('dave', 'B', 10),]
+           >>> sorted(student_tuples, key=lambda student: student[2])
+           [('dave', 'B', 10), ('jane', 'B', 12), ('john', 'A', 15)]
+         #+END_SRC
+
+    3) Operator Module Functions
+*** quotes
+** PART [[~/da/git/docs/python-doc-reference.pdf][van Rossum - The Python Language Reference]]
 *** summary
     1) INTRODUCTION
 
@@ -21875,7 +22933,7 @@ When a media query is true, the corresponding style sheet or style rules are app
            scope, so names assigned to in the target list don’t “leak”
            in the enclosing scope.
 *** ref [[file:master.bib::python-lang-ref][Rossum & Python 2015: Python Language Reference]]
-** PART [[./python-doc-library.pdf][Rossum - The Python Library Reference]]
+** PART [[./python-doc-library.pdf][van Rossum - The Python Library Reference]]
 *** summary
     1) INTRODUCTION
 
@@ -22376,336 +23434,6 @@ When a media query is true, the corresponding style sheet or style rules are app
 
               With no arguments, run a full collection.
 *** ref [[file:master.bib::python-lib-ref][Rossum & Python 2015: Python Library Reference]]
-** PART [[./random.pdf][Saucier - Computer Generation of Statistical Distributions]]
-*** summary
-    1) SUMMARY
-
-       many different distributions, C++, easy to use
-
-    2) INTRODUCTION
-
-       - simulations useful to
-
-         - supplement theory (may be understood and too hard to
-           analyse or just not well understood)
-
-         - supplement experiment (too costly)
-
-       - getting faster exponentially
-
-    3) METHODS FOR GENERATING RANDOM NUMBER DISTRIBUTIONS
-
-    5) [@5] PROBABILITY DISTRIBUTION FUNCTIONS
-
-       1) Continuous Distributions
-
-          27) [@27] Weibull
-
-              - a is just additive, can be left out, leaving
-                two-parameter form  X = b \cdot (−ln(U ))^{1/a}
-
-              - b is just multiplicative, can be multiplied-on later,
-                leaving one-parameter form X = (−ln(U ))^{1/a}
-*** quotes
-    5) [@5] PROBABILITY DISTRIBUTION FUNCTIONS
-       1) Continuous Distributions
-          8) [@8] Exponential
-
-             - (1) Generate U ~ U(0, 1)
-               (2) Return X = a − b ln U
-
-             - Source Code:
-               #+BEGIN_SRC C++
-                 double exponential( double a, double b )
-                 {
-                   assert( b > 0. );
-                   return a - b * log( uniform( 0., 1. ) );
-                 }
-               #+END_SRC
-
-          11) [@11] Gamma
-
-              - Density Function:
-                f(x) = 1/Gamma(c) *b^{-c} *(x-a)^{c-1} *e^{-(x-a)/b}
-                if x>a, else 0
-
-              - Input: scale parameter b > 0; shape parameter c > 0
-
-                c == \kappa, b == \theta
-
-              - Algorithm:
-
-                Case 1: c < 1
-                Let β = 1 + c/e.
-                1. Generate U_{1} ~ U(0, 1) and set P = β U_{1} .
-                   If P > 1, go to step 3; otherwise, go to step 2.
-                2. Set Y = P^{1/c} and generate U_{2} ~ U(0, 1).
-                   If U_{2} ≤ e^{−Y} , return X = Y ; otherwise, go back to step 1.
-                3. Set Y = − ln [( β − P)/c] and generate U_{2} ~ U(0, 1).
-                   If U_{2} ≤ Y^{c−1}, return X = Y ; otherwise, go back to step 1.
-
-              - Source Code:
-                #+BEGIN_SRC C++
-                  #include <math.h>
-                  double gamma( double a, double b, double c )
-                  {
-                    assert( b > 0. && c > 0. );
-                    const double A = 1. / sqrt( 2. * c - 1. );
-                    const double B = c - log( 4. );
-                    const double Q = c + 1. / A;
-                    const double T = 4.5;
-                    const double D = 1. + log( T );
-                    const double C = 1. + c / M_E;
-                    if ( c < 1. ) {
-                      while ( true ) {
-                        double p = C * uniform( 0., 1. );
-                        if ( p > 1. ) {
-                          double y = -log( ( C - p ) / c );
-                          if ( uniform( 0., 1. ) <= pow( y, c - 1. ) ) return a + b * y;
-                        }
-                        else {
-                          double y = pow( p, 1. / c );
-                          if ( uniform( 0., 1. ) <= exp( -y ) ) return a + b * y;
-                        }
-                      }
-                    }
-                    else if ( c == 1.0 ) return exponential( a, b );
-                    else {
-                      while ( true ) {
-                        double p1 = uniform( 0., 1. );
-                        double p2 = uniform( 0., 1. );
-                        double v = A * log( p1 / ( 1. - p1 ) );
-                        double y = c * exp( v );
-                        double z = p1 * p1 * p2;
-                        double w = B + Q * v - y;
-                        if ( w + D - T * z >= 0. || w >= log( z ) ) return a + b * y;
-                      }
-                    }
-                  }
-                #+END_SRC
-
-          15) [@15] Lognormal
-              - Distribution Function:
-
-                F(x) = 1/2 [1+erf[(ln(x-a)-\mu)/(\sqrt{2} \cdot \sigma)]]	for x > a
-                       0 					else
-              - Input:
-
-                Location parameter a, any real number, merely shifts
-                the origin; shape parameter σ > 0; scale parameter μ
-                is any real number
-
-              - Mean:
-                a + e^(\mu + \sigma^2/2)
-
-              - Variance:
-                e^(2*mu+sig^2) * (e^(sig^2)-1)
-
-              - (1) Generate V ~ N ( μ , σ^2 )
-                (2) Return X = a + e^{V}
-
-              - Source Code:
-                #+BEGIN_SRC C++
-                  double lognormal( double a, double mu, double sigma )
-                  {
-                    return a + exp( normal( mu, sigma ) );
-                  }
-                #+END_SRC
-
-          16) Normal (Gaussian)
-
-              - Algorithm:
-
-                1. Independently generate U 1 ~ U(−1, 1) and U 2 ~ U(−1, 1)
-
-                2. Set U = U 1 2 + U 2 2 (note that the square root is
-                   not necessary here)
-
-                3. If U < 1, return X = μ + σ U_{1} √(−2 ln U/U);
-                   otherwise, go back to step 1
-
-              - Source Code:
-
-                #+BEGIN_SRC c++
-                  double normal( double mu, double sigma )
-                  {
-                    assert( sigma > 0. );
-                    double p, p1, p2;
-                    do {
-                      p1 = uniform( -1., 1. );
-                      p2 = uniform( -1., 1. );
-                      p = p1 * p1 + p2 * p2;
-                    } while ( p >= 1. );
-                    return mu + sigma * p1 * sqrt( -2. * log( p ) / p );
-                  }
-                #+END_SRC
-
-          27) [@27] Weibull
-
-              - Algorithm:
-
-                1. Generate U ~ U(0, 1)
-                2. Return X = a + b(− ln U) 1/c
-
-              - Source Code:
-
-                #+BEGIN_SRC c++
-                  double weibull( double a, double b, double c )
-                  {
-                    assert( b > 0. && c > 0. );
-                    return a + b * pow( -log( uniform( 0., 1. ) ), 1. / c );
-                  }
-                #+END_SRC
-
-              - Notes:
-                1. When c = 1, this becomes the exponential
-                   distribution with scale b.
-                2. When c = 2 for general b, it becomes the Rayleigh
-                   distribution.
-       2) Discrete Distributions
-          2) [@2] Binomial
-             - Density Function:
-               - (^{n}_{k})p^{k} (1-p)^{n-k} [for k \in {0, 1, ..., n}]
-               - 0 [otherwise]
-             - where the binomial coefficient  (^{n}_{i}) = n! / (i!(n-1)!)
-             - Notes:
-               1. For large n, the binomial can be approximated by
-                  N(np,np), provided np > 5 and 0. 1 ≤ p ≤ 0. 9 — and
-                  for all values of p when np > 25.
-          3) Geometric
-             - "The geometric distribution represents the probability
-               of obtaining k failures before the first success in
-               independent Bernoulli trials, where the probability of
-               success in a single trial is p."
-             - Algorithm:
-               1. Generate U ~ U(0, 1)
-               2. Return X = int ( ln U/ ln (1 − p) )
-             - Source Code:
-               #+BEGIN_SRC c++
-                 int geometric( double p )
-                 {
-                   assert( 0. < p && p < 1. );
-                   return int( log( uniform( 0., 1. ) ) / log( 1. - p ) );
-                 }
-               #+END_SRC
-          5) [@5] Multinomial
-             - The multinomial distribution is a generalization of the
-               binomial so that instead of two possible outcomes,
-               success or failure, there are now m disjoint events
-               that can occur, with corresponding probability p_{i},
-               where i ∈ 1, 2, ..., m, and where p_{1} + p_{2} + ... + p_{m} = 1.
-*** ref [[file:master.bib::compgen][Saucier 2000: Computer Generation Statistical Distributions]]
-** PART [[./comp.ai.neural-nets FAQ, Part 2 of 7: Learning.html][Sarle - comp.ai.neural-nets FAQ, Part 2 of 7: Learning]]
-*** summary
-    - Should I normalize/standardize/rescale the data?
-
-      - *rescale*: add/subtract, then divide/multiply, example: Celsius
-        to Fahrenheit
-
-      - *normalize*: divide by norm of vector: make length 1
-
-      - *standardize*: subtract location, divide by scale,
-        f.ex. normal distribution subtract mean, divide by std \to
-        standard normal
-
-      - but used interchangeably
-
-      - following: input instance as row, input variables as columns
-
-      - Should I standardize the input variables (column vectors)?
-
-        - how are they used?
-
-          - if combined via distance function, then "standardizing
-            inputs can be crucial"
-
-          - if combined linearly, can speed up training, "and reduce
-            the chances of getting stuck in local optima"
-
-          - if random values as starters (NN-specific), should be
-            scale with input scale
-*** quotes
-    - Should I normalize/standardize/rescale the data?
-      - Should I standardize the input variables (column vectors)?
-        - In particular, scaling the inputs to [-1,1] will work better
-          than [0,1], although any scaling that sets to zero the mean
-          or median or other measure of central tendency is likely to
-          be as good, and robust estimators of location and scale
-          (Iglewicz, 1983) will be even better for input variables
-          with extreme outliers.
-*** ref [[file:master.bib::sarle2][Sarle 2002]]
-** PART [[/usr/share/doc/texlive-doc/generic/pgf/pgfmanual.pdf][Tantau - The TikZ and PGF Packages]]
-*** summary
-    7) [@7] Guidelines on Graphics
-
-       0) [@0]
-
-          - general guidelines for scientific papers
-
-          - Edward Tufte
-
-          - break rules, but be *aware* that you are breaking them
-
-       1) Planning the Time Needed for the Creation of Graphics
-
-          - as much time as for text of the same length
-
-          - revise graphics repeatedly
-
-       3) [@3] Linking Graphics With the Main Text
-
-          - stand-alone happens to "fill" pages
-
-          - if so:
-
-            - caption to make self-clear
-
-            - add as much context as possible
-
-            - reference in text
-
-            - spell out, f.ex. "Figure 2.1"
-
-              - periods are precious
-
-       4) Consistency Between Graphics and Text
-
-          - just as with text: same font, same line width, create at right size
-
-       5) Labels in Graphics
-
-          - readable: same font, same style
-
-          - in place
-
-          - maybe grey out unimportant labels
-
-       6) Plots and Charts
-
-          - consider using a table instead, if comparing a few data
-            points
-
-          - use 3d effects only if it makes sense
-
-          - use appropriate colors: bright for emphasis
-
-       7) Attention and Distraction
-
-          - /avoid distractions/ and *steer attention*
-
-          - constrasts attract the eye
-
-          - differentiate curves in plots by colors, not dashing patterns
-
-          - no background color, images, no clip art
-*** quotes
-    7) [@7] Guidelines on Graphics
-       3) [@3] Linking Graphics With the Main Text
-          - Do not feel afraid of a 5-line caption.
-       6) [@6] Plots and Charts
-          - The first question you should ask yourself when creating a
-            plot is: Are there enough data points to merit a plot? If
-            the answer is “not really,” use a table.
 ** PART [[./scipy-ref-0.17.0.pdf][SciPy Reference Guide]]
 *** summary
 1) Tutorial
@@ -23810,669 +24538,6 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
                The load event occurs when the DOM implementation
                finishes loading [...]
 *** ref [[file:master.bib::dom2-events][W3C 2000: Document Object Model]]
-** PART Beck - extreme Programming explained
-*** summary
-    1) Risk: The Basic Problem
-
-       There are several risks in Software Development. XP addresses them.
-
-    2) A Development Episode
-
-       Two programmers complement each other in test case design,
-       interaction, test refactoring, test writing, coding,
-       refactoring, integration, often switching keyboard control.
-
-    3) Economics of Software Development
-
-       There are interest payments.
-
-       - factors: cash flows in/out, interest rates, project mortality
-
-       - earn by: (spending less), (earning more),
-
-         - spending later/earning sooner
-
-         - keeping the project alive
-
-       - choices: abandon the project, switch direction, defer action or grow
-
-       - example: could add feature, cost 10$, estimated return 15$ \pm 100%
-
-         - strategy to wait: $7.87 (blackbox options theory calculator)
-
-    4) Four Variables
-
-       Cost, Time, Quality, Scope - pick three
-
-    5) Cost of Change
-
-       - exponential cost increase is no longer true, due to
-
-         - object-orientation, message-passing
-
-         - simple design
-
-         - automated tests
-
-         - practice in modifying the system
-
-       - easily change system later, defer decisions
-
-    6) Learning to Drive
-
-       - small changes, adjust course
-
-       - driver is customer
-
-    7) Four Values
-
-       communication, simplicity, feedback, courage
-
-       1) Communication
-
-          - problem arise when people don't communicate
-
-          - some steps make you communicate: unit testing, pair
-            programming, task estimation
-
-          - coach to reintroduce non-communicating members
-
-       2) Simplicity
-
-          - "what is the simplest thing that could possibly work?"
-
-          - simplicity is hard
-
-          - makes communication easier
-
-       3) Feedback
-
-          - from the system
-
-            - minutes/days: unit tests (+ programmers give feedback to
-              customer stories?)
-
-            - weeks/months: functional tests ("simplified use cases")
-              (+customers review schedule)
-
-          - deploy early
-
-          - "when all tests run, you're done"
-
-       4) Courage
-
-          - just do it
-
-          - change system if it is broken
-
-            - or if you have an idea how to improve
-
-          - supported by
-
-            - simplicity (easy to change), and
-
-            - communication: (agree before that bad solution, improvement)
-
-            - feedback: feel safer if you have tests
-
-          - supports simplicity: try to simplify asap
-
-       5) The Values in Practice
-
-          - next: how to implement xp
-
-    8) Basic Priciples
-
-       - Rapid feedback: helps in learning
-
-       - Assume simplicity: 98% when it helps give you free resources
-         for other 2%
-
-       - Incremental change: small changes at a time
-
-       - Embracing change
-
-       - Quality work: makes work more fun
-
-       - (less central principles)
-
-       - teach learning: self-responsibility
-
-       - small initial investment: start small, focuses, enough to
-         solve one interesting problem
-
-       - play to win
-
-       - Concrete experiments: test every abstract decision's
-         (code+requirements)
-
-       - open, honest communication
-
-       - work with people's instinct, not against them:
-
-       - accepted responsibility: of your own choosing (still part of team...)
-
-       - local adaptation: adapt this to local conditions
-
-       - travel light: keep only tests and code
-
-       - honest measurement
-
-         - to measurable scale ("two weeks" instead of "14.176 hours")
-
-         - with sensible metrics (not lines of code, f.ex.)
-
-    9) Back to Basics
-
-       1) Coding
-
-          - code to test thoughts: computer does exactly what you tell
-            it to do
-
-          - code to communicate (intent, algorithms, expansion, tests)
-
-       2) Testing
-
-          - faster than just coding
-
-          - write all tests that you think could break
-
-          - balance this with "tolerable error rates" (1 complaint/month f.ex.)
-
-          - unit tests *and* functional tests
-
-       3) Listening
-
-          - understand "customer", business people, etc
-
-          - active listening, tell them what's hard and what's easy
-
-          - structure communication
-
-            - which things, when, which detail
-
-            - not things that don't help, before understanding, too detailed
-
-       4) Designing
-
-          - just three above make coding harder in the long run
-
-          - solution: design
-
-            - good design
-
-              - organize logic
-
-              - separates parts of system
-
-              - "logic near the data it operates on"
-
-              - "allows extension with changes in only one place"
-
-    10) A Quick Overview
-
-        practices that complement each other
-
-        1) The Planning Game
-
-           - business people decide
-
-             - scope: how much of a problem must be solved: (too
-               much/not enough)
-
-             - priority: A or B, what first
-
-             - composition of releases
-
-             - date of releases: important dates for business
-
-           - technical people decide
-
-             - estimates: how long to implement feature
-
-             - consequences: f.ex. database
-
-             - process: work and team organization
-
-             - detailed scheduling: in release, f.ex. high-risk stuff
-               first
-
-        2) Small Releases
-
-           small, self-contained releases
-
-        3) Metaphor
-
-           - f.ex. computer appears as desktop
-
-           - "words used to identify technical entities should be
-             consistently taken from the chosen metphor"
-
-        4) Simple Design
-
-           - Rules
-
-             1. Runs all tests
-
-             2. No duplicate logic
-
-             3. "States every intention important to programmers"
-
-             4. Fewest possible pieces (classes, methods,...)
-
-           - Tufte book: design graph, then take away everything that does
-             not add information
-
-        5) Testing
-
-           - functional and unit tests
-
-           - increases confidence in program over time
-
-           - test "production methods that could possibly break"
-
-           - try out without tests, then "throw away your code and
-             start over with tests"
-
-        6) Refactoring
-
-           - duplicate code: system asking for refactoring
-
-           - both before or after programming feature
-
-        7) Pair Programming
-
-           - keyboarder: mainly implementation, other: strategy
-
-           - pairing is dynamic
-
-        8) Collective Ownership
-
-           - should add value to any portion of the code, "if it makes
-             their life easier"
-
-        9) Continous Integration
-
-           - integrate/test after a few hours, a day at most
-
-           - dedicated integration machine: get tests to 100%
-
-        10) 40-Hour Week
-
-            - keep programmers fresh and "full of fire and ideas"
-
-            - overtime: at most one week
-
-            - vacation: (minimum) two-week vacation per year, another
-              week or two for shorter breaks
-
-        11) On-Site Customer
-
-            - customer: real user when in production
-
-            - have time to do normal work, (although physically
-              separated)
-
-            - real project: single customer grudgingly to three
-              customers
-
-        12) Coding Standards
-
-            - need a code standard
-
-              - least amount of work possible
-
-                - Once and Only rule (no duplicate code)
-
-              - voluntarily adopted by team
-
-    11) How Could This Work?
-
-        look at each practice's flaws, how canceled out by another's
-        strengths
-
-        1) The Planning Game
-
-           - customers update plan, based on programmers estimates
-
-           - rough idea plan at beginning (couple of years possible)
-
-           - short releases
-
-           - customer in team
-
-        2) Short Releases
-
-           - ci packages anyways
-
-           - testing reduces defect rate
-
-           - planning game sets most important stories
-
-           - simple design, enough for this one release, not all time
-
-        3) Metaphor
-
-           - need concrete feedback from real code and tests
-
-           - customer needs to be ok talking like this
-
-           - refactor to refine understanding of metaphor in practice
-
-        4) Simple Design
-
-           - refactor to simplify design
-
-           - clear metaphor, so that development coverges (?)
-
-           - programming with partner: simple, not stupid design
-
-        5) Testing
-
-           - simple design, less tests
-
-           - partner ensure that you write tests
-
-           - you and customer: good feeling that (both sets of) tests run
-
-        6) Refactoring
-
-           - collective ownership and coding standards
-
-           - pairs are more courageous to refactor
-
-           - simple design makes it easier
-
-           - testing and c.i. assure correctness
-
-        7) Pair Programming
-
-           - coding standards, well-rested, simple design, metaphor
-             help understanding
-
-           - write tests together before coding to "align their
-             understanding"
-
-        8) Collective Ownership
-
-           - c.i. reduces chance of conflict
-
-           - test and pair programming reduce breakage
-
-           - coding standards
-
-        9) Continuous Integration
-
-           - runs fast, as do tests
-
-           - pairs halve change streams
-
-           - refactoring makes single changes smaller
-
-        10) 40-Hour Week
-
-            - planning game select "more valuable work"
-
-              - better to estimate in combination with testing
-
-            - all practices increase speed
-
-        11) On-Site Customer
-
-            produce value by writing test, and making priority decisions
-
-        12) Coding Standards
-
-            - xp makes you winning team, so you can bend your style
-
-        13) Conclusion
-
-            testing stands well on its own, the others support each other
-
-    12) Management Strategy
-
-        - application of basic principles (see ch. 8): manager
-
-          - highlights what needs to be done
-
-          - trusts programmers to deliver quality work
-
-          - suggests incremental improvements all along the way
-
-          - adapts XP locally
-
-          - does not impose lengthy meetings, etc
-
-          - measures honestly
-
-        - metrics
-
-          - main management tool, use "Big Visible Chart"
-
-          - set metrics for points which mostly need improvement (at
-            most 3-4 metrics)
-
-        - coaching
-
-          - coach is most experienced programmer
-
-          - helps newbies in development, sets refactoring goals,
-            explains to upper management, helps with individual
-            technical skills
-
-          - toys (f.ex. timer) and food
-
-        - tracking: update metrics, need to know planning game by heart
-
-        - intervention: unloved roles
-
-          - personnel changes: sooner rather than later
-
-          - change process: let team decide possibilities, measure effect
-
-          - kill the project
-
-    13) Facilities Strategy
-
-        - try out whatevery works
-
-        - xp rather has too much communal space than too little
-
-    14) Splitting Business and Technical Responsibility
-
-        - if Business dominates: too much risk for too little return
-
-        - if Dev dominates: the same
-
-        - split responsibility, inform other party
-
-        - business chooses: scope/timing of releases, relative
-          priorities and exact scope of features
-
-        - dev contributes: time estimates, alternatives and
-          consequences, dev process and set of practices (and how to
-          review)
-
-        - technology stack is business decision, dev shows
-          consequences (including costs to keep system alive)
-
-        - mostly easy, if hard: reduce risk as far as possible, then
-          rough it
-
-    15) Planning Strategy
-
-        0) [@0]
-
-           - plan to next horizons: increasing granularity as they get closer
-
-           - aim: team, set scope, estimate cost, confidence, feedback
-
-        1) The Planning Game
-
-           - rules should help in developing mutual trust
-
-           - goal: maximize value of software (-development, -risk incurred)
-
-           - strategy: produce most valuable first (while reducing risk)
-
-           - pieces: story cards (number, description, notes, tracking)
-
-           - players: business and development (both collectives)
-
-             - business f.ex. expert users
-
-           - moves
-
-             1) exploration
-
-                - business writes a story,
-
-                - developers estimate a story
-
-                - (or, if impossible, ask for /split/ or /clarification/)
-
-             2) commitment
-
-                - sort by value (business): (1) essential, (2) significant
-                  business value, (3) nice to have
-
-                - sort by risk (development): (1) estimate precisely,
-                  (2) estimate reasonably well, (3) can not estimate at all
-
-                - set velocity (development): Ideal Engineering Time/month
-
-                - choose scope (business): set date and choose cards,
-                  or choose cards and calculate date
-
-             3) steer
-
-                - iteration: business selects story
-
-                - recovery: development realizes velocity off, asks
-                  business for correction: most important stories
-
-                - new story: b writes, d estimates, b removes equivalent stories
-
-                - reestimate: d can reestimate
-
-        2) Iteration Planning
-
-           1) Exploration: write task (part of story), or split/merge
-
-           2) Commitment
-
-              - programmer accepts task
-
-              - estimate: programmer estimates ideal engineering days (=IEdays)
-
-              - set load factors: programmer chooses load factor
-                (=IEdays/iteration) based on previous ierations
-
-              - balance: developers with too much (7-8 or 2-3 for new
-                members) give up some (if team has too much, reestimate)
-
-           3) Steering
-
-              - implement take task card, find partner, write test,
-                make work, integrate and if all tests release
-
-              - record progress: one team member asks programmers
-                "every two or three days" how much spent and much left
-
-              - recovery: if overcommitted: (1) reduce task scope, (2)
-                c reduces story scope, (3) shed nonessential tasks,
-                (4) better help, (5) ask c to defer stories
-
-              - verify: check functional tests
-
-           4) notes on iteration planning:
-
-              - here: take task first then estimate
-
-              - unnecessary for two programmers, necessary for 10
-
-        3) Planning in a Week (fixed-price tender)
-
-           - previous experience
-
-           - rough plan
-
-    16) Development Strategy
-*** quotes
-    00) [@00] unsorted
-        - Use XP when requirements are vague or changing
-        - Since feedback from system in production is vastly higher
-          quality than any other kind of feedback, giving a project too
-          much time will hurt it.
-    0) [@0] Foreword by Erich Gamma
-       - Delivering software is hard, and delivering quality software
-         in time is even harder.
-    0) [@0] Preface
-       - In short, XP promises to reduce project risk, improve
-         responsiveness to business changes, improve productivity
-         throughout the life of a system, and add fun to building
-         software in teams --- all at the same time. Really. Quit
-         laughing. Now you'll have to read the rest of the book to see
-         if I'm crazy.
-    1) Risk: The Basic Problem
-       - loneliness that is often at the heart of job dissatisfaction
-    6) [@6] Learning to Drive
-       - The driver of a software project is the customer.
-       - Our job as programmers is to give the customer a steering
-         wheel and give them feedback about exactly where we are on
-         the road.
-    7) Four Values
-       - Short-term individual goals often conflict with long-term
-         social goals.
-       - Optimism is an occupational hazard of programming. Feedback
-         is the treatment.
-    8) Basic Priciples
-       - Even the adoption of XP must be taken in little steps.
-       - Most software development I see is played not to lose.
-    9) Back to Basics
-       1) Coding
-          - For a system to live, it must retain its source code.
-       2) Testing
-          - The English Positivist philosophers Locke, Berkeley, and
-            Hume said that anything that can't be measured doesn't
-            exist. When it comes to code, I agree with them
-            completely.
-          - You are responsible for writing every test that you can
-            imagine won't run immediately.
-          - If you keep writing the tests, your confidence in the
-            system increases over time.
-          - Programming and testing together is also faster than just
-            programming.
-       3) Listening
-          - programmers don't know anything that business people think
-            is interesting
-    10) A Quick Overview
-        1) Refactoring
-           - When the system requires that you duplicate code, it is
-             asking for refactoring.
-        2) 40-Hour Week
-           - Overtime is a symptom of a serious problem on the
-             porject.
-           - If you come in Monday and say, "To meet our goals, we'll
-             have to work late again," then you already have a problem
-             that can't be solved by working more hours.
-    12) [@12] Management Strategy
-        - People inevitably get off on tangents.
-        - If a metric gets close to 100%, replace it with another that
-          starts comfortably down in the single digits.
-        - Gathering real development data twice a week is plenty.
-        - As soon as you can't think of any scenario in which the
-          offender would be a help rather than a hindrance, you should
-          make the move.
-    14) [@14] Splitting Business and Technical Responsibility
-        - Cutting edge implies risk.
-    15) Planning Strategy
-        1) The Planning Game
-           - A simple method for estimating stories is to ask yourself
-             "How long would this take me to implement if this story
-             was all I had to implement, and I had no interruptions or
-             meetings?" In XP we call this /Ideal Engineering Time/.
-*** ref [[file:master.bib::xp][Beck 1999: Extreme Programming Explained]]
 ** PART [[./201335142847631.pdf][Lohr - Sampling: Design and Analysis]]
 ** PART [[/usr/lib/python2.7/dist-packages/Gnuplot/demo.py][haggerty - demo.py -- Demonstrate the Gnuplot python module]]
    :PROPERTIES:
@@ -24567,6 +24632,35 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
     10) [@10]
 	1) Brief-, Post- und Fernmeldegeheimnis
 	2) Beschränkung: wenn Staatsschutz, dann geheim
+** PART libsvm READMEs
+*** [[../sw/p/libsvm-3.20-src/README][./README]]
+**** quotes
+     - Installation and Data Format
+       - The format of training and testing data file is:
+
+         <label> <index1>:<value1> <index2>:<value2> ...
+     - `svm-train' Usage
+       - -t kernel_type : set type of kernel function (default 2)
+	 2 -- radial basis function: exp(-gamma*|u-v|^2)
+       - -g gamma : set gamma in kernel function (default 1/num_features)
+       - -c cost : set the parameter C of C-SVC, epsilon-SVR, and nu-SVR (default 1)
+       - -m cachesize : set cache memory size in MB (default 100)
+       - -v n: n-fold cross validation mode
+*** [[../sw/p/libsvm-3.20-src/tools/README][./tools/README]]
+**** quotes
+     2) [@2] Part II: Parameter Selection Tools
+        1) Introduction
+           - grid.py is a parameter selection tool for C-SVM
+             classification using the RBF (radial basis function)
+             kernel.
+           - Usage: grid.py [grid_options] [svm_options] dataset
+           - grid_options
+             - -resume [pathname] : resume the grid task using an
+               existing output file (default pathname is dataset.out)
+        2) Example
+           #+BEGIN_SRC python
+             python grid.py -log2c -5,5,1 -log2g -4,0,1 -v 5 -m 300 heart_scale
+           #+END_SRC
 ** onion routing project
 *** [[~/da/git/docs/onion-routing_pet2000.pdf][Towards an Analysis of Onion Routing Security]]
 **** ref: [[file:master.bib::onion-routing:pet2000][Syverson et al. 2000: Towards Analysis Onion Routing Security]]

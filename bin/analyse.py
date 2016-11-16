@@ -345,7 +345,7 @@ def size_test(argv, outlier_removal=True):
     for d in argv[2:]:
         print '{}: {}'.format(d, _size_increase(stats[defense0], stats[d]))
 
-def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
+def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=True):
     '''cross test on dirs: 1st has training data, rest have test
 
     argv is like sys.argv, cumul triggers CUMUL, else version 1'''
@@ -394,20 +394,33 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
         _verbose_test_11(X, y, clf)
 
     # vs test sets
+    its_counters0 = defenses[defense0]
     for (defense, its_counters) in defenses.iteritems():
         if defense == defense0:
             continue
         print '\ntrain: {} VS {} (overhead {}%)'.format(
             defense0, defense, _size_increase(stats[defense0], stats[defense]))
+        if cc and its_counters.keys() != its_counters0.keys():
+            # td: refactor code duplication with above (search for keys = ...)
+            keys = set(its_counters0.keys())
+            keys = keys.intersection(its_counters.keys())
+            tmp = {}; tmp0 = {}
+            for key in keys:
+                tmp0[key] = its_counters0[key]
+                tmp[key] = its_counters[key]
+            its_counters0 = tmp0
+            its_counters = tmp
+            logging.warn("keys are different, just used {} common keys"
+                         .format(len(keys)))
+
         if cumul:
             (X2, y2, _) = to_features_cumul(its_counters)
         else:
             l = _dict_elementwise(max,
-                                  _find_max_lengths(defenses[defense0]),
+                                  _find_max_lengths(its_counters0),
                                   _find_max_lengths(its_counters))
-            (X, y, _) = to_features(
-                counter.outlier_removal(defenses[defense0], 2),
-                l)
+            (X, y, _) = to_features(counter.outlier_removal(its_counters0, 2),
+                                    l)
             (X2, y2, _2) = to_features(counter.outlier_removal(its_counters, 1),
                                        l)
         for clf in CLFS:
@@ -672,6 +685,8 @@ def tts(counter_dict, test_size=1.0/3):
 
 # NEW
 # ['./disabled/bridge__2016-11-04_100@50_100_classes', '0.22/10aI__2016-11-04_50_of_100']
+# './disabled/bridge__2016-11-04_100@50_subsets/bridge__2016-11-04_100@50_top35'
+
 
 
 ### TOP
