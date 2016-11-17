@@ -204,6 +204,28 @@ def all_from_panchenko(dirname='.'):
                 out[filename].append(Counter.from_panchenko_data(line))
     return out
 
+def all_from_wang(dirname="batch"):
+    '''creates dict of Counters from wang's =batch/=-directory'''
+    class_names = []
+    try:
+        with open("batch_list") as f:
+            for line in f:
+                (id, name) = line.split(':')
+                assert int(id) is len(class_names)
+                class_names.append(name.strip())
+    except IOError:
+        pass
+    out = {}
+    for filename in glob.glob(os.path.join(dirname, '*')):
+        (cls, inst) = os.path.basename(filename).split('-')
+        if class_names:
+            cls = class_names[int(cls)]
+        if not cls in out:
+            out[cls] = []
+        with open(filename) as f:
+            out[cls].append(Counter.from_wang(filename, cls, inst))
+    return out
+
 def all_to_wang(counter_dict):
     '''writes all counters in counter_dict to directory <code>batch</code>. also writes a list number url to ./batch_list'''
     os.mkdir("batch")
@@ -356,8 +378,8 @@ class Counter(object):
         with open(filename) as f:
             for line in f:
                 (secs, negcount) = line.split('\t')
-                tmp.packets.append(-negcount)
-                tmp.timing.append([secs, -negcount])
+                tmp.packets.append(-int(negcount))
+                tmp.timing.append([secs, -int(negcount)])
         return tmp
 
     def variable_lengths(self):

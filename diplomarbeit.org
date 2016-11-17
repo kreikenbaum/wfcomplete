@@ -87,7 +87,7 @@
 ** WAIT just for finish
 * WAIT Summary
 ** WAIT just for finish
-* WRITE Basics (=basics) [51%]
+* WRITE Basics (=basics) [52%]
 ** EVA Introduction
    To protect online communication, journalists, whistleblowers,
    "normal people", and among others even military\cite{who-uses-tor}
@@ -104,7 +104,7 @@
    Fortunately, as soon as these weaknesses became known, defenses
    were proposed. [[#defenses][The subsequent section]] shows different classes of
    defenses and examines them in detail.
-** WRITE Website Fingerprinting [17/30]
+** WRITE Website Fingerprinting [17/29]
    :PROPERTIES:
    :CUSTOM_ID: wf
    :END:
@@ -396,7 +396,7 @@ Facebook.com\\
     #+CAPTION[CUMUL features example]: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}.
     #+NAME: CUMUL_traces
     [[./pictures/cumul_aus_paper.pdf]]
-*** WAIT Panchenko Version 1
+*** WRITE Panchenko Version 1
     #+INDEX: Panchenko~1
     #+INDEX: attack!Panchenko~1
     #+INDEX: closed-world
@@ -456,7 +456,7 @@ Facebook.com\\
     incoming and outgoing are appended to this list.
 
     Support vector machines classify these.
-*** WRITE Support Vector Machines
+*** CHECK Support Vector Machines
 **** EVA Introduction
      #+INDEX: classifier!Support Vector Machine
      #+INDEX: classifier!SVM
@@ -588,18 +588,19 @@ Facebook.com\\
      evaluation. This is done $k$ times, and the result is averaged.
 
      It might be possible to evaluate these meta-parameters together
-     with the main classification problem, but analogously to
-     \cite[sec.2.8.3]{esl}, this would probably become
-     "combinatorially hard".
-**** TODO link to basic book (bronstein) for vector space etc
-**** WRITE Preparation
-     - good results\cite[sec.7.8.1]{kernels}
-       - but drawback need additional work priming data than
-         f.ex. tree-based or knn, compare f.ex. \cite[sec.10.7]{esl}
-     - steps needed
-       - outlier removal
-       - scaling
-       - parameter estimation
+     with the main classification problem \cite[secs.2.8.3, 6.7]{esl},
+     but analogously to \cite[sec.2.8.3]{esl}, this would probably
+     become "combinatorially hard".
+**** CHECK Preparation
+     While Support Vector Machines yield results that often surpass
+     other machine learning techniques[fn::see
+     f.ex.\cite[sec.7.8.1]{kernels}], they require several
+     preprocessing steps that can be omitted for other learning
+     methods, such as decision-trees based methods and
+     kNN\cite[sec.10.7]{esl}.
+
+     Outlier removal, data normalization and parameter estimation help in
+     increasing the accuracy of SVMs.
 *** WRITE Wang's KNN
     #+INDEX: attack!kNN
     \cite{effective} achieved high accuracy
@@ -1234,7 +1235,7 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* KEYWORDS Results and Evaluation [32%]
+* KEYWORDS Results and Evaluation [39%]
 ** EVA Introduction
    The following sections describe [[#setup][how data was collected and
    analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
@@ -1444,20 +1445,16 @@ Facebook.com\\
     :PROPERTIES:
     :CUSTOM_ID: classification
     :END:
-**** WRITE Introduction
+**** EVA Introduction
      Once feature vectors are extracted from the collected traces,
-     they can be classified. \cite{panchenko2} was both reimplemented
-     and classified using the original
-     implementation. \cite{effective}'s original implementation was
-     used to double-check results.
-     - outlier removal (?)
-     - classification
-       - my code
-       - original code
-         - both: see appendix
-           - for technical details
-           - for code changes to wang's methods
+     they can be classified. Two state-of-the-art methods were
+     applied: [[#cumul-reimplementation][\cite{panchenko2} was reimplemented]] and [[#wf-original][both it and
+     \cite{effective}'s original implementation were used to
+     double-check results]].
 **** WRITE Original Classification Methods: Panchenko and Wang's
+     :PROPERTIES:
+     :CUSTOM_ID: wf-original
+     :END:
      As the main purpose of this thesis is defending against website
      fingerprinting, it helps to measure the success against
      state-of-the-art website fingerprinting methods. At first, a
@@ -1493,22 +1490,29 @@ Facebook.com\\
            - times are milliseconds since epoch
        - seems to compare whether sites are in the matched set or
          outside: data contains only two classes
+     - original code
+       - both: see appendix
+         - for technical details
+         - for code changes to wang's methods
 **** DANIEL CUMUL Re-Implementation
-    After outlier removal, splits and possibly scaling, classification
-    takes as input feature vectors and tries to output the class that
-    this input belongs to. This is triggered by [[#analyse][=analyse.py=]].
+     :PROPERTIES:
+     :CUSTOM_ID: cumul-reimplementation
+     :END:
+     After outlier removal, splits and possibly scaling, classification
+     takes as input feature vectors and tries to output the class that
+     this input belongs to. This is triggered by [[#analyse][=analyse.py=]].
 
-    Support Vector Machines need additional meta-parameters as
-    input. These are determined in an additional parameter estimation
-    step[fn::while it would be possible to also determine these
-    meta-parameters together with the support vectors, it would pose a
-    compationally hard problem, as mentioned for a similar case by
-    \cite[sec.2.8.3]{esl}]. \cite{Hsu10apractical} recommend
-    grid-search, which is used by \cite{panchenko2} and
-    \cite{panchenko}. This happens on the training set.
+     Support Vector Machines need additional meta-parameters as
+     input. These are determined in an additional parameter estimation
+     step[fn::while it would be possible to also determine these
+     meta-parameters together with the support vectors, it would pose a
+     compationally hard problem, as mentioned for a similar case by
+     \cite[sec.2.8.3]{esl}]. \cite{Hsu10apractical} recommend
+     grid-search, which is used by \cite{panchenko2} and
+     \cite{panchenko}. This happens on the training set.
 
-    After SVM-parameters have been determined, several classifiers are
-    trained on the training data and evaluated on the test data.
+     After SVM-parameters have been determined, several classifiers are
+     trained on the training data and evaluated on the test data.
 ** WRITE Website Fingerprinting [0/13]
 *** WRITE Introduction
     :PROPERTIES:
@@ -1527,52 +1531,6 @@ Facebook.com\\
         - =flearn_params.sh=
     - drawbacks
       - size changes
-*** WAIT Panchenko 1
-    - original wf attack
-    - HTTP/HTML-specific features
-    - mostly fixed-size, with Number and Size Markers variable-sized
-      - lead to longer feature vectors than CUMUL'default
-      - longer time
-**** WAIT for [[file:~/da/da.org::*klassifikation][klassifikation {0/10}]] panchenko 1 without scaling on best
-*** WAIT Panchenko 1 with Different Classifiers
-    :PROPERTIES:
-    :CUSTOM_ID: different-classifiers
-    :END:
-    Panchenko et al's first attack's\cite{panchenko} length of
-    features grow with the size of the packet trace, as opposed to
-    CUMUL's\cite{panchenko2}. As a result, it often has more features
-    than CUMUL's default. As the SVM classifier expects each feature
-    vector to have the same length, all vectors need to be padded to
-    the length of the longest vector. As evaluation time scales with
-    feature length, this increases classification time. In our
-    experiments, SVM evaluation takes longer.
-
-    Other classifiers evaluated included the K-Nearest-Neighbors
-    classifier. These provided quicker results, which often exceeded
-    the SVM's accuracy in our tests.
-
-    In addition, CUMUL improved the classification
-    result[fn::accuracy and FPR/TPR respectively].
-
-    In our various tests with the first attack many classifiers,
-    notably k-nearest-neighbors, perform better than the SVM
-    classifier on the same set of features. Additionally, these are
-    easier to apply, as they do not need to scale data.
-
- #+CAPTION: Timing comparison for various classifiers
- #+NAME: tab:timing
- #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
- #+INCLUDE: "data/results/alternatives.org::#timing" :only-contents t
-
-
-    - [ ] [[file:~/da/da.org::*klassifikation][klassifikation {0/12}]]
-      - how much better alt(knn) than svc
-    - much easier to just use knn, ....
-      - and slightly better results
-      - knn is best, outperforms svc on our tests
-    - more work for svm parameter estimation
-    - pad variable-length features to maximum length of all with 0s
-**** WAIT retest p1 without scale, see "panchenko 1 without scaling on best" in [[file:~/da/da.org::*klassifikation][klassifikation {0/10}]]
 *** WRITE [#A] Panchenko 1 vs Cumul
     Panchenko et al proposed two \cite{panchenko} methods
     \cite{panchenko2} for analysing traces, one of which is
@@ -1761,8 +1719,8 @@ Facebook.com\\
           - \cite{kfingerprint} captured 70 instances each
           - \cite{effective} used 90: 60 for train, 30 for test
         - this was before labelling erroneous traces
-** KEYWORDS Evaluation of Defenses [1/15]
-*** WRITE Introduction
+** KEYWORDS Evaluation of Defenses [1/12]
+*** KEYWORDS Introduction
     :PROPERTIES:
     :CUSTOM_ID: eval-defense
     :END:
@@ -1774,8 +1732,8 @@ Facebook.com\\
 
     - factor to overhead evaluation
       - lowest setting
-    - [[#results-cumul-traces][look at cumul-traces]] (?include this?)
-      - show how generation differs
+    - show how generation differs
+      - somewhere else, f.ex. wtf-pad?
     - examine different websites, differences
     - summary
 *** WRITE [#A] Add-on
@@ -1819,7 +1777,7 @@ Facebook.com\\
      The size-guessing =b= flavors produce significantly
      higher overhead, but yield a further small reduction of classifier
      accuracy.
-**** WAIT relation FACTOR to overhead
+**** KEYWORDS relation FACTOR to overhead
     - problem: tunable: factor correlation to overhead
       - not given for 0.15, retro, 0.18-0.21
       - old graph: cluster for retro, etc
@@ -1828,26 +1786,18 @@ Facebook.com\\
         - mention (somewhere else that tamaraw fell through)
     - factor at simple
       - 0.18 over-engineered?
-***** WAIT compute overhead at [[file:~/da/da.org::*size%20overhead%20for%20all%20defenses][size overhead for all defenses]]
-**** WAIT bursts
+**** KEYWORDS bursts
      :PROPERTIES:
      :CUSTOM_ID: eval-bursts
      :END:
      - as written in [[#methods-bursts][Bursts]], see effectiveness
      - effectiveness
-     - wait for eval of all
-       - maybe capture one/two more burst-traffic schemes
-       - specifically [[file:~/da/da.org::*bursts][bursts]]
 **** WAIT summary
     - optimal defenses: 22 and simple2@10
-      - rly?
       - main addon has high overhead
       - td: pix vs disabled
         - wait for [[file:~/da/da.org::*mock-up%20graphiken%20results][mock-up graphiken results]]
     - different factors
-    - all around same curve
-    - which classifier classifies which page well?
-    - mention Extra-Trees accuracy?
 *** WAIT [#A] sota (practical): WTF-PAD
     :PROPERTIES:
     :CUSTOM_ID: eval-wtf-pad
@@ -1894,36 +1844,6 @@ Facebook.com\\
       0.4% reduced cumul accuracy
       - not worth it
 **** maybe see cumul-graphics
-*** KEYWORDS Trace Comparison Three Main Defenses
-    :PROPERTIES:
-    :CUSTOM_ID: results-cumul-traces
-    :END:
-#+BEGIN_LaTeX
-\begin{table}[H]
-\begin{longtable}{c c c}
-   Page: google.com & Page: tumblr.com & Page: netflix.com \\
-\endfirsthead
-   Page: google.com & Page: tumblr.com & Page: netflix.com \\
-\endhead
-   \hline
-   \multicolumn{3}{c}{WTF-PAD} \\
-  \includegraphics[width=0.3 \textwidth]{./pictures/google.com__wfpad.eps}
-  & \includegraphics[width=0.3 \textwidth]{./pictures/tumblr.com__wfpad.eps}
-  & \includegraphics[width=0.3 \textwidth]{./pictures/netflix.com__wfpad.eps}
-  \\
-   \multicolumn{3}{c}{Simple Add-on, Factor 10\%} \\
-\includegraphics[width=0.3 \textwidth]{./pictures/google.com__simple1@10.eps}
-& \includegraphics[width=0.3 \textwidth]{./pictures/tumblr.com__simple1@10.eps}
-&\includegraphics[width=0.3 \textwidth]{./pictures/netflix.com__simple1@10.eps}
-\\
-   \multicolumn{3}{c}{Add-on Version 0.22, Factor 10\%} \\
-\includegraphics[width=0.3 \textwidth]{./pictures/google.com__22.0@10aI.eps}
-&\includegraphics[width=0.3 \textwidth]{./pictures/tumblr.com__22.0@10aI.eps}
-&\includegraphics[width=0.3 \textwidth]{./pictures/netflix.com__22.0@10aI.eps}
-\end{longtable}
-\caption{CUMUL traces of different defenses}
-\end{table}
-#+END_LaTeX
 *** KEYWORDS sota (theoretical): Walkie-Talkie
     - as of paper: 32%bw \to 5% fpr and 55% bw \to 10% fpr
     - how to translate to closed-world?
