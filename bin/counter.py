@@ -17,7 +17,9 @@ HOME_IP = '134.169.109.25'
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
 LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
+
 MIN_CLASS_SIZE=30
+TOR_CELL_SIZE=512
 
 TIME_SEPARATOR = '@'
 
@@ -155,31 +157,33 @@ def _sum_stream(packets):
 # td: separate json parsing and pcap-parsing
 # td: use glob.iglob? instead of os.walk?
 def all_from_dir(dirname, remove_small=True):
-    '''all packets traces in subdirectories of the name domain@tstamp are
-    parsed to Counters. If there are JSON files created by
-    =save()=, use those instead of the pcap files for their
-    domains
+    '''All packets traces of the name domain@tstamp are parsed to
+    Counters. If there are JSON files created by =save()=, use those
+    instead of the pcap files for their domains. If there are neither,
+    try to use a =batch= directory for Wang-style counters.
     '''
     global json_only
     out = {}
 
-    for (dirpath, _, filenames) in os.walk(dirname):
-        for jfile in [x for x in filenames if '.json' in x]:
-            domain = jfile.replace('.json', '')
-            logging.info('traces for %s from JSON %s', domain, jfile)
-            out[domain] = all_from_json(os.path.join(dirname, jfile))
-            filenames.remove(jfile)
-            for trace in [x for x in filenames if domain + '@' in x]:
-                filenames.remove(trace)
+    filenames = glob.glob(os.path.join(dirname, "*"))
+    for jfile in [x for x in filenames if '.json' in x]:
+        domain = os.path.basename(jfile).replace('.json', '')
+        logging.info('traces for %s from JSON %s', domain, jfile)
+        out[domain] = all_from_json(jfile)
+        filenames.remove(jfile)
+        for trace in [x for x in filenames if domain + '@' in x]:
+            filenames.remove(trace)
 
-        length = len(filenames)
-        for i, filename in enumerate(filenames):
-            fullname = os.path.join(dirpath, filename)
-            if TIME_SEPARATOR in filename: # file like google.com@1445350513
-                logging.info('processing (%d/%d) %s ',
-                             i+1, length, fullname)
-                json_only = False
-                _append_features(out, fullname)
+    length = len(filenames)
+    for i, filename in enumerate(filenames):
+        fullname = os.path.join(dirname, filename)
+        if TIME_SEPARATOR in filename: # file like google.com@1445350513
+            logging.info('processing (%d/%d) %s ',
+                         i+1, length, fullname)
+            json_only = False
+            _append_features(out, fullname)
+    if not out:
+        out = all_from_wang()
     if not out:
         raise Exception('no counters in path "{}"'.format(dirname))
     if remove_small:
@@ -204,7 +208,8 @@ def all_from_panchenko(dirname='.'):
                 out[filename].append(Counter.from_panchenko_data(line))
     return out
 
-def all_from_wang(dirname="batch"):
+# untested with open world
+def all_from_wang(dirname="batch", cw=True):
     '''creates dict of Counters from wang's =batch/=-directory'''
     class_names = []
     try:
@@ -217,6 +222,8 @@ def all_from_wang(dirname="batch"):
         pass
     out = {}
     for filename in glob.glob(os.path.join(dirname, '*')):
+        if cw and '-' not in filename:
+            continue
         (cls, inst) = os.path.basename(filename).split('-')
         if class_names:
             cls = class_names[int(cls)]
@@ -249,9 +256,12 @@ def dir_to_wang(dirname, remove_small=True):
 
 # td: read up on ordereddict, maybe replace
 def for_defenses(defenses):
-    '''@return dict: {defense1: {domain1: counters1_1, ...  domainN:
-    countersN_1}, ..., defenseM: {domain1: counters1_M, ...  domainN:
-    countersN_M}} for directories} in {@code defenses}'''
+    '''@return dict: {defense1: {domain1: [counter1_1, ..., counter1_N],
+    ..., domainN: [counterN_1, ... counterN_N]}, ..., defenseM:
+    {domain1: [counter1_1, ..., counter1_N], ..., domainN:
+    [counterN_1, ..., countersN_N]} for directories} in {@code
+    defenses}
+    '''
     out = {}
     if len(defenses) == 0:
         out['.'] = all_from_dir('.')
@@ -378,8 +388,10 @@ class Counter(object):
         with open(filename) as f:
             for line in f:
                 (secs, negcount) = line.split('\t')
+                if abs(int(negcount)) <= 1: # cell level
+                    negcount = int(negcount) * TOR_CELL_SIZE
                 tmp.packets.append(-int(negcount))
-                tmp.timing.append([secs, -int(negcount)])
+                tmp.timing.append([float(secs), -int(negcount)])
         return tmp
 
     def variable_lengths(self):
@@ -449,6 +461,8 @@ class Counter(object):
 
     def extract_line(self, src, size, tstamp):
         '''aggregates stream values'''
+        if abs(int(size)) < TOR_CELL_SIZE:
+            return
         if src == HOME_IP: # outgoing negative as of panchenko 3.1
             self.packets.append(- int(size))
             self.timing.append((float(tstamp), - int(size)))

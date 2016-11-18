@@ -345,10 +345,13 @@ def size_test(argv, outlier_removal=True):
     for d in argv[2:]:
         print '{}: {}'.format(d, _size_increase(stats[defense0], stats[d]))
 
-def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=True):
+def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test
 
-    argv is like sys.argv, cumul triggers CUMUL, else version 1'''
+    =argv= is like sys.argv, =cumul= triggers CUMUL, else version 1,
+    =cc= determines whether the test data directories are reduced to
+    common keys
+    '''
     # call with 1: x-validate test that
     # call with 2+: also train 1 (split), test 2,3,4,...
     defenses = counter.for_defenses(argv[1:])
@@ -410,9 +413,6 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=True):
                 tmp[key] = its_counters[key]
             its_counters0 = tmp0
             its_counters = tmp
-            logging.warn("keys are different, just used {} common keys"
-                         .format(len(keys)))
-
         if cumul:
             (X2, y2, _) = to_features_cumul(its_counters)
         else:

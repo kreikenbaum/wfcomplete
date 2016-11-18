@@ -52,6 +52,8 @@ void alg_init_weight(float** feat, float* weight) {
 	}*/
 }
 
+// distance ?
+// td mb ref: remove =power=
 float dist(float* feat1, float* feat2, float* weight, float power) {
 	float toret = 0;
 	for (int i = 0; i < FEAT_NUM; i++) {
@@ -525,7 +527,7 @@ void accuracy(float** closedfeat, float* weight, float** openfeat, float & tp, f
 	tp = 0;
 	tn = 0;
 
-	float** feat = new float*[SITE_NUM*TEST_NUM + OPENTEST_NUM];
+	float** feat = new float*[SITE_NUM * TEST_NUM + OPENTEST_NUM];
 
 	for (int i = 0; i < SITE_NUM*TEST_NUM; i++) {
 		feat[i] = closedfeat[i];
@@ -538,7 +540,7 @@ void accuracy(float** closedfeat, float* weight, float** openfeat, float & tp, f
 	int* classlist = new int[SITE_NUM + 1];
 
 	float* opendistlist = new float[OPENTEST_NUM];
-
+        // is == instance (runs over all)
 	for (int is = 0; is < SITE_NUM*TEST_NUM + OPENTEST_NUM; is++) {
 		printf("\rComputing accuracy... %d (%d-%d)", is, 0, SITE_NUM*TEST_NUM + OPENTEST_NUM);
 		fflush(stdout);
@@ -546,11 +548,14 @@ void accuracy(float** closedfeat, float* weight, float** openfeat, float & tp, f
 			classlist[i] = 0;
 		}
 		int maxclass = 0;
+                // determine distance to each element
 		for (int at = 0; at < SITE_NUM * TEST_NUM + OPENTEST_NUM; at++) {
 			distlist[at] = dist(feat[is], feat[at], weight, POWER);
 		}
 		float max = *max_element(distlist, distlist+SITE_NUM*TEST_NUM+OPENTEST_NUM);
+                // distlist[is] stores max value
 		distlist[is] = max;
+                // just once with default NEIGHBOUR_NUM==1: 
 		for (int i = 0; i < NEIGHBOUR_NUM; i++) {
 			int ind = find(distlist, distlist + SITE_NUM*TEST_NUM+OPENTEST_NUM, *min_element(distlist, distlist+SITE_NUM*TEST_NUM+OPENTEST_NUM)) - distlist;
 			int classind = 0;
@@ -568,6 +573,7 @@ void accuracy(float** closedfeat, float* weight, float** openfeat, float & tp, f
 		}
 
 		int trueclass = is/TEST_NUM;
+                // open world: one class for background
 		if (trueclass > SITE_NUM) trueclass = SITE_NUM;
 
 		int countclass = 0;
@@ -579,6 +585,7 @@ void accuracy(float** closedfeat, float* weight, float** openfeat, float & tp, f
 				hasconsensus = 1;
 			}
 		}
+                // will (almost) never happen with NEIGHBOUR_NUM==1 
 		if (hasconsensus == 0) {
 			for (int i = 0; i < SITE_NUM; i++) {
 				classlist[i] = 0;
@@ -635,7 +642,7 @@ int main(int argc, char** argv) {
 		NEIGHBOUR_NUM = NEIGHBOUR_list[NEIGHBOUR_ind % 12];
 	}
 
-        //        printf("checkpoint 0\n");
+        printf("checkpoint 0\n");
         if(argc == 6){
           SITE_NUM = atoi(argv[3]);
           INST_NUM = atoi(argv[4]);
@@ -658,7 +665,7 @@ int main(int argc, char** argv) {
 		opentestfeat[i] = new float[FEAT_NUM];
 	}
 
-        //        printf("checkpoint 1\n");
+        printf("checkpoint 1\n");
 	for (int cur_site = 0; cur_site < SITE_NUM; cur_site++) {
 		int real_inst = 0;
 		for (int cur_inst = 0; cur_inst < INST_NUM; cur_inst++) {
@@ -695,7 +702,7 @@ int main(int argc, char** argv) {
 			}
 			
 		}
-                //                printf("checkpoint 1.10\n");
+                //printf("checkpoint 1.10\n");
 		for (int cur_inst = 0; cur_inst < TEST_NUM; cur_inst++) {
 			int gotfile = 0;
 			ifstream fread;
@@ -731,7 +738,7 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
-        //        printf("checkpoint 2\n");
+        printf("checkpoint 2\n");
 
 	for (int cur_site = 0; cur_site < OPENTEST_NUM; cur_site++) {
 			int gotfile = 0;

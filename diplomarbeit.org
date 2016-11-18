@@ -87,7 +87,7 @@
 ** WAIT just for finish
 * WAIT Summary
 ** WAIT just for finish
-* WRITE Basics (=basics) [52%]
+* WRITE Basics (=basics) [57%]
 ** EVA Introduction
    To protect online communication, journalists, whistleblowers,
    "normal people", and among others even military\cite{who-uses-tor}
@@ -104,7 +104,7 @@
    Fortunately, as soon as these weaknesses became known, defenses
    were proposed. [[#defenses][The subsequent section]] shows different classes of
    defenses and examines them in detail.
-** WRITE Website Fingerprinting [17/29]
+** WRITE Website Fingerprinting [18/27]
    :PROPERTIES:
    :CUSTOM_ID: wf
    :END:
@@ -375,11 +375,6 @@ Facebook.com\\
     feature importance feedback.[fn:: f.ex.\space{}in scikit-learn
     \cite{scikit-learn} via the =_feature_importances= property]
 
-    As \cite{oakland2012-peekaboo} noted and experiments with
-    \cite{panchenko}'s estimator support[fn::see
-    [[#different-classifiers]]], you can get good accuracy with several
-    classifiers, if proper features are available.
-
     According to \cite{kfingerprint}, the top-five features are the
     number (both absolute and percentage of total) of both incoming
     and outgoing packets. The standard deviation of the packet
@@ -396,10 +391,14 @@ Facebook.com\\
     #+CAPTION[CUMUL features example]: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}.
     #+NAME: CUMUL_traces
     [[./pictures/cumul_aus_paper.pdf]]
-*** WRITE Panchenko Version 1
-    #+INDEX: Panchenko~1
+*** CHECK Panchenko Version 1
     #+INDEX: attack!Panchenko~1
     #+INDEX: closed-world
+    #+INDEX: false-negative-rate
+    #+INDEX: FNR
+    #+INDEX: Panchenko~1
+    #+INDEX: TPR
+    #+INDEX: true-positive-rate
     #+INDEX: open-world
     #+INDEX: world!closed
     #+INDEX: world!open
@@ -425,14 +424,14 @@ Facebook.com\\
     sites.
 
     \cite{panchenko} achieved closed-world recognition rates of 54.61%
-    and open-world true-positive rate of up to 73% for Tor. While the
-    Tor Project considers these and better rates both insufficient and
-    inapplicable\cite{critique} to pose a real threat, they still
-    consider this paper "the first work to successfully apply website
-    traffic fingerprinting to Tor"\cite{critique}.
-    
-    - true-positive rate etc footnote (with \cite[sec.5.1.3]{rieckdiss})
-**** WAIT for [[file:~/da/da.org::*daniel%20panchenko%201][daniel panchenko 1]]
+    and open-world true-positive rate[fn:: the ratio of correctly
+    recognized positive instances divided by all positve instances is
+    called the /true positive rate/ (short: TPR)] of up to 73% for
+    Tor. While the Tor Project considers these and better rates both
+    insufficient and inapplicable\cite{critique} to pose a real
+    threat, they still consider this paper "the first work to
+    successfully apply website traffic fingerprinting to
+    Tor"\cite{critique}.
 *** DANIEL CUMUL
     #+INDEX: CUMUL
     #+INDEX: attack!CUMUL
@@ -456,7 +455,7 @@ Facebook.com\\
     incoming and outgoing are appended to this list.
 
     Support vector machines classify these.
-*** CHECK Support Vector Machines
+*** EVA Support Vector Machines
 **** EVA Introduction
      #+INDEX: classifier!Support Vector Machine
      #+INDEX: classifier!SVM
@@ -591,16 +590,6 @@ Facebook.com\\
      with the main classification problem \cite[secs.2.8.3, 6.7]{esl},
      but analogously to \cite[sec.2.8.3]{esl}, this would probably
      become "combinatorially hard".
-**** CHECK Preparation
-     While Support Vector Machines yield results that often surpass
-     other machine learning techniques[fn::see
-     f.ex.\cite[sec.7.8.1]{kernels}], they require several
-     preprocessing steps that can be omitted for other learning
-     methods, such as decision-trees based methods and
-     kNN\cite[sec.10.7]{esl}.
-
-     Outlier removal, data normalization and parameter estimation help in
-     increasing the accuracy of SVMs.
 *** WRITE Wang's KNN
     #+INDEX: attack!kNN
     \cite{effective} achieved high accuracy
@@ -1235,7 +1224,7 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* KEYWORDS Results and Evaluation [39%]
+* KEYWORDS Results and Evaluation [38%]
 ** EVA Introduction
    The following sections describe [[#setup][how data was collected and
    analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
@@ -1465,18 +1454,19 @@ Facebook.com\\
  treatment.\cite{xp}
      #+END_QUOTE
      this method is validated with the original implementation used by
-     both \cite{panchenko2} and \cite{effective}.
+     both \cite{panchenko2}[fn:: Available at
+     \url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}] and
+     \cite{effective}[fn:: Available at
+     \url{https://cs.uwaterloo.ca/~t55wang/wf.html}, the attack's code
+     is at \url{https://cs.uwaterloo.ca/~t55wang/knn.zip}, the exmple
+     data at \url{https://cs.uwaterloo.ca/~t55wang/knndata.zip}].
 
-     Additionally, the reimplementation has some aspects lacking in
-     \cite{panchenko2}, namely those mentioned in [[#split][split]] and the
-     prototype in [[#outlier_removal][outlier removal]].
+     The reimplementation adds some aspects to \cite{panchenko2}'s
+     analysis, namely those mentioned in [[#split][split]] and the prototype in
+     [[#outlier_removal][outlier removal]]. It also does a grid-search, as the parameters
+     proposed in the paper do not always yield the best results.
  
-         - and has some optimizations
-           - several classifiers: extra-trees
      - wang: data sets until study (2014)
-       - web site at \url{https://cs.uwaterloo.ca/~t55wang/wf.html}
-         - attack code at \url{https://cs.uwaterloo.ca/~t55wang/knn.zip}
-         - attack data at \url{https://cs.uwaterloo.ca/~t55wang/knndata.zip}
        - data format: one file per trace, named =class_id-trace_num=
          - lines are time(float) \t packet length/cell
          - [ *positive out, neg in* ]
@@ -1719,8 +1709,8 @@ Facebook.com\\
           - \cite{kfingerprint} captured 70 instances each
           - \cite{effective} used 90: 60 for train, 30 for test
         - this was before labelling erroneous traces
-** KEYWORDS Evaluation of Defenses [1/12]
-*** KEYWORDS Introduction
+** KEYWORDS Evaluation of Defenses [1/13]
+*** WAIT Introduction
     :PROPERTIES:
     :CUSTOM_ID: eval-defense
     :END:
@@ -1736,6 +1726,7 @@ Facebook.com\\
       - somewhere else, f.ex. wtf-pad?
     - examine different websites, differences
     - summary
+**** WAIT until data and subsections are stable (f.ex.: optimal attacker and websites ?needed?)
 *** WRITE [#A] Add-on
     :PROPERTIES:
     :CUSTOM_ID: def-addon
@@ -1786,6 +1777,8 @@ Facebook.com\\
         - mention (somewhere else that tamaraw fell through)
     - factor at simple
       - 0.18 over-engineered?
+    - little factor for retrofixed
+    - some order for 0.22
 **** KEYWORDS bursts
      :PROPERTIES:
      :CUSTOM_ID: eval-bursts
