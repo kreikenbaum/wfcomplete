@@ -402,28 +402,25 @@ Facebook.com\\
     #+INDEX: open-world
     #+INDEX: world!closed
     #+INDEX: world!open
-    While \cite{ccsw09-fingerprinting} classified one-hop proxies
-    well, they had achieved low accuracy against Tor due to Tor's
-    multiplexing and fixed
-    cell-size\cite{experimental}. \cite{panchenko} were the
-    first\cite{critique} to publish a successful website
-    fingerprinting attack on Tor: They extracted HTTP-specific
-    features from the packet trace, adjusted their weights, and
-    selected only those found to have the greatest impact. The
-    features are weighted heavily in favor of total
-    incoming/outgoing bytes. Support Vector Machines then classified
-    these features.
+    While \cite{ccsw09-fingerprinting} classify one-hop proxies well,
+    they achieve low accuracy against Tor due to Tor's multiplexing
+    and fixed cell-size\cite{experimental}. \cite{panchenko}
+    first\cite{critique} published a successful website fingerprinting
+    attack on Tor: They extract HTTP-specific features from the packet
+    trace, adjust their weights, and select only those found to have
+    the greatest impact. The features are weighted heavily in favor of
+    total incoming/outgoing bytes. Support Vector Machines then
+    classify these features.
 
-    In addition to \cite{ccsw09-fingerprinting}'s data set, a new
-    open-world[fn::The /closed-world/ assumption means that the web
-    browser only visits /k/ web pages, while in the /open-world/
+    In addition to \cite{ccsw09-fingerprinting}'s data set, they use a
+    new open-world[fn::The /closed-world/ assumption means that the
+    web browser only visits /k/ web pages, while in the /open-world/
     scenario, /k/ web pages out of an arbitrarily large number are to
     be detected. Thus, the closed-world scenario is a
-    simplification.\cite{panchenko2}] dataset was used. The size of
-    the open-world data set was five foreground and 5000 background
-    sites.
+    simplification.\cite{panchenko2}] dataset. The size of the
+    open-world data set is five foreground and 5000 background sites.
 
-    \cite{panchenko} achieved closed-world recognition rates of 54.61%
+    \cite{panchenko} achieve closed-world recognition rates of 54.61%
     and open-world true-positive rate[fn:: the ratio of correctly
     recognized positive instances divided by all positve instances is
     called the /true positive rate/ (short: TPR)] of up to 73% for
@@ -590,14 +587,13 @@ Facebook.com\\
      with the main classification problem \cite[secs.2.8.3, 6.7]{esl},
      but analogously to \cite[sec.2.8.3]{esl}, this would probably
      become "combinatorially hard".
-*** WRITE Wang's KNN
+*** CHECK kNN-Attack
     #+INDEX: attack!kNN
-    \cite{effective} achieved high accuracy
-    - \cite{effective} achieved high accuracy, set standard
-      - knn with dynamically-determined metrics
-      - many features
-      - weighting/learning weights
-    - no outlier removal
+    \cite{effective} achieve high accuracy against Tor using the
+    k-Nearest-Neighbors classifier with a custom,
+    dynamically-determined metric. For this they evaluate over 4000
+    different features (3000 of which are single packets sizes), and
+    learn weights which best classify the classes.
 *** WRITE KNN
     #+INDEX: classifier!kNN
     - /k-nearest-neighbors/ \cite[sec.1.3.2]{iml} \cite[sec.2.3.2]{esl}
@@ -1180,7 +1176,7 @@ Facebook.com\\
      :CUSTOM_ID: methods-bursts
      :END:
     - problem: bursts recognizing factor
-      - \cite[sec.5.C]{dyer}
+      - \cite[sec.5.C]{oakland2012-peekaboo}
       - \cite[sec.4.2]{effective}
     - solution
       - test bursts at end of transmission
@@ -1445,7 +1441,7 @@ Facebook.com\\
      :CUSTOM_ID: wf-original
      :END:
      As the main purpose of this thesis is defending against website
-     fingerprinting, it helps to measure the success against
+     fingerprinting, its success should be measured against
      state-of-the-art website fingerprinting methods. At first, a
      re-implementation of \cite{panchenko2} was used for
      classification. As
@@ -1455,31 +1451,37 @@ Facebook.com\\
      #+END_QUOTE
      this method is validated with the original implementation used by
      both \cite{panchenko2}[fn:: Available at
-     \url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}] and
+     \url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}.] and
      \cite{effective}[fn:: Available at
      \url{https://cs.uwaterloo.ca/~t55wang/wf.html}, the attack's code
-     is at \url{https://cs.uwaterloo.ca/~t55wang/knn.zip}, the exmple
-     data at \url{https://cs.uwaterloo.ca/~t55wang/knndata.zip}].
+     is at \url{https://cs.uwaterloo.ca/~t55wang/knn.zip}, example
+     data at \url{https://cs.uwaterloo.ca/~t55wang/knndata.zip}.].
 
      The reimplementation adds some aspects to \cite{panchenko2}'s
      analysis, namely those mentioned in [[#split][split]] and the prototype in
      [[#outlier_removal][outlier removal]]. It also does a grid-search, as the parameters
      proposed in the paper do not always yield the best results.
+
+     \cite{effective}'s data format are file-based: each file, named
+     =class_id-trace_num=, contains a line for each packet, of the
+     form =time(float) \t packet length/cell=. Positive cells/packet
+     sizes are for outgoing data, negative for incoming. The feature
+     extraction code is in =fextractor.py=[fn::this thesis uses a
+     slightly modified version to adjust for different data set sizes,
+     see TODO.]
+
+     \cite{panchenko2}'s data format are line-based: each file
+     contains all the traces for a class, with one trace per line. Its
+     format is =class_name start_time packet_time1:packet_size1 ...=
+     with all times in millisecons since the epoch. Positive packet
+     sizes are for incoming data, negative for outgoing.
+
+     In the open-world scenario, \cite{panchenko2} has only two
+     classes, while \cite{effective} has the number of classes $+1$
+     for the background data set.
  
      - wang: data sets until study (2014)
-       - data format: one file per trace, named =class_id-trace_num=
-         - lines are time(float) \t packet length/cell
-         - [ *positive out, neg in* ]
-       - feature extraction in =fextractor.py=
-       - seems to compare different URLs whether they match: data
-         format contains different classes
-     - panchenko: 2016 data set plus code
-       - data format: one file per class, named by url
-         - *positive in, neg out*
-         - line is trace, =class start_time packet_time:packet_size ...=
-           - times are milliseconds since epoch
-       - seems to compare whether sites are in the matched set or
-         outside: data contains only two classes
+       - (meaning?)
      - original code
        - both: see appendix
          - for technical details
@@ -1521,52 +1523,6 @@ Facebook.com\\
         - =flearn_params.sh=
     - drawbacks
       - size changes
-*** WRITE [#A] Panchenko 1 vs Cumul
-    Panchenko et al proposed two \cite{panchenko} methods
-    \cite{panchenko2} for analysing traces, one of which is
-    considered\cite{kfingerprint} state-of-the art.
-
-    They both use support vector machines as classifier, but differ in
-    the features they select.
-
-    Since CUMUL\cite{panchenko2} is Panchenko et al.'s newer approach
-    after their first classifier\cite{panchenko} (called /Panchenko 1/
-    from now on), better accuracy of the former is to expected. As
-    seen in Table [[1vsCUMUL]], there is both a decrease in running time
-    and an increase in accuracy for CUMUL compared to
-    Panchenko 1. Still, panchenko 1 was the first method to sucessfully
-    classify traces recorded via Tor.
-
-    #+CAPTION: CUMUL and panchenko 1 accuracy and timing per classifier. Data is 30 sites, as described in section [[#30sites]].
-    #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}||n{1}{4}|n{1}{4}||n{1}{4}|n{1}{4}|n{3}{4}|
-    #+NAME: 1vsCUMUL
-|------+---------+---------+---------+---------+---------+---------+---------|
-|      | \open ET \close  |         | \open KNN\close  |         | \open SVM\close  |         |         |
-|      | \open accuracy \close | \open time\close | \open accuracy\close | \open time\close | \open accuracy\close | \open param search \close | \open time\close |
-| <4>  | <7>     |     <7> | <7>     |     <7> | <7>     |     <7> |     <7> |
-|------+---------+---------+---------+---------+---------+---------+---------|
-| Panchenko 1 | 0.60121239709 | 4.73188591003 | 0.749585484366 | 0.933593034744 | 0.087291644353 | 1.85943317413 | 117.314565897 |
-| CUMUL | 0.765525547631 | 1.89891982079 | 0.651070670389 | 0.411082983017 | 0.866125778825 | 1.08589506149 | 0.822636127472 |
-|------+---------+---------+---------+---------+---------+---------+---------|
-
-    - best parameters sometimes outside of panchenko's range
-    - state of the art:
-      - wang-knn
-        - knn with parameter weighting step
-        - first to 92% accuracy (current limit)
-      - cumul:
-        - faster
-        - easier to see
-        - bigger dataset
-      - k-fingerprinting
-        - accuracy
-      - all similar accuracies (as of k-fingerprinting)
-    - [ ] experiment
-      - how much better CUMUL than v1
-        - on disabled
-        - accuracy, overhead, time
-    - most important feature 3.3%, see [[file:data/results/alternatives.org::*feature%20importances%20et][feature importances et]]
-      - outgoing packet count + sum bytes each 3%, together 6.5%
 *** WRITE Trace Growth, Time Difference, Effect
     :PROPERTIES:
     :CUSTOM_ID: time
@@ -1768,7 +1724,7 @@ Facebook.com\\
      The size-guessing =b= flavors produce significantly
      higher overhead, but yield a further small reduction of classifier
      accuracy.
-**** KEYWORDS relation FACTOR to overhead
+**** WAIT relation FACTOR to overhead
     - problem: tunable: factor correlation to overhead
       - not given for 0.15, retro, 0.18-0.21
       - old graph: cluster for retro, etc
@@ -1779,6 +1735,7 @@ Facebook.com\\
       - 0.18 over-engineered?
     - little factor for retrofixed
     - some order for 0.22
+***** WAIT for [[file:~/da/da.org::*factor%20to%20overhead][factor to overhead]]
 **** KEYWORDS bursts
      :PROPERTIES:
      :CUSTOM_ID: eval-bursts

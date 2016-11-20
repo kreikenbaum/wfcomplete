@@ -148,8 +148,8 @@ getting data for gnuplot:  | <15> | <2> | <2> | <2> | <2> | <2> |   |   |
 | defense                                   | wang-knn |   size | notes |  cumul |
 |                                           |    <6> |    <6> | <3> |    <6> |
 |-------------------------------------------+--------+--------+-----+--------|
-| 0.18.2/json-100/b_i_noburst               |        | 11.0325448732 | no bridge |        |
-| disabled/06-17@100                        |        |        |     |        |
+| 0.18.2/json-100/b_i_noburst               | 0.305714 | 11.0325448732 | no bridge | 0.780081362043 |
+| disabled/06-17@100                        |        |        |     | 0.903838890875 |
 | disabled/bridge__2016-08-30_100           | 0.449286 |        |     |        |
 | disabled/bridge__2016-09-21_100           | 0.468571 |        |     |        |
 | disabled/bridge__2016-09-26_100           | 0.134680 |        |     |        |
@@ -914,6 +914,239 @@ getting data for gnuplot:  | <15> | <2> | <2> | <2> | <2> | <2> |   |   |
    | 0.15.3/nocache | 0.265454545455 | 0.247272727273 | 0.261818181818 | 0.261818181818 |   |
    | 0.15.3/cache        | 0.259124087591 | 0.251824817518 | 0.251824817518 | 0.251824817518 |     |
 * ========== END TABLES ===================
+* (old 15.3) out disabled vs var3
+Python 2.7.10 (default, Oct 14 2015, 16:09:02) 
+[GCC 5.2.1 20151010] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> >>> >>> >>> 
+>>> os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'sw', 'data', 'json', 'disabled'))
+>>> (X, y, y_domains) = to_features_cumul(counter.Counter.from_(sys.argv))
+>>> os.chdir('../variante3_v15.3')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+OSError: [Errno 2] No such file or directory: 'variante3_v15.3'
+>>> os.chdir('../variante3_v15.3')
+>>> (X2, y2, y2_domains) = to_features_cumul(counter.Counter.from_(sys.argv))
+>>> knn = neighbors.KNeighborsClassifier()
+>>> knn.fit(X1, y1)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AttributeError: 'KNeighborsClassifier' object has no attribute 'train'
+>>> knn.fit(X, y)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'X1' is not defined
+>>> knn.fit(X, y)
+KNeighborsClassifier(algorithm='auto', leaf_size=30, metric='minkowski',
+           metric_params=None, n_neighbors=5, p=2, weights='uniform')
+>>> knn.score(X2, y2)
+0.054317897371714642
+>>> test(X, y, knn)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: test() takes exactly 3 arguments (2 given)
+>>> test(X2, y2, knn)
+KNeighborsClassifier(algorithm='auto', leaf_size=30, metric='minkowski',
+           metric_params=None, n_neighbors=5, p=2, weights='uniform')
+[ 0.7         0.7025      0.69625     0.7125      0.69758577], mean = 0.701767153748
+>>> test(X2, y2, knn)
+KNeighborsClassifier(algorithm='auto', leaf_size=30, metric='minkowski',
+           metric_params=None, n_neighbors=5, p=2, weights='uniform')
+[ 0.17375     0.165       0.175       0.1575      0.19119497], mean = 0.172488993711
+** sizes
+>>> 9665484 / 5511748.0
+1.7536150056207214
+** out_disabled_vs_var3_extreeclass\(d_c_svc\)
+Python 2.7.10 (default, Oct 14 2015, 16:09:02) 
+[GCC 5.2.1 20151010] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> >>> >>> >>> >>> >>> 
+>>> X
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'X' is not defined
+>>> os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'sw', 'data', 'json', 'disabled'))
+>>> (X, y, y_domains) = to_features_cumul(counter.Counter.from_(sys.argv))
+>>> for esti in ALL:
+... 	test(X, y, esti)
+... 
+AdaBoostClassifier(algorithm='SAMME.R', base_estimator=None,
+          learning_rate=1.0, n_estimators=50, random_state=None)
+[ 0.0375     0.03       0.03625    0.03625    0.0292249], mean = 0.0338449809403
+ExtraTreesClassifier(bootstrap=False, class_weight=None, criterion='gini',
+           max_depth=None, max_features='auto', max_leaf_nodes=None,
+           min_samples_leaf=1, min_samples_split=2,
+           min_weight_fraction_leaf=0.0, n_estimators=250, n_jobs=1,
+           oob_score=False, random_state=None, verbose=0, warm_start=False)
+[ 0.7625      0.79375     0.79        0.78375     0.79161372], mean = 0.7843227446
+RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',
+            max_depth=None, max_features='auto', max_leaf_nodes=None,
+            min_samples_leaf=1, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, n_estimators=10, n_jobs=1,
+            oob_score=False, random_state=None, verbose=0,
+            warm_start=False)
+[ 0.72625     0.7375      0.7375      0.75        0.74205845], mean = 0.738661689962
+KNeighborsClassifier(algorithm='auto', leaf_size=30, metric='minkowski',
+           metric_params=None, n_neighbors=5, p=2, weights='uniform')
+[ 0.7         0.7025      0.69625     0.7125      0.69758577], mean = 0.701767153748
+SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0, degree=3, gamma=0.0,
+  kernel='rbf', max_iter=-1, probability=False, random_state=None,
+  shrinking=True, tol=0.001, verbose=False)
+[ 0.01        0.01        0.01        0.01        0.01016518], mean = 0.0100330368488
+DecisionTreeClassifier(class_weight=None, criterion='gini', max_depth=None,
+            max_features=None, max_leaf_nodes=None, min_samples_leaf=1,
+            min_samples_split=2, min_weight_fraction_leaf=0.0,
+            random_state=None, splitter='best')
+[ 0.675       0.6775      0.68375     0.67        0.69631512], mean = 0.680513024142
+>>> Cs = np.logspace(-20, 20, 41, base=2)
+>>> Cs
+array([  9.53674316e-07,   1.90734863e-06,   3.81469727e-06,
+         7.62939453e-06,   1.52587891e-05,   3.05175781e-05,
+         6.10351562e-05,   1.22070312e-04,   2.44140625e-04,
+         4.88281250e-04,   9.76562500e-04,   1.95312500e-03,
+         3.90625000e-03,   7.81250000e-03,   1.56250000e-02,
+         3.12500000e-02,   6.25000000e-02,   1.25000000e-01,
+         2.50000000e-01,   5.00000000e-01,   1.00000000e+00,
+         2.00000000e+00,   4.00000000e+00,   8.00000000e+00,
+         1.60000000e+01,   3.20000000e+01,   6.40000000e+01,
+         1.28000000e+02,   2.56000000e+02,   5.12000000e+02,
+         1.02400000e+03,   2.04800000e+03,   4.09600000e+03,
+         8.19200000e+03,   1.63840000e+04,   3.27680000e+04,
+         6.55360000e+04,   1.31072000e+05,   2.62144000e+05,
+         5.24288000e+05,   1.04857600e+06])
+>>> svc = svm.SVC()
+>>> clf = GridSearchCV(estimator=svc,
+                       param_grid=dict(C=Cs),
+                       n_jobs=2)
+... ... Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'GridSearchCV' is not defined
+>>> from sklearn.grid_search import GridSearchCV
+>>> clf = GridSearchCV(estimator=svc, verbose=1
+                       param_grid=dict(C=Cs),
+                       n_jobs=2)
+... ... >>> 
+>>> clf.fit(X, y)
+  C-c C-cTraceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/usr/lib/python2.7/dist-packages/sklearn/grid_search.py", line 732, in fit
+    return self._fit(X, y, ParameterGrid(self.param_grid))
+  File "/usr/lib/python2.7/dist-packages/sklearn/grid_search.py", line 505, in _fit
+    for parameters in parameter_iterable
+  File "/usr/lib/python2.7/dist-packages/joblib/parallel.py", line 660, in __call__
+    self.retrieve()
+  File "/usr/lib/python2.7/dist-packages/joblib/parallel.py", line 526, in retrieve
+    raise exception
+KeyboardInterrupt
+>>> clf = GridSearchCV(estimator=svc, verbose=1
+                       param_grid=dict(C=Cs),
+                       n_jobs=2)
+...   File "<stdin>", line 2
+    param_grid=dict(C=Cs),
+             ^
+SyntaxError: invalid syntax
+>>>   File "<stdin>", line 1
+    n_jobs=2)
+    ^
+IndentationError: unexpected indent
+>>> clf = GridSearchCV(estimator=svc, verbose=1,
+                       param_grid=dict(C=Cs),
+                       n_jobs=2)
+...   File "<stdin>", line 2
+    param_grid=dict(C=Cs),
+             ^
+SyntaxError: invalid syntax
+>>>   File "<stdin>", line 1
+    n_jobs=2)
+    ^
+IndentationError: unexpected indent
+>>> clf = GridSearchCV(estimator=svc, verbose=2,
+                       param_grid=dict(C=Cs),
+                       n_jobs=2)
+... ... >>> 
+>>> clf.fit(X, y)
+Fitting 3 folds for each of 41 candidates, totalling 123 fits
+
+[Parallel(n_jobs=2)]: Done   1 jobs       | elapsed:    4.6s
+[Parallel(n_jobs=2)]: Done  50 jobs       | elapsed:  1.7min
+[Parallel(n_jobs=2)]: Done 121 out of 123 | elapsed:  3.8min remaining:    3.8s
+[Parallel(n_jobs=2)]: Done 123 out of 123 | elapsed:  3.8min finished
+GridSearchCV(cv=None, error_score='raise',
+       estimator=SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0, degree=3, gamma=0.0,
+  kernel='rbf', max_iter=-1, probability=False, random_state=None,
+  shrinking=True, tol=0.001, verbose=False),
+       fit_params={}, iid=True, loss_func=None, n_jobs=2,
+       param_grid={'C': array([  9.53674e-07,   1.90735e-06,   3.81470e-06,   7.62939e-06,
+         1.52588e-05,   3.05176e-05,   6.10352e-05,   1.22070e-04,
+         2.44141e-04,   4.88281e-04,   9.76562e-04,   1.95312e-03,
+         3.90625e-03,   7.81250e-03,   1.56250e-02,   3.12500e-02,
+         6.2500...7680e+04,
+         6.55360e+04,   1.31072e+05,   2.62144e+05,   5.24288e+05,
+         1.04858e+06])},
+       pre_dispatch='2*n_jobs', refit=True, score_func=None, scoring=None,
+       verbose=1)
+>>> >>> 
+>>> clf.best_score_
+0.010032605969400551
+>>> clf.best_estimator_
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AttributeError: 'GridSearchCV' object has no attribute 'best_estimator'
+>>> clf.best_estimator_
+SVC(C=9.5367431640625e-07, cache_size=200, class_weight=None, coef0=0.0,
+  degree=3, gamma=0.0, kernel='rbf', max_iter=-1, probability=False,
+  random_state=None, shrinking=True, tol=0.001, verbose=False)
+>>> import math
+>>> math.log(9.5367431640625e-07, base=2)
+-13.862943611198906
+>>> math.log(9.5367431640625e-07, 2)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: log() takes no keyword arguments
+>>> math.log(9.5367431640625e-07, 2)
+-20.0
+>>> os.chdir(os.path.join('..', 'variante3_v15.3'))
+>>> (X2, y2, y2_domains) = to_features_cumul(counter.Counter.from_(sys.argv))
+>>> e = ensemble.ExtraTreesClassifier(n_estimators=250)
+>>> e.fit(X, y)
+ExtraTreesClassifier(bootstrap=False, class_weight=None, criterion='gini',
+           max_depth=None, max_features='auto', max_leaf_nodes=None,
+           min_samples_leaf=1, min_samples_split=2,
+           min_weight_fraction_leaf=0.0, n_estimators=250, n_jobs=1,
+           oob_score=False, random_state=None, verbose=0, warm_start=False)
+>>> e.score(X2, y2)
+0.055068836045056323
+>>> test(X, y, e)
+ExtraTreesClassifier(bootstrap=False, class_weight=None, criterion='gini',
+           max_depth=None, max_features='auto', max_leaf_nodes=None,
+           min_samples_leaf=1, min_samples_split=2,
+           min_weight_fraction_leaf=0.0, n_estimators=250, n_jobs=1,
+           oob_score=False, random_state=None, verbose=0, warm_start=False)
+[ 0.77125     0.78625     0.78375     0.7825      0.78780178], mean = 0.782310355781
+>>> test(X2, y2, e, 1)
+ExtraTreesClassifier(bootstrap=False, class_weight=None, criterion='gini',
+           max_depth=None, max_features='auto', max_leaf_nodes=None,
+           min_samples_leaf=1, min_samples_split=2,
+           min_weight_fraction_leaf=0.0, n_estimators=250, n_jobs=1,
+           oob_score=False, random_state=None, verbose=0, warm_start=False)
+  C-c C-cTraceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "/home/tarp/da/git/bin/extract_attribute.py", line 89, in test
+    result = cross_validation.cross_val_score(estimator, X, y, cv=5, n_jobs=nj)
+  File "/usr/lib/python2.7/dist-packages/sklearn/cross_validation.py", line 1361, in cross_val_score
+    for train, test in cv)
+  File "/usr/lib/python2.7/dist-packages/joblib/parallel.py", line 660, in __call__
+    self.retrieve()
+  File "/usr/lib/python2.7/dist-packages/joblib/parallel.py", line 526, in retrieve
+    raise exception
+KeyboardInterrupt
+>>> test(X2, y2, e, 1)
+ExtraTreesClassifier(bootstrap=False, class_weight=None, criterion='gini',
+           max_depth=None, max_features='auto', max_leaf_nodes=None,
+           min_samples_leaf=1, min_samples_split=2,
+           min_weight_fraction_leaf=0.0, n_estimators=250, n_jobs=1,
+           oob_score=False, random_state=None, verbose=0, warm_start=False)
+[ 0.27375     0.275       0.30125     0.2625      0.29811321], mean = 0.282122641509
 * TODO panchenko on panchenko-data
   grottiges result (immerhin, auf 1100 seiten, ohne grid-search): 34%
 ** code

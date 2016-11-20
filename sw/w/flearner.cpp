@@ -555,7 +555,7 @@ void accuracy(float** closedfeat, float* weight, float** openfeat, float & tp, f
 		float max = *max_element(distlist, distlist+SITE_NUM*TEST_NUM+OPENTEST_NUM);
                 // distlist[is] stores max value
 		distlist[is] = max;
-                // just once with default NEIGHBOUR_NUM==1: 
+                // just once with default NEIGHBOUR_NUM==1:
 		for (int i = 0; i < NEIGHBOUR_NUM; i++) {
 			int ind = find(distlist, distlist + SITE_NUM*TEST_NUM+OPENTEST_NUM, *min_element(distlist, distlist+SITE_NUM*TEST_NUM+OPENTEST_NUM)) - distlist;
 			int classind = 0;
@@ -585,7 +585,7 @@ void accuracy(float** closedfeat, float* weight, float** openfeat, float & tp, f
 				hasconsensus = 1;
 			}
 		}
-                // will (almost) never happen with NEIGHBOUR_NUM==1 
+                // will (almost) never happen with NEIGHBOUR_NUM==1
 		if (hasconsensus == 0) {
 			for (int i = 0; i < SITE_NUM; i++) {
 				classlist[i] = 0;
