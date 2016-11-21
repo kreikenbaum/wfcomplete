@@ -362,35 +362,6 @@ Facebook.com\\
     conjecture[fn:: \cite{Liberatore:2006} mention that they also did
     some experiments which lead to this conjecture] that this result
     could be improved with attacks specifically tailored to Tor.
-*** MOVE below [[*KNN][KNN]] DANIEL Features
-    :PROPERTIES:
-    :CUSTOM_ID: features
-    :END:
-    As stressed by \cite{critique}, analysis of which features
-    contribute the most towards classification will help to defend
-    against website fingerprinting. \cite{panchenko} provides a
-    qualitative analysis. \cite{kfingerprint} classify using random
-    forests[fn::forests of randomized trees, see
-    \cite{DBLP:journals/ml/Breiman01}], which provide quantitative
-    feature importance feedback.[fn:: f.ex.\space{}in scikit-learn
-    \cite{scikit-learn} via the =_feature_importances= property]
-
-    According to \cite{kfingerprint}, the top-five features are the
-    number (both absolute and percentage of total) of both incoming
-    and outgoing packets. The standard deviation of the packet
-    ordering list[fn:: Panchenko et al \cite{panchenko} call these
-    features /Number Markers/] completes the top five. Each added
-    feature increases accuracy, yet with nearly the same accuracy
-    for the best 30 as for the total of 150 features.
-
-    Both \cite{effective} and \cite{panchenko} also consider the first
-    packets of a transmission/the HTML page as effective features.
-
-    \cite{panchenko2} allows for the visual comparison of website
-    traces. See for example Figure [[CUMUL_traces]].
-    #+CAPTION[CUMUL features example]: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}.
-    #+NAME: CUMUL_traces
-    [[./pictures/cumul_aus_paper.pdf]]
 *** EVA Panchenko Version 1
     #+INDEX: attack!Panchenko~1
     #+INDEX: closed-world
@@ -610,6 +581,35 @@ Facebook.com\\
       randomforest, decisiontrees
       - one or the other slightly better
     - needs class sizes to be the same, otherwise implicit weighting
+*** DANIEL Features
+    :PROPERTIES:
+    :CUSTOM_ID: features
+    :END:
+    As stressed by \cite{critique}, analysis of which features
+    contribute the most towards classification will help to defend
+    against website fingerprinting. \cite{panchenko} provides a
+    qualitative analysis. \cite{kfingerprint} classify using random
+    forests[fn::forests of randomized trees, see
+    \cite{DBLP:journals/ml/Breiman01}], which provide quantitative
+    feature importance feedback.[fn:: f.ex.\space{}in scikit-learn
+    \cite{scikit-learn} via the =_feature_importances= property]
+
+    According to \cite{kfingerprint}, the top-five features are the
+    number (both absolute and percentage of total) of both incoming
+    and outgoing packets. The standard deviation of the packet
+    ordering list[fn:: Panchenko et al \cite{panchenko} call these
+    features /Number Markers/] completes the top five. Each added
+    feature increases accuracy, yet with nearly the same accuracy
+    for the best 30 as for the total of 150 features.
+
+    Both \cite{effective} and \cite{panchenko} also consider the first
+    packets of a transmission/the HTML page as effective features.
+
+    \cite{panchenko2} allows for the visual comparison of website
+    traces. See for example Figure [[CUMUL_traces]].
+    #+CAPTION[CUMUL features example]: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}.
+    #+NAME: CUMUL_traces
+    [[./pictures/cumul_aus_paper.pdf]]
 *** WRITE Extremely Randomized Trees
     #+INDEX: classifier!Extra-Trees
     #+INDEX: classifier!Extremely Randomized Trees
@@ -2301,20 +2301,6 @@ Facebook.com\\
    =export DISPLAY:1=
 
    and start the retrieval as mentioned above.
-** MOVE integrate into [[*Data Set Sizes][Data Set Sizes]] thoughts on size of data set
-   - computable (n^2 for svm with good results)
-   - number of instances negligible for computation
-     - check this
-   - stable results
-   - recent papers
-     - Panchenko: 775 a 20
-     - Wang:
-       - 100 a 90 of sensitive pages
-       - 5000 a 1 of non-monitored pages
-     - Cai: 400 samples of bbc.co.uk
-       - 100 \to 800 once a 20 \to 40 twice
-   - (currently closed world)
-*** TODO more complete list?
 ** WRITE filtering pcap files [0/4]
    Although this requirement could later be removed (see [[#future-work][section
    future work]]), the addon currently needs a generator of cover
@@ -2374,6 +2360,53 @@ Facebook.com\\
      xpra start ssh:user@host:ARBITRARY_DISPLAY_ID --start=/path/to/start-tor-browser
    #+END_SRC
 *** WAIT [#C] bug report: quote other's error messages, link to bug report
+** WRITE How to get Wang-kNN to work
+   in directory with traces (json/pcap/...)
+
+   0. [@0] convert traces to \cite{effective}'s =batch=-directory,
+      using =counter.py#dir_to_wang= (for convenience, use
+      =wang_batch.py=)
+   1. python /path/to/fextract.py
+   2. /path/to/flearner 0 1 $(flearn_params.sh)
+*** TODO github flearn_params.sh, link
+** WRITE How to get Panchenko-SVM to work
+*** algo
+    1. outlier removal
+       - creates new input dir
+         - closed world
+           #+BEGIN_SRC sh
+             python ./feature-scripts/outlier-removal.py -in ./foreground-data/ -out ./foreground-data-OR/ -setting CW -randomInstances NO -instances 40 -referenceFormat tcp -outlierRemoval Simple -ignoreOutlier YES
+           #+END_SRC
+         - open world
+           - foreground
+
+           - background
+
+    2. generate libsvm input
+       - closed world
+         #+BEGIN_SRC sh
+           python ./feature-scripts/generate-feature.py -in ./foreground-data-OR/ -out ./output/ -setting CW -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -dataSet CW -instances 40
+         #+END_SRC
+       - open world
+         - foreground
+         #+BEGIN_SRC sh
+           python ./feature-scripts/generate-feature.py -in ./foreground-data-OR/ -out ./output/ -setting OW_FG -dataSet FG -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -instances 1
+         #+END_SRC
+         - background
+
+    3. train svm
+       #+BEGIN_SRC sh
+         ./libsvm-3.20-src/svm-train -v 10 ./output/CW_TCP ./output/CW_TCP.model
+       #+END_SRC
+       f.ex. for closed world-data
+    4. use svm
+       #+BEGIN_SRC sh
+         ./libsvm-3.20-src/svm-predict ./output/CW_TCP  ./output/CW_TCP.model ./output/CW_TCP.output
+       #+END_SRC
+*** OW-data just has *two* classes: fg (=1) and bg (=0)
+ \bibliography{docs/master}
+ \bibliographystyle{plain}
+ \input{diplomarbeit.ind}
 * Lists of Sites
 ** KEYWORDS Modified Top-100
    :PROPERTIES:
@@ -3278,53 +3311,18 @@ per website fingerprinting study.
 - as mentioned by f.ex.\space{}\cite{panchenko} (where exactly?), small cw-set
   for testing defenses
 - caption, name, ...
-* MOVE sub [[#setup-details][setup]] WRITE How to get Wang-kNN to work
-  in directory with traces (json/pcap/...)
-
-  0. [@0] convert traces to \cite{effective}'s =batch=-directory,
-     using =counter.py#dir_to_wang= (for convenience, use
-     =wang_batch.py=)
-  1. python /path/to/fextract.py
-  2. /path/to/flearner 0 1 $(flearn_params.sh)
-** TODO github flearn_params.sh, link
-* MOVE sub [[#setup-details][setup]] WRITE How to get Panchenko-SVM to work
-** algo
-   1. outlier removal
-      - creates new input dir
-        - closed world
-          #+BEGIN_SRC sh
-            python ./feature-scripts/outlier-removal.py -in ./foreground-data/ -out ./foreground-data-OR/ -setting CW -randomInstances NO -instances 40 -referenceFormat tcp -outlierRemoval Simple -ignoreOutlier YES
-          #+END_SRC
-        - open world
-          - foreground
-
-          - background
-
-   2. generate libsvm input
-      - closed world
-        #+BEGIN_SRC sh
-          python ./feature-scripts/generate-feature.py -in ./foreground-data-OR/ -out ./output/ -setting CW -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -dataSet CW -instances 40
-        #+END_SRC
-      - open world
-        - foreground
-        #+BEGIN_SRC sh
-          python ./feature-scripts/generate-feature.py -in ./foreground-data-OR/ -out ./output/ -setting OW_FG -dataSet FG -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -instances 1
-        #+END_SRC
-        - background
-
-   3. train svm
-      #+BEGIN_SRC sh
-        ./libsvm-3.20-src/svm-train -v 10 ./output/CW_TCP ./output/CW_TCP.model
-      #+END_SRC
-      f.ex. for closed world-data
-   4. use svm
-      #+BEGIN_SRC sh
-        ./libsvm-3.20-src/svm-predict ./output/CW_TCP  ./output/CW_TCP.model ./output/CW_TCP.output
-      #+END_SRC
-** OW-data just has *two* classes: fg (=1) and bg (=0)
-\bibliography{docs/master}
-\bibliographystyle{plain}
-\input{diplomarbeit.ind}
+- computable (n^2 for svm with good results)
+- number of instances negligible for computation
+  - check this
+- stable results
+- recent papers
+  - Panchenko: 775 a 20
+  - Wang:
+    - 100 a 90 of sensitive pages
+    - 5000 a 1 of non-monitored pages
+  - Cai: 400 samples of bbc.co.uk
+    - 100 \to 800 once a 20 \to 40 twice
+- (currently closed world)
 * accuracy comparison CUMUL-original, reimplementation, and Wang-kNN
   The following tables show the accuracy of the three classifiers
   side-by-side, in addition to the size increase.
