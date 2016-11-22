@@ -10,6 +10,6 @@ fi
 
 if [ ! -p pipe ]; then mknod pipe p; fi
 (tail -f pipe | grep Round > $($BASE/bin/path_filename.sh flearner.out))&
-$BASE/sw/w/flearner $(sh $BASE/bin/flearn_params.sh) | tee pipe
+nice $BASE/sw/w/flearner $(sh $BASE/bin/flearn_params.sh) | tee pipe
 killall tail
 rm pipex`

@@ -565,18 +565,23 @@ Facebook.com\\
     dynamically-determined metric. For this they evaluate 3736
     different features (about 3000 of which are packets sizes), and
     learn distance weights which best classify the classes.
-*** WRITE KNN
+*** WRITE K-Nearest-Neighbor-Classifier
     #+INDEX: classifier!kNN
+    #+INDEX: classifier!k-nearest-neighbors
+    #+INDEX: kNN
+    #+INDEX: k-nearest-neighbors
     The /k-nearest-neighbors/ (short: kNN) classifier
     (\cite[sec.1.3.2]{iml} \cite[sec.2.3.2]{esl}
-    \cite[sec.8.2]{mitchell}) is successful "in a large number of
-    classification and regression
-    problems"\cite[sec.4.6]{scikit-user-guide}, despite its
+    \cite[sec.8.2]{mitchell}) classifies data points based on the
+    known class[es] of their neighbors: for each item to be
+    classified, determine the (f.ex.\space{}k=5) closest neighbors by a given
+    metric. If all neighbors' classes agree, or based on a majority
+    decision, the item's class is set to theirs.
+
+    It is successful "in a large number of classification and
+    regression problems"\cite[sec.4.6]{scikit-user-guide}, despite its
     simplicity.
 
-    - how works
-      - for point, determine (f.ex.\space{}k=5) closest neighbors by metric
-      - majority decision (or only if all agree), put in that group
     - as seen in table in appendix: similar results to extratrees,
       randomforest, decisiontrees
       - one or the other slightly better
@@ -1223,7 +1228,7 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* KEYWORDS Results and Evaluation [37%]
+* KEYWORDS Results and Evaluation [38%]
 ** EVA Introduction
    The following sections describe [[#setup][how data was collected and
    analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
@@ -1439,7 +1444,7 @@ Facebook.com\\
      applied: [[#cumul-reimplementation][\cite{panchenko2} was reimplemented]] and [[#wf-original][both it and
      \cite{effective}'s original implementation were used to
      double-check results]].
-**** WRITE Original Classification Methods: Panchenko and Wang's
+**** CHECK Original Classification Methods: Panchenko and Wang's
      :PROPERTIES:
      :CUSTOM_ID: wf-original
      :END:
@@ -1459,16 +1464,18 @@ Facebook.com\\
 
      The reimplementation adds some aspects to \cite{panchenko2}'s
      analysis, namely those mentioned in [[#split][split]] and the prototype in
-     [[#outlier_removal][outlier removal]]. It also does a grid-search, as the parameters
-     proposed in the paper do not always yield the best results.
+     [[#outlier_removal][outlier removal]]. It also does a parameter grid-search, as the
+     altered traces seem to require dynamically adjusted SVM
+     parameters.
 
      \cite{effective}'s data format are file-based: each file, named
      =class_id-trace_num=, contains a line for each packet, of the
-     form =time(float) \t packet length/cell=. Positive cells/packet
-     sizes are for outgoing data, negative for incoming. The feature
-     extraction code is in =fextractor.py=[fn::this thesis uses
-     slightly modified versions to adjust for different data set
-     sizes, see TODO.]
+     form
+     #+BEGIN_EXAMPLE
+       time(float) \t packet length/cell
+     #+END_EXAMPLE
+     Positive cells/packet sizes are for outgoing data, negative for
+     incoming. The feature extraction code is in =fextractor.py=.
 
      \cite{panchenko2}'s data format are line-based: each file
      contains all the traces for a class, with one trace per line. Its
@@ -1480,13 +1487,8 @@ Facebook.com\\
      classes, while \cite{effective} has the number of classes plus
      one for the background data set.
 
-     The steps taken to for the original methods is described in appendix
-
-     - original code
-       - both: see appendix
-         - for technical details
-         - for code changes to wang's methods
-***** WAIT github
+     The steps taken to apply the original methods is described in
+     appendices [[#wang-steps]] and [[#cumul-steps]].
 **** DANIEL CUMUL Re-Implementation
      :PROPERTIES:
      :CUSTOM_ID: cumul-reimplementation
@@ -1567,7 +1569,6 @@ Facebook.com\\
     :PROPERTIES:
     :CUSTOM_ID: svm_vs_et
     :END:
-    wait for [[file:~/da/da.org::*panchenko's%20approach%20(10fold)%20for%20all%20defenses][panchenko's approach (10fold) for all defenses]]
     - svc very good on unadd-oned data, (if trained and or on all)
       - extratrees with 5--10% lower accuracy, but less difference
         against defenses (?)
@@ -1581,6 +1582,7 @@ Facebook.com\\
         regular traces, but decaying fast on data collected
         - later
         - with add-on
+**** wait for [[file:~/da/da.org::*panchenko's%20approach%20(10fold)%20for%20all%20defenses][panchenko's approach (10fold) for all defenses]]
 *** WRITE Which Features Help Most in Classification
     #+CAPTION: Importance of CUMUL features
     #+ATTR_LATEX: :width 0.4\textwidth
@@ -1798,15 +1800,17 @@ Facebook.com\\
       0.4% reduced cumul accuracy
       - not worth it
 **** maybe see cumul-graphics
-*** KEYWORDS sota (theoretical): Walkie-Talkie
+*** WAIT sota (theoretical): Walkie-Talkie
     - as of paper: 32%bw \to 5% fpr and 55% bw \to 10% fpr
     - how to translate to closed-world?
     - wait for [[file:~/da/da.org::*open-world?%20(vs%20erst%20mal%20fertig?)][open-world? (vs erst mal fertig?)]]
-*** KEYWORDS (maybe) vs Optimal Attacker
+*** WAIT (maybe) vs Optimal Attacker
     - show just traces of single html retrieval:
       - small page, small page with add-on, bigger page
       - does with add-on look like bigger page?
-    - wait for [[file:~/da/da.org::*experimente][experimente]] plan 3
+    - wait for [[file:docs/lit.org::*6.2.1%20and%205.(1%20?)%20more%20thoroughly,%20then%20add%20to%20%5B%5Bfile:~/da/git/diplomarbeit.org::*(maybe)%2520vs%2520Optimal%2520Attacker%5D%5B(maybe)%20vs%20Optimal%20Attacker%5D%5D][6.2.1 and 5.(1 ?) more thoroughly, then add to (maybe) vs Optimal Attacker]]
+      - and?  [[file:~/da/da.org::*experimente][experimente]].(capture just...)
+**** WAIT for
 *** WRITE Websites
     :PROPERTIES:
     :CUSTOM_ID: websites
@@ -2361,16 +2365,30 @@ Facebook.com\\
    #+END_SRC
 *** WAIT [#C] bug report: quote other's error messages, link to bug report
 ** WRITE How to get Wang-kNN to work
-   in directory with traces (json/pcap/...)
+   :PROPERTIES:
+   :CUSTOM_ID: wang-steps
+   :END:
+    This thesis uses slightly modified versions of both the feature
+    extraction code =fextract.py= and the learning algorithm
+    =flearner=, to adjust for different data set sizes. These sizes
+    need to be added as a parameter to =flearner= via f.ex. a script,
+    see usage below. There is also =flearner_acc= which can be used
+    in-place for =flearner=, and additionally outputs class accuracy.
+*** KEYWORDS Step By Step
+    in directory with traces (json/pcap/...)
 
-   0. [@0] convert traces to \cite{effective}'s =batch=-directory,
-      using =counter.py#dir_to_wang= (for convenience, use
-      =wang_batch.py=)
-   1. python /path/to/fextract.py
-   2. /path/to/flearner 0 1 $(flearn_params.sh)
-*** TODO github flearn_params.sh, link
+    0. [@0] convert traces to \cite{effective}'s =batch=-directory,
+       using =counter.py#dir_to_wang= (for convenience, use
+       =wang_batch.py=)
+    1. python /path/to/fextract.py
+    2. /path/to/flearner 0 1 $(flearn_params.sh)
+    3. convenience script for last steps: =f_all.sh=
+**** WAIT github flearn_params.sh, link
 ** WRITE How to get Panchenko-SVM to work
-*** algo
+   :PROPERTIES:
+   :CUSTOM_ID: cumul-steps
+   :END:
+*** KEYWORDS algo
     1. outlier removal
        - creates new input dir
          - closed world
@@ -2378,9 +2396,9 @@ Facebook.com\\
              python ./feature-scripts/outlier-removal.py -in ./foreground-data/ -out ./foreground-data-OR/ -setting CW -randomInstances NO -instances 40 -referenceFormat tcp -outlierRemoval Simple -ignoreOutlier YES
            #+END_SRC
          - open world
-           - foreground
+           - foreground TODO
 
-           - background
+           - background TODO
 
     2. generate libsvm input
        - closed world
