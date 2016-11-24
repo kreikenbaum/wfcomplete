@@ -233,6 +233,17 @@ def all_from_wang(dirname="batch", cw=True):
             out[cls].append(Counter.from_wang(filename, cls, inst))
     return out
 
+def list_to_panchenko(counter_list, outfile):
+    '''write counters to outfile, one per line'''
+    for c in counter_list:
+        outfile.write(c.to_panchenko() + '\n')
+
+def dict_to_panchenko(counter_dict, dirname='p_traces'):
+    '''write counters in counter_dict to dirname'''
+    for (k, v) in counter_dict.iteritems():
+        with file(os.path.join(dirname, k), 'w') as f:
+            list_to_panchenko(v, f)
+
 def all_to_wang(counter_dict):
     '''writes all counters in counter_dict to directory <code>batch</code>. also writes a list number url to ./batch_list'''
     os.mkdir("batch")
@@ -534,12 +545,14 @@ class Counter(object):
 
         >>> a = _test(1); a.name = 'tps@1'; a.to_panchenko()
         'tps 1000 1000:600'
+        >>> a = _test(2); a.name = 'tps@1'; a.to_panchenko()
+        'tps 1000 1000:600 1010:600'
         '''
         (out, _) = self.name.split('@')
         start = int(float(_) * 1000)
         out += ' {}'.format(start)
         for (time, val) in self.timing:
-            out += ' {}:{}'.format(int(time) + start, val)
+            out += ' {}:{}'.format(int(1000 * time) + start, val)
         return out
 
     def cumul(self, num_features=100):

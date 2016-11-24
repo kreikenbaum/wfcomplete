@@ -90,7 +90,7 @@
     - encouragement
     - readability
 * WAIT_FINISH Summary
-* WRITE Basics (=basics) [63%]
+* WRITE Basics (=basics) [71%]
 ** DANIEL Introduction
    To protect online communication, journalists, whistleblowers,
    "normal people", and among others even military\cite{who-uses-tor}
@@ -107,7 +107,7 @@
    Fortunately, as soon as these weaknesses became known, defenses
    were proposed. [[#defenses][The subsequent section]] shows different classes of
    defenses and examines them in detail.
-** WRITE Website Fingerprinting [20/27]
+** WRITE Website Fingerprinting [21/24]
    :PROPERTIES:
    :CUSTOM_ID: wf
    :END:
@@ -568,7 +568,7 @@ Facebook.com\\
     dynamically-determined metric. For this they evaluate 3736
     different features (about 3000 of which are packets sizes), and
     learn distance weights which best classify the classes.
-*** CHECK K-Nearest-Neighbor-Classifier
+*** EVA K-Nearest-Neighbor-Classifier
     #+INDEX: classifier!kNN
     #+INDEX: classifier!k-nearest-neighbors
     #+INDEX: kNN
@@ -589,6 +589,10 @@ Facebook.com\\
     (training) instances. Otherwise, it is of course probable that the
     classes with the higher number of instances will be chosen as
     targets of classification more often.
+
+     #+CAPTION: The left picture shows the five closest neighbors around the test instance $x_q$, which is then classified as =-=. The right shows the k==1-decision boundary around several training instances (the area where a test instance would be classified as the point). Source \cite[Figure 8.1]{mitchell}
+     #+ATTR_LATEX: :width 0.7\textwidth
+     [[./pictures/mitchell-fig8.1.png]]
 *** DANIEL Features
     :PROPERTIES:
     :CUSTOM_ID: features
@@ -623,6 +627,10 @@ Facebook.com\\
     #+INDEX: classifier!Extremely Randomized Trees
     #+INDEX: Extra-Trees
     #+INDEX: Extremely Randomized Trees
+    Extremely Randomized Trees\cite{DBLP:journals/ml/GeurtsEW06} are a
+    ensemble method based on decision trees: several decision trees
+    are constructed for a subset of the data, and their output is
+    averaged.
     - decision trees
     - ensemble method - more random: (here only classifiction)
       - M trees, independent
@@ -649,7 +657,7 @@ Facebook.com\\
     - xvfb for local display
     - marionette
     - others, other tools
-    - bit on tor in [[Hurdles]]
+    - bit on tor in [[#Hurdles]]
       - also that use tor to avoid wf, then tracked again (if it works)
       - maybe also on ta
     - dyer: most important are the features, similar results for naive
@@ -1515,6 +1523,10 @@ Facebook.com\\
     :PROPERTIES:
     :CUSTOM_ID: eval-wf
     :END:
+    This section presents results for website fingerprinting without
+    defenses. This is mostly done to ensure the accuracy of said
+    methods, but also to highlight differences and peculiarities.
+
     - various approaches
       - also seemingly different ow-accuracy
     - aim: validate code
@@ -1916,7 +1928,8 @@ Facebook.com\\
 **** aliexpress.com
       - https of akamai
       - td: check with recapture both
-** brainstorm                                                       :ARCHIVE:
+** MOVE to intro brainstorm
+*** MOVE to [[#setup][Setup]]
    - describe setup
      - which sites, why
        - some with great variance
@@ -1924,6 +1937,7 @@ Facebook.com\\
      - how to capture
        - tools + scripts
        - bridge
+*** MOVE to [[*Website Fingerprinting][Website Fingerprinting {0/13}]]
      - how to analyse
        - json
        - script: reimplement
@@ -1931,6 +1945,10 @@ Facebook.com\\
            - classifiers
          - cumul: problems to achieve panchenko's accuracy
            - outlier removal
+   - panchenko worse?
+     - do pictures/comparisons
+     - timing comparison on disabled
+*** MOVE to [[*Evaluation of Defenses][Evaluation of Defenses {1/14}]]
    - addon
    - does it work?
    - does it work better?
@@ -1941,21 +1959,17 @@ Facebook.com\\
        - but better for fitting original data
        - "overfitting"
      - review trace pictures
-   - panchenko worse?
-     - do pictures/comparisons
-     - timing comparison on disabled
    - plots
      - accuracy vs overhead
        - all methods at 30
        - and vs Panchenko 1 for comparison
          - which parts?
-           - unaddoned
+           unaddoned (possible part)
      - cumul
        - disabled vs WTF-PAD, tamaraw, simple10, simple30, 22@best
    - compare bursts to nobursts
    - WTF-PAD pads small sites much, larger sites little
      - addon-simple does the opposite
-   - have a look at [[*practical wf: analyzing traces][practical wf: analyzing traces]]
 * WAIT Conclusion
 ** WAIT Introduction
 ** WAIT Discussion
@@ -2048,7 +2062,8 @@ Facebook.com\\
     - information-theoretical / stochastical analysis
     - quote perry critique
 **** TODO first read murdoch/danezis paper
-**** a.k.a onion host for cover traffic
+*** test with .onion ct server
+    a.k.a onion host for cover traffic
     As indicated f.ex.\space{}by Wang and Goldberg,
     \cite{wpes13-fingerprinting}, network load already is a bottleneck
     on Tor, with the key bottleneck being exit nodes\cite{wtfpad}. The
@@ -2056,10 +2071,9 @@ Facebook.com\\
     traffic generators (or, alternatively, hosts). A traffic generator
     could be further optimized by using tor proposals ... (see todo) to
     reduce latency, if this does not reduce privacy.
-***** TODO tor proposals as of tor.sx
-***** TODO read/skim and cite "on performance..."
+**** TODO tor proposals as of tor.sx
+**** TODO read/skim and cite "on performance..."
 *** more thorough evaluation
-    - only two panchenko approaches
     - assumption: can split traces
     As critiqued in \cite{critique}, the evaluation in this thesis
     makes copies the approach of
@@ -2395,7 +2409,7 @@ Facebook.com\\
        - creates new input dir
          - closed world
            #+BEGIN_SRC sh
-             python ./feature-scripts/outlier-removal.py -in ./foreground-data/ -out ./foreground-data-OR/ -setting CW -randomInstances NO -instances 40 -referenceFormat tcp -outlierRemoval Simple -ignoreOutlier YES
+             python $P_DIR/feature-scripts/outlier-removal.py -in ./foreground-data/ -out ./foreground-data-OR/ -setting CW -randomInstances NO -instances 40 -referenceFormat tcp -outlierRemoval Simple -ignoreOutlier YES
            #+END_SRC
          - open world
            - foreground TODO
@@ -2405,23 +2419,22 @@ Facebook.com\\
     2. generate libsvm input
        - closed world
          #+BEGIN_SRC sh
-           python ./feature-scripts/generate-feature.py -in ./foreground-data-OR/ -out ./output/ -setting CW -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -dataSet CW -instances 40
+           python $P_DIR/feature-scripts/generate-feature.py -in ./foreground-data-OR/ -out ./output/ -setting CW -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -dataSet CW -instances 40
          #+END_SRC
        - open world
          - foreground
          #+BEGIN_SRC sh
-           python ./feature-scripts/generate-feature.py -in ./foreground-data-OR/ -out ./output/ -setting OW_FG -dataSet FG -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -instances 1
+           python $P_DIR/feature-scripts/generate-feature.py -in ./foreground-data-OR/ -out ./output/ -setting OW_FG -dataSet FG -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -instances 1
          #+END_SRC
          - background
-
     3. train svm
        #+BEGIN_SRC sh
-         ./libsvm-3.20-src/svm-train -v 10 ./output/CW_TCP ./output/CW_TCP.model
+         $P_DIR/libsvm-3.20-src/svm-train -v 10 ./output/CW_TCP ./output/CW_TCP.model
        #+END_SRC
        f.ex. for closed world-data
-    4. use svm
+    4. use svm (if without =-v 10= for cross-validation)
        #+BEGIN_SRC sh
-         ./libsvm-3.20-src/svm-predict ./output/CW_TCP  ./output/CW_TCP.model ./output/CW_TCP.output
+         $P_DIR/libsvm-3.20-src/svm-predict ./output/CW_TCP  ./output/CW_TCP.model ./output/CW_TCP.output
        #+END_SRC
 *** OW-data just has *two* classes: fg (=1) and bg (=0)
  \bibliography{docs/master}
