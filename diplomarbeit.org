@@ -640,6 +640,9 @@ Facebook.com\\
     - reduce variance by randomness
     - reduce bias by several instances M
     - efficiency by basing on decision trees
+    - offer feature importances requested by \cite{critique}, while
+      providing greater accuracy than other tree-based methods as of
+      \cite{DBLP:journals/ml/GeurtsEW06}.
 *** brainstorm
     - induce pattern
       - naive
@@ -1234,7 +1237,7 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* KEYWORDS Results and Evaluation [42%]
+* WRITE Results and Evaluation [47%]
 ** DANIEL Introduction
    The following sections describe [[#setup][how data was collected and
    analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
@@ -1244,7 +1247,7 @@ Facebook.com\\
    :CUSTOM_ID: setup
    :END:
 *** DANIEL Introduction
-    The following sections describe [[#sites][which]] and [[#capture][how]] data was captured,
+    The following sections describe [[#sites][which, why]] and [[#capture][how]] data was captured,
     [[#feature-extraction][how classification input was extracted from the raw data]], and
     [[*Classification][how this input was assigned to
     classes/websites]].
@@ -1311,7 +1314,7 @@ Facebook.com\\
      traces were from add-on version 0.18.2]. Due to them being well
      apart, these sites should be easy to classify, and thus harder to
      keep apart via defenses.
-**** DANIEL open-world
+**** DANIEL Background Sites
      :PROPERTIES:
      :CUSTOM_ID: sites-bg
      :END:
@@ -1518,7 +1521,7 @@ Facebook.com\\
 
      After SVM-parameters have been determined, several classifiers are
      trained on the training data and evaluated on the test data.
-** WRITE Website Fingerprinting [0/13]
+** WRITE Website Fingerprinting [0/5]
 *** WRITE Introduction
     :PROPERTIES:
     :CUSTOM_ID: eval-wf
@@ -1526,6 +1529,9 @@ Facebook.com\\
     This section presents results for website fingerprinting without
     defenses. This is mostly done to ensure the accuracy of said
     methods, but also to highlight differences and peculiarities.
+
+    In the data tables in the appendix, you can see various different
+    classifiers.
 
     - various approaches
       - also seemingly different ow-accuracy
@@ -1540,46 +1546,7 @@ Facebook.com\\
         - =flearn_params.sh=
     - drawbacks
       - size changes
-*** WRITE Trace Growth, Time Difference, Effect
-    :PROPERTIES:
-    :CUSTOM_ID: time
-    :END:
-    The trace sizes changed significantly over time, see Table
-    [[tab:time]]. What at first seemed like a size increase was reduced by
-    the last measurement to mere fluctuations of up to 25%. As seen in Table
-    [[tab:site_sizes_relative]], this fluctuation is highly dependent on
-    the url. \url{google.com}, f.ex.\space{}shows two distinct sizes, which
-    could be related to whether doodles were active at these times.
-
-#+CAPTION[Overhead and accuracy for training 07-06, testing on various times]: Overhead and accuracy at different times, training 07-06, testing on listed times, sorted by date.
-#+NAME: tab:time
-#+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{3}{2}|
-#+INCLUDE: "data/results/alternatives.org::#tab:time" :only-contents t
-    - accuracy decrease: much for svc, little for et
-    - noticeable trace growth, see Table [[tab:sizes]]
-#+CAPTION: Overall growth of trace sizes [byte] by date.
-#+NAME: tab:sizes
-#+ATTR_LATEX: :align |r||n{7}{4}|n{1}{4}|
-#+INCLUDE: "data/results/alternatives.org::#size_all" :only-contents t
-    - some grew a lot, some not at all, see Table [[tab:site_sizes_relative]]
-#+CAPTION[Relative growth of trace sizes by date by domain]: Relative growth of trace (byte) sizes by date by domain.
-#+NAME: tab:site_sizes_relative
-#+ATTR_LATEX: :align |r||n{3}{3}|n{3}{3}|n{3}{3}|n{3}{3}|n{3}{3}|
-#+INCLUDE: "data/results/alternatives.org::#size_rel" :only-contents t
-       - google,
-       - cloudflare captcha test
-
-       - summary: compare to normal in time
-         - mostly for more exact overhead
-         - also for more exact accuracy
-         - due to time difference accuracy lag (and some time to
-           capture), all defenses compared to closest-in-time
-           no-defense retrieval
-       - makes it hard to evaluate overhead
-**** TODO [#C] google doodle
-**** TODO after removal of erroneous captures
-     - due to retrieval errors?
-*** WAIT CUMUL: SVM vs Extra-Trees
+*** KEYWORDS CUMUL: SVM vs Extra-Trees
     :PROPERTIES:
     :CUSTOM_ID: svm_vs_et
     :END:
@@ -1622,7 +1589,7 @@ Facebook.com\\
         - outCount
         - outSize
         - inSize
-*** WRITE outlier removal
+*** WRITE Effect of Outlier Removal
     :PROPERTIES:
     :CUSTOM_ID: wf-outlier-removal
     :END:
@@ -1682,7 +1649,7 @@ Facebook.com\\
           - \cite{kfingerprint} captured 70 instances each
           - \cite{effective} used 90: 60 for train, 30 for test
         - this was before labelling erroneous traces
-** WAIT Evaluation of Defenses [1/14]
+** WRITE Evaluation of Defenses [1/14]
 *** WAIT Introduction
     :PROPERTIES:
     :CUSTOM_ID: eval-defense
@@ -1775,6 +1742,7 @@ Facebook.com\\
     - overhead of WTF-PAD depends on network connection from client to bridge
       - 0--1% if on localhost
       - ~12.9% for virtual machine
+        - different host, same local network
       - reported by Juarez et al \cite{wtfpad}, confirmed by Danezis
         \cite{kfingerprint}: 54%
     - all of mine so far add additional data /for each request/, WTF-PAD
@@ -1788,11 +1756,11 @@ Facebook.com\\
       - et: 79% to 75% accuracy
       - svc: 87% to 41% accuracy
 
-- delay of some possible (f.ex.\space{}images)
-  - also pre-cache some as cover traffic
-- different target distributions
-- multiple distributions
-- optionally no cooperator necessary
+    - delay of some possible (f.ex.\space{}images)
+      - also pre-cache some as cover traffic
+    - different target distributions
+    - multiple distributions
+    - optionally no cooperator necessary
     dummy packets chosen as response to real request (as in web traffic)
 - add evaluation values
 - end of page load easily detectable
@@ -1929,11 +1897,10 @@ Facebook.com\\
       - https of akamai
       - td: check with recapture both
 ** MOVE to intro brainstorm
-*** MOVE to [[#setup][Setup]]
-   - describe setup
-     - which sites, why
+*** MOVE to [[#sites][Sites]]
        - some with great variance
        - top-10 did not work
+*** MOVE to [[#capture][Capture]]
      - how to capture
        - tools + scripts
        - bridge
@@ -1975,15 +1942,14 @@ Facebook.com\\
 ** WAIT Discussion
    intel model: interdependences (html bigger \to more embedded) not mentioned
    - wf
-    - very dependent on retrieved trace time difference, see [[#time]]
     - svc slightly better on original data, fails against defense
       - still panchenko's accuracy only with combined test-train-OR
-** TODO Future Work
+** WAIT Future Work
    :PROPERTIES:
    :CUSTOM_ID: future-work
    :END:
-*** KEYWORDS Introduction
-*** KEYWORDS addon
+*** WAIT Introduction
+*** WAIT addon
    - all HTTP gets treated the same
      a.k.a. how to distinguish HTML/embedded
      a.k.a. redirects + iframes included in model's number of embedded objects
@@ -2053,7 +2019,7 @@ Facebook.com\\
    - time not hidden (no delays of single files)
    - firefox e10n multiprocess
    - delay some requests (f.ex.\space{}images)
-*** TODO also helps against global observer if .onion generator is used
+*** WAIT also helps against global observer if .onion generator is used
     - murdoch/danezis: correlation
     - this creates additional traffic which might hinder correlation attacks
     - further work
@@ -2062,7 +2028,7 @@ Facebook.com\\
     - information-theoretical / stochastical analysis
     - quote perry critique
 **** TODO first read murdoch/danezis paper
-*** test with .onion ct server
+*** WAIT test with .onion ct server
     a.k.a onion host for cover traffic
     As indicated f.ex.\space{}by Wang and Goldberg,
     \cite{wpes13-fingerprinting}, network load already is a bottleneck
@@ -2073,7 +2039,7 @@ Facebook.com\\
     reduce latency, if this does not reduce privacy.
 **** TODO tor proposals as of tor.sx
 **** TODO read/skim and cite "on performance..."
-*** more thorough evaluation
+*** WAIT more thorough evaluation
     - assumption: can split traces
     As critiqued in \cite{critique}, the evaluation in this thesis
     makes copies the approach of
@@ -2090,7 +2056,7 @@ Facebook.com\\
     - more elaborate tests with different world sizes / open world / etc
 **** TODO follow critique at all?
      - yes, shows Tor project's official position
-*** Exactly distinguishing HTML and embedded requests
+*** WAIT Exactly distinguishing HTML and embedded requests
     The current version of the [[user.js][User module]] separates
     CoverTraffic by DNS-domainname. As it often happens that one HTML
     page has embedded elements from different domains, this does not

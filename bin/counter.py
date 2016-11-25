@@ -319,6 +319,8 @@ class Counter(object):
     def check(self):
         '''if counter looks wrong, discard and/or set warned flag'''
         if min(self.packets) > 0 or max(self.packets) < 0:
+            logging.warn("file: %s's packets go only in one direction\n",
+                         self.name)
             self.warned = True
             return None
 
@@ -351,9 +353,9 @@ class Counter(object):
         [300]
         >>> Counter.from_panchenko_data('c.com 1234 1235:300').to_panchenko()
         'c.com 1234 1235:300'
+        >>> Counter.from_panchenko_data('c.com 1234 1235:300').timing
+        [[0.001, 300]]
         '''
-#  >>> Counter.from_panchenko_data('c.com 1234 1235:300').timing
-# [[1, 300]]'
         tmp = Counter()
 
         elements = line.split()
