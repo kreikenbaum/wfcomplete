@@ -629,17 +629,9 @@ Facebook.com\\
     #+INDEX: Extremely Randomized Trees
     Extremely Randomized Trees\cite{DBLP:journals/ml/GeurtsEW06} are a
     ensemble method based on decision trees: several decision trees
-    are constructed for a subset of the data, and their output is
+    are constructed for subsets of the data, and their output is
     averaged.
-    - decision trees
-    - ensemble method - more random: (here only classifiction)
-      - M trees, independent
-      - split training set S into K subsets
-        - split by single non-constant, randomly-selected feature
-        - return best split
-    - reduce variance by randomness
-    - reduce bias by several instances M
-    - efficiency by basing on decision trees
+
     - offer feature importances requested by \cite{critique}, while
       providing greater accuracy than other tree-based methods as of
       \cite{DBLP:journals/ml/GeurtsEW06}.
@@ -1897,9 +1889,6 @@ Facebook.com\\
       - https of akamai
       - td: check with recapture both
 ** MOVE to intro brainstorm
-*** MOVE to [[#sites][Sites]]
-       - some with great variance
-       - top-10 did not work
 *** MOVE to [[#capture][Capture]]
      - how to capture
        - tools + scripts
@@ -2381,7 +2370,6 @@ Facebook.com\\
            - foreground TODO
 
            - background TODO
-
     2. generate libsvm input
        - closed world
          #+BEGIN_SRC sh
@@ -2393,12 +2381,16 @@ Facebook.com\\
            python $P_DIR/feature-scripts/generate-feature.py -in ./foreground-data-OR/ -out ./output/ -setting OW_FG -dataSet FG -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -instances 1
          #+END_SRC
          - background
-    3. train svm
+    3. scale data
        #+BEGIN_SRC sh
-         $P_DIR/libsvm-3.20-src/svm-train -v 10 ./output/CW_TCP ./output/CW_TCP.model
+         $P_DIR/libsvm-3.20-src/svm-scale -l 0 output/CW_TCP > output/CW_TCP_scaled
+       #+END_SRC
+    4. train svm
+       #+BEGIN_SRC sh
+         $P_DIR/libsvm-3.20-src/svm-train -v 10 ./output/CW_TCP_scaled ./output/CW_TCP.model
        #+END_SRC
        f.ex. for closed world-data
-    4. use svm (if without =-v 10= for cross-validation)
+    5. use svm (if without =-v 10= for cross-validation)
        #+BEGIN_SRC sh
          $P_DIR/libsvm-3.20-src/svm-predict ./output/CW_TCP  ./output/CW_TCP.model ./output/CW_TCP.output
        #+END_SRC
@@ -2697,8 +2689,9 @@ Facebook.com\\
    :PROPERTIES:
    :CUSTOM_ID: analyse
    :END:
-   Once the =Counter=s data is obtained, it needs to be transformed
-   to input for scikit-learn's\cite{scikit-learn} classifiers.
+   Once the =Counter=s data is obtained, it needs to be transformed to
+   input for scikit-learn's
+   classifiers\cite[sec.3.4]{scikit-user-guide}.
 
    The code to classify input can be found in =analyse.py= (see
    appendix [[#analyse]]). For Panchenko 1, this determines the maximum
@@ -2730,9 +2723,10 @@ Facebook.com\\
 *** TODO ref stackoverflow why 0 padding
 **** TODO or better, some statistics text
 *** TODO see also =to_features_cumul=
-*** TODO scikit-learn
-    The python module scikit-learn\cite{scikit-learn} is described as a
-    collection of "tools for data mining and data analysis".
+*** CHECK scikit-learn
+    The python module scikit-learn\cite{scikit-user-guide} is
+    described as a collection of "tools for data mining and data
+    analysis".
 
     It combines python's ease-of-use with the efficiency of libraries
     written in C, such as LibSVM. It offers many different classifiers

@@ -183,9 +183,12 @@ def all_from_dir(dirname, remove_small=True):
             json_only = False
             _append_features(out, fullname)
     if not out:
-        out = all_from_wang()
+        try:
+            out = all_from_wang(dirname)
+        except ValueError:
+            out = all_from_panchenko(dirname)
     if not out:
-        raise Exception('no counters in path "{}"'.format(dirname))
+        raise IOError('no counters in path "{}"'.format(dirname))
     if remove_small:
         return _remove_small_classes(out)
     return out
@@ -208,7 +211,6 @@ def all_from_panchenko(dirname='.'):
                 out[filename].append(Counter.from_panchenko_data(line))
     return out
 
-# untested with open world
 def all_from_wang(dirname="batch", cw=True):
     '''creates dict of Counters from wang's =batch/=-directory'''
     class_names = []
@@ -222,6 +224,7 @@ def all_from_wang(dirname="batch", cw=True):
         pass
     out = {}
     for filename in glob.glob(os.path.join(dirname, '*')):
+        # td: need to deal with open world traces later
         if cw and '-' not in filename:
             continue
         (cls, inst) = os.path.basename(filename).split('-')
@@ -257,11 +260,13 @@ def all_to_wang(counter_dict):
         url_id += 1
     batch_list.close()
 
-def dir_to_wang(dirname, remove_small=True):
+def dir_to_wang(dirname, remove_small=True, outlier_removal_lvl=0):
     '''creates input to wang's classifier (in a =batch/= directory) for traces in dirname'''
     previous_dir = os.getcwd()
     os.chdir(dirname)
     counter_dict = all_from_dir('.', remove_small)
+    if outlier_removal_lvl:
+        counter_dict = outlier_removal(counter_dict, outlier_removal_lvl)
     all_to_wang(counter_dict)
     os.chdir(previous_dir)
 
