@@ -105,7 +105,7 @@ if not os.path.isdir(mergedPath):
     exit_with_help('Error: Invalid Input Path!')
 if referenceFormat not in formats:
     exit_with_help('Error: Unknown Reference Format!')
-if not os.path.isdir(mergedPath + 'output-' + referenceFormat):
+if not os.path.isdir(os.path.join(mergedPath, 'output-' + referenceFormat)):
     exit_with_help('Error: Reference Format does not exist!')
 if outlierRemoval not in [ 'None', 'Simple', 'Strict', 'Wang' ]:
     exit_with_help('Error: Unknown Outlier Removal!')
@@ -162,7 +162,9 @@ os.mkdir(outlierfreePath)
 for form in formats:
     os.mkdir(outlierfreePath + 'output-' + form + '-outlierfree/')
 
-reffiles = natsorted(glob.glob(mergedPath + 'output-' + referenceFormat + '/*'))
+reffiles = natsorted(glob.glob(os.path.join(mergedPath,
+                                            'output-' + referenceFormat,
+                                            '*')))
 
 current=1
 countList = [0] * (len(formats))
@@ -338,7 +340,7 @@ for reffile in reffiles:
         dirNumber += 1
 
         # Skip non-existing formats
-        if not os.path.isdir(mergedPath + 'output-' + form + '/'):
+        if not os.path.isdir(os.path.join(mergedPath, 'output-' + form)):
             continue
         # Skip reference format
         if form == referenceFormat:
@@ -350,8 +352,8 @@ for reffile in reffiles:
         for timeRef in timestamps:
             found = False
             
-            if os.path.isfile(mergedPath + 'output-' + form + '/' + filename):
-                currentfile = open(mergedPath + 'output-' + form + '/' + filename, 'r')
+            if os.path.isfile(os.path.join(mergedPath, 'output-' + form, filename)):
+                currentfile = open(os.path.join(mergedPath, 'output-' + form, filename), 'r')
 
                 for instance in currentfile:
                     currentTime = int(instance.split()[1])
@@ -385,7 +387,7 @@ for reffile in reffiles:
 
 for dirNumber in range(0,len(formats)):
     # Skip non-existing formats
-    if os.path.isdir(mergedPath + 'output-' + formats[dirNumber] + '/'):
+    if os.path.isdir(os.path.join(mergedPath, 'output-' + formats[dirNumber])):
         print('INFO: (' + str(countList[dirNumber]) + '/' + str(len(reffiles)) + ') ' +  formats[dirNumber])
     else:
         try:

@@ -113,7 +113,7 @@ MIN_CLASS_SIZE per url'''
 
 def _test(num, val=600, millisecs=10):
     '''@return Counter with num packets of size val each millisecs apart'''
-    return from_json('{{"packets": {}, "timing": {}}}'.format(
+    return from_json('{{"packets": {}, "timing": {}, "name": "test@0"}}'.format(
         [val]*num, _test_timing(num, val, millisecs)))
 
 def _test_timing(num, val, millisecs):
@@ -176,12 +176,11 @@ def all_from_dir(dirname, remove_small=True):
 
     length = len(filenames)
     for i, filename in enumerate(filenames):
-        fullname = os.path.join(dirname, filename)
-        if TIME_SEPARATOR in filename: # file like google.com@1445350513
+        if TIME_SEPARATOR in os.path.basename(filename): # file like google.com@1445350513
             logging.info('processing (%d/%d) %s ',
-                         i+1, length, fullname)
+                         i+1, length, filename)
             json_only = False
-            _append_features(out, fullname)
+            _append_features(out, filename)
     if not out:
         try:
             out = all_from_wang(dirname)
@@ -243,8 +242,9 @@ def list_to_panchenko(counter_list, outfile):
 
 def dict_to_panchenko(counter_dict, dirname='p_traces'):
     '''write counters in counter_dict to dirname'''
+    os.mkdir(os.path.join(dirname, 'output-tcp'))
     for (k, v) in counter_dict.iteritems():
-        with file(os.path.join(dirname, k), 'w') as f:
+        with file(os.path.join(dirname, 'output-tcp', k), 'w') as f:
             list_to_panchenko(v, f)
 
 def all_to_wang(counter_dict):
@@ -318,6 +318,9 @@ class Counter(object):
         self.timing = [] # gets big, list [(packet_timing, packet_size), ...]
         self.warned = False
 
+    def __eq__(self, other):
+        return self.name == other.name and self.packets == other.packets
+        
     def __str__(self):
         return 'counter (packet, time): {}'.format(self.timing)
 
@@ -365,7 +368,11 @@ class Counter(object):
 
         elements = line.split()
         start_time = int(elements[1])/1000.
-        tmp.name = '{}@{}'.format(elements[0], start_time)
+        if '_' in elements[0]:
+            (its_name, err) = elements[0].split('_', 1)
+            tmp.name = '{}@{}_{}'.format(name, start_time, err)
+        else:
+            tmp.name = '{}@{}'.format(elements[0], start_time)
         for element in elements[2:]:
             (time, value) = element.split(':')
             tmp.packets.append(int(value))
@@ -555,8 +562,13 @@ class Counter(object):
         >>> a = _test(2); a.name = 'tps@1'; a.to_panchenko()
         'tps 1000 1000:600 1010:600'
         '''
-        (out, _) = self.name.split('@')
-        start = int(float(_) * 1000)
+        (out, rest) = self.name.split('@')
+        try:
+            start = int(float(rest) * 1000)
+        except ValueError:
+            (tmp_s, err) = rest.split('_')
+            start = int(float(tmp_s) * 1000)
+            out += '_{}'.format(err.replace(' ', '_').replace('\n', ''))
         out += ' {}'.format(start)
         for (time, val) in self.timing:
             out += ' {}:{}'.format(int(1000 * time) + start, val)

@@ -622,19 +622,20 @@ Facebook.com\\
     #+CAPTION[CUMUL features example]: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}.
     #+NAME: CUMUL_traces
     [[./pictures/cumul_aus_paper.pdf]]
-*** WRITE Extremely Randomized Trees
+*** CHECK Extremely Randomized Trees
     #+INDEX: classifier!Extra-Trees
     #+INDEX: classifier!Extremely Randomized Trees
     #+INDEX: Extra-Trees
     #+INDEX: Extremely Randomized Trees
-    Extremely Randomized Trees\cite{DBLP:journals/ml/GeurtsEW06} are a
-    ensemble method based on decision trees: several decision trees
-    are constructed for subsets of the data, and their output is
-    averaged.
+    /Extremely Randomized Trees/\cite{DBLP:journals/ml/GeurtsEW06}
+    (short: Extra-Trees) are an ensemble method based on decision
+    trees: several decision trees are constructed for subsets of the
+    data, and their output is averaged.
 
-    - offer feature importances requested by \cite{critique}, while
-      providing greater accuracy than other tree-based methods as of
-      \cite{DBLP:journals/ml/GeurtsEW06}.
+    As of the paper, Extra-Trees[fn::as they are also called by the
+    autor] yield higher accuracy than Random Forests on almost all
+    data sets. They offer single feature importances, as requested by
+    \cite{critique}.
 *** brainstorm
     - induce pattern
       - naive
@@ -1522,12 +1523,15 @@ Facebook.com\\
     defenses. This is mostly done to ensure the accuracy of said
     methods, but also to highlight differences and peculiarities.
 
+    The implementations compared are kNN \cite{effective} and CUMUL
+    \cite{panchenko2}. Panchenko's first approach was reimplemented as
+    well, but was superseded by CUMULs superior accuracy.
+
     In the data tables in the appendix, you can see various different
     classifiers.
 
     - various approaches
       - also seemingly different ow-accuracy
-    - aim: validate code
     - and show lower bound for perfect attacker
     - panchenko 1
       - diff classf
@@ -1658,6 +1662,27 @@ Facebook.com\\
       - somewhere else, f.ex. wtf-pad?
     - examine different websites, differences
     - summary
+   - addon
+   - does it work?
+   - does it work better?
+   - which variant works?
+   - difference svm others
+     - other grouped
+     - svm alone
+       - but better for fitting original data
+       - "overfitting"
+     - review trace pictures
+   - plots
+     - accuracy vs overhead
+       - all methods at 30
+       - and vs Panchenko 1 for comparison
+         - which parts?
+           unaddoned (possible part)
+     - cumul
+       - disabled vs WTF-PAD, tamaraw, simple10, simple30, 22@best
+   - compare bursts to nobursts
+   - WTF-PAD pads small sites much, larger sites little
+     - addon-simple does the opposite
 **** WAIT until data and subsections are stable (f.ex.: optimal attacker and websites ?needed?)
 *** WRITE [#A] Add-on
     :PROPERTIES:
@@ -1900,28 +1925,6 @@ Facebook.com\\
    - panchenko worse?
      - do pictures/comparisons
      - timing comparison on disabled
-*** MOVE to [[*Evaluation of Defenses][Evaluation of Defenses {1/14}]]
-   - addon
-   - does it work?
-   - does it work better?
-   - which variant works?
-   - difference svm others
-     - other grouped
-     - svm alone
-       - but better for fitting original data
-       - "overfitting"
-     - review trace pictures
-   - plots
-     - accuracy vs overhead
-       - all methods at 30
-       - and vs Panchenko 1 for comparison
-         - which parts?
-           unaddoned (possible part)
-     - cumul
-       - disabled vs WTF-PAD, tamaraw, simple10, simple30, 22@best
-   - compare bursts to nobursts
-   - WTF-PAD pads small sites much, larger sites little
-     - addon-simple does the opposite
 * WAIT Conclusion
 ** WAIT Introduction
 ** WAIT Discussion
@@ -2577,7 +2580,7 @@ Facebook.com\\
    \url{developer.mozilla.org/en-US/docs/Mozilla/Add-ons/SDK/Low-Level_APIs/test_assert.html}.
 *** TODO test link
 
-* Evaluation Scripts
+* WRITE Evaluation Scripts
 ** WRITE retrieve trace: ~one_site.py~
    :PROPERTIES:
    :CUSTOM_ID: 1site_desc
@@ -2690,36 +2693,38 @@ Facebook.com\\
    classifiers\cite[sec.3.4]{scikit-user-guide}.
 
    The code to classify input can be found in =analyse.py= (see
-   appendix [[#analyse]]). For Panchenko 1, this determines the maximum
-   length of all variable-length features, 0-pads variable-length
-   features with zeroes to the same length, and converts them to an
-   array fit for input into scikit-learn's classifiers. When called
-   from the command line, as
+   github). For Panchenko 1, this determines the maximum length of all
+   variable-length features, 0-pads variable-length features with
+   zeroes to the same length, and converts them to an array fit for
+   input into scikit-learn's classifiers. When called from the command
+   line, as
+   #+BEGIN_SRC sh
+     python -i /path/to/analyse.py
+   #+END_SRC
+   , it will extract the feature vectors from either JSON or pcap
+   files in the current directory, or also try to load both
+   \cite{effective} and \cite{panchenko2}'s data format, and run both
+   10-fold cross-validation on all of the data and 5-fold
+   cross-validated classifiers against training set, with accuracy
+   separately determined from a test set.
 
-   python -i /path/to/analyse.py
-
-   , it will extract the feature vectors from JSON or pcap files in
-   the current directory, and run 5-fold cross-validated classifiers
-   against the data.
-
-   =Counter= input features are transformed into scikit-learn input
-   in the =to_features()= function, which normalizes all vectors to
-   have the same size (padding with 0s), and creates the feature
-   matrix =X= with numeric class labels =y= (and class names in
-   =y_domain=).
+   =Counter= input features are transformed into scikit-learn input in
+   the =to_features()= function, which normalizes all Panchenko 1
+   vectors to have the same size (padding with 0s), and creates the
+   feature matrix =X= with numeric class labels =y= (and class names
+   in =y_domain=).
 
    Scikit-learn internally uses LibSVM\cite{libsvm}, a library for
-   support vector machine classification and regression. To run
-   LibSVM\cite{libsvm} on the command-line, there is ~to_libsvm(X, y,
-   fname='libsvm_in')~, which can be called with the output of
-   =to_features=. It writes lines in X with labels in y to the file
-   'libsvm_in' (by default).
+   support vector machine classification and regression. To run LibSVM
+   on the command-line, there is ~to_libsvm(X, y, fname='libsvm_in')~,
+   which can be called with the output of =to_features=. It writes
+   lines in X with labels in y to the file =libsvm_in= (by default).
 
-    - tries to follow \cite{panchenko} and \cite{panchenko2} code
+   - cumul
 *** TODO ref stackoverflow why 0 padding
 **** TODO or better, some statistics text
 *** TODO see also =to_features_cumul=
-*** CHECK scikit-learn
+*** APPENDIX_DONE scikit-learn
     The python module scikit-learn\cite{scikit-user-guide} is a
     collection of "tools for data mining and data analysis".
 
@@ -2727,6 +2732,7 @@ Facebook.com\\
     written in C, such as LibSVM. It offers many different classifiers
     and regressors, such as K-NN, SVM, decision trees, linear
     approximation, random trees, etc.
+*** WAIT github for analyse.py code, change text
 ** see also [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]                 :ARCHIVE:
 * TODO Remove same-host cover traffic server from traces: =7777.sh=
   <<7777>>

@@ -1,4 +1,6 @@
 #! /usr/bin/env python
+import os
+import tempfile
 import unittest
 
 import analyse
@@ -43,6 +45,17 @@ class TestCounter(unittest.TestCase):
         self.assertEqual(len(counter.outlier_removal(c_dict, 1)['url']), 7)
         self.assertEqual(len(c_dict['url']), 8, 'has side effect')
         self.assertEqual(len(counter.outlier_removal(c_dict, 1)['url']), 7)
+
+    #td: test this
+    def test_convert_j2p(self):
+        # test creation of panchenko dir, then back, check that the same
+        try:
+            testdir = tempfile.mkdtemp(dir="/run/user/{}".format(os.geteuid()))
+        except:
+            testdir = tempfile.mkdtemp()
+        counter.dict_to_panchenko({'a': self.c_list}, testdir)
+        restored = counter.all_from_panchenko(testdir + '/output-tcp')
+        self.assertEqual(restored, self.c_list)
         
 class TestAnalyse(unittest.TestCase):
 
