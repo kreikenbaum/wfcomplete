@@ -272,6 +272,18 @@ def dict_to_panchenko(counter_dict, dirname='p_batch'):
         with file(os.path.join(dirname, 'output-tcp', k), 'w') as f:
             list_to_panchenko(v, f)
 
+# td: codup with dir_to... others (and this has nicer try-finally etc)
+def dir_to_cai(dirname):
+    '''write all traces in defense in dirname to cai file'''
+    try:
+        previous_dir = os.getcwd()
+        os.chdir(dirname)
+        counter_dict = all_from_dir('.', remove_small=False)
+        with open(dirname.replace(os.sep, '___') + '.cai', 'w') as f:
+            dict_to_cai(counter_dict, f)
+    finally:
+        os.chdir(previous_dir)
+
 def dir_to_wang(dirname, remove_small=True, outlier_removal_lvl=0):
     '''creates input to wang's classifier (in a =batch/= directory) for traces in dirname'''
     previous_dir = os.getcwd()
