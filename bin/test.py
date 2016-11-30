@@ -55,7 +55,7 @@ class TestCounter(unittest.TestCase):
             testdir = tempfile.mkdtemp()
         counter.dict_to_panchenko({'a': self.c_list}, testdir)
         restored = counter.all_from_panchenko(testdir + '/output-tcp')
-        self.assertEqual(restored, self.c_list)
+        self.assertEqual(restored['a'], self.c_list)
         
 class TestAnalyse(unittest.TestCase):
 

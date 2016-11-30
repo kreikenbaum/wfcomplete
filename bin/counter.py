@@ -190,7 +190,8 @@ def all_from_dir(dirname, remove_small=True):
         raise IOError('no counters in path "{}"'.format(dirname))
     if remove_small:
         return _remove_small_classes(out)
-    return out
+    else:
+        return out
 
 def all_from_json(filename):
     '''returns all the counters in json file named filename '''
@@ -235,18 +236,6 @@ def all_from_wang(dirname="batch", cw=True):
             out[cls].append(Counter.from_wang(filename, cls, inst))
     return out
 
-def list_to_panchenko(counter_list, outfile):
-    '''write counters to outfile, one per line'''
-    for c in counter_list:
-        outfile.write(c.to_panchenko() + '\n')
-
-def dict_to_panchenko(counter_dict, dirname='p_traces'):
-    '''write counters in counter_dict to dirname'''
-    os.mkdir(os.path.join(dirname, 'output-tcp'))
-    for (k, v) in counter_dict.iteritems():
-        with file(os.path.join(dirname, 'output-tcp', k), 'w') as f:
-            list_to_panchenko(v, f)
-
 def all_to_wang(counter_dict):
     '''writes all counters in counter_dict to directory <code>batch</code>. also writes a list number url to ./batch_list'''
     os.mkdir("batch")
@@ -260,6 +249,14 @@ def all_to_wang(counter_dict):
         url_id += 1
     batch_list.close()
 
+def dict_to_panchenko(counter_dict, dirname='p_batch'):
+    '''write counters in counter_dict to dirname/output-tcp/'''
+    os.mkdir(dirname)
+    os.mkdir(os.path.join(dirname, 'output-tcp'))
+    for (k, v) in counter_dict.iteritems():
+        with file(os.path.join(dirname, 'output-tcp', k), 'w') as f:
+            list_to_panchenko(v, f)
+
 def dir_to_wang(dirname, remove_small=True, outlier_removal_lvl=0):
     '''creates input to wang's classifier (in a =batch/= directory) for traces in dirname'''
     previous_dir = os.getcwd()
@@ -268,6 +265,16 @@ def dir_to_wang(dirname, remove_small=True, outlier_removal_lvl=0):
     if outlier_removal_lvl:
         counter_dict = outlier_removal(counter_dict, outlier_removal_lvl)
     all_to_wang(counter_dict)
+    os.chdir(previous_dir)
+
+#td: code duplication dir_to (better: meta with method to what to do with dict)
+def dir_to_panchenko(dirname):
+    '''creates input to CUMUL (in a =p-batch/= directory) for traces in
+dirname'''
+    previous_dir = os.getcwd()
+    os.chdir(dirname)
+    counter_dict = all_from_dir('.', remove_small=False)
+    dict_to_panchenko(counter_dict)
     os.chdir(previous_dir)
 
 # td: read up on ordereddict, maybe replace
@@ -297,6 +304,11 @@ def from_json(jsonstring):
         setattr(tmp, key, value)
     return tmp
 
+def list_to_panchenko(counter_list, outfile):
+    '''write counters to outfile, one per line'''
+    for c in counter_list:
+        outfile.write(c.to_panchenko() + '\n')
+
 def save(counter_dict, prefix=''):
     '''saves counters as json data to file, each is prefixed with prefix'''
     for k, per_domain in counter_dict.iteritems():
@@ -320,7 +332,7 @@ class Counter(object):
 
     def __eq__(self, other):
         return self.name == other.name and self.packets == other.packets
-        
+
     def __str__(self):
         return 'counter (packet, time): {}'.format(self.timing)
 
@@ -370,7 +382,7 @@ class Counter(object):
         start_time = int(elements[1])/1000.
         if '_' in elements[0]:
             (its_name, err) = elements[0].split('_', 1)
-            tmp.name = '{}@{}_{}'.format(name, start_time, err)
+            tmp.name = '{}@{}_{}'.format(name, int(start_time), err)
         else:
             tmp.name = '{}@{}'.format(elements[0], start_time)
         for element in elements[2:]:
