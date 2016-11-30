@@ -55,8 +55,23 @@ class TestCounter(unittest.TestCase):
             testdir = tempfile.mkdtemp()
         counter.dict_to_panchenko({'a': self.c_list}, testdir)
         restored = counter.all_from_panchenko(testdir + '/output-tcp')
-        self.assertEqual(restored['a'], self.c_list)
-        
+        self.assertEqual(
+            restored['a'], self.c_list,
+            'unlike\n{}\n\n{}'.format([str(x) for x in restored['a']],
+                                      [str(x) for x in self.c_list]))
+
+    def test_dict_to_cai(self):
+        tw = TestWriter()
+        counter.dict_to_cai({'a': self.c_list}, tw)
+        self.assertEqual(tw.data, '''test 600
+test 600 600
+test 600 600
+test 600 600
+test 600 600
+test 600 600 600
+test 600 600 600 600
+''')
+
 class TestAnalyse(unittest.TestCase):
 
     def setUp(self):
@@ -66,36 +81,44 @@ class TestAnalyse(unittest.TestCase):
     def test__size_increase_equal(self):
         self.assertEqual(analyse._size_increase(self.base_mock,
                                                 {'a': (10, -1), 'b': (10, -1)}),
-                         100)
+                         0)
     def test__size_increase_same_half(self):
         self.assertEqual(analyse._size_increase(self.base_mock,
                                                 {'a': (5, -1), 'b': (5, -1)}),
-                         50)
+                         -50)
 
     def test__size_increase_same_double(self):
         self.assertEqual(analyse._size_increase(self.base_mock,
                                                 {'a': (20, -1), 'b': (20, -1)}),
-                         200)
+                         100)
 
     def test__size_increase_one_double(self):
         self.assertAlmostEqual(analyse._size_increase(self.base_mock,
                                                 {'a': (10, -1), 'b': (20, -1)}),
-                         100*pow(2, 1./2))
+                               100*(pow(2, 1./2) - 1))
 
     def test__size_increase_both_different(self):
         self.assertEqual(analyse._size_increase(self.base_mock,
                                                 {'a': (5, -1), 'b': (20, -1)}),
-                         100)
+                         0)
 
     def test__size_increase_three_one(self):
         self.assertAlmostEqual(analyse._size_increase(
             self.base_mock2, {'a': (10, -1), 'b': (10, -1), 'c': (20, -1)}),
-                               100.*pow(2, 1./3))
+                               100.*(pow(2, 1./3)-1))
 
     def test__size_increase_three_one_reverted(self):
         self.assertAlmostEqual(analyse._size_increase(
             {'a': (10, -1), 'b': (10, -1), 'c': (20, -1)}, self.base_mock2),
-                               100.*pow(1./2, 1./3))
+                               100.*(pow(1./2, 1./3)-1))
+
+
+class TestWriter(object):
+    def __init__(self):
+        self.data = ''
+
+    def write(self, line):
+        self.data += line
 
 if __name__ == '__main__':
     unittest.main()

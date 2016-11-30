@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''aggregates trace data, extracts features'''
 import doctest
+import errno
 import glob
 import itertools
 import json
@@ -11,7 +12,7 @@ import os
 import subprocess
 import sys
 
-DURATION_LIMIT=8 * 60 * 1000
+DURATION_LIMIT_SECS=8 * 60
 #HOME_IP = '134.76.96.47' #td: get ips
 HOME_IP = '134.169.109.25'
 #LOGLEVEL = logging.DEBUG
@@ -111,7 +112,7 @@ MIN_CLASS_SIZE per url'''
             out[k] = v
     return out
 
-def _test(num, val=600, millisecs=10):
+def _test(num, val=600, millisecs=10.):
     '''@return Counter with num packets of size val each millisecs apart'''
     return from_json('{{"packets": {}, "timing": {}, "name": "test@0"}}'.format(
         [val]*num, _test_timing(num, val, millisecs)))
@@ -120,7 +121,7 @@ def _test_timing(num, val, millisecs):
     '''used for _test above'''
     out = []
     for i in range(num):
-        out.append([i * millisecs, val])
+        out.append([i * millisecs / 1000., val])
     return out
 
 def _sum_numbers(packets):
@@ -249,10 +250,24 @@ def all_to_wang(counter_dict):
         url_id += 1
     batch_list.close()
 
+def dict_to_cai(counter_dict, writeto):
+    '''write counter_dict's entries to writeto'''
+    for counter_list in counter_dict.values():
+        for c in counter_list:
+            writeto.write('{}\n'.format(c.to_cai()))
+
 def dict_to_panchenko(counter_dict, dirname='p_batch'):
     '''write counters in counter_dict to dirname/output-tcp/'''
-    os.mkdir(dirname)
-    os.mkdir(os.path.join(dirname, 'output-tcp'))
+    try:
+        os.mkdir(dirname)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+    try:
+        os.mkdir(os.path.join(dirname, 'output-tcp'))
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
     for (k, v) in counter_dict.iteritems():
         with file(os.path.join(dirname, 'output-tcp', k), 'w') as f:
             list_to_panchenko(v, f)
@@ -327,11 +342,15 @@ class Counter(object):
         self.name = name
         self.variable = None
         self.packets = []
-        self.timing = [] # gets big, list [(packet_timing, packet_size), ...]
+        self.timing = [] # list [(p1_timing_secs, p1_size), ...]
         self.warned = False
 
     def __eq__(self, other):
-        return self.name == other.name and self.packets == other.packets
+        (cls, start) = self.name.split('@')
+        (o_cls, o_start) = other.name.split('@')
+        return (cls == o_cls
+                and float(start) == float(o_start)
+                and self.packets == other.packets)
 
     def __str__(self):
         return 'counter (packet, time): {}'.format(self.timing)
@@ -374,21 +393,21 @@ class Counter(object):
         >>> Counter.from_panchenko_data('c.com 1234 1235:300').to_panchenko()
         'c.com 1234 1235:300'
         >>> Counter.from_panchenko_data('c.com 1234 1235:300').timing
-        [[0.001, 300]]
+        [[0.001..., 300]]
         '''
         tmp = Counter()
 
         elements = line.split()
-        start_time = int(elements[1])/1000.
+        start_secs = int(elements[1])/1000.
         if '_' in elements[0]:
             (its_name, err) = elements[0].split('_', 1)
-            tmp.name = '{}@{}_{}'.format(name, int(start_time), err)
+            tmp.name = '{}@{}_{}'.format(name, int(start_secs), err)
         else:
-            tmp.name = '{}@{}'.format(elements[0], start_time)
+            tmp.name = '{}@{}'.format(elements[0], start_secs)
         for element in elements[2:]:
-            (time, value) = element.split(':')
+            (time_millis, value) = element.split(':')
             tmp.packets.append(int(value))
-            tmp.timing.append([int(int(time) - start_time * 1000),
+            tmp.timing.append([float(time_millis) / 1000 - start_secs,
                                int(value)])
         return tmp
 
@@ -448,8 +467,8 @@ class Counter(object):
         try:
             return self.timing[-1][0]
         except IndexError:
-            # panchenko
-            return DURATION_LIMIT
+            # panchenko input data
+            return DURATION_LIMIT_SECS
 
     def get_total_in(self):
         '''returns total incoming bytes'''
@@ -556,15 +575,30 @@ class Counter(object):
         #        self.variable['all_packets'] = self.packets # grew too big 4 mem
         return self
 
+    def to_cai(self, name=None):
+        '''@return this as line in cai file (class, packets_rounded)
+        >>> a = _test(1); a.name = 'tps@1'; a.to_cai()
+        'tps 600'
+        >>> a = _test(2); a.name = 'tps@1'; a.to_cai()
+        'tps 600 600'
+        >>> a = _test(1, 500); a.name = 'tps@1'; a.to_cai()
+        'tps'
+        >>> a = _test(3, 800); a.name = 'tps@1'; a.to_cai()
+        'tps 600 600 600'
+        >>> a = _test(3, 1000); a.name = 'tps@1'; a.to_cai()
+        'tps 1200 1200 1200'
+        '''
+        if not name:
+            name = self.name.split('@')[0]
+        out = name
+        for p in self.packets:
+            if abs(p) >= 512:
+                out += ' {}'.format(int(round(p / 600.) * 600))
+        return out
+
     def to_json(self):
         '''prints packet trace to json, for reimport'''
         return json.dumps(self.__dict__)
-
-    def to_wang(self, filename):
-        '''writes this counter to filename in Wang et al's format'''
-        with open(filename, 'w') as f:
-            for (time, size) in self.timing:
-                f.write("{}\t{}\n".format(time, -size))
 
     def to_panchenko(self):
         '''@return line for this counter in Panchenko et al's format
@@ -574,17 +608,23 @@ class Counter(object):
         >>> a = _test(2); a.name = 'tps@1'; a.to_panchenko()
         'tps 1000 1000:600 1010:600'
         '''
-        (out, rest) = self.name.split('@')
+        (out, rest_secs) = self.name.split('@')
         try:
-            start = int(float(rest) * 1000)
+            start_millis = int(float(rest_secs) * 1000)
         except ValueError:
-            (tmp_s, err) = rest.split('_')
-            start = int(float(tmp_s) * 1000)
+            (tmp_secs, err) = rest.split('_')
+            start_millis = int(float(tmp_secs) * 1000)
             out += '_{}'.format(err.replace(' ', '_').replace('\n', ''))
-        out += ' {}'.format(start)
-        for (time, val) in self.timing:
-            out += ' {}:{}'.format(int(1000 * time) + start, val)
+        out += ' {}'.format(start_millis)
+        for (time_secs, val) in self.timing:
+            out += ' {}:{}'.format(int(1000*time_secs + start_millis), val)
         return out
+
+    def to_wang(self, filename):
+        '''writes this counter to filename in Wang et al's format'''
+        with open(filename, 'w') as f:
+            for (time, size) in self.timing:
+                f.write("{}\t{}\n".format(time, -size))
 
     def cumul(self, num_features=100):
         '''@return CUMUL feature vector: inCount, outCount, outSize, inSize++'''
@@ -701,7 +741,7 @@ def p_or_toolong(counter_list):
 
     The capturing software seemingly did not remove the others, even
     though it should have.'''
-    return [x for x in counter_list if x.get_duration() < DURATION_LIMIT]
+    return [x for x in counter_list if x.get_duration() < DURATION_LIMIT_SECS]
 
 def outlier_removal(counter_dict, level=2):
     '''apply outlier removal to input of form
@@ -727,9 +767,9 @@ def outlier_removal(counter_dict, level=2):
             logging.warn('%s discarded in outlier removal', k)
     return out
 
+doctest.testmod(optionflags=doctest.ELLIPSIS)
 # example dir: os.chdir('../data/0.18.2/json-100/b_i_noburst')
 if __name__ == "__main__":
-    doctest.testmod()
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 
     try:
