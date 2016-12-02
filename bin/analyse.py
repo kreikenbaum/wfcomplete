@@ -12,7 +12,6 @@ import time
 import counter
 
 JOBS_NUM = -3 # 1 (version1 to 4-6 (cumul onduckstein)), maybe also -4, ...
-# panchenko grid takes about 16% mem/cpu: 3-4 should be fine, 5 ok'ish, 6 limit
 LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 #LOGLEVEL = logging.DEBUG
 #LOGLEVEL = logging.INFO
