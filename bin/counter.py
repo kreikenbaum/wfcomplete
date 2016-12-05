@@ -40,8 +40,7 @@ def _append_features(keys, filename):
     if not keys.has_key(domain):
         keys[domain] = []
     counter = Counter.from_pcap(filename)
-    counter.check()
-    if counter.packets and not counter.warned:
+    if counter.packets and not counter.warned and counter.check():
         keys[domain].append(counter)
     else:
         logging.warn('%s discarded', counter.name)
@@ -368,12 +367,14 @@ class Counter(object):
         return 'counter (packet, time): {}'.format(self.timing)
 
     def check(self):
-        '''if counter looks wrong, discard and/or set warned flag'''
+        '''if wrong, set warned flag and @return =false=, else =true='''
         if min(self.packets) > 0 or max(self.packets) < 0:
             logging.warn("file: %s's packets go only in one direction\n",
                          self.name)
             self.warned = True
-            return None
+            return False
+        else:
+            return True
 
     @staticmethod
     def from_(*args):
