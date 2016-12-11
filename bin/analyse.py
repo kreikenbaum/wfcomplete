@@ -87,6 +87,7 @@ def _find_domain(mean_per_dir, mean):
             if domain_mean == mean:
                 return domain
 
+# td: ref: counters == counter_list?
 def _find_max_lengths(counters):
     '''determines maximum lengths of variable-length features'''
     max_lengths = counters.values()[0][0].variable_lengths()
@@ -511,13 +512,13 @@ def to_features(counters, max_lengths=None):
     return (np.array(X_in), np.array(out_y), domain_names)
 
 # td: refactor: code duplication with to_features
-def to_features_cumul(counters):
+def to_features_cumul(counter_dict):
     '''transforms counter data to CUMUL-feature vector pair (X,y)'''
     X_in = []
     out_y = []
     class_number = 0
     domain_names = []
-    for domain, dom_counters in counters.iteritems():
+    for domain, dom_counters in counter_dict.iteritems():
         for count in dom_counters:
             if not count.warned:
                 X_in.append(count.cumul())
@@ -528,6 +529,33 @@ def to_features_cumul(counters):
         class_number += 1
     return (np.array(X_in), np.array(out_y), domain_names)
 
+# td: refactor: 1:1 code duplication with to_features_cumul (how to
+# call fixed method on changing objects?)
+def to_features_hermann(counter_dict):
+    '''@return hermann et al's feature matrix from counters'''
+    # 1. get all packet sizes
+    psizes = set()
+    for counter_list in counter_dict.values():
+        for counter in counter_list:
+            psizes.update(counter.packets)
+    # 2. sort to p1,...pn
+    list_psizes = list(psizes)
+    # 3. for each counter
+    #    1. line: 'class, p1_occurs, ..., pn_occurs
+    X_in = []
+    class_number = 0
+    domain_names = []
+    out_y = []
+    for domain, dom_counters in counter_dict.iteritems():
+        for count in dom_counters:
+            if not count.warned:
+                X_in.append(count.hermann(list_psizes))
+                out_y.append(class_number)
+                domain_names.append(domain)
+            else:
+                logging.warn('%s: one discarded', domain)
+        class_number += 1
+    return (np.array(X_in), np.array(out_y), domain_names)
 
 def to_libsvm(X, y, fname='libsvm_in'):
     """writes lines in X with labels in y to file 'libsvm_in'"""

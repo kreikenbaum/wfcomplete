@@ -1,9 +1,14 @@
 # as f_all.sh with class accuracy
+# td: refactor: join both if possible
 BASE=$(dirname $0)/..
 #FILTER="
 FILTER=""
 
 [ "x$1" != "x" ] && cd $1
+
+if ! [ -d batch ]; then
+    $BASE/bin/wang_batch.py;
+fi
 
 if [ ! $(ls batch | sort -n | tail -20 | sort -n -k 2 -t '-' | tail -1 | grep f) ]; then
     python $BASE/sw/w/fextractor.py

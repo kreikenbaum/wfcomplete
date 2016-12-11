@@ -183,7 +183,7 @@ def all_from_dir(dirname, remove_small=True):
             _append_features(out, filename)
     if not out:
         try:
-            out = all_from_wang(dirname)
+            out = all_from_wang(os.path.join(dirname, "batch"))
         except ValueError:
             out = all_from_panchenko(dirname)
     if not out:
@@ -224,6 +224,8 @@ def all_from_wang(dirname="batch", cw=True):
         pass
     out = {}
     for filename in glob.glob(os.path.join(dirname, '*')):
+        if filename[-1] is 'f':
+            continue
         # td: need to deal with open world traces later
         if cw and '-' not in filename:
             continue
@@ -272,12 +274,16 @@ def dict_to_panchenko(counter_dict, dirname='p_batch'):
             list_to_panchenko(v, f)
 
 # td: codup with dir_to... others (and this has nicer try-finally etc)
-def dir_to_cai(dirname):
+def dir_to_cai(dirname, clean=True):
     '''write all traces in defense in dirname to cai file'''
     try:
         previous_dir = os.getcwd()
         os.chdir(dirname)
-        counter_dict = all_from_dir('.', remove_small=False)
+        counter_dict = all_from_dir('.', remove_small=clean)
+        if clean:
+            counter_dict = outlier_removal(counter_dict)
+        if dirname is '.':
+            dirname = os.getcwd()
         with open(dirname.replace(os.sep, '___') + '.cai', 'w') as f:
             dict_to_cai(counter_dict, f)
     finally:
@@ -366,16 +372,6 @@ class Counter(object):
     def __str__(self):
         return 'counter (packet, time): {}'.format(self.timing)
 
-    def check(self):
-        '''if wrong, set warned flag and @return =false=, else =true='''
-        if min(self.packets) > 0 or max(self.packets) < 0:
-            logging.warn("file: %s's packets go only in one direction\n",
-                         self.name)
-            self.warned = True
-            return False
-        else:
-            return True
-
     @staticmethod
     def from_(*args):
         '''helper method to handle empty argument'''
@@ -463,17 +459,66 @@ class Counter(object):
                 tmp.timing.append([float(secs), -int(negcount)])
         return tmp
 
-    def variable_lengths(self):
-        '''lengths of variable-length features'''
-        self._postprocess()
-        return self._variable_lengths()
-
     def _variable_lengths(self):
         '''does the computation of lengths, assumes that variable is filled'''
         out = {}
         for k, feature in self.variable.iteritems():
             out[k] = len(feature)
         return out
+
+    def check(self):
+        '''if wrong, set warned flag and @return =false=, else =true='''
+        if min(self.packets) > 0 or max(self.packets) < 0:
+            logging.warn("file: %s's packets go only in one direction\n",
+                         self.name)
+            self.warned = True
+            return False
+        else:
+            return True
+
+    def cumul(self, num_features=100):
+        '''@return CUMUL feature vector: inCount, outCount, outSize, inSize++'''
+        c_abs = []
+        # cumulated packetsizes
+        c_rel = []
+        inSize = 0
+        outSize = 0
+        inCount = 0
+        outCount = 0
+
+        # copied &modified from panchenko's generate-feature.py
+        for packetsize in self.packets:
+            if packetsize > 0:
+                inSize += packetsize
+                inCount += 1
+                if len(c_rel) == 0:
+                    c_rel.append(packetsize)
+                    c_abs.append(packetsize)
+                else:
+                    c_rel.append(c_rel[-1] + packetsize)
+                    c_abs.append(c_abs[-1] + abs(packetsize))
+            elif packetsize < 0:
+                outSize += abs(packetsize)
+                outCount += 1
+                if len(c_rel) == 0:
+                    c_rel.append(packetsize)
+                    c_abs.append(abs(packetsize))
+                else:
+                    c_rel.append(c_rel[-1] + packetsize)
+                    c_abs.append(c_abs[-1] + abs(packetsize))
+            else:
+                logging.warn('packetsize == 0 in cumul')
+
+        features = [inCount, outCount, outSize, inSize]
+        cumulFeatures = np.interp(np.linspace(c_abs[0], c_abs[-1],
+                                              num_features+1),
+                                  c_abs,
+                                  c_rel)
+        # could be cumulFeatures[1:], but never change a running system
+        for el in itertools.islice(cumulFeatures, 1, None):
+            features.append(el)
+
+        return features
 
     def get_duration(self):
         '''@return duration of this trace'''
@@ -496,6 +541,9 @@ class Counter(object):
         '''returns the (scalar) feature of feature_name'''
         self._postprocess()
         return self.fixed[feature_name]
+
+    def hermann(self, p_sizes):
+        '''@return bit vector: for each in p_sizes, if this has packet of that size'''
 
     def panchenko(self, pad_by=300, extra=True):
         '''returns panchenko feature vector
@@ -588,25 +636,39 @@ class Counter(object):
         #        self.variable['all_packets'] = self.packets # grew too big 4 mem
         return self
 
+    # old doctest, old format
+        # >>> a = _test(1); a.name = 'tps@1'; a.to_cai()
+        # 'tps 600'
+        # >>> a = _test(2); a.name = 'tps@1'; a.to_cai()
+        # 'tps 600 600'
+        # >>> a = _test(1, 500); a.name = 'tps@1'; a.to_cai()
+        # 'tps'
+        # >>> a = _test(3, 800); a.name = 'tps@1'; a.to_cai()
+        # 'tps 600 600 600'
+        # >>> a = _test(3, 1000); a.name = 'tps@1'; a.to_cai()
+        # 'tps 1200 1200 1200'
     def to_cai(self, name=None):
         '''@return this as line in cai file (class, packets_rounded)
         >>> a = _test(1); a.name = 'tps@1'; a.to_cai()
-        'tps 600'
+        'tps +'
         >>> a = _test(2); a.name = 'tps@1'; a.to_cai()
-        'tps 600 600'
+        'tps + +'
         >>> a = _test(1, 500); a.name = 'tps@1'; a.to_cai()
         'tps'
         >>> a = _test(3, 800); a.name = 'tps@1'; a.to_cai()
-        'tps 600 600 600'
+        'tps + + +'
         >>> a = _test(3, 1000); a.name = 'tps@1'; a.to_cai()
-        'tps 1200 1200 1200'
+        'tps + + +'
         '''
         if not name:
             name = self.name.split('@')[0]
         out = name
         for p in self.packets:
-            if abs(p) >= 512:
-                out += ' {}'.format(int(round(p / 600.) * 600))
+#            if abs(p) >= 512:
+#                out += ' {}'.format(int(round(p / 600.) * 600))
+            while abs(p) >= 512:
+                out += ' {}'.format('+' if np.sign(p) == 1 else '-')
+                p -= np.sign(p) * 600
         return out
 
     def to_json(self):
@@ -639,49 +701,10 @@ class Counter(object):
             for (time, size) in self.timing:
                 f.write("{}\t{}\n".format(time, -size))
 
-    def cumul(self, num_features=100):
-        '''@return CUMUL feature vector: inCount, outCount, outSize, inSize++'''
-        c_abs = []
-        # cumulated packetsizes
-        c_rel = []
-        inSize = 0
-        outSize = 0
-        inCount = 0
-        outCount = 0
-
-        # copied &modified from panchenko's generate-feature.py
-        for packetsize in self.packets:
-            if packetsize > 0:
-                inSize += packetsize
-                inCount += 1
-                if len(c_rel) == 0:
-                    c_rel.append(packetsize)
-                    c_abs.append(packetsize)
-                else:
-                    c_rel.append(c_rel[-1] + packetsize)
-                    c_abs.append(c_abs[-1] + abs(packetsize))
-            elif packetsize < 0:
-                outSize += abs(packetsize)
-                outCount += 1
-                if len(c_rel) == 0:
-                    c_rel.append(packetsize)
-                    c_abs.append(abs(packetsize))
-                else:
-                    c_rel.append(c_rel[-1] + packetsize)
-                    c_abs.append(c_abs[-1] + abs(packetsize))
-            else:
-                logging.warn('packetsize == 0 in cumul')
-
-        features = [inCount, outCount, outSize, inSize]
-        cumulFeatures = np.interp(np.linspace(c_abs[0], c_abs[-1],
-                                              num_features+1),
-                                  c_abs,
-                                  c_rel)
-        # could be cumulFeatures[1:], but never change a running system
-        for el in itertools.islice(cumulFeatures, 1, None):
-            features.append(el)
-
-        return features
+    def variable_lengths(self):
+        '''lengths of variable-length features'''
+        self._postprocess()
+        return self._variable_lengths()
 
 class MinMaxer(object):
     '''keeps min and max scores

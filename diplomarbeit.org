@@ -90,7 +90,7 @@
     - encouragement
     - readability
 * WAIT_FINISH Summary
-* WRITE Basics (=basics) [72%]
+* WRITE Basics (=basics) [69%]
 ** DANIEL Introduction
    To protect online communication, journalists, whistleblowers,
    "normal people", and among others even military\cite{who-uses-tor}
@@ -107,7 +107,7 @@
    Fortunately, as soon as these weaknesses became known, defenses
    were proposed. [[#defenses][The subsequent section]] shows different classes of
    defenses and examines them in detail.
-** WRITE Website Fingerprinting [22/25]
+** WRITE Website Fingerprinting [21/25]
    :PROPERTIES:
    :CUSTOM_ID: wf
    :END:
@@ -125,8 +125,8 @@
     like Tor.
 
     Finally, [[#wf2.0][current website fingerprinting attacks]][fn::the attempt to
-    break a cryptologically secured system is called an /attack/]will
-    be explored.
+    break a cryptographic system is called an /attack/]will be
+    explored.
 *** DANIEL Visual Representation of Traces
     :PROPERTIES:
     :CUSTOM_ID: visual
@@ -220,7 +220,7 @@ Facebook.com\\
     object sizes. Cheng and Avnur \cite{ssl-traffic-analysis}
     additionally proposed a hidden markov model for page
     /transitions/, for hard-to-identify pages.
-*** DANIEL Hurdles to Website Fingerprinting: HTTP Protocol Evolution
+*** WAIT Hurdles to Website Fingerprinting: HTTP Protocol Evolution
     :PROPERTIES:
     :CUSTOM_ID: Hurdles
     :END:
@@ -277,6 +277,10 @@ Facebook.com\\
     \cite{experimental}. \cite{ccs2012-fingerprinting} found
     fingerprinting to be slightly easier with this defense enabled than
     without.
+
+      - *hope that spdy makes it harder again*
+        - ref mike perry
+**** WAIT for [[file:~/da/da.org::*download%20doc][download doc]]
 *** DANIEL Challenges to Website Fingerprinting: Tor [3/5]
     #+INDEX: Tor
     /The Onion Router/\cite{tor-design} (Tor) is an anonymity system:
@@ -640,16 +644,13 @@ Facebook.com\\
     gradient boosting models, which as of \cite[sec.15.3]{esl} also
     outperform Random Forests. All offer single feature importances,
     as requested by \cite{critique}.
-*** brainstorm
+*** WAIT brainstorm (split and put somewhere)
     - induce pattern
       - naive
       - machine learning
       - features
     - kind of traffic analysis
       - without seeing content, deduce information
-    - made harder by protocol changes and tor
-      - *hope that spdy makes it harder again*
-        - ref mike perry
     - no cacheing
     - current tbb (auto-update)
     - scripts etc
@@ -677,18 +678,22 @@ Facebook.com\\
       - maps features to classes (or probabilities)
       - classifier
 *** WRITE k-fingerprinting
-    \cite{kfingerprint} seems to be the latest website fingerprinting
-    attack. It offers comparable accuracy to \cite{effective} and
+    \cite{kfingerprint} is one of the latest website fingerprinting
+    attacks. It offers comparable accuracy to \cite{effective} and
     \cite{panchenko2}, with higher resistance to defenses than both of
-    these. About 150 different features are evaluated with a
-    random-forest classifier.
+    these, as of the paper.
 
-    Multi-class classification is different from those in Section
-    [[#multi-class]], see the subsection.
+    About 150 different features are evaluated with a random-forest
+    classifier. As each tree classifies a trace by the leaf it is
+    assigned to, and random forest has several such trees, the tree
+    leafs constitute a "fingerprint". This is then compared via kNN to
+    the training fingerprints. If all agree, the trace is classified.
+
+    As random forests offer feature importances, the paper also
+    evaluates which features offer the most information for
+    classification, see section [[#features][Features]].
 
     - leaf labels, see \cite[sec.42.9.9]{scikit-user-guide} apply
-    - feature importances
-**** KEYWORDS Multi-class-strategy: ecr
 *** WRITE Related Work
     :PROPERTIES:
     :CUSTOM_ID: wfRelated
@@ -1365,9 +1370,10 @@ Facebook.com\\
     One host runs the Tor Browser Bundle and the cover traffic server
     (if needed), the other runs a tor server instance in bridge
     mode. For WTF-PAD, an additional server transport program is run
-    at the bridge, and a client transport at the client[fn::WTF-PAD
-    did not run via the built-in =ServerTransportPlugin= and
-    =ClientTransportPlugin= directives].
+    at the bridge, and a client transport at the client[fn::WTF-PAD is
+    employed via the stand-alone programs. Using Tor's built-in
+    =ServerTransportPlugin= and =ClientTransportPlugin= directives
+    naïvely fails].
 
     This setup utilises the same bridge for WTF-PAD and the browser
     extension.
@@ -1558,21 +1564,19 @@ Facebook.com\\
    - panchenko worse?
      - do pictures/comparisons
      - timing comparison on disabled
-*** WRITE Which Features Help Most in Classification
+*** WAIT Which Features Help Most in Classification
     #+CAPTION: Importance of CUMUL features
     #+ATTR_LATEX: :width 0.4\textwidth
     [[./pictures/feature_importances.eps]]
-
 
     - include somehow [[file:data/results/alternatives.org::*feature%20importances%20ET][feature importances ET]]
     - mention that ET classifies differently from SVM
       - but easily accessible
       - compare
-        - general: [[#svm_vs_et]]
-        - specific: [[#websites][Websites]]
+        - specific: [[#websites][Websites]] (?)
     - all 100 CUMUL-values in the 1% \pm 0.5%
       - increasing with the first CUMUL-element at 0.5%, the last at 1.5%
-    - both outgoing byte and outgoing packet count at 3%
+    - both outgoing byte and outgoing packet count bigger than 3%
     - graph
       - data from feature_importances
       - xlabel: cumul feature number
@@ -1583,22 +1587,25 @@ Facebook.com\\
         - outCount
         - outSize
         - inSize
+      - like esl ch.15
+**** WAIT for [[file:~/da/da.org::*features%20relevancy%20graphics][features relevancy graphics]]
 *** WRITE Effect of Outlier Removal
     :PROPERTIES:
     :CUSTOM_ID: wf-outlier-removal
     :END:
-     As seen in Table [[tab:outlier_removal]], a higher level of outlier
-     removal on test data increases accuracy[fn:: The results are
-     similar for the Extra-Trees classifier, see appendix [[*Outlier Removal Results with Extra-Trees Classifier][Outlier
+     A higher level of outlier removal on test data seems to increase
+     accuracy, as seen in Table [[tab:outlier_removal]], [fn:: The results
+     are similar for the Extra-Trees classifier, see appendix [[*Outlier Removal Results with Extra-Trees Classifier][Outlier
      Removal Results with Extra-Trees Classifier]].], but as of section
-     [[#split]] this is not applicable in a real-world scenario.
+     [[#split]] this should not be not applicable in a real-world
+     scenario.
 
 #+CAPTION: Accuracy with SVM classifier after outlier removal. The ~both~ column shows classification accuracy if the outliers are removed from both test and training set at the same time.
 #+NAME: tab:outlier_removal
 #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
 #+INCLUDE: "data/results/alternatives.org::#outlier_removal" :only-contents t
 
-     This outlier removal removed on average
+     Outlier removal removed on average
        - how many removed for levels
          - both panchenko's own and mine
        - evaluation of outlier removal steps
@@ -1801,13 +1808,14 @@ Facebook.com\\
     - as of paper: 32%bw \to 5% fpr and 55% bw \to 10% fpr
     - how to translate to closed-world?
     - wait for [[file:~/da/da.org::*open-world?%20(vs%20erst%20mal%20fertig?)][open-world? (vs erst mal fertig?)]]
-*** WAIT (maybe) vs Optimal Attacker
+*** KEYWORDS (maybe) vs Optimal Attacker
     - show just traces of single html retrieval:
       - small page, small page with add-on, bigger page
       - does with add-on look like bigger page?
-    - wait for [[file:docs/lit.org::*6.2.1%20and%205.(1%20?)%20more%20thoroughly,%20then%20add%20to%20%5B%5Bfile:~/da/git/diplomarbeit.org::*(maybe)%2520vs%2520Optimal%2520Attacker%5D%5B(maybe)%20vs%20Optimal%20Attacker%5D%5D][6.2.1 and 5.(1 ?) more thoroughly, then add to (maybe) vs Optimal Attacker]]
+    - \cite{a-systematic} does not help, as it deals with a
+      deterministic defense. Here, all traces retrieved intentionally
+      look different, even for the same page
       - and?  [[file:~/da/da.org::*experimente][experimente]].(capture just...)
-**** WAIT for
 *** WRITE Websites
     :PROPERTIES:
     :CUSTOM_ID: websites
@@ -2330,7 +2338,7 @@ Facebook.com\\
     need to be added as a parameter to =flearner= via f.ex. a script,
     see usage below. There is also =flearner_acc= which can be used
     in-place for =flearner=, and additionally outputs class accuracy.
-*** KEYWORDS Step By Step
+*** WRITE Step By Step
     in directory with traces (json/pcap/...)
 
     0. [@0] convert traces to \cite{effective}'s =batch=-directory,
@@ -2338,23 +2346,22 @@ Facebook.com\\
        =wang_batch.py=)
     1. python /path/to/fextract.py
     2. /path/to/flearner 0 1 $(flearn_params.sh)
-    3. convenience script for last steps: =f_all.sh=
+    3. convenience script: =f_all.sh=
 **** WAIT github flearn_params.sh, link
 ** WRITE How to get Panchenko-SVM to work
    :PROPERTIES:
    :CUSTOM_ID: cumul-steps
    :END:
 *** KEYWORDS algo
+    example with closed world[fn::for open world usage, replace
+    =-setting CW= with =-setting OW_FG= and =-dataSet CW= with
+    =-dataSet FG=. (and replace FG with BG for the open world
+    background set)]
     1. outlier removal
        - creates new input dir
-         - closed world
            #+BEGIN_SRC sh
              python $P_DIR/feature-scripts/outlier-removal.py -in ./foreground-data/ -out ./foreground-data-OR/ -setting CW -randomInstances NO -instances 40 -referenceFormat tcp -outlierRemoval Simple -ignoreOutlier YES
            #+END_SRC
-         - open world
-           - foreground TODO
-
-           - background TODO
     2. generate libsvm input
        - closed world
          #+BEGIN_SRC sh
