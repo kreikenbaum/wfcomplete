@@ -543,7 +543,12 @@ class Counter(object):
         return self.fixed[feature_name]
 
     def hermann(self, p_sizes):
-        '''@return bit vector: for each in p_sizes, if this has packet of that size'''
+        '''@return bit vector: for each size in p_sizes, if counter has packet of that size'''
+        out = [0] * len(p_sizes)
+        for index,size in enumerate(p_sizes):
+            if size in self.packets:
+                out[index] = 1
+        return out
 
     def panchenko(self, pad_by=300, extra=True):
         '''returns panchenko feature vector
