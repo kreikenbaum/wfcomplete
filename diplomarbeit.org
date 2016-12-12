@@ -90,7 +90,7 @@
     - encouragement
     - readability
 * WAIT_FINISH Summary
-* WRITE Basics (=basics) [67%]
+* WRITE Basics (=basics) [71%]
 ** DANIEL Introduction
    To protect online communication, journalists, whistleblowers,
    "normal people", and among others even military\cite{who-uses-tor}
@@ -99,15 +99,17 @@
    Unfortunately, Tor's anonymity protection has been compromised
    under laboratory conditions. \cite{panchenko} were the first to
    show that just looking at the encrypted and location-anonymized
-   packets of Tor, the target web page can be determined with high
-   accuracy. The [[#wf][next section]] explains how this works: how data
+   packets of Tor[fn::which could be easily obtained by ISPs or WLAN
+   sniffers, and everyone who can see the Tor network connection
+   (f.ex. nation states)], the target web page can be determined with
+   high accuracy. The [[#wf][next section]] explains how this works: how data
    packets are captured, how relevant identifying data is extracted,
    etc.
 
    Fortunately, as soon as these weaknesses became known, defenses
    were proposed. [[#defenses][The subsequent section]] shows different classes of
    defenses and examines them in detail.
-** WRITE Website Fingerprinting [21/26]
+** WRITE Website Fingerprinting [21/24]
    :PROPERTIES:
    :CUSTOM_ID: wf
    :END:
@@ -220,7 +222,7 @@ Facebook.com\\
     object sizes. Cheng and Avnur \cite{ssl-traffic-analysis}
     additionally proposed a hidden markov model for page
     /transitions/, for hard-to-identify pages.
-*** WAIT Hurdles to Website Fingerprinting: HTTP Protocol Evolution
+*** CHECK Hurdles to Website Fingerprinting: HTTP Protocol Evolution
     :PROPERTIES:
     :CUSTOM_ID: Hurdles
     :END:
@@ -278,9 +280,10 @@ Facebook.com\\
     fingerprinting to be slightly easier with this defense enabled than
     without.
 
-      - *hope that spdy makes it harder again*
-        - ref mike perry
-**** WAIT for [[file:~/da/da.org::*download%20doc][download doc]]
+    \cite{experimental} suggests that website fingerprinting could
+    further be hindered by HTTP/2.0 \cite{rfc7540}, or even a proxy
+    transforming HTTP/1.x to this at the exit node
+    \cite{tor-spec-spdy}.
 *** DANIEL Challenges to Website Fingerprinting: Tor [3/5]
     #+INDEX: Tor
     /The Onion Router/\cite{tor-design} (Tor) is an anonymity system:
@@ -686,53 +689,13 @@ Facebook.com\\
     About 150 different features are evaluated with a random-forest
     classifier. As each tree classifies a trace by the leaf it is
     assigned to, and random forest has several such trees, the tree
-    leafs constitute a "fingerprint". A testing trace's fingerprint is
-    then compared via kNN to the training fingerprints. If the nearest
-    k neighbors agree, the trace is classified thus.
+    leaves constitute a "fingerprint". A testing trace's fingerprint
+    is compared via kNN to the training fingerprints. If the nearest k
+    neighbors agree, the trace is classified thus.
 
     As random forests offer feature importances, the paper also
     evaluates which features offer the most information for
     classification, see section [[#features][Features]].
-*** WRITE Related Work
-    :PROPERTIES:
-    :CUSTOM_ID: wfRelated
-    :END:
-    - mitchell
-    - sklearn
-    - herrmann: breakable shown via naive bayes
-    - panchenko: svm
-    - dyer: most important are the features, similar results for naive
-      bayes and svm
-    - cheng:?
-    - wang: knn
-    - dts-approach (?)
-    - k-forest: specific classifier based on randomized trees with
-      hadamard-distance on leaves
-    - panchenko1 and 2: (ovr?) svm
-
-    - schneier
-    - liberatore
-    - microsoft hintz-successor(?)
-    - bissias
-    - wright
-    - feghhi\cite{DBLP:journals/tifs/FeghhiL16}
-
-   Schneier's books /Applied Cryptography/\cite{applied96}
-   and (with Ferguson) /Practical Cryptography/\cite{practical} deal
-   briefly with /Traffic analysis/, of which website fingerprinting
-   is a subtask. The first mention of applying it against encrypted
-   internet communication dates to Wagner and Schneier's analysis of
-   the SSL 3.0 protocol\cite{SSL}, and is attributed to Bennet Yee.
-
-   The website fingerprinting attack scenario is already described in
-   the original Tor design paper\cite{tor-design}. Previous to
-   Panchenko et al.\cite{panchenko}, it was considered "less
-   effective"\cite{tor-design} against Tor, due to stream/circuit
-   multiplexing and fixed cell sizes.
-*** Who Could Attack via WF
-    As website fingerprinting requires very litte resources, a specific
-    attacker could be a WLAN sniffer, an ISP, up to maybe even a nation
-    state.
 ** WRITE Defenses [3/8]
    :PROPERTIES:
    :CUSTOM_ID: defenses
@@ -1822,6 +1785,7 @@ Facebook.com\\
     - show just traces of single html retrieval:
       - small page, small page with add-on, bigger page
       - does with add-on look like bigger page?
+      - include
     - \cite{a-systematic} does not help, as it deals with a
       deterministic defense. Here, all traces retrieved intentionally
       look different, even for the same page
