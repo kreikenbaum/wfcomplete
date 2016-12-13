@@ -529,7 +529,7 @@ def to_features_cumul(counter_dict):
         class_number += 1
     return (np.array(X_in), np.array(out_y), domain_names)
 
-# td: refactor: 1:1 code duplication with to_features_cumul (how to
+# td: refactor: much code duplication with to_features_cumul (how to
 # call fixed method on changing objects?)
 def to_features_hermann(counter_dict):
     '''@return hermann et al's feature matrix from counters'''
@@ -711,7 +711,7 @@ def tts(counter_dict, test_size=1.0/3):
 # sys.argv = ['', 'disabled/bridge__2016-08-30_100', 'disabled/bridge__2016-09-21_100', 'disabled/bridge__2016-09-26_100', 'disabled/bridge__2016-09-26_100_with_errs']
 
 # NEW
-# sys.argv = ['', './disabled/bridge__2016-11-04_100@50', './0.22/10aI__2016-11-04_50_of_100']
+# sys.argv = ['', './disabled/bridge__2016-11-04_100@50', './0.22/10aI__2016-11-04_50_of_100', './disabled/bridge__2016-11-21']
 
 
 
