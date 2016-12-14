@@ -8148,9 +8148,8 @@
 *** [#A] zu stufen der mustererkennung
 ** TODO [#A] [[./user_guide_0.16.1.pdf][Pedregosa - scikit-learn user guide]]
 *** TODO [#A] see [[file:~/da/da.org::*open%20world][open world]]
-        - 11.18.4 Receiver Operating Characteristic (ROC) with cross validation
-          (p.837/847)
         - 11.18.8 Receiver Operating Characteristic (ROC)
+          (p.847/857)
         - 42.21. sklearn.metrics: Metrics: sklearn.metrics.auc
 *** TODO [#B] 4.13.5 Tree-based feature selection
     feature_importances: gini or obb-score, see todo
@@ -8783,6 +8782,15 @@
                    classifier = svm.SVC(kernel='linear', probability=True)
                  #+END_SRC
 
+               - compute tpr, fpr
+                 #+BEGIN_SRC python
+                   probas_ = classifier.fit(X[train], y[train]).predict_proba(X[test])
+                   fpr, tpr, thresholds = roc_curve(y[test], probas_[:, 1])
+                   roc_auc = auc(fpr, tpr)
+                 #+END_SRC
+
+            8) [@8] Receiver Operating Characteristic (ROC)
+
 *** quotes
     2) [@2] A tutorial on statistical-learning for scientific data processing
        1) Statistical learning: the setting and the estimator object
@@ -8986,6 +8994,30 @@
                    # in each class)
                    cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
                  #+END_SRC
+            8) [@8] Receiver Operating Characteristic (ROC)
+               - ROC curves typically feature true positive rate on
+                 the Y axis, and false positive rate on the X
+                 axis. This means that the top left corner of the plot
+                 is the “ideal” point - a false positive rate of zero,
+                 and a true positive rate of one.
+               - The “steepness” of ROC curves is also important,
+                 since it is ideal to maximize the true positive rate
+                 while minimizing the false positive rate.
+               - Python source code: plot_roc.py
+                 #+BEGIN_SRC python
+                   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.5, random_state=0)
+                   # Learn to predict each class against the other
+                   classifier = OneVsRestClassifier(svm.SVC(kernel='linear', probability=True))#, random_state=random_state))
+                   y_score = classifier.fit(X_train, y_train).decision_function(X_test)
+                   # Compute ROC curve and ROC area for each class
+                   fpr = dict()
+                   tpr = dict()
+                   roc_auc = dict()
+                   for i in range(n_classes):
+                       fpr[i], tpr[i], _ = roc_curve(y_test[:, i],
+                                                     y_score[:, i])
+                       roc_auc[i] = auc(fpr[i], tpr[i])
+                 #+END_SRC
     12) Frequently Asked Questions
         12) [@12] How do I deal with string data (or trees, graphs...)?
             - Firstly, many estimators take precomputed
@@ -9050,6 +9082,24 @@
                  - verbose : integer
                    - Controls the verbosity: the higher, the more messages.
         21) [@21] sklearn.metrics: Metrics
+            2) [@2] Classification metrics
+               - sklearn.metrics.roc_curve(y_true, y_score,
+                 pos_label=None, sample_weight=None)
+
+                 Compute Receiver operating characteristic (ROC)
+
+                 Returns
+                 - fpr : array, shape = [>2] [...]
+
+                   Increasing false positive rates such that element i
+                   is the false positive rate of predictions with
+                   score >= thresholds[i].
+                 - tpr : array, shape = [>2]
+
+                   Increasing true positive rates such that element i
+                   is the true positive rate of predictions with score
+                   >= thresholds[i].
+                 - thresholds : array, shape = [n_thresholds]
             3) [@3] Regression metrics
                - sklearn.metrics.r2_score(y_true, y_pred, sample_weight=None)
                  [...]
@@ -9153,6 +9203,16 @@
                  This estimator scales and translates each feature
                  individually such that it is in the given range on
                  the training set, i.e. between zero and one.
+            14) [@14] sklearn.preprocessing.label_binarize
+                - sklearn.preprocessing.label_binarize(y, classes,
+                  neg_label=0, pos_label=1, sparse_output=False,
+                  multilabel=None)
+
+                  Binarize labels in a one-vs-all fashion
+                  #+BEGIN_SRC python
+                    >>> label_binarize(['yes', 'no', 'no', 'yes'], classes=['no', 'yes'])
+                    array([[1], [0], [0],[1]])
+                  #+END_SRC
         35) [@35] sklearn.tree: Decision Trees
             - class sklearn.tree.DecisionTreeClassifier[...]
 
@@ -25573,6 +25633,14 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 
       - select reference table (here: =nut=) and common column
 *** ref https://github.com/tbanel/orgtbljoin/blob/master/README.org
+** PART [[./VASfwxyB.html][Ubuntu 16.04: Auto apt update and apt upgrade]]
+*** quotes
+    7) [@7] Disable auto update and upgrade
+         #+BEGIN_SRC sh
+           sudo systemctl disable apt-daily.service # disable run when system boot
+           sudo systemctl disable apt-daily.timer   # disable timer run
+         #+END_SRC
+*** ref from http://www.hiroom2.com/2016/05/18/ubuntu-16-04-auto-apt-update-and-apt-upgrade/
 ** onion routing project
 *** [[~/da/git/docs/onion-routing_pet2000.pdf][Towards an Analysis of Onion Routing Security]]
 **** ref: [[file:master.bib::onion-routing:pet2000][Syverson et al. 2000: Towards Analysis Onion Routing Security]]
@@ -25948,11 +26016,3 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 *** ref available at http://www.mlsec.org/harry/docs/2011-dmkd.pdf
 ** [[./rfc7540.txt][Belshe - Hypertext Transfer Protocol Version 2 (HTTP/2)]]
 *** ref [[file:master.bib::rfc7540][Belshe et al. 2015: Hypertext Transfer Protocol]]
-** PART MOVE [[./VASfwxyB.html][Ubuntu 16.04: Auto apt update and apt upgrade]]
-*** quotes
-    7) [@7] Disable auto update and upgrade
-         #+BEGIN_SRC sh
-           sudo systemctl disable apt-daily.service # disable run when system boot
-           sudo systemctl disable apt-daily.timer   # disable timer run
-         #+END_SRC
-*** ref from http://www.hiroom2.com/2016/05/18/ubuntu-16-04-auto-apt-update-and-apt-upgrade/

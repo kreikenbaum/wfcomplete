@@ -90,7 +90,7 @@
     - encouragement
     - readability
 * WAIT_FINISH Summary
-* WRITE Basics (=basics) [71%]
+* WRITE Basics (=basics) [67%]
 ** DANIEL Introduction
    To protect online communication, journalists, whistleblowers,
    "normal people", and among others even military\cite{who-uses-tor}
@@ -109,22 +109,23 @@
    Fortunately, as soon as these weaknesses became known, defenses
    were proposed. [[#defenses][The subsequent section]] shows different classes of
    defenses and examines them in detail.
-** CHECK Website Fingerprinting [21/24]
+** WRITE Website Fingerprinting [21/26]
    :PROPERTIES:
    :CUSTOM_ID: wf
    :END:
-*** DANIEL Introduction
+*** EVA Introduction
     #+INDEX: attack
     Website fingerprinting\cite{hintz02} aims to deduce which web page
-    a user is visiting via an anonymizing proxy. It does so based on
-    order, size, and timing of data packets.
+    a user is visiting via an anonymizing proxy, seeing just encrypted
+    data traffic. It detects web pages based on order, size, and
+    timing of data packets.
 
     This chapter contains first [[#visual][a visual introduction to the subject]],
     then a short review of [[#http][what happens during website
     retrieval]]. Afterwards, [[#wf1.0][early methods of website fingerprinting]]
-    will be presented. The next section explains [[#Hurdles][why these
-    early techniques no longer work]] especially on anonymity networks
-    like Tor.
+    will be presented. The next section explains [[#Hurdles][why these early
+    techniques no longer work]] especially on [[#basics-tor][anonymity networks like
+    Tor]].
 
     Finally, [[#wf2.0][current website fingerprinting attacks]][fn::the attempt to
     break a cryptographic system is called an /attack/]will be
@@ -284,6 +285,9 @@ Facebook.com\\
     further be hindered by HTTP/2.0 \cite{rfc7540}, or even a proxy
     transforming to it at the exit node \cite{tor-spec-spdy}.
 *** DANIEL Challenges to Website Fingerprinting: Tor [3/5]
+    :PROPERTIES:
+    :CUSTOM_ID: basics-tor
+    :END:
     #+INDEX: Tor
     /The Onion Router/\cite{tor-design} (Tor) is an anonymity system:
     While encryption only hides the /content of communication/, Tor
@@ -351,10 +355,20 @@ Facebook.com\\
      characteristics.[fn::for a general introduction to cryptography,
      consider \cite{applied96}, for a high-level introduction to
      traffic analysis, see \cite{introta}].
-*** DANIEL Website Fingerprinting 2.0
+*** WRITE Website Fingerprinting 2.0
     :PROPERTIES:
     :CUSTOM_ID: wf2.0
     :END:
+**** WRITE Introduction
+     - ml-based
+     - first approaches
+     - first successful on Tor: p1
+     - basics: svm, knn, extratrees(?)
+     - knn
+     - cumul
+     - k-fingerprinting
+     - features (where to put this? up above?)
+**** DANIEL Trailbreakers
     #+INDEX: accuracy
     Similarly to the above website fingerprinting attacks,
     \cite{Liberatore:2006} and\cite{ccsw09-fingerprinting} use only
@@ -371,333 +385,320 @@ Facebook.com\\
     conjecture[fn:: \cite{Liberatore:2006} mention that they also did
     some experiments which lead to this conjecture] that this result
     could be improved with attacks specifically tailored to Tor.
-*** EVA Panchenko Version 1
-    #+INDEX: attack!Panchenko~1
-    #+INDEX: closed-world
-    #+INDEX: false-negative-rate
-    #+INDEX: FNR
-    #+INDEX: Panchenko~1
-    #+INDEX: TPR
-    #+INDEX: true-positive-rate
-    #+INDEX: open-world
-    #+INDEX: world!closed
-    #+INDEX: world!open
-    While \cite{ccsw09-fingerprinting} classify one-hop proxies well,
-    they achieve low accuracy against Tor due to Tor's multiplexing
-    and fixed cell-size\cite{experimental}. \cite{panchenko}
-    first\cite{critique} published a successful website fingerprinting
-    attack on Tor: They extract HTTP-specific features from the packet
-    trace, adjust their weights, and select only those found to have
-    the greatest impact. The features are weighted heavily in favor of
-    total incoming/outgoing bytes. Support Vector Machines then
-    classify these features.
+**** EVA Panchenko Version 1
+     #+INDEX: attack!Panchenko~1
+     #+INDEX: closed-world
+     #+INDEX: false-negative-rate
+     #+INDEX: FNR
+     #+INDEX: Panchenko~1
+     #+INDEX: TPR
+     #+INDEX: true-positive-rate
+     #+INDEX: open-world
+     #+INDEX: world!closed
+     #+INDEX: world!open
+     While \cite{ccsw09-fingerprinting} classify one-hop proxies well,
+     they achieve low accuracy against Tor due to Tor's multiplexing
+     and fixed cell-size\cite{experimental}. \cite{panchenko}
+     first\cite{critique} published a successful website fingerprinting
+     attack on Tor: They extract HTTP-specific features from the packet
+     trace, adjust their weights, and select only those found to have
+     the greatest impact. The features are weighted heavily in favor of
+     total incoming/outgoing bytes. Support Vector Machines then
+     classify these features.
 
-    In addition to \cite{ccsw09-fingerprinting}'s data set, they use a
-    new open-world[fn::The /closed-world/ assumption means that the
-    web browser only visits /k/ web pages, while in the /open-world/
-    scenario, /k/ web pages out of an arbitrarily large number are to
-    be detected. Thus, the closed-world scenario is a
-    simplification.\cite{panchenko2}] dataset. The size of the
-    open-world data set is five foreground and 5000 background sites.
+     In addition to \cite{ccsw09-fingerprinting}'s data set, they use a
+     new open-world[fn::The /closed-world/ assumption means that the
+     web browser only visits /k/ web pages, while in the /open-world/
+     scenario, /k/ web pages out of an arbitrarily large number are to
+     be detected. Thus, the closed-world scenario is a
+     simplification.\cite{panchenko2}] dataset. The size of the
+     open-world data set is five foreground and 5000 background sites.
 
-    \cite{panchenko} achieve closed-world recognition rates of 54.61%
-    and open-world true-positive rate[fn:: the ratio of correctly
-    recognized positive instances divided by all positve instances is
-    called the /true positive rate/ (short: TPR)] of up to 73% for
-    Tor. While the Tor Project considers these and better rates both
-    insufficient and inapplicable\cite{critique} to pose a real
-    threat, they still consider this paper "the first work to
-    successfully apply website traffic fingerprinting to
-    Tor"\cite{critique}.
-*** DANIEL CUMUL
-    #+INDEX: CUMUL
-    #+INDEX: attack!CUMUL
-    CUMUL\cite{panchenko2} is a state-of-the-art\cite{kfingerprint}
-    website fingerprinting attack. It sums the number of incoming and
-    outgoing bytes, which results in an easily-understandable
-    cumulative-size feature. As a reminder, see Figure [[CUMUL_traces]].
+     \cite{panchenko} achieve closed-world recognition rates of 54.61%
+     and open-world true-positive rate[fn:: the ratio of correctly
+     recognized positive instances divided by all positve instances is
+     called the /true positive rate/ (short: TPR)] of up to 73% for
+     Tor. While the Tor Project considers these and better rates both
+     insufficient and inapplicable\cite{critique} to pose a real
+     threat, they still consider this paper "the first work to
+     successfully apply website traffic fingerprinting to
+     Tor"\cite{critique}.
+**** DANIEL CUMUL
+     #+INDEX: CUMUL
+     #+INDEX: attack!CUMUL
+     CUMUL\cite{panchenko2} is a state-of-the-art\cite{kfingerprint}
+     website fingerprinting attack. It sums the number of incoming and
+     outgoing bytes, which results in an easily-understandable
+     cumulative-size feature. As a reminder, see Figure [[CUMUL_traces]].
 
-    CUMUL keeps a cumulative list of sizes: For each new packet in a
-    trace, its byte size is added[fn::\cite{panchenko2} treat incoming
-    byte sizes as positive and outgoing as negative values] to the
-    last cumulative size, and appended to the list.
+     CUMUL keeps a cumulative list of sizes: For each new packet in a
+     trace, its byte size is added[fn::\cite{panchenko2} treat incoming
+     byte sizes as positive and outgoing as negative values] to the
+     last cumulative size, and appended to the list.
 
-    To obtain a fixed size feature vector, values are interpolated
-    from the list values to $n$ equidistant points. As of
-    \cite{panchenko2}, "$n=100$ yields the best trade-off between
-    classification accuracy and computational efficiency."
+     To obtain a fixed size feature vector, values are interpolated
+     from the list values to $n$ equidistant points. As of
+     \cite{panchenko2}, "$n=100$ yields the best trade-off between
+     classification accuracy and computational efficiency."
 
-    This vector is then normalized to $[-1, 1]$. As additional
-    features, the total number of both bytes and packets, both
-    incoming and outgoing are appended to this list.
+     This vector is then normalized to $[-1, 1]$. As additional
+     features, the total number of both bytes and packets, both
+     incoming and outgoing are appended to this list.
 
-    Support vector machines classify these.
-*** EVA Support Vector Machines
-**** EVA Introduction
-     #+INDEX: classifier!Support Vector Machine
-     #+INDEX: classifier!SVM
-     #+INDEX: Support Vector Machine
-     #+INDEX: SVM
-     #+INDEX: linear classifier
-     #+INDEX: binary classification
-     #+INDEX: classification!binary
-     Support Vector Machines (short: SVM) are a /linear classifier/:
-     they find a linear boundary between points, see Figure
-     [[fig:linear_boundary]] for a simple example.
+     Support vector machines classify these.
+**** EVA Support Vector Machines
+***** EVA Introduction
+      #+INDEX: classifier!Support Vector Machine
+      #+INDEX: classifier!SVM
+      #+INDEX: Support Vector Machine
+      #+INDEX: SVM
+      #+INDEX: linear classifier
+      #+INDEX: binary classification
+      #+INDEX: classification!binary
+      Support Vector Machines (short: SVM) are a /linear classifier/:
+      they find a linear boundary between points, see Figure
+      [[fig:linear_boundary]] for a simple example.
 
-     #+CAPTION[Example binary linear classification]: Example binary linear classification from \cite[Figure 1.5]{iml}.
-     #+ATTR_LATEX: :width 0.4\textwidth
-     #+NAME: fig:linear_boundary
-     [[./pictures/iml_fig1.5.png]]
+      #+CAPTION[Example binary linear classification]: Example binary linear classification from \cite[Figure 1.5]{iml}.
+      #+ATTR_LATEX: :width 0.4\textwidth
+      #+NAME: fig:linear_boundary
+      [[./pictures/iml_fig1.5.png]]
 
-     (This and the following parts are mostly based on
-     \cite[ch.6f]{iml}). Given a set $X = \{x_1, ..., x_n\}$ with a
-     dot product $\langle\cdot, \cdot\rangle: X \times X \to \mathbb R$ and tuples $(x_1, y_1),
-     ..., (x_m, y_m)$, with $x_i \in X, y_i \in \{-1, 1\}$ as a /binary
-     classification/ task.
+      (This and the following parts are mostly based on
+      \cite[ch.6f]{iml}). Given a set $X = \{x_1, ..., x_n\}$ with a
+      dot product $\langle\cdot, \cdot\rangle: X \times X \to \mathbb R$ and tuples $(x_1, y_1),
+      ..., (x_m, y_m)$, with $x_i \in X, y_i \in \{-1, 1\}$ as a /binary
+      classification/ task.
 
-     The SVM's job is to find a hyperplane[fn::as \cite[ch.4.1]{esl}
-     mention, this is actually an affine set, as it need not pass
-     through the origin. Keeping with tradition, it will be called
-     hyperplane in this thesis (as long as those things formed by
-     quarks are still called atoms \ldots).]
-     #+BEGIN_LaTeX
-       \[\{x \in X \mid \langle w, x \rangle +b = 0\}\]
-     #+END_LaTeX
-     such that $\langle w, x_i \rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle
-     +b < 0$ whenever $y_i = -1$. With added normalization, this can
-     be compressed to the form \[y_i \cdot (\langle w, xi \rangle +b) \ge 1.\]
-**** EVA Soft Margin Classifiers
+      The SVM's job is to find a hyperplane[fn::as \cite[ch.4.1]{esl}
+      mention, this is actually an affine set, as it need not pass
+      through the origin. Keeping with tradition, it will be called
+      hyperplane in this thesis (as long as those things formed by
+      quarks are still called atoms \ldots).]
+      #+BEGIN_LaTeX
+        \[\{x \in X \mid \langle w, x \rangle +b = 0\}\]
+      #+END_LaTeX
+      such that $\langle w, x_i \rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle
+      +b < 0$ whenever $y_i = -1$. With added normalization, this can
+      be compressed to the form \[y_i \cdot (\langle w, xi \rangle +b) \ge 1.\]
+***** EVA Soft Margin Classifiers
+      :PROPERTIES:
+      :CUSTOM_ID: soft-margin-svm
+      :END:
+      #+INDEX: margin
+      #+INDEX: soft-margin
+      #+INDEX: classifier!soft-margin
+      A support vector machine tries to find a hyperplane between two
+      groups of points and maximize its distance to the closest points,
+      called /margin/. What happens if the points lie such that a line
+      cannot be found, as f.ex. in Figure [[fig:non-linear-data]]?
+
+      #+CAPTION[Example simple non-linearly separable data]: Non-linearly separable data; source: \url{https://en.wikipedia.org/wiki/File:Separability_NO.svg}
+      #+ATTR_LATEX: :width 0.4\textwidth
+      #+NAME: fig:non-linear-data
+      [[./pictures/Separability_NO.eps]]
+
+      To solve this, a /soft-margin classifier/ introduces slack
+      variables $\xi \ge 0$, which it tries to reduce while maximizing the
+      margin.
+
+      This alters the equations to $y_i( \langle w, xi \rangle +b) \ge 1 - \xi_i$ for the
+      optimization problem
+
+      \[\min_{w, b, \xi} \frac{1}{2} ||w||^2 + \frac{C}{m} \sum_{i=1..m} \xi_i.\]
+***** EVA Multi-Class Strategies
+      :PROPERTIES:
+      :CUSTOM_ID: multi-class
+      :END:
+      #+INDEX: binary classification
+      #+INDEX: multi-class classification
+      #+INDEX: classification!binary
+      #+INDEX: classification!multi-class
+      The SVMs as described above solve the binary classification
+      problem \cite[sec.1.1.3]{iml}: they propose a boundary between
+      two classes of objects.
+
+      In website fingerprinting[fn::as in f.ex.\space{}handwriting
+      recognition], there are most often more classes than two.
+
+      Several strategies exist to distinguish more than two
+      classes. The main are to train one classifier for each class ---
+      called /One-Vs-Rest/ (OVR) --- and one for each class-class
+      combination --- called /One-Vs-One/ (OVO). One-Vs-Rest trains
+      fewer classifiers, while One-Vs-One trains more, but evaluates
+      fewer samples per fitting.\cite[sec.4.12.3]{scikit-user-guide}.
+***** EVA Kernel Trick
+      #+INDEX: kernel
+      #+INDEX: kernel!radial basis function
+      #+INDEX: kernel!RBF
+      Straight lines do not always distinguish classes correctly, as
+      f.ex. example in Figure [[hastie_kerneltrick]]. This would seem a
+      drawback to using Support Vector Machines, yet they can compute
+      these not only on the original data, but also on a projected
+      space. This allows for complex decision boundaries. By using the
+      kernel trick\cite[sec.2.2.2]{kernels}[fn::A kernel is a function
+      with specific properties. The dot product is such a kernel. The
+      kernel trick enables a algorithm with a kernel to use any other
+      kernel], a SVM can not only use the dot product $\langle.,.\rangle$, but
+      another kernel $k(., .)$ instead.
+
+      #+CAPTION: Kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left side shows linear boundaries on $X$ and $Y$ --- the right side linear boundaries computed with added $X^2$, $Y^2$ and $XY$.
+      #+NAME: hastie_kerneltrick
+      [[./pictures/hastie.png]]
+
+      The kernel used by default by \cite{Hsu10apractical} for SVMs is
+      the (gaussian) /radial basis function/ (short: RBF)
+      kernel\cite[sec.2.3]{kernels} \[k(x, y) = \exp \left ( - { \|x -
+      y\|^2 \over 2 \gamma^2 } \right )\] This is also used by
+      \cite{panchenko2}. While the algorithms still finds a straight
+      line in a projected space, the resulting decision boundaries in
+      the original feature space are more varied.
+***** EVA Parameter Estimation
+      #+INDEX: cross-validation
+      #+INDEX: grid search
+      Each [[#soft-margin-svm][soft margin classifier]] has an error term $C$ which states
+      how much to penalize outliers. The gaussian radial basis function
+      kernel used by \cite{panchenko2} also has a \gamma term which varies
+      the width of the area, see Figure [[fig:C-gamma-effect]].
+
+      #+CAPTION[Example svm-rbf classification with different parameters for $C$ and \gamma]: Example svm-rbf classification with different parameters for $C$ and \gamma. Source \cite[Figure 42.328]{scikit-user-guide}, recreated for higher resolution.
+      #+ATTR_LATEX: :width 0.4\textwidth
+      #+NAME: fig:C-gamma-effect
+      [[./pictures/skl-fig-42.328.png]]
+ #     [[./pictures/skl-fig-42.328.eps]]
+
+      These parameters have to be provided externally for the Support
+      Vector Machine to achieve high
+      accuracy. \cite[sec.3.2]{Hsu10apractical} recommend grid-search
+      with cross-validation to find optimal parameters.
+
+      In grid-search, several parameters of $C$ and $\gamma$ are evaluated,
+      and the best one is chosen.
+
+      In cross-validation, the data set is split into $k$ disjoint
+      subsets, called /folds/, of equal size. Of those, $k-1$ are used
+      for training the classifier, while the last is used for
+      evaluation. This is done $k$ times, and the result is averaged.
+
+      It might be possible to evaluate these meta-parameters together
+      with the main classification problem \cite[secs.2.8.3, 6.7]{esl},
+      but analogously to \cite[sec.2.8.3]{esl}, this would probably
+      become "combinatorially hard".
+**** EVA kNN-Attack
+     #+INDEX: attack!kNN
+     \cite{effective} achieve high accuracy against Tor using the
+     k-Nearest-Neighbors classifier with a custom,
+     dynamically-determined metric. For this they evaluate 3736
+     different features (about 3000 of which are packets sizes), and
+     learn distance weights which best classify the classes.
+**** EVA K-Nearest-Neighbor-Classifier
+     #+INDEX: classifier!kNN
+     #+INDEX: classifier!k-nearest-neighbors
+     #+INDEX: kNN
+     #+INDEX: k-nearest-neighbors
+     The /k-nearest-neighbors/ (short: kNN) classifier
+     (\cite[sec.1.3.2]{iml} \cite[sec.13.3]{esl}
+     \cite[sec.8.2]{mitchell}) classifies data points based on the
+     known class[es] of their neighbors: for each item to be
+     classified, determine the (f.ex.\space{}k=5) closest neighbors by a given
+     metric. If all neighbors' classes agree, or based on a majority
+     decision, the item's class is set to theirs.
+
+     It is successful "in a large number of classification and
+     regression problems"\cite[sec.4.6]{scikit-user-guide}, despite its
+     simplicity.
+
+     This classifier works best if all classes have the same number of
+     (training) instances. Otherwise, it is of course probable that the
+     classes with the higher number of instances will be chosen as
+     targets of classification more often.
+
+      #+CAPTION: The left picture shows the five closest neighbors around the test instance $x_q$, which is then classified as =-=. The right shows the k==1-decision boundary around several training instances (the area where a test instance would be classified as the point). Source \cite[Figure 8.1]{mitchell}
+      #+ATTR_LATEX: :width 0.7\textwidth
+      [[./pictures/mitchell-fig8.1.png]]
+**** DANIEL Features
      :PROPERTIES:
-     :CUSTOM_ID: soft-margin-svm
+     :CUSTOM_ID: features
      :END:
-     #+INDEX: margin
-     #+INDEX: soft-margin
-     #+INDEX: classifier!soft-margin
-     A support vector machine tries to find a hyperplane between two
-     groups of points and maximize its distance to the closest points,
-     called /margin/. What happens if the points lie such that a line
-     cannot be found, as f.ex. in Figure [[fig:non-linear-data]]?
+     As stressed by \cite{critique}, analysis of which features
+     contribute the most towards classification will help to defend
+     against website fingerprinting. \cite{panchenko} provides a
+     qualitative analysis. \cite{kfingerprint} classify using random
+     forests[fn::forests of randomized trees, see
+     \cite{DBLP:journals/ml/Breiman01}], which provide quantitative
+     feature importance feedback.[fn:: f.ex.\space{}in scikit-learn
+     \cite{scikit-learn} via the =_feature_importances= property]
 
-     #+CAPTION[Example simple non-linearly separable data]: Non-linearly separable data; source: \url{https://en.wikipedia.org/wiki/File:Separability_NO.svg}
-     #+ATTR_LATEX: :width 0.4\textwidth
-     #+NAME: fig:non-linear-data
-     [[./pictures/Separability_NO.eps]]
+     According to \cite{kfingerprint}, the top-five features are the
+     number (both absolute and percentage of total) of both incoming
+     and outgoing packets. The standard deviation of the packet
+     ordering list[fn:: Panchenko et al \cite{panchenko} call these
+     features /Number Markers/] completes the top five. Each added
+     feature increases accuracy, yet with nearly the same accuracy
+     for the best 30 as for the total of 150 features.
 
-     To solve this, a /soft-margin classifier/ introduces slack
-     variables $\xi \ge 0$, which it tries to reduce while maximizing the
-     margin.
+     Both \cite{effective} and \cite{panchenko} also consider the first
+     packets of a transmission/the HTML page as effective features.
 
-     This alters the equations to $y_i( \langle w, xi \rangle +b) \ge 1 - \xi_i$ for the
-     optimization problem
+     \cite{panchenko2} allows for the visual comparison of website
+     traces. See for example Figure [[CUMUL_traces]].
+     #+CAPTION[CUMUL features example]: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}.
+     #+NAME: CUMUL_traces
+     [[./pictures/cumul_aus_paper.pdf]]
+**** EVA Extremely Randomized Trees
+     #+INDEX: classifier!Extra-Trees
+     #+INDEX: classifier!Extremely Randomized Trees
+     #+INDEX: Extra-Trees
+     #+INDEX: Extremely Randomized Trees
+     /Extremely Randomized Trees/\cite{DBLP:journals/ml/GeurtsEW06}
+     (short: Extra-Trees) are an ensemble method based on decision
+     trees: several decision trees are constructed for subsets of
+     features, and their output is averaged.
 
-     \[\min_{w, b, \xi} \frac{1}{2} ||w||^2 + \frac{C}{m} \sum_{i=1..m} \xi_i.\]
-**** EVA Multi-Class Strategies
-     :PROPERTIES:
-     :CUSTOM_ID: multi-class
-     :END:
-     #+INDEX: binary classification
-     #+INDEX: multi-class classification
-     #+INDEX: classification!binary
-     #+INDEX: classification!multi-class
-     The SVMs as described above solve the binary classification
-     problem \cite[sec.1.1.3]{iml}: they propose a boundary between
-     two classes of objects.
+     As of the paper, Extra-Trees yield higher accuracy than Random
+     Forests on almost all data sets. They were not compared to
+     gradient boosting models, which as of \cite[sec.15.3]{esl} also
+     outperform Random Forests. All offer single feature importances,
+     as requested by \cite{critique}.
+**** WAIT brainstorm (split and put somewhere)
+***** MOVE to [[#Hurdles]]
+     - bit on tor in [[#Hurdles]]
+       - also that use tor to avoid wf, then tracked again (if it works)
+       - maybe also on traffic analysis
+***** MOVE to features
+     - dyer: most important are the features, similar results for naive
+     - on feature importances:
+       - panchenko
+       - k-forest
+       - wang implicit
+***** MOVE somewhere (other related work)
+     - not mentioned/omitted in related work?
+       - schneier
+       - microsoft hintz-successor(?)
+       - bissias
+       - wright
+***** maybe own chapter?
+     - classifiers
+       - features important or also classifier
+       - no classifier fits all
+       - maps features to classes (or probabilities)
+       - classifier
+**** CHECK k-fingerprinting
+     \cite{kfingerprint} is one of the latest website fingerprinting
+     attacks. It offers comparable accuracy to \cite{effective} and
+     \cite{panchenko2}, with higher resistance to defenses than both of
+     these, as of the paper.
 
-     In website fingerprinting[fn::as in f.ex.\space{}handwriting
-     recognition], there are most often more classes than two.
+     About 150 different features are evaluated with a random-forest
+     classifier. As each tree classifies a trace by the leaf it is
+     assigned to, and random forest has several such trees, the tree
+     leaves constitute a "fingerprint". A testing trace's fingerprint
+     is compared via kNN to the training fingerprints. If the nearest k
+     neighbors agree, the trace is classified thus.
 
-     Several strategies exist to distinguish more than two
-     classes. The main are to train one classifier for each class ---
-     called /One-Vs-Rest/ (OVR) --- and one for each class-class
-     combination --- called /One-Vs-One/ (OVO). One-Vs-Rest trains
-     fewer classifiers, while One-Vs-One trains more, but evaluates
-     fewer samples per fitting.\cite[sec.4.12.3]{scikit-user-guide}.
-**** EVA Kernel Trick
-     #+INDEX: kernel
-     #+INDEX: kernel!radial basis function
-     #+INDEX: kernel!RBF
-     Straight lines do not always distinguish classes correctly, as
-     f.ex. example in Figure [[hastie_kerneltrick]]. This would seem a
-     drawback to using Support Vector Machines, yet they can compute
-     these not only on the original data, but also on a projected
-     space. This allows for complex decision boundaries. By using the
-     kernel trick\cite[sec.2.2.2]{kernels}[fn::A kernel is a function
-     with specific properties. The dot product is such a kernel. The
-     kernel trick enables a algorithm with a kernel to use any other
-     kernel], a SVM can not only use the dot product $\langle.,.\rangle$, but
-     another kernel $k(., .)$ instead.
-
-     #+CAPTION: Kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left side shows linear boundaries on $X$ and $Y$ --- the right side linear boundaries computed with added $X^2$, $Y^2$ and $XY$.
-     #+NAME: hastie_kerneltrick
-     [[./pictures/hastie.png]]
-
-     The kernel used by default by \cite{Hsu10apractical} for SVMs is
-     the (gaussian) /radial basis function/ (short: RBF)
-     kernel\cite[sec.2.3]{kernels} \[k(x, y) = \exp \left ( - { \|x -
-     y\|^2 \over 2 \gamma^2 } \right )\] This is also used by
-     \cite{panchenko2}. While the algorithms still finds a straight
-     line in a projected space, the resulting decision boundaries in
-     the original feature space are more varied.
-**** EVA Parameter Estimation
-     #+INDEX: cross-validation
-     #+INDEX: grid search
-     Each [[#soft-margin-svm][soft margin classifier]] has an error term $C$ which states
-     how much to penalize outliers. The gaussian radial basis function
-     kernel used by \cite{panchenko2} also has a \gamma term which varies
-     the width of the area, see Figure [[fig:C-gamma-effect]].
-
-     #+CAPTION[Example svm-rbf classification with different parameters for $C$ and \gamma]: Example svm-rbf classification with different parameters for $C$ and \gamma. Source \cite[Figure 42.328]{scikit-user-guide}, recreated for higher resolution.
-     #+ATTR_LATEX: :width 0.4\textwidth
-     #+NAME: fig:C-gamma-effect
-     [[./pictures/skl-fig-42.328.png]]
-#     [[./pictures/skl-fig-42.328.eps]]
-
-     These parameters have to be provided externally for the Support
-     Vector Machine to achieve high
-     accuracy. \cite[sec.3.2]{Hsu10apractical} recommend grid-search
-     with cross-validation to find optimal parameters.
-
-     In grid-search, several parameters of $C$ and $\gamma$ are evaluated,
-     and the best one is chosen.
-
-     In cross-validation, the data set is split into $k$ disjoint
-     subsets, called /folds/, of equal size. Of those, $k-1$ are used
-     for training the classifier, while the last is used for
-     evaluation. This is done $k$ times, and the result is averaged.
-
-     It might be possible to evaluate these meta-parameters together
-     with the main classification problem \cite[secs.2.8.3, 6.7]{esl},
-     but analogously to \cite[sec.2.8.3]{esl}, this would probably
-     become "combinatorially hard".
-*** EVA kNN-Attack
-    #+INDEX: attack!kNN
-    \cite{effective} achieve high accuracy against Tor using the
-    k-Nearest-Neighbors classifier with a custom,
-    dynamically-determined metric. For this they evaluate 3736
-    different features (about 3000 of which are packets sizes), and
-    learn distance weights which best classify the classes.
-*** EVA K-Nearest-Neighbor-Classifier
-    #+INDEX: classifier!kNN
-    #+INDEX: classifier!k-nearest-neighbors
-    #+INDEX: kNN
-    #+INDEX: k-nearest-neighbors
-    The /k-nearest-neighbors/ (short: kNN) classifier
-    (\cite[sec.1.3.2]{iml} \cite[sec.13.3]{esl}
-    \cite[sec.8.2]{mitchell}) classifies data points based on the
-    known class[es] of their neighbors: for each item to be
-    classified, determine the (f.ex.\space{}k=5) closest neighbors by a given
-    metric. If all neighbors' classes agree, or based on a majority
-    decision, the item's class is set to theirs.
-
-    It is successful "in a large number of classification and
-    regression problems"\cite[sec.4.6]{scikit-user-guide}, despite its
-    simplicity.
-
-    This classifier works best if all classes have the same number of
-    (training) instances. Otherwise, it is of course probable that the
-    classes with the higher number of instances will be chosen as
-    targets of classification more often.
-
-     #+CAPTION: The left picture shows the five closest neighbors around the test instance $x_q$, which is then classified as =-=. The right shows the k==1-decision boundary around several training instances (the area where a test instance would be classified as the point). Source \cite[Figure 8.1]{mitchell}
-     #+ATTR_LATEX: :width 0.7\textwidth
-     [[./pictures/mitchell-fig8.1.png]]
-*** DANIEL Features
-    :PROPERTIES:
-    :CUSTOM_ID: features
-    :END:
-    As stressed by \cite{critique}, analysis of which features
-    contribute the most towards classification will help to defend
-    against website fingerprinting. \cite{panchenko} provides a
-    qualitative analysis. \cite{kfingerprint} classify using random
-    forests[fn::forests of randomized trees, see
-    \cite{DBLP:journals/ml/Breiman01}], which provide quantitative
-    feature importance feedback.[fn:: f.ex.\space{}in scikit-learn
-    \cite{scikit-learn} via the =_feature_importances= property]
-
-    According to \cite{kfingerprint}, the top-five features are the
-    number (both absolute and percentage of total) of both incoming
-    and outgoing packets. The standard deviation of the packet
-    ordering list[fn:: Panchenko et al \cite{panchenko} call these
-    features /Number Markers/] completes the top five. Each added
-    feature increases accuracy, yet with nearly the same accuracy
-    for the best 30 as for the total of 150 features.
-
-    Both \cite{effective} and \cite{panchenko} also consider the first
-    packets of a transmission/the HTML page as effective features.
-
-    \cite{panchenko2} allows for the visual comparison of website
-    traces. See for example Figure [[CUMUL_traces]].
-    #+CAPTION[CUMUL features example]: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}.
-    #+NAME: CUMUL_traces
-    [[./pictures/cumul_aus_paper.pdf]]
-*** EVA Extremely Randomized Trees
-    #+INDEX: classifier!Extra-Trees
-    #+INDEX: classifier!Extremely Randomized Trees
-    #+INDEX: Extra-Trees
-    #+INDEX: Extremely Randomized Trees
-    /Extremely Randomized Trees/\cite{DBLP:journals/ml/GeurtsEW06}
-    (short: Extra-Trees) are an ensemble method based on decision
-    trees: several decision trees are constructed for subsets of
-    features, and their output is averaged.
-
-    As of the paper, Extra-Trees yield higher accuracy than Random
-    Forests on almost all data sets. They were not compared to
-    gradient boosting models, which as of \cite[sec.15.3]{esl} also
-    outperform Random Forests. All offer single feature importances,
-    as requested by \cite{critique}.
-*** WAIT brainstorm (split and put somewhere)
-**** MOVE to (or del) intro
-    - induce pattern
-      - naive
-      - machine learning
-      - features
-    - kind of traffic analysis
-      - without seeing content, deduce information
-**** MOVE to (or del) eval-setup
-    - no cacheing
-    - current tbb (auto-update)
-    - scripts etc
-    - xpra for slow network connection
-    - xvfb for local display
-    - marionette
-    - others, other tools
-**** cont
-    - bit on tor in [[#Hurdles]]
-      - also that use tor to avoid wf, then tracked again (if it works)
-      - maybe also on ta
-    - dyer: most important are the features, similar results for naive
-    - on feature importances:
-      - panchenko
-      - k-forest
-      - wang implicit
-    - not mentioned/omitted in related work?
-      - schneier
-      - liberatore
-      - microsoft hintz-successor(?)
-      - bissias
-      - wright
-    - classifiers
-      - features important or also classifier
-      - no classifier fits all
-      - maps features to classes (or probabilities)
-      - classifier
-*** CHECK k-fingerprinting
-    \cite{kfingerprint} is one of the latest website fingerprinting
-    attacks. It offers comparable accuracy to \cite{effective} and
-    \cite{panchenko2}, with higher resistance to defenses than both of
-    these, as of the paper.
-
-    About 150 different features are evaluated with a random-forest
-    classifier. As each tree classifies a trace by the leaf it is
-    assigned to, and random forest has several such trees, the tree
-    leaves constitute a "fingerprint". A testing trace's fingerprint
-    is compared via kNN to the training fingerprints. If the nearest k
-    neighbors agree, the trace is classified thus.
-
-    As random forests offer feature importances, the paper also
-    evaluates which features offer the most information for
-    classification, see section [[#features][Features]].
+     As random forests offer feature importances, the paper also
+     evaluates which features offer the most information for
+     classification, see section [[#features][Features]].
 ** WRITE Defenses [3/8]
    :PROPERTIES:
    :CUSTOM_ID: defenses
@@ -1207,12 +1208,12 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* WRITE Results and Evaluation [52%]
+* WRITE Results and Evaluation [47%]
 ** DANIEL Introduction
    The following sections describe [[#setup][how data was collected and
    analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
    [[#eval-defense][various defenses]].
-** EVA Setup
+** WRITE Setup
    :PROPERTIES:
    :CUSTOM_ID: setup
    :END:
@@ -1221,6 +1222,14 @@ Facebook.com\\
     [[#feature-extraction][how classification input was extracted from the raw data]], and
     [[*Classification][how this input was assigned to
     classes/websites]].
+**** MOVE to capture
+    - no cacheing
+    - current tbb (auto-update)
+    - scripts etc
+    - xpra for slow network connection
+    - xvfb for local display
+    - marionette
+    - others, other tools
 *** DANIEL Sites
     :PROPERTIES:
     :CUSTOM_ID: sites
@@ -1532,9 +1541,13 @@ Facebook.com\\
     - cumul
     - also evaluated
       - knn
+        - very good on its own (cell) data, 20% or so less so on mine
       - panchenko1
+        - best result with knn with other metric for same features
       - cai et al\cite{ccs2012-fingerprinting}
       - herrmann\cite{ccsw09-fingerprinting}
+        - 47% accuracy on 30 sites
+        - ... on 100 sites
     - cumul wins
       - others bit less good
     - features seemingly less clean than available from other authors
