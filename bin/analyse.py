@@ -11,7 +11,7 @@ import time
 
 import counter
 
-JOBS_NUM = -3 # 1 (version1 to 4-6 (cumul onduckstein)), maybe also -4, ...
+JOBS_NUM = -3 # 1. maybe -4 for herrmann (2 == -3) used up all memory
 LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 #LOGLEVEL = logging.DEBUG
 #LOGLEVEL = logging.INFO
