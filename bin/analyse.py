@@ -32,6 +32,7 @@ ALL_MAP = {}
 scaler = None
 
 # td: check if correct to use like this (or rather like _size_increase)
+# td: think if remove (not used)
 def _average_duration(counter_dict):
     '''@return the average duration over all traces'''
     ms = times_mean_std(counter_dict)
@@ -143,7 +144,7 @@ def _misclassification_rates(train, test, clf=GOOD[0]):
 def _my_grid(X, y,
              cs=np.logspace(11, 17, 4, base=2),
              gammas=np.logspace(-3, 3, 4, base=2),
-             results={}, num_jobs=JOBS_NUM, folds=5):
+             results={}, num_jobs=JOBS_NUM, folds=5, kwargs={}):
     '''grid-search on fixed params
 
     @param results are previously computed results {(c, g): accuracy, ...}
@@ -153,7 +154,7 @@ def _my_grid(X, y,
     for c in cs:
         for g in gammas:
             clf = multiclass.OneVsRestClassifier(svm.SVC(
-                gamma=g, C=c, class_weight='balanced'))
+                gamma=g, C=c, class_weight='balanced', *kwargs))
             if (c,g) in results:
                 current = results[(c,g)]
             else:
@@ -217,7 +218,7 @@ def _std(counter_dict):
     return out
 
 def _scale(X, clf):
-    '''assumption: svc never called on two different data sets in
+    '''ASSUMPTION: svc never called on two different data sets in
     sequence.  That is: _scale(X_train, svc), _scale(X_test, svc),
     _scale(Y_train, svc), _scale(Y_test, svc), will not
     happen. (without a _scale(..., non_svc) in between). The first is
@@ -237,6 +238,24 @@ def _scale(X, clf):
     else:
         scaler = None
         return X
+
+def _size_increase(base, compare):
+    '''@return how much bigger/smaller is =compare= than =base= (in %)'''
+    diff = {}
+    if base.keys() != compare.keys():
+        keys = set(base.keys())
+        keys = keys.intersection(compare.keys())
+        logging.warn("keys are different, just used {} common keys"
+                     .format(len(keys)))
+    else:
+        keys = base.keys()
+    for k in keys:
+        diff[k] = float(compare[k][0]) / base[k][0]
+    return 100 * (gmean(diff.values()) -1)
+
+def _size_increase_helper(two_defenses):
+    return _size_increase(two_defenses[two_defenses.keys()[0]],
+                          two_defenses[two_defenses.keys()[1]])
 
 def _test(X, y, clf, nj=JOBS_NUM, folds=5):
     '''tests estimator with X, y, @return result (ndarray)'''
@@ -317,40 +336,16 @@ picks best result'''
         ALL_MAP[name] = res
     print '10-fold result: {}'.format(max(map(np.mean, res.values())))
 
-def _size_increase_helper(two_defenses):
-    return _size_increase(two_defenses[two_defenses.keys()[0]],
-                          two_defenses[two_defenses.keys()[1]])
-
-def _size_increase(base, compare):
-    '''@return how much bigger/smaller is =compare= than =base= (in %)'''
-    diff = {}
-    if base.keys() != compare.keys():
-        keys = set(base.keys())
-        keys = keys.intersection(compare.keys())
-        logging.warn("keys are different, just used {} common keys"
-                     .format(len(keys)))
-    else:
-        keys = base.keys()
-    for k in keys:
-        diff[k] = float(compare[k][0]) / base[k][0]
-    return 100 * (gmean(diff.values()) -1)
-
-def size_test(argv, outlier_removal=True):
-    '''1. collect traces
-    2. create stats
-    3. evaluate for each vs first'''
-    defenses = counter.for_defenses(argv[1:])
-    stats = {k: _bytes_mean_std(v) for (k,v) in defenses.iteritems()}
-    defense0 = argv[1]
-    for d in argv[2:]:
-        print '{}: {}'.format(d, _size_increase(stats[defense0], stats[d]))
-
+def open_world(defense_name, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
+    '''does an open-world test on data'''
+    defense = counter.all_from_dir(defense_name)
+    # split (cv?)
+    
 def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test
 
     =argv= is like sys.argv, =cumul= triggers CUMUL, else version 1,
-    =cc= determines whether the test data directories are reduced to
-    common keys
+    =cc= determines whether to reduce the test data to common keys
     '''
     # call with 1: x-validate test that
     # call with 2+: also train 1 (split), test 2,3,4,...
@@ -488,6 +483,16 @@ def site_sizes(stats):
         for defense in a:
             out[url].append(stats[defense][url][0])
     return out
+
+def size_test(argv, outlier_removal=True):
+    '''1. collect traces
+    2. create stats
+    3. evaluate for each vs first'''
+    defenses = counter.for_defenses(argv[1:])
+    stats = {k: _bytes_mean_std(v) for (k,v) in defenses.iteritems()}
+    defense0 = argv[1]
+    for d in argv[2:]:
+        print '{}: {}'.format(d, _size_increase(stats[defense0], stats[d]))
 
 def to_features(counters, max_lengths=None):
     '''transforms counter data to panchenko.v1-feature vector pair (X,y)

@@ -90,7 +90,7 @@
     - encouragement
     - readability
 * WAIT_FINISH Summary
-* WRITE Basics (=basics) [67%]
+* WRITE Basics [71%]
 ** DANIEL Introduction
    To protect online communication, journalists, whistleblowers,
    "normal people", and among others even military\cite{who-uses-tor}
@@ -109,7 +109,7 @@
    Fortunately, as soon as these weaknesses became known, defenses
    were proposed. [[#defenses][The subsequent section]] shows different classes of
    defenses and examines them in detail.
-** WRITE Website Fingerprinting [21/26]
+** WRITE Website Fingerprinting [21/24]
    :PROPERTIES:
    :CUSTOM_ID: wf
    :END:
@@ -275,11 +275,10 @@ Facebook.com\\
     \url{http://wayback.archive.org/web/20101204053757/http://www.microsoft.com/windowsxp/expertzone/chats/transcripts/08_0814_ez_ie8.mspx}]
     in all major browsers. After \cite{panchenko}, Firefox's built-in
     request pipelining was enabled[fn::with added request order
-    randomization] as part of a no-cost defense prototype in the
-    Tor-Browser-Bundle
-    \cite{experimental}. \cite{ccs2012-fingerprinting} found
-    fingerprinting to be slightly easier with this defense enabled than
-    without.
+    randomization] as part of a no-cost defense prototype in the Tor
+    Browser Bundle \cite{experimental}. \cite{ccs2012-fingerprinting}
+    found fingerprinting to be slightly easier with this defense
+    enabled than without.
 
     \cite{experimental} suggests that website fingerprinting could
     further be hindered by HTTP/2.0 \cite{rfc7540}, or even a proxy
@@ -356,20 +355,20 @@ Facebook.com\\
      characteristics.[fn::for a general introduction to cryptography,
      consider \cite{applied96}, for a high-level introduction to
      traffic analysis, see \cite{introta}].
-*** WRITE Website Fingerprinting 2.0
+*** KEYWORDS Website Fingerprinting 2.0
     :PROPERTIES:
     :CUSTOM_ID: wf2.0
     :END:
 **** WRITE Introduction
-     While previous website fingerprinting attacks did the comparison
-     mostly by-hand, and used only object sizes, newer approaches all
-     use some machine-learning techniques, and most extract more
-     features from the traces.
+     [[#wf1.0][Previous website fingerprinting attacks]] did the comparison mostly
+     by-hand, and used only object sizes; Later approaches all use
+     some machine-learning techniques, and most extract more features
+     from the traces.
 
      This section describes the [[#trailbreakers][first approaches]] of machine-learning
      based website fingerprinting, followed by [[#p1][the first sucessful
-     attack against Tor]]. It then describes two state-of-the-art (as of
-     \cite{kfingerprint}) methods of website fingerprinting: [[#cumul][Panchenko
+     attack against Tor]]. It then describes state-of-the-art
+     \cite{kfingerprint} methods of website fingerprinting: [[#cumul][Panchenko
      et al.'s CUMUL]] and [[#knn][Wang et al.'s kNN]], each followed by a
      description of the used classifier.
 
@@ -635,7 +634,7 @@ Facebook.com\\
       #+CAPTION: The left picture shows the five closest neighbors around the test instance $x_q$, which is then classified as =-=. The right shows the k==1-decision boundary around several training instances (the area where a test instance would be classified as the point). Source \cite[Figure 8.1]{mitchell}
       #+ATTR_LATEX: :width 0.7\textwidth
       [[./pictures/mitchell-fig8.1.png]]
-**** WRITE Features
+**** MOVE below [[#trailbreakers][Trailbreakers]] WRITE Features
      :PROPERTIES:
      :CUSTOM_ID: features
      :END:
@@ -659,8 +658,9 @@ Facebook.com\\
      Both \cite{effective} and \cite{panchenko} also consider the first
      packets of a transmission/the HTML page as effective features.
 
-     \cite{panchenko2} allows for the visual comparison of website
-     traces. See for example Figure [[CUMUL_traces]].
+     \cite{panchenko2}'s cumulative feature allows for the visual
+     comparison of website traces. See for example Figure
+     [[CUMUL_traces]].
      #+CAPTION[CUMUL features example]: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}.
      #+NAME: CUMUL_traces
      [[./pictures/cumul_aus_paper.pdf]]
@@ -670,6 +670,12 @@ Facebook.com\\
        - panchenko
        - k-forest
        - wang implicit
+**** MOVE also, keep below Features KEYWORDS Classifiers
+     - features also important, basic measure
+     - as soon as these exist, classify
+     - maps features to classes (or probabilities)
+     - no classifier fits all
+     - classifier
 **** EVA Extremely Randomized Trees
      #+INDEX: classifier!Extra-Trees
      #+INDEX: classifier!Extremely Randomized Trees
@@ -685,27 +691,20 @@ Facebook.com\\
      gradient boosting models, which as of \cite[sec.15.3]{esl} also
      outperform Random Forests. All offer single feature importances,
      as requested by \cite{critique}.
-**** MOVE to subsection below [[#features][Features]]
-    - classifiers
-      - features important or also classifier
-      - no classifier fits all
-      - maps features to classes (or probabilities)
-      - classifier
 **** CHECK k-fingerprinting
      \cite{kfingerprint} is one of the latest website fingerprinting
      attacks. It offers comparable accuracy to \cite{effective} and
      \cite{panchenko2}, with higher resistance to defenses than both of
-     these, as of the paper.
+     these.
 
      About 150 different features are evaluated with a random-forest
      classifier. As each tree classifies a trace by the leaf it is
      assigned to, and random forest has several such trees, the tree
      leaves constitute a "fingerprint". A testing trace's fingerprint
      is compared via kNN to the training fingerprints. If the nearest
-     /k/ neighbors agree, the trace is classified thus.
+     /k/ neighbors' classes agree, the trace is classified thus.
 
-     As random forests offer feature importances, the paper also
-     evaluates which features offer the most information for
+     The paper also evaluates which features help most in
      classification, see section [[#features][Features]].
 ** WRITE Defenses [3/8]
    :PROPERTIES:
@@ -845,7 +844,7 @@ Facebook.com\\
     - padding (sslv2 \to 3)
     - requestpolicy (hintz 2nd way)
     - text-only browsing (hintz 2nd way)
-* WRITE Methods (=methods) [52%]
+* WRITE Methods [52%]
 ** WRITE Introduction
    - short what could be done better
    - longer: approach / variants
@@ -1287,7 +1286,7 @@ Facebook.com\\
      distributions, f.ex.\space{}in size, as mentioned in \cite{web-is-doom}.
 
      To solve this, the top 100 sites's traces[fn::both for no defense
-     and with add-on version 18.2 (see [[*0.18: configurability][0.18: configurability]])] were
+     and with add-on version 0.18.2 (see [[*0.18: configurability][0.18: configurability]])] were
      ordered by incoming byte size, and percentiles were
      chosen.[fn::the method to do this is =top30()= in [[#analyse][analyse.py]], the
      traces were from add-on version 0.18.2]. Due to them being well
@@ -1352,10 +1351,9 @@ Facebook.com\\
     extension.
 
     Single traces are captured via the Python script ~one_site.py~,
-    see appendix [[#1site_desc]]. It cleans the cache for each
-    capture[fn::by restarting the Tor Browser Bundle] A step-by-step
-    setup guide can be found in appendix [[#setup]].
-**** WAIT github config files upload + mention ([[file:~/da/da.org::*github,%20then%20search%20thesis,%20insert%20links][github, then search thesis, insert links]])
+    see appendix [[#1site_desc]]. It cleans the cache between
+    captures[fn::by restarting the Tor Browser Bundle]. Setup guides
+    can be found in appendix [[#setup-details]].
 *** DANIEL Feature Extraction
 **** DANIEL Introduction
      :PROPERTIES:
@@ -2045,7 +2043,7 @@ Facebook.com\\
 \part{Appendix}
 * appendices (begin above this headline; this is for searching)     :ARCHIVE:
   above, as in this section cuts it out (due to ARCHIVE tag)
-* Testing Results different defenses
+* WRITE Testing Results different defenses
 ** Accuracy on 30 Sites, Training against 2016-07-06
 #+CAPTION: Testing results of various defenses and other dates when trained on capture data from 2016-07-06. The columns headers show either the classifier, or overhead.
 #+NAME: some_name_test
@@ -2054,7 +2052,7 @@ Facebook.com\\
 ** Accuracy on 30 Sites, Training against 2016-07-21
    #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
    #+INCLUDE: "data/results/alternatives.org::#vs-07-21" :only-contents t
-* Outlier Removal Results with Extra-Trees Classifier
+* KEYWORDS Outlier Removal Results with Extra-Trees Classifier
   #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{3}{4}|
   #+CAPTION: Effect of outlier removal on Extra-Trees classifier accuracy
   #+INCLUDE: "data/results/alternatives.org::#outlier_removal_et" :only-contents t
@@ -2134,8 +2132,8 @@ Facebook.com\\
   Both programs rely on the libpcap library for access to network
   packets.
 ** TODO better title
-* tools
-** criteria for tool to retrieve websites
+* KEYWORDS tools
+** KEYWORDS criteria for tool to retrieve websites
    - script tor browser: load new page
    - easy set-up
    - should
@@ -2209,28 +2207,30 @@ Facebook.com\\
      - modified browser
      - selenium: daniel
      - plain tor bundle
-* setup
+* KEYWORDS setup
   :PROPERTIES:
   :CUSTOM_ID: setup-details
   :END:
-** TODO by-hand initialization to retrieve websites
-   After installation, the tor browser bundle performs some
-   initialization steps. To complete these easily, start the tor
-   browser bundle-firefox by hand once, set the connection type and
-   have it load any website via Tor. All this also downloads Tor
-   metadata, which allows to connect more quickly later on.
-** tshark installation
+** KEYWORDS Introduction
+** MOVE below [[*how to get the Tor Browser Bundle to work][how to get the Tor Browser Bundle to work]] CHECK Initialization by Hand
+   After installation, the Tor Browser Bundle needs to perform
+   initialization steps. To complete these easily, start it once by
+   hand, set the connection type and load a website via Tor for setup
+   validation. Tor network metadata is retrieved in the process, which
+   allows quicker connections later on.
+** KEYWORDS tshark installation
    You also need to install =tshark= [fn::via f.ex.\space{}=sudo apt-get
    install tshark= on Debian-based systems] and enable the user to
    capture packets [fn::via (Debian-based) =sudo dpkg-reconfigure
    wireshark-common= and adding the user to the =wireshark= group
    (in =/etc/groups=)].
-** TODO how to get tor browser bundle to work
-   In order to start the tor browser bundle via the =./firefox=
-   command, you need libraries, which are bundled with the binary.
-   They can be found inside the =/TorBrowser/Tor= directory.
+** WRITE Starting Firefox in the Tor Browser Bundle on the Command Line
+   To start the Tor Browser Bundle via the =./firefox= command, you
+   need libraries, which are bundled with the binary. They can be
+   found inside the =/TorBrowser/Tor= directory.
 
-   The library path environment variable can be set on the command-line via
+   The library path environment variable can be set on the
+   command-line via
    #+BEGIN_SRC sh
    export LD_LIBRARY_PATH=/lib:/usr/lib:/path/to/bundle/Browser/TorBrowser/Tor
    #+END_SRC
@@ -2238,7 +2238,7 @@ Facebook.com\\
 
    - install xpra
 *** TODO is old, still use, or remove?
-** Avoiding safe mode on restart
+** CHECK Avoiding safe mode on restart
    If Firefox was killed via a signal (as opposed to closing the
    window), it prompts to start in Safe Mode afterwards.
 
@@ -2253,7 +2253,7 @@ Facebook.com\\
    kills via =sed -i '/toolkit\.startup\.recent_crashes/d'
    /path/to/prefs.js=.
 *** TODO TBB current version
-** headless configuration
+** WRITE Headless Configuration
    If you want to capture on a headless server, you can use the
    =xvfb=-package. which is installed via =sudo apt-get install xvfb=.
 
@@ -2266,6 +2266,7 @@ Facebook.com\\
    =export DISPLAY:1=
 
    and start the retrieval as mentioned above.
+   - automatic via ...
 ** WRITE filtering pcap files [0/4]
    Although this requirement could later be removed (see [[#future-work][section
    future work]]), the addon currently needs a generator of cover
@@ -2293,10 +2294,7 @@ Facebook.com\\
    - then move all files to a common directory
 **** TODO include script from duckstein
 *** TODO link to man tshark
-** overview
-   - for the sake of comparability, also bridge for addon tests
-     - and easier to filter
-** Marionette installation
+** CHECK Marionette installation
    Marionette exists as a Python Package. It is thus easily installed
    via[fn::After installing pip (f.ex.\space{}Debian: =sudo apt-get install python-pip=)]
    #+BEGIN_SRC sh
@@ -2310,10 +2308,10 @@ Facebook.com\\
 *** TODO merge with above and split out pip install (also needed for wsgi)
 
 ** WAIT Tor Browser and Firefox errors via X-forwarding
-   In case someone experiences graphics errors when using Tor via
-   X-forwarding, there are several solutions. The first thing to check
-   is that the corresponding Firefox version on the same system yields
-   the same error.
+   In case of graphics errors when using Tor via X-forwarding, there
+   are several solutions. The first thing to check is that the
+   corresponding Firefox version on the same system yields the same
+   error.
 
    If so, the first workaround would be to use the =--sync=
    command-line option to both firefox and the TBB. This introduces
@@ -2324,7 +2322,11 @@ Facebook.com\\
    #+BEGIN_SRC sh
      xpra start ssh:user@host:ARBITRARY_DISPLAY_ID --start=/path/to/start-tor-browser
    #+END_SRC
-*** WAIT [#C] bug report: quote other's error messages, link to bug report
+
+   The bug report is fixed as of Firefox version 50.1. Yet, it will
+   take until March 2017 for this fix to reach the ESR version on
+   which the TBB is based.
+*** WAIT [#C] bug report link + firefox ESR release versions
 ** WRITE How to get Wang-kNN to work
    :PROPERTIES:
    :CUSTOM_ID: wang-steps
@@ -2387,7 +2389,7 @@ Facebook.com\\
  \bibliography{docs/master}
  \bibliographystyle{plain}
  \input{diplomarbeit.ind}
-* Lists of Sites
+* KEYWORDS Lists of Sites
 ** KEYWORDS Modified Top-100
    :PROPERTIES:
    :CUSTOM_ID: top-100
@@ -2571,11 +2573,12 @@ Facebook.com\\
 *** TODO test link
 
 * WRITE Evaluation Scripts
-** WRITE retrieve trace: ~one_site.py~
+** WRITE Retrieve Trace: ~one_site.py~
    :PROPERTIES:
    :CUSTOM_ID: 1site_desc
    :END:
-   If the Browser Bundle runs when started manually, webpages can be
+   If the Browser Bundle runs when started manually[fn::see section [[*by-hand initialization to retrieve
+    websites][by-hand initialization to retrieve websites]]], webpages can be
    retrieved automatically. This is done via the ~one_site.py~ script.
 
    The script
@@ -2613,7 +2616,8 @@ Facebook.com\\
    - browsers cache
      - only helps in cover traffic, (unless warm/cold site model is used)
      - thus by disabling, cover traffic has a harder job at concealing
-*** WAIT github link
+*** WAIT github config files upload + mention ([[file:~/da/da.org::*github,%20then%20search%20thesis,%20insert%20links][github, then search thesis, insert links]])
+    - git commit, see link
 ** WRITE counter.py: represent trace files
    :PROPERTIES:
    :CUSTOM_ID: counter
@@ -2724,10 +2728,10 @@ Facebook.com\\
     approximation, random trees, etc.
 *** WAIT github for analyse.py code, change text
 ** see also [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]                 :ARCHIVE:
-* TODO Remove same-host cover traffic server from traces: =7777.sh=
-  <<7777>>
-  #+INCLUDE: "./bin/7777.sh" src sh
-* Addon
+** KEYWORDS Remove same-host cover traffic server from traces: =7777.sh=
+   <<7777>>
+   #+INCLUDE: "./bin/7777.sh" src sh
+* MOVE sub [[*modules][modules {1/15}]] Addon
 ** Control module User
    <<user.js>>
    #+INCLUDE: "./cover/js/user.js" src js
@@ -2754,7 +2758,7 @@ Facebook.com\\
   format it for gnuplot (inserting appropriate newlines via =sed= and
   removing extra characters via =tr=), and =gnuplot= s it to a png
   file with the name of the trace file as prefix.
-* modules [1/15]
+* KEYWORDS modules [1/15]
     #+CAPTION: Modules/Classes of the Addon
     #+ATTR_LATEX: :float nil :width 0.5\textwidth
     [[./pictures/model.eps]]

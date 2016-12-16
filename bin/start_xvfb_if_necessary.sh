@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # exit if not sourced
-[[ "${BASH_SOURCE[0]}" != "${0}" ]] || echo 'source this script!'
+[[ "${BASH_SOURCE[0]}" != "${0}" ]] || echo 'source this script (via "source script.sh")!'
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] || exit
 
 # start xvfb, set display
