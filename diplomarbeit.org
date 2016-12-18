@@ -90,7 +90,7 @@
     - encouragement
     - readability
 * WAIT_FINISH Summary
-* WRITE Basics [71%]
+* WRITE Basics [67%]
 ** DANIEL Introduction
    To protect online communication, journalists, whistleblowers,
    "normal people", and among others even military\cite{who-uses-tor}
@@ -109,7 +109,7 @@
    Fortunately, as soon as these weaknesses became known, defenses
    were proposed. [[#defenses][The subsequent section]] shows different classes of
    defenses and examines them in detail.
-** WRITE Website Fingerprinting [21/24]
+** WRITE Website Fingerprinting [21/26]
    :PROPERTIES:
    :CUSTOM_ID: wf
    :END:
@@ -355,27 +355,33 @@ Facebook.com\\
      characteristics.[fn::for a general introduction to cryptography,
      consider \cite{applied96}, for a high-level introduction to
      traffic analysis, see \cite{introta}].
-*** KEYWORDS Website Fingerprinting 2.0
+*** WRITE Website Fingerprinting 2.0
     :PROPERTIES:
     :CUSTOM_ID: wf2.0
     :END:
-**** WRITE Introduction
-     [[#wf1.0][Previous website fingerprinting attacks]] did the comparison mostly
-     by-hand, and used only object sizes; Later approaches all use
+**** CHECK Introduction
+     [[#wf1.0][Previous website fingerprinting attacks]] compared websites mostly
+     by-hand, relying only on object sizes; Later approaches all use
      some machine-learning techniques, and most extract more features
      from the traces.
 
-     This section describes the [[#trailbreakers][first approaches]] of machine-learning
-     based website fingerprinting, followed by [[#p1][the first sucessful
-     attack against Tor]]. It then describes state-of-the-art
-     \cite{kfingerprint} methods of website fingerprinting: [[#cumul][Panchenko
-     et al.'s CUMUL]] and [[#knn][Wang et al.'s kNN]], each followed by a
-     description of the used classifier.
+     There are roughly two steps to website fingerprinting: feature
+     extraction and classification[fn::German literature,
+     e.g. \cite{meffert}, subsects /feature extraction/ further into
+     /Merkmalsextraktion/, and /Merkmalsreduktion/.]
 
-     - basics: extratrees(?)
-     - k-fingerprinting
-     - features (where to put this? up above?)
-     - classifiers (below features)
+     The former transforms the raw input data --- in our case, website
+     retrieval traces --- into characteristics --- in our case,
+     numbers for f.ex. the number of outgoing packets. The latter
+     groups these characteristics into categories.
+
+     This section describes the [[#trailbreakers][first approaches]] of machine-learning
+     based website fingerprinting. This is followed by a bit on
+     /feature extraction/ and /classification/. The next section
+     describes [[#p1][the first sucessful attack against Tor]]. The final
+     sections contain state-of-the-art \cite{kfingerprint} methods of
+     website fingerprinting: [[#cumul][Panchenko et al.'s CUMUL]] and [[#knn][Wang et
+     al.'s kNN]], each followed by a description of the used classifier.
 **** DANIEL Trailbreakers
      :PROPERTIES:
      :CUSTOM_ID: trailbreakers
@@ -396,6 +402,48 @@ Facebook.com\\
     conjecture[fn:: \cite{Liberatore:2006} mention that they also did
     some experiments which lead to this conjecture] that this result
     could be improved with attacks specifically tailored to Tor.
+**** WRITE Features
+     :PROPERTIES:
+     :CUSTOM_ID: features
+     :END:
+     As stressed by \cite{critique}, analysis of which features
+     contribute the most towards classification will help to defend
+     against website fingerprinting. \cite{panchenko} provides a
+     qualitative analysis. \cite{kfingerprint} classify using random
+     forests[fn::forests of randomized trees, see
+     \cite{DBLP:journals/ml/Breiman01}], which provide quantitative
+     feature importance feedback.[fn:: f.ex.\space{}in scikit-learn
+     \cite{scikit-learn} via the =_feature_importances= property]
+
+     According to \cite{kfingerprint}, the top-five features are the
+     number (both absolute and percentage of total) of both incoming
+     and outgoing packets. The standard deviation of the packet
+     ordering list[fn:: Panchenko et al \cite{panchenko} call these
+     features /Number Markers/] completes the top five. Each added
+     feature increases accuracy, yet with nearly the same accuracy
+     for the best 30 as for the total of 150 features.
+
+     Both \cite{effective} and \cite{panchenko} also consider the first
+     packets of a transmission/the HTML page as effective features.
+
+     \cite{panchenko2}'s cumulative feature allows for the visual
+     comparison of website traces. See for example Figure
+     [[CUMUL_traces]].
+     #+CAPTION[CUMUL features example]: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}.
+     #+NAME: CUMUL_traces
+     [[./pictures/cumul_aus_paper.pdf]]
+
+     - dyer: most important are the features, similar results for naive
+     - on feature importances:
+       - panchenko
+       - k-forest
+       - wang implicit
+**** WRITE Classifiers
+     - once features exist, map these to classes/class probab
+     - features also important, basic measure
+     - maps features to classes (or probabilities)
+     - no classifier fits all
+     - classifier
 **** EVA Panchenko Version 1
      :PROPERTIES:
      :CUSTOM_ID: p1
@@ -634,48 +682,6 @@ Facebook.com\\
       #+CAPTION: The left picture shows the five closest neighbors around the test instance $x_q$, which is then classified as =-=. The right shows the k==1-decision boundary around several training instances (the area where a test instance would be classified as the point). Source \cite[Figure 8.1]{mitchell}
       #+ATTR_LATEX: :width 0.7\textwidth
       [[./pictures/mitchell-fig8.1.png]]
-**** MOVE below [[#trailbreakers][Trailbreakers]] WRITE Features
-     :PROPERTIES:
-     :CUSTOM_ID: features
-     :END:
-     As stressed by \cite{critique}, analysis of which features
-     contribute the most towards classification will help to defend
-     against website fingerprinting. \cite{panchenko} provides a
-     qualitative analysis. \cite{kfingerprint} classify using random
-     forests[fn::forests of randomized trees, see
-     \cite{DBLP:journals/ml/Breiman01}], which provide quantitative
-     feature importance feedback.[fn:: f.ex.\space{}in scikit-learn
-     \cite{scikit-learn} via the =_feature_importances= property]
-
-     According to \cite{kfingerprint}, the top-five features are the
-     number (both absolute and percentage of total) of both incoming
-     and outgoing packets. The standard deviation of the packet
-     ordering list[fn:: Panchenko et al \cite{panchenko} call these
-     features /Number Markers/] completes the top five. Each added
-     feature increases accuracy, yet with nearly the same accuracy
-     for the best 30 as for the total of 150 features.
-
-     Both \cite{effective} and \cite{panchenko} also consider the first
-     packets of a transmission/the HTML page as effective features.
-
-     \cite{panchenko2}'s cumulative feature allows for the visual
-     comparison of website traces. See for example Figure
-     [[CUMUL_traces]].
-     #+CAPTION[CUMUL features example]: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}.
-     #+NAME: CUMUL_traces
-     [[./pictures/cumul_aus_paper.pdf]]
-
-     - dyer: most important are the features, similar results for naive
-     - on feature importances:
-       - panchenko
-       - k-forest
-       - wang implicit
-**** MOVE also, keep below Features KEYWORDS Classifiers
-     - features also important, basic measure
-     - as soon as these exist, classify
-     - maps features to classes (or probabilities)
-     - no classifier fits all
-     - classifier
 **** EVA Extremely Randomized Trees
      #+INDEX: classifier!Extra-Trees
      #+INDEX: classifier!Extremely Randomized Trees
@@ -691,21 +697,6 @@ Facebook.com\\
      gradient boosting models, which as of \cite[sec.15.3]{esl} also
      outperform Random Forests. All offer single feature importances,
      as requested by \cite{critique}.
-**** CHECK k-fingerprinting
-     \cite{kfingerprint} is one of the latest website fingerprinting
-     attacks. It offers comparable accuracy to \cite{effective} and
-     \cite{panchenko2}, with higher resistance to defenses than both of
-     these.
-
-     About 150 different features are evaluated with a random-forest
-     classifier. As each tree classifies a trace by the leaf it is
-     assigned to, and random forest has several such trees, the tree
-     leaves constitute a "fingerprint". A testing trace's fingerprint
-     is compared via kNN to the training fingerprints. If the nearest
-     /k/ neighbors' classes agree, the trace is classified thus.
-
-     The paper also evaluates which features help most in
-     classification, see section [[#features][Features]].
 ** WRITE Defenses [3/8]
    :PROPERTIES:
    :CUSTOM_ID: defenses
@@ -1215,7 +1206,7 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* WRITE Results and Evaluation [44%]
+* WRITE Results and Evaluation [45%]
 ** DANIEL Introduction
    The following sections describe [[#setup][how data was collected and
    analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
@@ -1352,8 +1343,8 @@ Facebook.com\\
 
     Single traces are captured via the Python script ~one_site.py~,
     see appendix [[#1site_desc]]. It cleans the cache between
-    captures[fn::by restarting the Tor Browser Bundle]. Setup guides
-    can be found in appendix [[#setup-details]].
+    captures[fn::by restarting the Tor Browser Bundle]. Evaluation
+    setup guides can be found in appendix [[#setup-details]].
 *** DANIEL Feature Extraction
 **** DANIEL Introduction
      :PROPERTIES:
@@ -1554,7 +1545,7 @@ Facebook.com\\
       - maybe due to changes in tbb since then(?)
     - tables (or graphics?)
       - success of classifiers
-*** WAIT Which Features Help Most in Classification
+*** WRITE Which Features Help Most in Classification
     #+CAPTION: Importance of CUMUL features
     #+ATTR_LATEX: :width 0.4\textwidth
     [[./pictures/feature_importances.eps]]
@@ -1643,7 +1634,8 @@ Facebook.com\\
         - this was before labelling erroneous traces
 *** KEYWORDS Bridge Usage
     - most captures using bridge, a few without
-    - bridge accuracy very slightly higher
+    - bridge accuracy slightly higher (0.856360007881 with bridge
+      instead of 0.8331922214032221403 without)
     - should not alter wf results in a meaningful way
 ** WRITE Evaluation of Defenses [1/14]
 *** WAIT Introduction
@@ -1725,7 +1717,7 @@ Facebook.com\\
      The size-guessing =b= flavors produce significantly
      higher overhead, but yield a further small reduction of classifier
      accuracy.
-**** WAIT relation FACTOR to overhead
+**** MOVE to appendix WAIT relation FACTOR to overhead
     - problem: tunable: factor correlation to overhead
       - not given for 0.15, retro, 0.18-0.21
       - old graph: cluster for retro, etc
@@ -2212,12 +2204,6 @@ Facebook.com\\
   :CUSTOM_ID: setup-details
   :END:
 ** KEYWORDS Introduction
-** MOVE below [[*how to get the Tor Browser Bundle to work][how to get the Tor Browser Bundle to work]] CHECK Initialization by Hand
-   After installation, the Tor Browser Bundle needs to perform
-   initialization steps. To complete these easily, start it once by
-   hand, set the connection type and load a website via Tor for setup
-   validation. Tor network metadata is retrieved in the process, which
-   allows quicker connections later on.
 ** KEYWORDS tshark installation
    You also need to install =tshark= [fn::via f.ex.\space{}=sudo apt-get
    install tshark= on Debian-based systems] and enable the user to
@@ -2238,6 +2224,15 @@ Facebook.com\\
 
    - install xpra
 *** TODO is old, still use, or remove?
+** CHECK Initialization by Hand
+   :PROPERTIES:
+   :CUSTOM_ID: by-hand
+   :END:
+   After installation, the Tor Browser Bundle needs to perform
+   initialization steps. To complete these easily, start it once by
+   hand, set the connection type and load a website via Tor for setup
+   validation. Tor network metadata is retrieved in the process, which
+   allows quicker connections later on.
 ** CHECK Avoiding safe mode on restart
    If Firefox was killed via a signal (as opposed to closing the
    window), it prompts to start in Safe Mode afterwards.
@@ -2577,9 +2572,9 @@ Facebook.com\\
    :PROPERTIES:
    :CUSTOM_ID: 1site_desc
    :END:
-   If the Browser Bundle runs when started manually[fn::see section [[*by-hand initialization to retrieve
-    websites][by-hand initialization to retrieve websites]]], webpages can be
-   retrieved automatically. This is done via the ~one_site.py~ script.
+   If the Browser Bundle runs when started manually[fn::see section
+   [[#by-hand]]], webpages can be retrieved automatically. This is done
+   via the ~one_site.py~ script.
 
    The script
 
@@ -2731,10 +2726,6 @@ Facebook.com\\
 ** KEYWORDS Remove same-host cover traffic server from traces: =7777.sh=
    <<7777>>
    #+INCLUDE: "./bin/7777.sh" src sh
-* MOVE sub [[*modules][modules {1/15}]] Addon
-** Control module User
-   <<user.js>>
-   #+INCLUDE: "./cover/js/user.js" src js
 * WRITE WF-Trace Pictures
   :PROPERTIES:
   :CUSTOM_ID: wf-pictures
@@ -2762,6 +2753,9 @@ Facebook.com\\
     #+CAPTION: Modules/Classes of the Addon
     #+ATTR_LATEX: :float nil :width 0.5\textwidth
     [[./pictures/model.eps]]
+** Control module User
+   <<user.js>>
+   #+INCLUDE: "./cover/js/user.js" src js
 ** TODO update picture to reflect on current addon
 ** TODO how to show (singleton)-module in UML
 ** TODO Watcher

@@ -508,13 +508,32 @@ def to_features(counters, max_lengths=None):
     for domain, dom_counters in counters.iteritems():
         for count in dom_counters:
             if not count.warned:
-                X_in.append(count.panchenko(max_lengths))
-                out_y.append(class_number)
-                domain_names.append(domain)
+                _trace_append(X_in, out_y, domain_names,
+                    count.panchenko(max_lengths), class_number, domain)
             else:
                 logging.warn('%s: one discarded', domain)
         class_number += 1
     return (np.array(X_in), np.array(out_y), domain_names)
+
+def _trace_append(X, y, y_names, x_add, y_add, name_add):
+    '''appends single trace to X, y, y_names
+    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); X
+    [[1, 2, 3]]
+    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); y_n
+    ['test']
+    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); y
+    [0]'''
+    X.append(x_add)
+    y.append(y_add)
+    y_names.append(name_add)
+
+def _trace_list_append(X, y, y_names, trace_list, method, list_id, name):
+    '''appends list of traces to X, y, y_names'''
+    for trace in trace_list:
+        if not trace.warned:
+            _trace_append(X, y, y_names, trace.__getattribute__(method)(), list_id, name)
+        else:
+            logging.warn('%s: one discarded', name)
 
 # td: refactor: code duplication with to_features
 def to_features_cumul(counter_dict):
@@ -524,20 +543,20 @@ def to_features_cumul(counter_dict):
     class_number = 0
     domain_names = []
     for domain, dom_counters in counter_dict.iteritems():
-        for count in dom_counters:
-            if not count.warned:
-                X_in.append(count.cumul())
-                out_y.append(class_number)
-                domain_names.append(domain)
-            else:
-                logging.warn('%s: one discarded', domain)
-        class_number += 1
+        ## TODO: codup
+        if domain is "background":
+            _trace_list_append(X_in, out_y, domain_names,
+                               dom_counters, "cumul", -1, "background")
+        else:
+            _trace_list_append(X_in, out_y, domain_names,
+                dom_counters, "cumul", class_number, "background")
+            class_number += 1
     return (np.array(X_in), np.array(out_y), domain_names)
 
 # td: refactor: much code duplication with to_features_cumul (how to
 # call fixed method on changing objects?)
-def to_features_hermann(counter_dict):
-    '''@return hermann et al's feature matrix from counters'''
+def to_features_herrmann(counter_dict):
+    '''@return herrmann et al's feature matrix from counters'''
     # 1. get all packet sizes
     psizes = set()
     for counter_list in counter_dict.values():
@@ -552,13 +571,8 @@ def to_features_hermann(counter_dict):
     domain_names = []
     out_y = []
     for domain, dom_counters in counter_dict.iteritems():
-        for count in dom_counters:
-            if not count.warned:
-                X_in.append(count.hermann(list_psizes))
-                out_y.append(class_number)
-                domain_names.append(domain)
-            else:
-                logging.warn('%s: one discarded', domain)
+        _trace_list_append(X_in, out_y, domain_names,
+                           dom_counters, "herrmann", class_number, domain)
         class_number += 1
     return (np.array(X_in), np.array(out_y), domain_names)
 

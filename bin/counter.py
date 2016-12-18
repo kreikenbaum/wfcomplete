@@ -542,7 +542,7 @@ class Counter(object):
         self._postprocess()
         return self.fixed[feature_name]
 
-    def hermann(self, p_sizes):
+    def herrmann(self, p_sizes):
         '''@return bit vector: for each size in p_sizes, if counter has packet of that size'''
         out = [0] * len(p_sizes)
         for index,size in enumerate(p_sizes):
