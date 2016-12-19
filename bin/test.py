@@ -61,22 +61,39 @@ class TestCounter(unittest.TestCase):
                                       [str(x) for x in self.c_list]))
 
     def test_dict_to_cai(self):
-        tw = TestWriter()
+        tw = MockWriter()
         counter.dict_to_cai({'a': self.c_list}, tw)
-        self.assertEqual(tw.data, '''test 600
-test 600 600
-test 600 600
-test 600 600
-test 600 600
-test 600 600 600
-test 600 600 600 600
+        self.assertEqual(tw.data, '''test +
+test + +
+test + +
+test + +
+test + +
+test + + +
+test + + + +
 ''')
+#         self.assertEqual(tw.data, '''test 600
+# test 600 600
+# test 600 600
+# test 600 600
+# test 600 600
+# test 600 600 600
+# test 600 600 600 600
+# ''')
 
 class TestAnalyse(unittest.TestCase):
 
     def setUp(self):
         self.base_mock = {'a': (10, -1), 'b': (10, -1)}
         self.base_mock2 = {'a': (10, -1), 'b': (10, -1), 'c': (10, -1)}
+        self.c_list = map(counter._test, [1, 2, 2, 2, 2, 3, 4]) # counter-list
+
+    def test__background_to_xy(self):
+        X, y, yd = analyse.to_features_cumul({'background': self.c_list})
+        self.assertTrue(-1 in y, '-1 not in {}'.format(set(y)))
+
+    def test__non_background_to_xy(self):
+        X, y, yd = analyse.to_features_cumul({'a': self.c_list})
+        self.assertFalse(-1 in y)
 
     def test__size_increase_equal(self):
         self.assertEqual(analyse._size_increase(self.base_mock,
@@ -113,7 +130,7 @@ class TestAnalyse(unittest.TestCase):
                                100.*(pow(1./2, 1./3)-1))
 
 
-class TestWriter(object):
+class MockWriter(object):
     def __init__(self):
         self.data = ''
 

@@ -544,7 +544,7 @@ def to_features_cumul(counter_dict):
     domain_names = []
     for domain, dom_counters in counter_dict.iteritems():
         ## TODO: codup
-        if domain is "background":
+        if domain == "background":
             _trace_list_append(X_in, out_y, domain_names,
                                dom_counters, "cumul", -1, "background")
         else:
