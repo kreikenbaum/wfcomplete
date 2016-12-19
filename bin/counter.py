@@ -238,19 +238,6 @@ def all_from_wang(dirname="batch", cw=True):
             out[cls].append(Counter.from_wang(filename, cls, inst))
     return out
 
-def all_to_wang(counter_dict):
-    '''writes all counters in counter_dict to directory <code>batch</code>. also writes a list number url to ./batch_list'''
-    os.mkdir("batch")
-    batch_list = open("batch_list", "w")
-    url_id = 0
-    for (url, data) in counter_dict.iteritems():
-        batch_list.write("{}: {}\n".format(url_id, url))
-        for (counter_id, datum) in enumerate(data):
-            datum.to_wang(os.path.join(
-                "batch", "{}-{}".format(url_id, counter_id)))
-        url_id += 1
-    batch_list.close()
-
 def dict_to_cai(counter_dict, writeto):
     '''write counter_dict's entries to writeto'''
     for counter_list in counter_dict.values():
@@ -272,6 +259,19 @@ def dict_to_panchenko(counter_dict, dirname='p_batch'):
     for (k, v) in counter_dict.iteritems():
         with file(os.path.join(dirname, 'output-tcp', k), 'w') as f:
             list_to_panchenko(v, f)
+
+def dict_to_wang(counter_dict):
+    '''writes all counters in counter_dict to directory <code>batch</code>. also writes a list number url to ./batch_list'''
+    os.mkdir("batch")
+    batch_list = open("batch_list", "w")
+    url_id = 0
+    for (url, data) in counter_dict.iteritems():
+        batch_list.write("{}: {}\n".format(url_id, url))
+        for (counter_id, datum) in enumerate(data):
+            datum.to_wang(os.path.join(
+                "batch", "{}-{}".format(url_id, counter_id)))
+        url_id += 1
+    batch_list.close()
 
 # td: codup with dir_to... others (and this has nicer try-finally etc)
 def dir_to_cai(dirname, clean=True):
@@ -296,7 +296,7 @@ def dir_to_wang(dirname, remove_small=True, outlier_removal_lvl=0):
     counter_dict = all_from_dir('.', remove_small)
     if outlier_removal_lvl:
         counter_dict = outlier_removal(counter_dict, outlier_removal_lvl)
-    all_to_wang(counter_dict)
+    dict_to_wang(counter_dict)
     os.chdir(previous_dir)
 
 #td: code duplication dir_to (better: meta with method to what to do with dict)
