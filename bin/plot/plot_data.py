@@ -4,6 +4,7 @@
 - list of counters'''
 import Gnuplot
 
+import collections
 import numpy as np
 
 def _color_cycle(steps=6):
@@ -19,8 +20,6 @@ def _scale(lst, factor=1/1024.0):
 
 def _table_to_data(f):
     '''parse file f with org-mode table export data'''
-    import collections
-
     Datum = collections.namedtuple('Datum', ['overhead',
                                              'ExtraTrees',
                                              'OneVsRest_SVC'])
@@ -32,6 +31,9 @@ def _table_to_data(f):
         (name, et, rf, knn, _, svc, overhead, _) = line.split("\t")
         out[name] = Datum(float(overhead), float(et), float(svc))
     return out
+
+def _table_size_to_data(f):
+    pass
 
 def _to_color(value):
     '''gives color to hls-hue'''

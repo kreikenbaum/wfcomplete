@@ -402,6 +402,13 @@ Facebook.com\\
     conjecture[fn:: \cite{Liberatore:2006} mention that they also did
     some experiments which lead to this conjecture] that this result
     could be improved with attacks specifically tailored to Tor.
+**** WRITE Machine Learning
+     - according to Mitchell / malte
+     - input space
+     - feature space
+     - features
+     - classifiers
+       - decision function
 **** EVA Features
      :PROPERTIES:
      :CUSTOM_ID: features
@@ -432,10 +439,12 @@ Facebook.com\\
      #+CAPTION[CUMUL features example]: CUMUL\cite{panchenko2} features example at \url{https://www.internetsociety.org/sites/default/files/10_3-ndss2016-slides.pdf}.
      #+NAME: CUMUL_traces
      [[./pictures/cumul_aus_paper.pdf]]
-**** WRITE Classifiers
-     - once features exist, map these to classes/class probab
+**** MOVE include in [[*Machine Learning][Machine Learning]] WRITE Classifiers
+     Once these features/characteristics are extracted raw data, they
+     can be classified --- assigned to a class.
+
      - features also important, basic measure
-     - maps features to classes (or probabilities)
+     - or probabilities
      - no classifier fits all
      - classifier
 **** EVA Panchenko Version 1
@@ -784,10 +793,10 @@ Facebook.com\\
     \cite{effective} proposed the (offline) defense of morphing all
     traffic to supersequences of traffic patterns.
 *** WRITE Tamaraw
-    - fixed-rate sending, other fixed-rate receiving
-    - different rate up-/downstream
-      aka throttle if more data, send dummies if less
-    - evolution of BuFLO\cite{oakland2012-peekaboo}
+    Tamaraw\cite{a-systematic} is an evolution of
+    BuFLO\cite{oakland2012-peekaboo}. It proposes fixed-rate sending,
+    and receiving of data, with different parameters for each.
+    - aka throttle if more data, send dummies if less
     - longer sending cloaks end of transmission
     - tunable overhead
 *** DANIEL Stochastic Defenses
@@ -1200,7 +1209,7 @@ Facebook.com\\
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* WRITE Results and Evaluation [51%]
+* WRITE Results and Evaluation [47%]
 ** DANIEL Introduction
    The following sections describe [[#setup][how data was collected and
    analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
@@ -1523,6 +1532,10 @@ Facebook.com\\
      - do pictures/comparisons
      - timing comparison on disabled
 *** WRITE Attack Results
+    In comparison to \cite{panchenko2}'s results, our implementation
+    of CUMUL achieved classification rates of 93--96% on the =WANG14=
+    data set.
+
     - cumul
     - also evaluated
       - knn
@@ -1539,6 +1552,7 @@ Facebook.com\\
       - maybe due to changes in tbb since then(?)
     - tables (or graphics?)
       - success of classifiers
+**** WAIT [[file:~/da/da.org::*table%20%5B%5Bfile:~/da/git/data/results/alternatives.org::*single%2520accuracy%2520per%2520attack:%2520100%2520sites%5D%5Bsingle%20accuracy%20per%20attack:%20100%20sites%5D%5D%20to%20appendix,][table single accuracy per attack: 100 sites to appendix,]]
 *** WRITE Which Features Help Most in Classification
     #+CAPTION: Importance of CUMUL features
     #+ATTR_LATEX: :width 0.4\textwidth
@@ -1600,6 +1614,9 @@ Facebook.com\\
 
      denoted as =-1=. As seen in the table, it does not show any
      accuracy gain.
+     - depends greatly on test-data outlier removal
+  - but very little on training-data outlier removal
+  - -1 as effective as 1, but more complicated, so useless
 **** on average/per class numbers how many removed
 **** WRITE disadvantage of few instances with much outlier removal
     - problem for level 3 (only): number of splits requires more data
@@ -1632,7 +1649,7 @@ Facebook.com\\
       instead of 0.8331922214032221403 without)
     - should not alter wf results in a meaningful way
 **** WAIT [[file:~/da/da.org::*2nd%20nobridge%20retrieval,%20check%20that%20accuracy%20slightly%20lower][2nd nobridge retrieval, check that accuracy slightly lower]]
-** WRITE Evaluation of Defenses [1/13]
+** KEYWORDS Evaluation of Defenses [1/15]
 *** WAIT Introduction
     :PROPERTIES:
     :CUSTOM_ID: eval-defense
@@ -1671,7 +1688,7 @@ Facebook.com\\
    - WTF-PAD pads small sites much, larger sites little
      - addon-simple does the opposite
 **** WAIT until data and subsections are stable (f.ex.: optimal attacker and websites ?needed?)
-*** WRITE [#A] Add-on
+*** KEYWORDS [#A] Add-on
     :PROPERTIES:
     :CUSTOM_ID: def-addon
     :END:
@@ -1721,6 +1738,7 @@ Facebook.com\\
        (cumul\cite{panchenko2}) for 3.7930667802 % overhead
        increase. Wang-kNN\cite{effective}: 4.7619% decrease in
        accuracy.
+**** KEYWORDS Versions
 **** WAIT summary
     - optimal defenses: 22 and simple2@10
       - main addon has high overhead
@@ -2018,7 +2036,15 @@ Facebook.com\\
 \part{Appendix}
 * appendices (begin above this headline; this is for searching)     :ARCHIVE:
   above, as in this section cuts it out (due to ARCHIVE tag)
-* WRITE Testing Results different defenses
+* KEYWORDS Both Training and Testing on the Same Data Sets, All Attacks
+** 100 Sites
+#+CAPTION[Testing several 100-class data sets with state-of-the-art classifiers]: Testing several data sets with state-of-the-art classifiers. cumul is my reimplementation, see ..., =p-cumul= is panchenko et al's implementation, tts-cumul is cumul with data split into training and testing set. Size is the size increase in % as related to closest no-addon capture, x means no-addon capture.
+#+NAME: 100_sites
+#+ATTR_LATEX: :align |r||n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|
+#+INCLUDE: "data/results/alternatives.org::#100-sites-pub" :only-contents t
+*** WAIT link to cumul-reimpl sec
+*** WAIT link to split (tts-cumul)
+* WRITE Training without Addon, testing With
 ** Accuracy on 30 Sites, Training against 2016-07-06
 #+CAPTION: Testing results of various defenses and other dates when trained on capture data from 2016-07-06. The columns headers show either the classifier, or overhead.
 #+NAME: some_name_test
@@ -2027,10 +2053,12 @@ Facebook.com\\
 ** Accuracy on 30 Sites, Training against 2016-07-21
    #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
    #+INCLUDE: "data/results/alternatives.org::#vs-07-21" :only-contents t
-* KEYWORDS Outlier Removal Results with Extra-Trees Classifier
+* WRITE Outlier Removal Results with Extra-Trees Classifier
   #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|n{3}{4}|
   #+CAPTION[Effect of outlier removal on Extra-Trees classifier accuracy]: Effect of outlier removal on Extra-Trees classifier accuracy.
   #+INCLUDE: "data/results/alternatives.org::#outlier_removal_et" :only-contents t
+  - very similar to SVM, see section [[#wf-outlier-removal]] (but lower
+    accuracy here)
 * WRITE Versions
   :PROPERTIES:
   :CUSTOM_ID: versions
@@ -2216,21 +2244,24 @@ Facebook.com\\
    hand, set the connection type and load a website via Tor for setup
    validation. Tor network metadata is retrieved in the process, which
    allows for quicker connections later on.
-** CHECK Avoiding safe mode on restart
+** MOVE below [[*Marionette installation][Marionette installation]] CHECK Avoiding safe mode on restart
+   :PROPERTIES:
+   :CUSTOM_ID: safe-mode
+   :END:
    If Firefox was killed via a signal (as opposed to closing the
-   window), it prompts to start in Safe Mode afterwards.
+   window), it prompts to start in Safe Mode afterwards. This blocks
+   automatic retrieval via Marionette.
 
    This behavior can be avoided in three ways:
 
-   - You can set the firefox preference
-     =toolkit.startup.max_resumed_crashes= to -1,
-   - you can set the environment variable =MOZ_DISABLE_AUTO_SAFE_MODE=
-     (did not work in Tor Browser Bundle version ...),
-   - or --- as a last resort --- you can remove the
-     =toolkit.startup.recent_crashes= line in the =prefs.js= config
-     file which saves the number of consecutive kills via =sed -i
-     '/toolkit\.startup\.recent_crashes/d' /path/to/prefs.js=.
-*** TODO TBB current version
+   - set the firefox preference =toolkit.startup.max_resumed_crashes=
+     to =-1=,
+   - set the environment variable =MOZ_DISABLE_AUTO_SAFE_MODE= (did
+     not work in the Tor Browser Bundle),
+   - remove the line =toolkit.startup.recent_crashes= in the
+     =prefs.js= config file which saves the number of consecutive
+     kills via =sed -i '/toolkit\.startup\.recent_crashes/d'
+     /path/to/prefs.js=.
 ** WRITE Headless Configuration
    If you want to capture on a headless server, you can use the
    =xvfb=-package. which is installed via =sudo apt-get install xvfb=.

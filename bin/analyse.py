@@ -336,10 +336,13 @@ picks best result'''
         ALL_MAP[name] = res
     print '10-fold result: {}'.format(max(map(np.mean, res.values())))
 
-def open_world(defense_name, cumul=True, with_svm=False, num_jobs=JOBS_NUM):
-    '''does an open-world test on data'''
+#todo: extend to other classifiers
+def open_world(defense_name, num_jobs=JOBS_NUM):
+    '''does an open-world (SVM) test on data'''
     defense = counter.all_from_dir(defense_name)
     # split (cv?)
+    X,y,yd=to_features_cumul(d)
+    y_binarized = np.ravel(preprocessing.label_binarize(y, [-1]))
     
 def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test
@@ -542,6 +545,7 @@ def to_features_cumul(counter_dict):
     out_y = []
     class_number = 0
     domain_names = []
+    if "background" in counter_dict.keys():
     for domain, dom_counters in counter_dict.iteritems():
         ## TODO: codup
         if domain == "background":
