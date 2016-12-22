@@ -144,7 +144,7 @@ def _misclassification_rates(train, test, clf=GOOD[0]):
 def _my_grid(X, y,
              cs=np.logspace(11, 17, 4, base=2),
              gammas=np.logspace(-3, 3, 4, base=2),
-             results={}, num_jobs=JOBS_NUM, folds=5, kwargs={}):
+             results={}, num_jobs=JOBS_NUM, folds=5, probability=False):
     '''grid-search on fixed params
 
     @param results are previously computed results {(c, g): accuracy, ...}
@@ -154,7 +154,7 @@ def _my_grid(X, y,
     for c in cs:
         for g in gammas:
             clf = multiclass.OneVsRestClassifier(svm.SVC(
-                gamma=g, C=c, class_weight='balanced', *kwargs))
+                gamma=g, C=c, class_weight='balanced', probability=probability))
             if (c,g) in results:
                 current = results[(c,g)]
             else:
@@ -336,13 +336,13 @@ picks best result'''
         ALL_MAP[name] = res
     print '10-fold result: {}'.format(max(map(np.mean, res.values())))
 
-#todo: extend to other classifiers
 def open_world(defense_name, num_jobs=JOBS_NUM):
     '''does an open-world (SVM) test on data'''
     defense = counter.all_from_dir(defense_name)
     # split (cv?)
-    X,y,yd=to_features_cumul(d)
+    X,y,yd=to_features_cumul(defense)
     y_binarized = np.ravel(preprocessing.label_binarize(y, [-1]))
+    c,r = _my_grid(X, y_binarized, probability=True)
     
 def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test
@@ -545,7 +545,6 @@ def to_features_cumul(counter_dict):
     out_y = []
     class_number = 0
     domain_names = []
-    if "background" in counter_dict.keys():
     for domain, dom_counters in counter_dict.iteritems():
         ## TODO: codup
         if domain == "background":
@@ -553,7 +552,7 @@ def to_features_cumul(counter_dict):
                                dom_counters, "cumul", -1, "background")
         else:
             _trace_list_append(X_in, out_y, domain_names,
-                dom_counters, "cumul", class_number, "background")
+                               dom_counters, "cumul", class_number, domain)
             class_number += 1
     return (np.array(X_in), np.array(out_y), domain_names)
 
@@ -561,15 +560,12 @@ def to_features_cumul(counter_dict):
 # call fixed method on changing objects?)
 def to_features_herrmann(counter_dict):
     '''@return herrmann et al's feature matrix from counters'''
-    # 1. get all packet sizes
     psizes = set()
     for counter_list in counter_dict.values():
         for counter in counter_list:
             psizes.update(counter.packets)
-    # 2. sort to p1,...pn
     list_psizes = list(psizes)
-    # 3. for each counter
-    #    1. line: 'class, p1_occurs, ..., pn_occurs
+    # 3. for each counter: line: 'class, p1_occurs, ..., pn_occurs
     X_in = []
     class_number = 0
     domain_names = []
