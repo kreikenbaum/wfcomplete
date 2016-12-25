@@ -333,7 +333,7 @@
            --dest 127.0.0.1:9001 server 134.76.96.77:42000
          #+END_SRC
 *** ref [[file:master.bib::arp-wtf][Arp 2016]]
-** [[./fp.pdf][Cai 2012 - Touching from a Distance: Website Fingerprinting Attacks and Defenses]]
+** [[./fp.pdf][Cai - Touching from a Distance: Website Fingerprinting Attacks and Defenses]]
 *** summary
     0. [@0] ABSTRACT
 
@@ -644,6 +644,537 @@
     - has no ordering information
     - (ends 7)
 *** ref [[file:./master.bib::ccs2012-fingerprinting][Cai et al. 2012: Touching Distance]]
+** [[./ccs14.pdf][Cai - A Systematic Approach to Developing and Evaluating Website Fingerprinting Defenses]]
+*** summary
+    0) [@0] ABSTRACT
+
+       - systematic analysis of features
+
+       - proven lower bounds of bandwidth cost
+
+       - mathematical framework for open-world given close-world
+
+       - tamaraw, better than BuFLO
+
+    1) INTRODUCTION
+
+       fingerprinting attacks
+
+       - dyer: 80%, which of 128 pages (5)
+
+       - cai: 75% against countermeasures (3)
+
+       - Cai: bundle defenses inffective (13)
+
+       - Luo: HTTPOS (11)
+
+         - Cai: little benefit
+
+       - Wright: traffic morphing (19)
+
+         - Dyer, Cai: little protection
+
+       - Dyer: BuFLO
+
+       - real world vs close-world (14)
+
+       - danger in real world
+
+       - state-of-the-art: only lower bound
+
+       - ideal attacker: websites distinguishable unless exact same
+         pattern
+
+       - abstract model:
+
+         - how far from optimal,
+
+       - which traffic features leak most information
+
+       - provably secure: tamaraw
+
+       - evaluate tamaraw with above techniques
+
+    2) WEBSITE FINGERPRINTING ATTACKS
+
+       - cai and chen aim at identifying web sites instead of web
+         pages
+
+       - wf explained
+
+         - only encrypted proxy
+
+         - page has characteristic dl/ul traffic pattern
+
+       - two assumptions retained
+
+         - page start noticeable
+
+         - no background traffic (file downloads, music streaming, etc)
+
+    3) FEATURES AND METHODOLOGY
+
+       wf tries to classify by features, defense tries to hide them
+
+       1) Packet Sequences and their Features
+
+          - time and length (positive for outgoing, negative for incoming)
+
+          - unique packet lengths (problem with tor)
+
+            (∃L ∈ P_{\ell} | L \not∈  P'_{\ell}) ∨ (∃L ∈ P_{\ell}' | L \not∈ P_{ell}' )
+
+            exists a length L
+            which is in P, but not P'
+            or in P', but not P
+
+          - packet length frequency (how often packet length occurs)
+
+            \exists L | n_{L}(P_{l}) \neq n_{L}(P_{l}') \wedge n_{L}(P_{l}) > 0 \wedge n_{L}(P_{l}') > 0
+
+            exists a length L
+            which occurs n_L times in P and not n_L times in P'
+            and with both occurances greater than 0
+
+          - packet ordering:
+
+            for the multiset of packet lengths M(P)
+            M(P) = M(P')
+            and P \ne P'
+
+          - interpacket timing:
+
+            two packets cannot be dependent, if their interpacket
+            times is less than one RTT
+
+            exists 1 \le i \le min(|P|, |P'|)
+            such that the timing t(P_i) \ne t(P'_i)
+
+          - this is a complete feature set (fact 1) (?td: think?)
+
+          - features are rather independent (fact 2) (?)
+
+       2) Comparative Methodology
+
+          - "To determine if a defense is able to hide a feature, we
+            apply the defense to two classes, C and C 0 , which differ
+            only by that feature. Then, we say that a defense is
+            successful in hiding the feature if after applying the
+            defense, there is no discernible difference between C and
+            C 0."
+
+          - several generators
+
+            1. small changes G_{1}: length + v, upto MTU
+            2. large changes G_{2}: length + 1000, upto MTU
+            3. length diffusion G_{3}: increased by position i/5, upto MTU
+            4. append incoming packets G_{4}: length MTU
+            5. append outgoing packets G_{5}: length first outgoing
+            6. insert incoming packets G_{6}: length MTU, one per 5 packets
+            7. Adjacent Transpositions: "v packets are transposed with
+               the previous packet"
+            8. Short-Distance Transpositions: v packets are transposed
+               with the packet 4 elements ago.
+            9. Long-Distance Transpositions: v packets are transposed
+               with the packet 19 elements ago.
+            10. Delays: Each packet is delayed by a linearly
+                increasing amount of time, multiplied by v.
+
+       3) Classification and Experimental Setup
+
+          C = 400 samples of bbc.co.uk
+          C' = generator(C)
+
+          200 training, 200 testing
+
+          4 feature classifiers
+
+          - Unique Packet-Lengths: (like jaccard of Liberatore)
+
+          - Packet-Length Frequencies: mean, std of (bytes and
+            packets) (incoming and outgoing)
+
+            scored separately, multiplied (like naive bayes of Liberatore)
+
+          - Packet Ordering: each position: length compared to mean of
+            all training packet length  (like bissias/liberatore)
+
+          - Interpacket Timing: total elapsed time
+
+          defense applied to each element c and c'
+
+          measured by the differences between C and c' before
+          classifier can distinguish
+
+          setup: 100mbps ethernet, mtu 1500, imacros 9.00 firefox
+          23.0, tcpdump
+
+    4) COMPARISON OF DEFENSES
+
+          state-of-the-art defenses, simulated
+
+       1) Simulated Defenses
+
+          - Maximum Packet Padding (PadM): pads all to mtu
+
+          - Exponential Packet Padding (PadE): pad to closest power of 2
+
+          - Traffic Morphing (Wr-Morph): mimic target page
+
+          - HTTP Obfuscation (HTTPOS): client-side only, tcp
+            advertised windows, http ranges, control sizes of
+            outgoing and incoming
+
+            (here: just split packet without extra packets)
+
+          - Background Noise (Pa-Decoy): load decoy in background
+
+            (here: alexa top 800)
+
+          - Buffered Fixed Length Obfuscator (BuFLO): packets at
+            fixed intervals with fixed lengths
+
+       2) Comparative Results
+
+          - "The full results are given in Table 3"
+
+          - v from 1 to 180,
+
+            - best feature classifier
+
+            - minimum value v for 55 % accuracy
+
+            - minimum value v for 75 % accuracy
+
+            - * means unable to
+
+          - PadM covers: unique packet lengths and orderings,
+            better than PadE
+
+            - both beaten by frequency analysis
+
+          - HTTPOS broken (f.ex. packet ordering)
+
+          - PaDecoy, BuFLO work against Panchenko and frequency attacks
+
+          - Pa-decoy does not completely cover total time (fails
+            half the time)
+
+          - BuFLO similar over 10seconds
+
+          - HTTPOS client-only
+
+    5) THEORETICAL FOUNDATIONS
+
+       Model of WF attacks, lower bounds for bandwidth overhead.
+
+       1) Security vs. Overhead Trade-Off
+
+          dissimilarity of websites increases overhead
+
+          offline version
+
+          1) Definitions
+
+             - w: website
+
+             - t: packet trace
+
+             - W: random variable for w (attacker knows distribution)
+
+             - T_{w}^{D}: random variable for t with defense (attacker knows D.)
+
+             - T_{w}: random variable for t without defense
+
+             - A(t) = argmax_{w} Pr[W = w] Pr[T_{w}^{D} = t]
+               attacker output (determine website w)
+
+             - D *non-uniformly \epsilon-secure* for W iff Pr[A(T_{W}^{D}) = W] ≤ \epsilon.
+
+             - D *uniformly \epsilon-secure* if max_{W} Pr[A(T_{W}^{D}) = W] ≤ \epsilon.
+
+             - B(t): total number of bytes transmitted in trace t.
+
+             - BWRatio_{D}(W): E[B(T_{W}^{D})] / E[B(T_{W}^{})]
+               bandwidth ratio of defense D
+
+          2) Bandwidth Lower Bounds
+
+             - THEOREM 1. Suppose n is an integer. Let W be a
+               random variable uniformly distributed over w_{1}, ... ,
+               w_{n}, i.e. W represents a closed-world
+               experiment. Suppose D is a defense that is
+               \epsilon-non-uniformly-secure against A_{S} on
+               distribution W. Then there exists a monotonically
+               increasing function f from S = {s_{1} , ... , s_{n}} to
+               itself such that
+
+               - |f(S)| ≤ \epsilon n
+               - \sum_{i=1}^{n} f(s_{i}) / \sum_{i=1}^{n} s_{i} \le BWRatio_{D} (W).
+               (see also quotes)
+
+               - proof via properties and construction
+
+             - A_{S}(t) = argmax_{w} Pr[B(T_{w}^{D}) = B(t)]
+
+               optimal, looks only at total size
+
+             - "Such an f is equivalent to a partition S_{1}, ... , S_{k}
+               of S satisfying k ≤ \epsilon n and minimizing
+               \sum_{i=1}^{k} |S_{i}| max_{s \in S_{i}} s.
+
+             - THEOREM 2. Let W be uniformly distributed over w_{1},
+               ... , w_{n}, i.e. W represents a closed-world
+               experiment. Suppose D is a deterministic defense
+               that is uniformly-\epsilon-secure against A_{S} on
+               distribution W. Then there exists a monotonically
+               increasing function f from S = {s_{1} , ... , s_{n}} to
+               itself such that
+
+               - min_{i}|f^{-1}(s_{i})| \ge  1/ \epsilon
+               - \sum_{i=1}^{n} f(s_{i}) / \sum_{i=1}^{n} s_{i} \le BWRatio_{D} (W).
+               (no proof)
+
+       2) From Closed to Open World
+
+          - "researchers need only perform closed-world experiments
+            to predict open-world performance."
+
+          - single w^{*}, find out if visited or not
+
+          - construct open-world from closed-world by selecting
+            websites w_{2}, ..., w_{n} and determining if A(t) = w^{*
+
+          - compute false-positive rate by (p_{i} probability of w_{i})
+
+          - R_{n} = 1/n \cdot Pr[A(T_{w*}^{D}) = w^{* }] + \sum_{i=2}^{n} Pr[A(T_{wi}^{D}) = w_{i}^{}]
+            "the average success rate of A in the closed world"
+
+          ... compute FPR, TPR, TDR (true-discovery rate)
+
+          - algorithm for lower bound \epsilon-secure fingerprinting defense
+            against A_{S} attackers
+
+    6) TAMARAW: A NEW DEFENSE
+
+       theoretically provable BuFLO
+
+       1) Design
+
+          1) Strong Theoretical Foundations:
+
+             optimal partitioning and feature hiding against A_{S}
+             attackers
+
+          2) Feature coverage:
+
+             not only total size, but all features (except for total
+             downstream transmission size)
+
+          3) Reducing Overhead Costs:
+
+             reduces BuFLO's overhead (bandwidth and time)
+
+          differences to BuFLO:
+
+          - 750 bytes, not MTU (most packets)
+
+          - distinguish incoming/outgoing
+
+          - time to next supersequence, not fixed
+
+          Tamaraw as follows:
+
+          - "We denote the packet intervals as ρ_{out} and ρ_{in}
+            (measured in s/packet)."
+
+          - "In Tamaraw, however, the number of packets sent in
+            both directions are always padded to multiples of a
+            padding parameter, L"
+
+       2) Experimental Results
+
+          0) [@0]
+
+             - "our objective in the choice of ρ_{in} and ρ_{out} is to
+               minimize overhead."
+
+             - "as ρ in and ρ out increased, size overhead decreased
+               while time overhead increased"
+
+             - padm better in some accounts
+
+          1) An Ideal Attacker
+
+             - "evaluate the partitions produced by Tamaraw"
+
+             - "For a partition of size |S|, the attacker can at
+               best achieve an accuracy of 1/|S| on each site in
+               the partition."
+
+             - capture single instances of top800, reset browser state
+               in-between
+
+             - pages indistinguishable if the same packet sizes
+               (!except for timing info!)
+
+             - upper bound of success for perfect attacker (via
+               deterministic defense)
+
+          2) Closed-world Performance
+
+             much better overhead ratio than BuFLO (configurable)
+
+          3) Open-world Performance
+
+             Much better than against Tor, BuFLO
+
+    7) CODE AND DATA RELEASE
+
+       all available (notes: ask)
+
+    8) CONCLUSIONS
+
+       classify and qualify WF defenses
+
+       tamaraw
+
+    9) ACKNOWLEDGMENTS
+
+       Panchenko talked
+*** quotes
+    0) [@0] ABSTRACT
+       - the Tor project now includes both network- and browser-level
+         defenses against these attacks
+    1) INTRODUCTION
+       - an attacker could infer, with a success rate over 80%, which of
+         128 pages a victim was visiting, even if the victim used
+         network-level countermeasures.
+       - In our ideal attack, two websites are distinguishable unless
+         they generate the exact same sequence of network traffic
+         observations.
+       - BuFLO unnecessarily wastes bandwidth hiding the number of
+         upstream packets and does not adequately hide the total number
+         of downstream packets.
+    2) WEBSITE FINGERPRINTING ATTACKS
+       - The structure of a page induces a logical order in its packet
+         sequence.
+       - This means that the attacker is weak, but is also resource-light
+         and essentially undetectable
+    3) FEATURES AND METHODOLOGY
+       1) Packet Sequences and their Features
+          - We indicate the packet length as a positive value if the packet
+            is outgoing and as a negative value if it is incoming.
+    4) COMPARISON OF DEFENSES
+       1) Simulated Defenses
+          - Packets are sent at fixed intervals with fixed length, and if no
+            data needs to be sent, dummy packets are sent instead.
+       2) Comparative Results
+          - Pa-Decoy fails to completely cover interpacket timing because it
+            only covers the total transmission time roughly half the time
+            (i.e., when the decoy page takes longer to load than the desired
+            page)
+    5) THEORETICAL FOUNDATIONS
+       0) [@0]
+          - show how to derive open-world performance from closed-world
+            experimental results
+       1) Security vs. Overhead Trade-Off
+          1. Definitions
+             - a set of similar websites can be protected with little overhead,
+               a set of dissimilar websites requires more overhead.
+             - DEFINITION 1. A fingerprinting defense D is *non-uniformly
+               \epsilon-secure* for W iff Pr A(T_W^D) = W ≤ \epsilon. Defense D is *uniformly
+               \epsilon-secure* for W if max_w Pr A(T_w^D ) = w ≤ \epsilon.
+
+               These are information-theoretic security definitions –
+               A is the optimal attacker described above. The first
+               definition says that A’s average success rate is less
+               than, but it does not require that every website be
+               difficult to recognize. The second definition requires
+               all websites to be at least \epsilon difficult to
+               recognize. All previous papers on website
+               fingerprinting attacks and defenses have reported
+               average attack success rates in the closed-world model,
+               i.e. they have reported non-uniform security
+               measurements.
+          2. [@2] Bandwidth Lower Bounds
+             - Intuitively, f represents a mapping from each website’s
+               original size (s_{i}) to the number of bytes that D
+               transmits when loading website w_{i}.
+       2) From Closed to Open World
+          - if the fingerprinting attacker is a government monitoring
+            citizens Tor usage, then W would be distributed according to the
+            popularity of websites among that nation’s Tor users.
+          - Cai, et al., showed that the Alexa top 100 websites were about
+            as similar as 100 randomly chosen websites [3], i.e. that the
+            most popular websites are not particularly similar to eachother.
+          - true-discovery rates for the open-world attack and defense
+            evaluations in this paper. Given an open-world classifier, C,
+            its true-discovery rate is defined as TDR(C) = Pr[W = w^∗ |
+            C(T_W^D) = 1]. Intuitively, the true-discovery rate is the
+            fraction of alarms that are true alarms.
+    6) TAMARAW: A NEW DEFENSE
+       1) Design
+          - In our implementations of BuFLO and Tamaraw, we pessimistically
+            required that the original logical ordering of the real packets
+            must be maintained.
+       2) Experimental Results
+          0) [@0]
+             - A practical implementation could achieve a lower size and time
+               overhead as re-ordering is possible for both defenses when
+               subsequence is not consequence;
+          1) An Ideal Attacker
+             - we eliminate the network variability and make the
+               defense system deterministic, which, as shown in the
+               Appendix, does not reduce the security of the defense.
+          2) Closed-world Performance
+             - at a size overhead of 130%, there are 553 partitions
+               (non-uniform security of 69%) in BuFLO (τ = 9) and 18 partitions
+               (non-uniform security of 2.25%) in Tamaraw.
+          3) Open-world Performance
+             - By showing that the TDR becomes extremely low when attacking
+               Tamaraw, even for the first 100 websites, we show that it’s
+               extremely low for all websites.
+    7) CONCLUSIONS
+       - The lower bounds of bandwidth costs are surprisingly low,
+         suggesting that it may be possible to build very efficient
+         defenses.
+*** code
+**** [[../sw/attacks/svm.py][svm.py]]
+     #+BEGIN_SRC python
+       #data is in this format:
+       #each data[i] is a class
+       #each data[i][j] is a standard-format sequence
+       #standard format is: each element is a pair (time, direction)
+     #+END_SRC
+     - str_to_sinste: helper function, splits string
+     - load_one: appends lines to data, returns
+     - load_all: appends load_one to data, returns
+     - extract: extracts features from data
+       - sizemarkers: pad to 300 with 0
+       - html size: my naive approach
+       - total transmitted: sums up
+       - number markers: pads to 300
+       - unique packet: unique lengths (-/+)
+       - percentage incoming
+       - number of packets
+     - "main"
+       - splits data in test and training
+       - saves test and training files
+***** problemsmaybe:
+      - unique packet no fixed length
+**** [[file:~/da/git/sw/attacks/svm-run.py]]
+     runs
+     - python svm.py i
+     - svm-train -c c -g g svm.train svm.model
+     - svm-predict svm.test svm.model svm.resultst >> temp-acc
+     for i folds from 1 to 10
+**** [[file:~/da/git/sw/attacks/svmdotest.rb]]
+     cleans up, runs
+     - clgen_stratify cltor_matrix 36 40
+     - svm-train -t 4 -c 1024
+     - svm-predict
+*** ref [[file:master.bib::a-systematic][Cai et al. 2014: Systematic Approach Developing]]
 ** [[./ronathan-heyning.pdf][Cheng - Traffic Analysis of SSL Encrypted Web Browsing]]
 *** summary
     0) [@0] Abstract
@@ -8245,6 +8776,40 @@
                pattern due not to the true underlying model but
                instead to randomness in the world or the sensors.
 *** ref [[file:master.bib::duda][Duda et al. 2000: Pattern Classification]]
+** TODO [#A] [[./icml-tutorial.pdf][Christiani - Support Vector and Kernel Machines]]
+*** continue page 26
+*** quotes
+    - A Little History
+      - SVMs introduced in COLT-92 by Boser, Guyon, Vapnik. Greatly
+        developed ever since.
+    - Very Informal Reasoning
+      - The class of kernel methods _implicitly_ defines the class of
+        possible patterns by introducing a notion of similarity
+        between data
+    - Modularity
+      - Any K-B [kernel-based] algorithm can be fitted with any kernel
+    - Dual Representation
+      - The decision function can be re-written as follows:
+
+        f ( x ) = \langle w , x \rangle + b = ∑ α_i y_i \langle x_i , x \rangle + b
+        w = ∑ α_i y_i x_i
+      - And also the update rule can be rewritten as follows:
+
+        if y_i (∑ α_j y_j \langle x_j , x_i\rangle + b) ≤ 0
+        then α_i ← α_i + η
+      - data appears only inside dot products
+    - Non-Linear Classifiers
+      - One solution: creating a net of simple linear classifiers
+        (neurons): a Neural Network (problems: local minima; many
+        parameters; heuristics needed to train; etc)
+
+      - Other solution: map data into a richer feature space including
+        non-linear features, then use a linear classifier
+    - Kernel-Induced Feature Spaces
+      - In the dual representation, the data points only appear inside
+        dot products:
+
+        f ( x ) = ∑ α_i y_i \langle \phi(x_i) , \phi(x) \rangle + b
 ** TODO PART [#B] [[./thebook.pdf][Smola - INTRODUCTION TO MACHINE LEARNING]]
 *** [#B] sec 3.3 Constrained Optimization, cont p.128 / 136
 *** [#B] parts: classifiers for thesis: knn, svm, (bayes?, random forest?)
@@ -12017,40 +12582,6 @@ V.L. Voydock and S.T. Kent. Security Mechanisms in High-Level Network Protocols.
              system as a whole using a combination of CRC cards,
              sketches, and refactoring.
 *** ref [[file:master.bib::xp][Beck 1999: Extreme Programming Explained]]
-** TODO MOVE [#A] [[./icml-tutorial.pdf][Christiani - Support Vector and Kernel Machines]]
-*** continue page 26
-*** quotes
-    - A Little History
-      - SVMs introduced in COLT-92 by Boser, Guyon, Vapnik. Greatly
-        developed ever since.
-    - Very Informal Reasoning
-      - The class of kernel methods _implicitly_ defines the class of
-        possible patterns by introducing a notion of similarity
-        between data
-    - Modularity
-      - Any K-B [kernel-based] algorithm can be fitted with any kernel
-    - Dual Representation
-      - The decision function can be re-written as follows:
-
-        f ( x ) = \langle w , x \rangle + b = ∑ α_i y_i \langle x_i , x \rangle + b
-        w = ∑ α_i y_i x_i
-      - And also the update rule can be rewritten as follows:
-
-        if y_i (∑ α_j y_j \langle x_j , x_i\rangle + b) ≤ 0
-        then α_i ← α_i + η
-      - data appears only inside dot products
-    - Non-Linear Classifiers
-      - One solution: creating a net of simple linear classifiers
-        (neurons): a Neural Network (problems: local minima; many
-        parameters; heuristics needed to train; etc)
-
-      - Other solution: map data into a richer feature space including
-        non-linear features, then use a linear classifier
-    - Kernel-Induced Feature Spaces
-      - In the dual representation, the data points only appear inside
-        dot products:
-
-        f ( x ) = ∑ α_i y_i \langle \phi(x_i) , \phi(x) \rangle + b
 ** TODO [#B] [[./Axelsson.pdf][Axelsson - The Base-Rate Fallacy and its Implications for the Difficulty of Intrusion Detection]]
 ** TODO [#B] PART [[./hastie.pdf][Hastie - The Elements of Statistical Learning]]          :ML:
 *** TODO Sections 5.8, 14.5.4, 18.5 and Chapter 12
@@ -17488,537 +18019,6 @@ E. Casalicchio and M. Colajanni. A client-aware dispatching
        a) [@2] Commands
           - \npthousandthpartsep Change the thousand separator (only
             after the decimal sign).
-** MOVE [[./ccs14.pdf][Cai 2014 - A Systematic Approach to Developing and Evaluating Website Fingerprinting Defenses]]
-*** summary
-    0) [@0] ABSTRACT
-
-       - systematic analysis of features
-
-       - proven lower bounds of bandwidth cost
-
-       - mathematical framework for open-world given close-world
-
-       - tamaraw, better than BuFLO
-
-    1) INTRODUCTION
-
-       fingerprinting attacks
-
-       - dyer: 80%, which of 128 pages (5)
-
-       - cai: 75% against countermeasures (3)
-
-       - Cai: bundle defenses inffective (13)
-
-       - Luo: HTTPOS (11)
-
-         - Cai: little benefit
-
-       - Wright: traffic morphing (19)
-
-         - Dyer, Cai: little protection
-
-       - Dyer: BuFLO
-
-       - real world vs close-world (14)
-
-       - danger in real world
-
-       - state-of-the-art: only lower bound
-
-       - ideal attacker: websites distinguishable unless exact same
-         pattern
-
-       - abstract model:
-
-         - how far from optimal,
-
-       - which traffic features leak most information
-
-       - provably secure: tamaraw
-
-       - evaluate tamaraw with above techniques
-
-    2) WEBSITE FINGERPRINTING ATTACKS
-
-       - cai and chen aim at identifying web sites instead of web
-         pages
-
-       - wf explained
-
-         - only encrypted proxy
-
-         - page has characteristic dl/ul traffic pattern
-
-       - two assumptions retained
-
-         - page start noticeable
-
-         - no background traffic (file downloads, music streaming, etc)
-
-    3) FEATURES AND METHODOLOGY
-
-       wf tries to classify by features, defense tries to hide them
-
-       1) Packet Sequences and their Features
-
-          - time and length (positive for outgoing, negative for incoming)
-
-          - unique packet lengths (problem with tor)
-
-            (∃L ∈ P_{\ell} | L \not∈  P'_{\ell}) ∨ (∃L ∈ P_{\ell}' | L \not∈ P_{ell}' )
-
-            exists a length L
-            which is in P, but not P'
-            or in P', but not P
-
-          - packet length frequency (how often packet length occurs)
-
-            \exists L | n_{L}(P_{l}) \neq n_{L}(P_{l}') \wedge n_{L}(P_{l}) > 0 \wedge n_{L}(P_{l}') > 0
-
-            exists a length L
-            which occurs n_L times in P and not n_L times in P'
-            and with both occurances greater than 0
-
-          - packet ordering:
-
-            for the multiset of packet lengths M(P)
-            M(P) = M(P')
-            and P \ne P'
-
-          - interpacket timing:
-
-            two packets cannot be dependent, if their interpacket
-            times is less than one RTT
-
-            exists 1 \le i \le min(|P|, |P'|)
-            such that the timing t(P_i) \ne t(P'_i)
-
-          - this is a complete feature set (fact 1) (?td: think?)
-
-          - features are rather independent (fact 2) (?)
-
-       2) Comparative Methodology
-
-          - "To determine if a defense is able to hide a feature, we
-            apply the defense to two classes, C and C 0 , which differ
-            only by that feature. Then, we say that a defense is
-            successful in hiding the feature if after applying the
-            defense, there is no discernible difference between C and
-            C 0."
-
-          - several generators
-
-            1. small changes G_{1}: length + v, upto MTU
-            2. large changes G_{2}: length + 1000, upto MTU
-            3. length diffusion G_{3}: increased by position i/5, upto MTU
-            4. append incoming packets G_{4}: length MTU
-            5. append outgoing packets G_{5}: length first outgoing
-            6. insert incoming packets G_{6}: length MTU, one per 5 packets
-            7. Adjacent Transpositions: "v packets are transposed with
-               the previous packet"
-            8. Short-Distance Transpositions: v packets are transposed
-               with the packet 4 elements ago.
-            9. Long-Distance Transpositions: v packets are transposed
-               with the packet 19 elements ago.
-            10. Delays: Each packet is delayed by a linearly
-                increasing amount of time, multiplied by v.
-
-       3) Classification and Experimental Setup
-
-          C = 400 samples of bbc.co.uk
-          C' = generator(C)
-
-          200 training, 200 testing
-
-          4 feature classifiers
-
-          - Unique Packet-Lengths: (like jaccard of Liberatore)
-
-          - Packet-Length Frequencies: mean, std of (bytes and
-            packets) (incoming and outgoing)
-
-            scored separately, multiplied (like naive bayes of Liberatore)
-
-          - Packet Ordering: each position: length compared to mean of
-            all training packet length  (like bissias/liberatore)
-
-          - Interpacket Timing: total elapsed time
-
-          defense applied to each element c and c'
-
-          measured by the differences between C and c' before
-          classifier can distinguish
-
-          setup: 100mbps ethernet, mtu 1500, imacros 9.00 firefox
-          23.0, tcpdump
-
-    4) COMPARISON OF DEFENSES
-
-          state-of-the-art defenses, simulated
-
-       1) Simulated Defenses
-
-          - Maximum Packet Padding (PadM): pads all to mtu
-
-          - Exponential Packet Padding (PadE): pad to closest power of 2
-
-          - Traffic Morphing (Wr-Morph): mimic target page
-
-          - HTTP Obfuscation (HTTPOS): client-side only, tcp
-            advertised windows, http ranges, control sizes of
-            outgoing and incoming
-
-            (here: just split packet without extra packets)
-
-          - Background Noise (Pa-Decoy): load decoy in background
-
-            (here: alexa top 800)
-
-          - Buffered Fixed Length Obfuscator (BuFLO): packets at
-            fixed intervals with fixed lengths
-
-       2) Comparative Results
-
-          - "The full results are given in Table 3"
-
-          - v from 1 to 180,
-
-            - best feature classifier
-
-            - minimum value v for 55 % accuracy
-
-            - minimum value v for 75 % accuracy
-
-            - * means unable to
-
-          - PadM covers: unique packet lengths and orderings,
-            better than PadE
-
-            - both beaten by frequency analysis
-
-          - HTTPOS broken (f.ex. packet ordering)
-
-          - PaDecoy, BuFLO work against Panchenko and frequency attacks
-
-          - Pa-decoy does not completely cover total time (fails
-            half the time)
-
-          - BuFLO similar over 10seconds
-
-          - HTTPOS client-only
-
-    5) THEORETICAL FOUNDATIONS
-
-       Model of WF attacks, lower bounds for bandwidth overhead.
-
-       1) Security vs. Overhead Trade-Off
-
-          dissimilarity of websites increases overhead
-
-          offline version
-
-          1) Definitions
-
-             - w: website
-
-             - t: packet trace
-
-             - W: random variable for w (attacker knows distribution)
-
-             - T_{w}^{D}: random variable for t with defense (attacker knows D.)
-
-             - T_{w}: random variable for t without defense
-
-             - A(t) = argmax_{w} Pr[W = w] Pr[T_{w}^{D} = t]
-               attacker output (determine website w)
-
-             - D *non-uniformly \epsilon-secure* for W iff Pr[A(T_{W}^{D}) = W] ≤ \epsilon.
-
-             - D *uniformly \epsilon-secure* if max_{W} Pr[A(T_{W}^{D}) = W] ≤ \epsilon.
-
-             - B(t): total number of bytes transmitted in trace t.
-
-             - BWRatio_{D}(W): E[B(T_{W}^{D})] / E[B(T_{W}^{})]
-               bandwidth ratio of defense D
-
-          2) Bandwidth Lower Bounds
-
-             - THEOREM 1. Suppose n is an integer. Let W be a
-               random variable uniformly distributed over w_{1}, ... ,
-               w_{n}, i.e. W represents a closed-world
-               experiment. Suppose D is a defense that is
-               \epsilon-non-uniformly-secure against A_{S} on
-               distribution W. Then there exists a monotonically
-               increasing function f from S = {s_{1} , ... , s_{n}} to
-               itself such that
-
-               - |f(S)| ≤ \epsilon n
-               - \sum_{i=1}^{n} f(s_{i}) / \sum_{i=1}^{n} s_{i} \le BWRatio_{D} (W).
-               (see also quotes)
-
-               - proof via properties and construction
-
-             - A_{S}(t) = argmax_{w} Pr[B(T_{w}^{D}) = B(t)]
-
-               optimal, looks only at total size
-
-             - "Such an f is equivalent to a partition S_{1}, ... , S_{k}
-               of S satisfying k ≤ \epsilon n and minimizing
-               \sum_{i=1}^{k} |S_{i}| max_{s \in S_{i}} s.
-
-             - THEOREM 2. Let W be uniformly distributed over w_{1},
-               ... , w_{n}, i.e. W represents a closed-world
-               experiment. Suppose D is a deterministic defense
-               that is uniformly-\epsilon-secure against A_{S} on
-               distribution W. Then there exists a monotonically
-               increasing function f from S = {s_{1} , ... , s_{n}} to
-               itself such that
-
-               - min_{i}|f^{-1}(s_{i})| \ge  1/ \epsilon
-               - \sum_{i=1}^{n} f(s_{i}) / \sum_{i=1}^{n} s_{i} \le BWRatio_{D} (W).
-               (no proof)
-
-       2) From Closed to Open World
-
-          - "researchers need only perform closed-world experiments
-            to predict open-world performance."
-
-          - single w^{*}, find out if visited or not
-
-          - construct open-world from closed-world by selecting
-            websites w_{2}, ..., w_{n} and determining if A(t) = w^{*
-
-          - compute false-positive rate by (p_{i} probability of w_{i})
-
-          - R_{n} = 1/n \cdot Pr[A(T_{w*}^{D}) = w^{* }] + \sum_{i=2}^{n} Pr[A(T_{wi}^{D}) = w_{i}^{}]
-            "the average success rate of A in the closed world"
-
-          ... compute FPR, TPR, TDR (true-discovery rate)
-
-          - algorithm for lower bound \epsilon-secure fingerprinting defense
-            against A_{S} attackers
-
-    6) TAMARAW: A NEW DEFENSE
-
-       theoretically provable BuFLO
-
-       1) Design
-
-          1) Strong Theoretical Foundations:
-
-             optimal partitioning and feature hiding against A_{S}
-             attackers
-
-          2) Feature coverage:
-
-             not only total size, but all features (except for total
-             downstream transmission size)
-
-          3) Reducing Overhead Costs:
-
-             reduces BuFLO's overhead (bandwidth and time)
-
-          differences to BuFLO:
-
-          - 750 bytes, not MTU (most packets)
-
-          - distinguish incoming/outgoing
-
-          - time to next supersequence, not fixed
-
-          Tamaraw as follows:
-
-          - "We denote the packet intervals as ρ_{out} and ρ_{in}
-            (measured in s/packet)."
-
-          - "In Tamaraw, however, the number of packets sent in
-            both directions are always padded to multiples of a
-            padding parameter, L"
-
-       2) Experimental Results
-
-          0) [@0]
-
-             - "our objective in the choice of ρ_{in} and ρ_{out} is to
-               minimize overhead."
-
-             - "as ρ in and ρ out increased, size overhead decreased
-               while time overhead increased"
-
-             - padm better in some accounts
-
-          1) An Ideal Attacker
-
-             - "evaluate the partitions produced by Tamaraw"
-
-             - "For a partition of size |S|, the attacker can at
-               best achieve an accuracy of 1/|S| on each site in
-               the partition."
-
-             - capture single instances of top800, reset browser state
-               in-between
-
-             - pages indistinguishable if the same packet sizes
-               (!except for timing info!)
-
-             - upper bound of success for perfect attacker (via
-               deterministic defense)
-
-          2) Closed-world Performance
-
-             much better overhead ratio than BuFLO (configurable)
-
-          3) Open-world Performance
-
-             Much better than against Tor, BuFLO
-
-    7) CODE AND DATA RELEASE
-
-       all available (notes: ask)
-
-    8) CONCLUSIONS
-
-       classify and qualify WF defenses
-
-       tamaraw
-
-    9) ACKNOWLEDGMENTS
-
-       Panchenko talked
-*** quotes
-    0) [@0] ABSTRACT
-       - the Tor project now includes both network- and browser-level
-         defenses against these attacks
-    1) INTRODUCTION
-       - an attacker could infer, with a success rate over 80%, which of
-         128 pages a victim was visiting, even if the victim used
-         network-level countermeasures.
-       - In our ideal attack, two websites are distinguishable unless
-         they generate the exact same sequence of network traffic
-         observations.
-       - BuFLO unnecessarily wastes bandwidth hiding the number of
-         upstream packets and does not adequately hide the total number
-         of downstream packets.
-    2) WEBSITE FINGERPRINTING ATTACKS
-       - The structure of a page induces a logical order in its packet
-         sequence.
-       - This means that the attacker is weak, but is also resource-light
-         and essentially undetectable
-    3) FEATURES AND METHODOLOGY
-       1) Packet Sequences and their Features
-          - We indicate the packet length as a positive value if the packet
-            is outgoing and as a negative value if it is incoming.
-    4) COMPARISON OF DEFENSES
-       1) Simulated Defenses
-          - Packets are sent at fixed intervals with fixed length, and if no
-            data needs to be sent, dummy packets are sent instead.
-       2) Comparative Results
-          - Pa-Decoy fails to completely cover interpacket timing because it
-            only covers the total transmission time roughly half the time
-            (i.e., when the decoy page takes longer to load than the desired
-            page)
-    5) THEORETICAL FOUNDATIONS
-       0) [@0]
-          - show how to derive open-world performance from closed-world
-            experimental results
-       1) Security vs. Overhead Trade-Off
-          1. Definitions
-             - a set of similar websites can be protected with little overhead,
-               a set of dissimilar websites requires more overhead.
-             - DEFINITION 1. A fingerprinting defense D is *non-uniformly
-               \epsilon-secure* for W iff Pr A(T_W^D) = W ≤ \epsilon. Defense D is *uniformly
-               \epsilon-secure* for W if max_w Pr A(T_w^D ) = w ≤ \epsilon.
-
-               These are information-theoretic security definitions –
-               A is the optimal attacker described above. The first
-               definition says that A’s average success rate is less
-               than, but it does not require that every website be
-               difficult to recognize. The second definition requires
-               all websites to be at least \epsilon difficult to
-               recognize. All previous papers on website
-               fingerprinting attacks and defenses have reported
-               average attack success rates in the closed-world model,
-               i.e. they have reported non-uniform security
-               measurements.
-          2. [@2] Bandwidth Lower Bounds
-             - Intuitively, f represents a mapping from each website’s
-               original size (s_{i}) to the number of bytes that D
-               transmits when loading website w_{i}.
-       2) From Closed to Open World
-          - if the fingerprinting attacker is a government monitoring
-            citizens Tor usage, then W would be distributed according to the
-            popularity of websites among that nation’s Tor users.
-          - Cai, et al., showed that the Alexa top 100 websites were about
-            as similar as 100 randomly chosen websites [3], i.e. that the
-            most popular websites are not particularly similar to eachother.
-          - true-discovery rates for the open-world attack and defense
-            evaluations in this paper. Given an open-world classifier, C,
-            its true-discovery rate is defined as TDR(C) = Pr[W = w^∗ |
-            C(T_W^D) = 1]. Intuitively, the true-discovery rate is the
-            fraction of alarms that are true alarms.
-    6) TAMARAW: A NEW DEFENSE
-       1) Design
-          - In our implementations of BuFLO and Tamaraw, we pessimistically
-            required that the original logical ordering of the real packets
-            must be maintained.
-       2) Experimental Results
-          0) [@0]
-             - A practical implementation could achieve a lower size and time
-               overhead as re-ordering is possible for both defenses when
-               subsequence is not consequence;
-          1) An Ideal Attacker
-             - we eliminate the network variability and make the
-               defense system deterministic, which, as shown in the
-               Appendix, does not reduce the security of the defense.
-          2) Closed-world Performance
-             - at a size overhead of 130%, there are 553 partitions
-               (non-uniform security of 69%) in BuFLO (τ = 9) and 18 partitions
-               (non-uniform security of 2.25%) in Tamaraw.
-          3) Open-world Performance
-             - By showing that the TDR becomes extremely low when attacking
-               Tamaraw, even for the first 100 websites, we show that it’s
-               extremely low for all websites.
-    7) CONCLUSIONS
-       - The lower bounds of bandwidth costs are surprisingly low,
-         suggesting that it may be possible to build very efficient
-         defenses.
-*** code
-**** [[../sw/attacks/svm.py][svm.py]]
-     #+BEGIN_SRC python
-       #data is in this format:
-       #each data[i] is a class
-       #each data[i][j] is a standard-format sequence
-       #standard format is: each element is a pair (time, direction)
-     #+END_SRC
-     - str_to_sinste: helper function, splits string
-     - load_one: appends lines to data, returns
-     - load_all: appends load_one to data, returns
-     - extract: extracts features from data
-       - sizemarkers: pad to 300 with 0
-       - html size: my naive approach
-       - total transmitted: sums up
-       - number markers: pads to 300
-       - unique packet: unique lengths (-/+)
-       - percentage incoming
-       - number of packets
-     - "main"
-       - splits data in test and training
-       - saves test and training files
-***** problemsmaybe:
-      - unique packet no fixed length
-**** [[file:~/da/git/sw/attacks/svm-run.py]]
-     runs
-     - python svm.py i
-     - svm-train -c c -g g svm.train svm.model
-     - svm-predict svm.test svm.model svm.resultst >> temp-acc
-     for i folds from 1 to 10
-**** [[file:~/da/git/sw/attacks/svmdotest.rb]]
-     cleans up, runs
-     - clgen_stratify cltor_matrix 36 40
-     - svm-train -t 4 -c 1024
-     - svm-predict
-*** ref [[file:master.bib::a-systematic][Cai et al. 2014: Systematic Approach Developing]]
 ** TODO [#E] demultiply git/docs/ and chive/keepimport [|/home/web/keep]
 ** TODO [[./DOM3-Core.pdf][Document Object Model (DOM) Level 3 Core Specification]]
 *** part: read some to quote for [[file:~/da/git/diplomarbeit.org::*Estimate%20Parameter:%20Number%20of%20Embedded%20Objects][Estimate Parameter: Number of Embedded Objects]]

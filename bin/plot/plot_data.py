@@ -4,6 +4,7 @@
 - list of counters'''
 import Gnuplot
 
+import csv
 import collections
 import numpy as np
 
@@ -32,8 +33,14 @@ def _table_to_data(f):
         out[name] = Datum(float(overhead), float(et), float(svc))
     return out
 
-def _table_size_to_data(f):
-    pass
+def _size_table_to_data(readable):
+    '''read readable to csv data'''
+    # file:  git/data/results/export_30sites.csv
+    read = []
+    reader = csv.reader(readable)
+    for row in reader:
+        read.append(row)
+    return read
 
 def _to_color(value):
     '''gives color to hls-hue'''
