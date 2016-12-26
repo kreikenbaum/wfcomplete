@@ -34,7 +34,7 @@ def _table_to_data(f):
     return out
 
 def _size_table_to_data(readable):
-    '''read readable to csv data'''
+    '''read readable to csv data. data is org-export-table in csv format'''
     # file:  git/data/results/export_30sites.csv
     read = []
     reader = csv.reader(readable)
