@@ -38,8 +38,10 @@ def _size_table_to_data(readable):
     # file:  git/data/results/export_30sites.csv
     read = []
     reader = csv.reader(readable)
+    DataRecord = collections.namedtuple(
+        'DataRecord', map(lambda x: x.replace('-', ''), reader.next()))
     for row in reader:
-        read.append(row)
+        read.append(DataRecord._make(row))
     return read
 
 def _to_color(value):
