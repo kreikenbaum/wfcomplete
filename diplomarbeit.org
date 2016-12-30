@@ -427,7 +427,7 @@ Facebook.com\\
       case, several packets of our own capture were filtered out,
       f.ex. ACKs, traffic except to the bridge (see [[#capture][Capture]]), if used,
       or traffic to the cover traffic server if no bridge was
-      used.[fn:: see code one_site (filter), 7777.sh (server),
+      used.[fn:: see code [[#1site_desc][one_site]] (filter), 7777.sh (server),
       counter.py]
 
       The resultant intermediate data is in (packet size,
@@ -767,12 +767,12 @@ Facebook.com\\
 
     The next sections explode [[#def-early][early defense proposals]], then address
     [[#def-specific-vs-general][defenses tailored to specific attacks, versus /general defenses/
-    that hope to defend against all possible attacks]]. Last are general
-    stochastic defenses that add randomness to achieve meaningful
-    reduction of detection strength with less bandwith and time
-    overhead than deterministic ones.
+    that hope to defend against all possible attacks]], and describe the
+    [[#def-tamaraw][Tamaraw defense]]. The latest sections present [[#def-stochastic][stochastic defenses]]
+    that add randomness to achieve meaningful reduction of detection
+    strength with less bandwith and time overhead than deterministic
+    ones, with the [[#def-wtf-pad][WTF-PAD]] defense.
 
-      - tamaraw
       - deterministic
         - fixed data rate
         - supersequence if known
@@ -855,6 +855,9 @@ Facebook.com\\
     defense of morphing all traffic to supersequences of traffic
     patterns.
 *** DANIEL Tamaraw
+    :PROPERTIES:
+    :CUSTOM_ID: def-tamaraw
+    :END:
     #+INDEX: Defense!Tamaraw
     #+INDEX: Tamaraw
     /Tamaraw/\cite{a-systematic} is an evolution of
@@ -867,6 +870,9 @@ Facebook.com\\
 
     Tamaraw has a tunable overhead, with a trade-off of time vs size.
 *** DANIEL Stochastic Defenses
+    :PROPERTIES:
+    :CUSTOM_ID: def-stochastic
+    :END:
     Previous general defenses were mostly deterministic. The latest
     defenses by \cite{wtfpad} and \cite{wang2015walkie} both use a
     stochastic approach to generate additional traffic, with the
@@ -878,6 +884,9 @@ Facebook.com\\
     packets in each, omitting the sending when the browser generated
     packets itself.
 *** DANIEL WTF-PAD
+    :PROPERTIES:
+    :CUSTOM_ID: def-wtf-pad
+    :END:
     #+INDEX: Defense!WTF-PAD
     #+INDEX: WTF-PAD
     /Website Traffic Fingerprinting Protection with Adaptive Defense/
@@ -1719,10 +1728,13 @@ Facebook.com\\
           - \cite{kfingerprint} captured 70 instances each
           - \cite{effective} used 90: 60 for train, 30 for test
         - this was before labelling erroneous traces
-*** WRITE Bridge Usage
-    - most captures using bridge, a few without
-    - bridge accuracy slightly higher (0.856360007881 with bridge
-      instead of 0.8331922214032221403 without)
+*** WRITE (No) Effect of Bridge Usage
+    As describe in section [[#capture][Capture]], most data was captured using a
+    secondary computer as a Tor bridge. This does not seem to affect
+    accuracy greatly: The accuracy of using a bridge was slightly
+    higher compared to not using one: 0.856360007881 with vs
+    0.8331922214032221403 without, as seen in table [[tab:100_sites]].
+
     - should not alter wf results in a meaningful way
 **** WAIT [[file:~/da/da.org::*2nd%20nobridge%20retrieval,%20check%20that%20accuracy%20slightly%20lower][2nd nobridge retrieval, check that accuracy slightly lower]]
 ** KEYWORDS Evaluation of Defenses [1/15]
@@ -2117,8 +2129,8 @@ Facebook.com\\
    :PROPERTIES:
    :CUSTOM_ID: tab:100-sites
    :END:
-#+CAPTION[Testing several 100-class data sets with state-of-the-art classifiers]: Testing several data sets with state-of-the-art classifiers. cumul is my reimplementation, see ..., =p-cumul= is panchenko et al's implementation, tts-cumul is cumul with data split into training and testing set. Size is the size increase in % as related to closest no-addon capture.
-#+NAME: 100_sites
+#+CAPTION[Testing several 100-class data sets with state-of-the-art classifiers]: Testing several data sets with state-of-the-art classifiers. /cumul/ is my reimplementation, see ..., /p-cumul/ is panchenko et al's implementation, /tts-cumul/ is my cumul with data split into training and testing set. /Size/ is the size increase in % as related to the closest no-addon capture.
+#+NAME: tab:100_sites
 #+ATTR_LATEX: :align |r||n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|
 #+INCLUDE: "data/results/alternatives.org::#100-sites-pub" :only-contents t
 *** WAIT link to cumul-reimpl sec
@@ -2337,7 +2349,7 @@ Facebook.com\\
 
    and start the retrieval as mentioned above.
    - automatic via ...
-** WRITE filtering pcap files [0/4]
+** CHECK Filtering =pcap= Files [0/4]
    Although this requirement could later be removed (see [[#future-work][section
    future work]]), the addon currently needs a generator of cover
    traffic to work. While it can be set in the add-on's preferences,
@@ -2353,10 +2365,10 @@ Facebook.com\\
    described in the manual \cite{wireshark-filter}, with the tcp
    protocol specific fields as given in \cite{tcp-filter-fields}.
 
-   The script to solve this is in the appendix [[7777]]. As the server
-   ran on port 7777, which was allowed only as an incoming port by
-   the firewall, it suffices to filter by port name. (Otherwise, the
-   read filter would need to be modified).
+   The script to solve this is described in appendix [[#7777]]: As the
+   server ran on port 7777, which was allowed only as an incoming port
+   by the firewall, it suffices to filter by port name. (Otherwise,
+   the read filter would need to be modified).
 *** TODO implementation
    - summary approach: file 7777.sh takes each (pcap) file in
      current directory, filters the port 7777 out
@@ -2381,7 +2393,7 @@ Facebook.com\\
    :PROPERTIES:
    :CUSTOM_ID: safe-mode
    :END:
-   If Firefox was stopped via a signal (as opposed to closing the
+   If Firefox was stopped via the =kill= command (as opposed to closing the
    window), it prompts to start in /Safe Mode/ afterwards. This blocks
    automatic retrieval via Marionette.
 
@@ -2392,8 +2404,8 @@ Facebook.com\\
    - set the environment variable =MOZ_DISABLE_AUTO_SAFE_MODE= (did
      not work in the Tor Browser Bundle),
    - remove the line =toolkit.startup.recent_crashes= in the
-     =prefs.js= config file which saves the number of consecutive
-     kills via
+     =prefs.js= config file, which saves the number of consecutive
+     kills, via
      #+BEGIN_SRC sh
        sed -i '/toolkit\.startup\.recent_crashes/d' /path/to/prefs.js
      #+END_SRC
@@ -2676,7 +2688,7 @@ Facebook.com\\
    1. starts the Tor Browser Bundle's =firefox= binary, enabling
       remote-control via the [[Marionette][=-marionette=]] command-line argument,
       waiting up to 60 seconds for its initialization
-   2. starts the =tshark= capture
+   2. starts the =tshark= capture, possibly limited only to the bridge
    3. loads the page (given as first parameter) via Marionette
    4. waits up to 600 seconds for the page load to finish
    5. waits 3 more seconds (for the last cover traffic to finish)
@@ -2818,9 +2830,14 @@ Facebook.com\\
     approximation, random trees, etc.
 *** WAIT github for analyse.py code, change text
 ** see also [[file:geloescht.org::*from%20%5B%5B*transform%20to%20panchenko-attributes%5D%5D][from *transform to panchenko-attributes]]                 :ARCHIVE:
-** KEYWORDS Remove same-host cover traffic server from traces: =7777.sh=
-   <<7777>>
-   #+INCLUDE: "./bin/7777.sh" src sh
+** WRITE Remove same-host cover traffic server from traces: =7777.sh=
+   :PROPERTIES:
+   :CUSTOM_ID: 7777
+   :END:
+   - filters out all traffic to cover traffic server port
+     - 7777
+   - messages user after finish
+*** WAIT link to github
 * WRITE WF-Trace Pictures
   :PROPERTIES:
   :CUSTOM_ID: wf-pictures

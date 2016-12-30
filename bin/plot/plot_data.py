@@ -16,7 +16,7 @@ def _color_cycle(steps=6):
     return out
 
 def _scale(lst, factor=1/1024.0):
-    '''scale byte to kByte'''
+    '''scale list of Bytes to kiloByte'''
     return [x*factor for x in lst]
 
 def _table_to_data(f):
@@ -34,12 +34,12 @@ def _table_to_data(f):
     return out
 
 def _size_table_to_data(readable):
-    '''read readable to csv data. data is org-export-table in csv format'''
-    # file:  git/data/results/export_30sites.csv
+    '''read readable data, which contains org-export-table in csv format'''
+    # readable = open('../../data/results/export_30sites.csv')
     read = []
     reader = csv.reader(readable)
     DataRecord = collections.namedtuple(
-        'DataRecord', map(lambda x: x.replace('-', ''), reader.next()))
+        'DataRecord', map(lambda x: x.replace('-', '_'), reader.next()))
     for row in reader:
         read.append(DataRecord._make(row))
     return read
