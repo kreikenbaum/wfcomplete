@@ -182,10 +182,9 @@ def all_from_dir(dirname, remove_small=True):
             json_only = False
             _append_features(out, filename)
     if not out:
-        try:
-            out = all_from_wang(os.path.join(dirname, "batch"))
-        except ValueError:
-            out = all_from_panchenko(dirname)
+        out = all_from_wang(os.path.join(dirname, "batch"))
+    if not out:
+        out = all_from_panchenko(dirname)
     if not out:
         raise IOError('no counters in path "{}"'.format(dirname))
     if remove_small:
@@ -403,6 +402,10 @@ class Counter(object):
         'c.com 1234 1235:300'
         >>> Counter.from_panchenko_data('c.com 1234 1235:300').timing
         [[0.001..., 300]]
+        >>> Counter.from_panchenko_data('c.com_exception 1234 1235:300').timing
+        [[0.001..., 300]]
+        >>> Counter.from_panchenko_data('c.com_exception 1234 1235:300').name
+        'c.com@1_exception'
         '''
         tmp = Counter()
 
@@ -410,7 +413,7 @@ class Counter(object):
         start_secs = int(elements[1])/1000.
         if '_' in elements[0]:
             (its_name, err) = elements[0].split('_', 1)
-            tmp.name = '{}@{}_{}'.format(name, int(start_secs), err)
+            tmp.name = '{}@{}_{}'.format(its_name, int(start_secs), err)
         else:
             tmp.name = '{}@{}'.format(elements[0], start_secs)
         for element in elements[2:]:

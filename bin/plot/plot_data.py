@@ -36,6 +36,9 @@ def _table_to_data(f):
 def _size_table_to_data(readable):
     '''read readable data, which contains org-export-table in csv format'''
     # readable = open('../../data/results/export_30sites.csv')
+    # a = _size_table_to_data(readable)
+    # g = Gnuplot.Gnuplot()
+    # g.plot([(x.size, x.cumul) for x in a])
     read = []
     reader = csv.reader(readable)
     DataRecord = collections.namedtuple(
@@ -114,7 +117,7 @@ def save(gnuplotter, prefix='plot', type_='eps'):
                         enhanced=1, color=1, mode="eps")
 
 def table(data, cls="svc"):
-    '''table data'''
+    '''plot table data = {defense: {overhead: ..., svc: ...} '''
     g = Gnuplot.Gnuplot()
     g("set xrange [0:*]")
     g("set yrange [0:100]")
