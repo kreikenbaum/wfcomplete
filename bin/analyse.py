@@ -2,12 +2,18 @@
 '''Analyses (Panchenko's) features returned from Counter class'''
 
 import numpy as np
-from sklearn import cross_validation, ensemble, multiclass, neighbors, preprocessing, svm, tree
+from sklearn import cross_validation, ensemble, metrics, multiclass, neighbors, preprocessing, svm, tree
 from scipy.stats.mstats import gmean
 import doctest
 import logging
 import sys
 import time
+
+# tmp - by hand open world
+from sklearn.cross_validation import train_test_split
+from sklearn.preprocessing import label_binarize
+from sklearn.metrics import roc_curve, auc
+import matplotlib.pyplot as plt
 
 import counter
 
@@ -341,7 +347,7 @@ def open_world(defense_name, num_jobs=JOBS_NUM):
     defense = counter.all_from_dir(defense_name)
     # split (cv?)
     X,y,yd=to_features_cumul(defense)
-    y_binarized = np.ravel(preprocessing.label_binarize(y, [-1]))
+    X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=.5)
     c,r = _my_grid(X, y_binarized, probability=True)
     
 def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=False):
