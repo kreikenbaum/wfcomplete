@@ -2,6 +2,9 @@
 global warned
 warned = False
 
+import glob
+import os
+
 def extract(times, sizes, features):
 
     #Transmission size features
@@ -98,9 +101,12 @@ def extract(times, sizes, features):
             features.append("X")
 
 #this takes quite a while
-for site in range(0, 120):
+files = [os.path.basename(x) for x in glob.iglob("batch/*")]
+numdomain = sorted([int(x.split('-')[0]) for x in files])[-1] +1
+numinst = sorted([int(x.split('-')[1]) for x in files if not "f" in x])[-1] +1
+for site in range(0, numdomain):
     #print site
-    for instance in range(0, 90):
+    for instance in range(0, numinst):
         #print instance
         fname = str(site) + "-" + str(instance)
         #Set up times, sizes

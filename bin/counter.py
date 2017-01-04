@@ -200,15 +200,18 @@ def all_from_json(filename):
     return out
 
 def all_from_panchenko(dirname='.'):
-    '''creates list of Counters from filename, calling from_panchenko_data()'''
-    out = {}
-    os.chdir(dirname)
-    for filename in glob.glob('*'):
+    '''@return a dict { class_1: [counters], ..., class_n: [c] }'''
+    return dict(panchenko_generator(dirname))
+
+def panchenko_generator(dirname):
+    '''generator of Counters from filename, calling
+from_panchenko_data()'''
+    for filename in glob.glob(os.path.join(dirname, '*')):
+        out = []
         with open(filename) as f:
-            out[filename] = []
             for line in f:
-                out[filename].append(Counter.from_panchenko_data(line))
-    return out
+                out.append(Counter.from_panchenko_data(line))
+        yield (os.path.basename(filename), out)
 
 def all_from_wang(dirname="batch", cw=True):
     '''creates dict of Counters from wang's =batch/=-directory'''
