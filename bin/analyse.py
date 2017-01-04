@@ -147,6 +147,16 @@ def _misclassification_rates(train, test, clf=GOOD[0]):
     return _predict_percentages(_class_predictions(y2, clf.predict(X2)),
                                 _gen_url_list(y2, y2d))
 
+def _binarize(y, keep=-1, default=0):
+    '''binarize data in y: transform all values to =default= except =keep=
+    >>> list(_binarize([0, -1, 1]))
+    [0, -1, 0]'''
+    for el in y:
+        if el == keep:
+            yield keep
+        else:
+            yield default
+
 def _my_grid(X, y,
              cs=np.logspace(11, 17, 4, base=2),
              gammas=np.logspace(-3, 3, 4, base=2),
@@ -348,7 +358,7 @@ def open_world(defense_name, num_jobs=JOBS_NUM):
     # split (cv?)
     X,y,yd=to_features_cumul(defense)
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=.5)
-    c,r = _my_grid(X, y_binarized, probability=True)
+    c,r = _my_grid(X_train, y_train, probability=True)
     
 def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test
@@ -751,6 +761,5 @@ def tts(counter_dict, test_size=1.0/3):
 if __name__ == "__main__":
     doctest.testmod()
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
-
 
     cross_test(sys.argv, with_svm=True) #, cumul=False)

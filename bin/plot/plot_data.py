@@ -38,7 +38,7 @@ def _size_table_to_data(readable):
     # readable = open('../../data/results/export_30sites.csv')
     # a = _size_table_to_data(readable)
     # g = Gnuplot.Gnuplot()
-    # g.plot([(x.size, x.cumul) for x in a])
+    # g.plot([(x.size, x.cumul) for x in a if 'plotskip' not in x.notes]])
     read = []
     reader = csv.reader(readable)
     DataRecord = collections.namedtuple(
