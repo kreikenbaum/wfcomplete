@@ -39,6 +39,7 @@ def _size_table_to_data(readable):
     # a = _size_table_to_data(readable)
     # g = Gnuplot.Gnuplot()
     # g.plot([(x.size, x.cumul) for x in a if 'plotskip' not in x.notes]])
+    # g.replot(Gnuplot.Data([(x.size, x.cumul) for x in a if 'plotskip' not in x.notes and 'wfpad' in x.defense], title='wfpad'))
     read = []
     reader = csv.reader(readable)
     DataRecord = collections.namedtuple(

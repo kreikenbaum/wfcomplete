@@ -74,8 +74,13 @@ def extract(times, sizes, features):
         if x > 0 and stopped == 1:
             stopped = 0
             bursts.append(curburst)
-    features.append(max(bursts))
-    features.append(sum(bursts)/len(bursts))
+    try:
+        features.append(max(bursts))
+        features.append(sum(bursts)/len(bursts))
+    except ValueError, ZeroDivisionError:
+        features.append("X")
+        features.append("X")
+        print "error on instance {}-{}: bursts empty".format(site, instance)
     features.append(len(bursts))
     counts = [0, 0, 0]
     for x in bursts:

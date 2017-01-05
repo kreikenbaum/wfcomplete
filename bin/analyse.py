@@ -161,10 +161,12 @@ def _my_grid(X, y,
              cs=np.logspace(11, 17, 4, base=2),
              gammas=np.logspace(-3, 3, 4, base=2),
              results={}, num_jobs=JOBS_NUM, folds=5, probability=False):
-    '''grid-search on fixed params
+    '''grid-search on fixed params (this is necessary as sklearn does not
+enable grid-search for the OneVsRestClassifier class)
 
     @param results are previously computed results {(c, g): accuracy, ...}
-    @return tuple (optimal_classifier, results_object)'''
+    @return tuple (optimal_classifier, results_object)
+    '''
     best = None
     bestres = 0
     for c in cs:
