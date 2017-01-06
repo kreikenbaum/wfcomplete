@@ -360,7 +360,9 @@ def open_world(defense_name, num_jobs=JOBS_NUM):
     # split (cv?)
     X,y,yd=to_features_cumul(defense)
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=.5)
-    c,r = _my_grid(X_train, y_train, probability=True)
+    c,r = _my_grid(X_train, y_train)
+    cplus = multiclass.OneVsRestClassifier(svm.SVC(
+        C=c.estimator.C, gamma=c.estimator.gamma, probability=True))
     
 def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test

@@ -8903,6 +8903,7 @@
           - The four outcomes can be formulated in a 2×2 /contingency
             table/ or /confusion matrix/
 ** TODO [#A] [[./201101-Evaluation_JMLT_Postprint-Colour.pdf][Powers - Evaluation: from precision, recall and f-measure to roc, informedness, markedness & correlation]]
+*** continue p.3
 *** summary
     0. [@0] Abstract
 
@@ -8932,11 +8933,51 @@
 
           - assumption: no value is 0, dichotomous (two-valued) model
 
-       1. Recall & Precision, Sensitivity & Specitivity
+       1. Recall & Precision, Sensitivity & Specificity
+
+          - Recall = Sensitivity = tpr = tp/rp = TP/RP = A / (A+C)
+
+            - information retrieval, ml, comp.ling.: minor
+
+            - comp.ling. machine translation + medicine: major
+
+          - Precision = Confidence = tpa = tp/pp = TP/PP = A / (A+B)
+
+            - focus of ml, data mining, info.retr., ignored by ROC
+
+          - their means: A, Gand F=G^2/A (f-measure)
+
+          - all ignore tn
+
+          - Inverse Recall = Specificity = tnr = tn/rn = TN/RN = D / (B+D)
+
+          - Inverse Precision = tna = tn/pn = TN/PN = D / (C+D)
+
+          - inverse of F1==PS+ is PS- in statistics
+
+          - (Rand) Accuracy = tca = tcr = tp+tn = rp*tpr+rn*tnr
+            = (TP+TN)/N = pp * tpa + pn * tna = (A+D)/N
+
+          - Dice F1 = tp / (tp+(fn+fp)/2) = A / (A+(B+C)/2)
+            = 1/(1+mean(FN,FP)/TP)
+
+          - Jaccard = tp / (tp+fn+fp)=TP/(N-TN) = A/(A+B+C) = A/(N-D)
+            = 1/(1+2 mean(FN,FP)/TP) = F1 / (2-F1)
 *** quotes
     2. [@2] THE BINARY CASE
-       - On the other hand =tp=, =fp=, =fn=, =tn= and =rp=, =rn=, and
-         =pp=, =pn= refer to the joint and marginal probabilities
+       0. [@0]
+          - On the other hand =tp=, =fp=, =fn=, =tn= and =rp=, =rn=, and
+            =pp=, =pn= refer to the joint and marginal probabilities
+       1. Recall & Precision, Sensitivity & Specificity
+          | +R   | -R   |    |
+          | *tp* | fp   | pp |
+          | fn   | *tn* | pn |
+          | rp   | rn   | 1  |
+
+          |    | +R  | -R  |     |
+          | +P | *A* | B   | A+B |
+          | -P | C   | *D* | C+D |
+          |    | A+C | B+D | N   |
 ** TODO [#A] [[./user_guide_0.16.1.pdf][Pedregosa - scikit-learn user guide]]
 *** TODO [#A] 6.3. Model evaluation: quantifying the quality of predictions
 *** TODO [#B] 42.21. sklearn.metrics: Metrics: sklearn.metrics.auc, see [[file:~/da/da.org::*open%20world][open world]]
@@ -9585,8 +9626,29 @@
                  better, steeper better
 
                - typically binary classification, extendable by
-                 binarizing or micro-averaging
+                 binarizing (and optionally additional
+                 micro-averaging)
 
+               - binarize data:
+                 #+BEGIN_SRC python
+                   y = label_binarize(y, classes=[0, 1, 2])
+                 #+END_SRC
+
+               - split data:
+                 #+BEGIN_SRC python
+                   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.5)
+                 #+END_SRC
+
+               - get class scores (after possible grid-search)
+                 #+BEGIN_SRC python
+                   y_score = classifier.fit(X_train, y_train).decision_function(X_test)
+                   fpr = dict()
+                   tpr = dict()
+                   roc_auc = dict()
+                   for i in range(n_classes):
+                       fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
+                       roc_auc[i] = auc(fpr[i], tpr[i])
+                 #+END_SRC
 *** quotes
     2. [@2] A tutorial on statistical-learning for scientific data processing
        1. Statistical learning: the setting and the estimator object
@@ -9766,6 +9828,8 @@
                GridSearchCV instance) and an evaluation set to compute
                performance metrics.
     11. [@11] Examples
+        11. [@11] Ensemble methods
+            3. [@3] Feature importances with forests of trees
         18. [@18] Model Selection
             3. [@3] Confusion matrix
                - Example of confusion matrix usage to evaluate the
@@ -9825,6 +9889,9 @@
                    plt.legend(loc="lower right")
                    plt.show()
                  #+END_SRC
+            10. [@10] Sample pipeline for text feature extraction and evaluation
+                # multiprocessing requires the fork to happen in a
+                # __main__ protected block
     12. Frequently Asked Questions
         12. [@12] How do I deal with string data (or trees, graphs...)?
             - Firstly, many estimators take precomputed
@@ -10053,16 +10120,15 @@
     47. [@47] Chapter 47. How to optimize for speed
         3. [@3] Profiling Python code
            - It is however still interesting to check what’s happening
-             inside the _nls_subproblem function which is the hotspot if
-             we only consider Python code: it takes around 100% of the
-             cumulated time of the module. In order to better understand
-             the profile of this specific function, let us install
-             line-prof and wire it to IPython:
+             inside the =_nls_subproblem= function which is the
+             hotspot if we only consider Python code: it takes around
+             100% of the cumulated time of the module. In order to
+             better understand the profile of this specific function,
+             let us install line-prof and wire it to IPython:
              #+BEGIN_SRC sh
                pip install line-profiler
              #+END_SRC
-
-    48. somewhere
+    48. MOVE to 11.11.3
                 #+BEGIN_SRC python
                   from sklearn.ensemble import ExtraTreesClassifier
                   [...]
@@ -18322,10 +18388,6 @@ E. Casalicchio and M. Colajanni. A client-aware dispatching
 ** TODO [#C] [[./torspec/proposals/ideas/xxx-using-spdy.txt][Murdoch - Using the SPDY protocol to improve Tor performance]]
 *** ref [[file:master.bib::tor-spec-spdy][Murdoch 2010: Using SPDY Tor]]
 ** TODO [#C] PART [[../../../chive/GG/it/emacs/org.pdf][Dominik - The Org Manual]]
-*** TODO [#D] org-mode how to filter by tags
-    [2016-07-29 Fr]
-    [[file:~/Desktop/main.org::*Tasks][Tasks]]
-
 *** summary
     1. Introduction
 
@@ -18801,7 +18863,14 @@ E. Casalicchio and M. Colajanni. A client-aware dispatching
             Kill the current column.
           - M-x org-table-export RET
 
-            Export the table, by default as a TAB-separated file.
+            Export the table, by default as a TAB-separated file. Use
+            for data exchange with, for example, spreadsheet or
+            database programs. The format used to export the file can
+            be configured in the option
+            =org-table-export-default-format=. You may also use
+            properties =TABLE_EXPORT_FILE= and =TABLE_EXPORT_FORMAT=
+            to specify the file name and the format for table export
+            in a subtree.
        2. Column width and alignment
           - To set the width of a column, one field anywhere in the column
             may contain just the string ‘<N>’ where ‘N’ is an integer
@@ -18921,6 +18990,19 @@ E. Casalicchio and M. Colajanni. A client-aware dispatching
                [Exporting], page 136), only the headline is. Configure
                the details using the variable
                org-export-with-archived-trees.
+    10. Agenda views
+        1. Agenda files
+           - C-c [                                   org-agenda-file-to-front
+
+             Add current file to the list of agenda files.
+        3. [@3] The built-in agenda views
+           2. [@2] The global TODO list
+              - C-c a t org-todo-list
+
+                Show the global TODO list. This collects the TODO
+                items from all agenda files (see Chapter 10 [Agenda
+                views], page 100) into a single buffer. By default,
+                this lists items with a state the is not a DONE state.
     11. [@11] Markup for rich export
         1. Structural markup elements
            1. Document title
@@ -19004,6 +19086,13 @@ E. Casalicchio and M. Colajanni. A client-aware dispatching
                   Set, respectively, the alignment string of the
                   table, its font size and its width. They only apply
                   on regular tables.
+                - :environment
+
+                  Environment used for the table. It can be set to any
+                  LATEX table environment, like =tabularx=,
+                  =longtable=, =array=, =tabu=, =bmatrix=... It
+                  defaults to =org-latex-default-table-environment=
+                  value.
                 - :float :placement
 
                   The :float specifies the float environment for the

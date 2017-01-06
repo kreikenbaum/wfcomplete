@@ -12,7 +12,6 @@
 #+LATEX_HEADER: \usepackage{times}
 #+LATEX_HEADER: \usepackage{float}
 #+LATEX_HEADER: \restylefloat{table}
-#+LATEX_HEADER: \usepackage{longtable}
 #+LATEX_HEADER: \setlongtables
 #+LATEX_HEADER: \usepackage{numprint}
 #+LATEX_HEADER: \npdecimalsign{.}
@@ -90,7 +89,7 @@
     - encouragement
     - readability
 * WAIT_FINISH Summary
-* DANIEL Basics [94%]
+* DANIEL Basics [96%]
   To protect online communication, journalists, whistleblowers,
   "normal people", and among others even military\cite{who-uses-tor}
   have resorted to the Tor\cite{tor-design} anonymity network.
@@ -108,7 +107,7 @@
   Fortunately, as soon as these weaknesses became known, defenses
   were proposed. [[#defenses][The subsequent section]] shows different classes of
   defenses and examines them in detail.
-** DANIEL Website Fingerprinting [25/27]
+** DANIEL Website Fingerprinting [25/26]
    :PROPERTIES:
    :CUSTOM_ID: wf
    :END:
@@ -415,7 +414,7 @@ experience /E/.
 
      The following sections present the main parts of machine learning:
      [[#ml-preprocess][preprocessing]], [[#ml-features][feature extraction]] and [[#ml-class][classification]].
-***** CHECK Preprocessing
+***** EVA Preprocessing
       :PROPERTIES:
       :CUSTOM_ID: ml-preprocess
       :END:
@@ -481,7 +480,11 @@ experience /E/.
 
       From this, various metrics can be derived. The main metrics used
       in almost all papers are closed-world accuracy, and
-      true-positive-- and false-positive rate. These are defined as
+      true-positive- and false-positive-rate. These are defined as
+
+      - tpr = TP / (TP + FN)
+      - fpr = FP / (FP + TN)
+      - acc = (TP + TN) / (TP + FP + FN + TN)
       - closed-world: accuracy
         - TPR, FPR
         - roc
@@ -948,12 +951,10 @@ experience /E/.
    \cite{wtfpad} had not been published yet.
 *** WAIT brainstorm (include in other parts, or just in intro)
    - make wf/ml harder, fudge features
-     - problems WTF-PAD: modify all of tor,
+     - problems WTF-PAD: modify all of tor traffic,
        - yet problem is browser traffic
          - and traffic is app-dependent
        - deployability: all/nothing
-       - modify firefox codebase, when add-on suffices
-       - maybe also efficiency 
        - histograms
          - not fitting: no need to hide *that* traffic occurs, just where to,
          - compare to real fingerprints
@@ -1355,10 +1356,9 @@ experience /E/.
      To solve this, the top 100 sites's traces[fn::both for no defense
      and with add-on version 0.18.2 (see [[*0.18: configurability][0.18: configurability]])] were
      ordered by incoming byte size, and percentiles were
-     chosen.[fn::the method to do this is =top30()= in [[#analyse][analyse.py]], the
-     traces were from add-on version 0.18.2]. Due to them being well
-     apart, these sites should be easy to classify, and thus harder to
-     keep apart via defenses.
+     chosen.[fn::the method to do this is =top30()= in
+     [[#analyse][analyse.py]]]. Due to them being well apart, these sites should be
+     easy to classify, and thus harder to mix up via defenses.
 **** DANIEL Background Sites
      :PROPERTIES:
      :CUSTOM_ID: sites-bg
@@ -1639,7 +1639,7 @@ experience /E/.
       - maybe due to changes in tbb since then(?)
     - tables (or graphics?)
       - success of classifiers
-    - table [[#tab:100-sites]]
+    - table [[tab:100-sites]]
 **** WAIT for [[file:~/da/da.org::*wang%20on%20complete%20panchenko%20data][wang on complete panchenko data]]
 *** WRITE Which Features Help Most in Classification
     #+CAPTION: Importance of CUMUL features
@@ -1743,7 +1743,7 @@ experience /E/.
     secondary computer as a Tor bridge. This does not seem to affect
     accuracy greatly: The accuracy of using a bridge was slightly
     higher compared to not using one: 0.856360007881 with vs
-    0.8331922214032221403 without, as seen in table [[tab:100_sites]].
+    0.8331922214032221403 without, as seen in table [[tab:100-sites]].
 
     - should not alter wf results in a meaningful way
 **** WAIT [[file:~/da/da.org::*2nd%20nobridge%20retrieval,%20check%20that%20accuracy%20slightly%20lower][2nd nobridge retrieval, check that accuracy slightly lower]]
@@ -1786,8 +1786,8 @@ experience /E/.
     The following sections evaluate the addon's protection from
     website fingerprinting. The addon branches[fn::as described in [[*How to Generate Cover Traffic][How
     to Generate Cover Traffic]]] are each evaluated: first [[#results-flavors][the main
-    addon's flavors]], then the simple and retrofixed versions, finally the
-    addition of bursts at the traffic end; Finally, a summary
+    addon's flavors]], then the simple and retrofixed versions, finally
+    the addition of bursts at the traffic end; Finally, a summary
     description of which provides the highest accuracy decrease per
     overhead best is provided.
 
@@ -1827,7 +1827,8 @@ experience /E/.
      The size-guessing =b= flavors produce significantly
      higher overhead, but yield a further small reduction of classifier
      accuracy.
-**** KEYWORDS Versions: Simple
+**** KEYWORDS Version: Simple
+**** KEYWORDS Version: Retrofixed
 **** WRITE Bursts
      :PROPERTIES:
      :CUSTOM_ID: eval-bursts
@@ -1847,6 +1848,8 @@ experience /E/.
     :PROPERTIES:
     :CUSTOM_ID: eval-wtf-pad
     :END:
+    As seen in ...
+
     - overhead of WTF-PAD depends on network connection from client to bridge
       - 0--1% if on localhost
       - ~12.9% for virtual machine
@@ -1869,17 +1872,20 @@ experience /E/.
     - different target distributions
     - multiple distributions
     - optionally no cooperator necessary
-    dummy packets chosen as response to real request (as in web traffic)
-- add evaluation values
-- end of page load easily detectable
-  - wfpad can see end of each transmission
-- similarities:
-  - also has app_hint
-  - no delay
-- currently uses exit nodes
-- this has no gap traffic, aims less at global adversary, more at ISP
-   - WTF-PAD pads small sites much, larger sites little
-     - addon-simple does the opposite
+    - dummy packets chosen as response to real request (as in web traffic)
+    - add evaluation values
+    - end of page load easily detectable
+      - wfpad can see end of each transmission
+    - similarities:
+      - also has app_hint
+      - no delay
+    - currently uses exit nodes
+    - this has no gap traffic, aims less at global adversary, more at ISP
+      - WTF-PAD pads small sites much, larger sites little
+        - addon-simple does the opposite
+    - [[#def-wtf-pad][WTF-PAD]] basics section
+       - modify firefox codebase, when add-on suffices
+     - maybe efficiency
 **** move difference comparison of traces (wfpad , disabled, (?others?)) here
 *** WRITE Does This Hide Bursts?
     - meta-bursts as described in walkie-talkie
@@ -2137,16 +2143,26 @@ experience /E/.
 * appendices (begin above this headline; this is for searching)     :ARCHIVE:
   above, as in this section cuts it out (due to ARCHIVE tag)
 * KEYWORDS Both Training and Testing on the Same Data Sets, All Attacks
-** 100 Sites
-   :PROPERTIES:
-   :CUSTOM_ID: tab:100-sites
-   :END:
-#+CAPTION[Testing several 100-class data sets with state-of-the-art classifiers]: Testing several data sets with state-of-the-art classifiers. /cumul/ is my reimplementation, see ..., /p-cumul/ is panchenko et al's implementation, /tts-cumul/ is my cumul with data split into training and testing set. /Size/ is the size increase in % as related to the closest no-addon capture.
-#+NAME: tab:100_sites
+In the following tables, /size/ is the size increase in % as related
+to the closest no-addon capture, /knn/ is \cite{effective}'s
+classifier, see [[#knn][kNN-Attack]], /cumul/ my reimplementation, see [[#cumul-reimplementation][CUMUL
+Re-Implementation]], /p-cumul/ is panchenko et al's implementation, see [[#cumul][CUMUL]]
+/tts-cumul/ is my cumul with data split into training and testing
+set, see [[#split][split]].
+#+CAPTION[Testing several 10-class data sets with state-of-the-art classifiers]: Testing several [[#30sites][10-class data sets]] with state-of-the-art classifiers.
+#+NAME: tab:10-sites
+#+ATTR_LATEX: :align |r||n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}| :environment longtable
+#+INCLUDE: "data/results/alternatives.org::#10-sites-pub" :only-contents t
+
+#+CAPTION[Testing several 30-class data sets with state-of-the-art classifiers]: Testing several [[#30sites][30-class data sets]] with state-of-the-art classifiers.
+#+NAME: tab:30-sites
+#+ATTR_LATEX: :align |r||n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}| :environment longtable
+#+INCLUDE: "data/results/alternatives.org::#30-sites-pub" :only-contents t
+
+#+CAPTION[Testing several 100-class data sets with state-of-the-art classifiers]: Testing several [[#top100][100-class data sets]] with state-of-the-art classifiers.
+#+NAME: tab:100-sites
 #+ATTR_LATEX: :align |r||n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|
 #+INCLUDE: "data/results/alternatives.org::#100-sites-pub" :only-contents t
-*** WAIT link to cumul-reimpl sec
-*** WAIT link to split (tts-cumul)
 * WRITE Training without Addon, testing With
 ** Accuracy on 30 Sites, Training against 2016-07-06
 #+CAPTION: Testing results of various defenses and other dates when trained on capture data from 2016-07-06. The columns headers show either the classifier, or overhead.
@@ -2361,7 +2377,7 @@ experience /E/.
 
    and start the retrieval as mentioned above.
    - automatic via ...
-** CHECK Filtering =pcap= Files [0/2]
+** APPENDIX_DONE Filtering =pcap= Files [0/2]
    Although this requirement could later be removed (see section
    [[#future-work]]), the addon currently needs a generator of cover
    traffic to work. While it can be set to any host in the add-on's
@@ -2379,8 +2395,7 @@ experience /E/.
 
    The script to solve this is described in appendix [[#7777]]: As the
    server ran on port 7777, which was allowed only as an incoming port
-   by the firewall, it suffices to filter by port number. (Otherwise,
-   the filtering code would need to be modified).
+   by the firewall, it suffices to filter by port number.
 *** WAIT link to altered accuracy results, once done
 *** TODO link to man tshark
 ** APPENDIX_DONE Marionette installation
@@ -2412,7 +2427,7 @@ experience /E/.
      not work in the Tor Browser Bundle),
    - remove the line =toolkit.startup.recent_crashes= in the
      =prefs.js= config file, which saves the number of consecutive
-     kills, via
+     kills, via f.ex.
      #+BEGIN_SRC sh
        sed -i '/toolkit\.startup\.recent_crashes/d' /path/to/prefs.js
      #+END_SRC
@@ -2791,7 +2806,7 @@ experience /E/.
    :PROPERTIES:
    :CUSTOM_ID: analyse
    :END:
-   Once the =Counter=s data is obtained, it needs to be transformed to
+   Once the =counter= data is obtained, it needs to be transformed to
    input for scikit-learn's
    classifiers\cite[sec.3.4]{scikit-user-guide}.
 
@@ -2824,9 +2839,7 @@ experience /E/.
    lines in X with labels in y to the file =libsvm_in= (by default).
 
    - cumul
-*** TODO ref stackoverflow why 0 padding
-**** TODO or better, some statistics text
-*** TODO see also =to_features_cumul=
+     - =to_features_cumul=
 *** APPENDIX_DONE scikit-learn
     The python module scikit-learn\cite{scikit-user-guide} is a
     collection of "tools for data mining and data analysis".
@@ -3464,5 +3477,4 @@ per website fingerprinting study.
   1. get kernel matrices from k. rieck
   2. libsvm's =svm-train -t 4 kernelfile=
   3. libsvm's =svm-predict traces kernelfile.model kernelfile.output=
-* KEYWORDS Version: Codename Retrofixed
 * END: above index, bibliography, etc                               :ARCHIVE:

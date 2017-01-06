@@ -33,17 +33,44 @@ def _table_to_data(f):
         out[name] = Datum(float(overhead), float(et), float(svc))
     return out
 
+def _gnuplot_ohacc():
+    '''@return gnuplot initialized for overhead-accuracy plot'''
+    g = Gnuplot.Gnuplot()
+    g("set xrange [0:*]")
+    g("set yrange [0:1]")
+    g("set xlabel 'overhead [%]'")
+    g("set ylabel 'accuracy [%]'")
+    return g
+
+def plot_defenses_helper(g, filename='../../data/results/export_30sites.csv'):
+    '''plots all defenses in filename'''
+    # g = _gnuplot_ohacc()
+    with open(filename) as f:
+        t = _size_table_to_data(f)
+        for defense in set([x.defense.split('/')[0] for x in t]):
+            g.replot(Gnuplot.Data([(x.size, x.cumul) for x in t
+                                   if 'plotskip' not in x.notes
+                                   and defense in x.defense],
+                                  title=defense))
+
+def _replace(stringlist):
+    '''removes nonparseable stuff
+    >>> replace(['hi', '-', '\open '])
+    ['hi', '_', '']
+    '''
+    out = []
+    for s in stringlist:
+        out.append(s
+                   .replace('-', '_')
+                   .replace("\open ", "")
+                   .replace(" \close", ""))
+    return out
+
 def _size_table_to_data(readable):
     '''read readable data, which contains org-export-table in csv format'''
-    # readable = open('../../data/results/export_30sites.csv')
-    # a = _size_table_to_data(readable)
-    # g = Gnuplot.Gnuplot()
-    # g.plot([(x.size, x.cumul) for x in a if 'plotskip' not in x.notes]])
-    # g.replot(Gnuplot.Data([(x.size, x.cumul) for x in a if 'plotskip' not in x.notes and 'wfpad' in x.defense], title='wfpad'))
     read = []
     reader = csv.reader(readable)
-    DataRecord = collections.namedtuple(
-        'DataRecord', map(lambda x: x.replace('-', '_'), reader.next()))
+    DataRecord = collections.namedtuple('DataRecord', _replace(reader.next()))
     for row in reader:
         read.append(DataRecord._make(row))
     return read
