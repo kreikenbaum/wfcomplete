@@ -438,10 +438,14 @@ class Counter(object):
             try:
                 (_, time, src, _, dst, proto, size, rest) = line.split(None, 7)
             except ValueError:
-                tmp.warned = True
-                logging.warn('file: %s had problems in line \n%s\n',
-                             filename, line)
-                break
+                try:
+                    (_, time, src, _, dst, proto, size) = line.split(None, 6)
+                    rest = ''
+                except ValueError:
+                    tmp.warned = True
+                    logging.warn('file: %s had problems in line \n%s\n',
+                                 filename, line)
+                    break
             else:
                 if not 'Len=0' in rest and not proto == 'ARP':
                     tmp.extract_line(src, size, time)

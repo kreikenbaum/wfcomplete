@@ -61,8 +61,10 @@ def _navigate_or_fail(client, url, file_name):
     try:
         client.navigate(url)
     except:
-        os.rename(file_name, '{}_{}'.format(
-            file_name, sys.exc_info()[1].replace(' ', '_').replace('\n', '')))
+        os.rename(file_name,
+                  '{}_{}'
+                  .format(file_name, sys.exc_info()[1])
+                  .replace(' ', '_').replace('\n', ''))
         raise
 
 def _open_browser(exe='/home/mkreik/bin/tor-browser_en-US/Browser/firefox -marionette', open_timeout=60):

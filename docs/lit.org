@@ -8814,6 +8814,21 @@
                 right
 
           12. Costs and Risks
+
+              - classification error: 1-accuracy
+
+              - risk: including cost for wrong decision
+
+              - possible to compute general limit for best classifier?
+
+          13. Computational Complexity
+
+              - trade-off storage, computation, time, ...
+
+              - learning (in the lab) can be costly, making a decision
+                (in the field) should not be
+
+       4. Learning and Adaptation
 *** quotes
     1. Introduction
        2. [@2] An Example
@@ -8903,7 +8918,6 @@
           - The four outcomes can be formulated in a 2×2 /contingency
             table/ or /confusion matrix/
 ** TODO [#A] [[./201101-Evaluation_JMLT_Postprint-Colour.pdf][Powers - Evaluation: from precision, recall and f-measure to roc, informedness, markedness & correlation]]
-*** continue p.3
 *** summary
     0. [@0] Abstract
 
@@ -8963,6 +8977,19 @@
 
           - Jaccard = tp / (tp+fn+fp)=TP/(N-TN) = A/(A+B+C) = A/(N-D)
             = 1/(1+2 mean(FN,FP)/TP) = F1 / (2-F1)
+
+          - all of these discount some parts of the table
+
+          - Fallout = fpr = fp/rp = FP/RP = B / (B+D)
+
+          - FN == Type 1, FP == Type 2 Errors
+
+          - fn == alpha, fp == beta
+
+          - all measures individually leave at least two factors out
+            (plus N)
+
+       2. Prevalence, Bias, Cost & Skew
 *** quotes
     2. [@2] THE BINARY CASE
        0. [@0]
@@ -9830,6 +9857,15 @@
     11. [@11] Examples
         11. [@11] Ensemble methods
             3. [@3] Feature importances with forests of trees
+                #+BEGIN_SRC python
+                  from sklearn.ensemble import ExtraTreesClassifier
+                  [...]
+                  # Build a forest and compute the feature importances
+                  forest = ExtraTreesClassifier(n_estimators=250,
+                  random_state=0)
+                  forest.fit(X, y)
+                  importances = forest.feature_importances_
+                #+END_SRC
         18. [@18] Model Selection
             3. [@3] Confusion matrix
                - Example of confusion matrix usage to evaluate the
@@ -10128,16 +10164,6 @@
              #+BEGIN_SRC sh
                pip install line-profiler
              #+END_SRC
-    48. MOVE to 11.11.3
-                #+BEGIN_SRC python
-                  from sklearn.ensemble import ExtraTreesClassifier
-                  [...]
-                  # Build a forest and compute the feature importances
-                  forest = ExtraTreesClassifier(n_estimators=250,
-                  random_state=0)
-                  forest.fit(X, y)
-                  importances = forest.feature_importances_
-                #+END_SRC
 *** ref [[file:master.bib::scikit-learn][Pedregosa et al. 2011: Scikit]]
 *** exercises
 **** Exercise digits-knn-linear
@@ -13213,7 +13239,6 @@ V.L. Voydock and S.T. Kent. Security Mechanisms in High-Level Network Protocols.
             315.036,54 Euro zahlen müssen. [...] (Zwangsgeld-Spanne
             für Deutschland: 13.436 bis 807.786 Euro).[93]
 ** TODO [#B] Beck - extreme Programming explained
-*** continue p. 115
 *** summary
     1. Risk: The Basic Problem
 
@@ -13945,6 +13970,38 @@ V.L. Voydock and S.T. Kent. Security Mechanisms in High-Level Network Protocols.
              - learn from both of these
 
         1. Who Writes Tests?
+
+           - Programmer writes method-by-method
+
+             - if interface or implementation are unclear/complicated
+
+             - document unusual circumstance under which code should work
+
+             - find a problem, write test to isolate
+
+             - before refactor, if there is no test describing behavior
+
+             - 100% or bust
+
+           - Customer writes story-by-story
+
+             - what needs to be checked so I can be confident of story
+
+             - has help of full-time tester, who helps and thinks of
+               variations
+
+             - increases to 100%, before relase, Customer prioritises rest
+
+           - Other Tests
+
+             - Parallel Test: is the new system good enough to replace
+               the old?
+
+             - Stress test: "worst possible load"
+
+             - Monkey test: "nonsensical input"
+
+    19. Implementing XP
 *** quotes
     00. [@00] unsorted
         - Use XP when requirements are vague or changing
@@ -14083,6 +14140,9 @@ V.L. Voydock and S.T. Kent. Security Mechanisms in High-Level Network Protocols.
         0. [@0]
            - You should write the tests that help get programs working
              and keep programs working. Nothing more.
+        1. Who Writes Tests?
+           - The tester is certainly not there to just churn out as
+             many tests as possible.
 *** ref [[file:master.bib::xp][Beck 1999: Extreme Programming Explained]]
 ** TODO [#B] [[./Axelsson.pdf][Axelsson - The Base-Rate Fallacy and its Implications for the Difficulty of Intrusion Detection]]
 *** TODO understand base rate fallacy intellectually
@@ -26610,6 +26670,54 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 
        3. Die Planungsfalle
 
+          - man kann nur Reaktionen bestimmen, nicht Ereignisse
+
+          - Diskrepanz Plan/Wirklichkeit minimieren
+
+          - sonst scheisse ...
+
+    2. Angst
+
+       0. [@0]
+
+          - Pläne wegen Angst
+
+          - Kunden und Entwickler haben Ängste
+
+       1. Nicht eingestandene Angst ist die Ursache aller Fehler in
+          Softwareprojekten
+
+          - sonst klare Kommunikation, Aspekt des Entwicklungsprozesses
+
+       2. Die Rechte des Kunden
+
+          - Grundplan: was bis wann, Kosten
+
+          - maximaler Gegenwert aus Zeit
+
+          - Fortschritte im laufenden System zu sehen, bewiesen durch
+            Tests
+
+          - Meinung ändern, ohne zu große Kosten
+
+          - informiert werden über Planveränderungen
+
+       3. Die Rechte des Programmierers
+
+          - Anforderungen und Prioritäten kennen,
+
+          - Qualitätsarbeit,
+
+          - Hilfe,
+
+          - eigene Schätzungen,
+
+          - Verpflichtungen selbst übernehmen
+
+    3. Software fahren
+
+       - wie Autofahren: viele kleine Korrekturen
+
     6. [@6] Zu viel zu tun
 
        - statt "Ich habe nicht genug Zeit": "Ich habe zu viel zu tun."
@@ -26622,6 +26730,23 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 
          - jemand anderes bitten, Aufgaben zu übernehmen
 *** quotes
+    1. Warum planen?
+       3. [@3] Die Planungsfalle
+          - Das schlimmste, was einem Projekt widerfahren kann, ist
+            die Diskrepanz zwischen Plan und Wirklichkeit.
+    2. Angst
+       - Auch die Entwickler haben Ängste: [...]
+         - Sie sind zu dumm.
+    3. Software fahren
+       - Die Metapher "Fahren" hilft uns ein weiteres Mal. Das Erste,
+         was Sie machen, wenn Sie in den Wagen steigen, ist nicht, am
+         Lenkrad zu drehen, so dass es auf Ihr Ziel zeigt. Ihre erste
+         Handlung ist gewöhnlich, die Zündung zu
+         betätigen. Tatsächlich hat die anfängliche Bewegungsrichtung
+         auch nicht viel mit Ihrem Ziel zu tun, sondern vielmehr mit
+         den örtlichen Gegebenheiten. Sie werden vielleicht aus Ihrer
+         Garage fahren wollen, bevor Sie sich auf den Weg nach Peoria
+         machen.
     6. [@6] Zu viel zu tun
        - Zu viel zu erledigen zu haben, schafft Hoffnung.
        - wenigstens wissen wir, was wir tun müssen.
