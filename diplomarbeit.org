@@ -291,7 +291,7 @@ Facebook.com\\
     for how long, when, how frequent, ...?
 
     This metadata is important, as it can reveal "[a] lot of good
-    information"\cite{applied96}.
+    information"\cite[sec.10.3]{applied96}.
 **** DANIEL History of Tor
      Tor inherits its onion design from the Onion Routing Project
      \cite{anonymous-connections}. It was originally developed by the
@@ -382,7 +382,7 @@ Facebook.com\\
      :PROPERTIES:
      :CUSTOM_ID: trailbreakers
      :END:
-    #+INDEX: accuracy
+    #+INDEX: Accuracy (acc)
     Similarly to the above website fingerprinting attacks,
     \cite{Liberatore:2006} and\cite{ccsw09-fingerprinting} use only
     packet sizes, but employ machine learning
@@ -418,6 +418,8 @@ experience /E/.
       :PROPERTIES:
       :CUSTOM_ID: ml-preprocess
       :END:
+      #+INDEX: preprocessing
+      #+INDEX: machine learning!preprocessing
       The raw data often needs to be adjusted. F.ex. images need to
       have their light level normalized\cite[sec.1.2.]{duda}. In our
       case, several packets of our own capture were removed,
@@ -450,6 +452,8 @@ experience /E/.
       :PROPERTIES:
       :CUSTOM_ID: ml-class
       :END:
+      #+INDEX: classification
+      #+INDEX: machine learning!classification
       Once the features' values are extracted, instances can be
       assigned[fn::Here, we deal only with classification. Another
       application is regression, where a real-valued function is
@@ -462,32 +466,51 @@ experience /E/.
       model from which further input data can be classified. Others,
       such as [[*K-Nearest-Neighbor-Classifier][k-Nearest-Neighbors]] classify directly without an
       intermediary model.
-***** WRITE Measuring Performance
+***** CHECK Measuring Performance
+      #+INDEX: Accuracy (acc)
       #+INDEX: confusion matrix
+      #+INDEX: False Positive Rate
+      #+INDEX: fpr
+      #+INDEX: Receiver Operating Characteristic curve
+      #+INDEX: ROC curve
+      #+INDEX: True Positive Rate
+      #+INDEX: tpr
       To evaluate website fingerprinting attacks and defenses, their
-      success needs to be measured. In the binary classification case,
-      a /confusion matrix/ helps to illustrate the different cases
-      that can occur. Each occurrence is counted. See Table
+      success needs to be measured.[fn::this section's definitions
+      follow \cite{powers}] Starting with binary classification, a
+      /confusion matrix/ helps to illustrate the different cases that
+      can occur. Each occurrence is counted. See Table
       [[tab:confusion_matrix]].
 
-      #+CAPTION: Confusion matrix
+      #+CAPTION: Confusion matrix. Correctly classified cases are in bold.
       #+NAME: tab:confusion_matrix
       #+ATTR_LATEX: :align r|l l
-      |             | real 1               | real 2               |
-      |-------------+----------------------+----------------------|
-      | predicted 1 | True Positives (TP)  | False Positives (FP) |
-      | predicted 2 | False Negatives (FN) | True Negatives (TN)  |
+      |             | real 1                | real 2                |
+      |-------------+-----------------------+-----------------------|
+      | predicted 1 | *True Positives (TP)* | False Positives (FP)  |
+      | predicted 2 | False Negatives (FN)  | *True Negatives (TN)* |
 
-      From this, various metrics can be derived. The main metrics used
-      in almost all papers are closed-world accuracy, and
-      true-positive- and false-positive-rate. These are defined as
+      From these absolute values, various metrics can be derived. The
+      main metrics used by almost all authors are[fn::accuracy is
+      mostly used in the closed-world case] accuracy, and
+      True-Positive- and False-Positive-rate[fn::tpr and fpr are
+      mostly used in the open-world case]. These are defined as
 
-      - tpr = TP / (TP + FN)
-      - fpr = FP / (FP + TN)
-      - acc = (TP + TN) / (TP + FP + FN + TN)
-      - closed-world: accuracy
-        - TPR, FPR
-        - roc
+      #+ATTR_LATEX: :align l r
+      | /True-Positive Rate/ (short: tpr)  | $TP / (TP + FN)$                  |
+      | /False-Positive Rate/ (short: fpr) | $FP / (FP + TN)$                  |
+      | /Accuracy/ (short: acc)            | $(TP + TN) / (TP + FP + FN + TN)$ |
+
+      To show the classifier strictness tradeoff, a /Receiver
+      Operating Characteristic Curve/ (short: ROC-Curve) can be used,
+      this diagram contrasts classifier tpr vs fpr, see Figure
+      [[fig:roc-example]]. The area under the curve can be measured. The
+      closer this value is to 1, the better.
+
+      #+CAPTION[ROC curve example]: Example Receiver Operating Characteristic (ROC) curve. Source: \cite[sec.11.18.8]{scikit-user-guide}.
+      #+ATTR_LATEX: :width 0.4\textwidth
+      #+NAME: fig:roc-example
+      [[./pictures/plot_roc.png]]
 **** DANIEL Website Fingerprinting Features
      :PROPERTIES:
      :CUSTOM_ID: features
@@ -874,7 +897,7 @@ experience /E/.
     :PROPERTIES:
     :CUSTOM_ID: def-tamaraw
     :END:
-    #+INDEX: Defense!Tamaraw
+    #+INDEX: defense!Tamaraw
     #+INDEX: Tamaraw
     /Tamaraw/\cite{a-systematic} is an evolution of
     BuFLO\cite{oakland2012-peekaboo}[fn::a Tamaraw is a small Buffalo,
@@ -904,7 +927,7 @@ experience /E/.
     :PROPERTIES:
     :CUSTOM_ID: def-wtf-pad
     :END:
-    #+INDEX: Defense!WTF-PAD
+    #+INDEX: defense!WTF-PAD
     #+INDEX: WTF-PAD
     /Website Traffic Fingerprinting Protection with Adaptive Defense/
     (short: WTF-PAD)\cite{wtfpad} is a stochastic defense based on
@@ -922,10 +945,10 @@ experience /E/.
     WTF-PAD is built using Tor's pluggable transport\cite{tor-spec-pt}
     censorship avoidance layer. This has the advantage of not
     burdening the most stressed part of the network, the exit nodes.
-* WRITE Methods [60%]
+* WRITE Methods [63%]
   - short what could be done better
   - longer: approach / variants
-** DANIEL Motivation [2/3]
+** DANIEL Motivation
    As emphasized both by \cite{wang2015walkie} and \cite{wtfpad},
    deterministic approaches have the major shortcoming of introducing
    delay into the traffic, which conflicts with Tor's design goal of
@@ -949,34 +972,6 @@ experience /E/.
 
    Additionally, when this thesis was started, both \cite{wang2015walkie} and
    \cite{wtfpad} had not been published yet.
-*** WAIT brainstorm (include in other parts, or just in intro)
-   - make wf/ml harder, fudge features
-     - problems WTF-PAD: modify all of tor traffic,
-       - yet problem is browser traffic
-         - and traffic is app-dependent
-       - deployability: all/nothing
-       - histograms
-         - not fitting: no need to hide *that* traffic occurs, just where to,
-         - compare to real fingerprints
-         - less efficient
-       - not tunable, bridge-dependent
-     - problems walkie-talkie: also modify all
-       - bit slower
-       - not preferred method
-       - TD: compare to WTF-PAD accuracy/efficiency
-     - conversely:
-       - add-on: easier to modify/implement/test
-         - *easy to use* if not default (currently needs server, but
-           others need too, does not need by default)
-         - HTTP traffic properties used
-         - "general defense": not trying to modify specific settings
-   - design
-     - different versions
-     - different factors
-   - aim: selective cover traffic
-     - select based on web site
-     - and target
-     - simultaneous to real traffic
 *** DANIEL Aim: Selective Cover Traffic
     As detailed in section [[#features]], there are key features that
     are hard to cloak except by extra traffic, especially the total
@@ -1218,6 +1213,9 @@ experience /E/.
     3) one target distribution (II) with original size from Bloom (A),
     4) one target distribution (II) with random sizes (B)
 **** EVA Add-on Version: Simple
+     :PROPERTIES:
+     :CUSTOM_ID: simple
+     :END:
      The main version had become quite complex for a Firefox extension
      with more than 500 lines of code. A simplified\cite[ch.7.2]{xp}
      algorithm triggers a HTML-sized[fn::times overhead] request at
@@ -1286,7 +1284,7 @@ experience /E/.
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* DANIEL Results and Evaluation [40%]
+* DANIEL Results and Evaluation [36%]                               :results:
   The following sections describe [[#setup][how data was collected and
   analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
   [[#eval-defense][various defenses]].
@@ -1498,7 +1496,7 @@ experience /E/.
     applied: [[#cumul-reimplementation][\cite{panchenko2} was reimplemented]] and [[#wf-original][both it and
     \cite{effective}'s original implementation were used to
     double-check results]].
-**** EVA Original Classification Methods: Panchenko and Wang's
+**** CHECK Original Classification Methods: Panchenko and Wang
      :PROPERTIES:
      :CUSTOM_ID: wf-original
      :END:
@@ -1529,7 +1527,8 @@ experience /E/.
        time(float) \t packet length/cell
      #+END_EXAMPLE
      Positive cells/packet sizes are for outgoing data, negative for
-     incoming. The feature extraction code is in =fextractor.py=.
+     incoming.[fn::Identical to \cite[sec.6.A]{wtfpad}] The feature
+     extraction code is in =fextractor.py=.
 
      \cite{panchenko2}'s data format are line-based: each file
      contains all the traces for a class, with one trace per line. Its
@@ -1537,13 +1536,15 @@ experience /E/.
      #+BEGIN_EXAMPLE
        class_name start_time packet_time1:packet_size1 ...
      #+END_EXAMPLE
-     with all times in millisecons since the
+     with all times in milliseconds since the
      epoch\cite{time2-manual}. Positive packet sizes are for incoming
      data, negative for outgoing.
 
      In the open-world scenario, \cite{panchenko2} has only two
-     classes, while \cite{effective} has the number of classes plus
-     one for the background data set.
+     classes[fn::While the paper also evaluates a multi-class
+     open-world scenario, no option for multi-class was obvious in
+     =generate-feature.py=.], while \cite{effective} has the number of
+     classes plus one for the background data set.
 
      The steps taken to apply the original methods are described in
      appendices [[#wang-steps]] and [[#cumul-steps]].
@@ -1747,7 +1748,7 @@ experience /E/.
 
     - should not alter wf results in a meaningful way
 **** WAIT [[file:~/da/da.org::*2nd%20nobridge%20retrieval,%20check%20that%20accuracy%20slightly%20lower][2nd nobridge retrieval, check that accuracy slightly lower]]
-** WAIT Evaluation of Defenses [1/14]
+** WAIT Evaluation of Defenses [1/15]
 *** WAIT until data and subsections are stable (f.ex.: optimal attacker and websites ?needed?)
    :PROPERTIES:
    :CUSTOM_ID: eval-defense
@@ -1786,10 +1787,10 @@ experience /E/.
     The following sections evaluate the addon's protection from
     website fingerprinting. The addon branches[fn::as described in [[*How to Generate Cover Traffic][How
     to Generate Cover Traffic]]] are each evaluated: first [[#results-flavors][the main
-    addon's flavors]], then the simple and retrofixed versions, finally
+    addon's flavors]], then the [[#results-simple][simple]] and retrofixed versions, finally
     the addition of bursts at the traffic end; Finally, a summary
-    description of which provides the highest accuracy decrease per
-    overhead best is provided.
+    description of which version provides the highest accuracy
+    decrease per overhead is provided.
 
     - addon
       - [[#results-flavors][flavors]] of main addon version
@@ -1827,7 +1828,15 @@ experience /E/.
      The size-guessing =b= flavors produce significantly
      higher overhead, but yield a further small reduction of classifier
      accuracy.
-**** KEYWORDS Version: Simple
+**** WRITE Version: Simple
+     :PROPERTIES:
+     :CUSTOM_ID: results-simple
+     :END:
+     - As seen clearly in the data, [[#simple][the simple version]], which randomly
+       sends requests of appropriately-distributed sizes
+     - worse than main addon
+     - but can reach lower
+     - linear relation factor to overhead
 **** KEYWORDS Version: Retrofixed
 **** WRITE Bursts
      :PROPERTIES:
@@ -1848,7 +1857,8 @@ experience /E/.
     :PROPERTIES:
     :CUSTOM_ID: eval-wtf-pad
     :END:
-    As seen in ...
+    [[#def-wtf-pad][WTF-PAD]]'s theoretic results are reported by \cite{wtfpad} and
+    confirmed by \cite{kfingerprint} as
 
     - overhead of WTF-PAD depends on network connection from client to bridge
       - 0--1% if on localhost
@@ -2138,6 +2148,9 @@ experience /E/.
     page has embedded elements from different domains, this does not
     perfectly represent reality. It would be more exact to analyse the
     HTML page and at least return the domains of all embedded elements.
+\bibliography{docs/master}
+\bibliographystyle{plain}
+\input{diplomarbeit.ind}
 \appendix
 \part{Appendix}
 * appendices (begin above this headline; this is for searching)     :ARCHIVE:
@@ -2466,7 +2479,8 @@ set, see [[#split][split]].
 
     0. [@0] convert traces to \cite{effective}'s =batch=-directory,
        using =counter.py#dir_to_wang= (for convenience, use
-       =wang_batch.py=)
+       =wang_batch.py=). This loads all data into RAM first, and thus
+       failed for Panchenko's huge data set. Here, you can use =p2w.py=.
     1. python /path/to/fextract.py
     2. /path/to/flearner 0 1 $(flearn_params.sh)
     3. convenience script: =f_all.sh=
@@ -2483,17 +2497,26 @@ set, see [[#split][split]].
     1. outlier removal
        - creates new input dir
            #+BEGIN_SRC sh
-             python $P_DIR/feature-scripts/outlier-removal.py -in ./foreground-data/ -out ./foreground-data-OR/ -setting CW -randomInstances NO -instances 40 -referenceFormat tcp -outlierRemoval Simple -ignoreOutlier YES
+             python $P_DIR/feature-scripts/outlier-removal.py \
+             -in ./foreground-data/ -out ./foreground-data-OR/ \
+             -setting CW -randomInstances NO -instances 40 \
+             -referenceFormat tcp -outlierRemoval Simple -ignoreOutlier YES
            #+END_SRC
     2. generate libsvm input
        - closed world
          #+BEGIN_SRC sh
-           python $P_DIR/feature-scripts/generate-feature.py -in ./foreground-data-OR/ -out ./output/ -setting CW -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -dataSet CW -instances 40
+           python $P_DIR/feature-scripts/generate-feature.py \
+           -in ./foreground-data-OR/ -out ./output/ -setting CW \
+           -classifier CUMULATIVE -force YES -features 100 \
+           -randomInstances NO -dataSet CW -instances 40
          #+END_SRC
        - open world
          - foreground
          #+BEGIN_SRC sh
-           python $P_DIR/feature-scripts/generate-feature.py -in ./foreground-data-OR/ -out ./output/ -setting OW_FG -dataSet FG -classifier CUMULATIVE -force YES -features 100 -randomInstances NO -instances 1
+           python $P_DIR/feature-scripts/generate-feature.py \
+           -in ./foreground-data-OR/ -out ./output/ -setting OW_FG \
+           -dataSet FG -classifier CUMULATIVE -force YES -features 100 \
+           -randomInstances NO -instances 1
          #+END_SRC
          - background
     3. scale data
@@ -2502,17 +2525,16 @@ set, see [[#split][split]].
        #+END_SRC
     4. train svm
        #+BEGIN_SRC sh
-         $P_DIR/libsvm-3.20-src/svm-train -v 10 ./output/CW_TCP_scaled ./output/CW_TCP.model
+         $P_DIR/libsvm-3.20-src/svm-train -v 10 ./output/CW_TCP_scaled\
+         ./output/CW_TCP.model
        #+END_SRC
        f.ex. for closed world-data
     5. use svm (if without =-v 10= for cross-validation)
        #+BEGIN_SRC sh
-         $P_DIR/libsvm-3.20-src/svm-predict ./output/CW_TCP  ./output/CW_TCP.model ./output/CW_TCP.output
+         $P_DIR/libsvm-3.20-src/svm-predict ./output/CW_TCP \
+         ./output/CW_TCP.model ./output/CW_TCP.output
        #+END_SRC
 *** OW-data just has *two* classes: fg (=1) and bg (=0)
- \bibliography{docs/master}
- \bibliographystyle{plain}
- \input{diplomarbeit.ind}
 * KEYWORDS Lists of Sites
 ** KEYWORDS Modified Top-100
    :PROPERTIES:

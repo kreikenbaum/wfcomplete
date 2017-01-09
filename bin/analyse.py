@@ -2,7 +2,7 @@
 '''Analyses (Panchenko's) features returned from Counter class'''
 
 import numpy as np
-from sklearn import cross_validation, ensemble, metrics, multiclass, neighbors, preprocessing, svm, tree
+from sklearn import cross_validation, ensemble, multiclass, neighbors, preprocessing, svm, tree
 from scipy.stats.mstats import gmean
 import doctest
 import logging
@@ -363,6 +363,7 @@ def open_world(defense_name, num_jobs=JOBS_NUM):
     c,r = _my_grid(X_train, y_train)
     cplus = multiclass.OneVsRestClassifier(svm.SVC(
         C=c.estimator.C, gamma=c.estimator.gamma, probability=True))
+    #clf = GridSearchCV(estimator=multiclass.OneVsRestClassifier(svm.SVC()), param_grid=dict(estimator__C=Cs), n_jobs=-1, verbose=10)
     
 def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test
@@ -759,6 +760,8 @@ def tts(counter_dict, test_size=1.0/3):
 # sys.argv = ['', 'disabled/bridge__2016-07-06', 'wfpad/bridge__2016-07-05']
 
 # disabled/p-foreground-data/30/output-tcp
+
+# sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git', 'bin')); reload(counter)
 
 # if by hand: change to the right directory before importing
 # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))

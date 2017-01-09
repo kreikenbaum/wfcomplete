@@ -33,10 +33,10 @@ def _table_to_data(f):
         out[name] = Datum(float(overhead), float(et), float(svc))
     return out
 
-def _gnuplot_ohacc():
+def _gnuplot_ohacc(xrangeleft=0):
     '''@return gnuplot initialized for overhead-accuracy plot'''
     g = Gnuplot.Gnuplot()
-    g("set xrange [0:*]")
+    g("set xrange [{}:*]".format(xrangeleft))
     g("set yrange [0:1]")
     g("set xlabel 'overhead [%]'")
     g("set ylabel 'accuracy [%]'")

@@ -2,6 +2,7 @@
 import os
 import tempfile
 import unittest
+from sklearn import multiclass, svm
 
 import analyse
 import counter
@@ -128,7 +129,6 @@ class TestAnalyse(unittest.TestCase):
         self.assertAlmostEqual(analyse._size_increase(
             {'a': (10, -1), 'b': (10, -1), 'c': (20, -1)}, self.base_mock2),
                                100.*(pow(1./2, 1./3)-1))
-
 
 class MockWriter(object):
     def __init__(self):
