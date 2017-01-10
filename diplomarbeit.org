@@ -89,7 +89,7 @@
     - encouragement
     - readability
 * WAIT_FINISH Summary
-* DANIEL Basics [96%]
+* DANIEL Basics [100%]
   To protect online communication, journalists, whistleblowers,
   "normal people", and among others even military\cite{who-uses-tor}
   have resorted to the Tor\cite{tor-design} anonymity network.
@@ -107,7 +107,7 @@
   Fortunately, as soon as these weaknesses became known, defenses
   were proposed. [[#defenses][The subsequent section]] shows different classes of
   defenses and examines them in detail.
-** DANIEL Website Fingerprinting [25/26]
+** DANIEL Website Fingerprinting [26/26]
    :PROPERTIES:
    :CUSTOM_ID: wf
    :END:
@@ -280,7 +280,7 @@ Facebook.com\\
     \cite{experimental} suggests that website fingerprinting could
     further be hindered by HTTP/2.0 \cite{rfc7540}, or even a proxy
     transforming to it at the Tor exit node \cite{tor-spec-spdy}.
-*** DANIEL Challenges to Website Fingerprinting: Tor [3/3]
+*** DANIEL Challenges to Website Fingerprinting: Tor
     :PROPERTIES:
     :CUSTOM_ID: basics-tor
     :END:
@@ -466,7 +466,7 @@ experience /E/.
       model from which further input data can be classified. Others,
       such as [[*K-Nearest-Neighbor-Classifier][k-Nearest-Neighbors]] classify directly without an
       intermediary model.
-***** CHECK Measuring Performance
+***** EVA Measuring Performance
       #+INDEX: Accuracy (acc)
       #+INDEX: confusion matrix
       #+INDEX: False Positive Rate
@@ -491,9 +491,9 @@ experience /E/.
       | predicted 2 | False Negatives (FN)  | *True Negatives (TN)* |
 
       From these absolute values, various metrics can be derived. The
-      main metrics used by almost all authors are[fn::accuracy is
-      mostly used in the closed-world case] accuracy, and
-      True-Positive- and False-Positive-rate[fn::tpr and fpr are
+      main metrics used in website fingerprinting literature are
+      Accuracy[fn::accuracy is mostly used in the closed-world case],
+      and True-Positive- and False-Positive-rate[fn::tpr and fpr are
       mostly used in the open-world case]. These are defined as
 
       #+ATTR_LATEX: :align l r
@@ -948,6 +948,8 @@ experience /E/.
 * WRITE Methods [63%]
   - short what could be done better
   - longer: approach / variants
+   Additionally, when this thesis was started, both \cite{wang2015walkie} and
+   \cite{wtfpad} had not been published yet.
 ** DANIEL Motivation
    As emphasized both by \cite{wang2015walkie} and \cite{wtfpad},
    deterministic approaches have the major shortcoming of introducing
@@ -960,18 +962,15 @@ experience /E/.
    This thesis's approach uses properties of web traffic to determine
    when and how much traffic to send, providing this functionality
    through an easy-to-add browser extension, thus keeping the Tor
-   Browser code as-is. This approach stands in contrast to both
-   \cite{wang2015walkie}, which offers sampling from both uniform and
-   normal distributions, and \cite{wtfpad}, which creates
-   histogram-based traffic, but works at Tor's cell level, adds
-   overhead to non-web-based traffic, and adapts a method that tries
-   to do more (hiding from a global adversary), instead of hiding
-   which site was browsed to from a local passive observer.[fn::only
-   the second of these is included in Tor's design goals, see
-   \cite[sec.3.1]{tor-design}]
-
-   Additionally, when this thesis was started, both \cite{wang2015walkie} and
-   \cite{wtfpad} had not been published yet.
+   Browser code as-is. This stochastical web-based approach stands in
+   contrast to both \cite{wang2015walkie}, which offers sampling from
+   both uniform and normal distributions, and \cite{wtfpad}, which
+   creates histogram-based traffic, but works at Tor's cell level,
+   adds overhead to non-web-based traffic, and adapts a method that
+   tries to do more (hiding from a global adversary), instead of
+   hiding which site was browsed to from a local passive
+   observer.[fn::only the second of these is included in Tor's design
+   goals, see \cite[sec.3.1]{tor-design}]
 *** DANIEL Aim: Selective Cover Traffic
     As detailed in section [[#features]], there are key features that
     are hard to cloak except by extra traffic, especially the total
@@ -1579,8 +1578,8 @@ experience /E/.
    \cite{panchenko2}. Panchenko's first approach was reimplemented as
    well, but was superseded by CUMULs superior accuracy.
 
-   In the data tables in the appendix, you can see various different
-   classifiers.
+   In the data tables in the appendix, you can see various defenses
+   against different classifiers in Table [[tab:30-sites]].
 
    - various approaches
      - also seemingly different ow-accuracy
@@ -2148,14 +2147,11 @@ experience /E/.
     page has embedded elements from different domains, this does not
     perfectly represent reality. It would be more exact to analyse the
     HTML page and at least return the domains of all embedded elements.
-\bibliography{docs/master}
-\bibliographystyle{plain}
-\input{diplomarbeit.ind}
 \appendix
 \part{Appendix}
 * appendices (begin above this headline; this is for searching)     :ARCHIVE:
   above, as in this section cuts it out (due to ARCHIVE tag)
-* KEYWORDS Both Training and Testing on the Same Data Sets, All Attacks
+* APPENDIX_DONE Both Training and Testing on the Same Data Sets, All Attacks
 In the following tables, /size/ is the size increase in % as related
 to the closest no-addon capture, /knn/ is \cite{effective}'s
 classifier, see [[#knn][kNN-Attack]], /cumul/ my reimplementation, see [[#cumul-reimplementation][CUMUL
@@ -2176,6 +2172,7 @@ set, see [[#split][split]].
 #+NAME: tab:100-sites
 #+ATTR_LATEX: :align |r||n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|
 #+INCLUDE: "data/results/alternatives.org::#100-sites-pub" :only-contents t
+** WAIT sizes for 10-sites, see also [[file:~/da/da.org::*size%20overhead%20for%20all%20defenses][size overhead for all defenses]]
 * WRITE Training without Addon, testing With
 ** Accuracy on 30 Sites, Training against 2016-07-06
 #+CAPTION: Testing results of various defenses and other dates when trained on capture data from 2016-07-06. The columns headers show either the classifier, or overhead.
@@ -2432,12 +2429,12 @@ set, see [[#split][split]].
    closing the window) several times, it prompts to start in /Safe
    Mode/. This blocks automatic retrieval via Marionette.
 
-   This behavior can be avoided in three ways:
+   This behavior can be avoided in three ways, of which only the third
+   worked reliably:
 
    - set the Firefox preference =toolkit.startup.max_resumed_crashes=
      to =-1=,
-   - set the environment variable =MOZ_DISABLE_AUTO_SAFE_MODE= (did
-     not work in the Tor Browser Bundle),
+   - set the environment variable =MOZ_DISABLE_AUTO_SAFE_MODE=,
    - remove the line =toolkit.startup.recent_crashes= in the
      =prefs.js= config file, which saves the number of consecutive
      kills, via f.ex.
@@ -2719,7 +2716,7 @@ set, see [[#split][split]].
 *** TODO test link
 
 * WRITE Evaluation Scripts
-** WRITE Retrieve Trace: ~one_site.py~
+** WRITE Capture Trace: ~one_site.py~
    :PROPERTIES:
    :CUSTOM_ID: 1site_desc
    :END:
@@ -3437,7 +3434,8 @@ per website fingerprinting study.
 |-----------------------+--------------------------+---------------------------|
 | \cite{effective}      | 100@(60train+30test)     | 9000@1 (from alexa 10000) |
 | \cite{kfingerprint}   | 55@100                   | 100000 alexa (-55 fg)     |
-| \cite{wtfpad}         | 100@20-40                | ?                         |
+| \cite{wtfpad}         | 100@20-40                | varying: 0-4000           |
+| from ccs2014-critical | for ROC curve: 50        | 5000                      |
 | \cite{Liberatore:2006} | 109,479/(2000mostcommon) |                           |
 | \cite{wpes13-fingerprinting} | 100@40                   |                           |
 | \cite{panchenko2} RND-WWW | 1125@40                  | 118,884@1                 |
@@ -3499,4 +3497,7 @@ per website fingerprinting study.
   1. get kernel matrices from k. rieck
   2. libsvm's =svm-train -t 4 kernelfile=
   3. libsvm's =svm-predict traces kernelfile.model kernelfile.output=
-* END: above index, bibliography, etc                               :ARCHIVE:
+\bibliography{docs/master}
+\bibliographystyle{plain}
+\input{diplomarbeit.ind}
+* END: above this headline are INDEX, and BIBLIOGRAPHY, etc         :ARCHIVE:

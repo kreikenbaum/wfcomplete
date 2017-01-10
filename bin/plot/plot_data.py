@@ -146,11 +146,7 @@ def save(gnuplotter, prefix='plot', type_='eps'):
 
 def table(data, cls="svc"):
     '''plot table data = {defense: {overhead: ..., svc: ...} '''
-    g = Gnuplot.Gnuplot()
-    g("set xrange [0:*]")
-    g("set yrange [0:100]")
-    g("set xlabel 'overhead [%]'")
-    g("set ylabel 'accuracy [%]'")
+    g = _gnuplot_ohacc()
 
     for (defense, datum) in data.items():
         g.replot(Gnuplot.Data([(datum.overhead, datum._asdict()[cls]*100)],
