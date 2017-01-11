@@ -2,7 +2,7 @@
 '''Analyses (Panchenko's) features returned from Counter class'''
 
 import numpy as np
-from sklearn import cross_validation, ensemble, multiclass, neighbors, preprocessing, svm, tree
+from sklearn import cross_validation, ensemble, grid_search, multiclass, neighbors, preprocessing, svm, tree
 from scipy.stats.mstats import gmean
 import doctest
 import logging
@@ -359,11 +359,11 @@ def open_world(defense_name, num_jobs=JOBS_NUM):
     defense = counter.all_from_dir(defense_name)
     # split (cv?)
     X,y,yd=to_features_cumul(defense)
-    X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=.5)
-    c,r = _my_grid(X_train, y_train)
-    cplus = multiclass.OneVsRestClassifier(svm.SVC(
-        C=c.estimator.C, gamma=c.estimator.gamma, probability=True))
-    #clf = GridSearchCV(estimator=multiclass.OneVsRestClassifier(svm.SVC()), param_grid=dict(estimator__C=Cs), n_jobs=-1, verbose=10)
+    X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=.8)
+    cs = np.logspace(-5, 15, 5, base=2)
+    gammas = np.logspace(-15, 5, 5, base=2)
+    clf = grid_search.GridSearchCV(estimator=multiclass.OneVsRestClassifier(svm.SVC(class_weight="balanced")), param_grid={"estimator__C": cs, "estimator__gamma": gammas}, n_jobs=-1, verbose=1)
+#    c,r = _my_grid(X_train, y_train)
     
 def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test

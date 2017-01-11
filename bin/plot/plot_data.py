@@ -19,6 +19,7 @@ def _scale(lst, factor=1/1024.0):
     '''scale list of Bytes to kiloByte'''
     return [x*factor for x in lst]
 
+# old, superseded by _size_table_to_data
 def _table_to_data(f):
     '''parse file f with org-mode table export data'''
     Datum = collections.namedtuple('Datum', ['overhead',
@@ -47,11 +48,28 @@ def plot_defenses_helper(g, filename='../../data/results/export_30sites.csv'):
     # g = _gnuplot_ohacc()
     with open(filename) as f:
         t = _size_table_to_data(f)
+        plot_defenses(g, t)
         for defense in set([x.defense.split('/')[0] for x in t]):
             g.replot(Gnuplot.Data([(x.size, x.cumul) for x in t
                                    if 'plotskip' not in x.notes
                                    and defense in x.defense],
                                   title=defense))
+
+def plot_defenses(g, data):
+    '''plots data items, separates by defense'''
+    for defense in set([x.defense.split('/')[0] for x in data]):
+        g.replot(Gnuplot.Data([(x.size, x.cumul) for x in data
+                               if 'plotskip' not in x.notes
+                               and defense in x.defense],
+                              title=defense))
+
+def plot_flavours(g, data):
+    '''plots flavors of main defense'''
+    main = [x for x in data if '0.22' in x.defense]
+    for flavor in ['aI', 'aII', 'bI', 'bII']:
+        its_datas = [x for x in main if '{}-'.format(flavor) in x.defense]
+        g.replot(Gnuplot.Data([(x.size, x.cumul) for x in its_datas],
+                              title=flavor))
 
 def _replace(stringlist):
     '''removes nonparseable stuff
