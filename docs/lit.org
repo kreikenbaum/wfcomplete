@@ -2192,6 +2192,21 @@
        - By including website visits to trending topics we argue that
          this diminishes the ability to properly measure how effective
          a website fingerprinting attack will perform in general.
+    6. [@6] Attack on Hardened Defenses
+       - Table 1: Attack comparison under various website
+         fingerprinting defenses.
+| Defenses         | This work   | k-NN        | CUMUL       | Bandwidth overhead (%) |
+|                  |             |             |             | <10>       |
+|------------------+-------------+-------------+-------------+------------|
+| No defense       | 0.91 ± 0.01 | 0.91 ± 0.03 | 0.91 ± 0.04 | 0          |
+| Morphing         | 0.90 ±0.03  | 0.82 ± 0.06 | 0.75 ± 0.07 | 50 ± 10    |
+| Decoy pages      | 0.37 ±0.01  | 0.30 ± 0.06 | 0.21 ± 0.02 | 130 ± 20   |
+| Adaptive Padding | 0.30 ±0.04  | 0.19 ± 0.03 | 0.16 ± 0.03 | 54         |
+| BuFLO            | 0.21 ±0.02  | 0.10 ± 0.03 | 0.08 ± 0.03 | 190 ± 20   |
+| Tamaraw          | 0.10 ±0.01  | 0.09 ± 0.02 | 0.08 ± 0.03 | 96 ± 9     |
+       - Table 1 shows the performance of k-fingerprinting against
+         k-NN and CUMUL under various website fingerprinting defenses
+         in a closed-world setting.
     8. [@8] Attack evaluation on DS_{Tor}
        1. Alexa web pages monitored set
           - an attacker needs to train on less than 10% of the entire
@@ -4818,6 +4833,18 @@
             inter-arrival time distributions
           - use normal and log-normal distributions for the sake of
             simplicity,
+          - TABLE I: Performance and security comparison among
+            link-padding defenses against the most effective attacks
+            in the closed-world setting.
+|          |       | Accuracy (%) |        |        |       | Overhead (%) |           |
+| Defense  | Parameters | kNN      | Pa-SVM | DL-SVM | VNG++ |  Latency | Bandwidth |
+|          | <5>   | <8>      |        |        |       |      <8> |           |
+|----------+-------+----------+--------+--------+-------+----------+-----------|
+| BuFLO    | τ = 10s, ρ = 20ms, d = 1500B | 14.9     |   14.1 |  18.75 |   N/A |      145 |       348 |
+| CS-BuFLO | ρ = [20, 200]ms, d = 1500B, CPSP | N/A      |   30.6 |   40.5 |  22.5 |      173 |       130 |
+| Tamaraw  | ρ out = 0.053, ρ in = 0.138, d = 1500B | 13.6     |  10.59 |  18.60 |  12.1 |      200 |        38 |
+|----------+-------+----------+--------+--------+-------+----------+-----------|
+| WTF-PAD  | Normal fit, p = 0.4, d = 1500B | 17.25    |  15.33 |     23 |    26 |        0 |        54 |
     7. REALISTIC SCENARIOS
        - In both multi-tab scenarios, we found that k-NN could detect the
          background page (the first tab) with much greater accuracy than
@@ -9047,6 +9074,7 @@
 *** TODO [#B] 42.21. sklearn.metrics: Metrics: sklearn.metrics.auc, see [[file:~/da/da.org::*open%20world][open world]]
 *** TODO [#B] 4.13.5 Tree-based feature selection
     feature_importances: gini or obb-score, see todo
+*** TODO [#C] 11.1.2 Concatenating multiple feature extraction methods
 *** summary
     1. AN INTRODUCTION TO MACHINE LEARNING WITH SCIKIT-LEARN
 
@@ -10019,6 +10047,19 @@
                 This cross-validation object is a variation of KFold
                 that returns stratified folds. The folds are made by
                 preserving the percentage of samples for each class.
+
+           10. [@10] sklearn.cross_validation.train_test_split
+               - sklearn.cross_validation.train_test_split(*arrays,
+                 **options)
+
+                 Split arrays or matrices into random train and test
+                 subsets
+
+                 Parameters
+                 - stratify : array-like or None (default is None)
+
+                   If not None, data is split in a stratified fashion,
+                   using this as the labels array.
         9. [@9] sklearn.ensemble: Ensemble Methods
            9. [@9] sklearn.ensemble.RandomForestClassifier
               - apply(X)
@@ -10047,7 +10088,14 @@
                  pre_dispatch=‘2*n_jobs’, error_score=’raise’)
                - Parameters:
                  - verbose : integer
-                   - Controls the verbosity: the higher, the more messages.
+
+                   Controls the verbosity: the higher, the more messages.
+                 - cv : integer or cross-validation generator, default=3
+
+                   If an integer is passed, it is the number of
+                   folds. Specific cross-validation objects can be
+                   passed, see sklearn.cross_validation module for the
+                   list of possible objects
         21. [@21] sklearn.metrics: Metrics
             2. [@2] Classification metrics
                - sklearn.metrics.roc_curve(y_true, y_score,
@@ -18936,10 +18984,27 @@ E. Casalicchio and M. Colajanni. A client-aware dispatching
                ...
                [fn:1] The link is: http://orgmode.org
              #+END_EXAMPLE
-           - [fn:: This is the inline definition of this footnote]
+           - Here are the valid references:
+             - [1]
 
-             A LATEX-like anonymous footnote where the definition is
-             given directly at the reference point.
+               A plain numeric footnote marker. Compatible with
+               footnote.el, but not recommended because something like
+               ‘[1]’ could easily be part of a code snippet.
+             - [fn:name]
+
+               A named footnote reference, where name is a unique
+               label word, or, for simplicity of automatic creation, a
+               number.
+             - [fn:: This is the inline definition of this footnote]
+
+               A LATEX-like anonymous footnote where the definition is
+               given directly at the reference point.
+             - [fn:name: a definition]
+
+               An inline definition of a footnote, which also
+               specifies a name for the note. Since Org allows
+               multiple references to the same note, you can then
+               use [fn:name] to create additional references.
     3. Tables
        1. The built-in table editor
           - C-c | org-table-create-or-convert-from-region
@@ -25427,6 +25492,13 @@ E. Casalicchio and M. Colajanni. A client-aware dispatching
                retstep=False, dtype=None)
 
                Return evenly spaced numbers over a specified interval.
+             - numpy.logspace(start, stop, num=50, endpoint=True,
+               base=10.0, dtype=None)
+
+               Return numbers spaced evenly on a log scale. In linear
+               space, the sequence starts at =base ** start= (base to
+               the power of start) and ends with =base ** stop= (see
+               endpoint below).
        2. Array manipulation routines
           - numpy.ravel(a, order=’C’)
 

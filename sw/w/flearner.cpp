@@ -702,8 +702,9 @@ int main(int argc, char** argv) {
 			}
 			
 		}
-                //printf("checkpoint 1.10\n");
+                // printf("checkpoint 1.10\n");
 		for (int cur_inst = 0; cur_inst < TEST_NUM; cur_inst++) {
+                  //printf("."); fflush(stdout);
 			int gotfile = 0;
 			ifstream fread;
 			string freadname;
@@ -711,6 +712,7 @@ int main(int argc, char** argv) {
 				ostringstream freadnamestream;
 				freadnamestream << "batch/" << cur_site << "-" << real_inst << "f";
 				freadname = freadnamestream.str();
+                                //printf("%s\n", freadname.c_str()); fflush(stdout);
 				fread.open(freadname.c_str());
 				if (fread.is_open()) gotfile = 1;
 				real_inst++;

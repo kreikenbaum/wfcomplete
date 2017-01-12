@@ -4,14 +4,15 @@
 import numpy as np
 from sklearn import cross_validation, ensemble, grid_search, multiclass, neighbors, preprocessing, svm, tree
 from scipy.stats.mstats import gmean
+import collections
 import doctest
 import logging
 import sys
 import time
 
 # tmp - by hand open world
-from sklearn.cross_validation import train_test_split
-from sklearn.preprocessing import label_binarize
+#from sklearn.cross_validation import train_test_split
+#from sklearn.preprocessing import label_binarize
 from sklearn.metrics import roc_curve, auc
 import matplotlib.pyplot as plt
 
@@ -157,43 +158,81 @@ def _binarize(y, keep=-1, default=0):
         else:
             yield default
 
+def _fit_grid(cs, gammas, X, y, cv):
+    '''@return appropriate gridsearchcv, fitted with X and y'''
+    logging.debug('cs: %s, gammas: %s', list(cs), list(gammas))
+    clf =  grid_search.GridSearchCV(
+        estimator=multiclass.OneVsRestClassifier(
+            svm.SVC(class_weight="balanced")),
+        param_grid={"estimator__C": cs, "estimator__gamma": gammas},
+        n_jobs=JOBS_NUM, verbose=0, cv=cv)
+    return clf.fit(X, y)
+
+def _stop_grid(y, step, result, previous):
+    '''@return True if grid should stop
+
+    >>> _stop_grid([1,1,2,2,3,3], 0.0001, 0.5, 0.4) # stop due to step
+    True
+    >>> _stop_grid([1,2], 1, 0.5, 0.4) # no stop
+    False
+    '''
+    return (step < 0.001 or
+            (result > min(3.*max(collections.Counter(y).values()) / len(y), 0.8)
+             and abs(result - previous) < 0.001))
+
 def _my_grid(X, y,
              cs=np.logspace(11, 17, 4, base=2),
              gammas=np.logspace(-3, 3, 4, base=2),
-             results={}, num_jobs=JOBS_NUM, folds=5, probability=False):
-    '''grid-search on fixed params (this is necessary as sklearn does not
-enable grid-search for the OneVsRestClassifier class)
+             folds=3):#,
+#             results={}, num_jobs=JOBS_NUM, folds=5, probability=False):
+#    @param results are previously computed results {(c, g): accuracy, ...}
+#    @return tuple (optimal_classifier, results_object)
+    '''grid-search on fixed params, searching laterally and in depth
 
-    @param results are previously computed results {(c, g): accuracy, ...}
-    @return tuple (optimal_classifier, results_object)
+    @return gridsearchcv object
     '''
-    best = None
-    bestres = 0
-    for c in cs:
-        for g in gammas:
-            clf = multiclass.OneVsRestClassifier(svm.SVC(
-                gamma=g, C=c, class_weight='balanced', probability=probability))
-            if (c,g) in results:
-                current = results[(c,g)]
-            else:
-                current = _test(X, y, clf, num_jobs, folds=folds)
-                results[(c, g)] = current
-            if not best or bestres.mean() < current.mean():
-                best = clf
-                bestres = current
-            logging.debug('c: {:8} g: {:10} acc: {}'.format(c, g,
-                                                            current.mean()))
-    if (best.estimator.C in (cs[0], cs[-1])
-        or best.estimator.gamma in (gammas[0], gammas[-1])):
-        logging.warn('optimal parameters found at the border. c:%f, g:%f',
-                     best.estimator.C, best.estimator.gamma)
-        return _my_grid(X, y,
-                       _new_search_range(best.estimator.C),
-                       _new_search_range(best.estimator.gamma),
-                       results)
-    else:
-        logging.info('grid result: {}'.format(best))
-        return best, results
+    step = 2
+    previous = -1
+
+    clf = _fit_grid(cs, gammas, X, y, folds)
+    while not _stop_grid(y, step, clf.best_score_, previous):
+        if (clf.best_params_['estimator__C'] in (cs[0], cs[-1])
+            or clf.best_params_['estimator__gamma'] in (gammas[0], gammas[-1])):
+            pass #keep step, search laterally
+        else:
+            step = step/2.
+        cs = _new_search_range(clf.best_params_['estimator__C'], step)
+        gammas = _new_search_range(clf.best_params_['estimator__gamma'], step)
+        previous = clf.best_score_
+        clf = _fit_grid(cs, gammas, X, y)
+    return clf
+
+
+    # for c in cs:
+    #     for g in gammas:
+    #         clf = multiclass.OneVsRestClassifier(svm.SVC(
+    #             gamma=g, C=c, class_weight='balanced', probability=probability))
+    #         if (c,g) in results:
+    #             current = results[(c,g)]
+    #         else:
+    #             current = _test(X, y, clf, num_jobs, folds=folds)
+    #             results[(c, g)] = current
+    #         if not best or bestres.mean() < current.mean():
+    #             best = clf
+    #             bestres = current
+    #         logging.debug('c: {:8} g: {:10} acc: {}'.format(c, g,
+    #                                                         current.mean()))
+    # if (best.estimator.C in (cs[0], cs[-1])
+    #     or best.estimator.gamma in (gammas[0], gammas[-1])):
+    #     logging.warn('optimal parameters found at the border. c:%f, g:%f',
+    #                  best.estimator.C, best.estimator.gamma)
+    #     return _my_grid(X, y,
+    #                    _new_search_range(best.estimator.C),
+    #                    _new_search_range(best.estimator.gamma),
+    #                    results)
+    # else:
+    #     logging.info('grid result: {}'.format(best))
+    #     return best, results
 
 def _my_grid_helper(counter_dict, outlier_removal=True, nj=JOBS_NUM,
                     cumul=True, folds=5):
@@ -202,19 +241,18 @@ def _my_grid_helper(counter_dict, outlier_removal=True, nj=JOBS_NUM,
         counter_dict = counter.outlier_removal(counter_dict)
     if cumul:
         (X, y, _) = to_features_cumul(counter_dict)
-        return _my_grid(X, y, num_jobs=nj, folds=folds)
+        return _my_grid(X, y, folds=folds)
     else: # panchenko 1
         (X, y, _) = to_features(counter_dict)
-        return _my_grid(X, y, num_jobs=nj,
+        return _my_grid(X, y,
                         cs=np.logspace(15, 19, 3, base=2),
                         gammas=np.logspace(-17, -21, 3, base=2))
 
-def _new_search_range(best_param):
-    '''returns new array of parameters to search in
-
-    (use if best result was at border)
-    '''
-    return [best_param / 2, best_param, best_param * 2]
+def _new_search_range(best_param, step=1):
+    '''@return new array of parameters to search in, with logspaced steps'''
+    _step = 2.**step
+    return [best_param / (_step**2), best_param / _step, best_param,
+            best_param * _step, best_param * _step**2]
 
 def _predict_percentages(class_predictions_list, url_list):
     '''@return percentages how often a class was mapped to itself'''
@@ -347,23 +385,25 @@ def simulated_original(counters, name=None, folds=10):
     '''simulates original panchenko: does 10-fold cv on _all_ data, just
 picks best result'''
     if name is not None and name in ALL_MAP:
-        res = ALL_MAP[name]
+        clf = ALL_MAP[name]
     else:
-        _,res = _my_grid_helper(counter.outlier_removal(counters, 2),
+        clf = _my_grid_helper(counter.outlier_removal(counters, 2),
                                 cumul=True, folds=folds)
-        ALL_MAP[name] = res
-    print '10-fold result: {}'.format(max(map(np.mean, res.values())))
+        ALL_MAP[name] = clf
+    print '10-fold result: {}'.format(clf.best_score_)
 
 def open_world(defense_name, num_jobs=JOBS_NUM):
     '''does an open-world (SVM) test on data'''
     defense = counter.all_from_dir(defense_name)
     # split (cv?)
     X,y,yd=to_features_cumul(defense)
-    X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=.8)
-    cs = np.logspace(-5, 15, 5, base=2)
-    gammas = np.logspace(-15, 5, 5, base=2)
-    clf = grid_search.GridSearchCV(estimator=multiclass.OneVsRestClassifier(svm.SVC(class_weight="balanced")), param_grid={"estimator__C": cs, "estimator__gamma": gammas}, n_jobs=-1, verbose=1)
-#    c,r = _my_grid(X_train, y_train)
+    X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, train_size=.8, stratify=y)
+    cs = np.logspace(11, 19, 5, base=2)
+    gammas = np.logspace(-49, -41, 5, base=2)
+    clf = _my_grid(X_train, y_train, cs, gammas)
+
+#        grid_search.GridSearchCV(estimator=multiclass.OneVsRestClassifier(svm.SVC(class_weight="balanced")), param_grid={"estimator__C": cs, "estimator__gamma": gammas}, n_jobs=-1, verbose=2)
+
     
 def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test
@@ -397,7 +437,7 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=False):
             CLFS.append(SVC_TTS_MAP[defense0])
         else:
             t = time.time()
-            clf,_ = _my_grid_helper(counter.outlier_removal(train, 2), cumul)
+            clf = _my_grid_helper(counter.outlier_removal(train, 2), cumul)
             logging.debug('parameter search took: %s', time.time() -t)
             if cumul:
                 SVC_TTS_MAP[defense0] = clf
@@ -476,7 +516,7 @@ def outlier_removal_levels(defense, clf=None):
         (train, test) = tts(defense_with_or)
         (X, y, _) = to_features_cumul(train)
         if type(clf) is type(None):
-            clf,_ = _my_grid(X, y)
+            clf = _my_grid(X, y)
         (X, y, _) = to_features_cumul(test)
         print "level: {}".format(lvl)
         _verbose_test_11(X, y, clf)
@@ -489,7 +529,7 @@ def outlier_removal_levels(defense, clf=None):
             (X, y, _) = to_features_cumul(counter.outlier_removal(train,
                                                                   train_lvl))
             if type(clf) is type(None):
-                clf,_ = _my_grid(X, y)
+                clf = _my_grid(X, y)
             (X, y, _) = to_features_cumul(counter.outlier_removal(test,
                                                                   test_lvl))
             print "level train: {}, test: {}".format(train_lvl, test_lvl)

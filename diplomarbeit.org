@@ -718,7 +718,7 @@ experience /E/.
       #+INDEX: grid search
       Each [[#soft-margin-svm][soft margin classifier]] has an error term $C$ which states
       how much to penalize outliers. The gaussian radial basis function
-      kernel used by \cite{panchenko2} also has a \gamma term which varies
+      kernel used by \cite{panchenko2} also has a $\gamma$ term which varies
       the width of the area, see Figure [[fig:C-gamma-effect]].
 
       #+CAPTION[Example svm-rbf classification with different parameters for $C$ and \gamma]: Example svm-rbf classification with different parameters for $C$ and \gamma. Source \cite[Figure 42.328]{scikit-user-guide}, recreated for higher resolution.
@@ -945,9 +945,9 @@ experience /E/.
     WTF-PAD is built using Tor's pluggable transport\cite{tor-spec-pt}
     censorship avoidance layer. This has the advantage of not
     burdening the most stressed part of the network, the exit nodes.
-* CHECK Methods [63%]
-  This chapter [[#motivation][motivates briefly what could be done better]], then
-  [[#design][describes the design]].
+* CHECK Methods [60%]
+  This chapter [[#motivation][motivates briefly this thesis' aim]], then [[#design][describes the
+  design]].
 ** DANIEL Motivation
    :PROPERTIES:
    :CUSTOM_ID: motivation
@@ -987,7 +987,7 @@ experience /E/.
     level, as a whistleblower might need more anonymity protection
     than Jane Doe who just reads the latest news, possibly censored in
     her country.
-** DANIEL Design and Implementation [9/16]
+** DANIEL Design and Implementation [9/17]
    :PROPERTIES:
    :CUSTOM_ID: design
    :END:
@@ -1106,10 +1106,9 @@ experience /E/.
      :PROPERTIES:
      :CUSTOM_ID: addon_main
      :END:
-     The main version works with the retrieved page's[fn:kg:known or
-     guessed, see [[#cache_size][description in the next subsection]]] HTML size, and
-     number of embedded objects, adding to these to reach target
-     values.
+     The main version works with the retrieved page's[fn::known or
+     guessed, see [[#cache_size][description]]] HTML size, and number of embedded
+     objects, adding to these to reach target values.
 
      At the web page's first HTML request, a /target HTML size/ is
      determined, the HTML size of the current request is subtracted
@@ -1118,9 +1117,10 @@ experience /E/.
 
      At the same time, a /target number of embedded requests/ is
      determined. From this and the page's number of embedded
-     items[fn:kg], the probability of embedded requests is
-     computed. For each request to embedded objects, this is the
-     probability that embedded-object-sized dummy data is requested.
+     items[fn::once again, known or guessed, see [[#cache_size][description]]], the
+     probability of embedded requests is computed. For each request to
+     embedded objects, this is the probability that
+     embedded-object-sized dummy data is requested.
 ***** EVA Choice: Cache (approximate) sizes using Bloom Filters
       :PROPERTIES:
       :CUSTOM_ID: cache_size
@@ -1134,9 +1134,10 @@ experience /E/.
       a limited number of URLs], it is possible to cache all
       sizes[fn::See appendices [[#find sizes of HTML-documents]] and
       [[#number_embedded]] for how the sizes were determined]
-      beforehand. If a size is unknown, random variates from the [[#HTTP traffic model][HTTP
-      traffic model]] are used.[fn:: The size of each embedded dummy
-      object is always drawn from the HTTP traffic model.]
+      beforehand. If a size is unknown, random variates from the
+      [[#HTTP traffic model][HTTP traffic model]] are used.[fn:: The
+      size of each embedded dummy object is always drawn from the HTTP
+      traffic model.]
 
       Using known sizes is called the /cache/ flavour and denoted by
       =a= in tables etc. In the /nocache/ flavour, denoted by =b=,
@@ -1170,11 +1171,11 @@ experience /E/.
        latter cases, the default distribution is used.[fn::See [[#bloom-sort]]
        for implementation details.]
 
-       This data structure has the advantage that, even if visited
-       page sizes were saved, an adversary could not safely detemine
-       that pages were visited due to the Bloom Filter's false
-       positive errors.
-****** MAYBE Error estimation of Bloom Sort
+       This data structure has the additional advantage that, even if
+       visited page sizes were saved, an adversary could not safely
+       detemine that pages were visited due to the Bloom Filter's
+       false positive errors.
+****** WAIT Error estimation of Bloom Sort
        - error both ways, and difference bin-size to real size
       - sources of error
         - filter tells that is has element when it has not
@@ -1186,13 +1187,14 @@ experience /E/.
       - error estimation?
         - +: fixed size
         - -: error both ways, and difference bin-size to real size
-***** WRITE Choice: How to Set Cover Traffic Target Values
+***** CHECK Choice: How to Set Cover Traffic Target Values
       #+INDEX: I
       #+INDEX: flavour!I
       #+INDEX: II
       #+INDEX: flavour!II
-      Once the /page's values/ are thus determined[fn:kg], there are
-      two tactics on how to set /target/ values.
+      Once the /page's values/ are thus determined[fn::known or
+      guessed, see [[#cache_size][description]]], there are two tactics on how to set
+      /target/ values.
 
       One tactic (=I=) is to group the webpages by their values into bins and
       to set the bin border as the target value, as all webpages in the
@@ -1208,13 +1210,12 @@ experience /E/.
       model]]. This is also the fallback approach if the web page's
       values are not known.
 
-      - picture of binning approach
-    This leads to the following variations:
+      This leads to the following variations:
 
-    1) Bloom binning (=I=) with known sizes (=A=)
-    2) Bloom binning (=I=) with random sizes (=B=)
-    3) one target distribution (=II=) with original size from Bloom (=A=),
-    4) one target distribution (=II=) with random sizes (=B=)
+      1) Bloom binning (=I=) with known sizes (=a=),
+      2) Bloom binning (=I=) with random sizes (=b=),
+      3) one target distribution (=II=) with original size from Bloom (=a=), and
+      4) one target distribution (=II=) with random sizes (=b=).
 **** EVA Add-on Version: Simple
      :PROPERTIES:
      :CUSTOM_ID: simple
@@ -1228,6 +1229,9 @@ experience /E/.
      This halved the number of lines of code[fn::+simplified
      debugging]. The version is called /simple/.
 **** WRITE Add-on Version: Retro
+     :PROPERTIES:
+     :CUSTOM_ID: retro
+     :END:
      All other add-on versions reached overheads as low as 20%, but not
      lower.
 
@@ -1519,8 +1523,8 @@ experience /E/.
 
      The reimplementation adds some aspects to \cite{panchenko2}'s
      analysis, namely those mentioned in [[#split][split]] and the prototype in
-     [[#outlier_removal][outlier removal]]. It also does a parameter grid-search, as the
-     altered traces seem to require dynamically adjusted SVM
+     [[#outlier_removal][outlier removal]]. It also searches the (C, \gamma)-parameter-grid, as
+     the altered traces seem to require dynamically adjusted SVM
      parameters.
 
      \cite{effective}'s data format are file-based: each file, named
@@ -1853,6 +1857,9 @@ experience /E/.
      :PROPERTIES:
      :CUSTOM_ID: results-retrofixed
      :END:
+     - attempt: code fix ported to older version
+     - result: *very* low overhead
+     - described in section [[#retro]]
 **** WRITE Bursts
      :PROPERTIES:
      :CUSTOM_ID: eval-bursts
@@ -1875,15 +1882,22 @@ experience /E/.
     :PROPERTIES:
     :CUSTOM_ID: eval-wtf-pad
     :END:
-    [[#def-wtf-pad][WTF-PAD]]'s theoretic results are reported by \cite{wtfpad} and
-    confirmed by \cite{kfingerprint} as
+    [[#def-wtf-pad][WTF-PAD]]'s results are reported by \cite[Table I]{wtfpad} and
+    confirmed by \cite[Table 1]{kfingerprint} as 54% overhead on the
+    100 sites of the \cite{ccs2014-critical} data set. This yielded an
+    accuracy of 17.25 for the kNN and 15.33 for the Panchenko 1
+    attack. \cite{kfingerprint} further report a
+    CUMUL\cite{panchenko2} accuracy of 0.16 ± 0.03.
+
+    In our experiments, WTF-PAD's bandwidth overhead was highly
+    network-dependent. For an experiment using a local bridge on a
+    single computer, its overhead was only 4.24 % (see Table
+    [[tab:30-sites]]), with very little accuracy reduction.
 
     - overhead of WTF-PAD depends on network connection from client to bridge
       - 0--1% if on localhost
       - ~12.9% for virtual machine
         - different host, same local network
-      - reported by Juarez et al \cite{wtfpad}, confirmed by Danezis
-        \cite{kfingerprint}: 54%
     - all of mine so far add additional data /for each request/, WTF-PAD
       adds additional data /over time/, less with more requests, more
        with less

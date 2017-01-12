@@ -1,5 +1,9 @@
 #!/usr/bin/env python
-'''create batch/ -dir from large panchenko directory. This is intended for large directories.'''
+'''create batch/ -dir from large panchenko directory. This is intended
+for large directories. Usage f.ex. 
+
+$ python p2w.py foreground-data/output-tcp
+'''
 import os
 import sys
 
@@ -12,6 +16,8 @@ except OSError:
 batch_list = open("batch_list", "w")
 url_id = 0
 for (url, data) in counter.panchenko_generator(sys.argv[1]):
+    if not data:
+        continue
     batch_list.write("{}: {}\n".format(url_id, url))
     for (counter_id, datum) in enumerate(data):
         datum.to_wang(os.path.join(
