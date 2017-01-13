@@ -158,9 +158,11 @@ def _binarize(y, keep=-1, default=0):
         else:
             yield default
 
-def _fit_grid(cs, gammas, X, y, cv):
+def _fit_grid(c, gamma, step, X, y, cv):
     '''@return appropriate gridsearchcv, fitted with X and y'''
-    logging.debug('cs: %s, gammas: %s', list(cs), list(gammas))
+    logging.info('c: %s, gamma: %s, step: %s', c, gamma, step)
+    cs = _new_search_range(c, step)
+    gammas = _new_search_range(gamma, step)
     clf =  grid_search.GridSearchCV(
         estimator=multiclass.OneVsRestClassifier(
             svm.SVC(class_weight="balanced")),
@@ -173,38 +175,49 @@ def _stop_grid(y, step, result, previous):
 
     >>> _stop_grid([1,1,2,2,3,3], 0.0001, 0.5, 0.4) # stop due to step
     True
-    >>> _stop_grid([1,2], 1, 0.5, 0.4) # no stop
+    >>> _stop_grid([1,2], 1, 0.5, []) # no stop
+    False
+    >>> _stop_grid([1,2], 1, 0.5, [1,2,3]) # no stop
+    False
+    >>> _stop_grid([1,2], 1, 1, [1,1,1]) # stop due to results
     False
     '''
     return (step < 0.001 or
-            (result > min(3.*max(collections.Counter(y).values()) / len(y), 0.8)
-             and abs(result - previous) < 0.001))
+            (len(previous) > 3 and # some tries and with same val and > guess
+             max([abs(x - result) for x in previous[-3:]]) < 0.001 and
+             result > 1.1*max(collections.Counter(y).values()) / len(y)))
 
-def _my_grid(X, y,
-             cs=np.logspace(11, 17, 4, base=2),
-             gammas=np.logspace(-3, 3, 4, base=2),
-             folds=3):#,
+def _best_at_border(grid_clf):
+    '''@return True if best params are at parameter grid borders'''
+    c_params = grid_clf.param_grid['estimator__C']
+    c_borders = [params[0], params[-1]]
+    g_params = grid_clf.param_grid['estimator__gamma']
+    g_borders = [params[0], params[-1]]
+    return (grid_clf.best_params_['estimator__C'] in c_borders
+            or grid_clf.best_params_['estimator__gamma'] in gamma_borders)
+
+
+def _my_grid(X, y, c=2**14, gamma=2**-10, folds=3):#,
 #             results={}, num_jobs=JOBS_NUM, folds=5, probability=False):
 #    @param results are previously computed results {(c, g): accuracy, ...}
 #    @return tuple (optimal_classifier, results_object)
     '''grid-search on fixed params, searching laterally and in depth
 
-    @return gridsearchcv object
+    @return gridsearchcv classifier (with .best_score and .best_params)
     '''
     step = 2
-    previous = -1
+    previous = []
 
-    clf = _fit_grid(cs, gammas, X, y, folds)
+    clf = _fit_grid(c, gamma, step, X, y, folds)
     while not _stop_grid(y, step, clf.best_score_, previous):
-        if (clf.best_params_['estimator__C'] in (cs[0], cs[-1])
-            or clf.best_params_['estimator__gamma'] in (gammas[0], gammas[-1])):
+        if _best_at_border(clf):
             pass #keep step, search laterally
         else:
             step = step/2.
-        cs = _new_search_range(clf.best_params_['estimator__C'], step)
-        gammas = _new_search_range(clf.best_params_['estimator__gamma'], step)
-        previous = clf.best_score_
-        clf = _fit_grid(cs, gammas, X, y)
+        previous.append(clf.best_score_)
+        clf = _fit_grid(clf.best_params_['estimator__C'],
+                        clf.best_params_['estimator__gamma'],
+                        step, X, y, folds)
     return clf
 
 
@@ -398,13 +411,10 @@ def open_world(defense_name, num_jobs=JOBS_NUM):
     # split (cv?)
     X,y,yd=to_features_cumul(defense)
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, train_size=.8, stratify=y)
-    cs = np.logspace(11, 19, 5, base=2)
-    gammas = np.logspace(-49, -41, 5, base=2)
-    clf = _my_grid(X_train, y_train, cs, gammas)
+    c = 2**15
+    gamma = 2**-45
+    clf = _my_grid(X_train, y_train, c, gamma)
 
-#        grid_search.GridSearchCV(estimator=multiclass.OneVsRestClassifier(svm.SVC(class_weight="balanced")), param_grid={"estimator__C": cs, "estimator__gamma": gammas}, n_jobs=-1, verbose=2)
-
-    
 def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test
 
@@ -753,15 +763,15 @@ def tts(counter_dict, test_size=1.0/3):
 
 ### variants
 ## RETRO
-# ['0.15.3-retrofixed/bridge/100__2016_09_15', '0.15.3-retrofixed/bridge/50__2016_09_16']
-# ['0.15.3-retrofixed/bridge/200__2016-10-02/', '0.15.3-retrofixed/bridge/200__2016-10-02_with_errs/']
+# ['retro/bridge/100__2016_09_15', 'retro/bridge/50__2016_09_16']
+# ['retro/bridge/200__2016-10-02/', 'retro/bridge/200__2016-10-02_with_errs/']
 ## MAIN 0.22
 #['0.22/10aI__2016-07-08', '0.22/30aI__2016-07-13', '0.22/50aI__2016-07-13', '0.22/5aII__2016-07-18', '0.22/5aI__2016-07-19', '0.22/10_maybe_aI__2016-07-23', '0.22/5aI__2016-07-25', '0.22/30aI__2016-07-25', '0.22/50aI__2016-07-26', '0.22/2aI__2016-07-23', '0.22/5aI__2016-08-26', '0.22/5aII__2016-08-25', '0.22/5bI__2016-08-27', '0.22/5bII__2016-08-27', '0.22/20aI__2016-09-10', '0.22/20aII__2016-09-10', '0.22/20bII__2016-09-12', '0.22/20bI__2016-09-13']
 ## SIMPLE
 #['simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5__2016-07-17', 'simple2/20']
 
 # 07-06
-# sys.argv = ['', 'disabled/bridge__2016-07-06', '0.15.3-retrofixed/bridge/30', '0.15.3-retrofixed/bridge/70', '0.15.3-retrofixed/bridge/50']
+# sys.argv = ['', 'disabled/bridge__2016-07-06', 'retro/bridge/30', 'retro/bridge/70', 'retro/bridge/50']
 # sys.argv = ['', 'disabled/bridge__2016-07-06', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/20']
 # sys.argv = ['', 'disabled/bridge__2016-07-06', 'wfpad/bridge__2016-07-05', 'tamaraw']
 # sys.argv = ['', 'disabled/bridge__2016-07-06', '0.22/10aI', '0.22/5aI__2016-07-19', '0.22/5aII__2016-07-18', '0.22/2aI__2016-07-23']
@@ -775,7 +785,7 @@ def tts(counter_dict, test_size=1.0/3):
 # 09-09 (also just FLAVORS)
 # sys.argv = ['', 'disabled/bridge__2016-09-09', '0.22/20aI__2016-09-10', '0.22/20aII__2016-09-10', '0.22/20bI__2016-09-13', '0.22/20bII__2016-09-12']
 # 09-18 (also just RETRO)
-# sys.argv = ['', 'disabled/bridge__2016-09-18', '0.15.3-retrofixed/bridge/100__2016_09_15', '0.15.3-retrofixed/bridge/50__2016_09_16']
+# sys.argv = ['', 'disabled/bridge__2016-09-18', 'retro/bridge/100__2016_09_15', 'retro/bridge/50__2016_09_16']
 #'disabled/bridge__2016-09-30'
 # 09-23 (also just SIMPLE)
 # sys.argv = ['', 'disabled/bridge__2016-09-21_100', 'simple2/5__2016-09-23_100/']

@@ -947,7 +947,7 @@ experience /E/.
     burdening the most stressed part of the network, the exit nodes.
 * CHECK Methods [60%]
   This chapter [[#motivation][motivates briefly this thesis' aim]], then [[#design][describes the
-  design]].
+  generation of cover traffic's design]].
 ** DANIEL Motivation
    :PROPERTIES:
    :CUSTOM_ID: motivation
@@ -1196,14 +1196,15 @@ experience /E/.
       guessed, see [[#cache_size][description]]], there are two tactics on how to set
       /target/ values.
 
-      One tactic (=I=) is to group the webpages by their values into bins and
-      to set the bin border as the target value, as all webpages in the
-      bin must have a size less than or equal the border. This approach
-      approximates that taken by Wang et al. in \cite{effective} with
-      the bins being equivalent to the anonymity sets/partitions. As
-      the biggest bin does not have a maximum size, its median value is
-      chosen.[fn:: The optimal size for the biggest bin is a parameter
-      that should be evaluated as well, see [[#fw-addon]].]
+      One tactic (=I=) is to group the webpage sizes into bins and to
+      set the bin border as the target value, as all webpages sizes in
+      the bin must be less than or equal the border. This approach
+      approximates[fn::for response sizes] that taken by Wang et
+      al. in \cite{effective} with the bins being equivalent to the
+      anonymity sets/partitions. As the biggest bin does not have a
+      maximum size, its median value is chosen.[fn:: The optimal size
+      for the biggest bin is a parameter that should be evaluated as
+      well, see [[#fw-addon]].]
 
       The other tactic (=II=) is to have a single target distribution
       from which values are sampled each time, the [[#HTTP traffic model][HTTP traffic
@@ -1212,10 +1213,11 @@ experience /E/.
 
       This leads to the following variations:
 
-      1) Bloom binning (=I=) with known sizes (=a=),
-      2) Bloom binning (=I=) with random sizes (=b=),
-      3) one target distribution (=II=) with original size from Bloom (=a=), and
-      4) one target distribution (=II=) with random sizes (=b=).
+      - /aI/: Bloom binning (=I=) with known sizes (=a=),
+      - /bI/: Bloom binning (=I=) with random sizes (=b=),
+      - /aII/: one target distribution (=II=) with original size from
+        Bloom (=a=), and
+      - /bII/: one target distribution (=II=) with random sizes (=b=).
 **** EVA Add-on Version: Simple
      :PROPERTIES:
      :CUSTOM_ID: simple
@@ -1227,21 +1229,23 @@ experience /E/.
      overhead-related probability for each embedded object.
 
      This halved the number of lines of code[fn::+simplified
-     debugging]. The version is called /simple/.
-**** WRITE Add-on Version: Retro
+     debugging]. The version is called =simple=.
+**** CHECK Add-on Version: Retro
      :PROPERTIES:
      :CUSTOM_ID: retro
      :END:
-     All other add-on versions reached overheads as low as 20%, but not
-     lower.
+     The main add-on versions reached overheads as low as 20%, but
+     only rarely lower. To achieve minimal overhead, the change from
+     [[#versions][version]] =0.20= to =0.21= was retroactively applied to version
+     =0.15.3=, with the resulting version named =retro=. The =retro=
+     version remembers negative request sizes, and randomly subtracts
+     them for further requests.
 
-     - very low overhead at one test: negative
-     - previous version 0.15.3, added change 0.20 to 0.21: remembers
-       negative request sizes, and randomly subtracts them for further
-       requests
-     - de facto: HTML-sized request for each request (target-size),
-       (remembering negative sizes, subtracting them)
-     - drawback: not very configurable
+     De facto, this version sends a HTML-size-distributed request for
+     each request. From the target size, a random size is
+     subtracted. This might yield a negative response target size,
+     which is remembered, and stochastically subtracted from further
+     requests.
 **** WRITE Bursts
      :PROPERTIES:
      :CUSTOM_ID: methods-bursts
@@ -1291,7 +1295,7 @@ experience /E/.
     slightly underestimate the number of embedded elements. This
     might generate more traffic than strictly necessary, but here,
     safe seems better than sorry.
-* DANIEL Results and Evaluation [36%]                               :results:
+* DANIEL Results and Evaluation [39%]                               :results:
   The following sections describe [[#setup][how data was collected and
   analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
   [[#eval-defense][various defenses]].
@@ -1503,7 +1507,7 @@ experience /E/.
     applied: [[#cumul-reimplementation][\cite{panchenko2} was reimplemented]] and [[#wf-original][both it and
     \cite{effective}'s original implementation were used to
     double-check results]].
-**** CHECK Original Classification Methods: Panchenko and Wang
+**** EVA Original Classification Methods: Panchenko and Wang
      :PROPERTIES:
      :CUSTOM_ID: wf-original
      :END:
@@ -1589,7 +1593,7 @@ experience /E/.
    In the data tables in the appendix, you can see various defenses
    against different classifiers in Table [[tab:30-sites]].
 
-   - hermann
+   - herrmann
    - various approaches
      - also seemingly different ow-accuracy
    - and show lower bound for perfect attacker
@@ -1802,11 +1806,11 @@ experience /E/.
     :END:
     The following sections evaluate the addon's protection from
     website fingerprinting. The addon branches[fn::as described in [[*How to Generate Cover Traffic][How
-    to Generate Cover Traffic]]] are each evaluated: first [[#results-flavours][the main
-    addon's flavours]], then the [[#results-simple][simple]] and [[#results-retrofixed][retrofixed]] versions, finally
-    [[#eval-bursts][the addition of bursts at the traffic end]]; Finally, [[*Bursts][a summary
-    description of which version provides the highest accuracy
-    decrease per overhead]] is provided.
+    to Generate Cover Traffic]]] are each evaluated: first [[#results-flavours][the latest
+    =main= addon's flavours]], then the [[#results-simple][=simple=]] and [[#results-retro][=retro=]] versions,
+    finally [[#eval-bursts][the addition of bursts at the traffic end]]; In the end,
+    [[#eval-summary][a summary description of which version provides
+    the highest accuracy decrease per overhead]] is provided.
 **** DANIEL Main Add-on Flavours
      :PROPERTIES:
      :CUSTOM_ID: results-flavours
@@ -1853,13 +1857,15 @@ experience /E/.
      - worse than main addon
      - but can reach lower
      - linear relation factor to overhead
-**** KEYWORDS Version: Retrofixed
+**** KEYWORDS Version: Retro
      :PROPERTIES:
-     :CUSTOM_ID: results-retrofixed
+     :CUSTOM_ID: results-retro
      :END:
      - attempt: code fix ported to older version
      - result: *very* low overhead
      - described in section [[#retro]]
+     - very low overhead at one test: negative
+     - drawback: not very configurable
 **** WRITE Bursts
      :PROPERTIES:
      :CUSTOM_ID: eval-bursts
@@ -1869,7 +1875,7 @@ experience /E/.
        (cumul\cite{panchenko2}) for 3.7930667802 % overhead
        increase. Wang-kNN\cite{effective}: 4.7619% decrease in
        accuracy.
-**** WAIT summary
+**** WAIT Summary
      :PROPERTIES:
      :CUSTOM_ID: eval-summary
      :END:
@@ -2270,10 +2276,10 @@ set, see [[#split][split]].
        - subtract from request size, and from saved value
 
    The improvements described in this section were backported to
-   version 0.15.3, with version name 0.15.3-retrofixed. This
-   greatly reduced the amount of overhead, but had the same
-   problem: the factor was not correlated to the overhead: it
-   lacked control on how much traffic to generate.
+   version =0.15.3=, with version name =retro=. This greatly reduced
+   the amount of overhead, but had the same problem: the factor was
+   not correlated to the overhead: it lacked control on how much
+   traffic to generate.
 ** WRITE 0.20: bounds for probability
    - buggy html model: counts many more URLs as HTML than expected
      - fix would be: use only absolute numbers, not probabilities,
@@ -2281,11 +2287,10 @@ set, see [[#split][split]].
        when found), increase counter when found
      - workaround: bound probability
      - 20 limits number of embedded requests
-** WRITE 0.21 bounds absolute number of retrieved objects
+** WRITE 0.21: bounds absolute number of retrieved objects
     - better workaround
       - stricter bounds on retrieval of embedded objects
       - and stop when limit reached
-
 ** WRITE 0.22: should be 0.21.1: reliability fixes
    - retrieved one-too-many on each embedded request
    - fix to /simple/: =endsLoad= was seemingly not triggered
@@ -2458,7 +2463,7 @@ set, see [[#split][split]].
    Marionette.
 *** WAIT merge with above(?) and split out pip install (also needed for wsgi)
 *** link to marionette, mozmill and virtualenv
-** CHECK Avoiding Safe Mode on Restart
+** APPENDIX_DONE Avoiding Safe Mode on Restart
    :PROPERTIES:
    :CUSTOM_ID: safe-mode
    :END:
