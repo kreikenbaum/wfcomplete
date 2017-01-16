@@ -21,8 +21,8 @@ import counter
 JOBS_NUM = -3 # 1. maybe -4 for herrmann (2 == -3) used up all memory
 LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 #LOGLEVEL = logging.DEBUG
-#LOGLEVEL = logging.INFO
-LOGLEVEL = logging.WARN
+LOGLEVEL = logging.INFO
+#LOGLEVEL = logging.WARN
 TIME_SEPARATOR = '@'
 
 ### classifiers
@@ -72,9 +72,7 @@ def _clf_name(clf):
 def _clf_params(clf):
     '''@return name + params if SVM'''
     if  'SVC' in str(clf):
-        return ('{}(C={}, gamma={})'.format(_clf_name(clf),
-                                           clf.estimator.C,
-                                           clf.estimator.gamma))
+        return '{}_{}'.format(_clf_name(clf), clf.best_params_)
     else:
         return _clf_name(clf)
 
@@ -189,12 +187,12 @@ def _stop_grid(y, step, result, previous):
 
 def _best_at_border(grid_clf):
     '''@return True if best params are at parameter grid borders'''
-    c_params = grid_clf.param_grid['estimator__C']
-    c_borders = [params[0], params[-1]]
-    g_params = grid_clf.param_grid['estimator__gamma']
-    g_borders = [params[0], params[-1]]
+    c_borders = (grid_clf.param_grid['estimator__C'][0],
+                 grid_clf.param_grid['estimator__C'][-1])
+    g_borders = (grid_clf.param_grid['estimator__gamma'][0],
+                 grid_clf.param_grid['estimator__gamma'][-1])
     return (grid_clf.best_params_['estimator__C'] in c_borders
-            or grid_clf.best_params_['estimator__gamma'] in gamma_borders)
+            or grid_clf.best_params_['estimator__gamma'] in g_borders)
 
 
 def _my_grid(X, y, c=2**14, gamma=2**-10, folds=3):#,
@@ -204,6 +202,8 @@ def _my_grid(X, y, c=2**14, gamma=2**-10, folds=3):#,
     '''grid-search on fixed params, searching laterally and in depth
 
     @return gridsearchcv classifier (with .best_score and .best_params)
+    >>> test = _my_grid([[1, 0], [1, 0], [1, 0], [0, 1], [0, 1], [0, 1]], [0, 0, 0, 1, 1, 1], 0.0001, 0.000001); test.best_score_
+    1.0
     '''
     step = 2
     previous = []
@@ -496,6 +496,7 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=False):
             t = time.time()
             print '{}: {}'.format(_clf_name(clf), _xtest(X, y, X2, y2, clf)), 
             print '({} seconds)'.format(time.time() - t)
+    import pdb; pdb.set_trace()
 
 def gen_class_stats_list(defenses,
                          defense0='auto',
@@ -737,7 +738,7 @@ def tts(counter_dict, test_size=1.0/3):
 #    (X, y ,y_dom) = to_features_cumul(counters)
 
 ### OLDER DATA (without bridge)
-# sys.argv = ['', 'disabled/06-09@10', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
+# sys.argv = ['', 'disabled/05-12@10', 'disabled/06-09@10', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
 # sys.argv = ['', 'disabled/wfpad', 'wfpad']
 # sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
 # sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
