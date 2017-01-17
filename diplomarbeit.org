@@ -363,25 +363,26 @@
     by hand, relying only on object sizes; later approaches use some
     machine-learning techniques, and most extract more features from
     the traces.
-
+**** MOVE to end of [[*Machine Learning][Machine Learning]]
     There are roughly three steps to website fingerprinting:
     preprocessing, feature extraction and classification[fn::German
     literature, e.g. \cite{meffert}, adds an additional
     /Merkmalsreduktion/ (feature reduction) part after
     /Merkmalsextraktion/ (feature extraction).]
 
-    The former transforms the raw input data --- in our case, website
-    retrieval traces[fn::in =pcap= format] --- into characteristics
-    --- in our case, numbers for f.ex. the number of outgoing
-    packets. The latter groups these characteristics into categories.
-
+    The former two transform the raw input data --- in our case,
+    website retrieval traces[fn::in =pcap= format] --- into
+    characteristics --- in our case, numbers for f.ex. the number of
+    outgoing packets. The latter groups these characteristics into
+    categories. For details see section ...
+**** end MOVE
     This section describes the [[#trailbreakers][first approaches]] of machine-learning
-    based website fingerprinting. This is followed by a bit on
-    /feature extraction/ and /classification/. The next section
-    describes [[#p1][the first sucessful attack against Tor]]. The final
-    sections contain state-of-the-art \cite{kfingerprint} methods of
-    website fingerprinting: [[#cumul][Panchenko et al.'s CUMUL]] and [[#knn][Wang et
-    al.'s kNN]], each followed by a description of their classifier.
+    based website fingerprinting. This is followed by a short section
+    on [[#ml][machine learning in general]]. The next section describes [[#p1][the
+    first sucessful attack against Tor]]. The final sections contain
+    state-of-the-art \cite{kfingerprint} methods of website
+    fingerprinting: [[#cumul][Panchenko et al.'s CUMUL]] and [[#knn][Wang et al.'s kNN]],
+    each followed by a description of their classifier.
 **** DANIEL Trailbreakers
      :PROPERTIES:
      :CUSTOM_ID: trailbreakers
@@ -403,6 +404,9 @@
     some experiments which lead to this conjecture] that this result
     could be improved with attacks specifically tailored to Tor.
 **** DANIEL Machine Learning
+     :PROPERTIES:
+     :CUSTOM_ID: ml
+     :END:
      #+INDEX: machine learning
      The term /machine learning/ consists of the two parts "machine"
      and "learning". In this context, machine refers to a computer, a
@@ -496,18 +500,19 @@ experience /E/.
 
       From these absolute values, various metrics can be derived. The
       main metrics used in website fingerprinting literature are
-      Accuracy[fn::accuracy is mostly used in the closed-world case],
-      and True-Positive- and False-Positive-rate[fn::tpr and fpr are
-      mostly used in the open-world case]. These are defined as
+      Accuracy (short: acc)[fn::accuracy is mostly used in the
+      closed-world case], and /True/ and /False Positive Rate/ (short:
+      tpr and fpr)[fn::tpr and fpr are mostly used in the open-world
+      case]. These are defined as
 
       #+ATTR_LATEX: :align l r
-      | /True-Positive Rate/ (short: tpr)  | $TP / (TP + FN)$                  |
-      | /False-Positive Rate/ (short: fpr) | $FP / (FP + TN)$                  |
-      | /Accuracy/ (short: acc)            | $(TP + TN) / (TP + FP + FN + TN)$ |
+      | /True Positive Rate/  | $TP / (TP + FN)$                  |
+      | /False Positive Rate/ | $FP / (FP + TN)$                  |
+      | /Accuracy/            | $(TP + TN) / (TP + FP + FN + TN)$ |
 
       To show the classifier strictness tradeoff, a /Receiver
-      Operating Characteristic Curve/ (short: ROC-Curve) can be used,
-      this diagram contrasts classifier tpr vs fpr, see Figure
+      Operating Characteristic Curve/ (short: ROC-Curve) can be used.
+      This diagram contrasts classifier tpr vs fpr, see Figure
       [[fig:roc-example]]. The area under the curve can be measured. The
       closer this value is to 1, the better.
 
@@ -950,7 +955,7 @@ experience /E/.
     WTF-PAD is built using Tor's pluggable transport\cite{tor-spec-pt}
     censorship avoidance layer. This has the advantage of not
     burdening the most stressed part of the network, the exit nodes.
-* EVA Methods [54%]
+* EVA Methods [57%]
   This chapter [[#motivation][motivates briefly this thesis' aim]], then [[#design][describes
   conceptually the design for the generation of cover traffic]].
 ** DANIEL Motivation
@@ -992,7 +997,7 @@ experience /E/.
     level, as a whistleblower might need more anonymity protection
     than Jane Doe who just reads the latest news, possibly censored in
     her country.
-*** WRITE Contrast to WTF-PAD
+*** MOVE to [[*Evaluation of Defenses][Evaluation of Defenses {1/16}]] WRITE Contrast to WTF-PAD
     - all of mine so far add additional data /for each request/,
       WTF-PAD adds additional data /over time/, less with more
       requests, more with less
@@ -1243,23 +1248,21 @@ experience /E/.
      subtracted. This might yield a negative response target size,
      which is remembered, and stochastically subtracted from further
      requests.
-**** WRITE Bursts
+**** CHECK Bursts
      :PROPERTIES:
      :CUSTOM_ID: methods-bursts
      :END:
      As of both \cite[sec.5.C]{oakland2012-peekaboo}, and
-     \cite[sec.4.2]{effective}, and \cite{panchenko}, the number of
-     bursts[fn::see [[#features][Website Fingerprinting Features]]] of a trace are a
-     effective feature for recognition. While this thesis' defense
-     might well simulate HTTP traffic, its approach did not explicitly
-     include the altering of this metric. To test the effectiveness of
-     added bursts at the end of retrieval, an additional option was
-     implemented.
+     \cite[sec.4.2]{effective}, \cite{kfingerprint}, and
+     \cite{panchenko}, the number of bursts[fn::see [[#features][Website
+     Fingerprinting Features]]] of a trace are a effective feature for
+     recognition. While this thesis' defense might well simulate HTTP
+     traffic, its approach did not explicitly include the altering of
+     this metric. To test the effectiveness of added bursts at the end
+     of retrieval, an additional option was implemented.
 
-    - solution
-      - test bursts at end of transmission
-      - at simple, and at main
-    - MOVE include text from [[*0.17 bursts at end - bursts on addon site load finish][0.17 bursts at end - bursts on addon site load finish]]
+     This was implemented for the =simple= and =main= versions. For
+     implementation details, see section [[#version-0.17]].
 **** WRITE Why as an add-on
      Web browsing is the (main) target of website
      fingerprinting. Instead of burdening all of Tor with extra bells
@@ -1272,12 +1275,11 @@ experience /E/.
     - here: simplest: server, GET-query with size=bytes parameter
       returns this many bytes random data
     - later: .onion (link to related work)
-*** KEYWORDS Firefox Browser Extension
+*** KEYWORDS MOVE integrate to [[*Why as an add-on][Why as an add-on]]  Firefox Browser Extension
     - firefox browser extension / add-on
       - add-on sdk
       - maybe mention next generation
-*** WAIT brainstorm
-    - good code
+*** WAIT MOVE rest to appendix Clean Code
       - tests
         - unit tests
         - by hand
@@ -1285,6 +1287,7 @@ experience /E/.
       - js garden
       - style guide
       - version control
+**** MOVE integrate to [[*Why as an add-on][Why as an add-on]]
     - implementation
       - classes in appendix
 *** WRITE Related Work?
@@ -1592,8 +1595,9 @@ experience /E/.
    kNN \cite{effective}. Panchenko's first approach was reimplemented
    as well, but was superseded by CUMULs superior accuracy.
 
-   In the data tables in the appendix, you can see various defenses
-   against different classifiers in Table [[tab:30-sites]].
+   In the appendix, you can see the accuracy of different classifiers
+   on various captures (on different dates, with and without defenses)
+   in Tables [[tab:30-sites]] and [[tab:100-sites]].
 
    - herrmann
    - various approaches
@@ -2232,6 +2236,9 @@ set, see [[#split][split]].
   :CUSTOM_ID: versions
   :END:
 ** WRITE 0.17 bursts at end - bursts on addon site load finish
+   :PROPERTIES:
+   :CUSTOM_ID: version-0.17
+   :END:
    - wang: burst distinguishing feature left with
      w/t\cite{wang2015walkie}
    - solution: count how many embedded, add those as bursts at the
@@ -2260,7 +2267,7 @@ set, see [[#split][split]].
      - try to fix at 19 (and backport to 15.3, codename retro)
 ** WRITE 0.19: negative values in distribution
    :PROPERTIES:
-   :CUSTOM_ID: addon0.19
+   :CUSTOM_ID: version-0.19
    :END:
    - negative values for requests are saved and randomly subtracted
    - occur with real size > target size

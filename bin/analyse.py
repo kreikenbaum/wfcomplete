@@ -405,53 +405,47 @@ picks best result'''
         ALL_MAP[name] = clf
     print '10-fold result: {}'.format(clf.best_score_)
 
-def open_world(defense_name, num_jobs=JOBS_NUM):
+def open_world(defense, num_jobs=JOBS_NUM):
     '''does an open-world (SVM) test on data'''
-    defense = counter.all_from_dir(defense_name)
     # split (cv?)
     X,y,yd=to_features_cumul(defense)
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, train_size=.8, stratify=y)
     c = 2**15
     gamma = 2**-45
-    clf = _my_grid(X_train, y_train, c, gamma)
+    clf = _my_grid(X_train, y_train, c=2**15, gamma=2**-45)
 
-def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=False):
+def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test
 
     =argv= is like sys.argv, =cumul= triggers CUMUL, else version 1,
-    =cc= determines whether to reduce the test data to common keys
+    =cc= determines whether to reduce the test data to common keys.
+
+    If defenses has only one set, it is cross-validated etc. If there
+    are more than one, the first is taken as baseline and training,
+    while the others are tested against this.
     '''
-    # call with 1: x-validate test that
-    # call with 2+: also train 1 (split), test 2,3,4,...
-    defenses = counter.for_defenses(argv[1:])
     stats = {k: _bytes_mean_std(v) for (k,v) in defenses.iteritems()}
-    # domain), compare
     # durations = {k: _average_duration(v) for (k,v) in defenses.iteritems()}
 
-    defense0 = argv[1] if len(argv) > 1 else '.'
-
     # no-split, best result of 10-fold tts
-    simulated_original(defenses[defense0], defense0)
-    # clf,res = _my_grid_helper(counter.outlier_removal(defenses[defense0], 2),
-    #                           cumul, folds=10)
-    # print '10-fold result: {}'.format(max(map(np.mean, res.values())))
+    simulated_original(defenses[def0], def0)
 
     # training set
-    (train, test) = tts(defenses[defense0])
+    (train, test) = tts(defenses[def0])
     CLFS = GOOD[:]
     if with_svm:
-        if defense0 in SVC_TTS_MAP and cumul:
+        if def0 in SVC_TTS_MAP and cumul:
             logging.info('reused svc: %s for defense: %s',
-                         SVC_TTS_MAP[defense0],
-                         defense0) #debug?
-            CLFS.append(SVC_TTS_MAP[defense0])
+                         SVC_TTS_MAP[def0],
+                         def0)
+            CLFS.append(SVC_TTS_MAP[def0])
         else:
             t = time.time()
             clf = _my_grid_helper(counter.outlier_removal(train, 2), cumul)
             logging.debug('parameter search took: %s', time.time() -t)
             if cumul:
-                SVC_TTS_MAP[defense0] = clf
-                CLFS.append(SVC_TTS_MAP[defense0])
+                SVC_TTS_MAP[def0] = clf
+                CLFS.append(SVC_TTS_MAP[def0])
             else:
                 CLFS.append(clf)
 
@@ -466,12 +460,12 @@ def cross_test(argv, cumul=True, with_svm=False, num_jobs=JOBS_NUM, cc=False):
         _verbose_test_11(X, y, clf)
 
     # vs test sets
-    its_counters0 = defenses[defense0]
+    its_counters0 = defenses[def0]
     for (defense, its_counters) in defenses.iteritems():
-        if defense == defense0:
+        if defense == def0:
             continue
         print '\ntrain: {} VS {} (overhead {}%)'.format(
-            defense0, defense, _size_increase(stats[defense0], stats[defense]))
+            def0, defense, _size_increase(stats[def0], stats[defense]))
         if cc and its_counters.keys() != its_counters0.keys():
             # td: refactor code duplication with above (search for keys = ...)
             keys = set(its_counters0.keys())
@@ -739,7 +733,7 @@ def tts(counter_dict, test_size=1.0/3):
 
 ### OLDER DATA (without bridge)
 # sys.argv = ['', 'disabled/05-12@10', 'disabled/06-09@10', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
-# sys.argv = ['', 'disabled/wfpad', 'wfpad']
+# sys.argv = ['', 'disabled/wtf-pad', 'wtf-pad']
 # sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
 # sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
 
@@ -774,9 +768,9 @@ def tts(counter_dict, test_size=1.0/3):
 # 07-06
 # sys.argv = ['', 'disabled/bridge__2016-07-06', 'retro/bridge/30', 'retro/bridge/70', 'retro/bridge/50']
 # sys.argv = ['', 'disabled/bridge__2016-07-06', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/20']
-# sys.argv = ['', 'disabled/bridge__2016-07-06', 'wfpad/bridge__2016-07-05', 'tamaraw']
+# sys.argv = ['', 'disabled/bridge__2016-07-06', 'wtf-pad/bridge__2016-07-05', 'tamaraw']
 # sys.argv = ['', 'disabled/bridge__2016-07-06', '0.22/10aI', '0.22/5aI__2016-07-19', '0.22/5aII__2016-07-18', '0.22/2aI__2016-07-23']
-# sys.argv = ['', 'disabled/bridge__2016-07-06', '0.22/10aI__2016-07-08/', 'wfpad/bridge__2016-07-05', '0.22/30aI__2016-07-13/', '0.22/50aI__2016-07-13/']
+# sys.argv = ['', 'disabled/bridge__2016-07-06', '0.22/10aI__2016-07-08/', 'wtf-pad/bridge__2016-07-05', '0.22/30aI__2016-07-13/', '0.22/50aI__2016-07-13/']
 # 07-21
 # sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aII__2016-07-18/', '0.22/5aI__2016-07-19/', '0.22/10_maybe_aI__2016-07-23/', '0.22/2aI__2016-07-23/', '0.22/30aI__2016-07-25/', '0.22/50aI__2016-07-26/', '0.22/5aI__2016-07-25/', '0.15.3/bridge']
 # 08-14/15
@@ -808,7 +802,7 @@ def tts(counter_dict, test_size=1.0/3):
 
 ### TOP
 # sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aI__2016-07-19']
-# sys.argv = ['', 'disabled/bridge__2016-07-06', 'wfpad/bridge__2016-07-05']
+# sys.argv = ['', 'disabled/bridge__2016-07-06', 'wtf-pad/bridge__2016-07-05']
 
 # disabled/p-foreground-data/30/output-tcp
 
@@ -816,8 +810,17 @@ def tts(counter_dict, test_size=1.0/3):
 
 # if by hand: change to the right directory before importing
 # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
+doctest.testmod()
+
+def main(argv=sys.argv, with_svm=True, cumul=True):
+    '''loads stuff, triggers either open or closed-world eval'''
+    defenses = counter.for_defenses(argv[1:])
+    if len(defenses) == 1 and 'background' in defenses.values()[0]:
+        open_world(defenses[0])
+    else:
+        closed_world(defenses, argv[1], with_svm=with_svm, cumul=cumul)
+
 if __name__ == "__main__":
-    doctest.testmod()
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 
-    cross_test(sys.argv, with_svm=True) #, cumul=False)
+    main(sys.argv)
