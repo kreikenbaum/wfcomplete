@@ -156,6 +156,17 @@ def _binarize(y, keep=-1, default=0):
         else:
             yield default
 
+def _clf(**svm_params):
+    '''@return default classifier with additional params'''
+    return multiclass.OneVsRestClassifier(
+        svm.SVC(class_weight="balanced", **svm_params))
+
+def _proba_clf(other_clf):
+    '''@return ovr-svc with othere_clfs c and gamma'''
+    return _clf(C=other_clf.best_params_['estimator__C'],
+                gamma=other_clf.best_params_['estimator__gamma'],
+                probability=True)
+
 def _fit_grid(c, gamma, step, X, y, cv):
     '''@return appropriate gridsearchcv, fitted with X and y'''
     logging.info('c: %s, gamma: %s, step: %s', c, gamma, step)
@@ -413,6 +424,14 @@ def open_world(defense, num_jobs=JOBS_NUM):
     c = 2**15
     gamma = 2**-45
     clf = _my_grid(X_train, y_train, c=2**15, gamma=2**-45)
+    c2 = _proba_clf(clf)
+    # tpr, fpr, ... on test data # bl = lambda x: list(_binarize(x))
+    p_ = c2.fit(X_train, bl(y_train)).predict_proba(X_test)
+    fpr, tpr, thresholds = roc_curve(bl(y_test), p_[:, 1], 0)
+    # roc
+    plt.figure()
+    plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % auc(fpr, tpr))
+    plt.show()
 
 def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test

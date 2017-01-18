@@ -361,8 +361,8 @@
     :END:
     [[#wf1.0][Previous website fingerprinting attacks]] compared websites mostly
     by hand, relying only on object sizes; later approaches use some
-    machine-learning techniques, and most extract more features from
-    the traces.
+    machine-learning techniques, and most extract more/different
+    features than object sizes from the traces.
 
     This section describes the [[#trailbreakers][first approaches]] of machine-learning
     based website fingerprinting. This is followed by a short section
@@ -384,13 +384,15 @@
     Jaccard's classifier $s_{AB} = \frac{|A \cap B|}{|A \cup B|}$[fn::described
     f.ex.\space{}in \cite{ccsw09-fingerprinting}], while
     \cite{ccsw09-fingerprinting} use a Naïve Bayes Classifier with
-    various metrics and preprocessing. This yields high accuracy[fn::/accuracy/ is the percentage of correctly classified sites.]
-    against one-hop anonymizing proxies, but only 3% accuracy against
-    775 distinct pages retrieved via Tor\cite{tor-design}. As this is
-    still significantly better than random guessing, they
-    conjecture[fn:: \cite{Liberatore:2006} mention that they also did
-    some experiments which lead to this conjecture] that this result
-    could be improved with attacks specifically tailored to Tor.
+    various metrics and preprocessing. This yields high
+    accuracy[fn::/Accuracy/ is the percentage of correctly classified
+    sites, see [[#ml-measure][Measuring Performance]].] against one-hop anonymizing
+    proxies, but only 3% accuracy against 775 distinct URLs retrieved
+    via Tor\cite{tor-design}. As this is still significantly better
+    than random guessing, they conjecture[fn:: \cite{Liberatore:2006}
+    mention that they also did some experiments which lead to this
+    conjecture] that this result could be improved with attacks
+    specifically tailored to Tor.
 **** CHECK Machine Learning
      :PROPERTIES:
      :CUSTOM_ID: ml
@@ -398,8 +400,9 @@
      #+INDEX: machine learning
      The term /machine learning/ consists of the two parts "machine"
      and "learning". In this context, machine refers to a computer, a
-     /von-Neumann-machine/. Learning here means to improve prediction
-     given training data. In the words of Tom
+     /von-Neumann-machine/\cite[sec.2.1.1]{malte}. Learning here means
+     to improve prediction given training data
+     \cite[sec.1.4.0]{duda}. In the words of Tom
      Mitchell\cite[sec.1.1]{mitchell}
      #+BEGIN_QUOTE
 A computer program is said to *learn* from experience /E/ with
@@ -408,20 +411,18 @@ its performance at tasks in /T/, as measured by /P/, improves with
 experience /E/.
      #+END_QUOTE
 
-     There are roughly three steps to website fingerprinting:
-     preprocessing, feature extraction and classification[fn::German
-     literature, e.g. \cite{meffert}, adds an additional
-     /Merkmalsreduktion/ (feature reduction) part after
-     /Merkmalsextraktion/ (feature extraction).]
+     There are roughly three steps to machine learning: [[#ml-preprocess][preprocessing]],
+     [[#ml-features][feature extraction]] and [[#ml-class][classification]][fn::German literature,
+     e.g. \cite{meffert}, adds an additional /Merkmalsreduktion/
+     (feature reduction) part after /Merkmalsextraktion/ (feature
+     extraction).] The first standardizes and cleans input data, the
+     second transforms the raw input data --- in our case, website
+     retrieval traces[fn::in =pcap= format] --- into characteristics
+     --- in our case, numbers for f.ex. the number of outgoing
+     packets. The third groups these characteristics into categories.
 
-     The former two transform the raw input data --- in our case,
-     website retrieval traces[fn::in =pcap= format] --- into
-     characteristics --- in our case, numbers for f.ex. the number of
-     outgoing packets. The latter groups these characteristics into
-     categories.
-
-     The following sections present these main parts of machine
-     learning: [[#ml-preprocess][preprocessing]], [[#ml-features][feature extraction]] and [[#ml-class][classification]].
+     A final section details [[#ml-measure][measures used to evaluate machine
+     learning performance]].
 ***** DANIEL Preprocessing
       :PROPERTIES:
       :CUSTOM_ID: ml-preprocess
@@ -438,8 +439,9 @@ experience /E/.
 
       The resultant intermediate data are tuples of =(packet size,
       timing)=, with positive/negative marking outgoing/incoming
-      packets respectively.[fn::positive/negative is dependent on
-      author, see [[#wf-original]]]
+      packets respectively.[fn::The assignment of positive/negative to
+      incoming and outgoing data is dependent on author, see section
+      [[#wf-original]].]
 ***** DANIEL Feature Extraction
       :PROPERTIES:
       :CUSTOM_ID: ml-features
@@ -475,6 +477,9 @@ experience /E/.
       such as [[*K-Nearest-Neighbor-Classifier][k-Nearest-Neighbors]] classify directly without an
       intermediary model.
 ***** CHECK Measuring Performance
+      :PROPERTIES:
+      :CUSTOM_ID: ml-measure
+      :END:
       #+INDEX: Accuracy (acc)
       #+INDEX: confusion matrix
       #+INDEX: False Positive Rate
@@ -955,7 +960,7 @@ experience /E/.
     WTF-PAD is built using Tor's pluggable transport\cite{tor-spec-pt}
     censorship avoidance layer. This has the advantage of not
     burdening the most stressed part of the network, the exit nodes.
-* EVA Methods [57%]
+* EVA Methods
   This chapter [[#motivation][motivates briefly this thesis' aim]], then [[#design][describes
   conceptually the design for the generation of cover traffic]].
 ** DANIEL Motivation
@@ -997,7 +1002,7 @@ experience /E/.
     level, as a whistleblower might need more anonymity protection
     than Jane Doe who just reads the latest news, possibly censored in
     her country.
-* DANIEL Results and Evaluation [38%]                               :results:
+* DANIEL Results and Evaluation [45%]                               :results:
   The following sections describe [[#setup][how data was collected and
   analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
   [[#eval-defense][various defenses]].
@@ -1510,9 +1515,9 @@ experience /E/.
     The following sections evaluate the addon's protection from
     website fingerprinting. The addon branches[fn::as described in [[*How to Generate Cover Traffic][How
     to Generate Cover Traffic]]] are each evaluated: first [[#results-flavours][the latest
-    =main= addon's flavours]], then the [[#results-simple][=simple=]] and [[#results-retro][=retro=]] versions,
-    finally [[#eval-bursts][the addition of bursts at the traffic end]]; the last
-    section provides [[#eval-summary][a summary description of which
+    =main= addon and its different flavours]], then the [[#results-simple][=simple=]] and
+    [[#results-retro][=retro=]] versions, finally [[#eval-bursts][the addition of bursts at the traffic
+    end]]; the last section provides [[#eval-summary][a summary description of which
     version provides the highest accuracy decrease per overhead]].
     provided.
 **** DANIEL Main Add-on Flavours
@@ -1765,7 +1770,7 @@ experience /E/.
 **** aliexpress.com
       - https of akamai
       - td: check with recapture both
-** DANIEL Design and Implementation [9/18]
+** MOVE back to [[*Methods][Methods]] DANIEL Design and Implementation [10/16]
    :PROPERTIES:
    :CUSTOM_ID: design
    :END:
@@ -1846,10 +1851,13 @@ experience /E/.
     Providing an accurate estimate of embedded objects /per web page/
     would be [[#future-work][future work]].
 *** DANIEL Why HTTP-shaped Cover Traffic
+    :PROPERTIES:
+    :CUSTOM_ID: design-whyhttp
+    :END:
     HTTP-shaped cover traffic might prove more effective, as this
     would make it harder to separate cover and real traffic. In
     addition, it works at the layer where the problem
-    originates[fn::For a treatment of /separation of concerns/,
+    originates[fn::For a treatment of /separation of layers/,
     \cite[ch.1.7]{DBLP:books/daglib/0001977} is recommended], as it
     mimics the HTTP-specific request-response interaction.
 
@@ -1949,7 +1957,7 @@ experience /E/.
        visited page sizes were saved, an adversary could not safely
        detemine that pages were visited due to the Bloom Filter's
        false positive errors.
-***** CHECK Choice: How to Set Cover Traffic Target Values
+***** EVA Choice: How to Set Cover Traffic Target Values
       #+INDEX: I
       #+INDEX: flavour!I
       #+INDEX: II
@@ -1997,11 +2005,11 @@ experience /E/.
      :CUSTOM_ID: retro
      :END:
      The main add-on versions reached overheads as low as 20%, but
-     only rarely lower. To achieve minimal overhead, the change from
-     [[#versions][version]] =0.20= to =0.21= was retroactively applied to version
-     =0.15.3=, with the resulting version named =retro=. The =retro=
-     version remembers negative request sizes, and randomly subtracts
-     them for further requests.
+     only rarely lower. To achieve minimal overhead, the change set
+     from [[#versions][version]] =0.20= to =0.21= was retroactively applied to
+     the[fn::low-overhead] version =0.15.3=, with the resulting
+     version named =retro=. The =retro= version remembers negative
+     request sizes, and randomly subtracts them for further requests.
 
      De facto, this version sends a HTML-size-distributed request for
      each request. From the target size, the page size is
@@ -2012,28 +2020,38 @@ experience /E/.
      :PROPERTIES:
      :CUSTOM_ID: methods-bursts
      :END:
-     As of both \cite[sec.5.C]{oakland2012-peekaboo}, and
+     As of \cite[sec.5.C]{oakland2012-peekaboo},
      \cite[sec.4.2]{effective}, \cite{kfingerprint}, and
      \cite{panchenko}, the number of bursts[fn::see [[#features][Website
      Fingerprinting Features]]] of a trace are a effective feature for
      recognition. While this thesis' defense might well simulate HTTP
-     traffic, its approach did not explicitly include the altering of
-     this metric. To test the effectiveness of added bursts at the end
-     of retrieval, an additional option was implemented.
-
-     This was implemented for the =simple= and =main= versions. For
-     implementation details, see section [[#version-0.17]].
-**** WRITE Why as an add-on
+     traffic, its approach did not explicitly include altering this
+     metric. To test the effectiveness of added bursts at the end of
+     retrieval, an additional option was implemented for the =simple=
+     and =main= versions. For implementation details, see appendix
+     [[#version-0.17]].
+**** CHECK Why as an add-on
      Web browsing is the (main) target of website
      fingerprinting. Instead of burdening all of Tor with extra bells
      and whistles, this solves this deanonymization problem at the
-     application layer, where its origins are. (Separation of
-     Concerns)
-    - firefox browser extension / add-on
-      - add-on sdk
-      - maybe mention next generation
-    - implementation
-      - classes in appendix
+     application layer, where its origins are[fn::see also section [[#design-whyhttp][Why
+     HTTP-shaped Cover Traffic]]].
+
+     Tor's users have different threat levels, and different concerns,
+     with Website Fingerprinting. A whistleblower should be much more
+     concerned than f.ex. law enforcement, or businesses which
+     investigate competitors[fn::as in both of these cases, the first
+     hop, where website fingerprinting attacks, should be secured].
+
+     Thus, not everyone needs website fingerprinting defenses, and the
+     necessary overhead they bring along. Mozilla Firefox offers ways
+     to enhance their browser via add-ons, of which browser extensions
+     are a type.[fn::the others are themes, and plug-ins] These can be
+     enabled on-demand on an individual case-by-case basis. The
+     defense's functionality is kept separate from the main code base,
+     which eases ease-of-use, configurability, and maintenance.
+
+     The implementation is partly detailed in appendix [[*modules]].
 *** WRITE Server
     - where there are several possibilities how to generate cover
       traffic,
@@ -2220,23 +2238,14 @@ set, see [[#split][split]].
   #+INCLUDE: "data/results/alternatives.org::#outlier_removal_et" :only-contents t
   - very similar to SVM, see section [[#wf-outlier-removal]] (but lower
     accuracy here)
-* WRITE Versions
+* KEYWORDS Addon-Versions
   :PROPERTIES:
   :CUSTOM_ID: versions
   :END:
-** WRITE 0.17 bursts at end - bursts on addon site load finish
+** CHECK 0.17 bursts at end - bursts on addon site load finish
    :PROPERTIES:
    :CUSTOM_ID: version-0.17
    :END:
-   - wang: burst distinguishing feature left with
-     w/t\cite{wang2015walkie}
-   - solution: count how many embedded, add those as bursts at the
-     end
-
-   One characteristic which identified sites well as per Dyer et
-   al.\cite{oakland2012-peekaboo} and Wang and Goldberg
-   \cite{wang2015walkie} is the number of bursts.
-
    As the addon would conceptually only increase burst sizes, and not
    alter their number, this should be covered as well. To address this,
    the per-site traffic module [[CoverTraffic]] remembers the number of
@@ -2940,6 +2949,9 @@ set, see [[#split][split]].
   removing extra characters via =tr=), and =gnuplot= s it to a png
   file with the name of the trace file as prefix.
 * KEYWORDS modules [1/15]
+  :PROPERTIES:
+  :CUSTOM_ID: addon-modules
+  :END:
     #+CAPTION: Modules/Classes of the Addon
     #+ATTR_LATEX: :float nil :width 0.5\textwidth
     [[./pictures/model.eps]]
