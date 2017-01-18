@@ -960,7 +960,7 @@ experience /E/.
     WTF-PAD is built using Tor's pluggable transport\cite{tor-spec-pt}
     censorship avoidance layer. This has the advantage of not
     burdening the most stressed part of the network, the exit nodes.
-* EVA Methods
+* EVA Methods [68%]
   This chapter [[#motivation][motivates briefly this thesis' aim]], then [[#design][describes
   conceptually the design for the generation of cover traffic]].
 ** DANIEL Motivation
@@ -1002,7 +1002,305 @@ experience /E/.
     level, as a whistleblower might need more anonymity protection
     than Jane Doe who just reads the latest news, possibly censored in
     her country.
-* DANIEL Results and Evaluation [45%]                               :results:
+** DANIEL Design and Implementation [10/16]
+   :PROPERTIES:
+   :CUSTOM_ID: design
+   :END:
+   This thesis' aim is to create cover traffic to hinder website
+   fingerprinting[fn::and, coincidentally, correlation attacks]. The
+   question is how, and how much traffic to create.
+
+   All of website fingerprinting is an application-layer
+   problem[fn::for an introduction to protocol layering etc, see
+   f.ex.\space{}\cite[ch.1.7]{DBLP:books/daglib/0001977}]. It exploits HTTP
+   characteristics, so a same-level application-layer solution would
+   be to generate additional HTTP-shaped traffic to make the
+   classifier misclassify.
+
+   When a new webpage is opened by the user, the browser creates a
+   sequence of HTTP requests as detailed above (see [[#http]]). As of the
+   [[#HTTP traffic model][HTTP traffic model]], embedded elements have a different size
+   distribution than the HTML document, but both come from
+   (heavy-tailed) lognormal distributions.
+
+   The next sections describe in detail how the add-on distinguishes
+   initial traffic from embedded objects, how to create traffic and
+   describe different versions of the add-on.
+*** DANIEL HTTP traffic model
+    :PROPERTIES:
+    :CUSTOM_ID: HTTP traffic model
+    :END:
+    \cite{newtrafficmodel} models web traffic via statistical
+    distributions.
+
+    The size of both HTML documents and embedded objects is each
+    modeled by truncated lognormal distributions. The number of
+    embedded objects is modeled by a truncated gamma function. See
+    illustration in Figure \ref{distribution}. They offer further
+    parameters to fully model web browsing.
+
+    #+BEGIN_LaTeX
+    \begin{figure}[htb]
+      \begin{adjustbox}{max width=\textwidth}
+        \input{pictures/fig_html_embedded.pgf}
+      \end{adjustbox}
+      \caption{Distribution of sizes for the HTTP traffic model}
+      \label{distribution}
+    \end{figure}
+    #+END_LaTeX
+
+    These distributions have two drawbacks. Firstly, web traffic has
+    evolved since 2007, when the paper was written, as documented for
+    total web page size in \cite{web-is-doom}. Secondly, as mentioned
+    in \cite{newtrafficmodel}, the number of embedded objects are
+    computed per each HTML page, including frames, and possibly
+    including redirects. How the number of embedded elements is used
+    in this thesis differs from how it should be used, see next
+    section.
+*** DANIEL How to Distinguish HTML and Embedded Objects
+    :PROPERTIES:
+    :CUSTOM_ID: distinguish_HTML_embedded
+    :END:
+    To tune traffic generation, it makes sense to distinguish between
+    HTML and other requests. This is usually done via HTTP's
+    =content-type= header\cite[sec.14.18]{rfc2068}, yet that is only
+    accessible when the content has been received, whereas this
+    defense needs to distinguish at the time it is requested.
+
+    World Wide Web URLs increasingly move away from including a file
+    type suffix\cite{cooluri}, so that distinguishing HTTP elements at
+    request time by just looking at the URL is not recommended. The solution
+    in this add-on is to consider the first request to a host as the
+    HTML page, while subsequent requests while the page is being
+    loaded[fn::until the body's =load=
+    event\cite[ch.1.6.5]{dom2-events}] are considered requests for
+    embedded objects.
+
+    This accurately distinguishes between start of a page load and the
+    loading of its embedded objects, but a drawback is that is does
+    not recongnize embedded iframes etc. as HTML.
+
+    Providing an accurate estimate of embedded objects /per web page/
+    would be [[#future-work][future work]].
+*** DANIEL Why HTTP-shaped Cover Traffic
+    :PROPERTIES:
+    :CUSTOM_ID: design-whyhttp
+    :END:
+    HTTP-shaped cover traffic might prove more effective, as this
+    would make it harder to separate cover and real traffic. In
+    addition, it works at the layer where the problem
+    originates[fn::For a treatment of /separation of layers/,
+    \cite[ch.1.7]{DBLP:books/daglib/0001977} is recommended], as it
+    mimics the HTTP-specific request-response interaction.
+
+
+    There are several approaches on how to generate HTTP-shaped
+    traffic. The naïve way, using HTTP dummy
+    traffic[fn::a.k.a. loading another page in the background
+    a.k.a. decoy pages a.k.a. multi-tab browsing], has been evaluated
+    several times (\cite{ccs2012-fingerprinting}, \cite{a-systematic},
+    \cite{kfingerprint}, \cite{effective}, \cite{panchenko},
+    \cite{wtfpad}) and is surprisingly effective for all its
+    simplicity, albeit at a high overhead.
+*** DANIEL How to Generate Cover Traffic
+    The cover add-on defends against website fingerprinting by
+    injecting artificial cover traffic into the communication.
+
+    When the user requests a page, be it by clicking on a hyperlink, a
+    bookmark, or entering an address via the location bar, the add-on
+    always creates additional traffic simultaneous to the first HTTP
+    request.
+
+    Several versions, and flavours, were evaluated. The next sections
+    describe the main add-on branch with its configuration
+    possibilities, the simple version, and an older version with very
+    low, but non-adjustable overhead. Version evolution is described
+    in appendix [[#versions]].
+**** DANIEL Add-on Version: Main
+     :PROPERTIES:
+     :CUSTOM_ID: addon_main
+     :END:
+     The main version works with the retrieved page's[fn::known or
+     guessed, see [[#cache_size][description]]] HTML size, and number of embedded
+     objects, adding to these to reach target values.
+
+     At the web page's first HTML request, a /target HTML size/ is
+     determined, the HTML size of the current request is subtracted
+     from the target size and a request for the remaining bytes is
+     sent[fn::or a token amount if too small].
+
+     At the same time, a /target number of embedded requests/ is
+     determined. From this and the page's number of embedded
+     items[fn::once again, known or guessed, see [[#cache_size][description]]], the
+     probability of embedded requests is computed. For each request to
+     embedded objects, this is the probability that
+     embedded-object-sized dummy data is requested.
+***** DANIEL Choice: Cache (approximate) sizes using Bloom Filters
+      :PROPERTIES:
+      :CUSTOM_ID: cache_size
+      :END:
+      #+INDEX: a
+      #+INDEX: flavour!a
+      #+INDEX: b
+      #+INDEX: flavour!b
+      A webpage is modeled by its HTML size and its number of embedded
+      objects. In a closed world[fn::if the client can only browse to
+      a limited number of URLs], it is possible to cache all
+      sizes[fn::See appendices [[#find sizes of HTML-documents]] and
+      [[#number_embedded]] for how the sizes were determined]
+      beforehand. If a size is unknown, random variates from the
+      [[#HTTP traffic model][HTTP traffic model]] are used.[fn:: The
+      size of each embedded dummy object is always drawn from the HTTP
+      traffic model.]
+
+      Using known sizes is called the /cache/ flavour and denoted by
+      =a= in tables etc. In the /nocache/ flavour, denoted by =b=,
+      sizes are always guessed.
+
+      To cache sizes, an approximate-size data structure based on
+      Bloom filters is used.
+****** DANIEL Bloom Filter
+       Bloom filters\cite{Bloom70space/timetrade-offs}[fn::
+       \cite{Broder02networkapplications} contains a Bloom filter
+       overview with applications] are a stochastic fixed-width data
+       structure to test membership in a set. They work similarly to
+       hash-coding[fn::see \cite{Bloom70space/timetrade-offs} for
+       hash-coding. Shortly: elements are hashed and certain places
+       is checked for whether it contains this hash.], yet require
+       significantly less space, which they trade for a small /error
+       rate/[fn::This error rate is dependent on the size of the Bloom
+       filter and the number of inserted elements.]: they work
+       flawlessly if an element is inside the set, yet might wrongly
+       state that an element is inside, when it is not.
+****** DANIEL Application: Bloom Sort
+       Sizes can be saved approximately based on Bloom filters: they
+       are sorted into bins based on the target distribution. For each
+       bin, a Bloom filter is created. An element is added to this
+       filter if its size is inside the bin.
+
+       To approximate the size of an element, all filters are
+       checked. If one filter reports containment, its size is
+       chosen. If zero report containment, the size is not known; if
+       two or more report containment, it is saved wrongly. In the
+       latter cases, the default distribution is used.[fn::See [[#bloom-sort]]
+       for implementation details.]
+
+       This data structure has the additional advantage that, even if
+       visited page sizes were saved, an adversary could not safely
+       detemine that pages were visited due to the Bloom Filter's
+       false positive errors.
+***** EVA Choice: How to Set Cover Traffic Target Values
+      #+INDEX: I
+      #+INDEX: flavour!I
+      #+INDEX: II
+      #+INDEX: flavour!II
+      Once the /page's values/ are thus determined[fn::known or
+      guessed, see [[#cache_size][description]]], there are two tactics on how to set
+      /target/ values.
+
+      One tactic (=I=) is to group the webpage sizes into bins and to
+      set the bin border as the target value, as all webpages sizes in
+      the bin must be less than or equal the border. This approach
+      approximates[fn::for response sizes] that taken by
+      \cite{effective} with the bins being equivalent to the anonymity
+      sets/partitions. As the biggest bin does not have a maximum
+      size, its median value is chosen.[fn:: The optimal size for the
+      biggest bin is a parameter that should be evaluated as well, see
+      [[#fw-addon]].]
+
+      The other tactic (=II=) is to have a single target distribution
+      from which values are sampled each time, the [[#HTTP traffic model][HTTP traffic
+      model]]. This is also the fallback approach if the web page's
+      values are not cached.
+
+      This leads to the following variations:
+
+      - /aI/: Bloom binning (=I=) with known sizes (=a=),
+      - /bI/: Bloom binning (=I=) with random sizes (=b=),
+      - /aII/: one target distribution (=II=) with original size from
+        Bloom (=a=), and
+      - /bII/: one target distribution (=II=) with random sizes (=b=).
+**** DANIEL Add-on Version: Simple
+     :PROPERTIES:
+     :CUSTOM_ID: simple
+     :END:
+     The main version had become quite complex for a Firefox extension
+     with more than 500 lines of code. A simplified\cite[ch.7.2]{xp}
+     algorithm triggers a HTML-sized[fn::times overhead] request at
+     the beginning, and an embedded-sized request with
+     overhead-related probability for each embedded object.
+
+     This halved the number of lines of code[fn::+simplified
+     debugging]. The version is called =simple=.
+**** CHECK Add-on Version: Retro
+     :PROPERTIES:
+     :CUSTOM_ID: retro
+     :END:
+     The main add-on versions reached overheads as low as 20%, but
+     only rarely lower. To achieve minimal overhead, the change set
+     from [[#versions][version]] =0.20= to =0.21= was retroactively applied to
+     the[fn::low-overhead] version =0.15.3=, with the resulting
+     version named =retro=. The =retro= version remembers negative
+     request sizes, and randomly subtracts them for further requests.
+
+     De facto, this version sends a HTML-size-distributed request for
+     each request. From the target size, the page size is
+     subtracted. This might yield a negative response target size,
+     which is remembered, and stochastically subtracted from further
+     requests.
+**** CHECK Bursts
+     :PROPERTIES:
+     :CUSTOM_ID: methods-bursts
+     :END:
+     As of \cite[sec.5.C]{oakland2012-peekaboo},
+     \cite[sec.4.2]{effective}, \cite{kfingerprint}, and
+     \cite{panchenko}, the number of bursts[fn::see [[#features][Website
+     Fingerprinting Features]]] of a trace are a effective feature for
+     recognition. While this thesis' defense might well simulate HTTP
+     traffic, its approach did not explicitly include altering this
+     metric. To test the effectiveness of added bursts at the end of
+     retrieval, an additional option was implemented for the =simple=
+     and =main= versions. For implementation details, see appendix
+     [[#version-0.17]].
+**** CHECK Why as an add-on
+     Web browsing is the (main) target of website
+     fingerprinting. Instead of burdening all of Tor with extra bells
+     and whistles, this solves this deanonymization problem at the
+     application layer, where its origins are[fn::see also section [[#design-whyhttp][Why
+     HTTP-shaped Cover Traffic]]].
+
+     Tor's users have different threat levels, and different concerns,
+     with Website Fingerprinting. A whistleblower should be much more
+     concerned than f.ex. law enforcement, or businesses which
+     investigate competitors[fn::as in both of these cases, the first
+     hop, where website fingerprinting attacks, should be secured].
+
+     Thus, not everyone needs website fingerprinting defenses, and the
+     necessary overhead they bring along. Mozilla Firefox offers ways
+     to enhance their browser via add-ons, of which browser extensions
+     are a type.[fn::the others are themes, and plug-ins] These can be
+     enabled on-demand on an individual case-by-case basis. The
+     defense's functionality is kept separate from the main code base,
+     which eases ease-of-use, configurability, and maintenance.
+
+     The implementation is partly detailed in appendix [[*modules]].
+*** WRITE Server
+    - where there are several possibilities how to generate cover
+      traffic,
+    - here: simplest: server, GET-query with size=bytes parameter
+      returns this many bytes random data
+    - later: .onion (link to related work)
+*** WRITE Related Work?
+    - Bloom paper
+    - network applications
+*** WAIT integrate into above
+    This approximation currently omits some possibly embedded
+    elements, f.ex.\space{}those embedded in css files and =style= tags via
+    the =@url= css-directive. It seems better for cover traffic to
+    slightly underestimate the number of embedded elements. This
+    might generate more traffic than strictly necessary, but here,
+    safe seems better than sorry.
+* DANIEL Results and Evaluation [38%]                               :results:
   The following sections describe [[#setup][how data was collected and
   analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
   [[#eval-defense][various defenses]].
@@ -1770,304 +2068,6 @@ experience /E/.
 **** aliexpress.com
       - https of akamai
       - td: check with recapture both
-** MOVE back to [[*Methods][Methods]] DANIEL Design and Implementation [10/16]
-   :PROPERTIES:
-   :CUSTOM_ID: design
-   :END:
-   This thesis' aim is to create cover traffic to hinder website
-   fingerprinting[fn::and, coincidentally, correlation attacks]. The
-   question is how, and how much traffic to create.
-
-   All of website fingerprinting is an application-layer
-   problem[fn::for an introduction to protocol layering etc, see
-   f.ex.\space{}\cite[ch.1.7]{DBLP:books/daglib/0001977}]. It exploits HTTP
-   characteristics, so a same-level application-layer solution would
-   be to generate additional HTTP-shaped traffic to make the
-   classifier misclassify.
-
-   When a new webpage is opened by the user, the browser creates a
-   sequence of HTTP requests as detailed above (see [[#http]]). As of the
-   [[#HTTP traffic model][HTTP traffic model]], embedded elements have a different size
-   distribution than the HTML document, but both come from
-   (heavy-tailed) lognormal distributions.
-
-   The next sections describe in detail how the add-on distinguishes
-   initial traffic from embedded objects, how to create traffic and
-   describe different versions of the add-on.
-*** DANIEL HTTP traffic model
-    :PROPERTIES:
-    :CUSTOM_ID: HTTP traffic model
-    :END:
-    \cite{newtrafficmodel} models web traffic via statistical
-    distributions.
-
-    The size of both HTML documents and embedded objects is each
-    modeled by truncated lognormal distributions. The number of
-    embedded objects is modeled by a truncated gamma function. See
-    illustration in Figure \ref{distribution}. They offer further
-    parameters to fully model web browsing.
-
-    #+BEGIN_LaTeX
-    \begin{figure}[htb]
-      \begin{adjustbox}{max width=\textwidth}
-        \input{pictures/fig_html_embedded.pgf}
-      \end{adjustbox}
-      \caption{Distribution of sizes for the HTTP traffic model}
-      \label{distribution}
-    \end{figure}
-    #+END_LaTeX
-
-    These distributions have two drawbacks. Firstly, web traffic has
-    evolved since 2007, when the paper was written, as documented for
-    total web page size in \cite{web-is-doom}. Secondly, as mentioned
-    in \cite{newtrafficmodel}, the number of embedded objects are
-    computed per each HTML page, including frames, and possibly
-    including redirects. How the number of embedded elements is used
-    in this thesis differs from how it should be used, see next
-    section.
-*** DANIEL How to Distinguish HTML and Embedded Objects
-    :PROPERTIES:
-    :CUSTOM_ID: distinguish_HTML_embedded
-    :END:
-    To tune traffic generation, it makes sense to distinguish between
-    HTML and other requests. This is usually done via HTTP's
-    =content-type= header\cite[sec.14.18]{rfc2068}, yet that is only
-    accessible when the content has been received, whereas this
-    defense needs to distinguish at the time it is requested.
-
-    World Wide Web URLs increasingly move away from including a file
-    type suffix\cite{cooluri}, so that distinguishing HTTP elements at
-    request time by just looking at the URL is not recommended. The solution
-    in this add-on is to consider the first request to a host as the
-    HTML page, while subsequent requests while the page is being
-    loaded[fn::until the body's =load=
-    event\cite[ch.1.6.5]{dom2-events}] are considered requests for
-    embedded objects.
-
-    This accurately distinguishes between start of a page load and the
-    loading of its embedded objects, but a drawback is that is does
-    not recongnize embedded iframes etc. as HTML.
-
-    Providing an accurate estimate of embedded objects /per web page/
-    would be [[#future-work][future work]].
-*** DANIEL Why HTTP-shaped Cover Traffic
-    :PROPERTIES:
-    :CUSTOM_ID: design-whyhttp
-    :END:
-    HTTP-shaped cover traffic might prove more effective, as this
-    would make it harder to separate cover and real traffic. In
-    addition, it works at the layer where the problem
-    originates[fn::For a treatment of /separation of layers/,
-    \cite[ch.1.7]{DBLP:books/daglib/0001977} is recommended], as it
-    mimics the HTTP-specific request-response interaction.
-
-
-    There are several approaches on how to generate HTTP-shaped
-    traffic. The naïve way, using HTTP dummy
-    traffic[fn::a.k.a. loading another page in the background
-    a.k.a. decoy pages a.k.a. multi-tab browsing], has been evaluated
-    several times (\cite{ccs2012-fingerprinting}, \cite{a-systematic},
-    \cite{kfingerprint}, \cite{effective}, \cite{panchenko},
-    \cite{wtfpad}) and is surprisingly effective for all its
-    simplicity, albeit at a high overhead.
-*** DANIEL How to Generate Cover Traffic
-    The cover add-on defends against website fingerprinting by
-    injecting artificial cover traffic into the communication.
-
-    When the user requests a page, be it by clicking on a hyperlink, a
-    bookmark, or entering an address via the location bar, the add-on
-    always creates additional traffic simultaneous to the first HTTP
-    request.
-
-    Several versions, and flavours, were evaluated. The next sections
-    describe the main add-on branch with its configuration
-    possibilities, the simple version, and an older version with very
-    low, but non-adjustable overhead. Version evolution is described
-    in appendix [[#versions]].
-**** DANIEL Add-on Version: Main
-     :PROPERTIES:
-     :CUSTOM_ID: addon_main
-     :END:
-     The main version works with the retrieved page's[fn::known or
-     guessed, see [[#cache_size][description]]] HTML size, and number of embedded
-     objects, adding to these to reach target values.
-
-     At the web page's first HTML request, a /target HTML size/ is
-     determined, the HTML size of the current request is subtracted
-     from the target size and a request for the remaining bytes is
-     sent[fn::or a token amount if too small].
-
-     At the same time, a /target number of embedded requests/ is
-     determined. From this and the page's number of embedded
-     items[fn::once again, known or guessed, see [[#cache_size][description]]], the
-     probability of embedded requests is computed. For each request to
-     embedded objects, this is the probability that
-     embedded-object-sized dummy data is requested.
-***** DANIEL Choice: Cache (approximate) sizes using Bloom Filters
-      :PROPERTIES:
-      :CUSTOM_ID: cache_size
-      :END:
-      #+INDEX: a
-      #+INDEX: flavour!a
-      #+INDEX: b
-      #+INDEX: flavour!b
-      A webpage is modeled by its HTML size and its number of embedded
-      objects. In a closed world[fn::if the client can only browse to
-      a limited number of URLs], it is possible to cache all
-      sizes[fn::See appendices [[#find sizes of HTML-documents]] and
-      [[#number_embedded]] for how the sizes were determined]
-      beforehand. If a size is unknown, random variates from the
-      [[#HTTP traffic model][HTTP traffic model]] are used.[fn:: The
-      size of each embedded dummy object is always drawn from the HTTP
-      traffic model.]
-
-      Using known sizes is called the /cache/ flavour and denoted by
-      =a= in tables etc. In the /nocache/ flavour, denoted by =b=,
-      sizes are always guessed.
-
-      To cache sizes, an approximate-size data structure based on
-      Bloom filters is used.
-****** DANIEL Bloom Filter
-       Bloom filters\cite{Bloom70space/timetrade-offs}[fn::
-       \cite{Broder02networkapplications} contains a Bloom filter
-       overview with applications] are a stochastic fixed-width data
-       structure to test membership in a set. They work similarly to
-       hash-coding[fn::see \cite{Bloom70space/timetrade-offs} for
-       hash-coding. Shortly: elements are hashed and certain places
-       is checked for whether it contains this hash.], yet require
-       significantly less space, which they trade for a small /error
-       rate/[fn::This error rate is dependent on the size of the Bloom
-       filter and the number of inserted elements.]: they work
-       flawlessly if an element is inside the set, yet might wrongly
-       state that an element is inside, when it is not.
-****** DANIEL Application: Bloom Sort
-       Sizes can be saved approximately based on Bloom filters: they
-       are sorted into bins based on the target distribution. For each
-       bin, a Bloom filter is created. An element is added to this
-       filter if its size is inside the bin.
-
-       To approximate the size of an element, all filters are
-       checked. If one filter reports containment, its size is
-       chosen. If zero report containment, the size is not known; if
-       two or more report containment, it is saved wrongly. In the
-       latter cases, the default distribution is used.[fn::See [[#bloom-sort]]
-       for implementation details.]
-
-       This data structure has the additional advantage that, even if
-       visited page sizes were saved, an adversary could not safely
-       detemine that pages were visited due to the Bloom Filter's
-       false positive errors.
-***** EVA Choice: How to Set Cover Traffic Target Values
-      #+INDEX: I
-      #+INDEX: flavour!I
-      #+INDEX: II
-      #+INDEX: flavour!II
-      Once the /page's values/ are thus determined[fn::known or
-      guessed, see [[#cache_size][description]]], there are two tactics on how to set
-      /target/ values.
-
-      One tactic (=I=) is to group the webpage sizes into bins and to
-      set the bin border as the target value, as all webpages sizes in
-      the bin must be less than or equal the border. This approach
-      approximates[fn::for response sizes] that taken by
-      \cite{effective} with the bins being equivalent to the anonymity
-      sets/partitions. As the biggest bin does not have a maximum
-      size, its median value is chosen.[fn:: The optimal size for the
-      biggest bin is a parameter that should be evaluated as well, see
-      [[#fw-addon]].]
-
-      The other tactic (=II=) is to have a single target distribution
-      from which values are sampled each time, the [[#HTTP traffic model][HTTP traffic
-      model]]. This is also the fallback approach if the web page's
-      values are not cached.
-
-      This leads to the following variations:
-
-      - /aI/: Bloom binning (=I=) with known sizes (=a=),
-      - /bI/: Bloom binning (=I=) with random sizes (=b=),
-      - /aII/: one target distribution (=II=) with original size from
-        Bloom (=a=), and
-      - /bII/: one target distribution (=II=) with random sizes (=b=).
-**** DANIEL Add-on Version: Simple
-     :PROPERTIES:
-     :CUSTOM_ID: simple
-     :END:
-     The main version had become quite complex for a Firefox extension
-     with more than 500 lines of code. A simplified\cite[ch.7.2]{xp}
-     algorithm triggers a HTML-sized[fn::times overhead] request at
-     the beginning, and an embedded-sized request with
-     overhead-related probability for each embedded object.
-
-     This halved the number of lines of code[fn::+simplified
-     debugging]. The version is called =simple=.
-**** CHECK Add-on Version: Retro
-     :PROPERTIES:
-     :CUSTOM_ID: retro
-     :END:
-     The main add-on versions reached overheads as low as 20%, but
-     only rarely lower. To achieve minimal overhead, the change set
-     from [[#versions][version]] =0.20= to =0.21= was retroactively applied to
-     the[fn::low-overhead] version =0.15.3=, with the resulting
-     version named =retro=. The =retro= version remembers negative
-     request sizes, and randomly subtracts them for further requests.
-
-     De facto, this version sends a HTML-size-distributed request for
-     each request. From the target size, the page size is
-     subtracted. This might yield a negative response target size,
-     which is remembered, and stochastically subtracted from further
-     requests.
-**** CHECK Bursts
-     :PROPERTIES:
-     :CUSTOM_ID: methods-bursts
-     :END:
-     As of \cite[sec.5.C]{oakland2012-peekaboo},
-     \cite[sec.4.2]{effective}, \cite{kfingerprint}, and
-     \cite{panchenko}, the number of bursts[fn::see [[#features][Website
-     Fingerprinting Features]]] of a trace are a effective feature for
-     recognition. While this thesis' defense might well simulate HTTP
-     traffic, its approach did not explicitly include altering this
-     metric. To test the effectiveness of added bursts at the end of
-     retrieval, an additional option was implemented for the =simple=
-     and =main= versions. For implementation details, see appendix
-     [[#version-0.17]].
-**** CHECK Why as an add-on
-     Web browsing is the (main) target of website
-     fingerprinting. Instead of burdening all of Tor with extra bells
-     and whistles, this solves this deanonymization problem at the
-     application layer, where its origins are[fn::see also section [[#design-whyhttp][Why
-     HTTP-shaped Cover Traffic]]].
-
-     Tor's users have different threat levels, and different concerns,
-     with Website Fingerprinting. A whistleblower should be much more
-     concerned than f.ex. law enforcement, or businesses which
-     investigate competitors[fn::as in both of these cases, the first
-     hop, where website fingerprinting attacks, should be secured].
-
-     Thus, not everyone needs website fingerprinting defenses, and the
-     necessary overhead they bring along. Mozilla Firefox offers ways
-     to enhance their browser via add-ons, of which browser extensions
-     are a type.[fn::the others are themes, and plug-ins] These can be
-     enabled on-demand on an individual case-by-case basis. The
-     defense's functionality is kept separate from the main code base,
-     which eases ease-of-use, configurability, and maintenance.
-
-     The implementation is partly detailed in appendix [[*modules]].
-*** WRITE Server
-    - where there are several possibilities how to generate cover
-      traffic,
-    - here: simplest: server, GET-query with size=bytes parameter
-      returns this many bytes random data
-    - later: .onion (link to related work)
-*** WRITE Related Work?
-    - Bloom paper
-    - network applications
-*** WAIT integrate into above
-    This approximation currently omits some possibly embedded
-    elements, f.ex.\space{}those embedded in css files and =style= tags via
-    the =@url= css-directive. It seems better for cover traffic to
-    slightly underestimate the number of embedded elements. This
-    might generate more traffic than strictly necessary, but here,
-    safe seems better than sorry.
 * WAIT Conclusion
 ** WAIT Introduction
 ** WAIT Discussion
