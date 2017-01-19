@@ -14,9 +14,9 @@ import time
 #from sklearn.cross_validation import train_test_split
 #from sklearn.preprocessing import label_binarize
 from sklearn.metrics import roc_curve, auc
-import matplotlib.pyplot as plt
 
 import counter
+import plot_data
 
 JOBS_NUM = -3 # 1. maybe -4 for herrmann (2 == -3) used up all memory
 LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
@@ -145,6 +145,10 @@ def _misclassification_rates(train, test, clf=GOOD[0]):
     X2 = _scale(X2, clf)
     return _predict_percentages(_class_predictions(y2, clf.predict(X2)),
                                 _gen_url_list(y2, y2d))
+
+def lb(*args, **kwargs):
+    '''facade for _binarize'''
+    return list(_binarize(*args, **kwargs))
 
 def _binarize(y, keep=-1, default=0):
     '''binarize data in y: transform all values to =default= except =keep=
@@ -426,12 +430,11 @@ def open_world(defense, num_jobs=JOBS_NUM):
     clf = _my_grid(X_train, y_train, c=2**15, gamma=2**-45)
     c2 = _proba_clf(clf)
     # tpr, fpr, ... on test data # bl = lambda x: list(_binarize(x))
-    p_ = c2.fit(X_train, bl(y_train)).predict_proba(X_test)
-    fpr, tpr, thresholds = roc_curve(bl(y_test), p_[:, 1], 0)
-    # roc
-    plt.figure()
-    plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % auc(fpr, tpr))
-    plt.show()
+    p_ = c2.fit(X_train, list(_binarize(y_train))).predict_proba(X_test)
+    fpr, tpr, thresholds = roc_curve(list(_binarize(y_test)), p_[:, 1], 0)
+    plot = plot_data.roc(fpr, tpr)
+    # td: show/save/... output result
+    # tdmb: daniel: improve result with way more fpr vs much less tpr (auc0.01)
 
 def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test

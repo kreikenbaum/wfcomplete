@@ -2,11 +2,13 @@
 
 - file with org table, 
 - list of counters'''
-import Gnuplot
-
-import csv
 import collections
+import csv
+import matplotlib.pyplot as plt
 import numpy as np
+from sklearn import metrics
+
+import Gnuplot
 
 def _color_cycle(steps=6):
     '''yields steps of different colors'''
@@ -128,14 +130,6 @@ def counters(counter_list, gnuplotter=None, label=None, color="blue"):
         gnuplotter.replot(d)
     return gnuplotter
 
-def many_defenses(places, defs=['simple1/10', '22.0/10aI'],
-                  urls=['google.com', 'netflix.com', 'tumblr.com']):
-    for d in defs:
-        for u in urls:
-            tmp_defs = ['disabled/bridge']; tmp_defs.append(d)
-            g = defenses(places, tmp_defs, u)
-            save(g, "{}__{}_vs_disabled".format(u, d.replace('/', '@')))
-
 def defenses(places, defs=['disabled/bridge', 'simple1/10'], url='google.com'):
     '''compares defenses at url
 
@@ -153,6 +147,28 @@ def defenses(places, defs=['disabled/bridge', 'simple1/10'], url='google.com'):
     g.title('CUMUL-traces on {} after defenses'.format(url))
     g.replot()
     return g
+
+def many_defenses(places, defs=['simple1/10', '22.0/10aI'],
+                  urls=['google.com', 'netflix.com', 'tumblr.com']):
+    for d in defs:
+        for u in urls:
+            tmp_defs = ['disabled/bridge']; tmp_defs.append(d)
+            g = defenses(places, tmp_defs, u)
+            save(g, "{}__{}_vs_disabled".format(u, d.replace('/', '@')))
+
+def roc(fpr, tpr):
+    '''@return plot object with roc_curve done, use =.show()= to
+display, and =.save(...)= to save'''
+    out = plt.figure()
+    plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % metrics.auc(fpr, tpr))
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver operating characteristic example')
+    plt.legend(loc="lower right")
+    return out
 
 def save(gnuplotter, prefix='plot', type_='eps'):
     '''saves plot to dated file'''
