@@ -964,7 +964,7 @@ experience /E/.
     WTF-PAD is built using Tor's pluggable transport\cite{tor-spec-pt}
     censorship avoidance layer. This has the advantage of not
     burdening the most stressed part of the network, the exit nodes.
-* EVA Methods [68%]
+* EVA Methods [76%]
   This chapter [[#motivation][motivates briefly this thesis' aim]], then [[#design][describes
   conceptually the design for the generation of cover traffic]].
 ** DANIEL Motivation
@@ -1288,30 +1288,9 @@ experience /E/.
      which eases ease-of-use, configurability, and maintenance.
 
      The implementation is partly detailed in appendix [[*modules]].
-*** MOVE to further work CHECK Cover Traffic Server
-    As seen in [[#http][What Happens During a (HTTP) Website Request]], HTTP
-    traffic has two directions: requests come from the client, and are
-    answered by a werver, which sends data back to the client.
-    client. To simulate this traffic, an endpoint is required. While
-    existing servers could be queried for appropriately-sized objects,
-    this thesis uses a simple stand-alone server to provide cover
-    traffic. It responds to requests with a =size=bytes= parameter
-    with as many bytes of traffic.
-
-    Alternatives --- outside this thesis' scope --- consist of either
-    using existing web servers, like f.ex. Wikipedia, Google, etc. To
-    reduce load on Tor's exit nodes, Tor's hidden services could be
-    used, maybe even with shorter paths than the default six hops.
 *** WRITE Related Work?
     - Bloom paper
     - network applications
-*** MOVE integrate into [[*Bloom-Cache][Bloom-Cache]]
-    This approximation currently omits some possibly embedded
-    elements, f.ex.\space{}those embedded in css files and =style= tags via
-    the =@url= css-directive. It seems better for cover traffic to
-    slightly underestimate the number of embedded elements. This
-    might generate more traffic than strictly necessary, but here,
-    safe seems better than sorry.
 * DANIEL Results and Evaluation [38%]                               :results:
   The following sections describe [[#setup][how data was collected and
   analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
@@ -2166,7 +2145,20 @@ experience /E/.
    - time not hidden (no delays of single files)
    - firefox e10n multiprocess
    - delay some requests (f.ex.\space{}images)
-*** WAIT also helps against global observer if .onion generator is used
+*** WRITE Cover Traffic Server
+    As seen in [[#http][What Happens During a (HTTP) Website Request]], HTTP
+    traffic has two directions: requests come from the client, and are
+    answered by a werver, which sends data back to the client.
+    client. To simulate this traffic, an endpoint is required. While
+    existing servers could be queried for appropriately-sized objects,
+    this thesis uses a simple stand-alone server to provide cover
+    traffic. It responds to requests with a =size=bytes= parameter
+    with as many bytes of traffic.
+
+    Alternatives --- outside this thesis' scope --- consist of either
+    using existing web servers, like f.ex. Wikipedia, Google, etc. To
+    reduce load on Tor's exit nodes, Tor's hidden services could be
+    used, maybe even with shorter paths than the default six hops.
     - murdoch/danezis: correlation
     - this creates additional traffic which might hinder correlation attacks
     - further work
@@ -3115,7 +3107,14 @@ set, see [[#split][split]].
    To extract, python's lxml module to parse the HTML's
    DOM extracts the URLs of embedded files from the features of
    several tags, f.ex.\space{}the =src= element of =img= tags.
-*** TODO link to lxml website
+
+   This approximation currently omits some possibly embedded elements,
+   f.ex.\space{}those embedded in css files and =style= tags via the =@url=
+   css-directive. It seems better for cover traffic to slightly
+   underestimate the number of embedded elements. This might generate
+   more traffic than strictly necessary, but here, safe seems better
+   than sorry.
+*** WAIT link to lxml website
 *** WAIT github links
 ** WRITE Error estimation of Bloom Sort
    - error both ways, and difference bin-size to real size
@@ -3129,6 +3128,132 @@ set, see [[#split][split]].
   - error estimation?
     - +: fixed size
     - -: error both ways, and difference bin-size to real size
+** WRITE Bloom usage and implementation
+   - Bloom sort
+     - error rate computation
+   - size taken from example...
+     - maybe change when altered
+** WRITE Bloom-sort
+   :PROPERTIES:
+   :CUSTOM_ID: bloom-sort
+   :END:
+    By ordering data into bins, it becomes possible to use Bloom filters
+    for the estimation of sizes, using one Bloom filter for each bin.
+
+    To achieve this, sensible separation criteria (called /splits/) for
+    the bins need to be found. Afterwards, each bin needs to be assigned
+    a value (called /size/) for all contained elements. See appendix
+    [[#bloom-params]] on determining the sizes and splits.
+
+    This data-structure, called /Bloom-sort/ is initialized with an
+    array of splits, and an array of sizes. The sizes-array needs to
+    have one more element than the splits-array, as the bins are bounded
+    on the left by 0, and on the right by infinity.
+
+    #+BEGIN_SRC js
+      /**
+       ,* @param {sizes Array} array of values for each bin, must be sorted
+       ,* @param {splits Array} array of bin borders, must be sorted
+      ,*/
+      function BloomSort(sizes, splits) {
+          this.sizes = sizes;
+          this.splits = splits;
+          this.filters = [];
+          for ( let i = 0; i < sizes.length; i++ ) {
+              this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH);
+          }
+      }
+    #+END_SRC
+
+    Thus, you get
+    \[-\infty \le \text{size}_0 \le \text{split}_0 \le \text{size}_1 \le \text{split}_1 \le ... \le \text{split}_{n-1} \le \text{size}_n < \infty\]
+    Given the splits, it becomes possible to add the elements to their
+    bins:
+
+    #+BEGIN_SRC js
+      BloomSort.prototype.add = function(id, size) {
+          this.filters[_.sortedIndex(this.splits, size)].add(id);
+      };
+    #+END_SRC
+
+    where =_.sortedIndex()= gives the index at which =size= would be
+    inserted into the sorted =this.splits= array.
+
+    The retrieval of element sizes looks into each Bloom filter,
+    checking whether it might contain the element =id=. If one Bloom
+    filter reports containment, its corresponding element- =size= is
+    returned. If several or no Bloom filters report containment, an
+    exception is thrown. The exception is used to allow all possible
+    return values, not blocking one of them, say =-1=, for the error
+    condition.
+    #+BEGIN_SRC js
+      /** determines size of element, raises exception if unclear */
+      BloomSort.prototype.query = function(id) {
+          let pos = -1;
+          for ( let i = 0; i < this.filters.length; i++ ) {
+              if ( this.filters[i].test(id) ) {
+                  if ( pos === -1 ) {
+                      pos = i;
+                  } else {
+                      throw {
+                          name: 'BloomError',
+                          message: 'Contains multiple entries'
+                      };
+                  }
+              }
+          }
+          if ( pos === -1 ) {
+              throw {
+                  name: 'BloomError',
+                  message: 'Contains no entries'
+              };
+          }
+          return this.sizes[pos];
+      };
+    #+END_SRC
+
+    It is initialized with
+    #+BEGIN_SRC js
+    let htmlSizes = new BloomSort.BloomSort([400, 1000, 20000], [700, 10000]);
+    #+END_SRC
+
+    then adding elements via =htmlSizes.add("http://google.com/", 613)=
+    and querying via =htmlSizes.query("http://google.com/")=, which
+    would yield =400=. See usage in =size-cache=.
+
+    - link to main bloom-sort, create custom-id there
+*** WAIT github link
+** CHECK determining Bloom-sort parameters
+   :PROPERTIES:
+   :CUSTOM_ID: bloom-params
+   :END:
+   It is impractical to store the sizes of all URLs. Another
+   possibility is to use Bloom Filters to aggregate groups of URLs
+   with similar values, as described in [[#bloom-sort][bloom-sort]].
+
+   Each groups gets borders (/splits/) and a size which represents each
+   contained element.
+
+   Determining the optimal number of groups, splits and sizes is a
+   topic of [[#future-work][Further work]]. Here, initially the quantiles of the
+   HTTP-model (see [[#HTTP traffic model][HTTP traffic model]]) were used. When the data were
+   to be inserted, it turned out that especially the numbers of
+   embedded elements did not match the theoretically proposed groups:
+
+   For three groups, the splits would be given by the 33 1/3 and 66
+   2/3 quantiles, as 0.0107 and 1.481. As the number of embedded
+   elements is a whole number, two thirds of the information would
+   be if an element is 0, the next group would contain all other
+   elements: The (representative) sizes of the groups were given as
+   7.915E-05, 0.188, and 8.260 (quantiles 16 1/6, 50, and 83 5/6).
+
+   The data to be inserted (see [[#number_embedded][Cached: Number of Embedded Objects]])
+   had the splits (quantiles) at 10 2/3 and 36 2/3 and the sizes at
+   6, 20, and 59 2/3.
+
+   In addition to using the observed sizes for the Bloom filter, the
+   number of groups was increased to 5.
+*** WAIT maybe graphics?
 * KEYWORDS single files of a website
   The complete data of google.com can be retrieved via
 
@@ -3371,133 +3496,6 @@ set, see [[#split][split]].
   - growth of websites
   - [[#future-work][Further work]]
 ** link in [[#HTTP traffic model][HTTP traffic model]] to here when moved
-* MOVE merge with [[*Bloom-Cache][Bloom-Cache]] KEYWORDS Bloom Filters
-** TODO Bloom usage and implementation
-   - Bloom sort
-     - error rate computation
-   - size taken from example...
-     - maybe change when altered
-** WRITE Bloom-sort
-   :PROPERTIES:
-   :CUSTOM_ID: bloom-sort
-   :END:
-    By ordering data into bins, it becomes possible to use Bloom filters
-    for the estimation of sizes, using one Bloom filter for each bin.
-
-    To achieve this, sensible separation criteria (called /splits/) for
-    the bins need to be found. Afterwards, each bin needs to be assigned
-    a value (called /size/) for all contained elements. See appendix
-    [[#bloom-params]] on determining the sizes and splits.
-
-    This data-structure, called /Bloom-sort/ is initialized with an
-    array of splits, and an array of sizes. The sizes-array needs to
-    have one more element than the splits-array, as the bins are bounded
-    on the left by 0, and on the right by infinity.
-
-    #+BEGIN_SRC js
-      /**
-       ,* @param {sizes Array} array of values for each bin, must be sorted
-       ,* @param {splits Array} array of bin borders, must be sorted
-      ,*/
-      function BloomSort(sizes, splits) {
-          this.sizes = sizes;
-          this.splits = splits;
-          this.filters = [];
-          for ( let i = 0; i < sizes.length; i++ ) {
-              this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH);
-          }
-      }
-    #+END_SRC
-
-    Thus, you get
-    \[-\infty \le \text{size}_0 \le \text{split}_0 \le \text{size}_1 \le \text{split}_1 \le ... \le \text{split}_{n-1} \le \text{size}_n < \infty\]
-    Given the splits, it becomes possible to add the elements to their
-    bins:
-
-    #+BEGIN_SRC js
-      BloomSort.prototype.add = function(id, size) {
-          this.filters[_.sortedIndex(this.splits, size)].add(id);
-      };
-    #+END_SRC
-
-    where =_.sortedIndex()= gives the index at which =size= would be
-    inserted into the sorted =this.splits= array.
-
-    The retrieval of element sizes looks into each Bloom filter,
-    checking whether it might contain the element =id=. If one Bloom
-    filter reports containment, its corresponding element- =size= is
-    returned. If several or no Bloom filters report containment, an
-    exception is thrown. The exception is used to allow all possible
-    return values, not blocking one of them, say =-1=, for the error
-    condition.
-    #+BEGIN_SRC js
-      /** determines size of element, raises exception if unclear */
-      BloomSort.prototype.query = function(id) {
-          let pos = -1;
-          for ( let i = 0; i < this.filters.length; i++ ) {
-              if ( this.filters[i].test(id) ) {
-                  if ( pos === -1 ) {
-                      pos = i;
-                  } else {
-                      throw {
-                          name: 'BloomError',
-                          message: 'Contains multiple entries'
-                      };
-                  }
-              }
-          }
-          if ( pos === -1 ) {
-              throw {
-                  name: 'BloomError',
-                  message: 'Contains no entries'
-              };
-          }
-          return this.sizes[pos];
-      };
-    #+END_SRC
-
-    It is initialized with
-    #+BEGIN_SRC js
-    let htmlSizes = new BloomSort.BloomSort([400, 1000, 20000], [700, 10000]);
-    #+END_SRC
-
-    then adding elements via =htmlSizes.add("http://google.com/", 613)=
-    and querying via =htmlSizes.query("http://google.com/")=, which
-    would yield =400=. See usage in =size-cache=.
-
-    - link to main bloom-sort, create custom-id there
-*** WAIT github link
-** TODO determining Bloom-sort parameters
-   :PROPERTIES:
-   :CUSTOM_ID: bloom-params
-   :END:
-   It is impractical to store the sizes of all URLs. Another
-   possibility is to use Bloom Filters to aggregate groups of URLs
-   with similar values, as described in [[#bloom-sort][bloom-sort]].
-
-   Each groups gets borders (/splits/) and a size which represents each
-   contained element.
-
-   Determining the optimal number of groups, splits and sizes is a
-   topic of [[#future-work][Further work]]. Here, initially the quantiles of the
-   HTTP-model (see [[#HTTP traffic model][HTTP traffic model]]) were used. When the data were
-   to be inserted, it turned out that especially the numbers of
-   embedded elements did not match the theoretically proposed groups:
-
-   For three groups, the splits would be given by the 33 1/3 and 66
-   2/3 quantiles, as 0.0107 and 1.481. As the number of embedded
-   elements is a whole number, two thirds of the information would
-   be if an element is 0, the next group would contain all other
-   elements: The (representative) sizes of the groups were given as
-   7.915E-05, 0.188, and 8.260 (quantiles 16 1/6, 50, and 83 5/6).
-
-   The data to be inserted (see [[#number_embedded][Cached: Number of Embedded Objects]])
-   had the splits (quantiles) at 10 2/3 and 36 2/3 and the sizes at
-   6, 20, and 59 2/3.
-
-   In addition to using the observed sizes for the Bloom filter, the
-   number of groups was increased to 5.
-*** maybe graphics?
 * KEYWORDS Data Set Sizes
 The following Table [[tab:data-set-size]] lists the size of the data sets
 per website fingerprinting study.
