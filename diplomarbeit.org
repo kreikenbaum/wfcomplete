@@ -89,7 +89,7 @@
     - encouragement
     - readability
 * WAIT_FINISH Summary
-* DANIEL Basics [90%]
+* DANIEL Basics [93%]
   To protect online communication, journalists, whistleblowers,
   "normal people", and among others even military\cite{who-uses-tor}
   have resorted to the Tor\cite{tor-design} anonymity network.
@@ -310,7 +310,7 @@
      anonymity\cite{usability:weis2006}. This has led to a diverse
      user base\cite{who-uses-tor}: The network consists of over six
      thousand nodes and is used by about two million people
-     daily[fn:metrics:\url{metrics.torproject.org}].
+     daily[fn:metrics:\url{https://metrics.torproject.org}].
 
      As of \cite{who-uses-tor}, the groups[fn::actual or recommended]
      who increase their anonymity via Tor are: journalists and their
@@ -355,14 +355,15 @@
      characteristics.[fn::for a general introduction to cryptography,
      consider \cite{applied96}, for a high-level introduction to
      traffic analysis, see \cite{introta}].
-*** CHECK Website Fingerprinting 2.0
+*** EVA Website Fingerprinting 2.0
     :PROPERTIES:
     :CUSTOM_ID: wf2.0
     :END:
     [[#wf1.0][Previous website fingerprinting attacks]] compared websites mostly
     by hand, relying only on object sizes; later approaches use some
-    machine-learning techniques, and most extract more/different
-    features than object sizes from the traces.
+    machine-learning techniques, and most extract other features than
+    object sizes[fn::which are no longer available, as of [[#Hurdles][Hurdles to
+    Website Fingerprinting: HTTP Protocol Evolution]]] from the traces.
 
     This section describes the [[#trailbreakers][first approaches]] of machine-learning
     based website fingerprinting. This is followed by a short section
@@ -411,17 +412,18 @@ its performance at tasks in /T/, as measured by /P/, improves with
 experience /E/.
      #+END_QUOTE
 
-     There are roughly three steps to machine learning: [[#ml-preprocess][preprocessing]],
-     [[#ml-features][feature extraction]] and [[#ml-class][classification]][fn::German literature,
-     e.g. \cite{meffert}, adds an additional /Merkmalsreduktion/
-     (feature reduction) part after /Merkmalsextraktion/ (feature
-     extraction).] The first standardizes and cleans input data, the
-     second transforms the raw input data --- in our case, website
-     retrieval traces[fn::in =pcap= format] --- into characteristics
-     --- in our case, numbers for f.ex. the number of outgoing
-     packets. The third groups these characteristics into categories.
+     Machine learning can conceptually be split into three steps:
+     [[#ml-preprocess][preprocessing]], [[#ml-features][feature extraction]] and [[#ml-class][classification]][fn::Some
+     authors, e.g. \cite{meffert}, adds an additional
+     /Merkmalsreduktion/ (feature reduction) part after
+     /Merkmalsextraktion/ (feature extraction).] The first
+     standardizes and cleans input data, the second transforms the raw
+     input data --- in our case, website retrieval traces[fn::in
+     =pcap= format] --- into characteristics --- in our case, numbers
+     for f.ex. the number of outgoing packets. The third groups these
+     characteristics into categories.
 
-     A final section details [[#ml-measure][measures used to evaluate machine
+     A last section details [[#ml-measure][measures used to evaluate machine
      learning performance]].
 ***** DANIEL Preprocessing
       :PROPERTIES:
@@ -492,7 +494,9 @@ experience /E/.
       success needs to be measured.[fn::this section's definitions
       follow \cite{powers}] Starting with binary classification, a
       /confusion matrix/ helps to illustrate the different cases that
-      can occur. Each occurrence is counted. See Table
+      can occur. Each instance is categorized by its real and
+      predicted class. Here, whether it /is/ a sensitive website, and
+      whether it is /classified/ as such. See Table
       [[tab:confusion_matrix]].
 
       #+CAPTION: Confusion matrix. Correctly classified cases are in bold.
@@ -505,15 +509,15 @@ experience /E/.
 
       From these absolute values, various metrics can be derived. The
       main metrics used in website fingerprinting literature are
-      Accuracy (short: acc)[fn::accuracy is mostly used in the
+      /Accuracy/ (short: acc)[fn::accuracy is mostly used in the
       closed-world case], and /True/ and /False Positive Rate/ (short:
       tpr and fpr)[fn::tpr and fpr are mostly used in the open-world
       case]. These are defined as
 
       #+ATTR_LATEX: :align l r
-      | /True Positive Rate/  | $TP / (TP + FN)$                  |
-      | /False Positive Rate/ | $FP / (FP + TN)$                  |
-      | /Accuracy/            | $(TP + TN) / (TP + FP + FN + TN)$ |
+      | True Positive Rate    | $TP / (TP + FN)$                  |
+      | False Positive Rate   | $FP / (FP + TN)$                  |
+      | Accuracy              | $(TP + TN) / (TP + FP + FN + TN)$ |
 
       To show the classifier strictness tradeoff, a /Receiver
       Operating Characteristic Curve/ (short: ROC-Curve) can be used.
@@ -1238,8 +1242,8 @@ experience /E/.
      :END:
      The main add-on versions reached overheads as low as 20%, but
      only rarely lower. To achieve minimal overhead, the change set
-     from [[#versions][version]] =0.20= to =0.21= was retroactively applied to
-     the[fn::low-overhead] version =0.15.3=, with the resulting
+     from [[#versions][version]] [[#version-0.20][=0.20=]] to [[#version-0.21][=0.21=]] was retroactively applied to
+     version[fn::with low-overhead] =0.15.3=, with the resulting
      version named =retro=. The =retro= version remembers negative
      request sizes, and randomly subtracts them for further requests.
 
@@ -1284,16 +1288,24 @@ experience /E/.
      which eases ease-of-use, configurability, and maintenance.
 
      The implementation is partly detailed in appendix [[*modules]].
-*** WRITE Server
-    - where there are several possibilities how to generate cover
-      traffic,
-    - here: simplest: server, GET-query with size=bytes parameter
-      returns this many bytes random data
-    - later: .onion (link to related work)
+*** MOVE to further work CHECK Cover Traffic Server
+    As seen in [[#http][What Happens During a (HTTP) Website Request]], HTTP
+    traffic has two directions: requests come from the client, and are
+    answered by a werver, which sends data back to the client.
+    client. To simulate this traffic, an endpoint is required. While
+    existing servers could be queried for appropriately-sized objects,
+    this thesis uses a simple stand-alone server to provide cover
+    traffic. It responds to requests with a =size=bytes= parameter
+    with as many bytes of traffic.
+
+    Alternatives --- outside this thesis' scope --- consist of either
+    using existing web servers, like f.ex. Wikipedia, Google, etc. To
+    reduce load on Tor's exit nodes, Tor's hidden services could be
+    used, maybe even with shorter paths than the default six hops.
 *** WRITE Related Work?
     - Bloom paper
     - network applications
-*** WAIT integrate into above
+*** MOVE integrate into [[*Bloom-Cache][Bloom-Cache]]
     This approximation currently omits some possibly embedded
     elements, f.ex.\space{}those embedded in css files and =style= tags via
     the =@url= css-directive. It seems better for cover traffic to
@@ -2282,6 +2294,9 @@ set, see [[#split][split]].
    not correlated to the overhead: it lacked control on how much
    traffic to generate.
 ** WRITE 0.20: bounds for probability
+   :PROPERTIES:
+   :CUSTOM_ID: version-0.20
+   :END:
    - buggy html model: counts many more URLs as HTML than expected
      - fix would be: use only absolute numbers, not probabilities,
        detect HTML (by suffix as approximation, and by content-type
@@ -2289,6 +2304,9 @@ set, see [[#split][split]].
      - workaround: bound probability
      - 20 limits number of embedded requests
 ** WRITE 0.21: bounds absolute number of retrieved objects
+   :PROPERTIES:
+   :CUSTOM_ID: version-0.21
+   :END:
     - better workaround
       - stricter bounds on retrieval of embedded objects
       - and stop when limit reached
@@ -3353,7 +3371,7 @@ set, see [[#split][split]].
   - growth of websites
   - [[#future-work][Further work]]
 ** link in [[#HTTP traffic model][HTTP traffic model]] to here when moved
-* KEYWORDS Bloom Filters
+* MOVE merge with [[*Bloom-Cache][Bloom-Cache]] KEYWORDS Bloom Filters
 ** TODO Bloom usage and implementation
    - Bloom sort
      - error rate computation

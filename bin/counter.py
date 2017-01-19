@@ -312,7 +312,7 @@ dirname'''
     os.chdir(previous_dir)
 
 # td: read up on ordereddict, maybe replace
-def for_defenses(defenses):
+def for_defenses(defenses, remove_small=True):
     '''@return dict: {defense1: {domain1: [counter1_1, ..., counter1_N],
     ..., domainN: [counterN_1, ... counterN_N]}, ..., defenseM:
     {domain1: [counter1_1, ..., counter1_N], ..., domainN:
@@ -321,10 +321,10 @@ def for_defenses(defenses):
     '''
     out = {}
     if len(defenses) == 0:
-        out['.'] = all_from_dir('.')
+        out['.'] = all_from_dir('.', remove_small=remove_small)
     for d in defenses:
         if d not in DEFENSES:
-            DEFENSES[d] = all_from_dir(d)
+            DEFENSES[d] = all_from_dir(d, remove_small=remove_small)
         else:
             logging.info('reused defense: %s', d) #debug?
         out[d] = DEFENSES[d]

@@ -341,6 +341,15 @@ def _size_increase_helper(two_defenses):
     return _size_increase(two_defenses[two_defenses.keys()[0]],
                           two_defenses[two_defenses.keys()[1]])
 
+def size_increase_from_argv(defense_argv, remove_small=True):
+    '''computes sizes increases from sys.argv-like list, argv[1] is baseline'''
+    defenses = counter.for_defenses(defense_argv[1:], remove_small=remove_small)
+    stats = {k: _bytes_mean_std(v) for (k,v) in defenses.iteritems()}
+    out = {}
+    for d in defense_argv[2:]:
+        out[d] = _size_increase(stats[defense_argv[1]], stats[d])
+    return out
+
 def _test(X, y, clf, nj=JOBS_NUM, folds=5):
     '''tests estimator with X, y, @return result (ndarray)'''
     X = _scale(X, clf)
@@ -757,7 +766,7 @@ def tts(counter_dict, test_size=1.0/3):
 # sys.argv = ['', 'disabled/05-12@10', 'disabled/06-09@10', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
 # sys.argv = ['', 'disabled/wtf-pad', 'wtf-pad']
 # sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
-# sys.argv = ['', 'disabled/06-17@10_from', '20.0/0_ai', '20.0/0_bi', '20.0/20_ai', '20.0/20_bi', '20.0/40_ai', '20.0/40_bi', '20.0/0_aii', '20.0/0_bii', '20.0/20_aii', '20.0/20_bii', '20.0/40_aii', '20.0/40_bii']
+# sys.argv = ['', 'disabled/06-17@10_from', '0.20/0_ai', '0.20/0_bi', '0.20/20_ai', '0.20/20_bi', '0.20/40_bi', '0.20/0_aii', '0.20/0_bii', '0.20/20_aii', '0.20/20_bii', '0.20/40_aii', '0.20/40_bii']
 
 ### CLASSIFICATION RESULTS PER CLASS
 
