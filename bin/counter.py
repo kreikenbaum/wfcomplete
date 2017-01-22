@@ -379,12 +379,12 @@ class Counter(object):
         '''helper method to handle empty argument'''
         logging.info('args: %s, length: %d', args, len(args))
         if len(args) == 2:
-            try:
+            if os.path.isdir(args[1]):
                 os.chdir(args[1])
                 out = all_from_dir('.')
-            except OSError:
-                pass # ok, was a filename
-        elif len(args) > 1:
+            else:
+                out = {}; _append_features(out, args[1])
+        elif len(args) > 2:
             out = {}
             for filename in args[1:]:
                 _append_features(out, filename)
@@ -426,6 +426,8 @@ class Counter(object):
                                int(value)])
         return tmp
 
+    # corner cases
+    # (1) '2717 39.777541132 65.19.167.130 -> 134.169.109.25 ANSI C12.22 363 1153 \xe2\x86\x92 7777 [PSH, ACK] Seq=1 Ack=1 Win=26880 Len=297 TSval=3074280410 TSecr=531832242[Malformed Packet][Malformed Packet][Malformed Packet]\n'
     @staticmethod
     def from_pcap(filename):
         '''creates Counter from pcap file'''
@@ -447,6 +449,12 @@ class Counter(object):
                                  filename, line)
                     break
             else:
+                if 'Len=0' in rest or proto == 'ARP':
+                    logging.debug('discarded line %s from %s', line, file)
+                    continue
+                if 'Len=' in rest: # see comment case (1)
+                    size = rest[rest.index("Len=")+4:].split()[0]
+                    tmp.extract_line(src, size, time)
                 if not 'Len=0' in rest and not proto == 'ARP':
                     tmp.extract_line(src, size, time)
                 logging.debug('from %s to %s: %s bytes', src, dst, size)

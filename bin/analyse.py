@@ -2,7 +2,7 @@
 '''Analyses (Panchenko's) features returned from Counter class'''
 
 import numpy as np
-from sklearn import cross_validation, ensemble, grid_search, multiclass, neighbors, preprocessing, svm, tree
+from sklearn import cross_validation, ensemble, grid_search, metrics, multiclass, neighbors, preprocessing, svm, tree
 from scipy.stats.mstats import gmean
 import collections
 import doctest
@@ -45,6 +45,16 @@ def _average_duration(counter_dict):
     ms = times_mean_std(counter_dict)
     return np.mean([x[0] for x in ms.values()])
 
+def _binarize(y, keep=-1, default=0):
+    '''binarize data in y: transform all values to =default= except =keep=
+    >>> list(_binarize([0, -1, 1]))
+    [0, -1, 0]'''
+    for el in y:
+        if el == keep:
+            yield keep
+        else:
+            yield default
+
 def _bytes_mean_std(counter_dict):
     '''@return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
     >>> _bytes_mean_std({'yahoo.com': [counter._test(3)]})
@@ -64,6 +74,11 @@ def _class_predictions(y2, y2_predict):
     for (idx, elem) in enumerate(y2):
         out[elem].append(y2_predict[idx])
     return out
+
+def _clf(**svm_params):
+    '''@return default classifier with additional params'''
+    return multiclass.OneVsRestClassifier(
+        svm.SVC(class_weight="balanced", **svm_params))
 
 def _clf_name(clf):
     '''@return name of estimator class'''
@@ -125,6 +140,10 @@ def _gen_url_list(y, y_domains):
             assert out[cls] == y_domains[idx]
     return out
 
+def _lb(*args, **kwargs):
+    '''facade for _binarize, list wrap'''
+    return list(_binarize(*args, **kwargs))
+
 def _mean(counter_dict):
     '''@return a dict of {domain1: mean1, ... domainN: meanN}
     >>> _mean({'yahoo.com': [counter._test(3)]})
@@ -146,30 +165,31 @@ def _misclassification_rates(train, test, clf=GOOD[0]):
     return _predict_percentages(_class_predictions(y2, clf.predict(X2)),
                                 _gen_url_list(y2, y2d))
 
-def lb(*args, **kwargs):
-    '''facade for _binarize'''
-    return list(_binarize(*args, **kwargs))
-
-def _binarize(y, keep=-1, default=0):
-    '''binarize data in y: transform all values to =default= except =keep=
-    >>> list(_binarize([0, -1, 1]))
-    [0, -1, 0]'''
-    for el in y:
-        if el == keep:
-            yield keep
-        else:
-            yield default
-
-def _clf(**svm_params):
-    '''@return default classifier with additional params'''
-    return multiclass.OneVsRestClassifier(
-        svm.SVC(class_weight="balanced", **svm_params))
-
 def _proba_clf(other_clf):
     '''@return ovr-svc with othere_clfs c and gamma'''
     return _clf(C=other_clf.best_params_['estimator__C'],
                 gamma=other_clf.best_params_['estimator__gamma'],
                 probability=True)
+
+def _trace_append(X, y, y_names, x_add, y_add, name_add):
+    '''appends single trace to X, y, y_names
+    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); X
+    [[1, 2, 3]]
+    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); y_n
+    ['test']
+    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); y
+    [0]'''
+    X.append(x_add)
+    y.append(y_add)
+    y_names.append(name_add)
+
+def _trace_list_append(X, y, y_names, trace_list, method, list_id, name):
+    '''appends list of traces to X, y, y_names'''
+    for trace in trace_list:
+        if not trace.warned:
+            _trace_append(X, y, y_names, trace.__getattribute__(method)(), list_id, name)
+        else:
+            logging.warn('%s: one discarded', name)
 
 def _fit_grid(c, gamma, step, X, y, cv):
     '''@return appropriate gridsearchcv, fitted with X and y'''
@@ -445,6 +465,15 @@ def open_world(defense, num_jobs=JOBS_NUM):
     # td: show/save/... output result
     # tdmb: daniel: improve result with way more fpr vs much less tpr (auc0.01)
 
+def bounded_auc(y_true, y_predict, bound=0.01, pos_label=0):
+    '''@return bounded auc of (probabilistic) fitted classifier on data.'''
+    fpr, tpr, thresholds = roc_curve(y_true, y_predict, pos_label)
+    newfpr = [x for x in fpr if x < bound]
+    newfpr.append(bound)
+    newtpr = np.interp(newfpr, fpr, tpr)
+    import pdb; pdb.set_trace()
+    return metrics.auc(newfpr, newtpr)
+
 def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test
 
@@ -615,26 +644,6 @@ def to_features(counters, max_lengths=None):
         class_number += 1
     return (np.array(X_in), np.array(out_y), domain_names)
 
-def _trace_append(X, y, y_names, x_add, y_add, name_add):
-    '''appends single trace to X, y, y_names
-    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); X
-    [[1, 2, 3]]
-    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); y_n
-    ['test']
-    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); y
-    [0]'''
-    X.append(x_add)
-    y.append(y_add)
-    y_names.append(name_add)
-
-def _trace_list_append(X, y, y_names, trace_list, method, list_id, name):
-    '''appends list of traces to X, y, y_names'''
-    for trace in trace_list:
-        if not trace.warned:
-            _trace_append(X, y, y_names, trace.__getattribute__(method)(), list_id, name)
-        else:
-            logging.warn('%s: one discarded', name)
-
 # td: refactor: code duplication with to_features
 def to_features_cumul(counter_dict):
     '''transforms counter data to CUMUL-feature vector pair (X,y)'''
@@ -653,8 +662,6 @@ def to_features_cumul(counter_dict):
             class_number += 1
     return (np.array(X_in), np.array(out_y), domain_names)
 
-# td: refactor: much code duplication with to_features_cumul (how to
-# call fixed method on changing objects?)
 def to_features_herrmann(counter_dict):
     '''@return herrmann et al's feature matrix from counters'''
     psizes = set()
@@ -763,7 +770,16 @@ def tts(counter_dict, test_size=1.0/3):
 #    (X, y ,y_dom) = to_features_cumul(counters)
 
 ### OLDER DATA (without bridge)
-# sys.argv = ['', 'disabled/05-12@10', 'disabled/06-09@10', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
+# sys.argv = ['', 'disabled/05-12@10']
+# next: traces in between
+# sys.argv = ['', 'disabled/06-09@10', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache']
+# sys.argv = ['', 'disabled/06-17@10_from', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
+# missing:
+#sys.argv = ['', 'disabled/06-17@10_from', 'retro/0', 'retro/1', 'retro/10', 'retro/20', 'retro/30', 'retro/5', '0.15.3/json-10/0', '0.15.3/json-10/1', '0.15.3/json-10/10', '0.15.3/json-10/20', '0.15.3/json-10/30', '0.15.3/json-10/40', '0.15.3/json-10/5', '0.19/0-ai', '0.19/0-bii', '0.19/20-bi', '0.19/20-bii', '0.19/aii-factor=0', '0.21']
+#sys.argv = ['', 'disabled/2016-06-30', 'retro/0', 'retro/1', 'retro/10', 'retro/20', 'retro/30', 'retro/5', '0.15.3/json-10/0', '0.15.3/json-10/1', '0.15.3/json-10/10', '0.15.3/json-10/20', '0.15.3/json-10/30', '0.15.3/json-10/40', '0.15.3/json-10/5', '0.19/0-ai', '0.19/0-bii', '0.19/20-bi', '0.19/20-bii', '0.19/aii-factor=0', '0.21']
+
+
+
 # sys.argv = ['', 'disabled/wtf-pad', 'wtf-pad']
 # sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
 # sys.argv = ['', 'disabled/06-17@10_from', '0.20/0_ai', '0.20/0_bi', '0.20/20_ai', '0.20/20_bi', '0.20/40_bi', '0.20/0_aii', '0.20/0_bii', '0.20/20_aii', '0.20/20_bii', '0.20/40_aii', '0.20/40_bii']
@@ -847,7 +863,7 @@ def main(argv=sys.argv, with_svm=True, cumul=True):
     '''loads stuff, triggers either open or closed-world eval'''
     defenses = counter.for_defenses(argv[1:])
     if len(defenses) == 1 and 'background' in defenses.values()[0]:
-        open_world(defenses[0])
+        open_world(defenses.values()[0])
     else:
         closed_world(defenses, argv[1], with_svm=with_svm, cumul=cumul)
 
