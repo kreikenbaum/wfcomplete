@@ -88,6 +88,12 @@ class TestAnalyse(unittest.TestCase):
         self.base_mock2 = {'a': (10, -1), 'b': (10, -1), 'c': (10, -1)}
         self.c_list = map(counter._test, [1, 2, 2, 2, 2, 3, 4]) # counter-list
 
+    def test__tfh(self):
+        X, y, yd = analyse.to_features_herrmann({'url': self.c_list[:2]})
+        self.assertEquals(list(X.flatten()), [1, 1])
+        self.assertEquals(list(y.flatten()), [0, 0])
+        self.assertEquals(yd, ['url', 'url'])
+
     def test__background_to_xy(self):
         X, y, yd = analyse.to_features_cumul({'background': self.c_list})
         self.assertTrue(-1 in y, '-1 not in {}'.format(set(y)))

@@ -212,8 +212,8 @@ def _stop_grid(y, step, result, previous):
     False
     >>> _stop_grid([1,2], 1, 0.5, [1,2,3]) # no stop
     False
-    >>> _stop_grid([1,2], 1, 1, [1,1,1]) # stop due to results
-    False
+    >>> _stop_grid([1,2], 1, 1, [1,1,1,1]) # stop due to results
+    True
     '''
     return (step < 0.001 or
             (len(previous) > 3 and # some tries and with same val and > guess
@@ -230,7 +230,7 @@ def _best_at_border(grid_clf):
             or grid_clf.best_params_['estimator__gamma'] in g_borders)
 
 
-def _my_grid(X, y, c=2**14, gamma=2**-10, folds=3):#,
+def _my_grid(X, y, c=2**14, gamma=2**-10, folds=3, grid_args={}):#,
 #             results={}, num_jobs=JOBS_NUM, folds=5, probability=False):
 #    @param results are previously computed results {(c, g): accuracy, ...}
 #    @return tuple (optimal_classifier, results_object)
@@ -449,6 +449,16 @@ picks best result'''
         ALL_MAP[name] = clf
     print '10-fold result: {}'.format(clf.best_score_)
 
+def tvts(X, y):
+    '''@return X1, X2, X3, y1, y2, y3 with each 1/3 of the data (train,
+validate, test)
+    >> tvts([[1], [1], [1], [2], [2], [2]], [1, 1, 1, 2, 2, 2])
+    ([[1], [2]], [[1], [2]], [[1], [2]], [1, 2], [1, 2], [1, 2]) # modulo order
+    '''
+    X1, Xtmp, y1, ytmp = cross_validation.train_test_split(X, y, train_size=1./3, stratify=y)
+    X2, X3, y2, y3 = cross_validation.train_test_split(Xtmp, ytmp, train_size=.5, stratify=ytmp)
+    return (X1, X2, X3, y1, y2, y3)
+
 def open_world(defense, num_jobs=JOBS_NUM):
     '''does an open-world (SVM) test on data'''
     # split (cv?)
@@ -465,13 +475,19 @@ def open_world(defense, num_jobs=JOBS_NUM):
     # td: show/save/... output result
     # tdmb: daniel: improve result with way more fpr vs much less tpr (auc0.01)
 
-def bounded_auc(y_true, y_predict, bound=0.01, pos_label=0):
-    '''@return bounded auc of (probabilistic) fitted classifier on data.'''
-    fpr, tpr, thresholds = roc_curve(y_true, y_predict, pos_label)
+def bounded_roc(y_true, y_predict, bound=0.01, **kwargs):
+    '''@return (fpr, tpr) within fpr-bounds'''
+    assert 0 <= bound <= 1
+    fpr, tpr, thresholds = roc_curve(y_true, y_predict, **kwargs)
     newfpr = [x for x in fpr if x < bound]
     newfpr.append(bound)
     newtpr = np.interp(newfpr, fpr, tpr)
-    import pdb; pdb.set_trace()
+    return (newfpr, newtpr)
+
+#scorer = metrics.make_scorer(bounded_auc, needs_proba=True)
+def bounded_auc(y_true, y_predict, bound=0.01, **kwargs):
+    '''@return bounded auc of (probabilistic) fitted classifier on data.'''
+    newfpr, newtpr = bounded_roc(y_true, y_predict, bound, **kwargs)
     return metrics.auc(newfpr, newtpr)
 
 def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, cc=False):
@@ -662,6 +678,7 @@ def to_features_cumul(counter_dict):
             class_number += 1
     return (np.array(X_in), np.array(out_y), domain_names)
 
+# td: if possible merge with to_features
 def to_features_herrmann(counter_dict):
     '''@return herrmann et al's feature matrix from counters'''
     psizes = set()
@@ -675,8 +692,13 @@ def to_features_herrmann(counter_dict):
     domain_names = []
     out_y = []
     for domain, dom_counters in counter_dict.iteritems():
-        _trace_list_append(X_in, out_y, domain_names,
-                           dom_counters, "herrmann", class_number, domain)
+        for count in dom_counters:
+            if not count.warned:
+                X_in.append(count.herrmann(list_psizes))
+                out_y.append(class_number)
+                domain_names.append(domain)
+            else:
+                logging.warn('%s: one discarded', domain)
         class_number += 1
     return (np.array(X_in), np.array(out_y), domain_names)
 
