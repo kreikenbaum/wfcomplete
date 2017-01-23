@@ -8749,7 +8749,7 @@
        - sensitivity == tpr == recall: proportion of correctly
          identified positives, avoiding of false negatives
 
-       - specitivity == tnr: proportion of correctly identified
+       - specificity == tnr: proportion of correctly identified
          negatives, avoiding of false positives
 
     1. Definitions
@@ -8814,6 +8814,18 @@
           - prevalence-independent
 
        1. Misconceptions
+
+          - SPIN: SPecific test, Positive, rules IN disease
+
+          - SNOUT: SeNsitive test, Negatives, rules OUT disease
+
+          - both "inferentially misleading", test quality depends on
+            both
+
+          - ROC curve shows tpr/fpr trade-off, equal weight optimizes
+            Informedness = Specificity + Sensitivity -1 = TPR - FPR
+
+       2. Sensitivity index
 *** quotes
     0. [@0]
        - Sensitivity and specificity are statistical measures of the
@@ -8828,6 +8840,10 @@
        3. Sensitivity
           - Sensitivity refers to the test's ability to correctly
             detect patients who do have the condition.
+    2. Medical examples
+       1. Misconceptions
+          - the diagnostic power of any test is determined by both its
+            sensitivity and its specificity
 ** TODO [#A] [[./201101-Evaluation_JMLT_Postprint-Colour.pdf][Powers - Evaluation: from precision, recall and f-measure to roc, informedness, markedness & correlation]]
 *** continue p. 41 "We now summarize..."
 *** summary
@@ -8957,6 +8973,10 @@
             - F-Measure F1 = 2 Recall \cdot Prev / [Bias + Prev]
 
             - WRacc = 4 [Recall - Bias] \cdot Prev
+
+            - WRacc unbiased, maximizing maximizes AUC (as c constant)
+
+       4. DeltaP, Informedness and Markedness
 *** quotes
     2. [@2] THE BINARY CASE
        0. [@0]
@@ -8978,9 +8998,24 @@
           | -P | FN = C   | TN = *D* | C+D |
           |----+----------+----------+-----|
           |    | A+C      | B+D      | N   |
+       3. [@3] ROC and PN Analyses
+          - formulae
+            10. [@10] AUC = (tpr - fpr +1) /2
+                = [tpr + tnr) /2
+                = 1 - (fpr+fnr)/2
+            11. Accuracy = [tpr +c\cdot (1-fpr)]/[1+c]
+                = 2 \cdot Recall \cdot Prev + 1 - Bias - Prev
+            12. Precision = tpr / [tpr + c \cdot fpr]
+                = Recall \cdot Prev / Bias
+            13. F-Measure F1 = 2 \cdot tpr / [tpr+c \cdot fpr+1]
+                = 2 \cdot Recall \cdot Prev / [Bias + Prev]
+            14. WRacc = 4c \cdot [ tpr - fpr] / [1+c]^2
+                = 4 \cdot [ Recall - Bias ] \cdot Prev
+          - Note that for a given Recall level, the other measures
+            (10-13) all decrease with increasing Bias towards positive
+            predictions.
 *** ref [[file:master.bib::powers][Powers 2011: Evaluation]]
-** TODO [#A] [[./user_guide_0.16.1.pdf][Pedregosa - scikit-learn user guide]]
-*** TODO [#A] 6.3. Model evaluation: quantifying the quality of predictions
+** TODO MOVE [#B] [[./user_guide_0.16.1.pdf][Pedregosa - scikit-learn user guide]]
 *** TODO [#B] 42.21. sklearn.metrics: Metrics: sklearn.metrics.auc, see [[file:~/da/da.org::*open%20world][open world]]
 *** TODO [#B] 4.13.5 Tree-based feature selection
     feature_importances: gini or obb-score, see todo
@@ -9586,10 +9621,41 @@
 
              1. Common cases: predefined values
 
-                use f.ex.
+                use f.ex. (for full list see chapter 6.3.1)
                 #+BEGIN_SRC python
                   cross_val_score(clf, X, y, scoring='neg_log_loss')
                 #+END_SRC
+
+             2. Defining your scoring strategy from metric functions
+
+                - if not in list
+
+                - possible to use another method
+
+                - params: method, =greater_is_better=,
+                  =needs_threshold=, additional parameters
+                  #+BEGIN_SRC python
+                    ftwo_scorer = make_scorer(bounded_auc, bound=0.01, needs_threshold=True)
+                    grid = GridSearchCV(LinearSVC(), param_grid={'C': [1, 10]}, scoring=ftwo_scorer)
+                  #+END_SRC
+
+                - use given method, or implement own (takes params
+                  =(base, prediction)=)
+
+             3. Implementing your own scoring object
+
+                - skip =make_scorer= factory, implement own
+
+                - params =(estimator, X, y)=
+
+                - return float, higher better
+
+          2. Classification metrics
+
+             several metrics to help: =matthews_corrcoef=,
+             =roc_curve=, ...
+
+             1. From binary to multiclass and multilabel
 
     7. Dataset transformations
 
@@ -9856,6 +9922,14 @@
                data into a development set (to be fed to the
                GridSearchCV instance) and an evaluation set to compute
                performance metrics.
+       3. Model evaluation: quantifying the quality of predictions
+          2. [@2] Classification metrics
+             - And some work with binary and multilabel (but not
+               multiclass) problems: [...]
+
+               =roc_auc_score(y_true, y_score[, average, ...])=
+               Compute Area Under the Curve (AUC) from prediction
+               scores
     11. [@11] Examples
         11. [@11] Ensemble methods
             3. [@3] Feature importances with forests of trees
@@ -10314,8 +10388,22 @@
         #     score = cross_validation.cross_val_score(lasso, X, y, n_jobs=1)
         #     print '%f, %s' % (a, np.mean(score))
       #+END_SRC
-** TODO [#A] [[./LiuSIGIR2010.pdf][Liu - Understanding web browsing behaviors through Weibull analysis of dwell time]]
-*** TODO [#A] (was B) skim for [[file:~/da/git/diplomarbeit.org::#HTTP%20traffic%20model][HTTP traffic model]]
+** TODO MOVE [#B] [[./LiuSIGIR2010.pdf][Liu - Understanding web browsing behaviors through Weibull analysis of dwell time]]
+*** TODO [#B] skim for [[file:~/da/git/diplomarbeit.org::#HTTP%20traffic%20model][HTTP traffic model]], check that only dwell time, if so (#C)
+*** summary
+    0. [@0] ABSTRACT
+
+       - user dwell time important aspect of web browsing modelling
+
+       - here: weibull distribution, analog to system failure
+
+       - boundary for deep information: most people leave quickly
+
+    1. INTRODUCTION
+*** quotes
+    0. [@0] ABSTRACT
+       - demonstrate that dwell time distributions can be reasonably
+         predicted purely based on low-level page features,
 *** ref: C. Liu, R. White, and S. Dumais. Understanding web browsing
       behaviors through Weibull analysis of dwell time.  In
       Proceedings of the 33rd international ACM SIGIR Conference,
@@ -10323,12 +10411,60 @@
 ** TODO [#A] [[./ton96.pdf][Crovella - Self-Similarity in World Wide Web Traffic: Evidence and Possible Causes]]
 *** TODO [#A] (was C) skim for [[file:~/da/git/diplomarbeit.org::#HTTP%20traffic%20model][HTTP traffic model]]
 *** summary
+    0. [@0] Abstract
+
+       - self-similarity not only applies to LAN, but also to WWW traffic
+
+    1. Introduction
+
+       - common model, Poisson process, challenged
+
+         - burstiness not explained
+
+       - this also fails most network predictions, packet loss and
+         delay behave "radically different"
+
+       - traffic dependent on all future traffic
+
+       - model via many on/off switches, see quotes
+
+       - studied via browser (ncsa mosaic)
+
+       - many distributions are heavy-tailed: transfer times, user
+         requests, document sizes, quiet times
+
+    2. Background
+
+       1. Definition of Self-Similarity
 *** quotes
+    1. Introduction
+       - when viewed at varying scales, the object's correlational
+         structure remains unchanged. As a result, such a timeseries
+         exhibits bursts --- extended periods above the mean --- at a
+         wide range of time scales.
+       - long-range dependence; values at any instant are typically
+         non-negligibly positively correlated with values at all
+         future instants.
+       - self-similar traffic can be constructed by multiplexing a
+         large number of ON/OFF sources that have ON and OFF period
+         lengths that are heavy-tailed
+       - many characteristics of Web use can be modelled using
+         heavy-tailed distributions,
 *** ref M. E. Crovella and A. Bestavros. Self-similarity in World Wide
       Web traffic: evidence and possible causes. Networking, IEEE/ACM
       Transactions on, 5(6):835–846, 1997.
 ** TODO [#A] [[./p434.pdf][Casalicchio - A client-aware dispatching algorithm for web clusters providing multiple services]]
 *** TODO [#A] (was C) skim for [[file:~/da/git/diplomarbeit.org::#HTTP%20traffic%20model][HTTP traffic model]]
+*** summary
+    0. [@0] ABSTRACT
+
+       - web switches which distribute load based on client and type
+         (dynamic, crypto, ...)
+
+       - more efficient in the above scenario
+
+    1. INTRODUCTION
+*** quotes
 *** ref
 E. Casalicchio and M. Colajanni. A client-aware dispatching
       algorithm for web clusters providing multiple services. In
@@ -13071,7 +13207,7 @@ V.L. Voydock and S.T. Kent. Security Mechanisms in High-Level Network Protocols.
           - The first question you should ask yourself when creating a
             plot is: Are there enough data points to merit a plot? If
             the answer is “not really,” use a table.
-** TODO [#B] [[./Vorratsdatenspeicherung – Wikipedia.html][Wikipedia - Vorratsdatenspeicherung]]
+** TODO MOVE [[./Vorratsdatenspeicherung – Wikipedia.html][Wikipedia - Vorratsdatenspeicherung]]
 *** summary
     0. [@0]
 
@@ -14191,8 +14327,18 @@ V.L. Voydock and S.T. Kent. Security Mechanisms in High-Level Network Protocols.
            - The tester is certainly not there to just churn out as
              many tests as possible.
 *** ref [[file:master.bib::xp][Beck 1999: Extreme Programming Explained]]
-** TODO [#B] [[./Axelsson.pdf][Axelsson - The Base-Rate Fallacy and its Implications for the Difficulty of Intrusion Detection]]
-*** TODO understand base rate fallacy intellectually
+** TODO MOVE [#A] [[./Axelsson.pdf][Axelsson - The Base-Rate Fallacy and its Implications for the Difficulty of Intrusion Detection]]
+*** TODO (was #B) [#A] understand base rate fallacy intellectually
+*** summary
+    0. [@0] Abstract
+
+       - to achieve good bayesian detection rate, P(Intrusion|Alarm),
+         you need very small false alarm rate (=FPR)
+
+         - (== P(sensitive website|classified as such))
+
+    1. Introduction
+*** quotes
 ** TODO [#B] PART [[./hastie.pdf][Hastie - The Elements of Statistical Learning]]          :ML:
 *** TODO Sections 5.8, 14.5.4, 18.5 and Chapter 12
 *** TODO skim chapters 2.9, 3.3, 6.7, 7 (esp 7.10), 9, 12 and 13, 15, 16

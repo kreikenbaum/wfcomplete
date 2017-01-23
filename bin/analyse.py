@@ -355,7 +355,8 @@ def _size_increase(base, compare):
         keys = base.keys()
     for k in keys:
         diff[k] = float(compare[k][0]) / base[k][0]
-    return 100 * (gmean(diff.values()) -1)
+#    return 100 * (gmean(diff.values()) -1)
+    return 100 * (np.mean(diff.values()) -1)
 
 def _size_increase_helper(two_defenses):
     return _size_increase(two_defenses[two_defenses.keys()[0]],
@@ -799,8 +800,6 @@ def tts(counter_dict, test_size=1.0/3):
 # missing:
 #sys.argv = ['', 'disabled/06-17@10_from', 'retro/0', 'retro/1', 'retro/10', 'retro/20', 'retro/30', 'retro/5', '0.15.3/json-10/0', '0.15.3/json-10/1', '0.15.3/json-10/10', '0.15.3/json-10/20', '0.15.3/json-10/30', '0.15.3/json-10/40', '0.15.3/json-10/5', '0.19/0-ai', '0.19/0-bii', '0.19/20-bi', '0.19/20-bii', '0.19/aii-factor=0', '0.21']
 #sys.argv = ['', 'disabled/2016-06-30', 'retro/0', 'retro/1', 'retro/10', 'retro/20', 'retro/30', 'retro/5', '0.15.3/json-10/0', '0.15.3/json-10/1', '0.15.3/json-10/10', '0.15.3/json-10/20', '0.15.3/json-10/30', '0.15.3/json-10/40', '0.15.3/json-10/5', '0.19/0-ai', '0.19/0-bii', '0.19/20-bi', '0.19/20-bii', '0.19/aii-factor=0', '0.21']
-
-
 
 # sys.argv = ['', 'disabled/wtf-pad', 'wtf-pad']
 # sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
