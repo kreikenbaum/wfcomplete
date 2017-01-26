@@ -485,7 +485,7 @@ def bounded_roc(y_true, y_predict, bound=0.01, **kwargs):
     newtpr = np.interp(newfpr, fpr, tpr)
     return (newfpr, newtpr)
 
-#scorer = metrics.make_scorer(bounded_auc, needs_proba=True)
+#scorer = metrics.make_scorer(bounded_auc, needs_proba=True, bound=0.01)
 def bounded_auc(y_true, y_predict, bound=0.01, **kwargs):
     '''@return bounded auc of (probabilistic) fitted classifier on data.'''
     newfpr, newtpr = bounded_roc(y_true, y_predict, bound, **kwargs)
