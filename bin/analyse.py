@@ -2,7 +2,8 @@
 '''Analyses (Panchenko's) features returned from Counter class'''
 
 import numpy as np
-from sklearn import cross_validation, ensemble, grid_search, metrics, multiclass, neighbors, preprocessing, svm, tree
+from sklearn import cross_validation, ensemble, grid_search, metrics
+from sklearn import multiclass, neighbors, preprocessing, svm, tree
 from scipy.stats.mstats import gmean
 import collections
 import doctest
@@ -20,7 +21,7 @@ import grid
 import plot_data
 
 JOBS_NUM = grid.JOBS_NUM
-LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
+LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
 #LOGLEVEL = logging.WARN
@@ -55,6 +56,20 @@ def _binarize(y, keep=-1, default=0):
             yield keep
         else:
             yield default
+
+def _bounded_auc(y_true, y_predict, bound=0.01, **kwargs):
+    '''@return bounded auc of (probabilistic) fitted classifier on data.'''
+    newfpr, newtpr = _bounded_roc(y_true, y_predict, bound, **kwargs)
+    return metrics.auc(newfpr, newtpr)
+
+def _bounded_roc(y_true, y_predict, bound=0.01, **kwargs):
+    '''@return (fpr, tpr) within fpr-bounds'''
+    assert 0 <= bound <= 1
+    fpr, tpr, thresholds = roc_curve(y_true, y_predict, **kwargs)
+    newfpr = [x for x in fpr if x < bound]
+    newfpr.append(bound)
+    newtpr = np.interp(newfpr, fpr, tpr)
+    return (newfpr, newtpr)
 
 def _bytes_mean_std(counter_dict):
     '''@return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
@@ -177,7 +192,7 @@ def _predict_percentages(class_predictions_list, url_list):
     import collections
     out = {}
     for (idx, elem) in enumerate(class_predictions_list):
-        out[url_list[idx]] =  float(collections.Counter(elem)[idx])/len(elem)
+        out[url_list[idx]] = float(collections.Counter(elem)[idx])/len(elem)
     return out
 
 def _std(counter_dict):
@@ -235,7 +250,7 @@ def _size_increase_helper(two_defenses):
 def size_increase_from_argv(defense_argv, remove_small=True):
     '''computes sizes increases from sys.argv-like list, argv[1] is baseline'''
     defenses = counter.for_defenses(defense_argv[1:], remove_small=remove_small)
-    stats = {k: _bytes_mean_std(v) for (k,v) in defenses.iteritems()}
+    stats = {k: _bytes_mean_std(v) for (k, v) in defenses.iteritems()}
     out = {}
     for d in defense_argv[2:]:
         out[d] = _size_increase(stats[defense_argv[1]], stats[d])
@@ -294,8 +309,8 @@ def compare_stats(dirs):
     dir2:..., ..., dirN: ...} with domain mean, standard distribution
     and labels'''
     defenses = counter.for_defenses(dirs)
-    means = {k: _mean(v) for (k,v) in defenses.iteritems()}
-    stds = {k: _std(v) for (k,v) in defenses.iteritems()}
+    means = {k: _mean(v) for (k, v) in defenses.iteritems()}
+    stds = {k: _std(v) for (k, v) in defenses.iteritems()}
     out = []
     for d in dirs:
         logging.info('version: %s', d)
@@ -333,11 +348,14 @@ validate, test)
 def open_world(defense, num_jobs=JOBS_NUM):
     '''does an open-world (SVM) test on data'''
     # split (cv?)
-    X,y,yd=counter.to_features_cumul(defense)
-    X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, train_size=.8, stratify=y)
+    X, y, yd = counter.to_features_cumul(defense)
+    X_train, X_test, y_train, y_test = cross_validation.train_test_split(
+        X, y, train_size=.8, stratify=y)
     c = 2**15
     gamma = 2**-45
-    clf = grid._my(X_train, y_train, c=2**15, gamma=2**-45)
+    scorer = metrics.make_scorer(_bounded_auc, needs_proba=True, bound=0.01)
+    clf = grid._my(X_train, y_train, c=2**15, gamma=2**-45,
+                   grid_args={"scoring":scorer})
     c2 = _proba_clf(clf)
     # tpr, fpr, ... on test data # bl = lambda x: list(_binarize(x))
     p_ = c2.fit(X_train, list(_binarize(y_train))).predict_proba(X_test)
@@ -345,21 +363,6 @@ def open_world(defense, num_jobs=JOBS_NUM):
     plot = plot_data.roc(fpr, tpr)
     # td: show/save/... output result
     # tdmb: daniel: improve result with way more fpr vs much less tpr (auc0.01)
-
-def bounded_roc(y_true, y_predict, bound=0.01, **kwargs):
-    '''@return (fpr, tpr) within fpr-bounds'''
-    assert 0 <= bound <= 1
-    fpr, tpr, thresholds = roc_curve(y_true, y_predict, **kwargs)
-    newfpr = [x for x in fpr if x < bound]
-    newfpr.append(bound)
-    newtpr = np.interp(newfpr, fpr, tpr)
-    return (newfpr, newtpr)
-
-#scorer = metrics.make_scorer(bounded_auc, needs_proba=True, bound=0.01)
-def bounded_auc(y_true, y_predict, bound=0.01, **kwargs):
-    '''@return bounded auc of (probabilistic) fitted classifier on data.'''
-    newfpr, newtpr = bounded_roc(y_true, y_predict, bound, **kwargs)
-    return metrics.auc(newfpr, newtpr)
 
 def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test
@@ -388,7 +391,7 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, c
             CLFS.append(SVC_TTS_MAP[def0])
         else:
             t = time.time()
-            clf = _grid._helper(counter.outlier_removal(train, 2), cumul)
+            clf = grid._helper(counter.outlier_removal(train, 2), cumul)
             logging.debug('parameter search took: %s', time.time() -t)
             if cumul:
                 SVC_TTS_MAP[def0] = clf
@@ -435,7 +438,7 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, c
                 counter.outlier_removal(its_counters, 1), l)
         for clf in CLFS:
             t = time.time()
-            print '{}: {}'.format(_clf_name(clf), _xtest(X, y, X2, y2, clf)), 
+            print '{}: {}'.format(_clf_name(clf), _xtest(X, y, X2, y2, clf)),
             print '({} seconds)'.format(time.time() - t)
     import pdb; pdb.set_trace()
 
@@ -681,7 +684,9 @@ def main(argv=sys.argv, with_svm=True, cumul=True):
     if len(argv) == 1:
         argv.append('.')
     defenses = counter.for_defenses(argv[1:])
-    if len(defenses) == 1 and 'background' in defenses.values()[0]:
+    if 'background' in defenses.values()[0]:
+        if len(defenses) > 1:
+            print 'chose first class for open world analysis'
         open_world(defenses.values()[0])
     else:
         closed_world(defenses, argv[1], with_svm=with_svm, cumul=cumul)

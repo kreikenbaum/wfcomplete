@@ -6,14 +6,14 @@ import counter
 
 JOBS_NUM = -3 # 1. maybe -4 for herrmann (2 == -3) used up all memory
 
-def _fit(c, gamma, step, X, y, cv, scoring=None):
+def _fit(c, gamma, step, X, y, cv, scoring=None, probability=False):
     '''@return appropriate gridsearchcv, fitted with X and y'''
     logging.info('c: %s, gamma: %s, step: %s', c, gamma, step)
     cs = _new_search_range(c, step)
     gammas = _new_search_range(gamma, step)
     clf =  grid_search.GridSearchCV(
         estimator=multiclass.OneVsRestClassifier(
-            svm.SVC(class_weight="balanced")),
+            svm.SVC(class_weight="balanced", probability=probability)),
         param_grid={"estimator__C": cs, "estimator__gamma": gammas},
         n_jobs=JOBS_NUM, verbose=0, cv=cv, scoring=scoring)
     return clf.fit(X, y)
@@ -45,20 +45,25 @@ def _best_at_border(grid_clf):
             or grid_clf.best_params_['estimator__gamma'] in g_borders)
 
 
-def _my(X, y, c=2**14, gamma=2**-10, folds=3, grid_args={}):#,
+def _my(X, y, c=2**14, gamma=2**-10, folds=3, step=2, grid_args={},
+        probability=False):
 #             results={}, num_jobs=JOBS_NUM, folds=5, probability=False):
 #    @param results are previously computed results {(c, g): accuracy, ...}
 #    @return tuple (optimal_classifier, results_object)
     '''grid-search on fixed params, searching laterally and in depth
 
+    @param X,y,c,gamma,folds as for the classifier
+    @param step exponential step size, c-range = [c/2**step, c, c*2**step], etc
+    @param grid_args: arguments for grid-search, f.ex. scorer
+
     @return gridsearchcv classifier (with .best_score and .best_params)
     >>> test = _my([[1, 0], [1, 0], [1, 0], [0, 1], [0, 1], [0, 1]], [0, 0, 0, 1, 1, 1], 0.0001, 0.000001); test.best_score_
     1.0
     '''
-    step = 2
     previous = []
 
-    clf = _fit(c, gamma, step, X, y, folds, **grid_args)
+    clf = _fit(c, gamma, step, X, y, folds, probability=probability,
+               **grid_args)
     while not _stop(y, step, clf.best_score_, previous):
         if _best_at_border(clf):
             pass #keep step, search laterally

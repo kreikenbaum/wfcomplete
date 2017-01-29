@@ -295,28 +295,34 @@ def dict_to_wang(counter_dict):
         url_id += 1
     batch_list.close()
 
-# td: codup with dir_to... others (and this has nicer try-finally etc)
-def dir_to_cai(dirname, clean=True):
-    '''write all traces in defense in dirname to cai file'''
+def _dirname_helper(dirname, clean=True):
+    '''@return all traces in dirname'''
     previous_dir = os.getcwd()
     try:
         os.chdir(dirname)
         counter_dict = all_from_dir('.', remove_small=clean)
         if clean:
             counter_dict = outlier_removal(counter_dict)
-        if dirname is '.':
-            dirname = os.getcwd()
-        with open(dirname.replace(os.sep, '___') + '.cai', 'w') as f:
-            dict_to_cai(counter_dict, f)
     finally:
         os.chdir(previous_dir)
+    return counter_dict
 
-# td: codup with dir_to_cai        
+def dir_to_cai(dirname, clean=True):
+    '''write all traces in defense in dirname to cai file'''
+    counter_dict = _dirname_helper(dirname, clean)
+    if dirname is '.':
+        dirname = os.getcwd()
+    with open(dirname.replace(os.sep, '___') + '.cai', 'w') as f:
+        dict_to_cai(counter_dict, f)
+
 def dir_to_herrmann(dirname, clean=True):
     '''write all traces in defense in dirname to herrmann libsvm file'''
-    # 1. load files: make common for all dir_to
+    counter_dict = _dirname_helper(dirname, clean)
     # 2. write to file
-
+    X, y, yd = to_features_herrmann(counter_dict)
+    if dirname is '.':
+        dirname = os.getcwd()
+    to_libsvm(X, y, fname='{}.her_svm'.format(dirname.replace(os.sep, '___')))
 
 def dir_to_wang(dirname, remove_small=True, outlier_removal_lvl=0):
     '''creates input to wang's classifier (in a =batch/= directory) for traces in dirname'''
@@ -328,15 +334,11 @@ def dir_to_wang(dirname, remove_small=True, outlier_removal_lvl=0):
     dict_to_wang(counter_dict)
     os.chdir(previous_dir)
 
-#td: code duplication dir_to (better: meta with method to what to do with dict)
 def dir_to_panchenko(dirname):
     '''creates input to CUMUL (in a =p-batch/= directory) for traces in
 dirname'''
-    previous_dir = os.getcwd()
-    os.chdir(dirname)
-    counter_dict = all_from_dir('.', remove_small=False)
+    counter_dict = _dirname_helper(dirname, clean=False)
     dict_to_panchenko(counter_dict)
-    os.chdir(previous_dir)
 
 # td: read up on ordereddict, maybe replace
 def for_defenses(defenses, remove_small=True):
