@@ -111,6 +111,26 @@ MIN_CLASS_SIZE per url'''
             out[k] = v
     return out
 
+def _trace_append(X, y, y_names, x_add, y_add, name_add):
+    '''appends single trace to X, y, y_names
+    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); X
+    [[1, 2, 3]]
+    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); y_n
+    ['test']
+    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); y
+    [0]'''
+    X.append(x_add)
+    y.append(y_add)
+    y_names.append(name_add)
+
+def _trace_list_append(X, y, y_names, trace_list, method, list_id, name):
+    '''appends list of traces to X, y, y_names'''
+    for trace in trace_list:
+        if not trace.warned:
+            _trace_append(X, y, y_names, trace.__getattribute__(method)(), list_id, name)
+        else:
+            logging.warn('%s: one discarded', name)
+
 def _test(num, val=600, millisecs=10.):
     '''@return Counter with num packets of size val each millisecs apart'''
     return from_json('{{"packets": {}, "timing": {}, "name": "test@0"}}'.format(
@@ -278,8 +298,8 @@ def dict_to_wang(counter_dict):
 # td: codup with dir_to... others (and this has nicer try-finally etc)
 def dir_to_cai(dirname, clean=True):
     '''write all traces in defense in dirname to cai file'''
+    previous_dir = os.getcwd()
     try:
-        previous_dir = os.getcwd()
         os.chdir(dirname)
         counter_dict = all_from_dir('.', remove_small=clean)
         if clean:
@@ -290,6 +310,13 @@ def dir_to_cai(dirname, clean=True):
             dict_to_cai(counter_dict, f)
     finally:
         os.chdir(previous_dir)
+
+# td: codup with dir_to_cai        
+def dir_to_herrmann(dirname, clean=True):
+    '''write all traces in defense in dirname to herrmann libsvm file'''
+    # 1. load files: make common for all dir_to
+    # 2. write to file
+
 
 def dir_to_wang(dirname, remove_small=True, outlier_removal_lvl=0):
     '''creates input to wang's classifier (in a =batch/= directory) for traces in dirname'''
@@ -353,6 +380,80 @@ def save(counter_dict, prefix=''):
             for counter in per_domain:
                 file_.write(counter.to_json())
                 file_.write('\n')
+
+def to_features(counters, max_lengths=None):
+    '''transforms counter data to panchenko.v1-feature vector pair (X,y)
+
+    if max_lengths is given, use that instead of trying to determine'''
+    if not max_lengths:
+        max_lengths = _find_max_lengths(counters)
+
+    X_in = []
+    out_y = []
+    class_number = 0
+    domain_names = []
+    for domain, dom_counters in counters.iteritems():
+        for count in dom_counters:
+            if not count.warned:
+                _trace_append(X_in, out_y, domain_names,
+                    count.panchenko(max_lengths), class_number, domain)
+            else:
+                logging.warn('%s: one discarded', domain)
+        class_number += 1
+    return (np.array(X_in), np.array(out_y), domain_names)
+
+# td: refactor: code duplication with to_features
+def to_features_cumul(counter_dict):
+    '''transforms counter data to CUMUL-feature vector pair (X,y)'''
+    X_in = []
+    out_y = []
+    class_number = 0
+    domain_names = []
+    for domain, dom_counters in counter_dict.iteritems():
+        ## TODO: codup
+        if domain == "background":
+            _trace_list_append(X_in, out_y, domain_names,
+                               dom_counters, "cumul", -1, "background")
+        else:
+            _trace_list_append(X_in, out_y, domain_names,
+                               dom_counters, "cumul", class_number, domain)
+            class_number += 1
+    return (np.array(X_in), np.array(out_y), domain_names)
+
+# td: if possible merge with to_features
+def to_features_herrmann(counter_dict):
+    '''@return herrmann et al's feature matrix from counters'''
+    psizes = set()
+    for counter_list in counter_dict.values():
+        for counter in counter_list:
+            psizes.update(counter.packets)
+    list_psizes = list(psizes)
+    # 3. for each counter: line: 'class, p1_occurs, ..., pn_occurs
+    X_in = []
+    class_number = 0
+    domain_names = []
+    out_y = []
+    for domain, dom_counters in counter_dict.iteritems():
+        for count in dom_counters:
+            if not count.warned:
+                X_in.append(count.herrmann(list_psizes))
+                out_y.append(class_number)
+                domain_names.append(domain)
+            else:
+                logging.warn('%s: one discarded', domain)
+        class_number += 1
+    return (np.array(X_in), np.array(out_y), domain_names)
+
+def to_libsvm(X, y, fname='libsvm_in'):
+    """writes lines in X with labels in y to file 'libsvm_in'"""
+    f = open(fname, 'w')
+    for i, row in enumerate(X):
+        f.write(str(y[i]))
+        f.write(' ')
+        for no, val in enumerate(row):
+            if val != 0:
+                f.write('{}:{} '.format(no+1, val))
+        f.write('\n')
 
 class Counter(object):
     '''single trace file'''

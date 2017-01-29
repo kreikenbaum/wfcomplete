@@ -16,9 +16,10 @@ import time
 from sklearn.metrics import roc_curve, auc
 
 import counter
+import grid
 import plot_data
 
-JOBS_NUM = -3 # 1. maybe -4 for herrmann (2 == -3) used up all memory
+JOBS_NUM = grid.JOBS_NUM
 LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 #LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
@@ -158,9 +159,9 @@ def _mean(counter_dict):
 # td: simple doctest/unit test
 def _misclassification_rates(train, test, clf=GOOD[0]):
     '''@return (mis-)classification rates per class in test'''
-    (X, y, y_d) = to_features_cumul(counter.outlier_removal(train))
+    (X, y, y_d) = counter.to_features_cumul(counter.outlier_removal(train))
     clf.fit(_scale(X, clf), y)
-    (X2, y2, y2d) = to_features_cumul(test)
+    (X2, y2, y2d) = counter.to_features_cumul(test)
     X2 = _scale(X2, clf)
     return _predict_percentages(_class_predictions(y2, clf.predict(X2)),
                                 _gen_url_list(y2, y2d))
@@ -170,137 +171,6 @@ def _proba_clf(other_clf):
     return _clf(C=other_clf.best_params_['estimator__C'],
                 gamma=other_clf.best_params_['estimator__gamma'],
                 probability=True)
-
-def _trace_append(X, y, y_names, x_add, y_add, name_add):
-    '''appends single trace to X, y, y_names
-    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); X
-    [[1, 2, 3]]
-    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); y_n
-    ['test']
-    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); y
-    [0]'''
-    X.append(x_add)
-    y.append(y_add)
-    y_names.append(name_add)
-
-def _trace_list_append(X, y, y_names, trace_list, method, list_id, name):
-    '''appends list of traces to X, y, y_names'''
-    for trace in trace_list:
-        if not trace.warned:
-            _trace_append(X, y, y_names, trace.__getattribute__(method)(), list_id, name)
-        else:
-            logging.warn('%s: one discarded', name)
-
-def _fit_grid(c, gamma, step, X, y, cv):
-    '''@return appropriate gridsearchcv, fitted with X and y'''
-    logging.info('c: %s, gamma: %s, step: %s', c, gamma, step)
-    cs = _new_search_range(c, step)
-    gammas = _new_search_range(gamma, step)
-    clf =  grid_search.GridSearchCV(
-        estimator=multiclass.OneVsRestClassifier(
-            svm.SVC(class_weight="balanced")),
-        param_grid={"estimator__C": cs, "estimator__gamma": gammas},
-        n_jobs=JOBS_NUM, verbose=0, cv=cv)
-    return clf.fit(X, y)
-
-def _stop_grid(y, step, result, previous):
-    '''@return True if grid should stop
-
-    >>> _stop_grid([1,1,2,2,3,3], 0.0001, 0.5, 0.4) # stop due to step
-    True
-    >>> _stop_grid([1,2], 1, 0.5, []) # no stop
-    False
-    >>> _stop_grid([1,2], 1, 0.5, [1,2,3]) # no stop
-    False
-    >>> _stop_grid([1,2], 1, 1, [1,1,1,1]) # stop due to results
-    True
-    '''
-    return (step < 0.001 or
-            (len(previous) > 3 and # some tries and with same val and > guess
-             max([abs(x - result) for x in previous[-3:]]) < 0.001 and
-             result > 1.1*max(collections.Counter(y).values()) / len(y)))
-
-def _best_at_border(grid_clf):
-    '''@return True if best params are at parameter grid borders'''
-    c_borders = (grid_clf.param_grid['estimator__C'][0],
-                 grid_clf.param_grid['estimator__C'][-1])
-    g_borders = (grid_clf.param_grid['estimator__gamma'][0],
-                 grid_clf.param_grid['estimator__gamma'][-1])
-    return (grid_clf.best_params_['estimator__C'] in c_borders
-            or grid_clf.best_params_['estimator__gamma'] in g_borders)
-
-
-def _my_grid(X, y, c=2**14, gamma=2**-10, folds=3, grid_args={}):#,
-#             results={}, num_jobs=JOBS_NUM, folds=5, probability=False):
-#    @param results are previously computed results {(c, g): accuracy, ...}
-#    @return tuple (optimal_classifier, results_object)
-    '''grid-search on fixed params, searching laterally and in depth
-
-    @return gridsearchcv classifier (with .best_score and .best_params)
-    >>> test = _my_grid([[1, 0], [1, 0], [1, 0], [0, 1], [0, 1], [0, 1]], [0, 0, 0, 1, 1, 1], 0.0001, 0.000001); test.best_score_
-    1.0
-    '''
-    step = 2
-    previous = []
-
-    clf = _fit_grid(c, gamma, step, X, y, folds)
-    while not _stop_grid(y, step, clf.best_score_, previous):
-        if _best_at_border(clf):
-            pass #keep step, search laterally
-        else:
-            step = step/2.
-        previous.append(clf.best_score_)
-        clf = _fit_grid(clf.best_params_['estimator__C'],
-                        clf.best_params_['estimator__gamma'],
-                        step, X, y, folds)
-    return clf
-
-
-    # for c in cs:
-    #     for g in gammas:
-    #         clf = multiclass.OneVsRestClassifier(svm.SVC(
-    #             gamma=g, C=c, class_weight='balanced', probability=probability))
-    #         if (c,g) in results:
-    #             current = results[(c,g)]
-    #         else:
-    #             current = _test(X, y, clf, num_jobs, folds=folds)
-    #             results[(c, g)] = current
-    #         if not best or bestres.mean() < current.mean():
-    #             best = clf
-    #             bestres = current
-    #         logging.debug('c: {:8} g: {:10} acc: {}'.format(c, g,
-    #                                                         current.mean()))
-    # if (best.estimator.C in (cs[0], cs[-1])
-    #     or best.estimator.gamma in (gammas[0], gammas[-1])):
-    #     logging.warn('optimal parameters found at the border. c:%f, g:%f',
-    #                  best.estimator.C, best.estimator.gamma)
-    #     return _my_grid(X, y,
-    #                    _new_search_range(best.estimator.C),
-    #                    _new_search_range(best.estimator.gamma),
-    #                    results)
-    # else:
-    #     logging.info('grid result: {}'.format(best))
-    #     return best, results
-
-def _my_grid_helper(counter_dict, outlier_removal=True, nj=JOBS_NUM,
-                    cumul=True, folds=5):
-    '''@return grid-search on counter_dict result (clf, results)'''
-    if outlier_removal:
-        counter_dict = counter.outlier_removal(counter_dict)
-    if cumul:
-        (X, y, _) = to_features_cumul(counter_dict)
-        return _my_grid(X, y, folds=folds)
-    else: # panchenko 1
-        (X, y, _) = to_features(counter_dict)
-        return _my_grid(X, y,
-                        cs=np.logspace(15, 19, 3, base=2),
-                        gammas=np.logspace(-17, -21, 3, base=2))
-
-def _new_search_range(best_param, step=1):
-    '''@return new array of parameters to search in, with logspaced steps'''
-    _step = 2.**step
-    return [best_param / (_step**2), best_param / _step, best_param,
-            best_param * _step, best_param * _step**2]
 
 def _predict_percentages(class_predictions_list, url_list):
     '''@return percentages how often a class was mapped to itself'''
@@ -445,8 +315,8 @@ picks best result'''
     if name is not None and name in ALL_MAP:
         clf = ALL_MAP[name]
     else:
-        clf = _my_grid_helper(counter.outlier_removal(counters, 2),
-                                cumul=True, folds=folds)
+        clf = grid._helper(counter.outlier_removal(counters, 2),
+                           cumul=True, folds=folds)
         ALL_MAP[name] = clf
     print '10-fold result: {}'.format(clf.best_score_)
 
@@ -463,11 +333,11 @@ validate, test)
 def open_world(defense, num_jobs=JOBS_NUM):
     '''does an open-world (SVM) test on data'''
     # split (cv?)
-    X,y,yd=to_features_cumul(defense)
+    X,y,yd=counter.to_features_cumul(defense)
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, train_size=.8, stratify=y)
     c = 2**15
     gamma = 2**-45
-    clf = _my_grid(X_train, y_train, c=2**15, gamma=2**-45)
+    clf = grid._my(X_train, y_train, c=2**15, gamma=2**-45)
     c2 = _proba_clf(clf)
     # tpr, fpr, ... on test data # bl = lambda x: list(_binarize(x))
     p_ = c2.fit(X_train, list(_binarize(y_train))).predict_proba(X_test)
@@ -518,7 +388,7 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, c
             CLFS.append(SVC_TTS_MAP[def0])
         else:
             t = time.time()
-            clf = _my_grid_helper(counter.outlier_removal(train, 2), cumul)
+            clf = _grid._helper(counter.outlier_removal(train, 2), cumul)
             logging.debug('parameter search took: %s', time.time() -t)
             if cumul:
                 SVC_TTS_MAP[def0] = clf
@@ -528,9 +398,9 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, c
 
     # X,y for eval
     if cumul:
-        (X, y, _) = to_features_cumul(counter.outlier_removal(test, 1))
+        (X, y, _) = counter.to_features_cumul(counter.outlier_removal(test, 1))
     else:
-        (X, y, _) = to_features(counter.outlier_removal(test, 1))
+        (X, y, _) = counter.to_features(counter.outlier_removal(test, 1))
     # evaluate accuracy on all of unaddoned
     print 'cross-validation on X,y'
     for clf in CLFS:
@@ -554,15 +424,15 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, c
             its_counters0 = tmp0
             its_counters = tmp
         if cumul:
-            (X2, y2, _) = to_features_cumul(its_counters)
+            (X2, y2, _) = counter.to_features_cumul(its_counters)
         else:
             l = _dict_elementwise(max,
                                   _find_max_lengths(its_counters0),
                                   _find_max_lengths(its_counters))
-            (X, y, _) = to_features(counter.outlier_removal(its_counters0, 2),
-                                    l)
-            (X2, y2, _2) = to_features(counter.outlier_removal(its_counters, 1),
-                                       l)
+            (X, y, _) = counter.to_features(
+                counter.outlier_removal(its_counters0, 2), l)
+            (X2, y2, _2) = counter.to_features(
+                counter.outlier_removal(its_counters, 1), l)
         for clf in CLFS:
             t = time.time()
             print '{}: {}'.format(_clf_name(clf), _xtest(X, y, X2, y2, clf)), 
@@ -596,10 +466,10 @@ def outlier_removal_levels(defense, clf=None):
     for lvl in [1,2,3]:
         defense_with_or = counter.outlier_removal(defense, lvl)
         (train, test) = tts(defense_with_or)
-        (X, y, _) = to_features_cumul(train)
+        (X, y, _) = counter.to_features_cumul(train)
         if type(clf) is type(None):
-            clf = _my_grid(X, y)
-        (X, y, _) = to_features_cumul(test)
+            clf = grid._my(X, y)
+        (X, y, _) = counter.to_features_cumul(test)
         print "level: {}".format(lvl)
         _verbose_test_11(X, y, clf)
     (train, test) = tts(defense)
@@ -608,12 +478,12 @@ def outlier_removal_levels(defense, clf=None):
     print 'separate outlier removal for training and test data'
     for train_lvl in [1,2,3]:
         for test_lvl in [-1,1,2,3]:
-            (X, y, _) = to_features_cumul(counter.outlier_removal(train,
-                                                                  train_lvl))
+            (X, y, _) = counter.to_features_cumul(
+                counter.outlier_removal(train, train_lvl))
             if type(clf) is type(None):
-                clf = _my_grid(X, y)
-            (X, y, _) = to_features_cumul(counter.outlier_removal(test,
-                                                                  test_lvl))
+                clf = grid._my(X, y)
+            (X, y, _) = counter.to_features_cumul(
+                counter.outlier_removal(test, test_lvl))
             print "level train: {}, test: {}".format(train_lvl, test_lvl)
             _verbose_test_11(X, y, clf)
 
@@ -639,80 +509,6 @@ def size_test(argv, outlier_removal=True):
     defense0 = argv[1]
     for d in argv[2:]:
         print '{}: {}'.format(d, _size_increase(stats[defense0], stats[d]))
-
-def to_features(counters, max_lengths=None):
-    '''transforms counter data to panchenko.v1-feature vector pair (X,y)
-
-    if max_lengths is given, use that instead of trying to determine'''
-    if not max_lengths:
-        max_lengths = _find_max_lengths(counters)
-
-    X_in = []
-    out_y = []
-    class_number = 0
-    domain_names = []
-    for domain, dom_counters in counters.iteritems():
-        for count in dom_counters:
-            if not count.warned:
-                _trace_append(X_in, out_y, domain_names,
-                    count.panchenko(max_lengths), class_number, domain)
-            else:
-                logging.warn('%s: one discarded', domain)
-        class_number += 1
-    return (np.array(X_in), np.array(out_y), domain_names)
-
-# td: refactor: code duplication with to_features
-def to_features_cumul(counter_dict):
-    '''transforms counter data to CUMUL-feature vector pair (X,y)'''
-    X_in = []
-    out_y = []
-    class_number = 0
-    domain_names = []
-    for domain, dom_counters in counter_dict.iteritems():
-        ## TODO: codup
-        if domain == "background":
-            _trace_list_append(X_in, out_y, domain_names,
-                               dom_counters, "cumul", -1, "background")
-        else:
-            _trace_list_append(X_in, out_y, domain_names,
-                               dom_counters, "cumul", class_number, domain)
-            class_number += 1
-    return (np.array(X_in), np.array(out_y), domain_names)
-
-# td: if possible merge with to_features
-def to_features_herrmann(counter_dict):
-    '''@return herrmann et al's feature matrix from counters'''
-    psizes = set()
-    for counter_list in counter_dict.values():
-        for counter in counter_list:
-            psizes.update(counter.packets)
-    list_psizes = list(psizes)
-    # 3. for each counter: line: 'class, p1_occurs, ..., pn_occurs
-    X_in = []
-    class_number = 0
-    domain_names = []
-    out_y = []
-    for domain, dom_counters in counter_dict.iteritems():
-        for count in dom_counters:
-            if not count.warned:
-                X_in.append(count.herrmann(list_psizes))
-                out_y.append(class_number)
-                domain_names.append(domain)
-            else:
-                logging.warn('%s: one discarded', domain)
-        class_number += 1
-    return (np.array(X_in), np.array(out_y), domain_names)
-
-def to_libsvm(X, y, fname='libsvm_in'):
-    """writes lines in X with labels in y to file 'libsvm_in'"""
-    f = open(fname, 'w')
-    for i, row in enumerate(X):
-        f.write(str(y[i]))
-        f.write(' ')
-        for no, val in enumerate(row):
-            if val != 0:
-                f.write('{}:{} '.format(no+1, val))
-        f.write('\n')
 
 def top_30(mean_per_dir):
     '''@return 30 domains with well-interspersed trace means sizes
@@ -790,7 +586,7 @@ def tts(counter_dict, test_size=1.0/3):
     #     variable2 = gdl.metric(x[xbounds2[0]:xbounds2[1]],
     #                            y[ybounds2[0]:ybounds2[1]])
     #     return math.sqrt(fixedm + variable1 + variable2)
-#    (X, y ,y_dom) = to_features_cumul(counters)
+#    (X, y ,y_dom) = counter.to_features_cumul(counters)
 
 ### OLDER DATA (without bridge)
 # sys.argv = ['', 'disabled/05-12@10']
@@ -882,6 +678,8 @@ doctest.testmod()
 
 def main(argv=sys.argv, with_svm=True, cumul=True):
     '''loads stuff, triggers either open or closed-world eval'''
+    if len(argv) == 1:
+        argv.append('.')
     defenses = counter.for_defenses(argv[1:])
     if len(defenses) == 1 and 'background' in defenses.values()[0]:
         open_world(defenses.values()[0])
