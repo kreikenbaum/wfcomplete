@@ -12,25 +12,26 @@ import os
 import subprocess
 import sys
 
-DURATION_LIMIT_SECS=8 * 60
-#HOME_IP = '134.76.96.47' #td: get ips
+DURATION_LIMIT_SECS = 8 * 60
+# HOME_IP = '134.76.96.47' #td: get ips
 HOME_IP = '134.169.109.25'
-#LOGLEVEL = logging.DEBUG
+# LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
-LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
+LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 
-MIN_CLASS_SIZE=30
-TOR_CELL_SIZE=512
+MIN_CLASS_SIZE = 30
+TOR_CELL_SIZE = 512
 
 TIME_SEPARATOR = '@'
 
-### defense->counter_dict cache-map
+# defense->counter_dict cache-map
 DEFENSES = {}
 
 # module-globals
 json_only = True
 # td: remove this maybe (level==-1 did not increase accuracy vs 1)
 minmax = None
+
 
 def _append_features(keys, filename):
     '''appends features in trace file of name "filename" to keys.
@@ -45,6 +46,7 @@ def _append_features(keys, filename):
     else:
         logging.warn('%s discarded', counter.name)
 
+
 def _discretize(number, step):
     '''discretizes(=round) number by increment, rounding up
     >>> _discretize(15, 3)
@@ -56,13 +58,16 @@ def _discretize(number, step):
     '''
     return int(math.ceil(float(number) / step) * step)
 
-#td: rename to _get_url
+# td: rename to _get_url
+
+
 def _extract_url(filename):
     '''extracts domain part from filename:
     >>> _extract_url('/tmp/google.com@12412')
     'google.com'
     '''
     return os.path.basename(filename).split(TIME_SEPARATOR)[0]
+
 
 def _normalize(array):
     '''normalizes array so that its maximum absolute value is +- 1.0
@@ -75,6 +80,7 @@ def _normalize(array):
     maxabs = float(max((abs(x) for x in array)))
     return [x / maxabs for x in array]
 
+
 def _num_bytes(packets):
     '''number of (incoming, outgoing) bytes
     >>> _num_bytes([-3,1,-4,4])
@@ -82,6 +88,7 @@ def _num_bytes(packets):
     '''
     return((sum((x for x in packets if x > 0)),
             abs(sum((x for x in packets if x < 0)))))
+
 
 def _num_packets(packets):
     '''number of (incoming, outgoing) packets
@@ -91,6 +98,7 @@ def _num_packets(packets):
     return((sum((1 for x in packets if x > 0)),
             sum((1 for x in packets if x < 0))))
 
+
 def _pad(row, upto=300):
     '''enlarges row to have upto entries (padded with 0)
     >>> _pad([2], 20)
@@ -98,6 +106,7 @@ def _pad(row, upto=300):
     '''
     row.extend([0] * (upto - len(row)))
     return row
+
 
 def _remove_small_classes(counter_dict):
     '''@return dict with removed traces if there are less than
@@ -111,6 +120,7 @@ MIN_CLASS_SIZE per url'''
             out[k] = v
     return out
 
+
 def _trace_append(X, y, y_names, x_add, y_add, name_add):
     '''appends single trace to X, y, y_names
     >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); X
@@ -123,18 +133,22 @@ def _trace_append(X, y, y_names, x_add, y_add, name_add):
     y.append(y_add)
     y_names.append(name_add)
 
+
 def _trace_list_append(X, y, y_names, trace_list, method, list_id, name):
     '''appends list of traces to X, y, y_names'''
     for trace in trace_list:
         if not trace.warned:
-            _trace_append(X, y, y_names, trace.__getattribute__(method)(), list_id, name)
+            _trace_append(
+                X, y, y_names, trace.__getattribute__(method)(), list_id, name)
         else:
             logging.warn('%s: one discarded', name)
+
 
 def _test(num, val=600, millisecs=10.):
     '''@return Counter with num packets of size val each millisecs apart'''
     return from_json('{{"packets": {}, "timing": {}, "name": "test@0"}}'.format(
-        [val]*num, _test_timing(num, val, millisecs)))
+        [val] * num, _test_timing(num, val, millisecs)))
+
 
 def _test_timing(num, val, millisecs):
     '''used for _test above'''
@@ -142,6 +156,7 @@ def _test_timing(num, val, millisecs):
     for i in range(num):
         out.append([i * millisecs / 1000., val])
     return out
+
 
 def _sum_numbers(packets):
     '''sums number of adjacent packets in the same direction, discretized
@@ -152,11 +167,12 @@ def _sum_numbers(packets):
     '''
     counts = _sum_stream([math.copysign(1, x) for x in packets])
     # extended as counts had 16, 21
-    dictionary = {1: 1, 2: 2, 3: 3, 4: 3, 5: 3, 6: 4, 7: 4, 8:4,
-                  9:5, 10:5, 11:5, 12:5, 13:5, 14:6}
+    dictionary = {1: 1, 2: 2, 3: 3, 4: 3, 5: 3, 6: 4, 7: 4, 8: 4,
+                  9: 5, 10: 5, 11: 5, 12: 5, 13: 5, 14: 6}
     return [dictionary[min(14, abs(x))] for x in counts]
-    #return counts
-    #return [math.log(abs(x), 2.4) for x in counts]
+    # return counts
+    # return [math.log(abs(x), 2.4) for x in counts]
+
 
 def _sum_stream(packets):
     '''sums adjacent packets in the same direction
@@ -176,6 +192,8 @@ def _sum_stream(packets):
 
 # td: separate json parsing and pcap-parsing
 # td: use glob.iglob? instead of os.walk?
+
+
 def all_from_dir(dirname, remove_small=True):
     '''All packets traces of the name domain@tstamp are parsed to
     Counters. If there are JSON files created by =save()=, use those
@@ -196,9 +214,9 @@ def all_from_dir(dirname, remove_small=True):
 
     length = len(filenames)
     for i, filename in enumerate(filenames):
-        if TIME_SEPARATOR in os.path.basename(filename): # file like google.com@1445350513
+        if TIME_SEPARATOR in os.path.basename(filename):  # file like google.com@1445350513
             logging.info('processing (%d/%d) %s ',
-                         i+1, length, filename)
+                         i + 1, length, filename)
             json_only = False
             _append_features(out, filename)
     if not out:
@@ -212,6 +230,7 @@ def all_from_dir(dirname, remove_small=True):
     else:
         return out
 
+
 def all_from_json(filename):
     '''returns all the counters in json file named filename '''
     out = []
@@ -219,9 +238,11 @@ def all_from_json(filename):
         out.append(from_json(entry))
     return out
 
+
 def all_from_panchenko(dirname='.'):
     '''@return a dict { class_1: [counters], ..., class_n: [c] }'''
     return dict(panchenko_generator(dirname))
+
 
 def panchenko_generator(dirname):
     '''generator of Counters from filename, calling
@@ -232,6 +253,7 @@ from_panchenko_data()'''
             for line in f:
                 out.append(Counter.from_panchenko_data(line))
         yield (os.path.basename(filename), out)
+
 
 def all_from_wang(dirname="batch", cw=True):
     '''creates dict of Counters from wang's =batch/=-directory'''
@@ -260,11 +282,13 @@ def all_from_wang(dirname="batch", cw=True):
             out[cls].append(Counter.from_wang(filename, cls, inst))
     return out
 
+
 def dict_to_cai(counter_dict, writeto):
     '''write counter_dict's entries to writeto'''
     for counter_list in counter_dict.values():
         for c in counter_list:
             writeto.write('{}\n'.format(c.to_cai()))
+
 
 def dict_to_panchenko(counter_dict, dirname='p_batch'):
     '''write counters in counter_dict to dirname/output-tcp/'''
@@ -282,6 +306,7 @@ def dict_to_panchenko(counter_dict, dirname='p_batch'):
         with file(os.path.join(dirname, 'output-tcp', k), 'w') as f:
             list_to_panchenko(v, f)
 
+
 def dict_to_wang(counter_dict):
     '''writes all counters in counter_dict to directory <code>batch</code>. also writes a list number url to ./batch_list'''
     os.mkdir("batch")
@@ -295,6 +320,7 @@ def dict_to_wang(counter_dict):
         url_id += 1
     batch_list.close()
 
+
 def _dirname_helper(dirname, clean=True):
     '''@return all traces in dirname'''
     previous_dir = os.getcwd()
@@ -307,6 +333,7 @@ def _dirname_helper(dirname, clean=True):
         os.chdir(previous_dir)
     return counter_dict
 
+
 def dir_to_cai(dirname, clean=True):
     '''write all traces in defense in dirname to cai file'''
     counter_dict = _dirname_helper(dirname, clean)
@@ -314,6 +341,7 @@ def dir_to_cai(dirname, clean=True):
         dirname = os.getcwd()
     with open(dirname.replace(os.sep, '___') + '.cai', 'w') as f:
         dict_to_cai(counter_dict, f)
+
 
 def dir_to_herrmann(dirname, clean=True):
     '''write all traces in defense in dirname to herrmann libsvm file'''
@@ -323,6 +351,7 @@ def dir_to_herrmann(dirname, clean=True):
     if dirname is '.':
         dirname = os.getcwd()
     to_libsvm(X, y, fname='{}.her_svm'.format(dirname.replace(os.sep, '___')))
+
 
 def dir_to_wang(dirname, remove_small=True, outlier_removal_lvl=0):
     '''creates input to wang's classifier (in a =batch/= directory) for traces in dirname'''
@@ -334,6 +363,7 @@ def dir_to_wang(dirname, remove_small=True, outlier_removal_lvl=0):
     dict_to_wang(counter_dict)
     os.chdir(previous_dir)
 
+
 def dir_to_panchenko(dirname):
     '''creates input to CUMUL (in a =p-batch/= directory) for traces in
 dirname'''
@@ -341,6 +371,8 @@ dirname'''
     dict_to_panchenko(counter_dict)
 
 # td: read up on ordereddict, maybe replace
+
+
 def for_defenses(defenses, remove_small=True):
     '''@return dict: {defense1: {domain1: [counter1_1, ..., counter1_N],
     ..., domainN: [counterN_1, ... counterN_N]}, ..., defenseM:
@@ -355,9 +387,10 @@ def for_defenses(defenses, remove_small=True):
         if d not in DEFENSES:
             DEFENSES[d] = all_from_dir(d, remove_small=remove_small)
         else:
-            logging.info('reused defense: %s', d) #debug?
+            logging.info('reused defense: %s', d)  # debug?
         out[d] = DEFENSES[d]
     return out
+
 
 def from_json(jsonstring):
     '''creates Counter from self.to_json-output'''
@@ -367,10 +400,12 @@ def from_json(jsonstring):
         setattr(tmp, key, value)
     return tmp
 
+
 def list_to_panchenko(counter_list, outfile):
     '''write counters to outfile, one per line'''
     for c in counter_list:
         outfile.write(c.to_panchenko() + '\n')
+
 
 def save(counter_dict, prefix=''):
     '''saves counters as json data to file, each is prefixed with prefix'''
@@ -382,6 +417,7 @@ def save(counter_dict, prefix=''):
             for counter in per_domain:
                 file_.write(counter.to_json())
                 file_.write('\n')
+
 
 def to_features(counters, max_lengths=None):
     '''transforms counter data to panchenko.v1-feature vector pair (X,y)
@@ -398,13 +434,15 @@ def to_features(counters, max_lengths=None):
         for count in dom_counters:
             if not count.warned:
                 _trace_append(X_in, out_y, domain_names,
-                    count.panchenko(max_lengths), class_number, domain)
+                              count.panchenko(max_lengths), class_number, domain)
             else:
                 logging.warn('%s: one discarded', domain)
         class_number += 1
     return (np.array(X_in), np.array(out_y), domain_names)
 
 # td: refactor: code duplication with to_features
+
+
 def to_features_cumul(counter_dict):
     '''transforms counter data to CUMUL-feature vector pair (X,y)'''
     X_in = []
@@ -412,7 +450,7 @@ def to_features_cumul(counter_dict):
     class_number = 0
     domain_names = []
     for domain, dom_counters in counter_dict.iteritems():
-        ## TODO: codup
+        # TODO: codup
         if domain == "background":
             _trace_list_append(X_in, out_y, domain_names,
                                dom_counters, "cumul", -1, "background")
@@ -423,6 +461,8 @@ def to_features_cumul(counter_dict):
     return (np.array(X_in), np.array(out_y), domain_names)
 
 # td: if possible merge with to_features
+
+
 def to_features_herrmann(counter_dict):
     '''@return herrmann et al's feature matrix from counters'''
     psizes = set()
@@ -446,6 +486,7 @@ def to_features_herrmann(counter_dict):
         class_number += 1
     return (np.array(X_in), np.array(out_y), domain_names)
 
+
 def to_libsvm(X, y, fname='libsvm_in'):
     """writes lines in X with labels in y to file 'libsvm_in'"""
     f = open(fname, 'w')
@@ -454,17 +495,20 @@ def to_libsvm(X, y, fname='libsvm_in'):
         f.write(' ')
         for no, val in enumerate(row):
             if val != 0:
-                f.write('{}:{} '.format(no+1, val))
+                f.write('{}:{} '.format(no + 1, val))
         f.write('\n')
 
+
 class Counter(object):
+
     '''single trace file'''
+
     def __init__(self, name=None):
         self.fixed = None
         self.name = name
         self.variable = None
         self.packets = []
-        self.timing = [] # list [(p1_timing_secs, p1_size), ...]
+        self.timing = []  # list [(p1_timing_secs, p1_size), ...]
         self.warned = False
 
     def __eq__(self, other):
@@ -486,7 +530,8 @@ class Counter(object):
                 os.chdir(args[1])
                 out = all_from_dir('.')
             else:
-                out = {}; _append_features(out, args[1])
+                out = {}
+                _append_features(out, args[1])
         elif len(args) > 2:
             out = {}
             for filename in args[1:]:
@@ -516,7 +561,7 @@ class Counter(object):
         tmp = Counter()
 
         elements = line.split()
-        start_secs = int(elements[1])/1000.
+        start_secs = int(elements[1]) / 1000.
         if '_' in elements[0]:
             (its_name, err) = elements[0].split('_', 1)
             tmp.name = '{}@{}_{}'.format(its_name, int(start_secs), err)
@@ -555,8 +600,8 @@ class Counter(object):
                 if 'Len=0' in rest or proto == 'ARP':
                     logging.debug('discarded line %s from %s', line, file)
                     continue
-                if 'Len=' in rest: # see comment case (1)
-                    size = rest[rest.index("Len=")+4:].split()[0]
+                if 'Len=' in rest:  # see comment case (1)
+                    size = rest[rest.index("Len=") + 4:].split()[0]
                     tmp.extract_line(src, size, time)
                 if not 'Len=0' in rest and not proto == 'ARP':
                     tmp.extract_line(src, size, time)
@@ -574,7 +619,7 @@ class Counter(object):
         with open(filename) as f:
             for line in f:
                 (secs, negcount) = line.split('\t')
-                if abs(int(negcount)) <= 1: # cell level
+                if abs(int(negcount)) <= 1:  # cell level
                     negcount = int(negcount) * TOR_CELL_SIZE
                 tmp.packets.append(-int(negcount))
                 tmp.timing.append([float(secs), -int(negcount)])
@@ -632,7 +677,7 @@ class Counter(object):
 
         features = [inCount, outCount, outSize, inSize]
         cumulFeatures = np.interp(np.linspace(c_abs[0], c_abs[-1],
-                                              num_features+1),
+                                              num_features + 1),
                                   c_abs,
                                   c_rel)
         # could be cumulFeatures[1:], but never change a running system
@@ -666,7 +711,7 @@ class Counter(object):
     def herrmann(self, p_sizes):
         '''@return bit vector: for each size in p_sizes, if counter has packet of that size'''
         out = [0] * len(p_sizes)
-        for index,size in enumerate(p_sizes):
+        for index, size in enumerate(p_sizes):
             if size in self.packets:
                 out[index] = 1
         return out
@@ -706,10 +751,10 @@ class Counter(object):
         '''aggregates stream values'''
         if abs(int(size)) < TOR_CELL_SIZE:
             return
-        if src == HOME_IP: # outgoing negative as of panchenko 3.1
+        if src == HOME_IP:  # outgoing negative as of panchenko 3.1
             self.packets.append(- int(size))
             self.timing.append((float(tstamp), - int(size)))
-        elif src: #incoming positive
+        elif src:  # incoming positive
             self.packets.append(int(size))
             self.timing.append((float(tstamp), int(size)))
 
@@ -748,7 +793,7 @@ class Counter(object):
         (packets_in, packets_out) = _num_packets(self.packets)
         # percentage incoming packets
         self.fixed['percentage_in'] = (
-            _discretize(100 * packets_in /(packets_in + packets_out), 5))
+            _discretize(100 * packets_in / (packets_in + packets_out), 5))
         # number incoming
         self.fixed['count_in'] = _discretize(packets_in, 15)
         # number outgoing
@@ -757,9 +802,9 @@ class Counter(object):
         self.fixed['duration'] = self.timing[-1][0]
         # variable lengths test
         for i, val in enumerate(self._variable_lengths().values()):
-            self.fixed['length_variable_'+str(i)] = val
+            self.fixed['length_variable_' + str(i)] = val
         # all packets as of "A Systematic ..." svm.py code
-        #        self.variable['all_packets'] = self.packets # grew too big 4 mem
+        # self.variable['all_packets'] = self.packets # grew too big 4 mem
         return self
 
     # old doctest, old format
@@ -818,7 +863,7 @@ class Counter(object):
             out += '_{}'.format(err.replace(' ', '_').replace('\n', ''))
         out += ' {}'.format(start_millis)
         for (time_secs, val) in self.timing:
-            out += ' {}:{}'.format(int(1000*time_secs + start_millis), val)
+            out += ' {}:{}'.format(int(1000 * time_secs + start_millis), val)
         return out
 
     def to_wang(self, filename):
@@ -832,15 +877,18 @@ class Counter(object):
         self._postprocess()
         return self._variable_lengths()
 
+
 class MinMaxer(object):
+
     '''keeps min and max scores
 
     >>> a = MinMaxer(); a.setIf(4,13); a.setIf(3,7); a.max
     13
     '''
+
     def __init__(self):
         self.min = sys.maxint
-        self.max = - sys.maxint -1
+        self.max = - sys.maxint - 1
 
     def setIf(self, minval, maxval):
         if maxval > self.max:
@@ -848,7 +896,9 @@ class MinMaxer(object):
         if minval < self.min:
             self.min = minval
 
-### outlier removal
+# outlier removal
+
+
 def p_or_tiny(counter_list):
     '''removes if len(packets) < 2 or total_in < 2*512
     >>> len(p_or_tiny([_test(1), _test(3)]))
@@ -857,17 +907,20 @@ def p_or_tiny(counter_list):
     1
     '''
     return [x for x in counter_list
-            if len(x.packets) >= 2 and x.get_total_in() >= 2*512]
+            if len(x.packets) >= 2 and x.get_total_in() >= 2 * 512]
+
 
 def p_or_median(counter_list):
     '''removes if total_in < 0.2 * median or > 1.8 * median'''
     med = np.median([counter.get_total_in() for counter in counter_list])
     global minmax
-    if minmax is None: minmax = MinMaxer()
+    if minmax is None:
+        minmax = MinMaxer()
     minmax.setIf(0.2 * med, 1.8 * med)
 
     return [x for x in counter_list
             if x.get_total_in() >= 0.2 * med and x.get_total_in() <= 1.8 * med]
+
 
 def p_or_quantiles(counter_list):
     '''remove if total_in < (q1-1.5 * (q3-q1))
@@ -882,13 +935,15 @@ def p_or_quantiles(counter_list):
     out = []
     # td: remove -1-code
     global minmax
-    if minmax is None: minmax = MinMaxer()
+    if minmax is None:
+        minmax = MinMaxer()
     minmax.setIf(q1 - 1.5 * (q3 - q1), q3 + 1.5 * (q3 - q1))
     for counter in counter_list:
         if (counter.get_total_in() >= (q1 - 1.5 * (q3 - q1)) and
-            counter.get_total_in() <= (q3 + 1.5 * (q3 - q1))):
+                counter.get_total_in() <= (q3 + 1.5 * (q3 - q1))):
             out.append(counter)
     return out
+
 
 def p_or_test(counter_list):
     '''outlier removal if training values are known'''
@@ -898,12 +953,14 @@ def p_or_test(counter_list):
             if x.get_total_in() >= minmax.min
             and x.get_total_in() <= minmax.max]
 
+
 def p_or_toolong(counter_list):
     '''@return counter_list with counters shorter than 8 minutes.
 
     The capturing software seemingly did not remove the others, even
     though it should have.'''
     return [x for x in counter_list if x.get_duration() < DURATION_LIMIT_SECS]
+
 
 def outlier_removal(counter_dict, level=2):
     '''apply outlier removal to input of form
@@ -925,7 +982,7 @@ def outlier_removal(counter_dict, level=2):
                 raise ValueError
             logging.debug('%15s: outlier_removal(%d) removed %d from %d',
                           k, level, (len(v) - len(out[k])), len(v))
-        except ValueError, IndexError: ## somewhere, list got to []
+        except ValueError, IndexError:  # somewhere, list got to []
             logging.warn('%s discarded in outlier removal', k)
     return out
 
@@ -943,9 +1000,9 @@ if __name__ == "__main__":
     if not json_only:
         save(COUNTERS)
         print 'counters saved to DOMAIN.json files'
-    # ## if non-interactive, print timing data
+    # if non-interactive, print timing data
     # from ctypes import pythonapi
     # if not os.environ.get('PYTHONINSPECT') and not pythonapi.Py_InspectFlag > 0:
     #     for t in itertools.chain.from_iterable(COUNTERS.values()):
-    #      # was [trace for domain in COUNTERS.values() for trace in domain]:
+    # was [trace for domain in COUNTERS.values() for trace in domain]:
     #         print t.timing

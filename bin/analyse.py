@@ -12,8 +12,8 @@ import sys
 import time
 
 # tmp - by hand open world
-#from sklearn.cross_validation import train_test_split
-#from sklearn.preprocessing import label_binarize
+# from sklearn.cross_validation import train_test_split
+# from sklearn.preprocessing import label_binarize
 from sklearn.metrics import roc_curve, auc
 
 import counter
@@ -22,12 +22,12 @@ import plot_data
 
 JOBS_NUM = grid.JOBS_NUM
 LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
-#LOGLEVEL = logging.DEBUG
+# LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
-#LOGLEVEL = logging.WARN
+# LOGLEVEL = logging.WARN
 TIME_SEPARATOR = '@'
 
-### classifiers
+# classifiers
 GOOD = [ensemble.ExtraTreesClassifier(n_estimators=250),
         ensemble.RandomForestClassifier(),
         neighbors.KNeighborsClassifier(),
@@ -42,10 +42,13 @@ scaler = None
 
 # td: check if correct to use like this (or rather like _size_increase)
 # td: think if remove (not used)
+
+
 def _average_duration(counter_dict):
     '''@return the average duration over all traces'''
     ms = times_mean_std(counter_dict)
     return np.mean([x[0] for x in ms.values()])
+
 
 def _binarize(y, keep=-1, default=0):
     '''binarize data in y: transform all values to =default= except =keep=
@@ -57,10 +60,12 @@ def _binarize(y, keep=-1, default=0):
         else:
             yield default
 
+
 def _bounded_auc(y_true, y_predict, bound=0.01, **kwargs):
     '''@return bounded auc of (probabilistic) fitted classifier on data.'''
     newfpr, newtpr = _bounded_roc(y_true, y_predict, bound, **kwargs)
     return metrics.auc(newfpr, newtpr)
+
 
 def _bounded_roc(y_true, y_predict, bound=0.01, **kwargs):
     '''@return (fpr, tpr) within fpr-bounds'''
@@ -70,6 +75,7 @@ def _bounded_roc(y_true, y_predict, bound=0.01, **kwargs):
     newfpr.append(bound)
     newtpr = np.interp(newfpr, fpr, tpr)
     return (newfpr, newtpr)
+
 
 def _bytes_mean_std(counter_dict):
     '''@return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
@@ -82,40 +88,49 @@ def _bytes_mean_std(counter_dict):
         out[domain] = (np.mean(total), np.std(total))
     return out
 
+
 def _class_predictions(y2, y2_predict):
     '''@return list: for each class in y2: what was it predicted to be'''
     out = []
-    for i in range(y2[-1]+1):
+    for i in range(y2[-1] + 1):
         out.append([])
     for (idx, elem) in enumerate(y2):
         out[elem].append(y2_predict[idx])
     return out
+
 
 def _clf(**svm_params):
     '''@return default classifier with additional params'''
     return multiclass.OneVsRestClassifier(
         svm.SVC(class_weight="balanced", **svm_params))
 
+
 def _clf_name(clf):
     '''@return name of estimator class'''
     return str(clf.__class__).split('.')[-1].split("'")[0]
 
+
 def _clf_params(clf):
     '''@return name + params if SVM'''
-    if  'SVC' in str(clf):
+    if 'SVC' in str(clf):
         return '{}_{}'.format(_clf_name(clf), clf.best_params_)
     else:
         return _clf_name(clf)
 
 # td: if ever used, have a look at _scale (needs to reset SCALER)
+
+
 def _compare(X, y, X2, y2, clfs=GOOD):
     for clf in clfs:
         _test(X, y, clf)
         _test(X2, y2, clf)
 
 # courtesy of http://stackoverflow.com/a/38060351
+
+
 def _dict_elementwise(func, d1, d2):
     return {k: func(d1[k], d2[k]) for k in d1}
+
 
 def _find_domain(mean_per_dir, mean):
     '''@return (first) domain name with mean'''
@@ -125,6 +140,8 @@ def _find_domain(mean_per_dir, mean):
                 return domain
 
 # td: ref: counters == counter_list?
+
+
 def _find_max_lengths(counters):
     '''determines maximum lengths of variable-length features'''
     max_lengths = counters.values()[0][0].variable_lengths()
@@ -138,16 +155,18 @@ def _find_max_lengths(counters):
                 max_lengths[key] = lengths[key]
     return max_lengths
 
+
 def _format_row(row):
     '''format row of orgtable to only contain relevant data (for tex export)'''
     out = [row[0]]
     out.extend(el[:6] for el in row[1:])
     return out
 
+
 def _gen_url_list(y, y_domains):
     '''@return list of urls, the index is the class'''
     out = []
-    for i in range(y[-1]+1):
+    for i in range(y[-1] + 1):
         out.append([])
     for (idx, cls) in enumerate(y):
         if not out[cls]:
@@ -156,9 +175,11 @@ def _gen_url_list(y, y_domains):
             assert out[cls] == y_domains[idx]
     return out
 
+
 def _lb(*args, **kwargs):
     '''facade for _binarize, list wrap'''
     return list(_binarize(*args, **kwargs))
+
 
 def _mean(counter_dict):
     '''@return a dict of {domain1: mean1, ... domainN: meanN}
@@ -172,6 +193,8 @@ def _mean(counter_dict):
     return out
 
 # td: simple doctest/unit test
+
+
 def _misclassification_rates(train, test, clf=GOOD[0]):
     '''@return (mis-)classification rates per class in test'''
     (X, y, y_d) = counter.to_features_cumul(counter.outlier_removal(train))
@@ -181,19 +204,22 @@ def _misclassification_rates(train, test, clf=GOOD[0]):
     return _predict_percentages(_class_predictions(y2, clf.predict(X2)),
                                 _gen_url_list(y2, y2d))
 
+
 def _proba_clf(other_clf):
     '''@return ovr-svc with othere_clfs c and gamma'''
     return _clf(C=other_clf.best_params_['estimator__C'],
                 gamma=other_clf.best_params_['estimator__gamma'],
                 probability=True)
 
+
 def _predict_percentages(class_predictions_list, url_list):
     '''@return percentages how often a class was mapped to itself'''
     import collections
     out = {}
     for (idx, elem) in enumerate(class_predictions_list):
-        out[url_list[idx]] = float(collections.Counter(elem)[idx])/len(elem)
+        out[url_list[idx]] = float(collections.Counter(elem)[idx]) / len(elem)
     return out
+
 
 def _std(counter_dict):
     '''@return a dict of {domain1: std1, ... domainN: stdN}
@@ -205,6 +231,7 @@ def _std(counter_dict):
         total = [counter.get_total_both() for counter in counter_list]
         out[domain] = np.std(total)
     return out
+
 
 def _scale(X, clf):
     '''ASSUMPTION: svc never called on two different data sets in
@@ -228,6 +255,7 @@ def _scale(X, clf):
         scaler = None
         return X
 
+
 def _size_increase(base, compare):
     '''@return how much bigger/smaller is =compare= than =base= (in %)'''
     diff = {}
@@ -241,20 +269,24 @@ def _size_increase(base, compare):
     for k in keys:
         diff[k] = float(compare[k][0]) / base[k][0]
 #    return 100 * (gmean(diff.values()) -1)
-    return 100 * (np.mean(diff.values()) -1)
+    return 100 * (np.mean(diff.values()) - 1)
+
 
 def _size_increase_helper(two_defenses):
     return _size_increase(two_defenses[two_defenses.keys()[0]],
                           two_defenses[two_defenses.keys()[1]])
 
+
 def size_increase_from_argv(defense_argv, remove_small=True):
     '''computes sizes increases from sys.argv-like list, argv[1] is baseline'''
-    defenses = counter.for_defenses(defense_argv[1:], remove_small=remove_small)
+    defenses = counter.for_defenses(
+        defense_argv[1:], remove_small=remove_small)
     stats = {k: _bytes_mean_std(v) for (k, v) in defenses.iteritems()}
     out = {}
     for d in defense_argv[2:]:
         out[d] = _size_increase(stats[defense_argv[1]], stats[d])
     return out
+
 
 def _test(X, y, clf, nj=JOBS_NUM, folds=5):
     '''tests estimator with X, y, @return result (ndarray)'''
@@ -262,6 +294,8 @@ def _test(X, y, clf, nj=JOBS_NUM, folds=5):
     return cross_validation.cross_val_score(clf, X, y, cv=folds, n_jobs=nj)
 
 # unused, but could be useful
+
+
 def _times_mean_std(counter_dict):
     '''analyse timing data (time overhead)
 
@@ -274,6 +308,7 @@ def _times_mean_std(counter_dict):
         out[domain] = (np.mean(total), np.std(total))
     return out
 
+
 def _verbose_test_11(X, y, clf):
     '''cross-test (1) estimator on (1) X, y, print results and estimator name'''
     t = time.time()
@@ -284,10 +319,12 @@ def _verbose_test_11(X, y, clf):
     logging.info('time: %s', time.time() - t)
     logging.debug('res: %s', res)
 
+
 def _xtest(X_train, y_train, X_test, y_test, clf):
     '''cross_tests with estimator'''
     clf.fit(_scale(X_train, clf), y_train)
     return clf.score(_scale(X_test, clf), y_test)
+
 
 def class_stats_to_table(class_stats):
     '''prints table from data in class_stats (gen_class_stats_list output)'''
@@ -303,6 +340,7 @@ def class_stats_to_table(class_stats):
         for col in class_stats:
             print '| {}'.format(col[row]),
         print '|'
+
 
 def compare_stats(dirs):
     '''@return a dict {dir1: {domain1: {...}, ..., domainN: {...}},
@@ -324,6 +362,7 @@ def compare_stats(dirs):
             out.append(tmp)
     return out
 
+
 def simulated_original(counters, name=None, folds=10):
     '''simulates original panchenko: does 10-fold cv on _all_ data, just
 picks best result'''
@@ -335,15 +374,19 @@ picks best result'''
         ALL_MAP[name] = clf
     print '10-fold result: {}'.format(clf.best_score_)
 
+
 def tvts(X, y):
     '''@return X1, X2, X3, y1, y2, y3 with each 1/3 of the data (train,
 validate, test)
     >> tvts([[1], [1], [1], [2], [2], [2]], [1, 1, 1, 2, 2, 2])
     ([[1], [2]], [[1], [2]], [[1], [2]], [1, 2], [1, 2], [1, 2]) # modulo order
     '''
-    X1, Xtmp, y1, ytmp = cross_validation.train_test_split(X, y, train_size=1./3, stratify=y)
-    X2, X3, y2, y3 = cross_validation.train_test_split(Xtmp, ytmp, train_size=.5, stratify=ytmp)
+    X1, Xtmp, y1, ytmp = cross_validation.train_test_split(
+        X, y, train_size=1. / 3, stratify=y)
+    X2, X3, y2, y3 = cross_validation.train_test_split(
+        Xtmp, ytmp, train_size=.5, stratify=ytmp)
     return (X1, X2, X3, y1, y2, y3)
+
 
 def open_world(defense, num_jobs=JOBS_NUM):
     '''does an open-world (SVM) test on data'''
@@ -355,7 +398,7 @@ def open_world(defense, num_jobs=JOBS_NUM):
     gamma = 2**-45
     scorer = metrics.make_scorer(_bounded_auc, needs_proba=True, bound=0.01)
     clf = grid._my(X_train, y_train, c=2**15, gamma=2**-45,
-                   grid_args={"scoring":scorer})
+                   grid_args={"scoring": scorer})
     c2 = _proba_clf(clf)
     # tpr, fpr, ... on test data # bl = lambda x: list(_binarize(x))
     p_ = c2.fit(X_train, list(_binarize(y_train))).predict_proba(X_test)
@@ -363,6 +406,7 @@ def open_world(defense, num_jobs=JOBS_NUM):
     plot = plot_data.roc(fpr, tpr)
     # td: show/save/... output result
     # tdmb: daniel: improve result with way more fpr vs much less tpr (auc0.01)
+
 
 def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test
@@ -374,7 +418,7 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, c
     are more than one, the first is taken as baseline and training,
     while the others are tested against this.
     '''
-    stats = {k: _bytes_mean_std(v) for (k,v) in defenses.iteritems()}
+    stats = {k: _bytes_mean_std(v) for (k, v) in defenses.iteritems()}
     # durations = {k: _average_duration(v) for (k,v) in defenses.iteritems()}
 
     # no-split, best result of 10-fold tts
@@ -392,7 +436,7 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, c
         else:
             t = time.time()
             clf = grid._helper(counter.outlier_removal(train, 2), cumul)
-            logging.debug('parameter search took: %s', time.time() -t)
+            logging.debug('parameter search took: %s', time.time() - t)
             if cumul:
                 SVC_TTS_MAP[def0] = clf
                 CLFS.append(SVC_TTS_MAP[def0])
@@ -420,7 +464,8 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, c
             # td: refactor code duplication with above (search for keys = ...)
             keys = set(its_counters0.keys())
             keys = keys.intersection(its_counters.keys())
-            tmp = {}; tmp0 = {}
+            tmp = {}
+            tmp0 = {}
             for key in keys:
                 tmp0[key] = its_counters0[key]
                 tmp[key] = its_counters[key]
@@ -440,7 +485,7 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, c
             t = time.time()
             print '{}: {}'.format(_clf_name(clf), _xtest(X, y, X2, y2, clf)),
             print '({} seconds)'.format(time.time() - t)
-    import pdb; pdb.set_trace()
+
 
 def gen_class_stats_list(defenses,
                          defense0='auto',
@@ -453,10 +498,12 @@ def gen_class_stats_list(defenses,
     out = []
     for clf in clfs:
         for c in defenses:
-            res = _misclassification_rates(defenses[defense0], defenses[c], clf=clf)
+            res = _misclassification_rates(
+                defenses[defense0], defenses[c], clf=clf)
             res['id'] = '{} with {}'.format(c, _clf_name(clf))
             out.append(res)
     return out
+
 
 def outlier_removal_levels(defense, clf=None):
     '''tests different outlier removal schemes and levels
@@ -466,7 +513,7 @@ def outlier_removal_levels(defense, clf=None):
     @param train_test: tuple of two "sets" (train, test) each like defense'''
     # outlier removal on both at the same time
     print 'combined outlier removal'
-    for lvl in [1,2,3]:
+    for lvl in [1, 2, 3]:
         defense_with_or = counter.outlier_removal(defense, lvl)
         (train, test) = tts(defense_with_or)
         (X, y, _) = counter.to_features_cumul(train)
@@ -479,8 +526,8 @@ def outlier_removal_levels(defense, clf=None):
 
     # separate outlier removal on train and test set
     print 'separate outlier removal for training and test data'
-    for train_lvl in [1,2,3]:
-        for test_lvl in [-1,1,2,3]:
+    for train_lvl in [1, 2, 3]:
+        for test_lvl in [-1, 1, 2, 3]:
             (X, y, _) = counter.to_features_cumul(
                 counter.outlier_removal(train, train_lvl))
             if type(clf) is type(None):
@@ -489,6 +536,7 @@ def outlier_removal_levels(defense, clf=None):
                 counter.outlier_removal(test, test_lvl))
             print "level train: {}, test: {}".format(train_lvl, test_lvl)
             _verbose_test_11(X, y, clf)
+
 
 def site_sizes(stats):
     '''@return {'url1': [size0, ..., sizeN-1], ..., urlM: [...]}
@@ -503,15 +551,17 @@ def site_sizes(stats):
             out[url].append(stats[defense][url][0])
     return out
 
+
 def size_test(argv, outlier_removal=True):
     '''1. collect traces
     2. create stats
     3. evaluate for each vs first'''
     defenses = counter.for_defenses(argv[1:])
-    stats = {k: _bytes_mean_std(v) for (k,v) in defenses.iteritems()}
+    stats = {k: _bytes_mean_std(v) for (k, v) in defenses.iteritems()}
     defense0 = argv[1]
     for d in argv[2:]:
         print '{}: {}'.format(d, _size_increase(stats[defense0], stats[d]))
+
 
 def top_30(mean_per_dir):
     '''@return 30 domains with well-interspersed trace means sizes
@@ -528,7 +578,8 @@ def top_30(mean_per_dir):
         out.add(_find_domain(mean_per_dir, mean))
     return out
 
-def tts(counter_dict, test_size=1.0/3):
+
+def tts(counter_dict, test_size=1.0 / 3):
     '''train-test-split: splits counter_dict in train_dict and test_dict
 
     test_size = deep_len(test)/deep_len(train)
@@ -556,27 +607,27 @@ def tts(counter_dict, test_size=1.0/3):
         test[url].append(counter_dict[url][index])
     return (train, test)
 
-    #_test(X, y, svm.SVC(kernel='linear')) #problematic, but best
-    ### random forest
-    ## feature importance
+    # _test(X, y, svm.SVC(kernel='linear')) #problematic, but best
+    # random forest
+    # feature importance
     # forest = ensemble.ExtraTreesClassifier(n_estimators=250)
     # forest.fit(X, y)
     # forest.feature_importances_
-    ### extratree param
+    # extratree param
     # for num in range(50, 400, 50):
     #     _test(X, y, ensemble.ExtraTreesClassifier(n_estimators=num))
-    ### linear params
+    # linear params
     # cstart, cstop = -5, 5
     # Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
     # for c in Cs:
     #     _test(X, y, svm.SVC(C=c, kernel='linear'))
-    ### metrics (single)
+    # metrics (single)
     # from scipy.spatial import distance
     # for dist in [distance.braycurtis, distance.canberra,
     #              distance.chebyshev, distance.cityblock, distance.correlation,
     #              distance.cosine, distance.euclidean, distance.sqeuclidean]:
     #     _test(X, y, neighbors.KNeighborsClassifier(metric='pyfunc', func=dist))3
-    ### td: knn + levenshtein
+    # td: knn + levenshtein
     # import math
     # def mydist(x, y):
     #     fixedm = distance.sqeuclidean(x[:8], y[:8])
@@ -591,20 +642,27 @@ def tts(counter_dict, test_size=1.0/3):
     #     return math.sqrt(fixedm + variable1 + variable2)
 #    (X, y ,y_dom) = counter.to_features_cumul(counters)
 
-### OLDER DATA (without bridge)
+# OLDER DATA (without bridge)
 # sys.argv = ['', 'disabled/05-12@10']
 # next: traces in between
 # sys.argv = ['', 'disabled/06-09@10', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache']
 # sys.argv = ['', 'disabled/06-17@10_from', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
 # missing:
-#sys.argv = ['', 'disabled/06-17@10_from', 'retro/0', 'retro/1', 'retro/10', 'retro/20', 'retro/30', 'retro/5', '0.15.3/json-10/0', '0.15.3/json-10/1', '0.15.3/json-10/10', '0.15.3/json-10/20', '0.15.3/json-10/30', '0.15.3/json-10/40', '0.15.3/json-10/5', '0.19/0-ai', '0.19/0-bii', '0.19/20-bi', '0.19/20-bii', '0.19/aii-factor=0', '0.21']
-#sys.argv = ['', 'disabled/2016-06-30', 'retro/0', 'retro/1', 'retro/10', 'retro/20', 'retro/30', 'retro/5', '0.15.3/json-10/0', '0.15.3/json-10/1', '0.15.3/json-10/10', '0.15.3/json-10/20', '0.15.3/json-10/30', '0.15.3/json-10/40', '0.15.3/json-10/5', '0.19/0-ai', '0.19/0-bii', '0.19/20-bi', '0.19/20-bii', '0.19/aii-factor=0', '0.21']
+# sys.argv = ['', 'disabled/06-17@10_from', 'retro/0', 'retro/1', 'retro/10', 'retro/20', 'retro/30', 'retro/5', '0.15.3/json-10/0', '0.15.3/json-10/1', '0.15.3/json-10/10', '0.15.3/json-10/20', '0.15.3/json-10/30', '0.15.3/json-10/40', '0.15.3/json-10/5', '0.19/0-ai', '0.19/0-bii', '0.19/20-bi', '0.19/20-bii', '0.19/aii-factor=0', '0.21']
+# sys.argv = ['', 'disabled/2016-06-30', 'retro/0', 'retro/1', 'retro/10',
+# 'retro/20', 'retro/30', 'retro/5', '0.15.3/json-10/0',
+# '0.15.3/json-10/1', '0.15.3/json-10/10', '0.15.3/json-10/20',
+# '0.15.3/json-10/30', '0.15.3/json-10/40', '0.15.3/json-10/5',
+# '0.19/0-ai', '0.19/0-bii', '0.19/20-bi', '0.19/20-bii',
+# '0.19/aii-factor=0', '0.21']
 
 # sys.argv = ['', 'disabled/wtf-pad', 'wtf-pad']
 # sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
-# sys.argv = ['', 'disabled/06-17@10_from', '0.20/0_ai', '0.20/0_bi', '0.20/20_ai', '0.20/20_bi', '0.20/40_bi', '0.20/0_aii', '0.20/0_bii', '0.20/20_aii', '0.20/20_bii', '0.20/40_aii', '0.20/40_bii']
+# sys.argv = ['', 'disabled/06-17@10_from', '0.20/0_ai', '0.20/0_bi',
+# '0.20/20_ai', '0.20/20_bi', '0.20/40_bi', '0.20/0_aii', '0.20/0_bii',
+# '0.20/20_aii', '0.20/20_bii', '0.20/40_aii', '0.20/40_bii']
 
-### CLASSIFICATION RESULTS PER CLASS
+# CLASSIFICATION RESULTS PER CLASS
 
 # defenses = counter.for_defenses(sys.argv[1:])
 # some_30 = top_30(means)
@@ -614,22 +672,22 @@ def tts(counter_dict, test_size=1.0/3):
 # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
 # counters = counter.all_from_panchenko(PANCHENKO_PATH)
 
-## CREATE WANG' BATCH DIRECTORIES. call this in data/ directory
-##   on update, alter [[diplomarbeit.org::*How to get Wang-kNN to work]]
+# CREATE WANG' BATCH DIRECTORIES. call this in data/ directory
+# on update, alter [[diplomarbeit.org::*How to get Wang-kNN to work]]
 # for root, dirs, files in os.walk('.'):
-#     # plots or already processed
+# plots or already processed
 #     if (not re.search('/(plots|path|batch|results)', root) and
 #         not dirs and files):
 #         print root
 #         counter.dir_to_wang(root, remove_small=False)
 
-### variants
-## RETRO
+# variants
+# RETRO
 # ['retro/bridge/100__2016_09_15', 'retro/bridge/50__2016_09_16']
 # ['retro/bridge/200__2016-10-02/', 'retro/bridge/200__2016-10-02_with_errs/']
-## MAIN 0.22
+# MAIN 0.22
 #['0.22/10aI__2016-07-08', '0.22/30aI__2016-07-13', '0.22/50aI__2016-07-13', '0.22/5aII__2016-07-18', '0.22/5aI__2016-07-19', '0.22/10_maybe_aI__2016-07-23', '0.22/5aI__2016-07-25', '0.22/30aI__2016-07-25', '0.22/50aI__2016-07-26', '0.22/2aI__2016-07-23', '0.22/5aI__2016-08-26', '0.22/5aII__2016-08-25', '0.22/5bI__2016-08-27', '0.22/5bII__2016-08-27', '0.22/20aI__2016-09-10', '0.22/20aII__2016-09-10', '0.22/20bII__2016-09-12', '0.22/20bI__2016-09-13']
-## SIMPLE
+# SIMPLE
 #['simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5__2016-07-17', 'simple2/20']
 
 # 07-06
@@ -654,30 +712,44 @@ def tts(counter_dict, test_size=1.0/3):
 # sys.argv = ['', 'disabled/bridge__2016-09-26_100', 'simple2/5__2016-09-23_100/']
 # sys.argv = ['', 'disabled/bridge__2016-09-26_100_with_errs', 'simple2/5__2016-09-23_100/']
 # 10-06 (also just FLAVORS)
-# sys.argv = ['', "disabled/bridge__2016-10-06_with_errors", "0.22/22@20aI__2016-10-07", "0.22/22@20aI__2016-10-07_with_errors", "0.22/22@20aII__2016-10-07", "0.22/22@20aII__2016-10-07_with_errors", "0.22/22@20bI__2016-10-08", "0.22/22@20bI__2016-10-08_with_errors", "0.22/22@20bII__2016-10-08", "0.22/22@20bII__2016-10-08_with_errors", "0.22/22@5aI__2016-10-09", "0.22/22@5aI__2016-10-09_with_errors", "0.22/22@5aII__2016-10-09", "0.22/22@5aII__2016-10-09_with_errors", "0.22/22@5bI__2016-10-10", "0.22/22@5bI__2016-10-10_with_errors", "0.22/22@5bII__2016-10-10", "0.22/22@5bII__2016-10-10_with_errors"]
+# sys.argv = ['', "disabled/bridge__2016-10-06_with_errors",
+# "0.22/22@20aI__2016-10-07", "0.22/22@20aI__2016-10-07_with_errors",
+# "0.22/22@20aII__2016-10-07", "0.22/22@20aII__2016-10-07_with_errors",
+# "0.22/22@20bI__2016-10-08", "0.22/22@20bI__2016-10-08_with_errors",
+# "0.22/22@20bII__2016-10-08", "0.22/22@20bII__2016-10-08_with_errors",
+# "0.22/22@5aI__2016-10-09", "0.22/22@5aI__2016-10-09_with_errors",
+# "0.22/22@5aII__2016-10-09", "0.22/22@5aII__2016-10-09_with_errors",
+# "0.22/22@5bI__2016-10-10", "0.22/22@5bI__2016-10-10_with_errors",
+# "0.22/22@5bII__2016-10-10", "0.22/22@5bII__2016-10-10_with_errors"]
 
-### DISABLED
+# DISABLED
 # 30
 # sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15', 'disabled/bridge__2016-08-29', 'disabled/bridge__2016-09-09', 'disabled/bridge__2016-09-18', 'disabled/bridge__2016-09-30', "disabled/bridge__2016-10-06_with_errors", "disabled/bridge__2016-10-16", "disabled/bridge__2016-10-16_with_errors"]
-## 100
-# sys.argv = ['', 'disabled/bridge__2016-08-30_100', 'disabled/bridge__2016-09-21_100', 'disabled/bridge__2016-09-26_100', 'disabled/bridge__2016-09-26_100_with_errs']
+# 100
+# sys.argv = ['', 'disabled/bridge__2016-08-30_100',
+# 'disabled/bridge__2016-09-21_100', 'disabled/bridge__2016-09-26_100',
+# 'disabled/bridge__2016-09-26_100_with_errs']
 
 # NEW
-# sys.argv = ['', './disabled/bridge__2016-11-04_100@50', './0.22/10aI__2016-11-04_50_of_100', './disabled/bridge__2016-11-21', './disabled/bridge__2016-11-27']
+# sys.argv = ['', './disabled/bridge__2016-11-04_100@50',
+# './0.22/10aI__2016-11-04_50_of_100', './disabled/bridge__2016-11-21',
+# './disabled/bridge__2016-11-27']
 
 
-
-### TOP
+# TOP
 # sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aI__2016-07-19']
 # sys.argv = ['', 'disabled/bridge__2016-07-06', 'wtf-pad/bridge__2016-07-05']
 
 # disabled/p-foreground-data/30/output-tcp
 
-# sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git', 'bin')); reload(counter)
+# sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git',
+# 'bin')); reload(counter)
 
 # if by hand: change to the right directory before importing
-# import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
+# import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git',
+# 'data'))
 doctest.testmod()
+
 
 def main(argv=sys.argv, with_svm=True, cumul=True):
     '''loads stuff, triggers either open or closed-world eval'''

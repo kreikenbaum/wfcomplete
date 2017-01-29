@@ -1,22 +1,24 @@
 import collections
 import doctest
 import logging
-from sklearn import grid_search, multiclass, svm #cross_validation, ensemble, metrics, neighbors, preprocessing, tree
+from sklearn import grid_search, multiclass, svm  # cross_validation, ensemble, metrics, neighbors, preprocessing, tree
 import counter
 
-JOBS_NUM = -3 # 1. maybe -4 for herrmann (2 == -3) used up all memory
+JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
+
 
 def _fit(c, gamma, step, X, y, cv, scoring=None, probability=False):
     '''@return appropriate gridsearchcv, fitted with X and y'''
     logging.info('c: %s, gamma: %s, step: %s', c, gamma, step)
     cs = _new_search_range(c, step)
     gammas = _new_search_range(gamma, step)
-    clf =  grid_search.GridSearchCV(
+    clf = grid_search.GridSearchCV(
         estimator=multiclass.OneVsRestClassifier(
             svm.SVC(class_weight="balanced", probability=probability)),
         param_grid={"estimator__C": cs, "estimator__gamma": gammas},
         n_jobs=JOBS_NUM, verbose=0, cv=cv, scoring=scoring)
     return clf.fit(X, y)
+
 
 def _stop(y, step, result, previous):
     '''@return True if grid should stop
@@ -31,9 +33,10 @@ def _stop(y, step, result, previous):
     True
     '''
     return (step < 0.001 or
-            (len(previous) > 3 and # some tries and with same val and > guess
+            (len(previous) > 3 and  # some tries and with same val and > guess
              max([abs(x - result) for x in previous[-3:]]) < 0.001 and
-             result > 1.1*max(collections.Counter(y).values()) / len(y)))
+             result > 1.1 * max(collections.Counter(y).values()) / len(y)))
+
 
 def _best_at_border(grid_clf):
     '''@return True if best params are at parameter grid borders'''
@@ -66,13 +69,13 @@ def _my(X, y, c=2**14, gamma=2**-10, folds=3, step=2, grid_args={},
                **grid_args)
     while not _stop(y, step, clf.best_score_, previous):
         if _best_at_border(clf):
-            pass #keep step, search laterally
+            pass  # keep step, search laterally
         else:
-            step = step/2.
+            step = step / 2.
         previous.append(clf.best_score_)
         clf = _fit(clf.best_params_['estimator__C'],
-                        clf.best_params_['estimator__gamma'],
-                        step, X, y, folds)
+                   clf.best_params_['estimator__gamma'],
+                   step, X, y, folds)
     return clf
 
     # for c in cs:
@@ -103,18 +106,19 @@ def _my(X, y, c=2**14, gamma=2**-10, folds=3, step=2, grid_args={},
 
 
 def _helper(counter_dict, outlier_removal=True, nj=JOBS_NUM,
-                    cumul=True, folds=5):
+            cumul=True, folds=5):
     '''@return grid-search on counter_dict result (clf, results)'''
     if outlier_removal:
         counter_dict = counter.outlier_removal(counter_dict)
     if cumul:
         (X, y, _) = counter.to_features_cumul(counter_dict)
         return _my(X, y, folds=folds)
-    else: # panchenko 1
+    else:  # panchenko 1
         (X, y, _) = counter.to_features(counter_dict)
         return _my(X, y,
-                        cs=np.logspace(15, 19, 3, base=2),
-                        gammas=np.logspace(-17, -21, 3, base=2))
+                   cs=np.logspace(15, 19, 3, base=2),
+                   gammas=np.logspace(-17, -21, 3, base=2))
+
 
 def _new_search_range(best_param, step=1):
     '''@return new array of parameters to search in, with logspaced steps'''
