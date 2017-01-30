@@ -396,16 +396,19 @@ def open_world(defense, num_jobs=JOBS_NUM):
         X, y, train_size=.8, stratify=y)
     c = 2**15
     gamma = 2**-45
-    scorer = metrics.make_scorer(_bounded_auc, needs_proba=True, bound=0.01)
-    clf = grid._my(X_train, y_train, c=2**15, gamma=2**-45,
-                   grid_args={"scoring": scorer})
+    clf = grid.sci(X_train, y_train, c=2**15, gamma=2**-45)
+#    scorer = metrics.make_scorer(_bounded_auc, needs_proba=True, bound=0.01)
+#    clf = grid.sci(X_train, y_train, c=2**15, gamma=2**-45,
+#                   grid_args={"scoring": scorer})
     c2 = _proba_clf(clf)
     # tpr, fpr, ... on test data # bl = lambda x: list(_binarize(x))
     p_ = c2.fit(X_train, list(_binarize(y_train))).predict_proba(X_test)
     fpr, tpr, thresholds = roc_curve(list(_binarize(y_test)), p_[:, 1], 0)
-    plot = plot_data.roc(fpr, tpr)
+    import pdb; pdb.set_trace()
+    return plot_data.roc(fpr, tpr)
     # td: show/save/... output result
     # tdmb: daniel: improve result with way more fpr vs much less tpr (auc0.01)
+    
 
 
 def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, cc=False):
@@ -746,8 +749,7 @@ def tts(counter_dict, test_size=1.0 / 3):
 # 'bin')); reload(counter)
 
 # if by hand: change to the right directory before importing
-# import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git',
-# 'data'))
+# import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
 doctest.testmod()
 
 

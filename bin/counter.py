@@ -12,6 +12,8 @@ import os
 import subprocess
 import sys
 
+import pyshark
+
 DURATION_LIMIT_SECS = 8 * 60
 # HOME_IP = '134.76.96.47' #td: get ips
 HOME_IP = '134.169.109.25'
@@ -577,7 +579,7 @@ class Counter(object):
     # corner cases
     # (1) '2717 39.777541132 65.19.167.130 -> 134.169.109.25 ANSI C12.22 363 1153 \xe2\x86\x92 7777 [PSH, ACK] Seq=1 Ack=1 Win=26880 Len=297 TSval=3074280410 TSecr=531832242[Malformed Packet][Malformed Packet][Malformed Packet]\n'
     @staticmethod
-    def from_pcap(filename):
+    def from_pcap_old(filename):
         '''creates Counter from pcap file'''
         tmp = Counter(filename)
 
@@ -607,6 +609,24 @@ class Counter(object):
                     tmp.extract_line(src, size, time)
                 logging.debug('from %s to %s: %s bytes', src, dst, size)
         return tmp
+
+
+    @staticmethod
+    def from_pcap(filename):
+        '''Creates Counter from pcap file. Less efficient than above.'''
+        tmp = Counter(filename)
+
+        cap = pyshark.FileCapture(filename)
+        start = cap[0].sniff_time
+        for pkt in cap:
+            #import pdb; pdb.set_trace()
+            if not 'ip' in pkt or int(pkt.ip.len) == '52':
+                logging.debug('discarded from %s packet %s', filename, pkt)
+            else:
+                tmp.extract_line(pkt.ip.src, pkt.ip.len,
+                                 (pkt.sniff_time - start).total_seconds())
+        return tmp
+        
 
     @staticmethod
     def from_wang(filename, its_url=None, its_time=None):
