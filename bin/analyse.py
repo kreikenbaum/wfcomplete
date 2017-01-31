@@ -142,20 +142,6 @@ def _find_domain(mean_per_dir, mean):
 # td: ref: counters == counter_list?
 
 
-def _find_max_lengths(counters):
-    '''determines maximum lengths of variable-length features'''
-    max_lengths = counters.values()[0][0].variable_lengths()
-    all_lengths = []
-    for domain, domain_values in counters.iteritems():
-        for trace in domain_values:
-            all_lengths.append(trace.variable_lengths())
-    for lengths in all_lengths:
-        for key in lengths.keys():
-            if max_lengths[key] < lengths[key]:
-                max_lengths[key] = lengths[key]
-    return max_lengths
-
-
 def _format_row(row):
     '''format row of orgtable to only contain relevant data (for tex export)'''
     out = [row[0]]
@@ -610,6 +596,18 @@ def tts(counter_dict, test_size=1.0 / 3):
         test[url].append(counter_dict[url][index])
     return (train, test)
 
+def main(argv=sys.argv, with_svm=True, cumul=True):
+    '''loads stuff, triggers either open or closed-world eval'''
+    if len(argv) == 1:
+        argv.append('.')
+    defenses = counter.for_defenses(argv[1:])
+    if 'background' in defenses.values()[0]:
+        if len(defenses) > 1:
+            print 'chose first class for open world analysis'
+        open_world(defenses.values()[0])
+    else:
+        closed_world(defenses, argv[1], with_svm=with_svm, cumul=cumul)
+
     # _test(X, y, svm.SVC(kernel='linear')) #problematic, but best
     # random forest
     # feature importance
@@ -745,25 +743,12 @@ def tts(counter_dict, test_size=1.0 / 3):
 
 # disabled/p-foreground-data/30/output-tcp
 
-# sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git',
-# 'bin')); reload(counter)
+# sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git', 'bin')); reload(counter)
 
 # if by hand: change to the right directory before importing
 # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
 doctest.testmod()
 
-
-def main(argv=sys.argv, with_svm=True, cumul=True):
-    '''loads stuff, triggers either open or closed-world eval'''
-    if len(argv) == 1:
-        argv.append('.')
-    defenses = counter.for_defenses(argv[1:])
-    if 'background' in defenses.values()[0]:
-        if len(defenses) > 1:
-            print 'chose first class for open world analysis'
-        open_world(defenses.values()[0])
-    else:
-        closed_world(defenses, argv[1], with_svm=with_svm, cumul=cumul)
 
 if __name__ == "__main__":
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)

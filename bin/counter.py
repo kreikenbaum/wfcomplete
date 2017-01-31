@@ -7,10 +7,11 @@ import itertools
 import json
 import logging
 import math
-import numpy as np
 import os
 import subprocess
 import sys
+
+import numpy as np
 
 import pyshark
 
@@ -71,6 +72,20 @@ def _extract_url(filename):
     return os.path.basename(filename).split(TIME_SEPARATOR)[0]
 
 
+def _find_max_lengths(counters):
+    '''determines maximum lengths of variable-length features'''
+    max_lengths = counters.values()[0][0].variable_lengths()
+    all_lengths = []
+    for domain, domain_values in counters.iteritems():
+        for trace in domain_values:
+            all_lengths.append(trace.variable_lengths())
+    for lengths in all_lengths:
+        for key in lengths.keys():
+            if max_lengths[key] < lengths[key]:
+                max_lengths[key] = lengths[key]
+    return max_lengths
+
+
 def _normalize(array):
     '''normalizes array so that its maximum absolute value is +- 1.0
 
@@ -116,8 +131,8 @@ MIN_CLASS_SIZE per url'''
     out = {}
     for (k, v) in counter_dict.iteritems():
         if len(v) < MIN_CLASS_SIZE:
-            logging.warn('class {} had only {} instances, removed'.format(
-                k, len(v)))
+            logging.warn('class %s had only %s instances, removed',
+                k, len(v))
         else:
             out[k] = v
     return out
@@ -442,8 +457,6 @@ def to_features(counters, max_lengths=None):
         class_number += 1
     return (np.array(X_in), np.array(out_y), domain_names)
 
-# td: refactor: code duplication with to_features
-
 
 def to_features_cumul(counter_dict):
     '''transforms counter data to CUMUL-feature vector pair (X,y)'''
@@ -452,7 +465,6 @@ def to_features_cumul(counter_dict):
     class_number = 0
     domain_names = []
     for domain, dom_counters in counter_dict.iteritems():
-        # TODO: codup
         if domain == "background":
             _trace_list_append(X_in, out_y, domain_names,
                                dom_counters, "cumul", -1, "background")
@@ -461,8 +473,6 @@ def to_features_cumul(counter_dict):
                                dom_counters, "cumul", class_number, domain)
             class_number += 1
     return (np.array(X_in), np.array(out_y), domain_names)
-
-# td: if possible merge with to_features
 
 
 def to_features_herrmann(counter_dict):
@@ -604,7 +614,7 @@ class Counter(object):
                 if 'Len=' in rest:  # see comment case (1)
                     size = rest[rest.index("Len=") + 4:].split()[0]
                     tmp.extract_line(src, size, time)
-                if not 'Len=0' in rest and not proto == 'ARP':
+                if 'Len=0' not in rest and proto != 'ARP':
                     tmp.extract_line(src, size, time)
                 logging.debug('from %s to %s: %s bytes', src, dst, size)
         return tmp
@@ -619,7 +629,6 @@ class Counter(object):
                 return tmp
         except:
             print '.', # old creation failed
-            pass
 
         tmp = Counter(filename)
 
@@ -631,7 +640,7 @@ class Counter(object):
             return tmp
         for pkt in cap:
             #import pdb; pdb.set_trace()
-            if not 'ip' in pkt or int(pkt.ip.len) == '52':
+            if 'ip' not in pkt or int(pkt.ip.len) == '52':
                 logging.debug('discarded from %s packet %s', filename, pkt)
             else:
                 tmp.extract_line(pkt.ip.src, pkt.ip.len,
@@ -1014,12 +1023,11 @@ def outlier_removal(counter_dict, level=2):
                 raise ValueError
             logging.debug('%15s: outlier_removal(%d) removed %d from %d',
                           k, level, (len(v) - len(out[k])), len(v))
-        except ValueError, IndexError:  # somewhere, list got to []
+        except (ValueError, IndexError):  # somewhere, list got to []
             logging.warn('%s discarded in outlier removal', k)
     return out
 
 doctest.testmod(optionflags=doctest.ELLIPSIS)
-# example dir: os.chdir('../data/0.18.2/json-100/b_i_noburst')
 if __name__ == "__main__":
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 

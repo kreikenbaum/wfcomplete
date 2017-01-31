@@ -1,7 +1,10 @@
+'''helper methods for grid search (using mine if scikit did not work out)'''
 import collections
 import doctest
 import logging
-from sklearn import grid_search, multiclass, svm  # cross_validation, ensemble, metrics, neighbors, preprocessing, tree
+from sklearn import grid_search, multiclass, svm
+# cross_validation, ensemble, metrics, neighbors, preprocessing, tree
+
 import counter
 
 JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
@@ -55,32 +58,33 @@ def _stop(y, step, result, previous):
              result > 1.1 * max(collections.Counter(y).values()) / len(y)))
 
 
-def helper(counter_dict, outlier_removal=True, nj=JOBS_NUM,
-            cumul=True, folds=5):
+def helper(counter_dict, outlier_removal=True, num_jobs=JOBS_NUM,
+           cumul=True, folds=5):
     '''@return grid-search on counter_dict result (clf, results)'''
     if outlier_removal:
         counter_dict = counter.outlier_removal(counter_dict)
     if cumul:
         (X, y, _) = counter.to_features_cumul(counter_dict)
-        return _my(X, y, folds=folds)
+        return my(X, y, folds=folds, num_jobs=num_jobs)
     else:  # panchenko 1
         (X, y, _) = counter.to_features(counter_dict)
-        return _my(X, y,
-                   cs=np.logspace(15, 19, 3, base=2),
-                   gammas=np.logspace(-17, -21, 3, base=2))
+        return my(X, y, c=2**17, gamma=2**-19, num_jobs=num_jobs)
 
 
-def my(X, y, cs=_new_search_range(2**14, 2),
-        gammas=_new_search_range(2**-10, 2), results={},
-        num_jobs=JOBS_NUM, folds=5, probability=False):
+def my(X, y, c=2**14, gamma=2**-10, step=2, results={},
+       num_jobs=JOBS_NUM, folds=5, probability=False):
     '''@param results are previously computed results {(c, g): accuracy, ...}
        @return tuple (optimal_classifier, results_object)'''
+    best = None
+    bestres = 0
+    cs = _new_search_range(c, step)
+    gammas = _new_search_range(gamma, step)
     for c in cs:
         for g in gammas:
             clf = multiclass.OneVsRestClassifier(svm.SVC(
                 gamma=g, C=c, class_weight='balanced', probability=probability))
-            if (c,g) in results:
-                current = results[(c,g)]
+            if (c, g) in results:
+                current = results[(c, g)]
             else:
                 current = _test(X, y, clf, num_jobs, folds=folds)
                 results[(c, g)] = current
@@ -93,10 +97,10 @@ def my(X, y, cs=_new_search_range(2**14, 2),
         or best.estimator.gamma in (gammas[0], gammas[-1])):
         logging.warn('optimal parameters found at the border. c:%f, g:%f',
                      best.estimator.C, best.estimator.gamma)
-        return _my_grid(X, y,
-                       _new_search_range(best.estimator.C),
-                       _new_search_range(best.estimator.gamma),
-                       results)
+        return my(X, y,
+                  _new_search_range(best.estimator.C),
+                  _new_search_range(best.estimator.gamma),
+                  results)
     else:
         logging.info('grid result: {}'.format(best))
         return best, results
@@ -110,7 +114,7 @@ def sci(X, y, c=2**14, gamma=2**-10, folds=3, step=2):
     @param grid_args: arguments for grid-search, f.ex. scorer
 
     @return gridsearchcv classifier (with .best_score and .best_params)
-    >>> test = _my([[1, 0], [1, 0], [1, 0], [0, 1], [0, 1], [0, 1]], [0, 0, 0, 1, 1, 1], 0.0001, 0.000001); test.best_score_
+    >>> test = sci([[1, 0], [1, 0], [1, 0], [0, 1], [0, 1], [0, 1]], [0, 0, 0, 1, 1, 1], 0.0001, 0.000001); test.best_score_
     1.0
     '''
     previous = []
