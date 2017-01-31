@@ -586,7 +586,6 @@ class Counter(object):
         tshark = subprocess.Popen(args=['tshark', '-r' + filename],
                                   stdout=subprocess.PIPE)
         for line in iter(tshark.stdout.readline, ''):
-            logging.debug(line)
             try:
                 (_, time, src, _, dst, proto, size, rest) = line.split(None, 7)
             except ValueError:
@@ -614,10 +613,22 @@ class Counter(object):
     @staticmethod
     def from_pcap(filename):
         '''Creates Counter from pcap file. Less efficient than above.'''
+        try:
+            tmp = from_pcap_old(filename)
+            if not tmp.warned:
+                return tmp
+        except:
+            print '.', # old creation failed
+            pass
+
         tmp = Counter(filename)
 
         cap = pyshark.FileCapture(filename)
-        start = cap[0].sniff_time
+        try:
+            start = cap[0].sniff_time
+        except KeyError:
+            tmp.warned = True
+            return tmp
         for pkt in cap:
             #import pdb; pdb.set_trace()
             if not 'ip' in pkt or int(pkt.ip.len) == '52':
@@ -625,6 +636,7 @@ class Counter(object):
             else:
                 tmp.extract_line(pkt.ip.src, pkt.ip.len,
                                  (pkt.sniff_time - start).total_seconds())
+        cap.close()
         return tmp
         
 
