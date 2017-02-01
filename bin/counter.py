@@ -14,6 +14,7 @@ import sys
 import numpy as np
 
 import pyshark
+from pyshark.capture.capture import TSharkCrashException
 
 DURATION_LIMIT_SECS = 8 * 60
 # HOME_IP = '134.76.96.47' #td: get ips
@@ -635,7 +636,7 @@ class Counter(object):
         cap = pyshark.FileCapture(filename)
         try:
             start = cap[0].sniff_time
-        except KeyError:
+        except (KeyError, TSharkCrashException, TypeError):
             tmp.warned = True
             return tmp
         for pkt in cap:

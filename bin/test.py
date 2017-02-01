@@ -22,7 +22,7 @@ class TestCounter(unittest.TestCase):
         tw = MockWriter()
         counter.dict_to_cai({'a': self.c_list}, tw)
         self.assertEqual(tw.data,'''test +
-        test + +
+test + +
 test + +
 test + +
 test + +

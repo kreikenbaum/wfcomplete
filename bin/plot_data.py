@@ -1,9 +1,11 @@
 '''assorted plotting commands:
 
-- file with org table, 
-- list of counters'''
+- file with org table,
+- list of counters
+- roc curve'''
 import collections
 import csv
+import doctest
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import metrics
@@ -11,39 +13,40 @@ from sklearn import metrics
 import Gnuplot
 
 def _color_cycle(steps=6):
-    '''yields steps of different colors'''
-    out = map(_to_color,
-              np.linspace(1.0/12, 13.0/12, num=steps, endpoint=False))
-    out = map(_to_hex, out)
-    return out
+    '''yields steps of different colors
+    >>> _color_cycle(3)
+    ['0xff7f00', '0x00ff7f', '0x7f00ff']
+    '''
+    return [_to_hex(_to_color(x)) for x in
+            np.linspace(1.0/12, 13.0/12, num=steps, endpoint=False)]
 
 def _scale(lst, factor=1/1024.0):
     '''scale list of Bytes to kiloByte'''
     return [x*factor for x in lst]
 
-# old, superseded by _size_table_to_data
-def _table_to_data(f):
-    '''parse file f with org-mode table export data'''
-    Datum = collections.namedtuple('Datum', ['overhead',
-                                             'ExtraTrees',
-                                             'OneVsRest_SVC'])
+# # old, superseded by _size_table_to_data
+# def _table_to_data(f):
+#     '''parse file f with org-mode table export data'''
+#     Datum = collections.namedtuple('Datum', ['overhead',
+#                                              'ExtraTrees',
+#                                              'OneVsRest_SVC'])
 
-    out = {}
-    for line in f:
-        if "overhead %" in line:
-            continue
-        (name, et, rf, knn, _, svc, overhead, _) = line.split("\t")
-        out[name] = Datum(float(overhead), float(et), float(svc))
-    return out
+#     out = {}
+#     for line in f:
+#         if "overhead %" in line:
+#             continue
+#         (name, et, rf, knn, _, svc, overhead, _) = line.split("\t")
+#         out[name] = Datum(float(overhead), float(et), float(svc))
+#     return out
 
 def _gnuplot_ohacc(xrangeleft=0):
     '''@return gnuplot initialized for overhead-accuracy plot'''
-    g = Gnuplot.Gnuplot()
-    g("set xrange [{}:*]".format(xrangeleft))
-    g("set yrange [0:1]")
-    g("set xlabel 'overhead [%]'")
-    g("set ylabel 'accuracy [%]'")
-    return g
+    plot = Gnuplot.Gnuplot()
+    plot("set xrange [{}:*]".format(xrangeleft))
+    plot("set yrange [0:1]")
+    plot("set xlabel 'overhead [%]'")
+    plot("set ylabel 'accuracy [%]'")
+    return plot
 
 def plot_defenses_helper(g, filename='../../data/results/export_30sites.csv'):
     '''plots all defenses in filename'''
@@ -57,33 +60,33 @@ def plot_defenses_helper(g, filename='../../data/results/export_30sites.csv'):
                                    and defense in x.defense],
                                   title=defense))
 
-def plot_defenses(g, data):
+def plot_defenses(plot, data):
     '''plots data items, separates by defense'''
     for defense in set([x.defense.split('/')[0] for x in data]):
-        g.replot(Gnuplot.Data([(x.size, x.cumul) for x in data
-                               if 'plotskip' not in x.notes
-                               and defense in x.defense],
-                              title=defense))
+        plot.replot(Gnuplot.Data([(x.size, x.cumul) for x in data
+                                  if 'plotskip' not in x.notes
+                                  and defense in x.defense],
+                                 title=defense))
 
-def plot_flavours(g, data):
+def plot_flavours(plot, data):
     '''plots flavors of main defense'''
     main = [x for x in data if '0.22' in x.defense]
     for flavor in ['aI', 'aII', 'bI', 'bII']:
         its_datas = [x for x in main if '{}-'.format(flavor) in x.defense]
-        g.replot(Gnuplot.Data([(x.size, x.cumul) for x in its_datas],
-                              title=flavor))
+        plot.replot(Gnuplot.Data([(x.size, x.cumul) for x in its_datas],
+                                 title=flavor))
 
 def _replace(stringlist):
     '''removes nonparseable stuff
-    >>> replace(['hi', '-', '\open '])
+    >>> _replace(['hi', '-', r'\open '])
     ['hi', '_', '']
     '''
     out = []
     for s in stringlist:
         out.append(s
                    .replace('-', '_')
-                   .replace("\open ", "")
-                   .replace(" \close", ""))
+                   .replace(r"\open ", "")
+                   .replace(r" \close", ""))
     return out
 
 def _size_table_to_data(readable):
@@ -121,11 +124,11 @@ def counters(counter_list, gnuplotter=None, label=None, color="blue"):
 
     if label: # use any counter separately just to plot the label
         data = [Gnuplot.Data(_scale(counter_list.pop().cumul()[4:]),
-                    inline=1, with_=withfmt, title=label)]
+                             inline=1, with_=withfmt, title=label)]
     else:
         data = []
     data.extend([Gnuplot.Data(_scale(x.cumul()[4:]), inline=1, with_=withfmt)
-                for x in counter_list])
+                 for x in counter_list])
     for d in data:
         gnuplotter.replot(d)
     return gnuplotter
@@ -142,7 +145,7 @@ def defenses(places, defs=['disabled/bridge', 'simple1/10'], url='google.com'):
     g = None
     for d in defs:
         g = counters(places[d][url], g,
-                     d.replace('/bridge',''),
+                     d.replace('/bridge', ''),
                      local_list.pop())
     g.title('CUMUL-traces on {} after defenses'.format(url))
     g.replot()
@@ -150,13 +153,14 @@ def defenses(places, defs=['disabled/bridge', 'simple1/10'], url='google.com'):
 
 def many_defenses(places, defs=['simple1/10', '22.0/10aI'],
                   urls=['google.com', 'netflix.com', 'tumblr.com']):
+    '''? prints many defenses to separate plot files'''
     for d in defs:
         for u in urls:
             tmp_defs = ['disabled/bridge']; tmp_defs.append(d)
-            g = defenses(places, tmp_defs, u)
-            save(g, "{}__{}_vs_disabled".format(u, d.replace('/', '@')))
+            plot = defenses(places, tmp_defs, u)
+            save(plot, "{}__{}_vs_disabled".format(u, d.replace('/', '@')))
 
-def roc(fpr, tpr):
+def roc(fpr, tpr, scenario=None):
     '''@return plot object with roc_curve done, use =.show()= to
 display, and =.save(...)= to save'''
     out = plt.figure()
@@ -166,7 +170,7 @@ display, and =.save(...)= to save'''
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.title('Receiver operating characteristic example')
+    if scenario: plt.title(scenario)
     plt.legend(loc="lower right")
     return out
 
@@ -180,20 +184,22 @@ def save(gnuplotter, prefix='plot', type_='eps'):
 
 def table(data, cls="svc"):
     '''plot table data = {defense: {overhead: ..., svc: ...} '''
-    g = _gnuplot_ohacc()
+    plot = _gnuplot_ohacc()
 
     for (defense, datum) in data.items():
-        g.replot(Gnuplot.Data([(datum.overhead, datum._asdict()[cls]*100)],
-                              title=defense.replace('@', '-'), inline=1),
-                 title="method: " + cls.replace('_', ' '))
-    return g
+        plot.replot(Gnuplot.Data([(datum.overhead, datum._asdict()[cls]*100)],
+                                 title=defense.replace('@', '-'), inline=1),
+                    title="method: " + cls.replace('_', ' '))
+    return plot
 
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) < 2:
-        sys.argv = ['_', 'table']
-    data = _table_to_data(open(sys.argv[1]))
-    for cls in ['ExtraTrees', 'OneVsRest_SVC']:
-        g = table(data, cls)
-        save(g, 'defenses with {}'.format(cls))
-    raw_input('press the enter key to exit')
+doctest.testmod()
+
+# if __name__ == "__main__":
+#     import sys
+#     if len(sys.argv) < 2:
+#         sys.argv = ['_', 'table']
+#     data = _table_to_data(open(sys.argv[1]))
+#     for cls in ['ExtraTrees', 'OneVsRest_SVC']:
+#         g = table(data, cls)
+#         save(g, 'defenses with {}'.format(cls))
+#     raw_input('press the enter key to exit')

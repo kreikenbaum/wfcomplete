@@ -17,10 +17,10 @@ import time
 from sklearn.metrics import roc_curve, auc
 
 import counter
-import grid
+import fit
 import plot_data
 
-JOBS_NUM = grid.JOBS_NUM
+JOBS_NUM = fit.JOBS_NUM
 LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 # LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
@@ -37,8 +37,6 @@ ALL.extend([ensemble.AdaBoostClassifier(),
             svm.SVC(gamma=2**-4)])
 SVC_TTS_MAP = {}
 ALL_MAP = {}
-
-scaler = None
 
 # td: check if correct to use like this (or rather like _size_increase)
 # td: think if remove (not used)
@@ -59,22 +57,6 @@ def _binarize(y, keep=-1, default=0):
             yield keep
         else:
             yield default
-
-
-def _bounded_auc(y_true, y_predict, bound=0.01, **kwargs):
-    '''@return bounded auc of (probabilistic) fitted classifier on data.'''
-    newfpr, newtpr = _bounded_roc(y_true, y_predict, bound, **kwargs)
-    return metrics.auc(newfpr, newtpr)
-
-
-def _bounded_roc(y_true, y_predict, bound=0.01, **kwargs):
-    '''@return (fpr, tpr) within fpr-bounds'''
-    assert 0 <= bound <= 1
-    fpr, tpr, thresholds = roc_curve(y_true, y_predict, **kwargs)
-    newfpr = [x for x in fpr if x < bound]
-    newfpr.append(bound)
-    newtpr = np.interp(newfpr, fpr, tpr)
-    return (newfpr, newtpr)
 
 
 def _bytes_mean_std(counter_dict):
@@ -105,25 +87,24 @@ def _clf(**svm_params):
         svm.SVC(class_weight="balanced", **svm_params))
 
 
-def _clf_name(clf):
-    '''@return name of estimator class'''
-    return str(clf.__class__).split('.')[-1].split("'")[0]
-
-
 def _clf_params(clf):
     '''@return name + params if SVM'''
     if 'SVC' in str(clf):
-        return '{}_{}'.format(_clf_name(clf), clf.best_params_)
+        try:
+            return '{}_{}'.format(fit._clf_name(clf), clf.best_params_)
+        except AttributeError:
+            return '{}_{}'.format(fit._clf_name(clf),
+                                  (clf.estimator.C, clf.estimator.gamma))
     else:
-        return _clf_name(clf)
+        return fit._clf_name(clf)
 
 # td: if ever used, have a look at _scale (needs to reset SCALER)
 
 
 def _compare(X, y, X2, y2, clfs=GOOD):
     for clf in clfs:
-        _test(X, y, clf)
-        _test(X2, y2, clf)
+        fit._eval(X, y, clf)
+        fit._eval(X2, y2, clf)
 
 # courtesy of http://stackoverflow.com/a/38060351
 
@@ -184,9 +165,9 @@ def _mean(counter_dict):
 def _misclassification_rates(train, test, clf=GOOD[0]):
     '''@return (mis-)classification rates per class in test'''
     (X, y, y_d) = counter.to_features_cumul(counter.outlier_removal(train))
-    clf.fit(_scale(X, clf), y)
+    clf.fit(fit._scale(X, clf), y)
     (X2, y2, y2d) = counter.to_features_cumul(test)
-    X2 = _scale(X2, clf)
+    X2 = fit._scale(X2, clf)
     return _predict_percentages(_class_predictions(y2, clf.predict(X2)),
                                 _gen_url_list(y2, y2d))
 
@@ -219,27 +200,6 @@ def _std(counter_dict):
     return out
 
 
-def _scale(X, clf):
-    '''ASSUMPTION: svc never called on two different data sets in
-    sequence.  That is: _scale(X_train, svc), _scale(X_test, svc),
-    _scale(Y_train, svc), _scale(Y_test, svc), will not
-    happen. (without a _scale(..., non_svc) in between). The first is
-    treated as training data, the next as test.
-
-    @return scaled X if estimator is SVM, else just X
-
-    '''
-    global scaler
-    if 'SVC' in str(clf):
-        logging.debug("_scaled on svc %s", _clf_name(clf))
-        if not scaler:
-            scaler = preprocessing.MinMaxScaler()
-            return scaler.fit_transform(X)
-        else:
-            return scaler.transform(X)
-    else:
-        scaler = None
-        return X
 
 
 def _size_increase(base, compare):
@@ -274,10 +234,10 @@ def size_increase_from_argv(defense_argv, remove_small=True):
     return out
 
 
-def _test(X, y, clf, nj=JOBS_NUM, folds=5):
-    '''tests estimator with X, y, @return result (ndarray)'''
-    X = _scale(X, clf)
-    return cross_validation.cross_val_score(clf, X, y, cv=folds, n_jobs=nj)
+# def _test(X, y, clf, nj=JOBS_NUM, folds=5):
+#     '''tests estimator with X, y, @return result (ndarray)'''
+#     X = _scale(X, clf)
+#     return cross_validation.cross_val_score(clf, X, y, cv=folds, n_jobs=nj)
 
 # unused, but could be useful
 
@@ -300,7 +260,7 @@ def _verbose_test_11(X, y, clf):
     t = time.time()
     scale = True if 'SVC' in str(clf) else False
     print _clf_params(clf),
-    res = _test(X, y, clf)
+    res = fit._eval(X, y, clf)
     print res.mean()
     logging.info('time: %s', time.time() - t)
     logging.debug('res: %s', res)
@@ -355,23 +315,10 @@ picks best result'''
     if name is not None and name in ALL_MAP:
         clf = ALL_MAP[name]
     else:
-        clf = grid._helper(counter.outlier_removal(counters, 2),
-                           cumul=True, folds=folds)
+        clf = fit.helper(counter.outlier_removal(counters, 2),
+                         cumul=True, folds=folds)
         ALL_MAP[name] = clf
     print '10-fold result: {}'.format(clf.best_score_)
-
-
-def tvts(X, y):
-    '''@return X1, X2, X3, y1, y2, y3 with each 1/3 of the data (train,
-validate, test)
-    >> tvts([[1], [1], [1], [2], [2], [2]], [1, 1, 1, 2, 2, 2])
-    ([[1], [2]], [[1], [2]], [[1], [2]], [1, 2], [1, 2], [1, 2]) # modulo order
-    '''
-    X1, Xtmp, y1, ytmp = cross_validation.train_test_split(
-        X, y, train_size=1. / 3, stratify=y)
-    X2, X3, y2, y3 = cross_validation.train_test_split(
-        Xtmp, ytmp, train_size=.5, stratify=ytmp)
-    return (X1, X2, X3, y1, y2, y3)
 
 
 def open_world(defense, num_jobs=JOBS_NUM):
@@ -382,19 +329,17 @@ def open_world(defense, num_jobs=JOBS_NUM):
         X, y, train_size=.8, stratify=y)
     c = 2**15
     gamma = 2**-45
-    clf = grid.sci(X_train, y_train, c=2**15, gamma=2**-45)
+    clf = fit.sci_grid(X_train, y_train, c=2**15, gamma=2**-45)
 #    scorer = metrics.make_scorer(_bounded_auc, needs_proba=True, bound=0.01)
-#    clf = grid.sci(X_train, y_train, c=2**15, gamma=2**-45,
+#    clf = fit.sci_grid(X_train, y_train, c=2**15, gamma=2**-45,
 #                   grid_args={"scoring": scorer})
     c2 = _proba_clf(clf)
     # tpr, fpr, ... on test data # bl = lambda x: list(_binarize(x))
     p_ = c2.fit(X_train, list(_binarize(y_train))).predict_proba(X_test)
     fpr, tpr, thresholds = roc_curve(list(_binarize(y_test)), p_[:, 1], 0)
-    import pdb; pdb.set_trace()
-    return plot_data.roc(fpr, tpr)
+    return (clf, plot_data.roc(fpr, tpr))
     # td: show/save/... output result
     # tdmb: daniel: improve result with way more fpr vs much less tpr (auc0.01)
-    
 
 
 def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, cc=False):
@@ -424,7 +369,8 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, c
             CLFS.append(SVC_TTS_MAP[def0])
         else:
             t = time.time()
-            clf = grid._helper(counter.outlier_removal(train, 2), cumul)
+            (clf, score, results, name) = fit.helper(
+                counter.outlier_removal(train, 2), cumul)
             logging.debug('parameter search took: %s', time.time() - t)
             if cumul:
                 SVC_TTS_MAP[def0] = clf
@@ -472,7 +418,7 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, c
                 counter.outlier_removal(its_counters, 1), l)
         for clf in CLFS:
             t = time.time()
-            print '{}: {}'.format(_clf_name(clf), _xtest(X, y, X2, y2, clf)),
+            print '{}: {}'.format(fit._clf_name(clf), _xtest(X, y, X2, y2, clf)),
             print '({} seconds)'.format(time.time() - t)
 
 
@@ -489,7 +435,7 @@ def gen_class_stats_list(defenses,
         for c in defenses:
             res = _misclassification_rates(
                 defenses[defense0], defenses[c], clf=clf)
-            res['id'] = '{} with {}'.format(c, _clf_name(clf))
+            res['id'] = '{} with {}'.format(c, fit._clf_name(clf))
             out.append(res)
     return out
 
@@ -507,7 +453,7 @@ def outlier_removal_levels(defense, clf=None):
         (train, test) = tts(defense_with_or)
         (X, y, _) = counter.to_features_cumul(train)
         if type(clf) is type(None):
-            clf = grid._my(X, y)
+            clf = fit.my_grid(X, y)
         (X, y, _) = counter.to_features_cumul(test)
         print "level: {}".format(lvl)
         _verbose_test_11(X, y, clf)
@@ -520,7 +466,7 @@ def outlier_removal_levels(defense, clf=None):
             (X, y, _) = counter.to_features_cumul(
                 counter.outlier_removal(train, train_lvl))
             if type(clf) is type(None):
-                clf = grid._my(X, y)
+                clf = fit.my_grid(X, y)
             (X, y, _) = counter.to_features_cumul(
                 counter.outlier_removal(test, test_lvl))
             print "level train: {}, test: {}".format(train_lvl, test_lvl)
@@ -608,7 +554,7 @@ def main(argv=sys.argv, with_svm=True, cumul=True):
     else:
         closed_world(defenses, argv[1], with_svm=with_svm, cumul=cumul)
 
-    # _test(X, y, svm.SVC(kernel='linear')) #problematic, but best
+    # fit._eval(X, y, svm.SVC(kernel='linear')) #problematic, but best
     # random forest
     # feature importance
     # forest = ensemble.ExtraTreesClassifier(n_estimators=250)
@@ -616,18 +562,18 @@ def main(argv=sys.argv, with_svm=True, cumul=True):
     # forest.feature_importances_
     # extratree param
     # for num in range(50, 400, 50):
-    #     _test(X, y, ensemble.ExtraTreesClassifier(n_estimators=num))
+    #     fit._eval(X, y, ensemble.ExtraTreesClassifier(n_estimators=num))
     # linear params
     # cstart, cstop = -5, 5
     # Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
     # for c in Cs:
-    #     _test(X, y, svm.SVC(C=c, kernel='linear'))
+    #     fit._eval(X, y, svm.SVC(C=c, kernel='linear'))
     # metrics (single)
     # from scipy.spatial import distance
     # for dist in [distance.braycurtis, distance.canberra,
     #              distance.chebyshev, distance.cityblock, distance.correlation,
     #              distance.cosine, distance.euclidean, distance.sqeuclidean]:
-    #     _test(X, y, neighbors.KNeighborsClassifier(metric='pyfunc', func=dist))3
+    #     fit._eval(X, y, neighbors.KNeighborsClassifier(metric='pyfunc', func=dist))3
     # td: knn + levenshtein
     # import math
     # def mydist(x, y):
@@ -744,7 +690,6 @@ def main(argv=sys.argv, with_svm=True, cumul=True):
 # disabled/p-foreground-data/30/output-tcp
 
 # sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git', 'bin')); reload(counter)
-
 # if by hand: change to the right directory before importing
 # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
 doctest.testmod()

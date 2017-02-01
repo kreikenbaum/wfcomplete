@@ -1,16 +1,22 @@
-'''helper methods for grid search (using mine if scikit did not work out)'''
+'''helper methods for fitting data'''
 import collections
 import doctest
 import logging
-from sklearn import grid_search, multiclass, svm
-# cross_validation, ensemble, metrics, neighbors, preprocessing, tree
+from sklearn import cross_validation, grid_search, metrics, multiclass, preprocessing, svm
+import numpy as np
+# ensemble, metrics, neighbors, tree
 
 import counter
 
-JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
+#JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
+JOBS_NUM = 1
 
+scaler = None
 
-def _best_at_border(grid_clf):
+Result = collections.namedtuple('Result', ['clf', 'best_score_',
+                                           'results', 'name'])
+
+def _sci_best_at_border(grid_clf):
     '''@return True if best params are at parameter grid borders'''
     c_borders = (grid_clf.param_grid['estimator__C'][0],
                  grid_clf.param_grid['estimator__C'][-1])
@@ -18,6 +24,38 @@ def _best_at_border(grid_clf):
                  grid_clf.param_grid['estimator__gamma'][-1])
     return (grid_clf.best_params_['estimator__C'] in c_borders
             or grid_clf.best_params_['estimator__gamma'] in g_borders)
+
+
+def _bounded_auc(y_true, y_predict, bound=0.01, **kwargs):
+    '''@return bounded auc of (probabilistic) fitted classifier on data.'''
+    newfpr, newtpr = _bounded_roc(y_true, y_predict, bound, **kwargs)
+    return metrics.auc(newfpr, newtpr)
+
+
+def _bounded_roc(y_true, y_predict, bound=0.01, **kwargs):
+    '''@return (fpr, tpr) within fpr-bounds'''
+    assert 0 <= bound <= 1
+    fpr, tpr, thresholds = metrics.roc_curve(y_true, y_predict, **kwargs)
+    newfpr = [x for x in fpr if x < bound]
+    newfpr.append(bound)
+    newtpr = np.interp(newfpr, fpr, tpr)
+    return (newfpr, newtpr)
+
+
+def _bounded_auc_eval(X, y, clf, y_bound=0.1):
+    '''evaluate clf X, y, give bounded auc score'''
+    (X1, X2, X3, y1, y2, y3) = _tvts(X, y)
+    # TODO
+
+def _clf_name(clf):
+    '''@return name of estimator class'''
+    return str(clf.__class__).split('.')[-1].split("'")[0]
+
+
+def _eval(X, y, clf, nj=JOBS_NUM, folds=5):
+    '''evaluate estimator on X, y, @return result (ndarray)'''
+    X = _scale(X, clf)
+    return cross_validation.cross_val_score(clf, X, y, cv=folds, n_jobs=nj)
 
 
 def _fit(c, gamma, step, X, y, cv, scoring=None, probability=False):
@@ -40,6 +78,28 @@ def _new_search_range(best_param, step=1):
             best_param * _step, best_param * _step**2]
 
 
+def _scale(X, clf):
+    '''ASSUMPTION: svc never called on two separate data sets in
+    sequence.  That is: _scale(X_train, svc), _scale(X_test, svc),
+    _scale(Y_train, svc), _scale(Y_test, svc), will not
+    happen. (without a _scale(..., non_svc) in between). The first is
+    treated as training data, the next/others as test.
+
+    @return scaled X if estimator is SVM, else just X
+    '''
+    global scaler
+    if 'SVC' in str(clf):
+        logging.debug("_scaled on %s", _clf_name(clf))
+        if not scaler:
+            scaler = preprocessing.MinMaxScaler()
+            return scaler.fit_transform(X)
+        else:
+            return scaler.transform(X)
+    else:
+        scaler = None
+        return X
+
+
 def _stop(y, step, result, previous):
     '''@return True if grid should stop
 
@@ -58,6 +118,19 @@ def _stop(y, step, result, previous):
              result > 1.1 * max(collections.Counter(y).values()) / len(y)))
 
 
+def _tvts(X, y):
+    '''@return X1, X2, X3, y1, y2, y3 with each 1/3 of the data (train,
+validate, test)
+    >> _tvts([[1], [1], [1], [2], [2], [2]], [1, 1, 1, 2, 2, 2])
+    ([[1], [2]], [[1], [2]], [[1], [2]], [1, 2], [1, 2], [1, 2]) # modulo order
+    '''
+    X1, Xtmp, y1, ytmp = cross_validation.train_test_split(
+        X, y, train_size=1. / 3, stratify=y)
+    X2, X3, y2, y3 = cross_validation.train_test_split(
+        Xtmp, ytmp, train_size=.5, stratify=ytmp)
+    return (X1, X2, X3, y1, y2, y3)
+
+
 def helper(counter_dict, outlier_removal=True, num_jobs=JOBS_NUM,
            cumul=True, folds=5):
     '''@return grid-search on counter_dict result (clf, results)'''
@@ -65,18 +138,18 @@ def helper(counter_dict, outlier_removal=True, num_jobs=JOBS_NUM,
         counter_dict = counter.outlier_removal(counter_dict)
     if cumul:
         (X, y, _) = counter.to_features_cumul(counter_dict)
-        return my(X, y, folds=folds, num_jobs=num_jobs)
+        return my_grid(X, y, folds=folds, num_jobs=num_jobs)
     else:  # panchenko 1
         (X, y, _) = counter.to_features(counter_dict)
-        return my(X, y, c=2**17, gamma=2**-19, num_jobs=num_jobs)
+        return my_grid(X, y, c=2**17, gamma=2**-19, num_jobs=num_jobs)
 
-
-def my(X, y, c=2**14, gamma=2**-10, step=2, results={},
-       num_jobs=JOBS_NUM, folds=5, probability=False):
+# tmp
+def my_grid(X, y, c=2**14, gamma=2**-10, step=2, results={},
+            num_jobs=JOBS_NUM, folds=5, probability=False, previous=[]):
     '''@param results are previously computed results {(c, g): accuracy, ...}
        @return tuple (optimal_classifier, results_object)'''
     best = None
-    bestres = 0
+    bestres = np.array([0])
     cs = _new_search_range(c, step)
     gammas = _new_search_range(gamma, step)
     for c in cs:
@@ -86,27 +159,28 @@ def my(X, y, c=2**14, gamma=2**-10, step=2, results={},
             if (c, g) in results:
                 current = results[(c, g)]
             else:
-                current = _test(X, y, clf, num_jobs, folds=folds)
+                current = _eval(X, y, clf, num_jobs, folds=folds)
                 results[(c, g)] = current
             if not best or bestres.mean() < current.mean():
                 best = clf
                 bestres = current
-            logging.debug('c: {:8} g: {:10} acc: {}'.format(c, g,
-                                                            current.mean()))
+#            logging.debug('c: {:8} g: {:10} acc: {}'.format(c, g,
+            logging.debug('c: %8s g: %10s acc: %f', c, g, current.mean())
+    previous.append(bestres.mean())
+    if _stop(y, step, bestres.mean(), previous):
+        logging.info('grid result: %s', best)
+        return Result(best, bestres.mean(), results, _clf_name(best))
     if (best.estimator.C in (cs[0], cs[-1])
-        or best.estimator.gamma in (gammas[0], gammas[-1])):
+            or best.estimator.gamma in (gammas[0], gammas[-1])):
         logging.warn('optimal parameters found at the border. c:%f, g:%f',
                      best.estimator.C, best.estimator.gamma)
-        return my(X, y,
-                  _new_search_range(best.estimator.C),
-                  _new_search_range(best.estimator.gamma),
-                  results)
     else:
-        logging.info('grid result: {}'.format(best))
-        return best, results
+        step /= 2.
+    return my_grid(X, y, best.estimator.C, best.estimator.gamma,
+                   step, results, previous=previous)
 
 
-def sci(X, y, c=2**14, gamma=2**-10, folds=3, step=2):
+def sci_grid(X, y, c=2**14, gamma=2**-10, folds=3, step=2):
     '''(scikit-)grid-search on fixed params, searching laterally and in depth
 
     @param X,y,c,gamma,folds as for the classifier
@@ -114,14 +188,14 @@ def sci(X, y, c=2**14, gamma=2**-10, folds=3, step=2):
     @param grid_args: arguments for grid-search, f.ex. scorer
 
     @return gridsearchcv classifier (with .best_score and .best_params)
-    >>> test = sci([[1, 0], [1, 0], [1, 0], [0, 1], [0, 1], [0, 1]], [0, 0, 0, 1, 1, 1], 0.0001, 0.000001); test.best_score_
+    >>> test = sci([[1, 0], [1, 0], [1, 0], [0, 1], [0, 1], [0, 1]], [0, 0, 0, 1, 1, 1], 0.0001, 0.000001, folds=2); test.best_score_
     1.0
     '''
     previous = []
 
     clf = _fit(c, gamma, step, X, y, folds)
     while not _stop(y, step, clf.best_score_, previous):
-        if _best_at_border(clf):
+        if _sci_best_at_border(clf):
             pass  # keep step, search laterally
         else:
             step = step / 2.
