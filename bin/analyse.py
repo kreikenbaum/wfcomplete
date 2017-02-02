@@ -2,10 +2,11 @@
 '''Analyses (Panchenko's) features returned from Counter class'''
 
 import numpy as np
-from sklearn import cross_validation, ensemble, grid_search, metrics
-from sklearn import multiclass, neighbors, preprocessing, svm, tree
-from scipy.stats.mstats import gmean
-import collections
+from sklearn import cross_validation, ensemble, metrics
+#, grid_search, preprocessing
+from sklearn import multiclass, neighbors, svm, tree
+#from scipy.stats.mstats import gmean
+#import collections
 import doctest
 import logging
 import sys
@@ -14,7 +15,7 @@ import time
 # tmp - by hand open world
 # from sklearn.cross_validation import train_test_split
 # from sklearn.preprocessing import label_binarize
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_curve #, auc
 
 import counter
 import fit
@@ -46,17 +47,6 @@ def _average_duration(counter_dict):
     '''@return the average duration over all traces'''
     ms = times_mean_std(counter_dict)
     return np.mean([x[0] for x in ms.values()])
-
-
-def _binarize(y, keep=-1, default=0):
-    '''binarize data in y: transform all values to =default= except =keep=
-    >>> list(_binarize([0, -1, 1]))
-    [0, -1, 0]'''
-    for el in y:
-        if el == keep:
-            yield keep
-        else:
-            yield default
 
 
 def _bytes_mean_std(counter_dict):
@@ -173,7 +163,7 @@ def _misclassification_rates(train, test, clf=GOOD[0]):
 
 
 def _proba_clf(other_clf):
-    '''@return ovr-svc with othere_clfs c and gamma'''
+    '''@return ovr-svc with other_clf's C and gamma'''
     return _clf(C=other_clf.best_params_['estimator__C'],
                 gamma=other_clf.best_params_['estimator__gamma'],
                 probability=True)
@@ -327,7 +317,7 @@ def open_world(defense, num_jobs=JOBS_NUM):
     X, y, yd = counter.to_features_cumul(defense)
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(
         X, y, train_size=.8, stratify=y)
-    c = 2**15
+    C = 2**15
     gamma = 2**-45
     clf = fit.sci_grid(X_train, y_train, c=2**15, gamma=2**-45)
 #    scorer = metrics.make_scorer(_bounded_auc, needs_proba=True, bound=0.01)
@@ -336,7 +326,7 @@ def open_world(defense, num_jobs=JOBS_NUM):
     c2 = _proba_clf(clf)
     # tpr, fpr, ... on test data # bl = lambda x: list(_binarize(x))
     p_ = c2.fit(X_train, list(_binarize(y_train))).predict_proba(X_test)
-    fpr, tpr, thresholds = roc_curve(list(_binarize(y_test)), p_[:, 1], 0)
+    fpr, tpr, _ = metrics.roc_curve(list(_binarize(y_test)), p_[:, 1], 0)
     return (clf, plot_data.roc(fpr, tpr))
     # td: show/save/... output result
     # tdmb: daniel: improve result with way more fpr vs much less tpr (auc0.01)
@@ -477,12 +467,12 @@ def site_sizes(stats):
     '''@return {'url1': [size0, ..., sizeN-1], ..., urlM: [...]}
 
     stats = {k: _bytes_mean_std(v) for (k,v) in defenses.iteritems()}'''
-    a = stats.keys()
-    a.sort()
+    defenses = stats.keys()
+    defenses.sort()
     out = {}
-    for url in stats[a[0]].keys():
+    for url in stats[defenses[0]].keys():
         out[url] = []
-        for defense in a:
+        for defense in defenses:
             out[url].append(stats[defense][url][0])
     return out
 
@@ -611,7 +601,6 @@ def main(argv=sys.argv, with_svm=True, cumul=True):
 
 # CLASSIFICATION RESULTS PER CLASS
 
-# defenses = counter.for_defenses(sys.argv[1:])
 # some_30 = top_30(means)
 # timing = {k: _average_duration(v) for (k,v) in defenses.iteritems()}
 # outlier_removal_levels(defenses[sys.argv[1]]) #td: try out

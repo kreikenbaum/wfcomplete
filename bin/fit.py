@@ -9,21 +9,22 @@ import numpy as np
 import counter
 
 #JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
-JOBS_NUM = 1
+JOBS_NUM = -3
 
 scaler = None
 
 Result = collections.namedtuple('Result', ['clf', 'best_score_',
                                            'results', 'name'])
 
-def _sci_best_at_border(grid_clf):
-    '''@return True if best params are at parameter grid borders'''
-    c_borders = (grid_clf.param_grid['estimator__C'][0],
-                 grid_clf.param_grid['estimator__C'][-1])
-    g_borders = (grid_clf.param_grid['estimator__gamma'][0],
-                 grid_clf.param_grid['estimator__gamma'][-1])
-    return (grid_clf.best_params_['estimator__C'] in c_borders
-            or grid_clf.best_params_['estimator__gamma'] in g_borders)
+def _binarize(y, keep=-1, default=0):
+    '''binarize data in y: transform all values to =default= except =keep=
+    >>> list(_binarize([0, -1, 1]))
+    [0, -1, 0]'''
+    for el in y:
+        if el == keep:
+            yield keep
+        else:
+            yield default
 
 
 def _bounded_auc(y_true, y_predict, bound=0.01, **kwargs):
@@ -43,9 +44,14 @@ def _bounded_roc(y_true, y_predict, bound=0.01, **kwargs):
 
 
 def _bounded_auc_eval(X, y, clf, y_bound=0.1):
-    '''evaluate clf X, y, give bounded auc score'''
-    (X1, X2, X3, y1, y2, y3) = _tvts(X, y)
-    # TODO
+    '''evaluate clf X, y, give bounded auc score, 0 is positive class label'''
+    X = _scale(X, clf)
+    y = list(_binarize(y))
+    (X1, X2, _, y1, y2, _) = _tvts(X, y)
+    clf.fit(X1, y1)
+    p_ = clf.predict_proba(X2)
+    return _bounded_auc(y2, p_[:, 1], y_bound, pos_label=0)
+
 
 def _clf_name(clf):
     '''@return name of estimator class'''
@@ -55,13 +61,13 @@ def _clf_name(clf):
 def _eval(X, y, clf, nj=JOBS_NUM, folds=5):
     '''evaluate estimator on X, y, @return result (ndarray)'''
     X = _scale(X, clf)
-    return cross_validation.cross_val_score(clf, X, y, cv=folds, n_jobs=nj)
+    return cross_validation.cross_val_score(clf, X, y, cv=folds, n_jobs=nj).mean()
 
 
-def _fit(c, gamma, step, X, y, cv, scoring=None, probability=False):
+def _fit(C, gamma, step, X, y, cv, scoring=None, probability=False):
     '''@return appropriate gridsearchcv, fitted with X and y'''
-    logging.info('c: %s, gamma: %s, step: %s', c, gamma, step)
-    cs = _new_search_range(c, step)
+    logging.info('C: %s, gamma: %s, step: %s', C, gamma, step)
+    cs = _new_search_range(C, step)
     gammas = _new_search_range(gamma, step)
     clf = grid_search.GridSearchCV(
         estimator=multiclass.OneVsRestClassifier(
@@ -100,6 +106,16 @@ def _scale(X, clf):
         return X
 
 
+def _sci_best_at_border(grid_clf):
+    '''@return True if best params are at parameter grid borders'''
+    c_borders = (grid_clf.param_grid['estimator__C'][0],
+                 grid_clf.param_grid['estimator__C'][-1])
+    g_borders = (grid_clf.param_grid['estimator__gamma'][0],
+                 grid_clf.param_grid['estimator__gamma'][-1])
+    return (grid_clf.best_params_['estimator__C'] in c_borders
+            or grid_clf.best_params_['estimator__gamma'] in g_borders)
+
+
 def _stop(y, step, result, previous):
     '''@return True if grid should stop
 
@@ -131,41 +147,47 @@ validate, test)
     return (X1, X2, X3, y1, y2, y3)
 
 
-def helper(counter_dict, outlier_removal=True, num_jobs=JOBS_NUM,
+def helper(counter_dict, outlier_removal=True, n_jobs=JOBS_NUM,
            cumul=True, folds=5):
     '''@return grid-search on counter_dict result (clf, results)'''
     if outlier_removal:
         counter_dict = counter.outlier_removal(counter_dict)
     if cumul:
         (X, y, _) = counter.to_features_cumul(counter_dict)
-        return my_grid(X, y, folds=folds, num_jobs=num_jobs)
+        return my_grid(X, y, folds=folds, n_jobs=n_jobs)
     else:  # panchenko 1
         (X, y, _) = counter.to_features(counter_dict)
-        return my_grid(X, y, c=2**17, gamma=2**-19, num_jobs=num_jobs)
+        return my_grid(X, y, C=2**17, gamma=2**-19, n_jobs=n_jobs)
 
-# tmp
-def my_grid(X, y, c=2**14, gamma=2**-10, step=2, results={},
-            num_jobs=JOBS_NUM, folds=5, probability=False, previous=[]):
-    '''@param results are previously computed results {(c, g): accuracy, ...}
+
+def my_grid(X, y, C=2**14, gamma=2**-10, step=2, results={}, auc_bound=None,
+            n_jobs=JOBS_NUM, folds=5, previous=[]):
+    '''@param results are previously computed results {(C,gamma): accuracy, ...}
+    @param auc_bound if this is set, use the bounded auc score with this y_bound
        @return tuple (optimal_classifier, results_object)'''
     best = None
     bestres = np.array([0])
-    cs = _new_search_range(c, step)
+    cs = _new_search_range(C, step)
     gammas = _new_search_range(gamma, step)
+    probability = True if auc_bound else False
     for c in cs:
         for g in gammas:
             clf = multiclass.OneVsRestClassifier(svm.SVC(
-                gamma=g, C=c, class_weight='balanced', probability=probability))
+                gamma=g, C=c, class_weight='balanced', probability=probability),
+                                                 n_jobs=n_jobs)
             if (c, g) in results:
                 current = results[(c, g)]
             else:
-                current = _eval(X, y, clf, num_jobs, folds=folds)
+                if auc_bound:
+                    current = _bounded_auc_eval(X, y, clf, auc_bound)
+                else:
+                    current = _eval(X, y, clf, folds=folds)
                 results[(c, g)] = current
-            if not best or bestres.mean() < current.mean():
+            if not best or bestres < current:
                 best = clf
                 bestres = current
 #            logging.debug('c: {:8} g: {:10} acc: {}'.format(c, g,
-            logging.debug('c: %8s g: %10s acc: %f', c, g, current.mean())
+            logging.info('c: %8s g: %10s acc: %f', c, g, current.mean())
     previous.append(bestres.mean())
     if _stop(y, step, bestres.mean(), previous):
         logging.info('grid result: %s', best)
@@ -176,14 +198,15 @@ def my_grid(X, y, c=2**14, gamma=2**-10, step=2, results={},
                      best.estimator.C, best.estimator.gamma)
     else:
         step /= 2.
-    return my_grid(X, y, best.estimator.C, best.estimator.gamma,
-                   step, results, previous=previous)
+    return my_grid(X, y, best.estimator.C, best.estimator.gamma, step,
+                   results, previous=previous, auc_bound=auc_bound,
+                   n_jobs=n_jobs, folds=folds)
 
 
-def sci_grid(X, y, c=2**14, gamma=2**-10, folds=3, step=2):
+def sci_grid(X, y, C=2**14, gamma=2**-10, folds=3, step=2):
     '''(scikit-)grid-search on fixed params, searching laterally and in depth
 
-    @param X,y,c,gamma,folds as for the classifier
+    @param X,y,C,gamma,folds as for the classifier
     @param step exponential step size, c-range = [c/2**step, c, c*2**step], etc
     @param grid_args: arguments for grid-search, f.ex. scorer
 
@@ -193,7 +216,7 @@ def sci_grid(X, y, c=2**14, gamma=2**-10, folds=3, step=2):
     '''
     previous = []
 
-    clf = _fit(c, gamma, step, X, y, folds)
+    clf = _fit(C, gamma, step, X, y, folds)
     while not _stop(y, step, clf.best_score_, previous):
         if _sci_best_at_border(clf):
             pass  # keep step, search laterally
