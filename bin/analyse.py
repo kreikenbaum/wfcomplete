@@ -1,21 +1,16 @@
 #!/usr/bin/env python
 '''Analyses (Panchenko's) features returned from Counter class'''
 
-import numpy as np
-from sklearn import cross_validation, ensemble, metrics
-#, grid_search, preprocessing
-from sklearn import multiclass, neighbors, svm, tree
-#from scipy.stats.mstats import gmean
-#import collections
+# from scipy.stats.mstats import gmean
+# import collections
 import doctest
 import logging
 import sys
 import time
-
-# tmp - by hand open world
-# from sklearn.cross_validation import train_test_split
-# from sklearn.preprocessing import label_binarize
-from sklearn.metrics import roc_curve #, auc
+import numpy as np
+from sklearn import cross_validation, ensemble, metrics
+from sklearn import multiclass, neighbors, svm, tree
+#, grid_search, preprocessing
 
 import counter
 import fit
@@ -41,12 +36,10 @@ ALL_MAP = {}
 
 # td: check if correct to use like this (or rather like _size_increase)
 # td: think if remove (not used)
-
-
 def _average_duration(counter_dict):
     '''@return the average duration over all traces'''
-    ms = times_mean_std(counter_dict)
-    return np.mean([x[0] for x in ms.values()])
+    mean_std = _times_mean_std(counter_dict)
+    return np.mean([x[0] for x in mean_std.values()])
 
 
 def _bytes_mean_std(counter_dict):
@@ -63,9 +56,7 @@ def _bytes_mean_std(counter_dict):
 
 def _class_predictions(y2, y2_predict):
     '''@return list: for each class in y2: what was it predicted to be'''
-    out = []
-    for i in range(y2[-1] + 1):
-        out.append([])
+    out = [[] for _ in range(y2[-1] + 1)] # different empty arrays
     for (idx, elem) in enumerate(y2):
         out[elem].append(y2_predict[idx])
     return out
@@ -77,16 +68,21 @@ def _clf(**svm_params):
         svm.SVC(class_weight="balanced", **svm_params))
 
 
+def _clf_name(clf):
+    '''@return name of estimator class'''
+    return str(clf.__class__).split('.')[-1].split("'")[0]
+
+
 def _clf_params(clf):
     '''@return name + params if SVM'''
     if 'SVC' in str(clf):
         try:
-            return '{}_{}'.format(fit._clf_name(clf), clf.best_params_)
+            return '{}_{}'.format(_clf_name(clf), clf.best_params_)
         except AttributeError:
-            return '{}_{}'.format(fit._clf_name(clf),
-                                  (clf.estimator.C, clf.estimator.gamma))
+            return '{}_{}'.format(_clf_name(clf), (clf.estimator.C,
+                                                   clf.estimator.gamma))
     else:
-        return fit._clf_name(clf)
+        return _clf_name(clf)
 
 # td: if ever used, have a look at _scale (needs to reset SCALER)
 
@@ -131,11 +127,6 @@ def _gen_url_list(y, y_domains):
         else:
             assert out[cls] == y_domains[idx]
     return out
-
-
-def _lb(*args, **kwargs):
-    '''facade for _binarize, list wrap'''
-    return list(_binarize(*args, **kwargs))
 
 
 def _mean(counter_dict):
@@ -190,8 +181,6 @@ def _std(counter_dict):
     return out
 
 
-
-
 def _size_increase(base, compare):
     '''@return how much bigger/smaller is =compare= than =base= (in %)'''
     diff = {}
@@ -243,6 +232,48 @@ def _times_mean_std(counter_dict):
         total = [counter.timing[-1][0] for counter in counter_list]
         out[domain] = (np.mean(total), np.std(total))
     return out
+
+
+def _tts(counter_dict, test_size=1.0 / 3):
+    '''train-test-split: splits counter_dict in train_dict and test_dict
+
+    test_size = deep_len(test)/deep_len(train)
+    uses cross_validation.train_test_split
+    @return (train_dict, test_dict) which together yield counter_dict
+    >>> len(_tts({'yahoo.com': map(counter._test, [3,3,3])})[0]['yahoo.com'])
+    2
+    >>> len(_tts({'yahoo.com': map(counter._test, [3,3,3])})[1]['yahoo.com'])
+    1
+    '''
+    ids = []
+    for url in counter_dict:
+        for i in range(len(counter_dict[url])):
+            ids.append((url, i))
+    (train_ids, test_ids) = cross_validation.train_test_split(
+        ids, test_size=test_size)
+    train = {}
+    test = {}
+    for url in counter_dict:
+        train[url] = []
+        test[url] = []
+    for (url, index) in train_ids:
+        train[url].append(counter_dict[url][index])
+    for (url, index) in test_ids:
+        test[url].append(counter_dict[url][index])
+    return (train, test)
+
+
+def _tvts(X, y):
+    '''@return X1, X2, X3, y1, y2, y3 with each 1/3 of the data (train,
+validate, test)
+    >> _tvts([[1], [1], [1], [2], [2], [2]], [1, 1, 1, 2, 2, 2])
+    ([[1], [2]], [[1], [2]], [[1], [2]], [1, 2], [1, 2], [1, 2]) # modulo order
+    '''
+    X1, Xtmp, y1, ytmp = cross_validation.train_test_split(
+        X, y, train_size=1. / 3, stratify=y)
+    X2, X3, y2, y3 = cross_validation.train_test_split(
+        Xtmp, ytmp, train_size=.5, stratify=ytmp)
+    return (X1, X2, X3, y1, y2, y3)
 
 
 def _verbose_test_11(X, y, clf):
@@ -311,28 +342,24 @@ picks best result'''
     print '10-fold result: {}'.format(clf.best_score_)
 
 
-def open_world(defense, num_jobs=JOBS_NUM):
-    '''does an open-world (SVM) test on data'''
-    # split (cv?)
+def open_world(defense, y_bound=0.05):
+    '''open-world (SVM) test on data, optimized on bounded auc.
+
+    @return (fpr, tpr, optimal_clf, roc_plot_mpl)'''
     X, y, yd = counter.to_features_cumul(defense)
-    X_train, X_test, y_train, y_test = cross_validation.train_test_split(
-        X, y, train_size=.8, stratify=y)
-    C = 2**15
-    gamma = 2**-45
-    clf = fit.sci_grid(X_train, y_train, c=2**15, gamma=2**-45)
-#    scorer = metrics.make_scorer(_bounded_auc, needs_proba=True, bound=0.01)
+    Xtt, Xv, ytt, yv = cross_validation.train_test_split(
+        X, y, train_size=2. / 3, stratify=y)
+    result = fit.my_grid(Xtt, ytt, auc_bound=y_bound)#, n_jobs=1)
 #    clf = fit.sci_grid(X_train, y_train, c=2**15, gamma=2**-45,
 #                   grid_args={"scoring": scorer})
-    c2 = _proba_clf(clf)
-    # tpr, fpr, ... on test data # bl = lambda x: list(_binarize(x))
-    p_ = c2.fit(X_train, list(_binarize(y_train))).predict_proba(X_test)
-    fpr, tpr, _ = metrics.roc_curve(list(_binarize(y_test)), p_[:, 1], 0)
-    return (clf, plot_data.roc(fpr, tpr))
-    # td: show/save/... output result
+    # tpr, fpr, ... on test data
+    fpr, tpr, trash = fit.roc(result.clf, Xtt, ytt, Xv, yv)
+    return (fpr, tpr, clf, plot_data.roc(fpr, tpr))
     # tdmb: daniel: improve result with way more fpr vs much less tpr (auc0.01)
 
 
-def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, cc=False):
+def closed_world(defenses, def0, cumul=True, with_svm=True,
+                 num_jobs=JOBS_NUM, cc=False):
     '''cross test on dirs: 1st has training data, rest have test
 
     =argv= is like sys.argv, =cumul= triggers CUMUL, else version 1,
@@ -349,7 +376,7 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, c
     simulated_original(defenses[def0], def0)
 
     # training set
-    (train, test) = tts(defenses[def0])
+    (train, test) = _tts(defenses[def0])
     CLFS = GOOD[:]
     if with_svm:
         if def0 in SVC_TTS_MAP and cumul:
@@ -359,7 +386,7 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, c
             CLFS.append(SVC_TTS_MAP[def0])
         else:
             t = time.time()
-            (clf, score, results, name) = fit.helper(
+            (clf, _, _) = fit.helper(
                 counter.outlier_removal(train, 2), cumul)
             logging.debug('parameter search took: %s', time.time() - t)
             if cumul:
@@ -400,15 +427,15 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, num_jobs=JOBS_NUM, c
             (X2, y2, _) = counter.to_features_cumul(its_counters)
         else:
             l = _dict_elementwise(max,
-                                  _find_max_lengths(its_counters0),
-                                  _find_max_lengths(its_counters))
+                                  counter._find_max_lengths(its_counters0),
+                                  counter._find_max_lengths(its_counters))
             (X, y, _) = counter.to_features(
                 counter.outlier_removal(its_counters0, 2), l)
-            (X2, y2, _2) = counter.to_features(
+            (X2, y2, _) = counter.to_features(
                 counter.outlier_removal(its_counters, 1), l)
         for clf in CLFS:
             t = time.time()
-            print '{}: {}'.format(fit._clf_name(clf), _xtest(X, y, X2, y2, clf)),
+            print '{}: {}'.format(_clf_name(clf), _xtest(X, y, X2, y2, clf)),
             print '({} seconds)'.format(time.time() - t)
 
 
@@ -425,7 +452,7 @@ def gen_class_stats_list(defenses,
         for c in defenses:
             res = _misclassification_rates(
                 defenses[defense0], defenses[c], clf=clf)
-            res['id'] = '{} with {}'.format(c, fit._clf_name(clf))
+            res['id'] = '{} with {}'.format(c, _clf_name(clf))
             out.append(res)
     return out
 
@@ -440,14 +467,14 @@ def outlier_removal_levels(defense, clf=None):
     print 'combined outlier removal'
     for lvl in [1, 2, 3]:
         defense_with_or = counter.outlier_removal(defense, lvl)
-        (train, test) = tts(defense_with_or)
+        (train, test) = _tts(defense_with_or)
         (X, y, _) = counter.to_features_cumul(train)
         if type(clf) is type(None):
             clf = fit.my_grid(X, y)
         (X, y, _) = counter.to_features_cumul(test)
         print "level: {}".format(lvl)
         _verbose_test_11(X, y, clf)
-    (train, test) = tts(defense)
+    (train, test) = _tts(defense)
 
     # separate outlier removal on train and test set
     print 'separate outlier removal for training and test data'
@@ -503,34 +530,6 @@ def top_30(mean_per_dir):
         out.add(_find_domain(mean_per_dir, mean))
     return out
 
-
-def tts(counter_dict, test_size=1.0 / 3):
-    '''train-test-split: splits counter_dict in train_dict and test_dict
-
-    test_size = deep_len(test)/deep_len(train)
-    uses cross_validation.train_test_split
-    @return (train_dict, test_dict) which together yield counter_dict
-    >>> len(tts({'yahoo.com': map(counter._test, [3,3,3])})[0]['yahoo.com'])
-    2
-    >>> len(tts({'yahoo.com': map(counter._test, [3,3,3])})[1]['yahoo.com'])
-    1
-    '''
-    ids = []
-    for url in counter_dict:
-        for i in range(len(counter_dict[url])):
-            ids.append((url, i))
-    (train_ids, test_ids) = cross_validation.train_test_split(
-        ids, test_size=test_size)
-    train = {}
-    test = {}
-    for url in counter_dict:
-        train[url] = []
-        test[url] = []
-    for (url, index) in train_ids:
-        train[url].append(counter_dict[url][index])
-    for (url, index) in test_ids:
-        test[url].append(counter_dict[url][index])
-    return (train, test)
 
 def main(argv=sys.argv, with_svm=True, cumul=True):
     '''loads stuff, triggers either open or closed-world eval'''
@@ -678,13 +677,12 @@ def main(argv=sys.argv, with_svm=True, cumul=True):
 
 # disabled/p-foreground-data/30/output-tcp
 
-# sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git', 'bin')); reload(counter)
+# sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git', 'bin')); reload(fit)
 # if by hand: change to the right directory before importing
 # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
 doctest.testmod()
-
+# this is currently the top-level application, thus logging outside of __main__
+logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 
 if __name__ == "__main__":
-    logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
-
     main(sys.argv)

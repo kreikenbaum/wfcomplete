@@ -19,12 +19,12 @@ from pyshark.capture.capture import TSharkCrashException
 DURATION_LIMIT_SECS = 8 * 60
 # HOME_IP = '134.76.96.47' #td: get ips
 HOME_IP = '134.169.109.25'
-# LOGLEVEL = logging.DEBUG
+#LOGLEVEL = logging.DEBUG
 LOGLEVEL = logging.INFO
 LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 
 MIN_CLASS_SIZE = 30
-TOR_CELL_SIZE = 512
+TOR_DATA_CELL_SIZE = 512
 
 TIME_SEPARATOR = '@'
 
@@ -133,7 +133,7 @@ MIN_CLASS_SIZE per url'''
     for (k, v) in counter_dict.iteritems():
         if len(v) < MIN_CLASS_SIZE:
             logging.warn('class %s had only %s instances, removed',
-                k, len(v))
+                         k, len(v))
         else:
             out[k] = v
     return out
@@ -224,7 +224,7 @@ def all_from_dir(dirname, remove_small=True):
     filenames = glob.glob(os.path.join(dirname, "*"))
     for jfile in [x for x in filenames if '.json' in x]:
         domain = os.path.basename(jfile).replace('.json', '')
-        logging.info('traces for %s from JSON %s', domain, jfile)
+        logging.debug('traces for %s from JSON %s', domain, jfile)
         out[domain] = all_from_json(jfile)
         filenames.remove(jfile)
         for trace in [x for x in filenames if domain + '@' in x]:
@@ -233,8 +233,8 @@ def all_from_dir(dirname, remove_small=True):
     length = len(filenames)
     for i, filename in enumerate(filenames):
         if TIME_SEPARATOR in os.path.basename(filename):  # file like google.com@1445350513
-            logging.info('processing (%d/%d) %s ',
-                         i + 1, length, filename)
+            logging.debug('processing (%d/%d) %s ',
+                          i + 1, length, filename)
             json_only = False
             _append_features(out, filename)
     if not out:
@@ -326,7 +326,9 @@ def dict_to_panchenko(counter_dict, dirname='p_batch'):
 
 
 def dict_to_wang(counter_dict):
-    '''writes all counters in counter_dict to directory <code>batch</code>. also writes a list number url to ./batch_list'''
+    '''writes all counters in =counter_dict= to directory
+    =./batch=. also writes a list number url to =./batch_list=
+    '''
     os.mkdir("batch")
     batch_list = open("batch_list", "w")
     url_id = 0
@@ -587,49 +589,65 @@ class Counter(object):
                                int(value)])
         return tmp
 
-    # corner cases
-    # (1) '2717 39.777541132 65.19.167.130 -> 134.169.109.25 ANSI C12.22 363 1153 \xe2\x86\x92 7777 [PSH, ACK] Seq=1 Ack=1 Win=26880 Len=297 TSval=3074280410 TSecr=531832242[Malformed Packet][Malformed Packet][Malformed Packet]\n'
     @staticmethod
     def from_pcap_old(filename):
         '''creates Counter from pcap file'''
         tmp = Counter(filename)
 
-        tshark = subprocess.Popen(args=['tshark', '-r' + filename],
+        tshark = subprocess.Popen(args=['tshark',
+                                        '-Tfields',
+                                        '-eip.src', '-eip.len',
+                                        '-eframe.time_relative',
+                                        '-r' + filename],
                                   stdout=subprocess.PIPE)
         for line in iter(tshark.stdout.readline, ''):
             try:
-                (_, time, src, _, dst, proto, size, rest) = line.split(None, 7)
+                (src, size, time) = line.split()
             except ValueError:
-                try:
-                    (_, time, src, _, dst, proto, size) = line.split(None, 6)
-                    rest = ''
-                except ValueError:
-                    tmp.warned = True
-                    logging.warn('file: %s had problems in line \n%s\n',
-                                 filename, line)
-                    break
+                tmp.warned = True
+                logging.warn('file: %s had problems in line \n%s\n',
+                             filename, line)
+                break
             else:
-                if 'Len=0' in rest or proto == 'ARP':
+                if int(size) == 52:
                     logging.debug('discarded line %s from %s', line, file)
                     continue
-                if 'Len=' in rest:  # see comment case (1)
-                    size = rest[rest.index("Len=") + 4:].split()[0]
-                    tmp.extract_line(src, size, time)
-                if 'Len=0' not in rest and proto != 'ARP':
-                    tmp.extract_line(src, size, time)
-                logging.debug('from %s to %s: %s bytes', src, dst, size)
+                tmp.extract_line(src, int(size)+14, time)
+        # tshark = subprocess.Popen(args=['tshark', '-r' + filename],
+        #                           stdout=subprocess.PIPE)
+        # for line in iter(tshark.stdout.readline, ''):
+        #     try:
+        #         (_, time, src, _, dst, proto, size, rest) = line.split(None, 7)
+        #     except ValueError:
+        #         try:
+        #             (_, time, src, _, dst, proto, size) = line.split(None, 6)
+        #             rest = ''
+        #         except ValueError:
+        #             tmp.warned = True
+        #             logging.warn('file: %s had problems in line \n%s\n',
+        #                          filename, line)
+        #             break
+        #     else:
+        #         if 'Len=0' in rest or proto == 'ARP':
+        #             logging.debug('discarded line %s from %s', line, file)
+        #             continue
+        #         if 'Len=' in rest:  # see comment case (1)
+        #             size = rest[rest.index("Len=") + 4:].split()[0]
+        #             tmp.extract_line(src, size, time)
+        #         if 'Len=0' not in rest and proto != 'ARP':
+        #             tmp.extract_line(src, size, time)
+        #         logging.debug('from %s to %s: %s bytes', src, dst, size)
         return tmp
 
 
     @staticmethod
     def from_pcap(filename):
         '''Creates Counter from pcap file. Less efficient than above.'''
-        try:
-            tmp = from_pcap_old(filename)
-            if not tmp.warned:
-                return tmp
-        except:
-            print '.', # old creation failed
+        tmp = Counter.from_pcap_old(filename)
+        if not tmp.warned:
+            return tmp
+        # except Exception, e:
+        #     print '.', # old creation failed
 
         tmp = Counter(filename)
 
@@ -662,7 +680,7 @@ class Counter(object):
             for line in f:
                 (secs, negcount) = line.split('\t')
                 if abs(int(negcount)) <= 1:  # cell level
-                    negcount = int(negcount) * TOR_CELL_SIZE
+                    negcount = int(negcount) * TOR_DATA_CELL_SIZE
                 tmp.packets.append(-int(negcount))
                 tmp.timing.append([float(secs), -int(negcount)])
         return tmp
@@ -791,7 +809,7 @@ class Counter(object):
 
     def extract_line(self, src, size, tstamp):
         '''aggregates stream values'''
-        if abs(int(size)) < TOR_CELL_SIZE:
+        if abs(int(size)) < TOR_DATA_CELL_SIZE:
             return
         if src == HOME_IP:  # outgoing negative as of panchenko 3.1
             self.packets.append(- int(size))
