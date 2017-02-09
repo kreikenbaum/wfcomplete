@@ -9,15 +9,16 @@ import numpy as np
 
 import counter
 
+logging.basicConfig(level=logging.ERROR)
+
 #JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
-# JOBS_NUM = 1 # testing
-JOBS_NUM = 4
-FOLDS = 5
+#JOBS_NUM = 4
+#FOLDS = 5
+JOBS_NUM = 1; FOLDS = 2 # testing
 
 scaler = None
 
 Result = collections.namedtuple('Result', ['clf', 'best_score_', 'results'])
-
 
 def _binarize(y, keep=-1, transform_to=0):
     '''binarize data in y: transform all values to =default= except =keep=
@@ -129,7 +130,7 @@ def _search_range(best_param, step=1):
             best_param * _step, best_param * _step**2]
 
 
-def _stop(y, step, result, previous):
+def _stop(y, step, result, previous, C=1, best=1):
     '''@return True if grid should stop
 
     >>> _stop([1,1,2,2,3,3], 0.0001, 0.5, 0.4) # stop due to step
@@ -140,11 +141,14 @@ def _stop(y, step, result, previous):
     False
     >>> _stop([1,2], 1, 1, [1,1,1,1]) # stop due to results
     True
+    >>> _stop([1,2], 1, 0.5, [], 1e-200) # stop due to C
+    True
     '''
     return (step < 0.001 or
+            C < 1e-50 or
             (len(previous) > 3 and  # some tries and with same val and > guess
              max([abs(x - result) for x in previous[-3:]]) < 0.00001 and
-             result > 1.1 * max(collections.Counter(y).values()) / len(y)))
+             result > best * 1.1 * max(collections.Counter(y).values()) / len(y)))
 
 
 def helper(counter_dict, outlier_removal=True, cumul=True):
@@ -187,7 +191,8 @@ def my_grid(X, y, C=2**14, gamma=2**-10, step=2, results=None,
                 bestres = current
             logging.info('c: %8s g: %10s res: %.6f', c, g, current.mean())
     previous.append(bestres.mean())
-    if _stop(y, step, bestres.mean(), previous):
+    if _stop(y, step, bestres.mean(), previous, C, best=(auc_bound if
+                                                         auc_bound else 1)):
         logging.info('grid result: %s', bestclf)
         return Result(bestclf, bestres.mean(), results)
     if (bestclf.estimator.C in (_search_range(C, step)[0],

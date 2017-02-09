@@ -237,7 +237,7 @@ def _times_mean_std(counter_dict):
 def _tts(counter_dict, test_size=1.0 / 3):
     '''train-test-split: splits counter_dict in train_dict and test_dict
 
-    test_size = deep_len(test)/deep_len(train)
+    test_size = deep_len(test)/deep_len(train+test)
     uses cross_validation.train_test_split
     @return (train_dict, test_dict) which together yield counter_dict
     >>> len(_tts({'yahoo.com': map(counter._test, [3,3,3])})[0]['yahoo.com'])
@@ -354,7 +354,7 @@ def open_world(defense, y_bound=0.05):
 #                   grid_args={"scoring": scorer})
     # tpr, fpr, ... on test data
     fpr, tpr, trash = fit.roc(result.clf, Xtt, ytt, Xv, yv)
-    return (fpr, tpr, clf, plot_data.roc(fpr, tpr))
+    return (fpr, tpr, result, plot_data.roc(fpr, tpr))
     # tdmb: daniel: improve result with way more fpr vs much less tpr (auc0.01)
 
 
