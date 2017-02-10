@@ -11,10 +11,10 @@ import counter
 
 logging.basicConfig(level=logging.ERROR)
 
-#JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
+JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
 #JOBS_NUM = 4
-#FOLDS = 5
-JOBS_NUM = 1; FOLDS = 2 # testing
+FOLDS = 5
+#JOBS_NUM = 1; FOLDS = 2 # testing
 
 scaler = None
 
@@ -65,10 +65,10 @@ def _bounded_auc_eval(X, y, clf, y_bound=0.1):
 #    return _bounded_auc(y2, p_[:, 1], y_bound, pos_label=0)
 
 
-def _eval(X, y, clf):
+def _eval(X, y, clf, folds=FOLDS):
     '''evaluate estimator on X, y, @return result (ndarray)'''
     X = _scale(X, clf)
-    return cross_validation.cross_val_score(clf, X, y, cv=FOLDS,
+    return cross_validation.cross_val_score(clf, X, y, cv=folds,
                                             n_jobs=JOBS_NUM).mean()
 
 
@@ -151,20 +151,20 @@ def _stop(y, step, result, previous, C=1, best=1):
              result > best * 1.1 * max(collections.Counter(y).values()) / len(y)))
 
 
-def helper(counter_dict, outlier_removal=True, cumul=True):
+def helper(counter_dict, outlier_removal=True, cumul=True, folds=FOLDS):
     '''@return grid-search on counter_dict result (clf, results)'''
     if outlier_removal:
         counter_dict = counter.outlier_removal(counter_dict)
     if cumul:
         (X, y, _) = counter.to_features_cumul(counter_dict)
-        return my_grid(X, y)
+        return my_grid(X, y, folds=folds)
     else:  # panchenko 1
         (X, y, _) = counter.to_features(counter_dict)
-        return my_grid(X, y, C=2**17, gamma=2**-19)
+        return my_grid(X, y, C=2**17, gamma=2**-19, folds=FOLDS)
 
 
 def my_grid(X, y, C=2**14, gamma=2**-10, step=2, results=None,
-            auc_bound=None, previous=None):
+            auc_bound=None, previous=None, folds=FOLDS):
     '''@param results are previously computed results {(C,gamma): accuracy, ...}
     @param auc_bound if this is set, use the bounded auc score with this y_bound
     @return Result namedtuple (see above)'''
@@ -184,7 +184,7 @@ def my_grid(X, y, C=2**14, gamma=2**-10, step=2, results=None,
                 if auc_bound:
                     current = _bounded_auc_eval(X, y, clf, auc_bound)
                 else:
-                    current = _eval(X, y, clf)
+                    current = _eval(X, y, clf, folds=folds)
                 results[(c, g)] = current
             if not bestclf or bestres < current:
                 bestclf = clf
@@ -213,9 +213,9 @@ def roc(clf, X_train, y_train, X_test, y_test):
 
     It uses the same scaling and binarization as my_grid.
     '''
-    p = clf.fit(_scale(X_train, clf),
-                _lb(y_train, transform_to=1)).predict_proba(_scale(X_test, clf))
-    return metrics.roc_curve(_lb(y_test, transform_to=1), p[:, 1], 1)
+    fitted = clf.fit(_scale(X_train, clf), _lb(y_train, transform_to=1))
+    prob = fitted.predict_proba(_scale(X_test, clf))
+    return metrics.roc_curve(_lb(y_test, transform_to=1), prob[:, 1], 1)
 
 
 def sci_grid(X, y, C=2**14, gamma=2**-10, step=2, scoring=None,

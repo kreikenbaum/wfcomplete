@@ -707,16 +707,16 @@ class Counter(object):
         c_abs = []
         # cumulated packetsizes
         c_rel = []
-        inSize = 0
-        outSize = 0
-        inCount = 0
-        outCount = 0
+        in_size = 0
+        out_size = 0
+        in_count = 0
+        out_count = 0
 
         # copied &modified from panchenko's generate-feature.py
         for packetsize in self.packets:
             if packetsize > 0:
-                inSize += packetsize
-                inCount += 1
+                in_size += packetsize
+                in_count += 1
                 if len(c_rel) == 0:
                     c_rel.append(packetsize)
                     c_abs.append(packetsize)
@@ -724,8 +724,8 @@ class Counter(object):
                     c_rel.append(c_rel[-1] + packetsize)
                     c_abs.append(c_abs[-1] + abs(packetsize))
             elif packetsize < 0:
-                outSize += abs(packetsize)
-                outCount += 1
+                out_size += abs(packetsize)
+                out_count += 1
                 if len(c_rel) == 0:
                     c_rel.append(packetsize)
                     c_abs.append(abs(packetsize))
@@ -735,7 +735,7 @@ class Counter(object):
             else:
                 logging.warn('packetsize == 0 in cumul')
 
-        features = [inCount, outCount, outSize, inSize]
+        features = [in_count, out_count, out_size, in_size]
         cumulFeatures = np.interp(np.linspace(c_abs[0], c_abs[-1],
                                               num_features + 1),
                                   c_abs,

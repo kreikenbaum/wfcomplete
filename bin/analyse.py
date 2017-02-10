@@ -330,14 +330,14 @@ def compare_stats(dirs):
     return out
 
 
-def simulated_original(counters, name=None, folds=10):
+def simulated_original(counters, name=None):
     '''simulates original panchenko: does 10-fold cv on _all_ data, just
 picks best result'''
     if name is not None and name in ALL_MAP:
         clf = ALL_MAP[name]
     else:
         clf = fit.helper(counter.outlier_removal(counters, 2),
-                         cumul=True, folds=folds)
+                         cumul=True, folds=10)
         ALL_MAP[name] = clf
     print '10-fold result: {}'.format(clf.best_score_)
 
@@ -508,7 +508,7 @@ def size_test(argv, outlier_removal=True):
     '''1. collect traces
     2. create stats
     3. evaluate for each vs first'''
-    defenses = counter.for_defenses(argv[1:])
+    defenses = counter.for_defenses(argv[1:], remove_small=outlier_removal)
     stats = {k: _bytes_mean_std(v) for (k, v) in defenses.iteritems()}
     defense0 = argv[1]
     for d in argv[2:]:
