@@ -90,13 +90,13 @@
     - encouragement
     - readability
 * WAIT_FINISH Summary
-* DANIEL Basics
+* DANIEL Basics [96%]
   To protect online communication, journalists, whistleblowers,
   "normal people", and among others even military\cite{who-uses-tor}
   have resorted to the Tor\cite{tor-design} anonymity network.
 
   Unfortunately, Tor's anonymity protection has been compromised
-  under laboratory conditions. \cite{panchenko} were the first to
+  under laboratory conditions: \cite{panchenko} were the first to
   show that just looking at the encrypted and location-anonymized
   packets of Tor[fn::which could be easily obtained by ISPs or WLAN
   sniffers, and everyone who can see the Tor network connection
@@ -222,7 +222,7 @@
     All of these approaches determined which page was visited via
     object sizes. Cheng and Avnur \cite{ssl-traffic-analysis}
     additionally proposed a hidden markov model for page
-    /transitions/, for hard-to-identify pages.
+    transitions, for hard-to-identify pages.
 *** DANIEL Hurdles to Website Fingerprinting: HTTP Protocol Evolution
     :PROPERTIES:
     :CUSTOM_ID: Hurdles
@@ -695,7 +695,8 @@ experience /E/.
 
       \[\min_{w, b, \xi} \frac{1}{2} ||w||^2 + \frac{C}{m} \sum_{i=1..m} \xi_i\]
 
-      with the /error-term/ $C$.
+      The /error term/ $C$ weighs minimizing training errors against
+      maximizing the margin\cite[sec.7.2.1]{iml}.
 ***** DANIEL Multi-Class Strategies
       :PROPERTIES:
       :CUSTOM_ID: multi-class
@@ -743,7 +744,7 @@ experience /E/.
       \cite{panchenko2}. While the algorithms still finds a straight
       line in a projected space, the resulting decision boundaries in
       the original feature space are more varied.
-***** RECHECK Parameter Estimation
+***** EVA-AGAIN Parameter Estimation
       #+INDEX: C
       #+INDEX: cross-validation
       #+INDEX: grid search
@@ -1299,7 +1300,7 @@ experience /E/.
      configurability, and maintenance.
 
      The implementation is partly detailed in appendix [[*modules]].
-* DANIEL Results and Evaluation [37%]                               :results:
+* DANIEL Results and Evaluation [38%]                               :results:
   The following sections describe [[#setup][how data was collected and
   analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
   [[#eval-defense][various defenses]].
@@ -1666,14 +1667,6 @@ experience /E/.
     #+CAPTION: Importance of CUMUL features
     #+ATTR_LATEX: :width 0.4\textwidth
     [[./pictures/feature_importances.eps]]
-
-      - add labels
-        - left importance in [\%]
-        - bottom feature number
-          - better if possible: first 4 features labeled (incoming etc)
-      - use percentages (clearer)
-      - use bars, ... instead of line
-        - even better: redo 10 times, use avg etc
     - ET classifies differently from SVM
       - but easily accessible
       - compare
@@ -1692,7 +1685,7 @@ experience /E/.
         - outSize
         - inSize
 **** WAIT [[file:~/da/da.org::*feature%20importances%20of%20cumul:%20rising%20importance%20from%200.5%20to%201.5][feature importances of cumul: rising importance from 0.5 to 1.5]]
-**** WAIT redo [[file:data/results/alternatives.org::*feature%20importances%20ET][feature importances ET]]
+
 *** WRITE Effect of Outlier Removal
     :PROPERTIES:
     :CUSTOM_ID: wf-outlier-removal
@@ -1768,7 +1761,7 @@ experience /E/.
 
     - should not alter wf results in a meaningful way
 **** WAIT [[file:~/da/da.org::*2nd%20nobridge%20retrieval,%20check%20that%20accuracy%20slightly%20lower][2nd nobridge retrieval, check that accuracy slightly lower]]
-** WAIT Evaluation of Defenses [1/16]
+** WAIT Evaluation of Defenses [2/16]
 *** WAIT until data and subsections are stable (f.ex.: optimal attacker and websites ?needed?)
    :PROPERTIES:
    :CUSTOM_ID: eval-defense
@@ -1808,7 +1801,7 @@ experience /E/.
     - cumul
       - disabled vs WTF-PAD, tamaraw, simple10, simple30, 22@best
   - compare bursts to nobursts
-*** CHECK Add-on
+*** EVA Add-on
     :PROPERTIES:
     :CUSTOM_ID: def-addon
     :END:
@@ -2263,7 +2256,7 @@ set, see [[#split][split]].
   :PROPERTIES:
   :CUSTOM_ID: versions
   :END:
-** CHECK 0.17 Bursts on End of Site Loading
+** WAIT 0.17 Bursts on End of Site Loading
    :PROPERTIES:
    :CUSTOM_ID: version-0.17
    :END:
@@ -2276,7 +2269,7 @@ set, see [[#split][split]].
    comes from a single server, the multiple connection
    limit[fn::compare [[#Hurdles]]] should automatically lead to multiple
    bursts if the number of embedded objects is high enough.
-** WRITE 0.18: configurability
+** APPENDIX_DONE 0.18: configurability
    - options choosing which tactic:
      - known/guess sizes
      - bins/target
@@ -3086,16 +3079,16 @@ set, see [[#split][split]].
    :CUSTOM_ID: find sizes of HTML-documents
    :END:
    The HTTP traffic model\cite{newtrafficmodel}'s statistical size
-   generation works with application-level sizes on the network, as the
-   authors of analysed logfiles of the Squid proxy[fn::
+   generation works with application-level sizes on the network, as
+   its authors analysed logfiles of the Squid proxy[fn::
    \url{http://www.squid-cache.org}].
 
    The HTML-sizes could not be trivially obtained from the
    =Content-Length= in the browser, as there are additional headers
    and size-reduction via compression, both of which =Content-Length=
-   does not represent. The sizes were determined by retrieving the
-   files with =wget= via squid. This is implemented via the
-   =html_top_100.sh= script.
+   does not represent. Thus, they were determined by retrieving the
+   files with =wget= via squid, and reading the sizes from the squid
+   log. This is implemented in the =html_top_100.sh= script.
 
    It empties squid's =access.log= file and cache by restarting
    it. Afterwards, the top-100 files are retrieved with =wget= via

@@ -8,8 +8,7 @@ import logging
 import sys
 import time
 import numpy as np
-from sklearn import cross_validation, ensemble, metrics
-from sklearn import multiclass, neighbors, svm, tree
+from sklearn import cross_validation, ensemble, multiclass, neighbors, svm, tree
 #, grid_search, preprocessing
 
 import counter
@@ -187,8 +186,8 @@ def _size_increase(base, compare):
     if base.keys() != compare.keys():
         keys = set(base.keys())
         keys = keys.intersection(compare.keys())
-        logging.warn("keys are different, just used {} common keys"
-                     .format(len(keys)))
+        logging.warn("keys are different, just used {} common keys: {}"
+                     .format(len(keys), keys))
     else:
         keys = base.keys()
     for k in keys:
@@ -353,13 +352,12 @@ def open_world(defense, y_bound=0.05):
 #    clf = fit.sci_grid(X_train, y_train, c=2**15, gamma=2**-45,
 #                   grid_args={"scoring": scorer})
     # tpr, fpr, ... on test data
-    fpr, tpr, trash = fit.roc(result.clf, Xtt, ytt, Xv, yv)
+    fpr, tpr, _ = fit.roc(result.clf, Xtt, ytt, Xv, yv)
     return (fpr, tpr, result, plot_data.roc(fpr, tpr))
     # tdmb: daniel: improve result with way more fpr vs much less tpr (auc0.01)
 
 
-def closed_world(defenses, def0, cumul=True, with_svm=True,
-                 num_jobs=JOBS_NUM, cc=False):
+def closed_world(defenses, def0, cumul=True, with_svm=True, cc=False):
     '''cross test on dirs: 1st has training data, rest have test
 
     =argv= is like sys.argv, =cumul= triggers CUMUL, else version 1,
@@ -531,7 +529,7 @@ def top_30(mean_per_dir):
     return out
 
 
-def main(argv=sys.argv, with_svm=True, cumul=True):
+def main(argv, with_svm=True, cumul=True):
     '''loads stuff, triggers either open or closed-world eval'''
     if len(argv) == 1:
         argv.append('.')
@@ -625,6 +623,7 @@ def main(argv=sys.argv, with_svm=True, cumul=True):
 # SIMPLE
 #['simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5__2016-07-17', 'simple2/20']
 
+# COMPLETE
 # 07-06
 # sys.argv = ['', 'disabled/bridge__2016-07-06', 'retro/bridge/30', 'retro/bridge/70', 'retro/bridge/50']
 # sys.argv = ['', 'disabled/bridge__2016-07-06', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/20']
@@ -666,9 +665,8 @@ def main(argv=sys.argv, with_svm=True, cumul=True):
 # 'disabled/bridge__2016-09-26_100_with_errs']
 
 # NEW
-# sys.argv = ['', './disabled/bridge__2016-11-04_100@50',
-# './0.22/10aI__2016-11-04_50_of_100', './disabled/bridge__2016-11-21',
-# './disabled/bridge__2016-11-27']
+# sys.argv = ['', './disabled/bridge__2016-11-21']
+# sys.argv = ['', './disabled/bridge__2016-11-04_100@50', './0.22/10aI__2016-11-04_50_of_100', './disabled/bridge__2016-11-27']
 
 
 # TOP

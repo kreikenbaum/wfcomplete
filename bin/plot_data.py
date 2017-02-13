@@ -48,17 +48,18 @@ def _gnuplot_ohacc(xrangeleft=0):
     plot("set ylabel 'accuracy [%]'")
     return plot
 
-def plot_defenses_helper(g, filename='../../data/results/export_30sites.csv'):
+def plot_defenses_helper(plot,
+                         filename='../../data/results/export_30sites.csv'):
     '''plots all defenses in filename'''
     # g = _gnuplot_ohacc()
     with open(filename) as f:
         t = _size_table_to_data(f)
-        plot_defenses(g, t)
+        plot_defenses(plot, t)
         for defense in set([x.defense.split('/')[0] for x in t]):
-            g.replot(Gnuplot.Data([(x.size, x.cumul) for x in t
-                                   if 'plotskip' not in x.notes
-                                   and defense in x.defense],
-                                  title=defense))
+            plot.replot(Gnuplot.Data([(x.size, x.cumul) for x in t
+                                      if 'plotskip' not in x.notes
+                                      and defense in x.defense],
+                                     title=defense))
 
 def plot_defenses(plot, data):
     '''plots data items, separates by defense'''
@@ -160,18 +161,28 @@ def many_defenses(places, defs=['simple1/10', '22.0/10aI'],
             plot = defenses(places, tmp_defs, u)
             save(plot, "{}__{}_vs_disabled".format(u, d.replace('/', '@')))
 
-def roc(fpr, tpr, scenario=None):
-    '''@return plot object with roc_curve done, use =.show()= to
-display, and =.save(...)= to save'''
+def roc(fpr, tpr, title="ROC curve", plot=None):
+    '''@return plot object with roc curve, use =.savefig(filename)=
+to save, and =.show()= to display.
+    @params If =plot=, draw another curve into existing plot'''
+    if not plot:
+        plot = _init_roc()
+    else:
+        plot.title("Receiver Operating Characteristic (ROC) Curve")
+    plot.plot(fpr, tpr,
+              label='{} (AUC = {:0.2f})'.format(title, metrics.auc(fpr, tpr)))
+    return plot
+
+def _init_roc():
+    '''initializes ROC plot'''
     out = plt.figure()
-    plt.plot(fpr, tpr, label='ROC curve (area = %0.2f)' % metrics.auc(fpr, tpr))
     plt.plot([0, 1], [0, 1], 'k--')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    if scenario: plt.title(scenario)
     plt.legend(loc="lower right")
+    plt.title("Receiver Operating Characteristic (ROC) Curve")
     return out
 
 def save(gnuplotter, prefix='plot', type_='eps'):

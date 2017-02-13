@@ -9,8 +9,6 @@ import numpy as np
 
 import counter
 
-logging.basicConfig(level=logging.ERROR)
-
 JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
 #JOBS_NUM = 4
 FOLDS = 5
@@ -248,4 +246,5 @@ def sci_grid(X, y, C=2**14, gamma=2**-10, step=2, scoring=None,
 doctest.testmod()
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.ERROR)
     print 'nothing to do, avoids joblib warning'
