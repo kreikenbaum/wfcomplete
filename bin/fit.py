@@ -9,8 +9,8 @@ import numpy as np
 
 import counter
 
-JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
 #JOBS_NUM = 4
+JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
 FOLDS = 5
 #JOBS_NUM = 1; FOLDS = 2 # testing
 
@@ -158,7 +158,7 @@ def helper(counter_dict, outlier_removal=True, cumul=True, folds=FOLDS):
         return my_grid(X, y, folds=folds)
     else:  # panchenko 1
         (X, y, _) = counter.to_features(counter_dict)
-        return my_grid(X, y, C=2**17, gamma=2**-19, folds=FOLDS)
+        return my_grid(X, y, C=2**17, gamma=2**-19, folds=folds)
 
 
 def my_grid(X, y, C=2**14, gamma=2**-10, step=2, results=None,

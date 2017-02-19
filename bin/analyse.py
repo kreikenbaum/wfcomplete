@@ -345,7 +345,8 @@ def open_world(defense, y_bound=0.05):
     '''open-world (SVM) test on data, optimized on bounded auc.
 
     @return (fpr, tpr, optimal_clf, roc_plot_mpl)'''
-    X, y, yd = counter.to_features_cumul(defense)
+    assert 'background' in defense
+    X, y, _ = counter.to_features_cumul(defense)
     Xtt, Xv, ytt, yv = cross_validation.train_test_split(
         X, y, train_size=2. / 3, stratify=y)
     result = fit.my_grid(Xtt, ytt, auc_bound=y_bound)#, n_jobs=1)
