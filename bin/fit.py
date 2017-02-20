@@ -1,4 +1,4 @@
-'''helper methods for fitting data'''
+'''helper methods for fitting data, works mostly with X, y sets'''
 import collections
 import doctest
 import logging
