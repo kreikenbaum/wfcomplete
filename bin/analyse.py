@@ -345,7 +345,7 @@ def open_world(defense, y_bound=0.05):
     '''open-world (SVM) test on data, optimized on bounded auc.
 
     @return (fpr, tpr, optimal_clf, roc_plot_mpl)'''
-    assert 'background' in defense
+    assert 'background' in defense, '''no "background" set in defense data'''
     X, y, _ = counter.to_features_cumul(defense)
     Xtt, Xv, ytt, yv = cross_validation.train_test_split(
         X, y, train_size=2. / 3, stratify=y)
@@ -519,7 +519,7 @@ def top_30(mean_per_dir):
 
     @param is f.ex. means from compare_stats above.'''
     all_means = []
-    for (defense, p_means) in mean_per_dir.items():
+    for p_means in mean_per_dir.values():
         all_means.extend(p_means.values())
     percentiles = np.percentile(all_means,
                                 np.linspace(0, 100, 31),
