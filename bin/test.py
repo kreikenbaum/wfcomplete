@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 '''unit tests counter, analyse and fix modules'''
+import logging
 import os
 import tempfile
 import unittest
@@ -109,7 +110,24 @@ class TestAnalyse(unittest.TestCase):
     def setUp(self):
         self.base_mock = {'a': (10, -1), 'b': (10, -1)}
         self.base_mock2 = {'a': (10, -1), 'b': (10, -1), 'c': (10, -1)}
-        self.c_list = map(counter._test, [1, 2, 2, 2, 2, 3, 4]) # counter-list
+        self.c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]]
+        self.bg_mock = {'background': self.c_list[:],
+                                 'a': self.c_list[:],
+                                 'b': self.c_list[:]}
+
+
+    def test__binarize(self):
+        res = analyse._binarize(self.bg_mock)
+        self.assertEquals(res['background'], self.c_list)
+#        self.assertEquals(res['foreground'], 2 * self.c_list)
+        self.assertEquals(len(res['foreground']), 2 * len(self.c_list))
+
+    def test__binarize_tf_cumul(self):
+        Xa, ya, _ = counter.to_features_cumul(analyse._binarize(self.bg_mock))
+        Xc, yc, _ = counter.to_features_cumul(self.bg_mock)
+        yc = fit._lb(yc)
+        self.assertTrue(np.array_equal(ya, yc))
+        self.assertTrue(np.array_equal(Xa, Xc))
 
 
     def test__size_increase_equal(self):
@@ -163,6 +181,9 @@ class TestFit(unittest.TestCase):
         self.y = [1] * self.size; self.y.extend([-1] * self.size)
         self.string = 'tpr: {}, fpr: {}'
         fit.FOLDS = 2
+        reload(logging)
+        logging.basicConfig(level=logging.ERROR) # reduce fit verbosity
+
 
     def test_ow(self):
         '''tests normal open world grid search'''

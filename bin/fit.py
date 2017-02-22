@@ -9,8 +9,8 @@ import numpy as np
 
 import counter
 
-#JOBS_NUM = 4
-JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
+JOBS_NUM = 4
+#JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
 FOLDS = 5
 #JOBS_NUM = 1; FOLDS = 2 # testing
 
@@ -165,7 +165,7 @@ def my_grid(X, y, C=2**14, gamma=2**-10, step=2, results=None,
             auc_bound=None, previous=None, folds=FOLDS):
     '''@param results are previously computed results {(C,gamma): accuracy, ...}
     @param auc_bound if this is set, use the bounded auc score with this y_bound
-    @return Result namedtuple (see above)'''
+    @return Result(clf, best_score_, results) (namedtuple see above)'''
     if not results:
         previous = []
         results = {}
@@ -187,7 +187,7 @@ def my_grid(X, y, C=2**14, gamma=2**-10, step=2, results=None,
             if not bestclf or bestres < current:
                 bestclf = clf
                 bestres = current
-            logging.info('c: %8s g: %10s res: %.6f', c, g, current.mean())
+            logging.info('c: %8s g: %15s res: %.6f', c, g, current.mean())
     previous.append(bestres.mean())
     if _stop(y, step, bestres.mean(), previous, C, best=(auc_bound if
                                                          auc_bound else 1)):
@@ -213,7 +213,9 @@ def roc(clf, X_train, y_train, X_test, y_test):
     '''
     fitted = clf.fit(_scale(X_train, clf), _lb(y_train, transform_to=1))
     prob = fitted.predict_proba(_scale(X_test, clf))
-    return metrics.roc_curve(_lb(y_test, transform_to=1), prob[:, 1], 1)
+    fpr, tpr, thresh = metrics.roc_curve(
+        _lb(y_test, transform_to=1), prob[:, 1], 1)
+    return fpr, tpr, thresh, prob
 
 
 def sci_grid(X, y, C=2**14, gamma=2**-10, step=2, scoring=None,

@@ -169,8 +169,8 @@ to save, and =.show()= to display.
         plot = _init_roc()
     else:
         plot.title("Receiver Operating Characteristic (ROC) Curve")
-    plot.plot(fpr, tpr,
-              label='{} (AUC = {:0.2f})'.format(title, metrics.auc(fpr, tpr)))
+    plt.plot(fpr, tpr,
+             label='{} (AUC = {:0.2f})'.format(title, metrics.auc(fpr, tpr)))
     return plot
 
 def _init_roc():

@@ -41,6 +41,17 @@ def _average_duration(counter_dict):
     return np.mean([x[0] for x in mean_std.values()])
 
 
+def _binarize(counter_dict, bg_label='background', fg_label='foreground'):
+    '''@return counter_dict with "background" url as-is, all others combined'''
+    out = {}
+    out[bg_label] = counter_dict[bg_label]
+    out[fg_label] = []
+    for (k, v) in counter_dict.iteritems():
+        if k != bg_label:
+            out[fg_label].extend(v)
+    return out
+
+
 def _bytes_mean_std(counter_dict):
     '''@return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
     >>> _bytes_mean_std({'yahoo.com': [counter._test(3)]})
@@ -150,13 +161,6 @@ def _misclassification_rates(train, test, clf=GOOD[0]):
     X2 = fit._scale(X2, clf)
     return _predict_percentages(_class_predictions(y2, clf.predict(X2)),
                                 _gen_url_list(y2, y2d))
-
-
-def _proba_clf(other_clf):
-    '''@return ovr-svc with other_clf's C and gamma'''
-    return _clf(C=other_clf.best_params_['estimator__C'],
-                gamma=other_clf.best_params_['estimator__gamma'],
-                probability=True)
 
 
 def _predict_percentages(class_predictions_list, url_list):
@@ -353,8 +357,8 @@ def open_world(defense, y_bound=0.05):
 #    clf = fit.sci_grid(X_train, y_train, c=2**15, gamma=2**-45,
 #                   grid_args={"scoring": scorer})
     # tpr, fpr, ... on test data
-    fpr, tpr, _ = fit.roc(result.clf, Xtt, ytt, Xv, yv)
-    return (fpr, tpr, result, plot_data.roc(fpr, tpr))
+    fpr, tpr, _, prob = fit.roc(result.clf, Xtt, ytt, Xv, yv)
+    return (fpr, tpr, result, plot_data.roc(fpr, tpr), prob)
     # tdmb: daniel: improve result with way more fpr vs much less tpr (auc0.01)
 
 
@@ -468,7 +472,7 @@ def outlier_removal_levels(defense, clf=None):
         defense_with_or = counter.outlier_removal(defense, lvl)
         (train, test) = _tts(defense_with_or)
         (X, y, _) = counter.to_features_cumul(train)
-        if type(clf) is type(None):
+        if clf is None:
             clf = fit.my_grid(X, y)
         (X, y, _) = counter.to_features_cumul(test)
         print "level: {}".format(lvl)
@@ -534,10 +538,11 @@ def main(argv, with_svm=True, cumul=True):
     '''loads stuff, triggers either open or closed-world eval'''
     if len(argv) == 1:
         argv.append('.')
+    # by hand: defenses = counter.for_defenses(sys.argv[1:])
     defenses = counter.for_defenses(argv[1:])
     if 'background' in defenses.values()[0]:
         if len(defenses) > 1:
-            print 'chose first class for open world analysis'
+            logging.warn('only first class chosen for open world analysis')
         open_world(defenses.values()[0])
     else:
         closed_world(defenses, argv[1], with_svm=with_svm, cumul=cumul)
