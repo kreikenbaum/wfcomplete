@@ -611,15 +611,6 @@ def main(argv, with_svm=True, cumul=True):
 # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
 # counters = counter.all_from_panchenko(PANCHENKO_PATH)
 
-# CREATE WANG' BATCH DIRECTORIES. call this in data/ directory
-# on update, alter [[diplomarbeit.org::*How to get Wang-kNN to work]]
-# for root, dirs, files in os.walk('.'):
-# plots or already processed
-#     if (not re.search('/(plots|path|batch|results)', root) and
-#         not dirs and files):
-#         print root
-#         counter.dir_to_wang(root, remove_small=False)
-
 # variants
 # RETRO
 # ['retro/bridge/100__2016_09_15', 'retro/bridge/50__2016_09_16']

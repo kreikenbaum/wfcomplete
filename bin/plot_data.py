@@ -167,10 +167,13 @@ to save, and =.show()= to display.
     @params If =plot=, draw another curve into existing plot'''
     if not plot:
         plot = _init_roc()
-    else:
-        plot.title("Receiver Operating Characteristic (ROC) Curve")
-    plt.plot(fpr, tpr,
-             label='{} (AUC = {:0.2f})'.format(title, metrics.auc(fpr, tpr)))
+    curve = plt.plot(
+        fpr, tpr,
+        label='{} (AUC = {:0.2f})'.format(title, metrics.auc(fpr, tpr)))
+    plt.legend()
+    one_percent = [y for (x,y) in zip(fpr, tpr) if x >= 0.01][0]
+    line = plt.plot([0, 1], [one_percent] *2, "red", label='1% fpr')
+    plt.legend([curve, line], loc="lower right")
     return plot
 
 def _init_roc():
@@ -181,7 +184,6 @@ def _init_roc():
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.legend(loc="lower right")
     plt.title("Receiver Operating Characteristic (ROC) Curve")
     return out
 

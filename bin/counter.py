@@ -370,7 +370,7 @@ def dir_to_herrmann(dirname, clean=True):
     X, y, yd = to_features_herrmann(counter_dict)
     if dirname is '.':
         dirname = os.getcwd()
-    to_libsvm(X, y, fname='{}.her_svm'.format(dirname.replace(os.sep, '___')))
+    to_libsvm(X, y, fname='her_svm')
 
 
 def dir_to_wang(dirname, remove_small=True, outlier_removal_lvl=0):
