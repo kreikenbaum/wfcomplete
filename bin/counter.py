@@ -895,8 +895,6 @@ class Counter(object):
             name = self.name.split('@')[0]
         out = name
         for p in self.packets:
-#            if abs(p) >= 512:
-#                out += ' {}'.format(int(round(p / 600.) * 600))
             while abs(p) >= 512:
                 out += ' {}'.format('+' if np.sign(p) == 1 else '-')
                 p -= np.sign(p) * 600

@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 '''unit tests counter, analyse and fix modules'''
+import doctest
 import logging
 import os
 import tempfile
@@ -18,6 +19,11 @@ class TestCounter(unittest.TestCase):
     def setUp(self):
         self.c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]] # len 7
         self.big_val = [counter._test(3, val=10*60*1000)] # very big, but ok
+
+
+    def test_doc(self):
+        (fail_num, _) = doctest.testmod(counter, optionflags=doctest.ELLIPSIS)
+        self.assertEqual(0, fail_num)
 
 
     def test__test(self):
@@ -116,6 +122,11 @@ class TestAnalyse(unittest.TestCase):
                                  'b': self.c_list[:]}
 
 
+    def test_doc(self):
+        (fail_num, _) = doctest.testmod(analyse)
+        self.assertEqual(0, fail_num)
+
+
     def test__binarize(self):
         res = analyse._binarize(self.bg_mock)
         self.assertEquals(res['background'], self.c_list)
@@ -185,6 +196,11 @@ class TestFit(unittest.TestCase):
         logging.basicConfig(level=logging.ERROR) # reduce fit verbosity
 
 
+    def test_doc(self):
+        (fail_num, _) = doctest.testmod(analyse)
+        self.assertEqual(0, fail_num)
+
+
     def test_ow(self):
         '''tests normal open world grid search'''
         result = fit.my_grid(self.X, self.y, auc_bound=0.3)
@@ -193,7 +209,7 @@ class TestFit(unittest.TestCase):
     def test_ow_roc(self):
         '''tests roc for normal open world grid search'''
         (clf, _, _) = fit.my_grid(self.X, self.y, auc_bound=0.3)
-        (fpr, tpr, _) = fit.roc(clf, self.X, self.y, self.X, self.y)
+        (fpr, tpr, _, _) = fit.roc(clf, self.X, self.y, self.X, self.y)
         self.assertEqual(list(fpr)[:2], [0, 1])
         self.assertEqual(list(tpr)[:2], [1, 1])
 
@@ -203,8 +219,8 @@ class TestFit(unittest.TestCase):
         X_rand_middle = [(0.5, 0.5)] * (11 * self.size / 10)
         X_rand_middle.extend(np.random.random_sample((9 * self.size / 10, 2)))
         (clf, _, _) = fit.my_grid(X_rand_middle, self.y, auc_bound=0.3)
-        (fpr, tpr, _) = fit.roc(clf, X_rand_middle, self.y,
-                                X_rand_middle, self.y)
+        (fpr, tpr, _, _) = fit.roc(clf, X_rand_middle, self.y,
+                                   X_rand_middle, self.y)
         # 2. check that fpr/tpr has certain structure (low up to tpr of 0.1))
         self.assertEqual(tpr[0], 0, self.string.format(tpr, fpr))
         self.assertEqual(fpr[0], 0, self.string.format(tpr, fpr))
@@ -217,7 +233,7 @@ class TestFit(unittest.TestCase):
         X_rand_middle = [(0.5, 0.5)] * (9 * self.size / 10)
         X_rand_middle.extend(np.random.random_sample((11 * self.size / 10, 2)))
         (clf, _, _) = fit.my_grid(X_rand_middle, self.y, auc_bound=0.3)
-        (fpr, tpr, _) = fit.roc(
+        (fpr, tpr, _, _) = fit.roc(
             clf, X_rand_middle, self.y, X_rand_middle, self.y)
         # 2. check that fpr/tpr has good structure (rises straight up to 0.9fpr)
         self.assertEqual(tpr[0], 0.9, self.string.format(tpr, fpr))

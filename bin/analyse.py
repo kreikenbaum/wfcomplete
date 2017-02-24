@@ -609,6 +609,8 @@ def main(argv, with_svm=True, cumul=True):
 # outlier_removal_levels(defenses[sys.argv[1]]) #td: try out
 
 # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
+# PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'subsets', '30', 'foreground-data', 'output-tcp')
+# PANCHENKO_bg = os.path.join('..', 'sw', 'p', 'subsets', 'background-1200', 'output-tcp')
 # counters = counter.all_from_panchenko(PANCHENKO_PATH)
 
 # variants

@@ -16232,6 +16232,242 @@ V.L. Voydock and S.T. Kent. Security Mechanisms in High-Level Network Protocols.
 *** ref M. E. Crovella and A. Bestavros. Self-similarity in World Wide
       Web traffic: evidence and possible causes. Networking, IEEE/ACM
       Transactions on, 5(6):835–846, 1997.
+** TODO [#B] [[./Matplotlib.pdf][Hunter - Matplotlib]]
+*** TODO [#B] tutorial
+*** summary
+    5. [@5] BEGINNER’S GUIDE
+
+       1. Pyplot tutorial
+
+          0. [@0]
+
+             - each command changes figure in some way
+               #+BEGIN_SRC python
+                 import matplotlib.pyplot as plt
+                 plt.plot([1,2,3,4])
+                 plt.ylabel('some numbers')
+                 plt.show() # only necessary if not =plt.ion()=
+               #+END_SRC
+
+             - plot(x, y, format_string='b-')
+
+          2. [@2] Working with multiple figures and axes
+
+             - =plt.gca()= gets current axes, =plt.gcf()= the current
+               figure
+
+             - =plt.figure()= new figure, seldomly used
+
+             - =plt.subplot(row, col, id)= creates subplot, row and
+               col are maximum, id traverses
+
+          3. Working with text
+
+             - =text()= at arbitrary location, else =xlabel=, =ylabel=, =title=
+
+             - Using mathematical expressions in text
+
+               - can use any TeX-command, need to use a raw string for that
+                 #+BEGIN_SRC python
+                   plt.title(r'$\sigma_i=15$')
+                 #+END_SRC
+
+          4. Logarithmic and other nonlinear axis
+
+          5. Typesetting With XeLaTeX/LuaLaTeX
+
+             - pgf supported, use =plt.savefig('figure.pgf')=
+
+             - use default LaTeX fonts by clearing =rcParams=:
+               #+BEGIN_SRC python
+                 import matplotlib as mpl
+                 mpl.use("pgf")
+                 pgf_with_rc_fonts = {
+                     "font.serif": [],
+                     "pgf.texsystem": "pdflatex"
+                 }
+                 mpl.rcParams.update(pgf_with_rc_fonts)
+               #+END_SRC
+               also possible to clean =font.sans-serif= or
+               =font.monospace=
+
+               - the above also sets the texsystem to pdflatex (use if
+                 there is only pdflatex installed)
+
+               - use("pgf") is not necessary, except if you want to
+                 generate PDF graphics with pgf backend
+
+                 - set this live via
+                   #+BEGIN_SRC python
+                     from matplotlib.backends.backend_pgf import FigureCanvasPgf
+                     matplotlib.backend_bases.register_backend('pdf', FigureCanvasPgf)
+                   #+END_SRC
+
+             - other parameters:
+
+               - ="pgf.rcfonts": False=
+
+               - ="text.usetex": True=
+
+       6. [@6] Legend guide
+
+          0. [@0] terms
+
+             - entry: consists of /key/ ("colored/patterened marker")
+               and /label/ (text)
+
+             - handle: object used to generate entry
+
+          1. Controlling the legend entries
+
+    12. [@12] Usage
+
+        8. [@8] What is interactive mode?
+
+           - automatic plotting to the screen
+
+           - turn on with =plt.ion()= and off with =plt.ioff()=
+
+           - query with =matplotlib.is_interactive()=
+
+    34. [@34] MATPLOTLIB MPLOT3D TOOLKIT
+
+        1. mplot3d tutorial
+
+           1. Getting started
+
+              - create axes object
+                #+BEGIN_SRC python
+                  from mpl_toolkits.mplot3d import Axes3D
+                  fig = plt.figure()
+                  ax = fig.add_subplot(111, projection='3d')
+                #+END_SRC
+
+           4. [@4] Wireframe plots
+
+    68. [@68] matplotlib.pyplot
+
+        - add label (per line) via
+          #+BEGIN_SRC python
+            plot([1,2,3], [1,2,3], 'go-', label='line 1', linewidth=2)
+            legend() # call just once after all plot() commands
+          #+END_SRC
+          afterwards, just do =show()=, etc
+
+        - reconfigure subplots so that lower title does not overlap
+          upper xlabel: =plt.tight_layout()=
+*** quotes
+    4. [@4] CONFIGURATION GUIDE
+       3. [@3] Using matplotlib in a python shell
+          3. [@3] Controlling interactive updating
+             - =ion()= turns interactive mode on
+             - =ioff()= turns interactive mode off
+    5. Beginner's Guide
+       1. Pyplot tutorial
+          0. [@0]
+             - For example, to plot the above with red circles, you would issue
+               #+BEGIN_SRC python
+                 import matplotlib.pyplot as plt
+                 plt.plot([1,2,3,4], [1,4,9,16], 'ro')
+                 plt.axis([0, 6, 0, 20])
+                 plt.show()
+               #+END_SRC
+          3. [@3] Working with multiple figures and axes
+             - If you are making lots of figures, you need to be aware
+               of one more thing: the memory required for a figure is
+               not completely released until the figure is explicitly
+               closed with =close()=.
+    44. [@44] axes
+        - set_xbound(lower=None, upper=None)
+
+          Set the lower and upper numerical bounds of the x-axis. This
+          method will honor axes inversion regardless of parameter
+          order. It will not change the _autoscaleXon attribute.
+        - set_xticklabels(labels, fontdict=None, minor=False, **kwargs)
+
+          Set the xtick labels with list of strings labels. Return a
+          list of axis text instances.
+          - rotation
+
+            [ angle in degrees | ‘vertical’ | ‘horizontal’ ]
+    68. [@68] matplotlib.pyplot
+        - matplotlib.pyplot.tight_layout(pad=1.08, h_pad=None,
+          w_pad=None, rect=None)
+
+          Automatically adjust subplot parameters to give specified padding.
+        - matplotlib.pyplot.savefig(*args, **kwargs)
+
+          Save the current figure.
+        - matplotlib.pyplot.xticks(*args, **kwargs)
+
+          Get or set the x-limits of the current tick locations and labels.
+          #+BEGIN_SRC python
+            locs, labels = xticks()
+            # set the locations and labels of the xticks
+            xticks( arange(5), ('Tom', 'Dick', 'Harry', 'Sally', 'Sue') )
+          #+END_SRC
+    72. [@72] text
+        1. matplotlib.text
+           - set_text(s)
+
+             Set the text string s. It may contain newlines (\n) or
+             math in LaTeX syntax. ACCEPTS: string or anything
+             printable with ‘%s’ conversion.
+    87. [@87] MPLOT3D EXAMPLES
+        20. [@20] mplot3d example code: surface3d_demo.py
+            #+BEGIN_SRC python
+              from mpl_toolkits.mplot3d import Axes3D
+              from matplotlib import cm
+              from matplotlib.ticker import LinearLocator, FormatStrFormatter
+              import matplotlib.pyplot as plt
+              import numpy as np
+              fig = plt.figure()
+              ax = fig.gca(projection='3d')
+              X = np.arange(-5, 5, 0.25)
+              Y = np.arange(-5, 5, 0.25)
+              X, Y = np.meshgrid(X, Y)
+              R = np.sqrt(X**2 + Y**2)
+              Z = np.sin(R)
+              surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm,
+                                     linewidth=0, antialiased=False)
+              ax.set_zlim(-1.01, 1.01)
+              ax.zaxis.set_major_locator(LinearLocator(10))
+              ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f '))
+              fig.colorbar(surf, shrink=0.5, aspect=5)
+              plt.show()
+            #+END_SRC
+        21. mplot3d example code: surface3d_demo2.py
+            #+BEGIN_SRC python
+              # [...]
+              fig = plt.figure()
+              ax = fig.add_subplot(111, projection='3d')
+              u = np.linspace(0, 2 * np.pi, 100)
+              v = np.linspace(0, np.pi, 100)
+              x = 10 * np.outer(np.cos(u), np.sin(v))
+              y = 10 * np.outer(np.sin(u), np.sin(v))
+              z = 10 * np.outer(np.ones(np.size(u)), np.cos(v))
+              ax.plot_surface(x, y, z, rstride=4, cstride=4, color='b')
+              plt.show()
+            #+END_SRC
+    89. [@89] PYLAB_EXAMPLES EXAMPLES
+        20. [@20] pylab_examples example code: bar_stacked.py [...]
+            #+BEGIN_SRC python
+              # a stacked bar plot with errorbars
+              N = 5
+              menMeans = (20, 35, 30, 35, 27)
+              womenMeans = (25, 32, 34, 20, 25)
+              menStd = (2, 3, 4, 1, 2)
+              womenStd = (3, 5, 2, 3, 3)
+              ind = np.arange(N)
+              # the x locations for the groups
+              width = 0.35
+              # the width of the bars: can also be len(x) sequence
+              p1 = plt.bar(ind, menMeans, width, color='r', yerr=menStd)
+              p2 = plt.bar(ind, womenMeans, width, color='y', bottom=menMeans,
+                           yerr=womenStd)
+              plt.xticks(ind + width/2., ('G1', 'G2', 'G3', 'G4', 'G5'))
+              plt.yticks(np.arange(0, 81, 10))
+            #+END_SRC
 ** TODO [#C] [[./wurster-nspw-08.pdf][The Developer is the Enemy]]
 *** summary
     0. [@0] ABSTRACT
@@ -23553,6 +23789,24 @@ When a media query is true, the corresponding style sheet or style rules are app
             . JSLint does not expect to see unnecessary semicolons or
             the empty statement.
 *** ref [[file:master.bib::javascript][Crockford 2008: JavaScript]]
+** PART [[./python-doc-howto-sorting.pdf][Dalke - Sorting HOW TO]]
+*** summary
+    1. Sorting Basics
+
+       - =sorted(an_iterable)= returns sorted list, =list.sort()=
+         sorts in-place, returns =None=
+
+    2. Key Functions
+
+       - accept any lambda, f.ex.
+         #+BEGIN_SRC python
+           >>> student_tuples = [('john', 'A', 15),('jane', 'B', 12),('dave', 'B', 10),]
+           >>> sorted(student_tuples, key=lambda student: student[2])
+           [('dave', 'B', 10), ('jane', 'B', 12), ('john', 'A', 15)]
+         #+END_SRC
+
+    3. Operator Module Functions
+*** quotes
 ** PART Ferguson - Practical Cryptography
 *** summary
     0. [@0] Preface
@@ -23905,242 +24159,6 @@ When a media query is true, the corresponding style sheet or style rules are app
           containing the pattern, the second argument can be used to
           add case-insensitivity or globalness.
 *** ref [[file:master.bib::eloquent-javascript][Haverbeke 2007: Eloquent JavaScript]]
-** TODO [#B] MOVE PART [[./Matplotlib.pdf][Hunter - Matplotlib]]
-*** TODO [#B] tutorial
-*** summary
-    5. [@5] BEGINNER’S GUIDE
-
-       1. Pyplot tutorial
-
-          0. [@0]
-
-             - each command changes figure in some way
-               #+BEGIN_SRC python
-                 import matplotlib.pyplot as plt
-                 plt.plot([1,2,3,4])
-                 plt.ylabel('some numbers')
-                 plt.show() # only necessary if not =plt.ion()=
-               #+END_SRC
-
-             - plot(x, y, format_string='b-')
-
-          2. [@2] Working with multiple figures and axes
-
-             - =plt.gca()= gets current axes, =plt.gcf()= the current
-               figure
-
-             - =plt.figure()= new figure, seldomly used
-
-             - =plt.subplot(row, col, id)= creates subplot, row and
-               col are maximum, id traverses
-
-          3. Working with text
-
-             - =text()= at arbitrary location, else =xlabel=, =ylabel=, =title=
-
-             - Using mathematical expressions in text
-
-               - can use any TeX-command, need to use a raw string for that
-                 #+BEGIN_SRC python
-                   plt.title(r'$\sigma_i=15$')
-                 #+END_SRC
-
-          4. Logarithmic and other nonlinear axis
-
-          5. Typesetting With XeLaTeX/LuaLaTeX
-
-             - pgf supported, use =plt.savefig('figure.pgf')=
-
-             - use default LaTeX fonts by clearing =rcParams=:
-               #+BEGIN_SRC python
-                 import matplotlib as mpl
-                 mpl.use("pgf")
-                 pgf_with_rc_fonts = {
-                     "font.serif": [],
-                     "pgf.texsystem": "pdflatex"
-                 }
-                 mpl.rcParams.update(pgf_with_rc_fonts)
-               #+END_SRC
-               also possible to clean =font.sans-serif= or
-               =font.monospace=
-
-               - the above also sets the texsystem to pdflatex (use if
-                 there is only pdflatex installed)
-
-               - use("pgf") is not necessary, except if you want to
-                 generate PDF graphics with pgf backend
-
-                 - set this live via
-                   #+BEGIN_SRC python
-                     from matplotlib.backends.backend_pgf import FigureCanvasPgf
-                     matplotlib.backend_bases.register_backend('pdf', FigureCanvasPgf)
-                   #+END_SRC
-
-             - other parameters:
-
-               - ="pgf.rcfonts": False=
-
-               - ="text.usetex": True=
-
-       6. [@6] Legend guide
-
-          0. [@0] terms
-
-             - entry: consists of /key/ ("colored/patterened marker")
-               and /label/ (text)
-
-             - handle: object used to generate entry
-
-          1. Controlling the legend entries
-
-    12. [@12] Usage
-
-        8. [@8] What is interactive mode?
-
-           - automatic plotting to the screen
-
-           - turn on with =plt.ion()= and off with =plt.ioff()=
-
-           - query with =matplotlib.is_interactive()=
-
-    34. [@34] MATPLOTLIB MPLOT3D TOOLKIT
-
-        1. mplot3d tutorial
-
-           1. Getting started
-
-              - create axes object
-                #+BEGIN_SRC python
-                  from mpl_toolkits.mplot3d import Axes3D
-                  fig = plt.figure()
-                  ax = fig.add_subplot(111, projection='3d')
-                #+END_SRC
-
-           4. [@4] Wireframe plots
-
-    68. [@68] matplotlib.pyplot
-
-        - add label (per line) via
-          #+BEGIN_SRC python
-            plot([1,2,3], [1,2,3], 'go-', label='line 1', linewidth=2)
-            legend() # call just once after all plot() commands
-          #+END_SRC
-          afterwards, just do =show()=, etc
-
-        - reconfigure subplots so that lower title does not overlap
-          upper xlabel: =plt.tight_layout()=
-*** quotes
-    4. [@4] CONFIGURATION GUIDE
-       3. [@3] Using matplotlib in a python shell
-          3. [@3] Controlling interactive updating
-             - =ion()= turns interactive mode on
-             - =ioff()= turns interactive mode off
-    5. Beginner's Guide
-       1. Pyplot tutorial
-          0. [@0]
-             - For example, to plot the above with red circles, you would issue
-               #+BEGIN_SRC python
-                 import matplotlib.pyplot as plt
-                 plt.plot([1,2,3,4], [1,4,9,16], 'ro')
-                 plt.axis([0, 6, 0, 20])
-                 plt.show()
-               #+END_SRC
-          3. [@3] Working with multiple figures and axes
-             - If you are making lots of figures, you need to be aware
-               of one more thing: the memory required for a figure is
-               not completely released until the figure is explicitly
-               closed with =close()=.
-    44. [@44] axes
-        - set_xbound(lower=None, upper=None)
-
-          Set the lower and upper numerical bounds of the x-axis. This
-          method will honor axes inversion regardless of parameter
-          order. It will not change the _autoscaleXon attribute.
-        - set_xticklabels(labels, fontdict=None, minor=False, **kwargs)
-
-          Set the xtick labels with list of strings labels. Return a
-          list of axis text instances.
-          - rotation
-
-            [ angle in degrees | ‘vertical’ | ‘horizontal’ ]
-    68. [@68] matplotlib.pyplot
-        - matplotlib.pyplot.tight_layout(pad=1.08, h_pad=None,
-          w_pad=None, rect=None)
-
-          Automatically adjust subplot parameters to give specified padding.
-        - matplotlib.pyplot.savefig(*args, **kwargs)
-
-          Save the current figure.
-        - matplotlib.pyplot.xticks(*args, **kwargs)
-
-          Get or set the x-limits of the current tick locations and labels.
-          #+BEGIN_SRC python
-            locs, labels = xticks()
-            # set the locations and labels of the xticks
-            xticks( arange(5), ('Tom', 'Dick', 'Harry', 'Sally', 'Sue') )
-          #+END_SRC
-    72. [@72] text
-        1. matplotlib.text
-           - set_text(s)
-
-             Set the text string s. It may contain newlines (\n) or
-             math in LaTeX syntax. ACCEPTS: string or anything
-             printable with ‘%s’ conversion.
-    87. [@87] MPLOT3D EXAMPLES
-        20. [@20] mplot3d example code: surface3d_demo.py
-            #+BEGIN_SRC python
-              from mpl_toolkits.mplot3d import Axes3D
-              from matplotlib import cm
-              from matplotlib.ticker import LinearLocator, FormatStrFormatter
-              import matplotlib.pyplot as plt
-              import numpy as np
-              fig = plt.figure()
-              ax = fig.gca(projection='3d')
-              X = np.arange(-5, 5, 0.25)
-              Y = np.arange(-5, 5, 0.25)
-              X, Y = np.meshgrid(X, Y)
-              R = np.sqrt(X**2 + Y**2)
-              Z = np.sin(R)
-              surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm,
-                                     linewidth=0, antialiased=False)
-              ax.set_zlim(-1.01, 1.01)
-              ax.zaxis.set_major_locator(LinearLocator(10))
-              ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f '))
-              fig.colorbar(surf, shrink=0.5, aspect=5)
-              plt.show()
-            #+END_SRC
-        21. mplot3d example code: surface3d_demo2.py
-            #+BEGIN_SRC python
-              # [...]
-              fig = plt.figure()
-              ax = fig.add_subplot(111, projection='3d')
-              u = np.linspace(0, 2 * np.pi, 100)
-              v = np.linspace(0, np.pi, 100)
-              x = 10 * np.outer(np.cos(u), np.sin(v))
-              y = 10 * np.outer(np.sin(u), np.sin(v))
-              z = 10 * np.outer(np.ones(np.size(u)), np.cos(v))
-              ax.plot_surface(x, y, z, rstride=4, cstride=4, color='b')
-              plt.show()
-            #+END_SRC
-    89. [@89] PYLAB_EXAMPLES EXAMPLES
-        20. [@20] pylab_examples example code: bar_stacked.py [...]
-            #+BEGIN_SRC python
-              # a stacked bar plot with errorbars
-              N = 5
-              menMeans = (20, 35, 30, 35, 27)
-              womenMeans = (25, 32, 34, 20, 25)
-              menStd = (2, 3, 4, 1, 2)
-              womenStd = (3, 5, 2, 3, 3)
-              ind = np.arange(N)
-              # the x locations for the groups
-              width = 0.35
-              # the width of the bars: can also be len(x) sequence
-              p1 = plt.bar(ind, menMeans, width, color='r', yerr=menStd)
-              p2 = plt.bar(ind, womenMeans, width, color='y', bottom=menMeans,
-                           yerr=womenStd)
-              plt.xticks(ind + width/2., ('G1', 'G2', 'G3', 'G4', 'G5'))
-              plt.yticks(np.arange(0, 81, 10))
-            #+END_SRC
 ** PART [[../../../chive/GG/it/LaTeX/a026.pdf][Jürgens - LATEX — eine Einführung und ein bisschen mehr ...]]
 *** summary
     4. [@4] Ein erstes Beispiel
@@ -24789,24 +24807,6 @@ When a media query is true, the corresponding style sheet or style rules are app
           (Iglewicz, 1983) will be even better for input variables
           with extreme outliers.
 *** ref [[file:master.bib::sarle2][Sarle 2002]]
-** PART MOVE [[./python-doc-howto-sorting.pdf][Dalke - Sorting HOW TO]]
-*** summary
-    1. Sorting Basics
-
-       - =sorted(an_iterable)= returns sorted list, =list.sort()=
-         sorts in-place, returns =None=
-
-    2. Key Functions
-
-       - accept any lambda, f.ex.
-         #+BEGIN_SRC python
-           >>> student_tuples = [('john', 'A', 15),('jane', 'B', 12),('dave', 'B', 10),]
-           >>> sorted(student_tuples, key=lambda student: student[2])
-           [('dave', 'B', 10), ('jane', 'B', 12), ('john', 'A', 15)]
-         #+END_SRC
-
-    3. Operator Module Functions
-*** quotes
 ** PART [[~/da/git/docs/python-doc-reference.pdf][van Rossum - The Python Language Reference]]
 *** summary
     1. INTRODUCTION
@@ -25215,6 +25215,10 @@ When a media query is true, the corresponding style sheet or style rules are app
                   doctest.testmod(optionflags=doctest.ELLIPSIS)
                 #+END_SRC
 
+              - call doctest externally (see also quotes):
+                #+BEGIN_SRC python
+                  (fail_num, _) = doctest.testmod(counter)
+                #+END_SRC
         3. unittest — Unit testing framework
 
            0. [@0]
@@ -25660,12 +25664,25 @@ When a media query is true, the corresponding style sheet or style rules are app
            HSV (Hue Saturation Value).
     25. [@25] Development Tools
         2. [@2] doctest — Test interactive Python examples
-           - doctest.ELLIPSIS
+           3. [@3] How It Works
+              - doctest.ELLIPSIS
 
-             When specified, an ellipsis marker (...) in the expected
-             output can match any substring in the actual output. This
-             includes substrings that span line boundaries, and empty
-             substrings
+                When specified, an ellipsis marker (...) in the expected
+                output can match any substring in the actual output. This
+                includes substrings that span line boundaries, and empty
+                substrings
+           4. [@4] Basic API
+              - doctest.testmod([m][, name][, globs][, verbose][,
+                report][, optionflags][, extraglobs][,
+                raise_on_error][, exclude_empty])
+
+                All arguments are optional, and all except for /m/
+                should be specified in keyword form.
+
+                Test examples in docstrings in functions and classes
+                reachable from module /m/ (or module =__main__= if /m/
+                is not supplied or is =None=), starting with
+                =m.__doc__=.
         3. unittest — Unit testing framework
            2. [@2] Command-Line Interface
               - The unittest module can be used from the command line to
