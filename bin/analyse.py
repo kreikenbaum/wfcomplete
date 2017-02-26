@@ -15,11 +15,10 @@ import counter
 import fit
 import plot_data
 
-JOBS_NUM = fit.JOBS_NUM
 LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
-# LOGLEVEL = logging.DEBUG
-LOGLEVEL = logging.INFO
-# LOGLEVEL = logging.WARN
+#LOGLEVEL = logging.DEBUG
+#LOGLEVEL = logging.INFO
+LOGLEVEL = logging.WARN
 TIME_SEPARATOR = '@'
 
 # classifiers
@@ -215,11 +214,6 @@ def size_increase_from_argv(defense_argv, remove_small=True):
         out[d] = _size_increase(stats[defense_argv[1]], stats[d])
     return out
 
-
-# def _test(X, y, clf, nj=JOBS_NUM, folds=5):
-#     '''tests estimator with X, y, @return result (ndarray)'''
-#     X = _scale(X, clf)
-#     return cross_validation.cross_val_score(clf, X, y, cv=folds, n_jobs=nj)
 
 # unused, but could be useful
 

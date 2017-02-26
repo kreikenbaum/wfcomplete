@@ -169,6 +169,7 @@ def my_grid(X, y, C=2**14, gamma=2**-10, step=2, results=None,
     if not results:
         previous = []
         results = {}
+        scaler = None # guesstimate: one grid search per data set (TODO: refact)
     bestclf = None
     bestres = np.array([0])
     for c in _search_range(C, step):
