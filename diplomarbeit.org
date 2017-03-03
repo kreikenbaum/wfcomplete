@@ -1586,7 +1586,7 @@ experience /E/.
 
      After SVM-parameters have been determined, several classifiers are
      trained on the training data and evaluated on the test data.
-** WRITE Website Fingerprinting [0/8]
+** WAIT Website Fingerprinting [0/8]
    :PROPERTIES:
    :CUSTOM_ID: eval-wf
    :END:
@@ -1624,7 +1624,7 @@ experience /E/.
      - do pictures/comparisons
      - timing comparison on disabled
 *** WAIT for [[file:~/da/da.org::herrmann results][herrmann results]]
-*** WRITE Closed World Attack Results
+*** WAIT Closed World Attack Results
     #+INDEX: closed-world!results
     #+INDEX: data sets!KRE
     #+INDEX: data sets!RND-WWW
@@ -1666,7 +1666,7 @@ experience /E/.
     - table [[tab:100-sites]]
     - wang
 **** WAIT [[file:~/da/da.org::redo p-cumul on panchenko's data set with *grid* search]]
-*** WRITE Which Features Help Most in Classification
+*** WAIT Which Features Help Most in Classification
     #+CAPTION: Importance of CUMUL features
     #+ATTR_LATEX: :width 0.4\textwidth
     [[./pictures/feature_importances.eps]]
@@ -2555,10 +2555,7 @@ set, see [[#split][split]].
    :CUSTOM_ID: cumul-steps
    :END:
 *** KEYWORDS algo
-    example with closed world[fn::for open world usage, replace
-    =-setting CW= with =-setting OW_FG= and =-dataSet CW= with
-    =-dataSet FG=. (and replace FG with BG for the open world
-    background set)]
+    closed world
     1. outlier removal
        - creates new input dir
            #+BEGIN_SRC sh
@@ -2599,6 +2596,16 @@ set, see [[#split][split]].
          $P_DIR/libsvm-3.20-src/svm-predict ./output/CW_TCP \
          ./output/CW_TCP.model ./output/CW_TCP.output
        #+END_SRC
+    open world: replace =-setting CW= with =-setting OW_FG= and
+    =-dataSet CW= with =-dataSet FG=, and replace FG with BG for the
+    open world background set, but without outlier removal.
+    0. [@0]
+       - =P_PATH=~/da/git/sw/p= #(path with =foreground-data= directory
+       - =INSTANCES=35=
+    1. python $P_PATH/feature-scripts/outlier-removal.py -in
+       ./foreground-data/ -out ./or-fg/ -setting OW_FG
+       -randomInstances NO -instances $INSTANCES -referenceFormat tcp
+       -outlierRemoval Simple -ignoreOutlier NO
 *** OW-data just has *two* classes: fg (=1) and bg (=0)
 * KEYWORDS Lists of Sites
 ** KEYWORDS Modified Top-100
@@ -3081,20 +3088,21 @@ set, see [[#split][split]].
    :CUSTOM_ID: find sizes of HTML-documents
    :END:
    The HTTP traffic model\cite{newtrafficmodel}'s statistical size
-   generation works with application-level sizes on the network, as
-   its authors analysed logfiles of the Squid proxy[fn::
-   \url{http://www.squid-cache.org}].
+   generation is based on application-level[fn::the data sizes
+   transported by TCP] sizes on the network, as its authors analysed
+   logfiles of the Squid proxy[fn:: \url{http://www.squid-cache.org}].
 
-   The HTML-sizes could not be trivially obtained from the
-   =Content-Length= in the browser, as there are additional headers
-   and size-reduction via compression, both of which =Content-Length=
-   does not represent. Thus, they were determined by retrieving the
-   files with =wget= via squid, and reading the sizes from the squid
-   log. This is implemented in the =html_top_100.sh= script.
+   These sizes could not be trivially obtained from the HTTP
+   =Content-Length=-header\cite[sec.3.3.2]{rfc7230}, as there are
+   additional headers and size-reduction via compression, both of
+   which =Content-Length= does not represent. Thus, they were
+   determined by retrieving the files with =wget= via squid, and
+   reading the sizes from the squid log. This is implemented in the
+   =html_top_100.sh= script.
 
-   It empties squid's =access.log= file and cache by restarting
-   it. Afterwards, the top-100 files are retrieved with =wget= via
-   squid.
+   It initially empties squid's =access.log= file and cache by
+   restarting it. Afterwards, the top-100 files are retrieved with
+   =wget= via squid.
 
    From the log file =access.log=, the sizes are extracted via the
    command

@@ -189,6 +189,11 @@ def my_grid(X, y, C=2**14, gamma=2**-10, step=2, results=None,
                 bestclf = clf
                 bestres = current
             logging.info('c: %8s g: %15s res: %.6f', c, g, current.mean())
+    previous.append(bestres.mean())
+    if _stop(y, step, bestres.mean(), previous, C, best=(auc_bound if
+                                                         auc_bound else 1)):
+        logging.info('grid result: %s', bestclf)
+        return Result(bestclf, bestres.mean(), results)
     if (bestclf.estimator.C in (_search_range(C, step)[0],
                                 _search_range(C, step)[-1])
             or bestclf.estimator.gamma in (_search_range(gamma, step)[0],
@@ -197,11 +202,6 @@ def my_grid(X, y, C=2**14, gamma=2**-10, step=2, results=None,
                      bestclf.estimator.C, bestclf.estimator.gamma, bestres)
     else:
         step /= 2.
-        previous.append(bestres.mean())
-    if _stop(y, step, bestres.mean(), previous, C, best=(auc_bound if
-                                                         auc_bound else 1)):
-        logging.info('grid result: %s', bestclf)
-        return Result(bestclf, bestres.mean(), results)
     return my_grid(X, y, bestclf.estimator.C, bestclf.estimator.gamma,
                    step, results, previous=previous,
                    auc_bound=auc_bound)

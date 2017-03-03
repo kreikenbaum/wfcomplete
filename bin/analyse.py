@@ -9,7 +9,6 @@ import sys
 import time
 import numpy as np
 from sklearn import cross_validation, ensemble, multiclass, neighbors, svm, tree
-#, grid_search, preprocessing
 
 import counter
 import fit
@@ -579,10 +578,10 @@ def main(argv, with_svm=True, cumul=True):
 # OLDER DATA (without bridge)
 # sys.argv = ['', 'disabled/05-12@10']
 # next: traces in between
-# sys.argv = ['', 'disabled/06-09@10', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache']
-# sys.argv = ['', 'disabled/06-17@10_from', '0.18.2/json-10/a_i_noburst', '0.18.2/json-10/a_ii_noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
+# sys.argv = ['', 'disabled/06-09@10', '0.18.2/json-10/a-i-noburst', '0.18.2/json-10/a-ii-noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache']
+# sys.argv = ['', 'disabled/06-17@10-from', '0.18.2/json-10/a-i-noburst', '0.18.2/json-10/a-ii-noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
 # missing:
-# sys.argv = ['', 'disabled/06-17@10_from', 'retro/0', 'retro/1', 'retro/10', 'retro/20', 'retro/30', 'retro/5', '0.15.3/json-10/0', '0.15.3/json-10/1', '0.15.3/json-10/10', '0.15.3/json-10/20', '0.15.3/json-10/30', '0.15.3/json-10/40', '0.15.3/json-10/5', '0.19/0-ai', '0.19/0-bii', '0.19/20-bi', '0.19/20-bii', '0.19/aii-factor=0', '0.21']
+# sys.argv = ['', 'disabled/06-17@10-from', 'retro/0', 'retro/1', 'retro/10', 'retro/20', 'retro/30', 'retro/5', '0.15.3/json-10/0', '0.15.3/json-10/1', '0.15.3/json-10/10', '0.15.3/json-10/20', '0.15.3/json-10/30', '0.15.3/json-10/40', '0.15.3/json-10/5', '0.19/0-ai', '0.19/0-bii', '0.19/20-bi', '0.19/20-bii', '0.19/aii-factor=0', '0.21']
 # sys.argv = ['', 'disabled/2016-06-30', 'retro/0', 'retro/1', 'retro/10',
 # 'retro/20', 'retro/30', 'retro/5', '0.15.3/json-10/0',
 # '0.15.3/json-10/1', '0.15.3/json-10/10', '0.15.3/json-10/20',
@@ -591,10 +590,10 @@ def main(argv, with_svm=True, cumul=True):
 # '0.19/aii-factor=0', '0.21']
 
 # sys.argv = ['', 'disabled/wtf-pad', 'wtf-pad']
-# sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b_i_noburst']
-# sys.argv = ['', 'disabled/06-17@10_from', '0.20/0_ai', '0.20/0_bi',
-# '0.20/20_ai', '0.20/20_bi', '0.20/40_bi', '0.20/0_aii', '0.20/0_bii',
-# '0.20/20_aii', '0.20/20_bii', '0.20/40_aii', '0.20/40_bii']
+# sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b-i-noburst']
+# sys.argv = ['', 'disabled/06-17@10-from', '0.20/0-ai', '0.20/0-bi',
+# '0.20/20-ai', '0.20/20-bi', '0.20/40-bi', '0.20/0-aii', '0.20/0-bii',
+# '0.20/20-aii', '0.20/20-bii', '0.20/40-aii', '0.20/40-bii']
 
 # CLASSIFICATION RESULTS PER CLASS
 
@@ -609,62 +608,62 @@ def main(argv, with_svm=True, cumul=True):
 
 # variants
 # RETRO
-# ['retro/bridge/100__2016_09_15', 'retro/bridge/50__2016_09_16']
-# ['retro/bridge/200__2016-10-02/', 'retro/bridge/200__2016-10-02_with_errs/']
+# ['retro/bridge/100--2016-09-15', 'retro/bridge/50--2016-09-16']
+# ['retro/bridge/200--2016-10-02/', 'retro/bridge/200--2016-10-02-with-errs/']
 # MAIN 0.22
-#['0.22/10aI__2016-07-08', '0.22/30aI__2016-07-13', '0.22/50aI__2016-07-13', '0.22/5aII__2016-07-18', '0.22/5aI__2016-07-19', '0.22/10_maybe_aI__2016-07-23', '0.22/5aI__2016-07-25', '0.22/30aI__2016-07-25', '0.22/50aI__2016-07-26', '0.22/2aI__2016-07-23', '0.22/5aI__2016-08-26', '0.22/5aII__2016-08-25', '0.22/5bI__2016-08-27', '0.22/5bII__2016-08-27', '0.22/20aI__2016-09-10', '0.22/20aII__2016-09-10', '0.22/20bII__2016-09-12', '0.22/20bI__2016-09-13']
+#['0.22/10aI--2016-07-08', '0.22/30aI--2016-07-13', '0.22/50aI--2016-07-13', '0.22/5aII--2016-07-18', '0.22/5aI--2016-07-19', '0.22/10-maybe-aI--2016-07-23', '0.22/5aI--2016-07-25', '0.22/30aI--2016-07-25', '0.22/50aI--2016-07-26', '0.22/2aI--2016-07-23', '0.22/5aI--2016-08-26', '0.22/5aII--2016-08-25', '0.22/5bI--2016-08-27', '0.22/5bII--2016-08-27', '0.22/20aI--2016-09-10', '0.22/20aII--2016-09-10', '0.22/20bII--2016-09-12', '0.22/20bI--2016-09-13']
 # SIMPLE
-#['simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5__2016-07-17', 'simple2/20']
+#['simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5--2016-07-17', 'simple2/20']
 
 # COMPLETE
 # 07-06
-# sys.argv = ['', 'disabled/bridge__2016-07-06', 'retro/bridge/30', 'retro/bridge/70', 'retro/bridge/50']
-# sys.argv = ['', 'disabled/bridge__2016-07-06', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/20']
-# sys.argv = ['', 'disabled/bridge__2016-07-06', 'wtf-pad/bridge__2016-07-05', 'tamaraw']
-# sys.argv = ['', 'disabled/bridge__2016-07-06', '0.22/10aI', '0.22/5aI__2016-07-19', '0.22/5aII__2016-07-18', '0.22/2aI__2016-07-23']
-# sys.argv = ['', 'disabled/bridge__2016-07-06', '0.22/10aI__2016-07-08/', 'wtf-pad/bridge__2016-07-05', '0.22/30aI__2016-07-13/', '0.22/50aI__2016-07-13/']
+# sys.argv = ['', 'disabled/bridge--2016-07-06', 'retro/bridge/30', 'retro/bridge/70', 'retro/bridge/50']
+# sys.argv = ['', 'disabled/bridge--2016-07-06', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/20']
+# sys.argv = ['', 'disabled/bridge--2016-07-06', 'wtf-pad/bridge--2016-07-05', 'tamaraw']
+# sys.argv = ['', 'disabled/bridge--2016-07-06', '0.22/10aI', '0.22/5aI--2016-07-19', '0.22/5aII--2016-07-18', '0.22/2aI--2016-07-23']
+# sys.argv = ['', 'disabled/bridge--2016-07-06', '0.22/10aI--2016-07-08/', 'wtf-pad/bridge--2016-07-05', '0.22/30aI--2016-07-13/', '0.22/50aI--2016-07-13/']
 # 07-21
-# sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aII__2016-07-18/', '0.22/5aI__2016-07-19/', '0.22/10_maybe_aI__2016-07-23/', '0.22/2aI__2016-07-23/', '0.22/30aI__2016-07-25/', '0.22/50aI__2016-07-26/', '0.22/5aI__2016-07-25/', '0.15.3/bridge']
+# sys.argv = ['', 'disabled/bridge--2016-07-21', 'simple2/5--2016-07-17', '0.22/5aII--2016-07-18/', '0.22/5aI--2016-07-19/', '0.22/10-maybe-aI--2016-07-23/', '0.22/2aI--2016-07-23/', '0.22/30aI--2016-07-25/', '0.22/50aI--2016-07-26/', '0.22/5aI--2016-07-25/', '0.15.3/bridge']
 # 08-14/15
-# sys.argv = ['', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15']
+# sys.argv = ['', 'disabled/bridge--2016-08-14', 'disabled/bridge--2016-08-15']
 # 08-29 (also just FLAVORS)
-# sys.argv = ['', 'disabled/bridge__2016-08-29', '0.22/5aI__2016-08-26', '0.22/5aII__2016-08-25', '0.22/5bI__2016-08-27', '0.22/5bII__2016-08-27']
+# sys.argv = ['', 'disabled/bridge--2016-08-29', '0.22/5aI--2016-08-26', '0.22/5aII--2016-08-25', '0.22/5bI--2016-08-27', '0.22/5bII--2016-08-27']
 # 09-09 (also just FLAVORS)
-# sys.argv = ['', 'disabled/bridge__2016-09-09', '0.22/20aI__2016-09-10', '0.22/20aII__2016-09-10', '0.22/20bI__2016-09-13', '0.22/20bII__2016-09-12']
+# sys.argv = ['', 'disabled/bridge--2016-09-09', '0.22/20aI--2016-09-10', '0.22/20aII--2016-09-10', '0.22/20bI--2016-09-13', '0.22/20bII--2016-09-12']
 # 09-18 (also just RETRO)
-# sys.argv = ['', 'disabled/bridge__2016-09-18', 'retro/bridge/100__2016_09_15', 'retro/bridge/50__2016_09_16']
-#'disabled/bridge__2016-09-30'
+# sys.argv = ['', 'disabled/bridge--2016-09-18', 'retro/bridge/100--2016-09-15', 'retro/bridge/50--2016-09-16']
+#'disabled/bridge--2016-09-30'
 # 09-23 (also just SIMPLE)
-# sys.argv = ['', 'disabled/bridge__2016-09-21_100', 'simple2/5__2016-09-23_100/']
-# sys.argv = ['', 'disabled/bridge__2016-09-26_100', 'simple2/5__2016-09-23_100/']
-# sys.argv = ['', 'disabled/bridge__2016-09-26_100_with_errs', 'simple2/5__2016-09-23_100/']
+# sys.argv = ['', 'disabled/bridge--2016-09-21-100', 'simple2/5--2016-09-23-100/']
+# sys.argv = ['', 'disabled/bridge--2016-09-26-100', 'simple2/5--2016-09-23-100/']
+# sys.argv = ['', 'disabled/bridge--2016-09-26-100-with-errs', 'simple2/5--2016-09-23-100/']
 # 10-06 (also just FLAVORS)
-# sys.argv = ['', "disabled/bridge__2016-10-06_with_errors",
-# "0.22/22@20aI__2016-10-07", "0.22/22@20aI__2016-10-07_with_errors",
-# "0.22/22@20aII__2016-10-07", "0.22/22@20aII__2016-10-07_with_errors",
-# "0.22/22@20bI__2016-10-08", "0.22/22@20bI__2016-10-08_with_errors",
-# "0.22/22@20bII__2016-10-08", "0.22/22@20bII__2016-10-08_with_errors",
-# "0.22/22@5aI__2016-10-09", "0.22/22@5aI__2016-10-09_with_errors",
-# "0.22/22@5aII__2016-10-09", "0.22/22@5aII__2016-10-09_with_errors",
-# "0.22/22@5bI__2016-10-10", "0.22/22@5bI__2016-10-10_with_errors",
-# "0.22/22@5bII__2016-10-10", "0.22/22@5bII__2016-10-10_with_errors"]
+# sys.argv = ['', "disabled/bridge--2016-10-06-with-errors",
+# "0.22/22@20aI--2016-10-07", "0.22/22@20aI--2016-10-07-with-errors",
+# "0.22/22@20aII--2016-10-07", "0.22/22@20aII--2016-10-07-with-errors",
+# "0.22/22@20bI--2016-10-08", "0.22/22@20bI--2016-10-08-with-errors",
+# "0.22/22@20bII--2016-10-08", "0.22/22@20bII--2016-10-08-with-errors",
+# "0.22/22@5aI--2016-10-09", "0.22/22@5aI--2016-10-09-with-errors",
+# "0.22/22@5aII--2016-10-09", "0.22/22@5aII--2016-10-09-with-errors",
+# "0.22/22@5bI--2016-10-10", "0.22/22@5bI--2016-10-10-with-errors",
+# "0.22/22@5bII--2016-10-10", "0.22/22@5bII--2016-10-10-with-errors"]
 
 # DISABLED
 # 30
-# sys.argv = ['', 'disabled/bridge__2016-07-06', 'disabled/bridge__2016-07-21', 'disabled/bridge__2016-08-14', 'disabled/bridge__2016-08-15', 'disabled/bridge__2016-08-29', 'disabled/bridge__2016-09-09', 'disabled/bridge__2016-09-18', 'disabled/bridge__2016-09-30', "disabled/bridge__2016-10-06_with_errors", "disabled/bridge__2016-10-16", "disabled/bridge__2016-10-16_with_errors"]
+# sys.argv = ['', 'disabled/bridge--2016-07-06', 'disabled/bridge--2016-07-21', 'disabled/bridge--2016-08-14', 'disabled/bridge--2016-08-15', 'disabled/bridge--2016-08-29', 'disabled/bridge--2016-09-09', 'disabled/bridge--2016-09-18', 'disabled/bridge--2016-09-30', "disabled/bridge--2016-10-06-with-errors", "disabled/bridge--2016-10-16", "disabled/bridge--2016-10-16-with-errors"]
 # 100
-# sys.argv = ['', 'disabled/bridge__2016-08-30_100',
-# 'disabled/bridge__2016-09-21_100', 'disabled/bridge__2016-09-26_100',
-# 'disabled/bridge__2016-09-26_100_with_errs']
+# sys.argv = ['', 'disabled/bridge--2016-08-30-100',
+# 'disabled/bridge--2016-09-21-100', 'disabled/bridge--2016-09-26-100',
+# 'disabled/bridge--2016-09-26-100-with-errs']
 
 # NEW
-# sys.argv = ['', './disabled/bridge__2016-11-21']
-# sys.argv = ['', './disabled/bridge__2016-11-04_100@50', './0.22/10aI__2016-11-04_50_of_100', './disabled/bridge__2016-11-27']
+# sys.argv = ['', './disabled/bridge--2016-11-21']
+# sys.argv = ['', './disabled/bridge--2016-11-04-100@50', './0.22/10aI--2016-11-04-50-of-100', './disabled/bridge--2016-11-27']
 
 
 # TOP
-# sys.argv = ['', 'disabled/bridge__2016-07-21', 'simple2/5__2016-07-17', '0.22/5aI__2016-07-19']
-# sys.argv = ['', 'disabled/bridge__2016-07-06', 'wtf-pad/bridge__2016-07-05']
+# sys.argv = ['', 'disabled/bridge--2016-07-21', 'simple2/5--2016-07-17', '0.22/5aI--2016-07-19']
+# sys.argv = ['', 'disabled/bridge--2016-07-06', 'wtf-pad/bridge--2016-07-05']
 
 # disabled/p-foreground-data/30/output-tcp
 
