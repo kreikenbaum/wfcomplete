@@ -1303,7 +1303,7 @@ experience /E/.
      configurability, and maintenance.
 
      The implementation is partly detailed in appendix [[*modules]].
-* DANIEL Results and Evaluation [38%]                               :results:
+* DANIEL Results and Evaluation [37%]                               :results:
   The following sections describe [[#setup][how data was collected and
   analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
   [[#eval-defense][various defenses]].
@@ -1586,7 +1586,7 @@ experience /E/.
 
      After SVM-parameters have been determined, several classifiers are
      trained on the training data and evaluated on the test data.
-** WAIT Website Fingerprinting [0/8]
+** WAIT Website Fingerprinting [0/11]
    :PROPERTIES:
    :CUSTOM_ID: eval-wf
    :END:
@@ -1706,7 +1706,9 @@ experience /E/.
 #+ATTR_LATEX: :align |r||n{1}{4}|n{1}{4}|n{1}{4}|n{1}{4}|
 #+INCLUDE: "data/results/alternatives.org::#outlier_removal" :only-contents t
 
-     Outlier removal removed on average
+     The number of instances removed by outlier removal depends on the
+     capture files. For very noisy captures
+       - [[*show pic with highly divergent data][show pic with highly divergent data]]
        - how many removed for levels
          - both panchenko's own and mine
        - evaluation of outlier removal steps
@@ -1728,7 +1730,8 @@ experience /E/.
      - depends greatly on test-data outlier removal
   - but very little on training-data outlier removal
   - -1 as effective as 1, but more complicated, so useless
-**** on average/per class numbers how many removed
+**** WAIT show pic with highly divergent data
+**** WAIT on average/per class numbers how many removed
 **** WRITE disadvantage of few instances with much outlier removal
     - problem for level 3 (only): number of splits requires more data
       than just 40 instances
@@ -2529,7 +2532,7 @@ set, see [[#split][split]].
    take until March 2017 for this fix to reach the ESR version on
    which the TBB is based.
 *** WAIT [#C] bug report link + firefox ESR release versions
-** WRITE How to get Wang-kNN to work
+** WRITE Steps to get Wang-kNN to work
    :PROPERTIES:
    :CUSTOM_ID: wang-steps
    :END:
@@ -2550,12 +2553,15 @@ set, see [[#split][split]].
     2. /path/to/flearner 0 1 $(flearn_params.sh)
     3. convenience script: =f_all.sh=
 **** WAIT github flearn_params.sh, link
-** WRITE How to get Panchenko-SVM to work
+** CHECK Steps to get Panchenko-SVM to work
    :PROPERTIES:
    :CUSTOM_ID: cumul-steps
    :END:
+   For low-level validation of results: These were the steps
+   taken[fn::after appropriate data conversion] to apply
+   \cite{panchenko2}'s method.
 *** KEYWORDS algo
-    closed world
+**** closed world
     1. outlier removal
        - creates new input dir
            #+BEGIN_SRC sh
@@ -2572,15 +2578,6 @@ set, see [[#split][split]].
            -classifier CUMULATIVE -force YES -features 100 \
            -randomInstances NO -dataSet CW -instances 40
          #+END_SRC
-       - open world
-         - foreground
-         #+BEGIN_SRC sh
-           python $P_DIR/feature-scripts/generate-feature.py \
-           -in ./foreground-data-OR/ -out ./output/ -setting OW_FG \
-           -dataSet FG -classifier CUMULATIVE -force YES -features 100 \
-           -randomInstances NO -instances 1
-         #+END_SRC
-         - background
     3. scale data
        #+BEGIN_SRC sh
          $P_DIR/libsvm-3.20-src/svm-scale -l 0 output/CW_TCP > output/CW_TCP_scaled
@@ -2596,9 +2593,10 @@ set, see [[#split][split]].
          $P_DIR/libsvm-3.20-src/svm-predict ./output/CW_TCP \
          ./output/CW_TCP.model ./output/CW_TCP.output
        #+END_SRC
-    open world: replace =-setting CW= with =-setting OW_FG= and
-    =-dataSet CW= with =-dataSet FG=, and replace FG with BG for the
-    open world background set, but without outlier removal.
+**** open world
+     replace =-setting CW= with =-setting OW_FG= and =-dataSet CW=
+     with =-dataSet FG=, and replace FG with BG for the open world
+     background set, but without outlier removal.
     0. [@0]
        - =P_PATH=~/da/git/sw/p= #(path with =foreground-data= directory
        - =INSTANCES=35=
@@ -2606,6 +2604,11 @@ set, see [[#split][split]].
        ./foreground-data/ -out ./or-fg/ -setting OW_FG
        -randomInstances NO -instances $INSTANCES -referenceFormat tcp
        -outlierRemoval Simple -ignoreOutlier NO
+    2. python $P_DIR/feature-scripts/generate-feature.py \
+           -in ./foreground-data-OR/ -out ./output/ -setting OW_FG \
+           -dataSet FG -classifier CUMULATIVE -force YES -features 100 \
+           -randomInstances NO -instances 1
+       - background
 *** OW-data just has *two* classes: fg (=1) and bg (=0)
 * KEYWORDS Lists of Sites
 ** KEYWORDS Modified Top-100
