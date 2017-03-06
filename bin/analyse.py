@@ -669,7 +669,7 @@ def main(argv, with_svm=True, cumul=True):
 
 # sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git', 'bin')); reload(fit)
 # if by hand: change to the right directory before importing
-# import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data'))
+# import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')); os.nice(1)
 doctest.testmod()
 # this is currently the top-level application, thus logging outside of __main__
 logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)

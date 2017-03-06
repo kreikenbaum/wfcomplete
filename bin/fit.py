@@ -161,7 +161,7 @@ def helper(counter_dict, outlier_removal=True, cumul=True, folds=FOLDS):
         return my_grid(X, y, C=2**17, gamma=2**-19, folds=folds)
 
 
-def my_grid(X, y, C=2**14, gamma=2**-10, step=2, results=None,
+def my_grid(X, y, C=2**14, gamma=2**-10, step=4, results=None,
             auc_bound=None, previous=None, folds=FOLDS):
     '''@param results are previously computed results {(C,gamma): accuracy, ...}
     @param auc_bound if this is set, use the bounded auc score with this y_bound
