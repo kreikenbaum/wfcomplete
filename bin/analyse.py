@@ -16,8 +16,8 @@ import plot_data
 
 LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 #LOGLEVEL = logging.DEBUG
-#LOGLEVEL = logging.INFO
-LOGLEVEL = logging.WARN
+LOGLEVEL = logging.INFO
+#LOGLEVEL = logging.WARN
 TIME_SEPARATOR = '@'
 
 # classifiers
