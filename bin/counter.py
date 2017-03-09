@@ -432,7 +432,7 @@ def save(counter_dict, prefix=''):
     for k, per_domain in counter_dict.iteritems():
         if not per_domain:
             continue
-        with open(k + '.json', 'w') as file_:
+        with open(prefix + k + '.json', 'w') as file_:
             logging.debug('writing json for %s', k)
             for counter in per_domain:
                 file_.write(counter.to_json())
@@ -590,6 +590,32 @@ class Counter(object):
         return tmp
 
     @staticmethod
+    def from_pcap(filename):
+        '''Creates Counter from pcap file. Less efficient than above.'''
+        tmp = Counter.from_pcap_old(filename)
+        if not tmp.warned:
+            return tmp
+
+        tmp = Counter(filename)
+
+        cap = pyshark.FileCapture(filename)
+        try:
+            start = cap[0].sniff_time
+            for pkt in cap:
+            #import pdb; pdb.set_trace()
+                if 'ip' not in pkt or int(pkt.ip.len) == '52':
+                    logging.debug('discarded from %s packet %s', filename, pkt)
+                else:
+                    tmp.extract_line(pkt.ip.src, pkt.ip.len,
+                                     (pkt.sniff_time - start).total_seconds())
+        except (KeyError, TSharkCrashException, TypeError):
+            tmp.warned = True
+            return tmp
+        cap.close()
+        return tmp
+
+
+    @staticmethod
     def from_pcap_old(filename):
         '''creates Counter from pcap file'''
         tmp = Counter(filename)
@@ -605,68 +631,17 @@ class Counter(object):
                 (src, size, time) = line.split()
             except ValueError:
                 tmp.warned = True
-                logging.warn('file: %s had problems in line \n%s\n',
+                logging.info('file: %s had problems in line \n%s\n',
                              filename, line)
+                tshark.kill()
                 break
             else:
                 if int(size) == 52:
                     logging.debug('discarded line %s from %s', line, file)
                     continue
                 tmp.extract_line(src, int(size)+14, time)
-        # tshark = subprocess.Popen(args=['tshark', '-r' + filename],
-        #                           stdout=subprocess.PIPE)
-        # for line in iter(tshark.stdout.readline, ''):
-        #     try:
-        #         (_, time, src, _, dst, proto, size, rest) = line.split(None, 7)
-        #     except ValueError:
-        #         try:
-        #             (_, time, src, _, dst, proto, size) = line.split(None, 6)
-        #             rest = ''
-        #         except ValueError:
-        #             tmp.warned = True
-        #             logging.warn('file: %s had problems in line \n%s\n',
-        #                          filename, line)
-        #             break
-        #     else:
-        #         if 'Len=0' in rest or proto == 'ARP':
-        #             logging.debug('discarded line %s from %s', line, file)
-        #             continue
-        #         if 'Len=' in rest:  # see comment case (1)
-        #             size = rest[rest.index("Len=") + 4:].split()[0]
-        #             tmp.extract_line(src, size, time)
-        #         if 'Len=0' not in rest and proto != 'ARP':
-        #             tmp.extract_line(src, size, time)
-        #         logging.debug('from %s to %s: %s bytes', src, dst, size)
         return tmp
 
-
-    @staticmethod
-    def from_pcap(filename):
-        '''Creates Counter from pcap file. Less efficient than above.'''
-        tmp = Counter.from_pcap_old(filename)
-        if not tmp.warned:
-            return tmp
-        # except Exception, e:
-        #     print '.', # old creation failed
-
-        tmp = Counter(filename)
-
-        cap = pyshark.FileCapture(filename)
-        try:
-            start = cap[0].sniff_time
-        except (KeyError, TSharkCrashException, TypeError):
-            tmp.warned = True
-            return tmp
-        for pkt in cap:
-            #import pdb; pdb.set_trace()
-            if 'ip' not in pkt or int(pkt.ip.len) == '52':
-                logging.debug('discarded from %s packet %s', filename, pkt)
-            else:
-                tmp.extract_line(pkt.ip.src, pkt.ip.len,
-                                 (pkt.sniff_time - start).total_seconds())
-        cap.close()
-        return tmp
-        
 
     @staticmethod
     def from_wang(filename, its_url=None, its_time=None):
