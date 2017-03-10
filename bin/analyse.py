@@ -507,8 +507,9 @@ def size_test(argv, outlier_removal=True):
     defenses = counter.for_defenses(argv[1:], remove_small=outlier_removal)
     stats = {k: _bytes_mean_std(v) for (k, v) in defenses.iteritems()}
     defense0 = argv[1]
-    for d in argv[2:]:
-        print '{}: {}'.format(d, _size_increase(stats[defense0], stats[d]))
+    for defense in argv[2:]:
+        print '{}: {}'.format(defense, _size_increase(stats[defense0],
+                                                      stats[defense]))
 
 
 def top_30(mean_per_dir):
@@ -602,8 +603,10 @@ def main(argv, with_svm=True, cumul=True):
 # outlier_removal_levels(defenses[sys.argv[1]]) #td: try out
 
 # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
-# PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'subsets', '30', 'foreground-data', 'output-tcp')
+# PANCHENKO_30 = os.path.join('..', 'sw', 'p', 'subsets', '30', 'foreground-data', 'output-tcp')
 # PANCHENKO_bg = os.path.join('..', 'sw', 'p', 'subsets', 'background-1200', 'output-tcp')
+# PANCHENKO_100 = os.path.join('..', 'sw', 'p', 'subsets', '30', 'foreground-data', 'output-tcp')
+# PANCHENKO_bg2 = os.path.join('..', 'sw', 'p', 'subsets', 'background-4000', 'output-tcp')
 # counters = counter.all_from_panchenko(PANCHENKO_PATH)
 
 # variants
@@ -669,7 +672,7 @@ def main(argv, with_svm=True, cumul=True):
 
 # sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git', 'bin')); reload(fit)
 # if by hand: change to the right directory before importing
-# import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')); os.nice(1)
+# import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')); os.nice(20)
 doctest.testmod()
 # this is currently the top-level application, thus logging outside of __main__
 logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)

@@ -170,10 +170,9 @@ to save, and =.show()= to display.
     curve = plt.plot(
         fpr, tpr,
         label='{} (AUC = {:0.2f})'.format(title, metrics.auc(fpr, tpr)))
-    plt.legend()
     one_percent = [y for (x,y) in zip(fpr, tpr) if x >= 0.01][0]
     line = plt.plot([0, 1], [one_percent] *2, "red", label='1% fpr')
-    plt.legend([curve, line], loc="lower right")
+    #plt.legend([curve, line], loc="lower right")
     return plot
 
 def _init_roc():

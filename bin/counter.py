@@ -233,8 +233,7 @@ def all_from_dir(dirname, remove_small=True):
     length = len(filenames)
     for i, filename in enumerate(filenames):
         if TIME_SEPARATOR in os.path.basename(filename):  # file like google.com@1445350513
-            logging.debug('processing (%d/%d) %s ',
-                          i + 1, length, filename)
+            logging.info('processing (%d/%d) %s ', i + 1, length, filename)
             json_only = False
             _append_features(out, filename)
     if not out:
@@ -595,6 +594,8 @@ class Counter(object):
         tmp = Counter.from_pcap_old(filename)
         if not tmp.warned:
             return tmp
+        else:
+            print '.',
 
         tmp = Counter(filename)
 
@@ -602,7 +603,6 @@ class Counter(object):
         try:
             start = cap[0].sniff_time
             for pkt in cap:
-            #import pdb; pdb.set_trace()
                 if 'ip' not in pkt or int(pkt.ip.len) == '52':
                     logging.debug('discarded from %s packet %s', filename, pkt)
                 else:
@@ -631,8 +631,8 @@ class Counter(object):
                 (src, size, time) = line.split()
             except ValueError:
                 tmp.warned = True
-                logging.info('file: %s had problems in line \n%s\n',
-                             filename, line)
+                logging.debug('file: %s had problems in line \n%s\n',
+                              filename, line)
                 tshark.kill()
                 break
             else:
@@ -980,8 +980,6 @@ def p_or_quantiles(counter_list):
 
 def p_or_test(counter_list):
     '''outlier removal if training values are known'''
-    global minmax
-
     return [x for x in counter_list
             if x.get_total_in() >= minmax.min
             and x.get_total_in() <= minmax.max]
