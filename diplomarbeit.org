@@ -1301,7 +1301,7 @@ experience /E/.
      configurability, and maintenance.
 
      The implementation is partly detailed in appendix [[*modules]].
-* Results and Evaluation [38%]                               :results:
+* Results and Evaluation [1/26]                                     :results:
   The following sections describe [[#setup][how data was collected and
   analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
   [[#eval-defense][various defenses]].
@@ -1584,7 +1584,7 @@ experience /E/.
 
      After SVM-parameters have been determined, several classifiers are
      trained on the training data and evaluated on the test data.
-** WAIT Website Fingerprinting [0/10]
+** EVA Website Fingerprinting [0/10]
    :PROPERTIES:
    :CUSTOM_ID: eval-wf
    :END:
@@ -1592,37 +1592,11 @@ experience /E/.
    defenses. This mostly ensures the accuracy of said methods, but
    also contrasts the methods.
 
-   The attacks are CUMUL \cite{panchenko2} in two implementations and
-   kNN \cite{effective}. Panchenko's first approach was reimplemented
-   as well, but was superseded by CUMULs superior accuracy.
-
-*** MOVE integrate to  [[*Closed World Attack Results][Closed World Attack Results]]
-   In the appendix, you can see the accuracy of different classifiers
-   on various captures (on different dates, with and without defenses)
-   in Tables [[tab:30-sites]] and [[tab:100-sites]].
-
-   - herrmann
-   - various approaches
-     - also seemingly different ow-accuracy
-   - and show lower bound for perfect attacker
-   - panchenko 1
-     - diff classf
-   - cumul
-     - my and panchenko's impl
-   - wang
-     - his impl, slightly modified for different number of classes/instances
-       - =flearn_params.sh=
-   - drawbacks
-     - size changes
-   - how to analyse
-     - json
-     - script: reimplement
-       - Panchenko 1: problems to achieve panchenko's accuracy: classifiers
-       - cumul: problems to achieve panchenko's accuracy: outlier removal
-   - panchenko worse?
-     - do pictures/comparisons
-     - timing comparison on disabled
-**** WAIT for [[file:~/da/da.org::herrmann results][herrmann results]]
+   The state-of-the-art attacks are CUMUL \cite{panchenko2} in two
+   implementations and kNN \cite{effective}. \cite{panchenko2}'s
+   predecessor \cite{panchenko} was reimplemented as well, as well as
+   Cai et al's\cite{ccs2012-fingerprinting} and Herrmann et
+   al.'s\cite{ccsw09-fingerprinting}.
 *** WRITE Closed World Attack Results
     #+INDEX: closed-world!results
     #+INDEX: data sets!KRE
@@ -1631,8 +1605,6 @@ experience /E/.
     - also evaluated
       - panchenko1
         - best result with knn with other metric for same features
-      - cai et al\cite{ccs2012-fingerprinting}
-      - herrmann\cite{ccsw09-fingerprinting}
         - 47% accuracy on 30 sites
         - ... on 100 sites
 
@@ -1654,6 +1626,10 @@ experience /E/.
     markably[fn::approximately 20%] lower closed-world accuracy than
     CUMUL (both the reimplementation and the original code).
 
+    In the appendix, you can see the accuracy of different classifiers
+    on various captures (on different dates, with and without
+    defenses) in Tables [[tab:30-sites]] and [[tab:100-sites]].
+
     - cumul wins
       - others bit less good
     - features seemingly less clean than available from other authors
@@ -1662,6 +1638,28 @@ experience /E/.
       - success of classifiers
     - table [[tab:100-sites]]
     - wang
+    - herrmann
+    - various approaches
+      - also seemingly different ow-accuracy
+    - and show lower bound for perfect attacker
+    - panchenko 1
+      - diff classf
+    - cumul
+      - my and panchenko's impl
+    - wang
+      - his impl, slightly modified for different number of classes/instances
+        - =flearn_params.sh=
+    - drawbacks
+      - size changes
+    - how to analyse
+      - json
+      - script: reimplement
+        - Panchenko 1: problems to achieve panchenko's accuracy: classifiers
+        - cumul: problems to achieve panchenko's accuracy: outlier removal
+    - panchenko worse?
+      - do pictures/comparisons
+      - timing comparison on disabled
+**** WAIT for [[file:~/da/da.org::herrmann results][herrmann results]]
 *** WAIT Which Features Help Most in Classification
     #+CAPTION: Importance of CUMUL features
     #+ATTR_LATEX: :width 0.4\textwidth
@@ -3101,11 +3099,11 @@ set, see [[#split][split]].
    reading the sizes from the Squid log. This is implemented in the
    =html_top_100.sh= script.
 
-   It initially empties Squid's =access.log= file and cache by
-   restarting it. Afterwards, the [[#top100][top-100]] files are retrieved with
-   =wget= via Squid.
+   It initially empties Squid's log file and cache by restarting
+   it. Afterwards, the [[#top100][top-100]] files are retrieved with =wget= via
+   Squid.
 
-   From the log file =access.log=, the sizes are extracted via the
+   From the =access.log= log file, the sizes are extracted via the
    command
 
    #+BEGIN_SRC sh
@@ -3253,7 +3251,7 @@ set, see [[#split][split]].
    :PROPERTIES:
    :CUSTOM_ID: bloom-params
    :END:
-   It is impractical to store the sizes of all URLs. Another
+   It is impractical to store the sizes of many URLs. Another
    possibility is to use Bloom Filters to aggregate groups of URLs
    with similar values, as described in [[#bloom-sort][Bloom-sort]].
 
@@ -3267,15 +3265,15 @@ set, see [[#split][split]].
    embedded elements did not match the theoretically proposed groups:
 
    For three groups, the splits would be given by the 33 1/3 and 66
-   2/3 quantiles, as 0.0107 and 1.481. This would merge two bins,
-   which only would contain the element 0. The next group would
-   contain all other elements: The (representative) sizes of the
-   groups were given as 7.915E-05, 0.188, and 8.260 (quantiles 16 1/6,
-   50, and 83 5/6).
+   2/3 quantiles, as 0.0107 and 1.481. This would create two
+   single-valued groups, which only would contain the elements 0
+   and 1. The next group would contain all other elements: The
+   (representative) sizes of the groups were given as 7.915E-05,
+   0.188, and 8.260 (quantiles 16 1/6, 50, and 83 5/6).
 
-   The data to be inserted (see [[#number_embedded][Cached: Number of Embedded Objects]])
-   had the /splits/ (quantiles) at 10 2/3 and 36 2/3 and the /sizes/
-   at 6, 20, and 59 2/3.
+   The actual data to be inserted (see [[#number_embedded][Cached: Number of Embedded
+   Objects]]) had the /splits/ (quantiles) at 10 2/3 and 36 2/3 and the
+   /sizes/ (middle quantile) at 6, 20, and 59 2/3.
 
    In addition to using the observed sizes for the Bloom filter, the
    number of groups was increased to 5.
