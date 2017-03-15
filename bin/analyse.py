@@ -188,8 +188,8 @@ def _size_increase(base, compare):
     if base.keys() != compare.keys():
         keys = set(base.keys())
         keys = keys.intersection(compare.keys())
-        logging.warn("keys are different, just used {} common keys: {}"
-                     .format(len(keys), keys))
+        logging.warn("keys are different, just used %d common keys: %s",
+                     len(keys), keys)
     else:
         keys = base.keys()
     for k in keys:
@@ -275,7 +275,6 @@ validate, test)
 def _verbose_test_11(X, y, clf):
     '''cross-test (1) estimator on (1) X, y, print results and estimator name'''
     t = time.time()
-    scale = True if 'SVC' in str(clf) else False
     print _clf_params(clf),
     res = fit._eval(X, y, clf)
     print res.mean()
@@ -285,8 +284,8 @@ def _verbose_test_11(X, y, clf):
 
 def _xtest(X_train, y_train, X_test, y_test, clf):
     '''cross_tests with estimator'''
-    clf.fit(_scale(X_train, clf), y_train)
-    return clf.score(_scale(X_test, clf), y_test)
+    clf.fit(fit._scale(X_train, clf), y_train)
+    return clf.score(fit._scale(X_test, clf), y_test)
 
 
 def class_stats_to_table(class_stats):
@@ -343,16 +342,18 @@ def open_world(defense, y_bound=0.05):
 
     @return (fpr, tpr, optimal_clf, roc_plot_mpl)'''
     assert 'background' in defense, '''no "background" set in defense data'''
+    defense = _binarize(defense)
     X, y, _ = counter.to_features_cumul(defense)
     Xtt, Xv, ytt, yv = cross_validation.train_test_split(
         X, y, train_size=2. / 3, stratify=y)
     result = fit.my_grid(Xtt, ytt, auc_bound=y_bound)#, n_jobs=1)
 #    clf = fit.sci_grid(X_train, y_train, c=2**15, gamma=2**-45,
 #                   grid_args={"scoring": scorer})
-    # tpr, fpr, ... on test data
     fpr, tpr, _, prob = fit.roc(result.clf, Xtt, ytt, Xv, yv)
+    print 'bounded auc: {} (C: {}, gamma: {})'.format(
+        fit.bounded_auc_score(result.clf, Xv, yv, 0.01),
+        result.clf.C, result.clf.gamma)
     return (fpr, tpr, result, plot_data.roc(fpr, tpr), prob)
-    # tdmb: daniel: improve result with way more fpr vs much less tpr (auc0.01)
 
 
 def closed_world(defenses, def0, cumul=True, with_svm=True, cc=False):
@@ -537,7 +538,7 @@ def main(argv, with_svm=True, cumul=True):
     if 'background' in defenses.values()[0]:
         if len(defenses) > 1:
             logging.warn('only first class chosen for open world analysis')
-        open_world(defenses.values()[0])
+        return open_world(defenses.values()[0])
     else:
         closed_world(defenses, argv[1], with_svm=with_svm, cumul=cumul)
 

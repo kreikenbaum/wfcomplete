@@ -19,48 +19,45 @@ scaler = None
 Result = collections.namedtuple('Result', ['clf', 'best_score_', 'results'])
 
 def _binarize(y, keep=-1, transform_to=0):
-    '''binarize data in y: transform all values to =default= except =keep=
+    '''binarize data in y: transform all values to =transform_to= except =keep=
     >>> list(_binarize([0, -1, 1]))
     [0, -1, 0]
     >>> list(_binarize([0, -1, 1], transform_to=3))
     [3, -1, 3]'''
-    for cls in y:
-        if cls == keep:
+    for y_class in y:
+        if y_class == keep:
             yield keep
         else:
             yield transform_to
 
 
-def _bounded_auc(y_true, y_predict, bound=0.01, **kwargs):
+#    p_ = clf.fit(X1, y1).predict_proba(X2)
+#    return _bounded_auc(y2, p_[:, 1], y_bound, pos_label=0)
+def _bounded_auc(y_true, y_predict, y_bound, **kwargs):
     '''@return bounded auc of (probabilistic) fitted classifier on data.'''
-    newfpr, newtpr = _bounded_roc(y_true, y_predict, bound, **kwargs)
+    newfpr, newtpr = _bounded_roc(y_true, y_predict, y_bound, **kwargs)
     return metrics.auc(newfpr, newtpr)
 
 
-def _bounded_roc(y_true, y_predict, bound=0.01, **kwargs):
+def _bounded_roc(y_true, y_predict, y_bound, **kwargs):
     '''@return (fpr, tpr) within fpr-bounds'''
-    assert 0 <= bound <= 1
+    assert 0 <= y_bound <= 1
     if y_predict.shape[1] == 2:
         y_predict = y_predict[:, 1]
     fpr, tpr, _ = metrics.roc_curve(y_true, y_predict, **kwargs)
     # plot_data.roc(fpr, tpr).savefig('/tmp/roc.pdf')
     # plt.close()
-    newfpr = [x for x in fpr if x < bound]
-    newfpr.append(bound)
+    newfpr = [x for x in fpr if x < y_bound]
+    newfpr.append(y_bound)
     newtpr = np.interp(newfpr, fpr, tpr)
     return (newfpr, newtpr)
 
 
-def _bounded_auc_eval(X, y, clf, y_bound=0.1):
+def _bounded_auc_eval(X, y, clf, y_bound):
     '''evaluate clf X, y, give bounded auc score, 0 is positive class label'''
     X = _scale(X, clf)
     y = list(_binarize(y, transform_to=1))
-    #     X, y, train_size=1. / 2, stratify=y)
-    scorer = metrics.make_scorer(_bounded_auc, needs_proba=True, bound=y_bound)
-    return cross_validation.cross_val_score(
-        clf, X, y, cv=FOLDS, n_jobs=JOBS_NUM, scoring=scorer).mean()
-#    p_ = clf.fit(X1, y1).predict_proba(X2)
-#    return _bounded_auc(y2, p_[:, 1], y_bound, pos_label=0)
+    return bounded_auc_score(clf, X, y, y_bound)
 
 
 def _eval(X, y, clf, folds=FOLDS):
@@ -147,6 +144,15 @@ def _stop(y, step, result, previous, C=1, best=1):
             (len(previous) > 3 and  # some tries and with same val and > guess
              max([abs(x - result) for x in previous[-3:]]) < 0.00001 and
              result > best * 1.1 * max(collections.Counter(y).values()) / len(y)))
+
+
+def bounded_auc_score(clf, X, y, y_bound=0.01):
+    '''@return cross-validated bounded auc of clf on X and y'''
+    scorer = metrics.make_scorer(
+        _bounded_auc, needs_proba=True, y_bound=y_bound)
+    y = list(_binarize(y, transform_to=1))
+    return cross_validation.cross_val_score(
+        clf, X, y, cv=FOLDS, n_jobs=JOBS_NUM, scoring=scorer).mean()
 
 
 def helper(counter_dict, outlier_removal=True, cumul=True, folds=FOLDS):
