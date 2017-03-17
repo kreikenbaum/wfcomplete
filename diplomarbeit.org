@@ -1302,11 +1302,11 @@ experience /E/.
      configurability, and maintenance.
 
      The implementation is partly detailed in appendix [[*modules]].
-* Results and Evaluation [1/26]                                     :results:
+* Results and Evaluation [1/27]                                     :results:
   The following sections describe [[#setup][how data was collected and
   analysed]], [[#eval-wf][evaluate some website fingerprinting approaches]], and
   [[#eval-defense][various defenses]].
-** Setup [13/13]
+** Setup [0/1]
    :PROPERTIES:
    :CUSTOM_ID: setup
    :END:
@@ -1437,154 +1437,155 @@ experience /E/.
     see appendix [[#1site_desc]]. It cleans the cache between
     captures[fn::by restarting the Tor Browser Bundle]. Evaluation
     setup guides can be found in appendix [[#setup-details]].
-*** Feature Extraction
-    :PROPERTIES:
-    :CUSTOM_ID: feature-extraction
-    :END:
-    The aim of preprocessing is to extract features relevant for
-    machine learning from the original trace files, which are in
-    =pcap= format. From these, a vector of characteristics, called
-    /features/ is created[fn::They are called /features/ and
-    /attributes/ in machine learning; statistics calls them
-    /independent variables/ or /predictors/, see\cite[sec.2.1]{esl}].
-
-    Of the several tools available for reading =pcap=-trace files,
-    =tshark= was used in this thesis, as it offers TLS packet
-    reassembly. It is the command-line version of the Wireshark
-    protocol analyzer[fn:: \url{http://www.wireshark.org}].
-
-    The program created to distill a feature vector from a trace is
-    called [[#counter][=counter.py=]]. It creates both CUMUL\cite{panchenko2} and
-    Version\nbsp1\cite{panchenko} feature vectors.
-**** split
+*** KEYWORDS Machine Learning [0/0]
+**** Feature Extraction
      :PROPERTIES:
-     :CUSTOM_ID: split
+     :CUSTOM_ID: feature-extraction
      :END:
-     As mentioned by \cite{arp-personal}, outliers can be removed
-     based on statistical class features[fn::\cite{panchenko2} used
-     incoming-byte-count median and quantiles] on the training data
-     only. On test data, outliers should be removed only based on
-     absolute size, as the adversary does not know the trace's class
-     beforehand. Splitting off the validation set thus happens before
-     outlier removal.
+     The aim of preprocessing is to extract features relevant for
+     machine learning from the original trace files, which are in
+     =pcap= format. From these, a vector of characteristics, called
+     /features/ is created[fn::They are called /features/ and
+     /attributes/ in machine learning; statistics calls them
+     /independent variables/ or /predictors/, see\cite[sec.2.1]{esl}].
 
-     The data set is thus split twice. Once for later validation of
-     results[fn::code at =tts()= in analyse.py], once implicitly
-     during SVM parameter estimation, which is done via five-fold
-     cross-validation.[fn::code at =_my_grid()= in analyse.py]
-**** Outlier Removal
+     Of the several tools available for reading =pcap=-trace files,
+     =tshark= was used in this thesis, as it offers TLS packet
+     reassembly. It is the command-line version of the Wireshark
+     protocol analyzer[fn:: \url{http://www.wireshark.org}].
+
+     The program created to distill a feature vector from a trace is
+     called [[#counter][=counter.py=]]. It creates both CUMUL\cite{panchenko2} and
+     Version\nbsp1\cite{panchenko} feature vectors.
+***** split
+      :PROPERTIES:
+      :CUSTOM_ID: split
+      :END:
+      As mentioned by \cite{arp-personal}, outliers can be removed
+      based on statistical class features[fn::\cite{panchenko2} used
+      incoming-byte-count median and quantiles] on the training data
+      only. On test data, outliers should be removed only based on
+      absolute size, as the adversary does not know the trace's class
+      beforehand. Splitting off the validation set thus happens before
+      outlier removal.
+
+      The data set is thus split twice. Once for later validation of
+      results[fn::code at =tts()= in analyse.py], once implicitly
+      during SVM parameter estimation, which is done via five-fold
+      cross-validation.[fn::code at =_my_grid()= in analyse.py]
+***** Outlier Removal
+      :PROPERTIES:
+      :CUSTOM_ID: outlier_removal
+      :END:
+      CUMUL's accuracy is increased by outlier
+      removal\cite{panchenko2}. Their
+      software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/},
+      see =features/feature-scripts/outlier-removal.py=] has 3--4
+      different settings: a minimal --- which just removes very small
+      traces ---, a median-based[fn::in addition to the median-based
+      original by Wang and Goldberg\cite{wpes13-fingerprinting}], and a
+      25%/75%-quantile-based approach, each adding a step to the
+      previous. \cite{panchenko2} only mentions the quantile-based
+      filtering, so that was mainly also used in this thesis.
+
+      An alternative saves the highest and lowest values of previous
+      outlier removal on training data and applies it to the test
+      data. It did not improve on the minimal setting, see section
+      [[#wf-outlier-removal]].
+***** Scaling
+      \cite{sarle2} and \cite{Hsu10apractical} both recommend that
+      input data for Support Vector Machines be normalized. This means
+      that over all input vectors, the maximum value for each feature
+      is set to one, while the minimum is set to zero.[fn::There are
+      alternate ways of normalization. Cf. both \cite{sarle2} and
+      \cite{Hsu10apractical}.]
+
+      This thesis' code applies \cite[sec.42.30.7]{scikit-user-guide}'s
+      =MinMaxScaler= to use the same scale on both training and test
+      data. The formula for this is \cite[sec.2.3.1]{rieckdiss}
+      \[\overline{\varphi}_{i} (x)
+      = {\varphi_i(x) - \min_{y \in X} \varphi_i(y) \over
+      \max_{y \in X} \varphi_i(y) - \min_{y \in X} \varphi_i(y)}.\]
+**** Classification
      :PROPERTIES:
-     :CUSTOM_ID: outlier_removal
+     :CUSTOM_ID: classification
      :END:
-     CUMUL's accuracy is increased by outlier
-     removal\cite{panchenko2}. Their
-     software[fn::\url{http://lorre.uni.lu/~andriy/zwiebelfreunde/},
-     see =features/feature-scripts/outlier-removal.py=] has 3--4
-     different settings: a minimal --- which just removes very small
-     traces ---, a median-based[fn::in addition to the median-based
-     original by Wang and Goldberg\cite{wpes13-fingerprinting}], and a
-     25%/75%-quantile-based approach, each adding a step to the
-     previous. \cite{panchenko2} only mentions the quantile-based
-     filtering, so that was mainly also used in this thesis.
+     Once feature vectors are extracted from the collected traces, they
+     can be classified. Two state-of-the-art methods were applied:
+     [[#cumul-reimplementation][\cite{panchenko2} was reimplemented]] and [[#wf-original][both its implementation
+     and \cite{effective}'s original implementation were used to
+     double-check results]].
+***** Original Classification Methods: Panchenko and Wang
+      :PROPERTIES:
+      :CUSTOM_ID: wf-original
+      :END:
+      As the main purpose of this thesis is defending against website
+      fingerprinting, its success should be measured against
+      state-of-the-art website fingerprinting methods. At first, a
+      re-implementation of \cite{panchenko2} was used for
+      classification. As "optimism is an occupational hazard of
+      programming. Feedback is the treatment."\cite{xp} this method is
+      validated with the original implementation used by both
+      \cite{panchenko2}[fn:: Available at
+      \url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}.] and
+      \cite{effective}[fn:: Available at
+      \url{https://cs.uwaterloo.ca/~t55wang/wf.html}, the attack's code
+      is at \url{https://cs.uwaterloo.ca/~t55wang/knn.zip}, example
+      data at \url{https://cs.uwaterloo.ca/~t55wang/knndata.zip}.].
 
-     An alternative saves the highest and lowest values of previous
-     outlier removal on training data and applies it to the test
-     data. It did not improve on the minimal setting, see section
-     [[#wf-outlier-removal]].
-**** Scaling
-     \cite{sarle2} and \cite{Hsu10apractical} both recommend that
-     input data for Support Vector Machines be normalized. This means
-     that over all input vectors, the maximum value for each feature
-     is set to one, while the minimum is set to zero.[fn::There are
-     alternate ways of normalization. Cf. both \cite{sarle2} and
-     \cite{Hsu10apractical}.]
+      The reimplementation adds some aspects to \cite{panchenko2}'s
+      analysis, namely those mentioned in [[#split][split]] and the prototype in
+      [[#outlier_removal][outlier removal]]. It also searches the (C, \gamma)-parameter-grid, as
+      the altered traces seem to require dynamically adjusted SVM
+      parameters.
 
-     This thesis' code applies \cite[sec.42.30.7]{scikit-user-guide}'s
-     =MinMaxScaler= to use the same scale on both training and test
-     data. The formula for this is \cite[sec.2.3.1]{rieckdiss}
-     \[\overline{\varphi}_{i} (x)
-     = {\varphi_i(x) - \min_{y \in X} \varphi_i(y) \over
-     \max_{y \in X} \varphi_i(y) - \min_{y \in X} \varphi_i(y)}.\]
-*** Classification
-    :PROPERTIES:
-    :CUSTOM_ID: classification
-    :END:
-    Once feature vectors are extracted from the collected traces, they
-    can be classified. Two state-of-the-art methods were applied:
-    [[#cumul-reimplementation][\cite{panchenko2} was reimplemented]] and [[#wf-original][both its implementation
-    and \cite{effective}'s original implementation were used to
-    double-check results]].
-**** Original Classification Methods: Panchenko and Wang
-     :PROPERTIES:
-     :CUSTOM_ID: wf-original
-     :END:
-     As the main purpose of this thesis is defending against website
-     fingerprinting, its success should be measured against
-     state-of-the-art website fingerprinting methods. At first, a
-     re-implementation of \cite{panchenko2} was used for
-     classification. As "optimism is an occupational hazard of
-     programming. Feedback is the treatment."\cite{xp} this method is
-     validated with the original implementation used by both
-     \cite{panchenko2}[fn:: Available at
-     \url{http://lorre.uni.lu/~andriy/zwiebelfreunde/}.] and
-     \cite{effective}[fn:: Available at
-     \url{https://cs.uwaterloo.ca/~t55wang/wf.html}, the attack's code
-     is at \url{https://cs.uwaterloo.ca/~t55wang/knn.zip}, example
-     data at \url{https://cs.uwaterloo.ca/~t55wang/knndata.zip}.].
+      \cite{effective}'s data format are file-based: each file, named
+      =class_id-trace_num=, contains a line for each packet, of the
+      form
+      #+BEGIN_EXAMPLE
+        time(float) \t packet length/cell
+      #+END_EXAMPLE
+      Positive cells/packet sizes are for outgoing data, negative for
+      incoming.[fn::Identical to \cite[sec.6.A]{wtfpad}] The feature
+      extraction code is in =fextractor.py=.
 
-     The reimplementation adds some aspects to \cite{panchenko2}'s
-     analysis, namely those mentioned in [[#split][split]] and the prototype in
-     [[#outlier_removal][outlier removal]]. It also searches the (C, \gamma)-parameter-grid, as
-     the altered traces seem to require dynamically adjusted SVM
-     parameters.
+      \cite{panchenko2}'s data format are line-based: each file
+      contains all the traces for a class, with one trace per line. Its
+      format is
+      #+BEGIN_EXAMPLE
+        class_name start_time packet_time1:packet_size1 ...
+      #+END_EXAMPLE
+      with all times in milliseconds since the
+      epoch\cite{time2-manual}. In contrast, /positive/ packet sizes are
+      for /incoming/ data, negative for outgoing.
 
-     \cite{effective}'s data format are file-based: each file, named
-     =class_id-trace_num=, contains a line for each packet, of the
-     form
-     #+BEGIN_EXAMPLE
-       time(float) \t packet length/cell
-     #+END_EXAMPLE
-     Positive cells/packet sizes are for outgoing data, negative for
-     incoming.[fn::Identical to \cite[sec.6.A]{wtfpad}] The feature
-     extraction code is in =fextractor.py=.
+      In the open-world scenario, \cite{panchenko2} has only two
+      classes[fn::While the paper also evaluates a multi-class
+      open-world scenario, no option for multi-class was obvious in
+      =generate-feature.py=.], while \cite{effective} has the number of
+      classes plus one for the background data set.
 
-     \cite{panchenko2}'s data format are line-based: each file
-     contains all the traces for a class, with one trace per line. Its
-     format is
-     #+BEGIN_EXAMPLE
-       class_name start_time packet_time1:packet_size1 ...
-     #+END_EXAMPLE
-     with all times in milliseconds since the
-     epoch\cite{time2-manual}. In contrast, /positive/ packet sizes are
-     for /incoming/ data, negative for outgoing.
+      The steps taken to apply the original methods are described in
+      appendices [[#wang-steps]] and [[#cumul-steps]].
+***** CUMUL Re-Implementation
+      :PROPERTIES:
+      :CUSTOM_ID: cumul-reimplementation
+      :END:
+      After outlier removal, splits and possibly scaling, classification
+      takes as input feature vectors and tries to output the class that
+      this input belongs to. This is triggered by [[#analyse][=analyse.py=]].
 
-     In the open-world scenario, \cite{panchenko2} has only two
-     classes[fn::While the paper also evaluates a multi-class
-     open-world scenario, no option for multi-class was obvious in
-     =generate-feature.py=.], while \cite{effective} has the number of
-     classes plus one for the background data set.
+      Support Vector Machines need additional meta-parameters as
+      input. These are determined in an additional parameter estimation
+      step[fn::while it would be possible to also determine these
+      meta-parameters together with the support vectors, it would pose a
+      compationally hard problem, as mentioned for a similar case by
+      \cite[sec.2.8.3]{esl}]. \cite{Hsu10apractical} recommend
+      grid-search, which is used by \cite{panchenko2} and
+      \cite{panchenko}. This happens on the training set.
 
-     The steps taken to apply the original methods are described in
-     appendices [[#wang-steps]] and [[#cumul-steps]].
-**** CUMUL Re-Implementation
-     :PROPERTIES:
-     :CUSTOM_ID: cumul-reimplementation
-     :END:
-     After outlier removal, splits and possibly scaling, classification
-     takes as input feature vectors and tries to output the class that
-     this input belongs to. This is triggered by [[#analyse][=analyse.py=]].
-
-     Support Vector Machines need additional meta-parameters as
-     input. These are determined in an additional parameter estimation
-     step[fn::while it would be possible to also determine these
-     meta-parameters together with the support vectors, it would pose a
-     compationally hard problem, as mentioned for a similar case by
-     \cite[sec.2.8.3]{esl}]. \cite{Hsu10apractical} recommend
-     grid-search, which is used by \cite{panchenko2} and
-     \cite{panchenko}. This happens on the training set.
-
-     After SVM-parameters have been determined, several classifiers are
-     trained on the training data and evaluated on the test data.
+      After SVM-parameters have been determined, several classifiers are
+      trained on the training data and evaluated on the test data.
 ** EVA Website Fingerprinting [0/10]
    :PROPERTIES:
    :CUSTOM_ID: eval-wf
@@ -1599,7 +1600,6 @@ experience /E/.
    predecessor \cite{panchenko} was reimplemented as well, as well as
    Cai et al's\cite{ccs2012-fingerprinting} and Herrmann et
    al.'s\cite{ccsw09-fingerprinting}.
-*** Attacks
 *** KEYWORDS Closed World Attack Results
     #+INDEX: closed-world!results
     #+INDEX: data sets!KRE
