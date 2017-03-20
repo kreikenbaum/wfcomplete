@@ -23381,6 +23381,233 @@ When a media query is true, the corresponding style sheet or style rules are app
 	 - need to measure, and stop growth
      - ensemble methods
        - build classifier from classifiers
+*** Choose Your own Algorithm
+**** Choose Your Own Adventure
+     - you choose what happens
+**** Algorithm Options
+     - knn: classic, simple, easy to understand
+     - adaboost
+     - random forest
+     both ensemble methods (= meta classifiers from decision trees)
+     bit like voting for president
+**** Investigation Process
+     1. do some research, general understanding
+     2. find sklearn docs
+     3. deploy it
+     4. use it to make predictions
+*** Datasets and Questions
+**** Introduction
+     - enron dataset
+       - 2000 top-10 company
+       - 2002 gone
+	 - lots of fraud
+       - real data
+	 - possible to find fraud?
+     - T: skills to learn?
+       - clustering: directors vs normal people
+     - not easy to solve
+**** What Is A POI
+     - person of interest
+       - indicted [indieted ;-)]
+       - settled without admitting guilt
+       - testified in exchange for immunity
+     - shows
+       - but mistakes could creep in
+       - be sceptical
+       - f.ex. post additional POIs to forums
+**** Accuracy vs. Training Set Size
+     - needs enough POIs to get high accuracy
+     - _more data > fine-tuned algorithm_
+**** Downloading Enron Data
+     - very few POIs to classify as
+**** Quiz: Types of Data Quiz 1
+     - numeric
+     - categorical
+     - timeseries
+     - text
+     - other
+**** Mixing Data Sources (optional)
+***** quote
+      - you should be exceptionally careful if your data are coming
+        from different sources for different classes
+***** summary
+     - problem: most from original source, some from other, with these
+       POIs lacking financial info
+*** Regressions
+**** Continuous Output Quiz
+     - previously: discrete output (classes)
+     - here: continuous, f.ex. height \to weight
+**** Income: Continuous or Discrete?
+     - regression if there's some kind of order on the output data
+**** Slope and Intercept
+     - general output
+       net worth = 6.25  \cdot age   + 0
+       TARGET    = SLOPE \cdot INPUT + INTERCEPT
+**** Handoff to Katie
+     - coding portion
+     - google regression
+     - "generalized linear models"
+     - code name =LinearRegression=
+**** Age/Net Worth Regression in sklearn
+     #+BEGIN_SRC python
+       from sklearn import linear_model
+       reg = linear_model.LinearRegression()
+       reg.fit(X, Y)
+     #+END_SRC
+**** Extracting Information from sklearn
+     - predict with =reg.predict([value])=
+     - slope/intercept with =reg.coef_= and =reg.intercept_=
+     - evaluate regressor with =reg.score(X, Y)= (r-squared score)
+       - on testing data
+**** Extracting Score Data from sklearn
+     - max of r-squared is 1 (korrelation?)
+       - using on test set might shows overfitting
+     - training score will be better than testing score
+**** Linear Regression Errors
+     - error := actual net worth - predicted net worth
+**** Minimizing Sum of Squared Errors
+     find y=mx+b which minimizes \sum_all (actual - prediced)^2
+**** Algorithms for Minimizing Squared Errors
+     - ordinary least squares (OLS)
+     - gradient descent
+**** Problem with Minimizing Absolute Errors
+     - several lines with same slope have the same absolute error
+     - but only one minimizes sum of squared error (SSE)
+**** Evaluating Regression by Eye (+next)
+     - problem: sse rises the more data points exists
+**** R Squared Metric for Regression
+     between 0 and 1, 1 is best
+**** quiz
+     - target: bonus
+     - input: salary
+     - reg.score can be negative
+*** Outliers
+**** Outliers in Regression
+     - common: some phenonmenon corrupts data points
+**** What Causes Outliers
+     - sensor malfunction
+       - often 0s
+     - data entry errors
+     ignore the above two
+     - freak event
+     pay attention to this
+**** Quiz: outlier selection
+     - also class outliers
+**** Outlier Detection/Removal Algorithm
+     1. train
+     2. remove 10%
+     3. train again
+**** Summary of Outlier Removal Strategy
+     - 10%, but depending on scenario
+**** mini-project
+***** quotes
+      - As you can see, visualization is one of the most powerful tools
+        for finding outliers!
+*** Clustering
+**** Unsupervised Learning
+     - identify clumps or clusters
+     - dimensionality reduction (future lesson): reduce curve to line
+**** Clustering Movies
+     - sebastian likes other movies than kate
+     - netflix could cluster these to two clusters
+       - for katie, recommend class K
+       - for sebastian, recommend class S
+**** How Many Clusters?
+     - maybe most basic
+     - by far the most used
+**** Match Points with Clusters
+     - two step algo
+       1. assign
+	  - see by drawing line between centers, split in middle,
+            half-space each belongs to other
+       2. optimize
+	  - move centers so that sum of quadratic distances is minimized
+     - start with random centerpoints
+**** visualization
+     - if centroid number unclear, just take two centroids
+**** Limitations of K-Means
+     - k-means is a "hill-climbing" algo
+       - depending on initial cluster centers
+       - local minimal can break it
+	 #+BEGIN_EXAMPLE
+           x  x
+
+                                         O
+            O                        x       x
+                                         O
+           x x
+	 #+END_EXAMPLE
+	   O is center
+     - not perfect
+     - need to run multiple times
+**** code
+     #+BEGIN_SRC python
+       from sklearn import cluster
+       uns = cluster.KMeans(n_clusters=2)
+       uns.fit(finance_features)
+       pred = uns.labels_
+     #+END_SRC
+*** feature scaling
+**** Chris's T-Shirt Size (Intuition)
+     chris needs shirt, does not know shirt size, knows two friend's sizes
+**** Comparing Features with Different Scales
+     - height (ft) has small values
+     - weight's values (lb) are large
+     - to weigh them the same, you can use feature scaling
+**** Feature Scaling Formula Quiz 1
+     x' = (x-x_min) / (x_max - x_min)
+     - benefit: reliable
+     - disadvantages: outliers mess this up
+**** Min/Max Scaler in sklearn
+     #+BEGIN_SRC python
+       from sklearn import preprocessing
+       import numpy as np
+       scaler = preprocessing.MinMaxScaler()
+       weights = np.array([[115.], [140.], [175.]])
+       rescaled = scaler.fit_transform(weights)
+       b.transform([200000])
+     #+END_SRC
+*** Text Learning
+**** Quiz: Dimensions when Learning From Text
+     - positive and negative example
+       - + = a very nice day
+       - - = nice day
+**** Bag Of Words
+     - length of text is variable
+     - bag of words: count every word in dictionary, get feature vector
+     - often omit stopwords: a the ...
+**** Bag of Words in Sklearn
+     =from sklearn.feature_extraction.text import CountVectorizer=
+**** Stopwords
+     - low-information, occurs frequently
+**** Getting Stopwords from NLTK
+     #+BEGIN_SRC python
+       from nltk.corpus import stopwords
+       sw = stopwords.words("english")
+       sw[10]
+     #+END_SRC
+**** Stemming to Consolidate Vocabulary
+     - stemming: take the wurzel
+**** Stemming to NLTK
+     - =from nltk.stem.snowball import SnowballStemmer=
+     - =stemmer = SnowballStemmer("english")=
+     - =stemmer.stem("responsiveness")=
+     - stemming cleans up vocabulary "a lot"
+     - first stem, then bag-of-words
+**** Weighting by Term Frequency
+     - term frequency, like bag-of-words
+     - inverse document frequency: inverse weight on how often it
+       occurs in the corpus
+**** quiz
+     #+BEGIN_SRC python
+       with open('your_email_authors.pkl') as f:
+           my_word_data = pickle.load(f)
+       from sklearn.feature_extraction.text import TfidfVectorizer
+       c = TfidfVectorizer(stop_words='english')
+       d = c.fit_transform(my_word_data)
+       len(c.get_feature_names()) #number different words
+       c.get_feature_names()[34597] # word number 34597
+     #+END_SRC
 ** PART [[info:gnuplot#Top][Broeker - gnuplot]]
 *** summary
     1. [[info:gnuplot#Top][gnuplot]]
@@ -26302,6 +26529,32 @@ When a media query is true, the corresponding style sheet or style rules are app
 
               With no arguments, run a full collection.
 *** ref [[file:master.bib::python-lib-ref][Rossum & Python 2015: Python Library Reference]]
+** PART Wikipedia - random forests
+   0. [@0]
+      - mode (modalwert?) of the classes
+      - correct dt's overfitting
+   1. History
+      - randomly forced to omit some feature dimensions
+      - resistant to overtraining due to "Kleinberg's theory of
+        stochastic discrimination"
+   2. Algorithm
+      1. Preliminaries: decision tree learning
+	 - DTs are off-the-shelf method
+      2. Tree bagging
+	 - RFs combine on subsets: train each tree on randomly chosen B
+	   training examples (bootstrap aggregating == bagging)
+	 - reduces variance, without increasing bias
+	 - B is free parameter
+	   - determined by out-of-bag error: for each x_i average of
+             all trees that have not trained on x_i
+      3. From bagging to random forests
+	 - at each split, select random subset of features
+      4. ExtraTrees
+	 - plus randomized splitting (?): random value instead of
+           optimal local split
+   3. Properties
+      1. Variable importance
+*** https://en.wikipedia.org/wiki/Random_forest
 ** PART [[./scipy-ref-0.17.0.pdf][SciPy Reference Guide]]
 *** summary
 1. Tutorial
@@ -28156,7 +28409,7 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 *** ref available at http://www.mlsec.org/harry/docs/2011-dmkd.pdf
 ** [[./rfc7540.txt][Belshe - Hypertext Transfer Protocol Version 2 (HTTP/2)]]
 *** ref [[file:master.bib::rfc7540][Belshe et al. 2015: Hypertext Transfer Protocol]]
-** PART GIT-RESET Git Manual
+** PART MOVE GIT-RESET Git Manual
 *** quotes
     5. [@5] EXAMPLES
        - Undo a commit and redo
@@ -28179,7 +28432,7 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 ** [[./sendai99.pdf][VAN ROY - ON THE SEPARATION OF CONCERNS IN DISTRIBUTED PROGRAMMING: APPLICATION TO DISTRIBUTION STRUCTURE AND FAULT TOLERANCE IN MOZART]]
 ** [[./Separation Of Concerns.htm]]
 ** [[./10.1.1.368.2254.pdf][Samuel - Some Studies in Machine Learning Using the Game of Checkers]]
-** PART [[help:manual-entry]]
+** PART MOVE [[help:manual-entry]]
 *** summary
     - use f.ex.
       #+BEGIN_SRC elisp
