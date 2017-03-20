@@ -15559,20 +15559,30 @@ V.L. Voydock and S.T. Kent. Security Mechanisms in High-Level Network Protocols.
                    using this as the labels array.
         9. [@9] sklearn.ensemble: Ensemble Methods
            9. [@9] sklearn.ensemble.RandomForestClassifier
-              - apply(X)
+              - class sklearn.ensemble.RandomForestClassifier(
+                n_estimators=10, criterion=’gini’, max_depth=None,
+                min_samples_split=2, min_samples_leaf=1,
+                min_weight_fraction_leaf=0.0, max_features=’auto’,
+                max_leaf_nodes=None, bootstrap=True, oob_score=False,
+                n_jobs=1, random_state=None, verbose=0,
+                warm_start=False, class_weight=None)
 
-                Apply trees in the forest to X, return leaf indices.
-                - Parameters X : array-like or sparse matrix, shape =
-                  [n_samples, n_features]
+                Methods
 
-                  The input samples. Internally, it will be converted to
-                  dtype=np.float32 and if a sparse matrix is provided to
-                  a sparse csr_matrix.
-                - Returns X_leaves : array_like, shape = [n_samples,
-                  n_estimators]
+                - apply(X)
 
-                  For each datapoint x in X and for each tree in the
-                  forest, return the index of the leaf x ends up in.
+                 Apply trees in the forest to X, return leaf indices.
+                  - Parameters X : array-like or sparse matrix, shape =
+                    [n_samples, n_features]
+
+                    The input samples. Internally, it will be converted to
+                    dtype=np.float32 and if a sparse matrix is provided to
+                    a sparse csr_matrix.
+                  - Returns X_leaves : array_like, shape = [n_samples,
+                    n_estimators]
+
+                    For each datapoint x in X and for each tree in the
+                    forest, return the index of the leaf x ends up in.
         13. [@13] sklearn.grid_search: Grid Search
             0. [@0]
                - User guide: See the Grid Search: Searching for
@@ -15740,11 +15750,18 @@ V.L. Voydock and S.T. Kent. Security Mechanisms in High-Level Network Protocols.
 
               Distance of the samples X to the separating hyperplane.
         35. sklearn.tree: Decision Trees
-            - class sklearn.tree.DecisionTreeClassifier[...]
+            - class sklearn.tree.DecisionTreeClassifier(
+              criterion=’gini’, splitter=’best’, max_depth=None,
+              min_samples_split=2, min_samples_leaf=1,
+              min_weight_fraction_leaf=0.0, max_features=None,
+              random_state=None, max_leaf_nodes=None,
+              class_weight=None)
 
-              feature_importances_ : array of shape = [n_features]
+              Attributes
 
-              The feature importances.
+              - feature_importances_ : array of shape = [n_features]
+
+                The feature importances.
     47. [@47] Chapter 47. How to optimize for speed
         3. [@3] Profiling Python code
            - It is however still interesting to check what’s happening
@@ -23116,6 +23133,254 @@ When a media query is true, the corresponding style sheet or style rules are app
             der Richtlinie täglich ein Zwangsgeld in Höhe von
             315.036,54 Euro zahlen müssen. [...] (Zwangsgeld-Spanne
             für Deutschland: 13.436 bis 807.786 Euro).[93]
+** TODO Intro to Machine Learning                                        :ML:
+*** introduction
+    - quizzes
+    - exams at end
+      - need python
+    - prerequisites
+      - python
+      - statistics
+      - curiosity
+*** bayes
+**** ml in self-driving car
+     - supervised
+     - show car right behavior
+       - emulates behavior
+       - car does the same
+     - stanley: desert
+       - took long for the car to learn
+**** acerous
+     - horses
+     - features: horns
+**** supervised classification examples
+     weird-looking bank transactions rather unsupervised
+**** features and labels
+     - songs: intensity vs tempo scatterplot
+     - do that before trying ml
+**** Intro To Stanley Terrain Classification
+     - steepness and ruggedness
+     - look at scatterplot instead of raw data
+**** From Scatterplots to Decision Surfaces
+     boundary between classes
+     - can be linear, or not
+     - ml transforms data to decision surface
+**** Transition to Naive Bayes
+     #+BEGIN_SRC python
+       from sklearn.naive_bayes import GaussianNB
+     #+END_SRC
+**** Quiz: Calculating NB Accuracy
+     - accuracy_score(pred, labels) (sklearn.metrics)
+**** Training and Testing Data
+     - very important: different data sets
+     - maybe 10% of data as testing set
+**** Unpacking NB Using Bayes Rule
+     - reverend thomas bayes
+**** cancer test
+     - test, cancer C 0.01 of population
+     - test positive \to 90% that you have cancer (C) *sensitivity* P(Pos | C)
+     - test negative \to 90% that you don't have cancer (\not C) *specificity* P(Neg | \not C)
+     - if test positive, 8 1/3 % that cancer
+**** quiz: prior and posterior
+     - prior: probability /before/ test
+     - add test evidence
+     - result: posterior probability
+     - example
+       - prior:
+	 - P(C) = 0.01
+	 - P(Pos | C) = 0.9
+	 - P(\not C) = 0.99
+	 - P(Neg | \not C) = 0.9
+	 - P(Pos | \not C) = 0.1
+       - +posterior+ joint:
+         - P(C | Pos) = P(C) \cdot P(Pos | C) = 0.009
+	 - P(\not C | Pos) = P(\not C) \cdot P(Pos | \not C) = 0.099
+     - normalize: keep ratio, add posterior to one
+       - P(Pos) = P(C | Pos) + P(\not C | Pos) = 0.108
+     - posterior:
+       - P(C | Pos) = 0.08333
+       - P(\not C | Pos) = 0.9167
+**** Quiz: Bayesian Probabilities On Your Own
+     p(chris) = 0.5 * 0.1 * .8 = 0.04
+     p(sara) = 0.5 * 0.5 * .2 = 0.05
+     p(chris | love deal) = 0.33
+**** Quiz: Why Is Naive Bayes Naive
+     - just multiply all the evidence
+**** Naive Bayes Strengths and Weaknesses
+     plus
+     - easy to implement, big feature space
+     - simple to run, efficient
+     minus
+     - multiple word phrases break
+**** Naive Bayes Mini-Project Video
+     - author of piece of test
+     - jk rowling pseudonymous test
+**** mini project
+ file: [[nb_author_id.py]]
+ #+BEGIN_SRC python
+   from sklearn.naive_bayes import GaussianNB
+   clf = GaussianNB()
+   clf.fit(features_train, labels_train)
+   clf.score(features_test, labels_test)
+ #+END_SRC
+ score: 0.97326507394766781
+ >>> training time: 0.725 s
+ >>> testing time: 0.108 s
+*** SVM
+    - invented by russian
+    - no clue why machine (quiz: separating line)
+    - input: classes
+    - output: line
+**** Quiz: What Makes A Good Separating Line
+     maximizes distance to nearest points == margin
+**** Quiz: Practice with Margins
+     maximizing margin maximizes robustness
+**** Quiz: SVMs and Tricky Data Distributions
+     if data point close to other class, naïve margin might be off
+**** Quiz: SVM Response to Outliers
+     "ignore"
+**** SVM Decision Boundary
+     straight line with svm.SVC() (?)
+**** Quiz: A New Feature
+     - circular distributed class
+     - use additional feature x^2+y^2
+     - linearly separable: can we find line/hyperplane
+**** Kernel Trick
+     - no need to write new features
+     - gist: map to other space, make linear
+**** Quiz: Playing Around with Kernel Choices
+     - svm: probabilities not supported out of the box, needs cross-validation
+**** Quiz: Kernel and Gamma
+     - C, gamma
+**** Quiz: SVM C Parameter
+***** summary
+      - the higher C, the more bumpy the surface
+***** quotes
+      - "C - controls tradeoff between smooth decision boundary and
+        classifying training points correctly"
+**** Quiz: Overfitting
+     - stop overfitting
+     - set C, gamma, kernel
+**** SVM Strengths and Weaknesses
+     plus
+     - well in complicated domains with clear separation
+     minus
+     - large datasets (cubic in size of data set)
+     - noise: better naive bayes clf
+
+**** mini project (svm/svm_author_id.py)
+     accuracy
+     - 0.98407281001137659 for linear svm
+       training time: 244.125 s
+       testing time: 25.605 s
+     - 0.49 for rbf
+       training time: 1832.481 s
+       testing time: 164.774 s
+     - 1/100's the data (linear)
+       training time: 0.151 s
+       testing time: 1.484 s
+       0.88452787258248011
+     - 1/100's the data (rbf)
+       training time: 0.171 s
+       testing time: 1.663 s
+       0.61604095563139927
+*** decision trees
+**** welcome
+     - intuitive
+     - understandable
+     - old
+     - popular
+**** Quiz: Linearly Separable Data
+     - trick: nonlinear decision making
+**** Quiz: Multiple Linear Questions
+     - multiple questions with linear boundaries each
+**** Quiz: Constructing a Decision Tree 2nd Split
+     - /axis-parallel decision lines/
+**** Decision Tree Accuracy
+     here: some overfitting,
+     accuracy = 90.8%
+**** Quiz: Decision Tree Parameters
+     - min_samples_split: how many samples to just keep, keep splitting or not
+    
+**** Decision Tree Accuracy
+     #+BEGIN_SRC python
+       import sys
+       from class_vis import prettyPicture
+       from prep_terrain_data import makeTerrainData
+
+       import matplotlib.pyplot as plt
+       import numpy as np
+       import pylab as pl
+
+       features_train, labels_train, features_test, labels_test = makeTerrainData()
+
+       from sklearn import tree
+       clf = tree.DecisionTreeClassifier()
+       acc_min_samples_split_2 = clf.fit(
+           features_train, labels_train).score(features_test, labels_test)
+       clf = tree.DecisionTreeClassifier(min_samples_split=50)
+       acc_min_samples_split_50 = clf.fit(
+           features_train, labels_train).score(features_test, labels_test)
+     #+END_SRC
+**** Data Impurity and Entropy
+     def entropy: measure of /impurity/ in a bunch of examples
+     - example: speed limit additional info for car
+       - can split on speed limit
+       - or on bumpiness
+     - aim: find pure subsets
+**** Formula of Entropy
+     entropy = \sum -p_i log_2 (p_i)
+
+     - p_i: number of examples in given class (percentage)
+     - entropy opposite of purity
+**** Quiz: Entropy Calculation Part
+     ffss: jeweils p_slow = p_fast = 0.5
+     entropy = -0.5 log_2(0.5) * 2 = 1
+**** Quiz: Information Gain Calculation Part 1
+***** quotes
+      information gain = entropy(parent) - [weighted average] entropy(children)
+**** Quiz: Information Gain Calculation Part 4
+     | grade | bumpiness | speed limit | speed |
+     |-------+-----------+-------------+-------|
+     | steep | bumpy     | yes         | slow  |
+     | steep | smooth    | yes         | slow  |
+     | flat  | bumpy     | no          | fast  |
+     | steep | smooth    | no          | fast  |
+
+**** aufteilen nach grade
+     s s f | f
+     entropy eltern = 1
+     entropy kinder = 3* (entr(float(1/3.)) + entr(2/3.)) /4
+     info gain = 1 - 3* (entr(float(1/3.)) + entr(2/3.)) /4 = 0.31127812445913283
+**** aufteilen nach bumpiness
+     s f | s f
+     entropy eltern = 1
+     entropy kinder = 1/2 * (entr(1/2.) + entr(1/2.)) + 1/2 * (entr(1/2.)+entr(1/2.) = 1
+     info gain = 1 - 1 = 0
+
+
+**** aufteilen nach speed limit
+     s f | s f
+     entropy eltern = 1
+     entropy kinder = 1/2 * entr(1) + 1/2 * entr(1) = 0
+     info gain = 1
+**** Tuning Criterion Parameter
+     default is gini coefficient
+**** Bias-Variance Dilemma
+     high-bias algo ignores the data
+     - high-bias car can be trained, but no matter the data, behaves the same
+     - high-variance perceptive to data, "can only replicate" seen
+       before, reacts poorly to new situations
+     - you want ability to generalize, but also look at data
+**** DT Strengths and Weaknesses
+     - plus
+       - easy to understand
+       - great to grow
+     - minus
+       - prone to overfitting
+	 - need to measure, and stop growth
+     - ensemble methods
+       - build classifier from classifiers
 ** PART [[info:gnuplot#Top][Broeker - gnuplot]]
 *** summary
     1. [[info:gnuplot#Top][gnuplot]]

@@ -9,7 +9,7 @@ import numpy as np
 
 import counter
 
-JOBS_NUM = 4
+JOBS_NUM = -1
 #JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
 FOLDS = 5
 #JOBS_NUM = 1; FOLDS = 2 # testing
