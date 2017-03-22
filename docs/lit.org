@@ -23608,6 +23608,330 @@ When a media query is true, the corresponding style sheet or style rules are app
        len(c.get_feature_names()) #number different words
        c.get_feature_names()[34597] # word number 34597
      #+END_SRC
+*** Feature Selection
+**** A New Enron Feature
+     - intuition:
+       - communication network: mails to other POIs (number, network)
+       - high-income
+       - find "codewords", or just certain names (these are default features)
+       - number of emails rises significantly in crisis time
+     - code up new features
+     - visualize
+     - repeat
+**** Beware of Feature Bugs!
+***** quotes
+      - 100% accuracy should generally make you
+        suspicious. Extraordinary claims require extraordinary proof.
+      - If there's a feature that tracks your labels a little too
+        closely, it's very likely a bug!
+**** Quiz: getting rid of features
+     - may remove features, as they
+       - are noisy
+       - cause overfitting
+       - are highly correlated to other features, or
+       - just slow down the training/testing
+**** Features != Information
+***** summary
+     - features \sim quantity
+     - information \sim quality
+***** quotes
+      - features attempt to access information
+**** Quiz: Feature Selection in TfIdf Vectorizer
+     - slice off features
+       #+BEGIN_SRC python
+         selector = SelectPercentile(f_classif, percentile=10)
+         selector.fit(features_train_transformed, labels_train)
+         features_train_transformed = selector.transform(features_train_transformed).toarray()
+         features_test_transformed = selector.transform(features_test_transformed).toarray()
+       #+END_SRC
+     - also TfidfVectorizer's =max_df= parameter
+**** Quiz: Bias, Variance, and Number of Features
+     same: few variables: high bias, many variables: high variance
+     - aim: few features, low r^2, large SSE
+***** quotes
+      - high bias: little attention to data, oversimplified, *high
+        error on training set, low r^2, large SSE*
+      - high variance: pays too much atention to data (does not
+        generalize well), overfits, *much higher error on test set than
+        on training set*
+**** Balancing Error with Number of Features
+     quality of model vs no. of features ("related to coefficients")
+     - too many features might decrease "quality of model"
+**** Regularization (regression)
+     - automatically penalize extra parameters: Lasso Regression
+     - minimize SSE + \lambda | \beta |
+     - reduces number of features
+**** Lasso Regression
+     - set coefficient of feature to zero
+**** Quiz: Lasso Code Quiz
+     #+BEGIN_SRC python
+       import sklearn.linear_model.Lasso
+       features labels = GetMyData()
+       regression = Lasso()
+       regression.fit(features, labels)
+       regression.predict([2,4]) #[[2,4]] ?
+       print regression.coef_
+     #+END_SRC
+     if coef_ is close to zero: parameter unused
+**** Mini-Project
+     remove stuff with huge =features_importances_=
+*** PCA
+**** Quiz: Data Dimensionality
+     - 1-dimensional even if line in two-dimensional space
+**** Quiz: Trickiest Data Dimensionality
+     - PCA just does shifts and rotations to reduce dimensions
+**** PCA for Data Transformation
+     1. center of coordinate system to center of data
+     2. x-axis in direction of "principal axis of variation"
+     3. y-axis orthogonal
+**** Quiz: Practice Finding Centers
+     spread value: importance computed by eigenvalue
+**** Quiz: From Four Features to Two
+     - example house: features sqaure footate, no of rooms, school
+       ranking, neighborhood safety
+       - latent features: size and neighborhood
+         - contain most information
+**** Quiz: Compression While Preserving Information
+     - SelectKBest to select just k most powerful features
+**** Quiz: Composite Features
+     - combine features
+**** Quiz: Maximal Variance
+***** quotes
+      - variance:
+        - the willingness/flexibility of an algorithm to learn (ml)
+        - "spread" of data distribution, STD = sqrt(VAR) (statistics)
+**** Quiz: Advantages of Maximal Variance
+***** summary
+     - principal component: direction having largest variance
+***** quotes
+      - retains maximum amount of "information" in original data
+**** Quiz: Maximal Variance and Information Loss
+     - lost information per point: distance to principal component
+**** Info Loss and Principal Components
+     - another "principal component" would lose more information
+     - this minimizes distance to new transformed values
+**** PCA for Feature Transformation
+     - pca is unsupervised
+     - can tell you new stuff about data
+**** Review/Definition of PCA
+     - systematized
+     - PCs as new features
+       - directions that maximize variance
+       - the more variance along PC, the higher ranked
+     - max no of PCs = max(no of input features, no of instances)
+**** PCA in sklearn
+     #+BEGIN_SRC python
+       from sklearn.decomposition import PCA
+       pca = PCA(n_components=2)
+       pca.fit(data)
+
+       print pca.explained_variance_ratio_
+       first_pc = pca.components_[0]
+       second_pc = pca.components_[1]
+
+       transformed_data = pca.transform(data)
+       # also plotting, see code '
+     #+END_SRC
+**** When to Use PCA
+***** quotes
+     - latent features driving the patterns in data (big shots @ Enron)
+     - dimensionality reduction
+       - visualize high-dimensional data
+       - reduce noise
+       - make other algorithms [classification and regression] work
+         better b/c fewer inputs (eigenfaces)
+**** Quiz: Selecting Principal Components
+     - how to determine
+     - have to figure out: train on different, increasing numbers, cut
+       off when accuracy decreases again
+     - avoid doing feature selection before PCA
+**** see code in pca/eigenfaces.py
+*** Validation
+**** Quiz: Train/Test Split in sklearn
+     =cross_validation.train_test_split(src.data, src.target)=
+**** Quiz: Where to use training vs. testing data 1
+     - testing data only for validating the stuff
+       - pca etc on testing data gives "unfair advantage"
+**** Quiz: Where to use training vs. testing data 3
+     #+BEGIN_SRC python
+       pca.fit(training_features)
+       pca.transform(training_features)
+       svc.train(training_features)
+       pca.transform(testing_features)
+       svc.predict(testing_features)
+     #+END_SRC
+**** Quiz: K-Fold Cross Validation
+     - maximize training set to have best learning result
+     - and maximize test set for best validation
+     - solution: cross-validation
+       - same run-time after training
+       - more accurate prediction
+       - more time for training
+**** Practical Advice for K-Fold in sklearn
+     - KFold did not shuffle
+       - if data set has pattern, this breaks train-test strata
+**** Cross Validation for Parameter Tuning
+     - gridsearchcv does that for you
+**** Mini-Project
+     - minimal release
+     - wrap to training-testing-framework
+*** Evaluation Metrics
+**** Accuracy Review
+     acc = \sum P / \sum N
+**** Quiz: Shortcomings of Accuracy
+     - skewed classes
+     - if you want to skew results to rather assume innocence, or
+       guilt, accuracy does not fit
+**** Precision and Recall
+     see table
+     recall (hugo chavez) = 10 correctly classified / 16 chavez faces = 10/16
+     precision = 10 correctly classified as chavez / 10 classified as chavez
+**** Quiz: True Positives in Eigenfaces
+     - makes sense:
+       - tp (correct),
+       - fp (classified as politician, but is not)
+       - fn (classified as someone else, but is the person)
+**** Quiz: Equation for Precision
+     *precision = tp / tp+fp*
+**** Quiz: Equation for Recall
+     *recall = tp / tp+fn*
+**** mini project
+     last one
+     - which features
+     - which algo
+     - which parameters
+*** Tying it all Together
+**** Summary
+***** dataset/question
+       - enough data
+       - define question
+       - enough/right geatures to answer question?
+***** \to features ( back to dataset )
+       - exploration
+	 - correlation
+	 - outlier removal
+	 - ?imputation?
+	 - cleaning
+       - creation
+	 - ?think about it like a human?
+       - representation
+	 - test vectorization
+	 - discretization
+       - scaling
+	 - mean subtraction
+	 - mimax scaler
+	 - standard scaler
+       - selection
+	 - kbest
+	 - percentile
+	 - recursive feature elimination
+       - transforms
+	 - pca
+	 - ica
+***** \to algorithms 
+       - tune our algorithm
+	 - parameters
+	 - visual inspection
+	 - performance on test data
+	 - gridsearchcv
+       - pick an algorithm
+	 - supervised
+	   - non-ordered/discrete
+	     - tree
+	     - bayes
+	     - svm
+	     - ensembles
+	     - knn
+	     - lda
+	     - logistic regression
+	   - ordered/continuous
+	     - linear regression
+	     - lasso regression
+	     - decision tree regression
+	     - SV regression
+	 - unsupervised
+	   - k-means clustering
+	   - spectral clustering
+	   - PCA
+	   - mixture models/EM algorithm
+	   - outlier detection
+***** \to evaluation (back to algorithms and features)
+       - validate
+	 - train/test split
+	 - k-fold
+	 - visualize
+       - pick metric(s)
+	 - SSE/r^2
+	 - precision
+	 - recall
+	 - f1 score
+	 - roc curve
+	 - custom
+	 - bias/variance
+**** outro
+    - see again, work, projects (post online)
+*** project
+**** Project Details
+     - search for POIs in enron data
+     - data: emails, and financial data
+     - features:
+       #+BEGIN_SRC js
+         - financial features: ['salary', 'deferral_payments',
+           'total_payments', 'loan_advances', 'bonus',
+           'restricted_stock_deferred', 'deferred_income',
+           'total_stock_value', 'expenses', 'exercised_stock_options',
+           'other', 'long_term_incentive', 'restricted_stock',
+           'director_fees'] (all units are in US dollars)
+         - email features: ['to_messages', 'email_address',
+           'from_poi_to_this_person', 'from_messages', 'from_this_person_to_poi',
+           'shared_receipt_with_poi'] (units are generally number of emails
+           messages; notable exception is ‘email_address’, which is a text
+           string)
+         - POI label: [‘poi’] (boolean, represented as integer)
+       #+END_SRC
+**** Questions
+     1. Summarize for us the goal of this project and how machine
+        learning is useful in trying to accomplish it. As part of your
+        answer, give some background on the dataset and how it can be
+        used to answer the project question. Were there any outliers in
+        the data when you got it, and how did you handle those?
+        [relevant rubric items: “data exploration”, “outlier
+        investigation”]
+     2. What features did you end up using in your POI identifier, and
+        what selection process did you use to pick them? Did you have
+        to do any scaling? Why or why not? As part of the assignment,
+        you should attempt to engineer your own feature that does not
+        come ready-made in the dataset -- explain what feature you
+        tried to make, and the rationale behind it. (You do not
+        necessarily have to use it in the final analysis, only engineer
+        and test it.) In your feature selection step, if you used an
+        algorithm like a decision tree, please also give the feature
+        importances of the features that you use, and if you used an
+        automated feature selection function like SelectKBest, please
+        report the feature scores and reasons for your choice of
+        parameter values.  [relevant rubric items: “create new
+        features”, “properly scale features”, “intelligently select
+        feature”]
+     3. What algorithm did you end up using? What other one(s) did you
+        try? How did model performance differ between algorithms?
+        [relevant rubric item: “pick an algorithm”]
+     4. What does it mean to tune the parameters of an algorithm, and
+        what can happen if you don’t do this well?  How did you tune
+        the parameters of your particular algorithm? (Some algorithms
+        do not have parameters that you need to tune -- if this is the
+        case for the one you picked, identify and briefly explain how
+        you would have done it for the model that was not your final
+        choice or a different model that does utilize parameter tuning,
+        e.g. a decision tree classifier).  [relevant rubric item: “tune
+        the algorithm”]
+     5. What is validation, and what’s a classic mistake you can make
+        if you do it wrong? How did you validate your analysis?
+        [relevant rubric item: “validation strategy”]
+     6. Give at least 2 evaluation metrics and your average performance
+        for each of them.  Explain an interpretation of your metrics
+        that says something human-understandable about your algorithm’s
+        performance. [relevant rubric item: “usage of evaluation
+        metrics”]
 ** PART [[info:gnuplot#Top][Broeker - gnuplot]]
 *** summary
     1. [[info:gnuplot#Top][gnuplot]]
@@ -26103,6 +26427,16 @@ When a media query is true, the corresponding style sheet or style rules are app
                string specifying the set of characters to be
                removed. If omitted or =None=, the chars argument
                defaults to removing whitespace.
+          4. [@4] Mutable Sequence Types
+             - 8. =sort()= method takes optional arguments for
+               controlling the comparisons.
+
+               /cmp/ specifies a custom comparison function of two
+               arguments (list items) which should return a negative,
+               zero or positive number depending on whether the first
+               argument is considered smaller than, equal to, or
+               larger than the second argument: =cmp=lambda x,y:
+               cmp(x.lower(), y.lower())=. The default value is =None=.
        7. Set Types — set, frozenset
           - the non-operator versions of =union()=, =intersection()=,
             =difference()=, and =symmetric_difference()=,
@@ -27990,6 +28324,36 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
           - key sequence C-M-g
 *** quotes
 *** ref http://orgmode.org/worg/org-tutorials/org-plot.html
+** PART [[help:manual-entry]]
+*** summary
+    - use f.ex.
+      #+BEGIN_SRC elisp
+        (manual-entry "tshark")
+      #+END_SRC
+*** quotes
+    - For a manpage from a particular section, use either of the
+      following.  "cat(1)" is how cross-references appear and is
+      passed to man as "1 cat".
+
+      cat(1)
+      1 cat
+** PART GIT-RESET Git Manual
+*** quotes
+    5. [@5] EXAMPLES
+       - Undo a commit and redo
+
+               $ git commit ...
+               $ git reset --soft HEAD^      (1)
+               $ edit                        (2)
+               $ git commit -a -c ORIG_HEAD  (3)
+
+           1. This is most often done when you remembered what you just
+           committed is incomplete, or you misspelled your commit message, or
+           both. Leaves working tree as it was before "reset".
+           2. Make corrections to working tree files.
+           3. "reset" copies the old head to .git/ORIG_HEAD; redo the commit
+           by starting with its log message. If you do not need to edit the
+           message further, you can give -C option instead.
 ** onion routing project
 *** [[~/da/git/docs/onion-routing_pet2000.pdf][Towards an Analysis of Onion Routing Security]]
 **** ref: [[file:master.bib::onion-routing:pet2000][Syverson et al. 2000: Towards Analysis Onion Routing Security]]
@@ -28409,41 +28773,11 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 *** ref available at http://www.mlsec.org/harry/docs/2011-dmkd.pdf
 ** [[./rfc7540.txt][Belshe - Hypertext Transfer Protocol Version 2 (HTTP/2)]]
 *** ref [[file:master.bib::rfc7540][Belshe et al. 2015: Hypertext Transfer Protocol]]
-** PART MOVE GIT-RESET Git Manual
-*** quotes
-    5. [@5] EXAMPLES
-       - Undo a commit and redo
-
-               $ git commit ...
-               $ git reset --soft HEAD^      (1)
-               $ edit                        (2)
-               $ git commit -a -c ORIG_HEAD  (3)
-
-           1. This is most often done when you remembered what you just
-           committed is incomplete, or you misspelled your commit message, or
-           both. Leaves working tree as it was before "reset".
-           2. Make corrections to working tree files.
-           3. "reset" copies the old head to .git/ORIG_HEAD; redo the commit
-           by starting with its log message. If you do not need to edit the
-           message further, you can give -C option instead.
 ** [[./taxonomy-dummy.pdf][Diaz - Taxonomy of Mixes and Dummy Traffic]]
 ** [[./Kiran_baserate.pdf][Kashalkar - presentation on Axelsson]]
 ** [[./aop-icse.pdf][Separation of Concerns for Security]]
 ** [[./sendai99.pdf][VAN ROY - ON THE SEPARATION OF CONCERNS IN DISTRIBUTED PROGRAMMING: APPLICATION TO DISTRIBUTION STRUCTURE AND FAULT TOLERANCE IN MOZART]]
 ** [[./Separation Of Concerns.htm]]
 ** [[./10.1.1.368.2254.pdf][Samuel - Some Studies in Machine Learning Using the Game of Checkers]]
-** PART MOVE [[help:manual-entry]]
-*** summary
-    - use f.ex.
-      #+BEGIN_SRC elisp
-        (manual-entry "tshark")
-      #+END_SRC
-*** quotes
-    - For a manpage from a particular section, use either of the
-      following.  "cat(1)" is how cross-references appear and is
-      passed to man as "1 cat".
-
-      cat(1)
-      1 cat
 ** tshark
 ** [[/usr/share/doc/RFC/proposed-standard/rfc7231.txt.gz][Fielding - Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content]]
