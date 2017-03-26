@@ -5261,6 +5261,805 @@
             the average of the k-identifiability value for each
             instance in the test set.
 *** ref [[file:master.bib::Liberatore:2006][Liberatore & Levine 2006: Inferring Source Encrypted HTTP Connections]]
+** Malone@udacity - Intro to Machine Learning                            :ML:
+*** introduction
+    - quizzes
+    - exams at end
+      - need python
+    - prerequisites
+      - python
+      - statistics
+      - curiosity
+*** bayes
+**** ml in self-driving car
+     - supervised
+     - show car right behavior
+       - emulates behavior
+       - car does the same
+     - stanley: desert
+       - took long for the car to learn
+**** acerous
+     - horses
+     - features: horns
+**** supervised classification examples
+     weird-looking bank transactions rather unsupervised
+**** features and labels
+     - songs: intensity vs tempo scatterplot
+     - do that before trying ml
+**** Intro To Stanley Terrain Classification
+     - steepness and ruggedness
+     - look at scatterplot instead of raw data
+**** From Scatterplots to Decision Surfaces
+     boundary between classes
+     - can be linear, or not
+     - ml transforms data to decision surface
+**** Transition to Naive Bayes
+     #+BEGIN_SRC python
+       from sklearn.naive_bayes import GaussianNB
+     #+END_SRC
+**** Quiz: Calculating NB Accuracy
+     - accuracy_score(pred, labels) (sklearn.metrics)
+**** Training and Testing Data
+     - very important: different data sets
+     - maybe 10% of data as testing set
+**** Unpacking NB Using Bayes Rule
+     - reverend thomas bayes
+**** cancer test
+     - test, cancer C 0.01 of population
+     - test positive \to 90% that you have cancer (C) *sensitivity* P(Pos | C)
+     - test negative \to 90% that you don't have cancer (\not C) *specificity* P(Neg | \not C)
+     - if test positive, 8 1/3 % that cancer
+**** quiz: prior and posterior
+     - prior: probability /before/ test
+     - add test evidence
+     - result: posterior probability
+     - example
+       - prior:
+	 - P(C) = 0.01
+	 - P(Pos | C) = 0.9
+	 - P(\not C) = 0.99
+	 - P(Neg | \not C) = 0.9
+	 - P(Pos | \not C) = 0.1
+       - +posterior+ joint:
+         - P(C | Pos) = P(C) \cdot P(Pos | C) = 0.009
+	 - P(\not C | Pos) = P(\not C) \cdot P(Pos | \not C) = 0.099
+     - normalize: keep ratio, add posterior to one
+       - P(Pos) = P(C | Pos) + P(\not C | Pos) = 0.108
+     - posterior:
+       - P(C | Pos) = 0.08333
+       - P(\not C | Pos) = 0.9167
+**** Quiz: Bayesian Probabilities On Your Own
+     p(chris) = 0.5 * 0.1 * .8 = 0.04
+     p(sara) = 0.5 * 0.5 * .2 = 0.05
+     p(chris | love deal) = 0.33
+**** Quiz: Why Is Naive Bayes Naive
+     - just multiply all the evidence
+**** Naive Bayes Strengths and Weaknesses
+     plus
+     - easy to implement, big feature space
+     - simple to run, efficient
+     minus
+     - multiple word phrases break
+**** Naive Bayes Mini-Project Video
+     - author of piece of test
+     - jk rowling pseudonymous test
+**** mini project
+ file: [[nb_author_id.py]]
+ #+BEGIN_SRC python
+   from sklearn.naive_bayes import GaussianNB
+   clf = GaussianNB()
+   clf.fit(features_train, labels_train)
+   clf.score(features_test, labels_test)
+ #+END_SRC
+ score: 0.97326507394766781
+ >>> training time: 0.725 s
+ >>> testing time: 0.108 s
+*** SVM
+    - invented by russian
+    - no clue why machine (quiz: separating line)
+    - input: classes
+    - output: line
+**** Quiz: What Makes A Good Separating Line
+     maximizes distance to nearest points == margin
+**** Quiz: Practice with Margins
+     maximizing margin maximizes robustness
+**** Quiz: SVMs and Tricky Data Distributions
+     if data point close to other class, naïve margin might be off
+**** Quiz: SVM Response to Outliers
+     "ignore"
+**** SVM Decision Boundary
+     straight line with svm.SVC() (?)
+**** Quiz: A New Feature
+     - circular distributed class
+     - use additional feature x^2+y^2
+     - linearly separable: can we find line/hyperplane
+**** Kernel Trick
+     - no need to write new features
+     - gist: map to other space, make linear
+**** Quiz: Playing Around with Kernel Choices
+     - svm: probabilities not supported out of the box, needs cross-validation
+**** Quiz: Kernel and Gamma
+     - C, gamma
+**** Quiz: SVM C Parameter
+***** summary
+      - the higher C, the more bumpy the surface
+***** quotes
+      - "C - controls tradeoff between smooth decision boundary and
+        classifying training points correctly"
+**** Quiz: Overfitting
+     - stop overfitting
+     - set C, gamma, kernel
+**** SVM Strengths and Weaknesses
+     plus
+     - well in complicated domains with clear separation
+     minus
+     - large datasets (cubic in size of data set)
+     - noise: better naive bayes clf
+
+**** mini project (svm/svm_author_id.py)
+     accuracy
+     - 0.98407281001137659 for linear svm
+       training time: 244.125 s
+       testing time: 25.605 s
+     - 0.49 for rbf
+       training time: 1832.481 s
+       testing time: 164.774 s
+     - 1/100's the data (linear)
+       training time: 0.151 s
+       testing time: 1.484 s
+       0.88452787258248011
+     - 1/100's the data (rbf)
+       training time: 0.171 s
+       testing time: 1.663 s
+       0.61604095563139927
+*** decision trees
+**** welcome
+     - intuitive
+     - understandable
+     - old
+     - popular
+**** Quiz: Linearly Separable Data
+     - trick: nonlinear decision making
+**** Quiz: Multiple Linear Questions
+     - multiple questions with linear boundaries each
+**** Quiz: Constructing a Decision Tree 2nd Split
+     - /axis-parallel decision lines/
+**** Decision Tree Accuracy
+     here: some overfitting,
+     accuracy = 90.8%
+**** Quiz: Decision Tree Parameters
+     - min_samples_split: how many samples to just keep, keep
+       splitting or not
+**** Decision Tree Accuracy
+     #+BEGIN_SRC python
+       import sys
+       from class_vis import prettyPicture
+       from prep_terrain_data import makeTerrainData
+
+       import matplotlib.pyplot as plt
+       import numpy as np
+       import pylab as pl
+
+       features_train, labels_train, features_test, labels_test = makeTerrainData()
+
+       from sklearn import tree
+       clf = tree.DecisionTreeClassifier()
+       acc_min_samples_split_2 = clf.fit(
+           features_train, labels_train).score(features_test, labels_test)
+       clf = tree.DecisionTreeClassifier(min_samples_split=50)
+       acc_min_samples_split_50 = clf.fit(
+           features_train, labels_train).score(features_test, labels_test)
+     #+END_SRC
+**** Data Impurity and Entropy
+     def entropy: measure of /impurity/ in a bunch of examples
+     - example: speed limit additional info for car
+       - can split on speed limit
+       - or on bumpiness
+     - aim: find pure subsets
+**** Formula of Entropy
+     entropy = \sum -p_i log_2 (p_i)
+
+     - p_i: number of examples in given class (percentage)
+     - entropy opposite of purity
+**** Quiz: Entropy Calculation Part
+     ffss: jeweils p_slow = p_fast = 0.5
+     entropy = -0.5 log_2(0.5) * 2 = 1
+**** Quiz: Information Gain Calculation Part 1
+***** quotes
+      information gain = entropy(parent) - [weighted average] entropy(children)
+**** Quiz: Information Gain Calculation Part 4
+     | grade | bumpiness | speed limit | speed |
+     |-------+-----------+-------------+-------|
+     | steep | bumpy     | yes         | slow  |
+     | steep | smooth    | yes         | slow  |
+     | flat  | bumpy     | no          | fast  |
+     | steep | smooth    | no          | fast  |
+
+**** aufteilen nach grade
+     s s f | f
+     entropy eltern = 1
+     entropy kinder = 3* (entr(float(1/3.)) + entr(2/3.)) /4
+     info gain = 1 - 3* (entr(float(1/3.)) + entr(2/3.)) /4 = 0.31127812445913283
+**** aufteilen nach bumpiness
+     s f | s f
+     entropy eltern = 1
+     entropy kinder = 1/2 * (entr(1/2.) + entr(1/2.)) + 1/2 * (entr(1/2.)+entr(1/2.) = 1
+     info gain = 1 - 1 = 0
+
+
+**** aufteilen nach speed limit
+     s f | s f
+     entropy eltern = 1
+     entropy kinder = 1/2 * entr(1) + 1/2 * entr(1) = 0
+     info gain = 1
+**** Tuning Criterion Parameter
+     default is gini coefficient
+**** Bias-Variance Dilemma
+     high-bias algo ignores the data
+     - high-bias car can be trained, but no matter the data, behaves the same
+     - high-variance perceptive to data, "can only replicate" seen
+       before, reacts poorly to new situations
+     - you want ability to generalize, but also look at data
+**** DT Strengths and Weaknesses
+     - plus
+       - easy to understand
+       - great to grow
+     - minus
+       - prone to overfitting
+	 - need to measure, and stop growth
+     - ensemble methods
+       - build classifier from classifiers
+*** Choose Your own Algorithm
+**** Choose Your Own Adventure
+     - you choose what happens
+**** Algorithm Options
+     - knn: classic, simple, easy to understand
+     - adaboost
+     - random forest
+     both ensemble methods (= meta classifiers from decision trees)
+     bit like voting for president
+**** Investigation Process
+     1. do some research, general understanding
+     2. find sklearn docs
+     3. deploy it
+     4. use it to make predictions
+*** Datasets and Questions
+**** Introduction
+     - enron dataset
+       - 2000 top-10 company
+       - 2002 gone
+	 - lots of fraud
+       - real data
+	 - possible to find fraud?
+     - T: skills to learn?
+       - clustering: directors vs normal people
+     - not easy to solve
+**** What Is A POI
+     - person of interest
+       - indicted [indieted ;-)]
+       - settled without admitting guilt
+       - testified in exchange for immunity
+     - shows
+       - but mistakes could creep in
+       - be sceptical
+       - f.ex. post additional POIs to forums
+**** Accuracy vs. Training Set Size
+     - needs enough POIs to get high accuracy
+     - _more data > fine-tuned algorithm_
+**** Downloading Enron Data
+     - very few POIs to classify as
+**** Quiz: Types of Data Quiz 1
+     - numeric
+     - categorical
+     - timeseries
+     - text
+     - other
+**** Mixing Data Sources (optional)
+***** quote
+      - you should be exceptionally careful if your data are coming
+        from different sources for different classes
+***** summary
+     - problem: most from original source, some from other, with these
+       POIs lacking financial info
+*** Regressions
+**** Continuous Output Quiz
+     - previously: discrete output (classes)
+     - here: continuous, f.ex. height \to weight
+**** Income: Continuous or Discrete?
+     - regression if there's some kind of order on the output data
+**** Slope and Intercept
+     - general output
+       net worth = 6.25  \cdot age   + 0
+       TARGET    = SLOPE \cdot INPUT + INTERCEPT
+**** Handoff to Katie
+     - coding portion
+     - google regression
+     - "generalized linear models"
+     - code name =LinearRegression=
+**** Age/Net Worth Regression in sklearn
+     #+BEGIN_SRC python
+       from sklearn import linear_model
+       reg = linear_model.LinearRegression()
+       reg.fit(X, Y)
+     #+END_SRC
+**** Extracting Information from sklearn
+     - predict with =reg.predict([value])=
+     - slope/intercept with =reg.coef_= and =reg.intercept_=
+     - evaluate regressor with =reg.score(X, Y)= (r-squared score)
+       - on testing data
+**** Extracting Score Data from sklearn
+     - max of r-squared is 1 (korrelation?)
+       - using on test set might shows overfitting
+     - training score will be better than testing score
+**** Linear Regression Errors
+     - error := actual net worth - predicted net worth
+**** Minimizing Sum of Squared Errors
+     find y=mx+b which minimizes \sum_all (actual - prediced)^2
+**** Algorithms for Minimizing Squared Errors
+     - ordinary least squares (OLS)
+     - gradient descent
+**** Problem with Minimizing Absolute Errors
+     - several lines with same slope have the same absolute error
+     - but only one minimizes sum of squared error (SSE)
+**** Evaluating Regression by Eye (+next)
+     - problem: sse rises the more data points exists
+**** R Squared Metric for Regression
+     between 0 and 1, 1 is best
+**** quiz
+     - target: bonus
+     - input: salary
+     - reg.score can be negative
+*** Outliers
+**** Outliers in Regression
+     - common: some phenonmenon corrupts data points
+**** What Causes Outliers
+     - sensor malfunction
+       - often 0s
+     - data entry errors
+     ignore the above two
+     - freak event
+     pay attention to this
+**** Quiz: outlier selection
+     - also class outliers
+**** Outlier Detection/Removal Algorithm
+     1. train
+     2. remove 10%
+     3. train again
+**** Summary of Outlier Removal Strategy
+     - 10%, but depending on scenario
+**** mini-project
+***** quotes
+      - As you can see, visualization is one of the most powerful tools
+        for finding outliers!
+*** Clustering
+**** Unsupervised Learning
+     - identify clumps or clusters
+     - dimensionality reduction (future lesson): reduce curve to line
+**** Clustering Movies
+     - sebastian likes other movies than kate
+     - netflix could cluster these to two clusters
+       - for katie, recommend class K
+       - for sebastian, recommend class S
+**** How Many Clusters?
+     - maybe most basic
+     - by far the most used
+**** Match Points with Clusters
+     - two step algo
+       1. assign
+	  - see by drawing line between centers, split in middle,
+            half-space each belongs to other
+       2. optimize
+	  - move centers so that sum of quadratic distances is minimized
+     - start with random centerpoints
+**** visualization
+     - if centroid number unclear, just take two centroids
+**** Limitations of K-Means
+     - k-means is a "hill-climbing" algo
+       - depending on initial cluster centers
+       - local minimal can break it
+	 #+BEGIN_EXAMPLE
+           x  x
+
+                                         O
+            O                        x       x
+                                         O
+           x x
+	 #+END_EXAMPLE
+	   O is center
+     - not perfect
+     - need to run multiple times
+**** code
+     #+BEGIN_SRC python
+       from sklearn import cluster
+       uns = cluster.KMeans(n_clusters=2)
+       uns.fit(finance_features)
+       pred = uns.labels_
+     #+END_SRC
+*** feature scaling
+**** Chris's T-Shirt Size (Intuition)
+     chris needs shirt, does not know shirt size, knows two friend's sizes
+**** Comparing Features with Different Scales
+     - height (ft) has small values
+     - weight's values (lb) are large
+     - to weigh them the same, you can use feature scaling
+**** Feature Scaling Formula Quiz 1
+     x' = (x-x_min) / (x_max - x_min)
+     - benefit: reliable
+     - disadvantages: outliers mess this up
+**** Min/Max Scaler in sklearn
+     #+BEGIN_SRC python
+       from sklearn import preprocessing
+       import numpy as np
+       scaler = preprocessing.MinMaxScaler()
+       weights = np.array([[115.], [140.], [175.]])
+       rescaled = scaler.fit_transform(weights)
+       b.transform([200000])
+     #+END_SRC
+*** Text Learning
+**** Quiz: Dimensions when Learning From Text
+     - positive and negative example
+       - + = a very nice day
+       - - = nice day
+**** Bag Of Words
+     - length of text is variable
+     - bag of words: count every word in dictionary, get feature vector
+     - often omit stopwords: a the ...
+**** Bag of Words in Sklearn
+     =from sklearn.feature_extraction.text import CountVectorizer=
+**** Stopwords
+     - low-information, occurs frequently
+**** Getting Stopwords from NLTK
+     #+BEGIN_SRC python
+       from nltk.corpus import stopwords
+       sw = stopwords.words("english")
+       sw[10]
+     #+END_SRC
+**** Stemming to Consolidate Vocabulary
+     - stemming: take the wurzel
+**** Stemming to NLTK
+     - =from nltk.stem.snowball import SnowballStemmer=
+     - =stemmer = SnowballStemmer("english")=
+     - =stemmer.stem("responsiveness")=
+     - stemming cleans up vocabulary "a lot"
+     - first stem, then bag-of-words
+**** Weighting by Term Frequency
+     - term frequency, like bag-of-words
+     - inverse document frequency: inverse weight on how often it
+       occurs in the corpus
+**** quiz
+     #+BEGIN_SRC python
+       with open('your_email_authors.pkl') as f:
+           my_word_data = pickle.load(f)
+       from sklearn.feature_extraction.text import TfidfVectorizer
+       c = TfidfVectorizer(stop_words='english')
+       d = c.fit_transform(my_word_data)
+       len(c.get_feature_names()) #number different words
+       c.get_feature_names()[34597] # word number 34597
+     #+END_SRC
+*** Feature Selection
+**** A New Enron Feature
+     - intuition:
+       - communication network: mails to other POIs (number, network)
+       - high-income
+       - find "codewords", or just certain names (these are default features)
+       - number of emails rises significantly in crisis time
+     - code up new features
+     - visualize
+     - repeat
+**** Beware of Feature Bugs!
+***** quotes
+      - 100% accuracy should generally make you
+        suspicious. Extraordinary claims require extraordinary proof.
+      - If there's a feature that tracks your labels a little too
+        closely, it's very likely a bug!
+**** Quiz: getting rid of features
+     - may remove features, as they
+       - are noisy
+       - cause overfitting
+       - are highly correlated to other features, or
+       - just slow down the training/testing
+**** Features != Information
+***** summary
+     - features \sim quantity
+     - information \sim quality
+***** quotes
+      - features attempt to access information
+**** Quiz: Feature Selection in TfIdf Vectorizer
+     - slice off features
+       #+BEGIN_SRC python
+         selector = SelectPercentile(f_classif, percentile=10)
+         selector.fit(features_train_transformed, labels_train)
+         features_train_transformed = selector.transform(features_train_transformed).toarray()
+         features_test_transformed = selector.transform(features_test_transformed).toarray()
+       #+END_SRC
+     - also TfidfVectorizer's =max_df= parameter
+**** Quiz: Bias, Variance, and Number of Features
+     same: few variables: high bias, many variables: high variance
+     - aim: few features, low r^2, large SSE
+***** quotes
+      - high bias: little attention to data, oversimplified, *high
+        error on training set, low r^2, large SSE*
+      - high variance: pays too much atention to data (does not
+        generalize well), overfits, *much higher error on test set than
+        on training set*
+**** Balancing Error with Number of Features
+     quality of model vs no. of features ("related to coefficients")
+     - too many features might decrease "quality of model"
+**** Regularization (regression)
+     - automatically penalize extra parameters: Lasso Regression
+     - minimize SSE + \lambda | \beta |
+     - reduces number of features
+**** Lasso Regression
+     - set coefficient of feature to zero
+**** Quiz: Lasso Code Quiz
+     #+BEGIN_SRC python
+       import sklearn.linear_model.Lasso
+       features labels = GetMyData()
+       regression = Lasso()
+       regression.fit(features, labels)
+       regression.predict([2,4]) #[[2,4]] ?
+       print regression.coef_
+     #+END_SRC
+     if coef_ is close to zero: parameter unused
+**** Mini-Project
+     remove stuff with huge =features_importances_=
+*** PCA
+**** Quiz: Data Dimensionality
+     - 1-dimensional even if line in two-dimensional space
+**** Quiz: Trickiest Data Dimensionality
+     - PCA just does shifts and rotations to reduce dimensions
+**** PCA for Data Transformation
+     1. center of coordinate system to center of data
+     2. x-axis in direction of "principal axis of variation"
+     3. y-axis orthogonal
+**** Quiz: Practice Finding Centers
+     spread value: importance computed by eigenvalue
+**** Quiz: From Four Features to Two
+     - example house: features sqaure footate, no of rooms, school
+       ranking, neighborhood safety
+       - latent features: size and neighborhood
+         - contain most information
+**** Quiz: Compression While Preserving Information
+     - SelectKBest to select just k most powerful features
+**** Quiz: Composite Features
+     - combine features
+**** Quiz: Maximal Variance
+***** quotes
+      - variance:
+        - the willingness/flexibility of an algorithm to learn (ml)
+        - "spread" of data distribution, STD = sqrt(VAR) (statistics)
+**** Quiz: Advantages of Maximal Variance
+***** summary
+     - principal component: direction having largest variance
+***** quotes
+      - retains maximum amount of "information" in original data
+**** Quiz: Maximal Variance and Information Loss
+     - lost information per point: distance to principal component
+**** Info Loss and Principal Components
+     - another "principal component" would lose more information
+     - this minimizes distance to new transformed values
+**** PCA for Feature Transformation
+     - pca is unsupervised
+     - can tell you new stuff about data
+**** Review/Definition of PCA
+     - systematized
+     - PCs as new features
+       - directions that maximize variance
+       - the more variance along PC, the higher ranked
+     - max no of PCs = max(no of input features, no of instances)
+**** PCA in sklearn
+     #+BEGIN_SRC python
+       from sklearn.decomposition import PCA
+       pca = PCA(n_components=2)
+       pca.fit(data)
+
+       print pca.explained_variance_ratio_
+       first_pc = pca.components_[0]
+       second_pc = pca.components_[1]
+
+       transformed_data = pca.transform(data)
+       # also plotting, see code '
+     #+END_SRC
+**** When to Use PCA
+***** quotes
+     - latent features driving the patterns in data (big shots @ Enron)
+     - dimensionality reduction
+       - visualize high-dimensional data
+       - reduce noise
+       - make other algorithms [classification and regression] work
+         better b/c fewer inputs (eigenfaces)
+**** Quiz: Selecting Principal Components
+     - how to determine
+     - have to figure out: train on different, increasing numbers, cut
+       off when accuracy decreases again
+     - avoid doing feature selection before PCA
+**** see code in pca/eigenfaces.py
+*** Validation
+**** Quiz: Train/Test Split in sklearn
+     =cross_validation.train_test_split(src.data, src.target)=
+**** Quiz: Where to use training vs. testing data 1
+     - testing data only for validating the stuff
+       - pca etc on testing data gives "unfair advantage"
+**** Quiz: Where to use training vs. testing data 3
+     #+BEGIN_SRC python
+       pca.fit(training_features)
+       pca.transform(training_features)
+       svc.train(training_features)
+       pca.transform(testing_features)
+       svc.predict(testing_features)
+     #+END_SRC
+**** Quiz: K-Fold Cross Validation
+     - maximize training set to have best learning result
+     - and maximize test set for best validation
+     - solution: cross-validation
+       - same run-time after training
+       - more accurate prediction
+       - more time for training
+**** Practical Advice for K-Fold in sklearn
+     - KFold did not shuffle
+       - if data set has pattern, this breaks train-test strata
+**** Cross Validation for Parameter Tuning
+     - gridsearchcv does that for you
+**** Mini-Project
+     - minimal release
+     - wrap to training-testing-framework
+*** Evaluation Metrics
+**** Accuracy Review
+     acc = \sum P / \sum N
+**** Quiz: Shortcomings of Accuracy
+     - skewed classes
+     - if you want to skew results to rather assume innocence, or
+       guilt, accuracy does not fit
+**** Precision and Recall
+     see table
+     recall (hugo chavez) = 10 correctly classified / 16 chavez faces = 10/16
+     precision = 10 correctly classified as chavez / 10 classified as chavez
+**** Quiz: True Positives in Eigenfaces
+     - makes sense:
+       - tp (correct),
+       - fp (classified as politician, but is not)
+       - fn (classified as someone else, but is the person)
+**** Quiz: Equation for Precision
+     *precision = tp / tp+fp*
+**** Quiz: Equation for Recall
+     *recall = tp / tp+fn*
+**** mini project
+     last one
+     - which features
+     - which algo
+     - which parameters
+*** Tying it all Together
+**** Summary
+***** dataset/question
+       - enough data
+       - define question
+       - enough/right geatures to answer question?
+***** \to features ( back to dataset )
+       - exploration
+	 - correlation
+	 - outlier removal
+	 - ?imputation?
+	 - cleaning
+       - creation
+	 - ?think about it like a human?
+       - representation
+	 - test vectorization
+	 - discretization
+       - scaling
+	 - mean subtraction
+	 - mimax scaler
+	 - standard scaler
+       - selection
+	 - kbest
+	 - percentile
+	 - recursive feature elimination
+       - transforms
+	 - pca
+	 - ica
+***** \to algorithms 
+       - tune our algorithm
+	 - parameters
+	 - visual inspection
+	 - performance on test data
+	 - gridsearchcv
+       - pick an algorithm
+	 - supervised
+	   - non-ordered/discrete
+	     - tree
+	     - bayes
+	     - svm
+	     - ensembles
+	     - knn
+	     - lda
+	     - logistic regression
+	   - ordered/continuous
+	     - linear regression
+	     - lasso regression
+	     - decision tree regression
+	     - SV regression
+	 - unsupervised
+	   - k-means clustering
+	   - spectral clustering
+	   - PCA
+	   - mixture models/EM algorithm
+	   - outlier detection
+***** \to evaluation (back to algorithms and features)
+       - validate
+	 - train/test split
+	 - k-fold
+	 - visualize
+       - pick metric(s)
+	 - SSE/r^2
+	 - precision
+	 - recall
+	 - f1 score
+	 - roc curve
+	 - custom
+	 - bias/variance
+**** outro
+    - see again, work, projects (post online)
+*** project
+**** Project Details
+     - search for POIs in enron data
+     - data: emails, and financial data
+     - features:
+       #+BEGIN_SRC js
+         - financial features: ['salary', 'deferral_payments',
+           'total_payments', 'loan_advances', 'bonus',
+           'restricted_stock_deferred', 'deferred_income',
+           'total_stock_value', 'expenses', 'exercised_stock_options',
+           'other', 'long_term_incentive', 'restricted_stock',
+           'director_fees'] (all units are in US dollars)
+         - email features: ['to_messages', 'email_address',
+           'from_poi_to_this_person', 'from_messages', 'from_this_person_to_poi',
+           'shared_receipt_with_poi'] (units are generally number of emails
+           messages; notable exception is ‘email_address’, which is a text
+           string)
+         - POI label: [‘poi’] (boolean, represented as integer)
+       #+END_SRC
+**** Questions
+     1. Summarize for us the goal of this project and how machine
+        learning is useful in trying to accomplish it. As part of your
+        answer, give some background on the dataset and how it can be
+        used to answer the project question. Were there any outliers in
+        the data when you got it, and how did you handle those?
+        [relevant rubric items: “data exploration”, “outlier
+        investigation”]
+     2. What features did you end up using in your POI identifier, and
+        what selection process did you use to pick them? Did you have
+        to do any scaling? Why or why not? As part of the assignment,
+        you should attempt to engineer your own feature that does not
+        come ready-made in the dataset -- explain what feature you
+        tried to make, and the rationale behind it. (You do not
+        necessarily have to use it in the final analysis, only engineer
+        and test it.) In your feature selection step, if you used an
+        algorithm like a decision tree, please also give the feature
+        importances of the features that you use, and if you used an
+        automated feature selection function like SelectKBest, please
+        report the feature scores and reasons for your choice of
+        parameter values.  [relevant rubric items: “create new
+        features”, “properly scale features”, “intelligently select
+        feature”]
+     3. What algorithm did you end up using? What other one(s) did you
+        try? How did model performance differ between algorithms?
+        [relevant rubric item: “pick an algorithm”]
+     4. What does it mean to tune the parameters of an algorithm, and
+        what can happen if you don’t do this well?  How did you tune
+        the parameters of your particular algorithm? (Some algorithms
+        do not have parameters that you need to tune -- if this is the
+        case for the one you picked, identify and briefly explain how
+        you would have done it for the model that was not your final
+        choice or a different model that does utilize parameter tuning,
+        e.g. a decision tree classifier).  [relevant rubric item: “tune
+        the algorithm”]
+     5. What is validation, and what’s a classic mistake you can make
+        if you do it wrong? How did you validate your analysis?
+        [relevant rubric item: “validation strategy”]
+     6. Give at least 2 evaluation metrics and your average performance
+        for each of them.  Explain an interpretation of your metrics
+        that says something human-understandable about your algorithm’s
+        performance. [relevant rubric item: “usage of evaluation
+        metrics”]
 ** [[./torspec/address-spec.txt][Mathewson - Special Hostnames in Tor]]
 *** summary
     1. Overview
@@ -15050,7 +15849,20 @@ V.L. Voydock and S.T. Kent. Security Mechanisms in High-Level Network Protocols.
 
            3. One-Vs-One
 
-    6. [@6] Model selection and evaluation
+    5. Unsupervised learning
+
+       7. [@7] Novelty and Outlier Detection
+
+          0. [@0] 
+
+             - novelty: have training data without outliers
+
+             - outlier: contained in training data, needs to fit
+               "central mode"
+
+          2. [@2] Outlier Detection
+
+    6. Model selection and evaluation
 
        1. Cross-validation: evaluating estimator performance
 
@@ -23133,805 +23945,6 @@ When a media query is true, the corresponding style sheet or style rules are app
             der Richtlinie täglich ein Zwangsgeld in Höhe von
             315.036,54 Euro zahlen müssen. [...] (Zwangsgeld-Spanne
             für Deutschland: 13.436 bis 807.786 Euro).[93]
-** TODO Intro to Machine Learning                                        :ML:
-*** introduction
-    - quizzes
-    - exams at end
-      - need python
-    - prerequisites
-      - python
-      - statistics
-      - curiosity
-*** bayes
-**** ml in self-driving car
-     - supervised
-     - show car right behavior
-       - emulates behavior
-       - car does the same
-     - stanley: desert
-       - took long for the car to learn
-**** acerous
-     - horses
-     - features: horns
-**** supervised classification examples
-     weird-looking bank transactions rather unsupervised
-**** features and labels
-     - songs: intensity vs tempo scatterplot
-     - do that before trying ml
-**** Intro To Stanley Terrain Classification
-     - steepness and ruggedness
-     - look at scatterplot instead of raw data
-**** From Scatterplots to Decision Surfaces
-     boundary between classes
-     - can be linear, or not
-     - ml transforms data to decision surface
-**** Transition to Naive Bayes
-     #+BEGIN_SRC python
-       from sklearn.naive_bayes import GaussianNB
-     #+END_SRC
-**** Quiz: Calculating NB Accuracy
-     - accuracy_score(pred, labels) (sklearn.metrics)
-**** Training and Testing Data
-     - very important: different data sets
-     - maybe 10% of data as testing set
-**** Unpacking NB Using Bayes Rule
-     - reverend thomas bayes
-**** cancer test
-     - test, cancer C 0.01 of population
-     - test positive \to 90% that you have cancer (C) *sensitivity* P(Pos | C)
-     - test negative \to 90% that you don't have cancer (\not C) *specificity* P(Neg | \not C)
-     - if test positive, 8 1/3 % that cancer
-**** quiz: prior and posterior
-     - prior: probability /before/ test
-     - add test evidence
-     - result: posterior probability
-     - example
-       - prior:
-	 - P(C) = 0.01
-	 - P(Pos | C) = 0.9
-	 - P(\not C) = 0.99
-	 - P(Neg | \not C) = 0.9
-	 - P(Pos | \not C) = 0.1
-       - +posterior+ joint:
-         - P(C | Pos) = P(C) \cdot P(Pos | C) = 0.009
-	 - P(\not C | Pos) = P(\not C) \cdot P(Pos | \not C) = 0.099
-     - normalize: keep ratio, add posterior to one
-       - P(Pos) = P(C | Pos) + P(\not C | Pos) = 0.108
-     - posterior:
-       - P(C | Pos) = 0.08333
-       - P(\not C | Pos) = 0.9167
-**** Quiz: Bayesian Probabilities On Your Own
-     p(chris) = 0.5 * 0.1 * .8 = 0.04
-     p(sara) = 0.5 * 0.5 * .2 = 0.05
-     p(chris | love deal) = 0.33
-**** Quiz: Why Is Naive Bayes Naive
-     - just multiply all the evidence
-**** Naive Bayes Strengths and Weaknesses
-     plus
-     - easy to implement, big feature space
-     - simple to run, efficient
-     minus
-     - multiple word phrases break
-**** Naive Bayes Mini-Project Video
-     - author of piece of test
-     - jk rowling pseudonymous test
-**** mini project
- file: [[nb_author_id.py]]
- #+BEGIN_SRC python
-   from sklearn.naive_bayes import GaussianNB
-   clf = GaussianNB()
-   clf.fit(features_train, labels_train)
-   clf.score(features_test, labels_test)
- #+END_SRC
- score: 0.97326507394766781
- >>> training time: 0.725 s
- >>> testing time: 0.108 s
-*** SVM
-    - invented by russian
-    - no clue why machine (quiz: separating line)
-    - input: classes
-    - output: line
-**** Quiz: What Makes A Good Separating Line
-     maximizes distance to nearest points == margin
-**** Quiz: Practice with Margins
-     maximizing margin maximizes robustness
-**** Quiz: SVMs and Tricky Data Distributions
-     if data point close to other class, naïve margin might be off
-**** Quiz: SVM Response to Outliers
-     "ignore"
-**** SVM Decision Boundary
-     straight line with svm.SVC() (?)
-**** Quiz: A New Feature
-     - circular distributed class
-     - use additional feature x^2+y^2
-     - linearly separable: can we find line/hyperplane
-**** Kernel Trick
-     - no need to write new features
-     - gist: map to other space, make linear
-**** Quiz: Playing Around with Kernel Choices
-     - svm: probabilities not supported out of the box, needs cross-validation
-**** Quiz: Kernel and Gamma
-     - C, gamma
-**** Quiz: SVM C Parameter
-***** summary
-      - the higher C, the more bumpy the surface
-***** quotes
-      - "C - controls tradeoff between smooth decision boundary and
-        classifying training points correctly"
-**** Quiz: Overfitting
-     - stop overfitting
-     - set C, gamma, kernel
-**** SVM Strengths and Weaknesses
-     plus
-     - well in complicated domains with clear separation
-     minus
-     - large datasets (cubic in size of data set)
-     - noise: better naive bayes clf
-
-**** mini project (svm/svm_author_id.py)
-     accuracy
-     - 0.98407281001137659 for linear svm
-       training time: 244.125 s
-       testing time: 25.605 s
-     - 0.49 for rbf
-       training time: 1832.481 s
-       testing time: 164.774 s
-     - 1/100's the data (linear)
-       training time: 0.151 s
-       testing time: 1.484 s
-       0.88452787258248011
-     - 1/100's the data (rbf)
-       training time: 0.171 s
-       testing time: 1.663 s
-       0.61604095563139927
-*** decision trees
-**** welcome
-     - intuitive
-     - understandable
-     - old
-     - popular
-**** Quiz: Linearly Separable Data
-     - trick: nonlinear decision making
-**** Quiz: Multiple Linear Questions
-     - multiple questions with linear boundaries each
-**** Quiz: Constructing a Decision Tree 2nd Split
-     - /axis-parallel decision lines/
-**** Decision Tree Accuracy
-     here: some overfitting,
-     accuracy = 90.8%
-**** Quiz: Decision Tree Parameters
-     - min_samples_split: how many samples to just keep, keep splitting or not
-    
-**** Decision Tree Accuracy
-     #+BEGIN_SRC python
-       import sys
-       from class_vis import prettyPicture
-       from prep_terrain_data import makeTerrainData
-
-       import matplotlib.pyplot as plt
-       import numpy as np
-       import pylab as pl
-
-       features_train, labels_train, features_test, labels_test = makeTerrainData()
-
-       from sklearn import tree
-       clf = tree.DecisionTreeClassifier()
-       acc_min_samples_split_2 = clf.fit(
-           features_train, labels_train).score(features_test, labels_test)
-       clf = tree.DecisionTreeClassifier(min_samples_split=50)
-       acc_min_samples_split_50 = clf.fit(
-           features_train, labels_train).score(features_test, labels_test)
-     #+END_SRC
-**** Data Impurity and Entropy
-     def entropy: measure of /impurity/ in a bunch of examples
-     - example: speed limit additional info for car
-       - can split on speed limit
-       - or on bumpiness
-     - aim: find pure subsets
-**** Formula of Entropy
-     entropy = \sum -p_i log_2 (p_i)
-
-     - p_i: number of examples in given class (percentage)
-     - entropy opposite of purity
-**** Quiz: Entropy Calculation Part
-     ffss: jeweils p_slow = p_fast = 0.5
-     entropy = -0.5 log_2(0.5) * 2 = 1
-**** Quiz: Information Gain Calculation Part 1
-***** quotes
-      information gain = entropy(parent) - [weighted average] entropy(children)
-**** Quiz: Information Gain Calculation Part 4
-     | grade | bumpiness | speed limit | speed |
-     |-------+-----------+-------------+-------|
-     | steep | bumpy     | yes         | slow  |
-     | steep | smooth    | yes         | slow  |
-     | flat  | bumpy     | no          | fast  |
-     | steep | smooth    | no          | fast  |
-
-**** aufteilen nach grade
-     s s f | f
-     entropy eltern = 1
-     entropy kinder = 3* (entr(float(1/3.)) + entr(2/3.)) /4
-     info gain = 1 - 3* (entr(float(1/3.)) + entr(2/3.)) /4 = 0.31127812445913283
-**** aufteilen nach bumpiness
-     s f | s f
-     entropy eltern = 1
-     entropy kinder = 1/2 * (entr(1/2.) + entr(1/2.)) + 1/2 * (entr(1/2.)+entr(1/2.) = 1
-     info gain = 1 - 1 = 0
-
-
-**** aufteilen nach speed limit
-     s f | s f
-     entropy eltern = 1
-     entropy kinder = 1/2 * entr(1) + 1/2 * entr(1) = 0
-     info gain = 1
-**** Tuning Criterion Parameter
-     default is gini coefficient
-**** Bias-Variance Dilemma
-     high-bias algo ignores the data
-     - high-bias car can be trained, but no matter the data, behaves the same
-     - high-variance perceptive to data, "can only replicate" seen
-       before, reacts poorly to new situations
-     - you want ability to generalize, but also look at data
-**** DT Strengths and Weaknesses
-     - plus
-       - easy to understand
-       - great to grow
-     - minus
-       - prone to overfitting
-	 - need to measure, and stop growth
-     - ensemble methods
-       - build classifier from classifiers
-*** Choose Your own Algorithm
-**** Choose Your Own Adventure
-     - you choose what happens
-**** Algorithm Options
-     - knn: classic, simple, easy to understand
-     - adaboost
-     - random forest
-     both ensemble methods (= meta classifiers from decision trees)
-     bit like voting for president
-**** Investigation Process
-     1. do some research, general understanding
-     2. find sklearn docs
-     3. deploy it
-     4. use it to make predictions
-*** Datasets and Questions
-**** Introduction
-     - enron dataset
-       - 2000 top-10 company
-       - 2002 gone
-	 - lots of fraud
-       - real data
-	 - possible to find fraud?
-     - T: skills to learn?
-       - clustering: directors vs normal people
-     - not easy to solve
-**** What Is A POI
-     - person of interest
-       - indicted [indieted ;-)]
-       - settled without admitting guilt
-       - testified in exchange for immunity
-     - shows
-       - but mistakes could creep in
-       - be sceptical
-       - f.ex. post additional POIs to forums
-**** Accuracy vs. Training Set Size
-     - needs enough POIs to get high accuracy
-     - _more data > fine-tuned algorithm_
-**** Downloading Enron Data
-     - very few POIs to classify as
-**** Quiz: Types of Data Quiz 1
-     - numeric
-     - categorical
-     - timeseries
-     - text
-     - other
-**** Mixing Data Sources (optional)
-***** quote
-      - you should be exceptionally careful if your data are coming
-        from different sources for different classes
-***** summary
-     - problem: most from original source, some from other, with these
-       POIs lacking financial info
-*** Regressions
-**** Continuous Output Quiz
-     - previously: discrete output (classes)
-     - here: continuous, f.ex. height \to weight
-**** Income: Continuous or Discrete?
-     - regression if there's some kind of order on the output data
-**** Slope and Intercept
-     - general output
-       net worth = 6.25  \cdot age   + 0
-       TARGET    = SLOPE \cdot INPUT + INTERCEPT
-**** Handoff to Katie
-     - coding portion
-     - google regression
-     - "generalized linear models"
-     - code name =LinearRegression=
-**** Age/Net Worth Regression in sklearn
-     #+BEGIN_SRC python
-       from sklearn import linear_model
-       reg = linear_model.LinearRegression()
-       reg.fit(X, Y)
-     #+END_SRC
-**** Extracting Information from sklearn
-     - predict with =reg.predict([value])=
-     - slope/intercept with =reg.coef_= and =reg.intercept_=
-     - evaluate regressor with =reg.score(X, Y)= (r-squared score)
-       - on testing data
-**** Extracting Score Data from sklearn
-     - max of r-squared is 1 (korrelation?)
-       - using on test set might shows overfitting
-     - training score will be better than testing score
-**** Linear Regression Errors
-     - error := actual net worth - predicted net worth
-**** Minimizing Sum of Squared Errors
-     find y=mx+b which minimizes \sum_all (actual - prediced)^2
-**** Algorithms for Minimizing Squared Errors
-     - ordinary least squares (OLS)
-     - gradient descent
-**** Problem with Minimizing Absolute Errors
-     - several lines with same slope have the same absolute error
-     - but only one minimizes sum of squared error (SSE)
-**** Evaluating Regression by Eye (+next)
-     - problem: sse rises the more data points exists
-**** R Squared Metric for Regression
-     between 0 and 1, 1 is best
-**** quiz
-     - target: bonus
-     - input: salary
-     - reg.score can be negative
-*** Outliers
-**** Outliers in Regression
-     - common: some phenonmenon corrupts data points
-**** What Causes Outliers
-     - sensor malfunction
-       - often 0s
-     - data entry errors
-     ignore the above two
-     - freak event
-     pay attention to this
-**** Quiz: outlier selection
-     - also class outliers
-**** Outlier Detection/Removal Algorithm
-     1. train
-     2. remove 10%
-     3. train again
-**** Summary of Outlier Removal Strategy
-     - 10%, but depending on scenario
-**** mini-project
-***** quotes
-      - As you can see, visualization is one of the most powerful tools
-        for finding outliers!
-*** Clustering
-**** Unsupervised Learning
-     - identify clumps or clusters
-     - dimensionality reduction (future lesson): reduce curve to line
-**** Clustering Movies
-     - sebastian likes other movies than kate
-     - netflix could cluster these to two clusters
-       - for katie, recommend class K
-       - for sebastian, recommend class S
-**** How Many Clusters?
-     - maybe most basic
-     - by far the most used
-**** Match Points with Clusters
-     - two step algo
-       1. assign
-	  - see by drawing line between centers, split in middle,
-            half-space each belongs to other
-       2. optimize
-	  - move centers so that sum of quadratic distances is minimized
-     - start with random centerpoints
-**** visualization
-     - if centroid number unclear, just take two centroids
-**** Limitations of K-Means
-     - k-means is a "hill-climbing" algo
-       - depending on initial cluster centers
-       - local minimal can break it
-	 #+BEGIN_EXAMPLE
-           x  x
-
-                                         O
-            O                        x       x
-                                         O
-           x x
-	 #+END_EXAMPLE
-	   O is center
-     - not perfect
-     - need to run multiple times
-**** code
-     #+BEGIN_SRC python
-       from sklearn import cluster
-       uns = cluster.KMeans(n_clusters=2)
-       uns.fit(finance_features)
-       pred = uns.labels_
-     #+END_SRC
-*** feature scaling
-**** Chris's T-Shirt Size (Intuition)
-     chris needs shirt, does not know shirt size, knows two friend's sizes
-**** Comparing Features with Different Scales
-     - height (ft) has small values
-     - weight's values (lb) are large
-     - to weigh them the same, you can use feature scaling
-**** Feature Scaling Formula Quiz 1
-     x' = (x-x_min) / (x_max - x_min)
-     - benefit: reliable
-     - disadvantages: outliers mess this up
-**** Min/Max Scaler in sklearn
-     #+BEGIN_SRC python
-       from sklearn import preprocessing
-       import numpy as np
-       scaler = preprocessing.MinMaxScaler()
-       weights = np.array([[115.], [140.], [175.]])
-       rescaled = scaler.fit_transform(weights)
-       b.transform([200000])
-     #+END_SRC
-*** Text Learning
-**** Quiz: Dimensions when Learning From Text
-     - positive and negative example
-       - + = a very nice day
-       - - = nice day
-**** Bag Of Words
-     - length of text is variable
-     - bag of words: count every word in dictionary, get feature vector
-     - often omit stopwords: a the ...
-**** Bag of Words in Sklearn
-     =from sklearn.feature_extraction.text import CountVectorizer=
-**** Stopwords
-     - low-information, occurs frequently
-**** Getting Stopwords from NLTK
-     #+BEGIN_SRC python
-       from nltk.corpus import stopwords
-       sw = stopwords.words("english")
-       sw[10]
-     #+END_SRC
-**** Stemming to Consolidate Vocabulary
-     - stemming: take the wurzel
-**** Stemming to NLTK
-     - =from nltk.stem.snowball import SnowballStemmer=
-     - =stemmer = SnowballStemmer("english")=
-     - =stemmer.stem("responsiveness")=
-     - stemming cleans up vocabulary "a lot"
-     - first stem, then bag-of-words
-**** Weighting by Term Frequency
-     - term frequency, like bag-of-words
-     - inverse document frequency: inverse weight on how often it
-       occurs in the corpus
-**** quiz
-     #+BEGIN_SRC python
-       with open('your_email_authors.pkl') as f:
-           my_word_data = pickle.load(f)
-       from sklearn.feature_extraction.text import TfidfVectorizer
-       c = TfidfVectorizer(stop_words='english')
-       d = c.fit_transform(my_word_data)
-       len(c.get_feature_names()) #number different words
-       c.get_feature_names()[34597] # word number 34597
-     #+END_SRC
-*** Feature Selection
-**** A New Enron Feature
-     - intuition:
-       - communication network: mails to other POIs (number, network)
-       - high-income
-       - find "codewords", or just certain names (these are default features)
-       - number of emails rises significantly in crisis time
-     - code up new features
-     - visualize
-     - repeat
-**** Beware of Feature Bugs!
-***** quotes
-      - 100% accuracy should generally make you
-        suspicious. Extraordinary claims require extraordinary proof.
-      - If there's a feature that tracks your labels a little too
-        closely, it's very likely a bug!
-**** Quiz: getting rid of features
-     - may remove features, as they
-       - are noisy
-       - cause overfitting
-       - are highly correlated to other features, or
-       - just slow down the training/testing
-**** Features != Information
-***** summary
-     - features \sim quantity
-     - information \sim quality
-***** quotes
-      - features attempt to access information
-**** Quiz: Feature Selection in TfIdf Vectorizer
-     - slice off features
-       #+BEGIN_SRC python
-         selector = SelectPercentile(f_classif, percentile=10)
-         selector.fit(features_train_transformed, labels_train)
-         features_train_transformed = selector.transform(features_train_transformed).toarray()
-         features_test_transformed = selector.transform(features_test_transformed).toarray()
-       #+END_SRC
-     - also TfidfVectorizer's =max_df= parameter
-**** Quiz: Bias, Variance, and Number of Features
-     same: few variables: high bias, many variables: high variance
-     - aim: few features, low r^2, large SSE
-***** quotes
-      - high bias: little attention to data, oversimplified, *high
-        error on training set, low r^2, large SSE*
-      - high variance: pays too much atention to data (does not
-        generalize well), overfits, *much higher error on test set than
-        on training set*
-**** Balancing Error with Number of Features
-     quality of model vs no. of features ("related to coefficients")
-     - too many features might decrease "quality of model"
-**** Regularization (regression)
-     - automatically penalize extra parameters: Lasso Regression
-     - minimize SSE + \lambda | \beta |
-     - reduces number of features
-**** Lasso Regression
-     - set coefficient of feature to zero
-**** Quiz: Lasso Code Quiz
-     #+BEGIN_SRC python
-       import sklearn.linear_model.Lasso
-       features labels = GetMyData()
-       regression = Lasso()
-       regression.fit(features, labels)
-       regression.predict([2,4]) #[[2,4]] ?
-       print regression.coef_
-     #+END_SRC
-     if coef_ is close to zero: parameter unused
-**** Mini-Project
-     remove stuff with huge =features_importances_=
-*** PCA
-**** Quiz: Data Dimensionality
-     - 1-dimensional even if line in two-dimensional space
-**** Quiz: Trickiest Data Dimensionality
-     - PCA just does shifts and rotations to reduce dimensions
-**** PCA for Data Transformation
-     1. center of coordinate system to center of data
-     2. x-axis in direction of "principal axis of variation"
-     3. y-axis orthogonal
-**** Quiz: Practice Finding Centers
-     spread value: importance computed by eigenvalue
-**** Quiz: From Four Features to Two
-     - example house: features sqaure footate, no of rooms, school
-       ranking, neighborhood safety
-       - latent features: size and neighborhood
-         - contain most information
-**** Quiz: Compression While Preserving Information
-     - SelectKBest to select just k most powerful features
-**** Quiz: Composite Features
-     - combine features
-**** Quiz: Maximal Variance
-***** quotes
-      - variance:
-        - the willingness/flexibility of an algorithm to learn (ml)
-        - "spread" of data distribution, STD = sqrt(VAR) (statistics)
-**** Quiz: Advantages of Maximal Variance
-***** summary
-     - principal component: direction having largest variance
-***** quotes
-      - retains maximum amount of "information" in original data
-**** Quiz: Maximal Variance and Information Loss
-     - lost information per point: distance to principal component
-**** Info Loss and Principal Components
-     - another "principal component" would lose more information
-     - this minimizes distance to new transformed values
-**** PCA for Feature Transformation
-     - pca is unsupervised
-     - can tell you new stuff about data
-**** Review/Definition of PCA
-     - systematized
-     - PCs as new features
-       - directions that maximize variance
-       - the more variance along PC, the higher ranked
-     - max no of PCs = max(no of input features, no of instances)
-**** PCA in sklearn
-     #+BEGIN_SRC python
-       from sklearn.decomposition import PCA
-       pca = PCA(n_components=2)
-       pca.fit(data)
-
-       print pca.explained_variance_ratio_
-       first_pc = pca.components_[0]
-       second_pc = pca.components_[1]
-
-       transformed_data = pca.transform(data)
-       # also plotting, see code '
-     #+END_SRC
-**** When to Use PCA
-***** quotes
-     - latent features driving the patterns in data (big shots @ Enron)
-     - dimensionality reduction
-       - visualize high-dimensional data
-       - reduce noise
-       - make other algorithms [classification and regression] work
-         better b/c fewer inputs (eigenfaces)
-**** Quiz: Selecting Principal Components
-     - how to determine
-     - have to figure out: train on different, increasing numbers, cut
-       off when accuracy decreases again
-     - avoid doing feature selection before PCA
-**** see code in pca/eigenfaces.py
-*** Validation
-**** Quiz: Train/Test Split in sklearn
-     =cross_validation.train_test_split(src.data, src.target)=
-**** Quiz: Where to use training vs. testing data 1
-     - testing data only for validating the stuff
-       - pca etc on testing data gives "unfair advantage"
-**** Quiz: Where to use training vs. testing data 3
-     #+BEGIN_SRC python
-       pca.fit(training_features)
-       pca.transform(training_features)
-       svc.train(training_features)
-       pca.transform(testing_features)
-       svc.predict(testing_features)
-     #+END_SRC
-**** Quiz: K-Fold Cross Validation
-     - maximize training set to have best learning result
-     - and maximize test set for best validation
-     - solution: cross-validation
-       - same run-time after training
-       - more accurate prediction
-       - more time for training
-**** Practical Advice for K-Fold in sklearn
-     - KFold did not shuffle
-       - if data set has pattern, this breaks train-test strata
-**** Cross Validation for Parameter Tuning
-     - gridsearchcv does that for you
-**** Mini-Project
-     - minimal release
-     - wrap to training-testing-framework
-*** Evaluation Metrics
-**** Accuracy Review
-     acc = \sum P / \sum N
-**** Quiz: Shortcomings of Accuracy
-     - skewed classes
-     - if you want to skew results to rather assume innocence, or
-       guilt, accuracy does not fit
-**** Precision and Recall
-     see table
-     recall (hugo chavez) = 10 correctly classified / 16 chavez faces = 10/16
-     precision = 10 correctly classified as chavez / 10 classified as chavez
-**** Quiz: True Positives in Eigenfaces
-     - makes sense:
-       - tp (correct),
-       - fp (classified as politician, but is not)
-       - fn (classified as someone else, but is the person)
-**** Quiz: Equation for Precision
-     *precision = tp / tp+fp*
-**** Quiz: Equation for Recall
-     *recall = tp / tp+fn*
-**** mini project
-     last one
-     - which features
-     - which algo
-     - which parameters
-*** Tying it all Together
-**** Summary
-***** dataset/question
-       - enough data
-       - define question
-       - enough/right geatures to answer question?
-***** \to features ( back to dataset )
-       - exploration
-	 - correlation
-	 - outlier removal
-	 - ?imputation?
-	 - cleaning
-       - creation
-	 - ?think about it like a human?
-       - representation
-	 - test vectorization
-	 - discretization
-       - scaling
-	 - mean subtraction
-	 - mimax scaler
-	 - standard scaler
-       - selection
-	 - kbest
-	 - percentile
-	 - recursive feature elimination
-       - transforms
-	 - pca
-	 - ica
-***** \to algorithms 
-       - tune our algorithm
-	 - parameters
-	 - visual inspection
-	 - performance on test data
-	 - gridsearchcv
-       - pick an algorithm
-	 - supervised
-	   - non-ordered/discrete
-	     - tree
-	     - bayes
-	     - svm
-	     - ensembles
-	     - knn
-	     - lda
-	     - logistic regression
-	   - ordered/continuous
-	     - linear regression
-	     - lasso regression
-	     - decision tree regression
-	     - SV regression
-	 - unsupervised
-	   - k-means clustering
-	   - spectral clustering
-	   - PCA
-	   - mixture models/EM algorithm
-	   - outlier detection
-***** \to evaluation (back to algorithms and features)
-       - validate
-	 - train/test split
-	 - k-fold
-	 - visualize
-       - pick metric(s)
-	 - SSE/r^2
-	 - precision
-	 - recall
-	 - f1 score
-	 - roc curve
-	 - custom
-	 - bias/variance
-**** outro
-    - see again, work, projects (post online)
-*** project
-**** Project Details
-     - search for POIs in enron data
-     - data: emails, and financial data
-     - features:
-       #+BEGIN_SRC js
-         - financial features: ['salary', 'deferral_payments',
-           'total_payments', 'loan_advances', 'bonus',
-           'restricted_stock_deferred', 'deferred_income',
-           'total_stock_value', 'expenses', 'exercised_stock_options',
-           'other', 'long_term_incentive', 'restricted_stock',
-           'director_fees'] (all units are in US dollars)
-         - email features: ['to_messages', 'email_address',
-           'from_poi_to_this_person', 'from_messages', 'from_this_person_to_poi',
-           'shared_receipt_with_poi'] (units are generally number of emails
-           messages; notable exception is ‘email_address’, which is a text
-           string)
-         - POI label: [‘poi’] (boolean, represented as integer)
-       #+END_SRC
-**** Questions
-     1. Summarize for us the goal of this project and how machine
-        learning is useful in trying to accomplish it. As part of your
-        answer, give some background on the dataset and how it can be
-        used to answer the project question. Were there any outliers in
-        the data when you got it, and how did you handle those?
-        [relevant rubric items: “data exploration”, “outlier
-        investigation”]
-     2. What features did you end up using in your POI identifier, and
-        what selection process did you use to pick them? Did you have
-        to do any scaling? Why or why not? As part of the assignment,
-        you should attempt to engineer your own feature that does not
-        come ready-made in the dataset -- explain what feature you
-        tried to make, and the rationale behind it. (You do not
-        necessarily have to use it in the final analysis, only engineer
-        and test it.) In your feature selection step, if you used an
-        algorithm like a decision tree, please also give the feature
-        importances of the features that you use, and if you used an
-        automated feature selection function like SelectKBest, please
-        report the feature scores and reasons for your choice of
-        parameter values.  [relevant rubric items: “create new
-        features”, “properly scale features”, “intelligently select
-        feature”]
-     3. What algorithm did you end up using? What other one(s) did you
-        try? How did model performance differ between algorithms?
-        [relevant rubric item: “pick an algorithm”]
-     4. What does it mean to tune the parameters of an algorithm, and
-        what can happen if you don’t do this well?  How did you tune
-        the parameters of your particular algorithm? (Some algorithms
-        do not have parameters that you need to tune -- if this is the
-        case for the one you picked, identify and briefly explain how
-        you would have done it for the model that was not your final
-        choice or a different model that does utilize parameter tuning,
-        e.g. a decision tree classifier).  [relevant rubric item: “tune
-        the algorithm”]
-     5. What is validation, and what’s a classic mistake you can make
-        if you do it wrong? How did you validate your analysis?
-        [relevant rubric item: “validation strategy”]
-     6. Give at least 2 evaluation metrics and your average performance
-        for each of them.  Explain an interpretation of your metrics
-        that says something human-understandable about your algorithm’s
-        performance. [relevant rubric item: “usage of evaluation
-        metrics”]
 ** PART [[info:gnuplot#Top][Broeker - gnuplot]]
 *** summary
     1. [[info:gnuplot#Top][gnuplot]]
@@ -28781,3 +28794,377 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 ** [[./10.1.1.368.2254.pdf][Samuel - Some Studies in Machine Learning Using the Game of Checkers]]
 ** tshark
 ** [[/usr/share/doc/RFC/proposed-standard/rfc7231.txt.gz][Fielding - Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content]]
+** [[./Binary-class Cross Validation with Different Criteria.html][Binary-class Cross Validation with Different Criteria]]
+*** summary
+    2. [@2] How to Run this Tool
+       - =#include "eval.h"= to svm-{train,predict}.c
+       - =do_cross_validation= replace with
+** Intro to Descriptive Statistics
+*** Lesson 1: Intro to Research Methods
+**** Measure Memory
+     - look at factors that influence memory
+**** Define Constructs
+     - happiness
+       - feel what you can bring to others
+       - loose body language (dog)
+     - how to measure
+       - number fo smiles
+     - memory
+       - control: film experience, interview person how that differs
+     - itchiness
+       - how often dogs scratch or do full body shake
+     - stress
+       - medical
+**** BBC Memory Test
+     - bbc invented
+     - no longer available
+     - remember faces
+**** Memory Test Description
+     1. view 12 photos
+     2. view another 12 photos
+     3. view 48 photos, ask if seen in first part, second part, or neither
+     two scores: recognition and temporal memory (which set, when you saw face)
+**** BBC Measurement
+     - definition enables you to measure "constructs"
+***** quotes
+      - The /percent/ of faces correctly recognized and placed from parts
+        I and II
+**** Constructs
+     - everything without unit of measure
+     - intelligence (iq test), effort (minutes doing hw, grades, GPA), ...
+**** Operational Definitions
+     - ways to measure constructs
+**** Data
+     - most important part
+**** Influence Memory
+     - age and time of day most influenced your memory
+**** Control for Time of Day
+     - holding one factor constant improves results
+       - f.ex. all at same local time
+     - extraneous factors (lurking variables)
+**** Same Scores
+     - Population vs Samples 
+       - Population average \mu
+       - Sample average \overline{x}
+**** Better Sample
+     - bigger sample makes \bar{x} approach \mu
+**** Randomness
+     - John Venn: paper in rain shower, each square will eventually be wet
+**** Visualize Relationship
+     - scatterplot of values
+       - x-axis: independent, predictor variable
+       - y-axis: dependent variable, outcome
+**** True or Not?
+     - correlation does not prove causation
+**** Golden Arches Theory
+     - Thomas Friedman: No two countries with a McDonald's have ever
+       gone to war since opening the McDonald's (Golden Arches Theory)
+**** Causal Inference
+     - to show relationships, you can do observational studies and surveys
+     - to show causation, you need a controlled experiment
+**** Benefits of Surveys
+     - easy, inexpensive, remotely possible
+     - partly easy to access
+**** Downsides of Surveys
+     - biased, untruthful responses
+     - respondents not understanding
+     - or refusing to answer
+**** Placebo
+     - give active or inactive pill to participants
+       - test effect
+**** Blind
+     - not telling participants which treatment they receive
+**** Double Blind
+     - researchers do not know which treatments participants received
+**** Random Assignment
+     - randomize which person gets assigned to which group
+     - exam: getting a good night's sleep will pay off more
+**** Katie's Hand
+     - overservational studies, vs
+     - surveys, vs
+     - experiments
+*** PS 1a: Intro to research methods
+**** quizzes
+     - construct: not directly measurable
+       - operational definition: values for this
+     - sampling error: between statistic and parameter
+     - hypothesis: statemtns about the relationships between variables
+     - randomize test to reduce lurking variable effect
+     - blindly rated: evaluator unaware of treatment group
+*** Lessen 2: Visualizing Data
+**** Frequency
+     - add up to 50 to check total
+**** Relative Frequency
+     proportion from 0 to 1
+**** Convert to Percentage
+     Percentage from 0 to 100
+**** Different Bin Sizes
+     - evaluate different ones
+**** Difference Between Graphs
+     - histogram (no place between bars): columns with intervals, any interval
+     - bar graph (place between bars): cannot change bin size
+     - histogram for ordered independent variable, bar graph for categorical
+**** Biased Graphs
+     - have a look a y-axis, note values
+**** Interpret Histogram
+     mode: peak of normal distribution
+**** Skewed Distribution
+     - positive skew: more to the left
+*** Lesson 3: Central Tendency
+**** One Number to Describe Data
+     - there are several characteristics
+**** Which Number to Choose?
+     - mode: value that occurs most often
+     - median: value in the middle
+     - mean: average
+**** Mode of Distribution
+***** quote
+      - mode (distribution): range that occurred with the highest frequency
+**** Mode - Uniform Distribution
+     - uniform distribution has no mode
+**** More than One Mode?
+     - two modes at foot size: male and female
+     - bimodal distribution
+**** Helpful Symbols
+     !x! = \sum_{i=1}^n x_i / n
+     \mu = \sum x / N
+**** Measures of Center
+     - robust: mean not affected much by outliers
+     - mean for highly skewed distributions
+**** Formula for Location of Median
+     - even:
+
+*** Lesson 4: Variability
+**** Quantify Spread
+     - range: maximum - minimum
+**** Where Is Q1?
+     - split data in middle, split again Q1, Q3, middle = Q2
+**** IQR
+     - Interquartile Range
+**** Define Outlier
+     - < Q1 - 1.5 (IQR)
+     - > Q3 + 1.5 (IQR)
+**** Match Boxplots
+     |----[==|==]----|
+     min  q1 q2 q3   max
+**** Problem with IQR
+     same iqr for normal, bimodal and uniform possible
+**** Measure Variability
+     - average between any two values
+       - does not scale well
+     - distance to min/max
+       - broken by outliers
+     - distance to mean
+       - "best bet"
+**** Formula for Avg. Abs. Dev.
+     - 1/n \cdot \sum |!x! - x_i|
+**** Squared Deviations
+     SS = \sum (x_i - !x!)^2
+**** Average Squared Deviation
+     VARIANCE = SS / n
+**** One Dimension
+     - line
+       - squared deviations are squares around distance of point to mean
+     - compute average square
+     - masseinheit: $$
+       - wurzel ziehen, um zu $ zu kommen
+       - standard deviation: sqrt of variance
+	 - length of average square
+**** Point of SD
+     - why use it, not the average absolute deviation?
+     - normal distribution (!x! = median = mode):
+       - approximately 68% of data within !x! \pm 1 \sigma
+       - and 95% of data witin !x! \pm 2 \sigma
+       - can approximate any part of data
+**** Bessel's Correction
+     - samples tend to underestimate population's standard deviation
+     - sample standard deviation: s = \sqrt{\sum(x_i - !x!)^2 / (n-1)} \approx \sigma
+       - to estimate the population's standard deviation
+*** Lesson 5: Standardizing
+**** Chess
+     - distribution differs interpretation of mean, median, and mode
+     - percentile is a good metric how good you are
+       - here: better than chess rating or place in ranking
+       - better: rank higher than 88%
+**** Absolute or Relative
+     - better to use relative frequencies if question: proportion less
+**** More Detail
+     - histograms cannot tell you all range in distribution
+     - smaller bin sizes help up to a point
+**** Infinitely Small
+     - you cannot feasibly make the bin size infinitely small
+**** Continuous Distribution
+     - the smaller the bin size, the more possible to distinguish
+     - but also the less content per bin
+     - solution: curve / continuous description
+**** Theoretical Normal Distribution
+     - perfectly symmetrical
+     - mean = median = mode
+     - reality slighly different
+**** Z
+     - location of value on x-axis described via \mu + a \cdot \sigma =: z
+     - if z = \mu + \sigma, 84% of values are smaller
+**** Unpopular
+     - how many standard deviations away from mean is a better metric
+       than absolute
+**** Who's More Unpopular?
+     - standardize distributions
+     - Katie is more unpopular
+**** Formula for Number of SDs
+     here : (x - \mu) / \sigma
+**** Z-Score
+     - standardized score on x-axis
+     - z-score: z= (x-\mu) / \sigma
+     - this /standardizes/ the distribution
+**** Negative Z-Score
+     - negative if original value is less than \mu
+**** Mean of Standardized Distribution
+     - is 0
+       - (\mu - \mu) / \sigma = 0/\sigma = 0
+**** SD of Standardized Distribution
+     - is 1
+       - (\mu + \sigma - \mu) / \sigma = \sigma / \sigma = 1
+**** Standard Normal Distribution
+     - has mean 0, and
+     - standard deviation 1
+     - every value is written in terms of standard deviations from the
+       mean
+**** Convert to Z-Score
+     - how to convert any distribution to any other distribution
+       1. take any normal distribution
+       2. convert to standard normal distribution,
+       3. convert that to desired distribution: (z * \sigma) + \mu
+*** PS 5b: Additional Practice (optional)
+**** 14. SJSU Football
+     - less than 1 standard deviation: "a little above average"
+*** Lesson 6: Normal Distribution
+**** Intro to the PDF
+     - PDF: normal distribution is example
+     - probability density function
+**** Probability
+     - pdf: y-axis is "probability"
+***** quotes
+      - the area under the curve represents the probability
+**** Get to Know the PDF
+     - tails do not touch the x-axis
+       - not 100% sure that these things don't happen
+***** quotes
+     - area under the curve up to x
+       - = probability of randomly selecting less than x
+       - = proportion in sample/population with scores less than x
+**** Probability Less
+     - x marks the limit of probability less/more
+**** 2 SDs Below or Above
+     - each curve has area of 1
+     - proportion of data either above or below 2 standard
+       distributions is 0.05
+     - 1 std: 68%
+     - 2 stds: 95%
+**** More than 262
+     - more than 2 SDs above
+       - (100%-95%) /2 = 2.5%
+**** Less than 240
+     - less than 2 SDs are 84%
+**** Z-Table
+     - first calculate z-score
+**** Using the Z-Table
+     1. calculate z-score: 
+        z = (240 - 190) / 36 = 1.39 (round to 100s here)
+     2. look at z-table
+**** Karma
+     - forum, like SO
+     - privileges: edit at 2000, delete at 10000
+**** More than 20
+     - compute z-score:
+       (20-13)/4.8 = 1.46
+     - get z-score: 0.9279
+       - is proportion /less/
+     - find proportion /more/: 1 - 0.9279 = 0.0721
+**** Between 10 and 16
+     - compute both z-scores, round, get both scores, subtract
+**** Top 5%
+     - look at z-table, find 0.95 (took bigger), compute x-axis: z*\sigma + \mu
+**** 16. 64th Percentile
+     - score is on x-axis, z-score as-is
+*** Lesson 7: Sampling Distribution
+**** Compare Sample Means
+     - how to compare sample to other samples
+       - find mean, compare to other samples' means
+**** Tetrahedral Die
+     - expected value: mean \mu = 2.5
+**** Mean of Sample Means
+     - same: mean M = 2.5
+**** What We Need to Compare the Means
+     - easy/possible to compare for small populations
+     - hard for bigger ones (314 million)
+     - need distribution of sample means
+**** Calculate SDs
+     #+BEGIN_SRC python
+ import itertools
+ >>> a = [1,2,3,4]
+ >>> import numpy as np
+ >>> np.std(a)
+ 1.1180339887498949
+ >>> list(itertools.product(a, a))
+ [(1,), (2,), (3,), (4,)]
+ >>> [np.mean(x) for x in list(itertools.product(a, a))]
+ [(1, 1), (1, 2), (1, 3), (1, 4), (2, 1), (2, 2), (2, 3), (2, 4), (3, 1), (3, 2), (3, 3), (3, 4), (4, 1), (4, 2), (4, 3), (4, 4)]
+ >>> np.std([np.mean(x) for x in list(itertools.product(a, a))])
+ [1.0, 1.5, 2.0, 2.5, 1.5, 2.0, 2.5, 3.0, 2.0, 2.5, 3.0, 3.5, 2.5, 3.0, 3.5, 4.0]
+ >>> np.std([np.mean(x) for x in list(itertools.product(a, a))])
+ 0.79056941504209488
+     #+END_SRC
+     - spreadsheet
+       - enter values (also combinations) by hand
+**** Ratio of SDs
+     - deviation of sample means: SE
+***** quotes
+      - What is the ration of \sigma to SE?
+      - \sigma / SE = \sqrt{2}
+      - Do you know what this number is?
+      - The square root of our sample size!
+**** SD of Sampling Distribution
+     - SE = \sigma / \sqrt{n}
+     - SE == standard error
+**** The Central Limit Theorem
+     CENTRAL LIMIT THEOREM: looks like gaussian in the end with SE = \sigma / \sqrt{n}
+**** Standard Error for Avg of 5 Dice
+     - compute: \sigma / \sqrt{5}
+**** Shape of Distribution When n Increases
+     - more samples, less standard error, more sure of population mean
+     - quadruple n for half the measurement error
+**** m&m
+     - 48 bags, 48 plates
+     - count number of blue m&ms on each plate
+     - get \mu = 11.25 and \sigma = 3.49
+     - random samples of 5 plates, collect 50 sample means
+     - experimental values very close to computed values
+**** Using Sampling Distribution
+     - generalize dice experiment
+**** Klout
+     - measure online influence
+     - collect "about 100 signals" per site
+     - over 400 signals per person
+     - bimodal distribution
+       - many with 40--60: peak quality content producers
+       - consumers
+     - average is lower than median
+     - 40 is "good sign"
+**** Klout Parameters
+     fill column
+     - select val
+     - go to last
+     - C-S-\uparrow
+     - C-v
+**** Sampling Distribution Shape
+     - can visually estimate size of std
+**** What Do You Get with a Good Klout Score?
+     - Audi invites opinion leaders
+     - some dating sites use as signal to match people up
+     - celebrities,
+**** Location of Mean on Distribution
+     - biebertweeter automatically retweets justin bieber's posts
+     - how far is 35-size sample with score 40 from mean 37.72 and
+       stddev 2.71
+**** Probability of Obtaining Mean
+     - how probable to get group with mean \ge 40?
