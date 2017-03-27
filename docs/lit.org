@@ -9573,6 +9573,19 @@
           - classifier better by chance only? (forman 2002 might solve this)
 
     4. Curves in ROC space
+
+       0. [@0]
+
+          - discrete classifiers only produce one point in ROC-curve
+
+          - some classifiers output a value how likely the point is to
+            belong to this class (called /probabilistic/ here)
+
+            - threshhold produces point in ROC-curve,
+
+            - combining all thresholds yields step-function in ROC-curve
+
+       1. Relative versus absolute scores
 *** quotes
 *** ref [[file:master.bib::Fawcett:2006:IRA:1159473.1159475][Fawcett 2006: Introduction ROC Analysis]]
 ** TODO PART [#B] [[./thebook.pdf][Smola - INTRODUCTION TO MACHINE LEARNING]]               :ML:
@@ -26451,6 +26464,10 @@ When a media query is true, the corresponding style sheet or style rules are app
                larger than the second argument: =cmp=lambda x,y:
                cmp(x.lower(), y.lower())=. The default value is =None=.
        7. Set Types — set, frozenset
+          - set - other - ...
+
+            Return a new set with elements in the set that are not in
+            the others.
           - the non-operator versions of =union()=, =intersection()=,
             =difference()=, and =symmetric_difference()=,
             =issubset()=, and =issuperset()= methods will accept any
@@ -28799,7 +28816,7 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
     2. [@2] How to Run this Tool
        - =#include "eval.h"= to svm-{train,predict}.c
        - =do_cross_validation= replace with
-** Intro to Descriptive Statistics
+** MOVE Intro to Descriptive Statistics
 *** Lesson 1: Intro to Research Methods
 **** Measure Memory
      - look at factors that influence memory
@@ -29168,3 +29185,398 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        stddev 2.71
 **** Probability of Obtaining Mean
      - how probable to get group with mean \ge 40?
+     - z-score is 0.84, look up in z-table, value is 0.7995, 1-val is 0.2005
+       #+BEGIN_SRC python
+         >>> import scipy.stats as st
+         >>> st.norm.cdf(0) # get z-table entry from z-score
+         0.5
+         >>> st.norm.ppf(0.5) # get z-score from table entry
+         0
+       #+END_SRC
+** PART MOVE https://en.wikipedia.org/wiki/Statistical_parameter
+*** quotes
+    - A parameter is to a population as a statistic is to a sample.
+** PART Intro to Data Analysis
+*** Data Analysis Process
+**** Introduction
+     - analyse data sets
+     - perform own questions
+**** Problems Solved by Data Analysts
+     - analyse udacity student data
+     - other problems
+       - netflix movie recommendations
+       - facebook: news
+       - okcupid: matches
+	 - best questions on first date:
+	   - like horror movies
+	   - travel around another country alone
+	   - go live on a sailboat
+       - walmart: what to stock
+       - bill james: top performers
+       - pharma companies: chemical compounds
+**** Data Analysis Process
+     1. question phase
+        - f.ex. characteristics of students who pass projects
+	  - or how to stock store
+     2. wrangling phase
+        1. data acquisition
+        2. data cleaning
+     3. explore phase
+        - "build intuition"
+        - "find patterns"
+     4. Drawing Conclusions Phase
+        - predict: what will users like
+        - conclude
+     5. Communication Phase
+        - blog post, paper, email, powerpoint, conversation
+        - data visualization helps
+
+     0. [@0] Phases 2 and 3 are intertwined
+
+     1. [@0] sometimes need to go back to Question from all steps
+**** Intro to CSV
+     - data from files, API, scraping web page, combining different formats
+     - here: CSV, /comma/-separated
+**** Fixing Data Types
+     - right now: strings, but could convert data types later
+     - better: convert now
+     - run starter code
+**** Questions about Student Data
+     - how long to finish
+     - hers:
+       - average time
+       - relates to completed
+       - engagement changes over time
+       - how often to submit before passes
+**** Investigating the Data
+     - less engaged students than enrolled
+**** Problems in the Data
+     - see above
+     - columnt name is =account_key= twice, =acct= once
+**** Missing Engagement Records
+     - important to investigate
+       - otherwise might be missing important stuff
+     - algo
+       1. identify surprising data points, if any
+       2. print out a few
+       3. fix problems
+	  - td: remove students that were enrolled only one day
+	  - td: remove test accounts
+**** Refining the Question: Explore Phase
+     - q: daily engagement differences depending on whether project is passed
+     - problems:
+       - also data without project submission
+       - different lengths
+       - engagement in courses not related
+     - revision: only data from first week, exclude students who cancel
+       within a week
+**** Indulge Curiosity
+     - getting better sense of data is almost always useful
+***** quotes
+      - exploring your data is never a waste of time for a data analyst
+**** Debugging Data Analysis Code 
+     1. Identify surprising data points
+     2. Print out one or a few surprising points
+     3. Fix any problems you find
+**** Making Histograms
+     - histograms bit broken due to number of bins
+     - visual inspection helps to distinguish
+**** Are your Results Just Noise?
+     - results are only tentative
+     - have not statistically been validated
+**** Correlation Does Not Imply Causation
+     - per capita cheese consumption correlated to number of people who
+       died by becoming tangled in their bedsheets
+     - lurking variables:
+       - level of interest
+       - background knowledge
+     - to find out, run an A/B test
+**** Predicting Based on Many Features
+     - which students are likely to pass the first project?
+     - heuristics can help, but ML is often better
+       - interaction of features
+**** Communication
+     - last phase
+     - example
+       - difference in total minutes
+	 - report average minutes
+       - difference in days visited
+	 - show histograms
+	   - polish visualizations
+***** quotes
+      - "what findings are most interesting?"
+      - "how will you present them?"
+      - it's a good idea to spend some time polishing them. You want to
+        make them look nicer and explain what trends you're
+        noticing. You always know what you made a plot of, but your
+        reader doesn't
+**** Improving Plots and Sharing Findings
+     - mlp plots look better with seaborn, just
+       =import seaborn as sns=
+**** Data Analysis and Related Terms
+     - data science (and analysis)
+     - data engineering
+     - big data
+**** Quiz Solutions
+     #+BEGIN_SRC python
+     # CSVs in Python
+       import unicodecsv
+
+       def read_csv(filename):
+           with open(filename, 'rb') as f:
+               reader = unicodecsv.DictReader(f)
+               return list(reader)
+
+       enrollments = read_csv('enrollments.csv')
+       daily_engagement = read_csv('daily_engagement.csv')
+       project_submissions = read_csv('project_submissions.csv')
+     # Investigating the Data
+       len(enrollments)
+
+       unique_enrolled_students = set()
+       for enrollment in enrollments:
+           unique_enrolled_students.add(enrollment['account_key'])
+       len(unique_enrolled_students)
+
+       len(daily_engagement)
+
+       unique_engagement_students = set()
+       for engagement_record in daily_engagement:
+           unique_engagement_students.add(engagement_record['acct'])
+       len(unique_engagement_students)
+
+       len(project_submissions)
+
+       unique_project_submitters = set()
+       for submission in project_submissions:
+           unique_project_submitters.add(submission['account_key'])
+       len(unique_project_submitters)
+     # Problems in the Data
+       for engagement_record in daily_engagement:
+           engagement_record['account_key'] = engagement_record['acct']
+           del[engagement_record['acct']]
+     # Missing engagement records
+       for enrollment in enrollments:
+           student = enrollment['account_key']
+           if student not in unique_engagement_students:
+               print enrollment
+               break
+     # Checking for more problem records
+       num_problem_students = 0
+       for enrollment in enrollments:
+           student = enrollment['account_key']
+           if (student not in unique_engagement_students and 
+                   enrollment['join_date'] != enrollment['cancel_date']):
+               print enrollment
+               num_problem_students += 1
+
+       num_problem_students
+     # Refining the Question
+       paid_students = {}
+       for enrollment in non_udacity_enrollments:
+           if (not enrollment['is_canceled'] or
+                   enrollment['days_to_cancel'] > 7):
+               account_key = enrollment['account_key']
+               enrollment_date = enrollment['join_date']
+               if (account_key not in paid_students or
+                       enrollment_date > paid_students[account_key]):
+                   paid_students[account_key] = enrollment_date
+       len(paid_students)
+     # Getting Data from First Week - fixed later
+       def within_one_week(join_date, engagement_date):
+           time_delta = engagement_date - join_date
+           return time_delta.days >= 0 and time_delta.days < 7
+
+       def remove_free_trial_cancels(data):
+           new_data = []
+           for data_point in data:
+               if data_point['account_key'] in paid_students:
+                   new_data.append(data_point)
+           return new_data
+
+       paid_enrollments = remove_free_trial_cancels(non_udacity_enrollments)
+       paid_engagement = remove_free_trial_cancels(non_udacity_engagement)
+       paid_submissions = remove_free_trial_cancels(non_udacity_submissions)
+
+       print len(paid_enrollments)
+       print len(paid_engagement)
+       print len(paid_submissions)
+
+       paid_engagement_in_first_week = []
+       for engagement_record in paid_engagement:
+           account_key = engagement_record['account_key']
+           join_date = paid_students[account_key]
+           engagement_record_date = engagement_record['utc_date']
+
+           if within_one_week(join_date, engagement_record_date):
+                paid_engagement_in_first_week.append(engagement_record)
+
+       len(paid_engagement_in_first_week)
+     # Debugging Data Analysis Code
+       student_with_max_minutes = None
+       max_minutes = 0
+
+       for student, total_minutes in total_minutes_by_account.items():
+           if total_minutes > max_minutes:
+               max_minutes = total_minutes
+               student_with_max_minutes = student
+
+       max_minutes
+
+       for engagement_record in paid_engagement_in_first_week:
+           if engagement_record['account_key'] == student_with_max_minutes:
+               print engagement_record
+     # Alternatively, you can find the account key with the maximum minutes using this shorthand notation:
+       max(total_minutes_by_account.items(), key=lambda pair: pair[1])
+     #Lessons Completed in First Week
+       from collections import defaultdict
+
+       def group_data(data, key_name):
+           grouped_data = defaultdict(list)
+           for data_point in data:
+               key = data_point[key_name]
+               grouped_data[key].append(data_point)
+           return grouped_data
+
+       engagement_by_account = group_data(paid_engagement_in_first_week,
+                                          'account_key')
+
+       def sum_grouped_items(grouped_data, field_name):
+           summed_data = {}
+           for key, data_points in grouped_data.items():
+               total = 0
+               for data_point in data_points:
+                   total += data_point[field_name]
+               summed_data[key] = total
+           return summed_data
+
+       total_minutes_by_account = sum_grouped_items(engagement_by_account,
+                                                    'total_minutes_visited')
+
+       import numpy as np
+
+       def describe_data(data):
+           print 'Mean:', np.mean(data)
+           print 'Standard deviation:', np.std(data)
+           print 'Minimum:', np.min(data)
+           print 'Maximum:', np.max(data)
+
+       describe_data(total_minutes_by_account.values())
+
+       lessons_completed_by_account = sum_grouped_items(engagement_by_account,
+                                                        'lessons_completed')
+       describe_data(lessons_completed_by_account.values())
+
+     # Number of Visits in the First Week
+       for engagement_record in paid_engagement:
+           if engagement_record['num_courses_visited'] > 0:
+               engagement_record['has_visited'] = 1
+           else:
+               engagement_record['has_visited'] = 0
+       days_visited_by_account = sum_grouped_items(engagement_by_account,
+                                                   'has_visited')
+       describe_data(days_visited_by_account.values())
+
+     # Splitting out Passing Students
+       subway_project_lesson_keys = ['746169184', '3176718735']
+
+       pass_subway_project = set()
+
+       for submission in paid_submissions:
+           project = submission['lesson_key']
+           rating = submission['assigned_rating']
+
+           if ((project in subway_project_lesson_keys) and
+                   (rating == 'PASSED' or rating == 'DISTINCTION')):
+               pass_subway_project.add(submission['account_key'])
+
+       len(pass_subway_project)
+
+       passing_engagement = []
+       non_passing_engagement = []
+
+       for engagement_record in paid_engagement_in_first_week:
+           if engagement_record['account_key'] in pass_subway_project:
+               passing_engagement.append(engagement_record)
+           else:
+               non_passing_engagement.append(engagement_record)
+
+       print len(passing_engagement)
+       print len(non_passing_engagement)
+
+     # Comparing the Two Student Groups
+       passing_engagement_by_account = group_data(passing_engagement,
+                                                  'account_key')
+       non_passing_engagement_by_account = group_data(non_passing_engagement,
+                                                      'account_key')
+
+       print 'non-passing students:'
+       non_passing_minutes = sum_grouped_items(
+           non_passing_engagement_by_account,
+           'total_minutes_visited'
+       )
+       describe_data(non_passing_minutes.values())
+
+       print 'passing students:'
+       passing_minutes = sum_grouped_items(
+           passing_engagement_by_account,
+           'total_minutes_visited'
+       )
+       describe_data(passing_minutes.values())
+
+       print 'non-passing students:'
+       non_passing_lessons = sum_grouped_items(
+           non_passing_engagement_by_account,
+           'lessons_completed'
+       )
+       describe_data(non_passing_lessons.values())
+
+       print 'passing students:'
+       passing_lessons = sum_grouped_items(
+           passing_engagement_by_account,
+           'lessons_completed'
+       )
+       describe_data(passing_lessons.values())
+
+       print 'non-passing students:'
+       non_passing_visits = sum_grouped_items(
+           non_passing_engagement_by_account, 
+           'has_visited'
+       )
+       describe_data(non_passing_visits.values())
+
+       print 'passing students:'
+       passing_visits = sum_grouped_items(
+           passing_engagement_by_account,
+           'has_visited'
+       )
+       describe_data(passing_visits.values())
+
+     # Making Histograms
+       %pylab inline
+
+       import matplotlib.pyplot as plt
+       import numpy as np
+
+       # Summarize the given data
+       def describe_data(data):
+           print 'Mean:', np.mean(data)
+           print 'Standard deviation:', np.std(data)
+           print 'Minimum:', np.min(data)
+           print 'Maximum:', np.max(data)
+           plt.hist(data)
+
+     # Improving Plots and Sharing Findings
+       import seaborn as sns
+
+       plt.hist(non_passing_visits.values(), bins=8)
+       plt.xlabel('Number of days')
+       plt.title('Distribution of classroom visits in the first week ' +
+                 'for students who do not pass the subway project')
+
+       plt.hist(passing_visits.values(), bins=8)
+       plt.xlabel('Number of days')
+       plt.title('Distribution of classroom visits in the first week ' +
+                 'for students who pass the subway project')
+
+     #+END_SRC
