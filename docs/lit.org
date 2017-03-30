@@ -29198,7 +29198,7 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        - svm-train.c: replace =do_cross_validation=
        - svm-predict.c: replace =predict(input,output)=
        - eval.cpp: set which score to use: =double (*validation_function)...=.
-** PART Intro to Data Analysis
+** TODO Intro to Data Analysis
 *** Data Analysis Process
 **** Introduction
      - analyse data sets
@@ -29735,3 +29735,179 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 	 =(day, place) = np.unravel_index(ridership.argmax(), ridership.shape)]=
        - select column's mean:
 	 =mean_for_max = ridership[:,place].mean()=
+**** NumPy Axis
+     - =axis=0=: calculate for each column
+       - =axis=1=: for each row
+       - try out
+**** NumPy and Pandas Data Types
+     - each np array has only /one/ data type, even if different values exist
+     - numpy converts these
+     - benefit of panda
+**** Accessing Elements of a DataFrame
+     - station names as column names, index for dates
+     - access rows via =.loc=
+       - and elements via =.loc[date, name]= or =.iloc[name]=
+	 - even without .loc
+     - =.values= gives just values without indices
+
+** TODO Intro to Inferential Statistics
+*** Introduction and Lesson 7 Review
+**** Lauren's Intro Video
+***** quotes
+      - Tuckey says: an approximate answer to the right problem is
+        worth a good deal more than an exact answer to an approximate
+        problem
+**** Intro
+     - exercise/quiz: make you think
+*** Lesson 8: Estimation
+**** Summary
+     - Klout: N=1048, \mu =37.72, \sigma = 16.04
+     - M = sample size mean
+**** Mean of Treated Population
+     - how would score change if everyone bieber-tweeted
+     - best guess: 40, as there is only a simple sample
+       - called /point estimate/
+**** Population Mean vs. Sample Mean
+     - population of bieber-tweeters would have mean around 40, but
+       probably not exactly
+**** Approximate Margin of Error
+     - "95% of new population will be within 2\sigma / sqrt{n} of the
+       sample mean"
+**** Interval Estimate for Population Mean
+     - [\mu_{BT} - 2(\sigma/\sqrt{n}, \mu_{BT} + 2(\sigma/\sqrt{n}] contains 95% of sample means
+     - guess that falls within:
+**** Confidence Interval Bounds
+     - !x! - 2 \sigma / \sqrt{n} < \mu_{BT} < !x! + 2 \sigma / \sqrt{n}
+       = 95% confidence interval
+       - if everyone used biebertweeter, then probably the mean would
+         be between these
+**** Exact Z-Scores
+     - 95% in middle, what are z-values of bounds
+     - look up in z-table 0.025 and 0.975
+     - or =st.norm.ppf(2.5 / 100)= and =st.norm.ppf(97.5 / 100)=
+**** 95% CI with Exact Z-Scores
+     - more exact: not 2, but z-score of 95%
+       [40 + st.norm.ppf(2.5 / 100) * 2.71,
+       40 + st.norm.ppf(97.5 / 100) * 2.71]
+       \approx [40 - 1.959963984540054 * 2.71,
+       40 + 1.959963984540054 * 2.71]
+       (for mean =  40, and stddev / \sqrt{n} = 2.71)
+     - approximate st.norm.ppf(97.5 / 100) with 1.96
+**** Generalize Point Estimate
+     - general terms
+     - some sample mean !x_I!
+     - want to find population mean \mu_I
+     - point estimate is !x_I!
+**** Generalize CI
+     - interval estimate is (!x_I! - 1.96 \sigma/\sqrt{n}, !x_I! + 1.96 \sigma/\sqrt{n})
+**** CI Range for Larger Sample Size
+     - bigger sample size makes the confidence interval smaller
+**** CI When n = 250
+     - sd is 16.04 / \sqrt{250} \approx 1.014458673382016 \approx 1.01 (given)
+     - (40 - 1.959963984540054 * 1.01, 40 + 1.959963984540054 * 1.01)
+**** Bigger Sample, Smaller CI
+     - 37.72 does not lie within new interval (with 95% CI)
+***** quotes
+      - this is evidence for a /treatment effect/
+**** Z for 98% CI
+     - how about a 98% CI?
+       - 1% on each side
+     - st.norm.ppf(99. / 100) \approx 2.3263478740408408 \approx 2.33 (by hand)
+     - st.norm.ppf(1. / 100) \approx -2.3263478740408408
+**** Find 98% CI
+     - use 2.33, other fails
+     - (40 - 2.33 * 1.01, 40 + 2.33 * 1.01)
+     - \approx (37.6467, 42.3533)
+**** Critical Values of Z
+     - important definitions:
+       - z-score,
+       - standard deviation,
+       - sampling distribution,
+       - standard error
+       - "express values of !x! interms of SEs away from \mu
+***** quotes
+      - \pm 2.33 are the CRITICAL VALUES OF Z for 98% confidence
+      - \pm 1.96 are the CRITICAL VALUES OF Z for 95% confidence
+**** Engagement Ratio
+     - made up data
+     - calculate mean and std
+     - compute in google drive spreadsheet by hand
+       1. mean of all cells
+       2. deviation: cell value - mean
+       3. average of 2 == variance
+       4. sqrt(step 3) == std
+***** quotes
+      - engagement ration = number of minutes watched / total minutes available
+**** Hypothesis Testing Song
+     - song to encourage
+**** Point Estimate Engagement Ratio
+     - sample of 20 students have engagement ratio of 0.13 (up from 0.07)
+     - this is also the point estimate
+**** Standard Error
+     - \sigma is 0.107, SE is \sigma / \sqrt{n} \approx 0.02392592735924775 \approx 0.024
+**** CI Bounds
+     - 95% CI
+     - somewhere around .13 (=mu)
+     - new mean \mu_I (I for Intervention)
+     - [mu + st.norm.ppf(2 / 100) * std, mu + st.norm.ppf(97.5 / 100) * std]
+       \approx [0.082960864371038695, 0.17703913562896129]
+       - for sigma above (0.024)
+     - units for interval: engagement ratio (minutes watched / total minutes)
+**** Generalize CI
+     - (!x! - z \cdot \sigma / \radic(n); !x! + z \cdot \sigma / \radic(n))
+**** Margin of Error
+     - general form of confidence interval: (!x!- z\cdot \sigma/ \radic(n), !x!+ z\cdot \sigma/ \radic(n))
+     - /margin of error/: z \cdot \sigma / \radic(n)
+       - half the width of the confidence interval
+       - take the z-value from the table(/ppf) for the needed
+         confidence interval
+	 - not the computed z-value
+**** Rate Engagement and Learning
+     - flaws
+       - keeps running in the background
+     - better:
+       - self-report engagement (1 to 10)
+       - self-reported learning (1 to 10)
+***** quotes
+      - confidence intervals great for estimating actual population
+        parameters (e.g. engagement ratio)
+**** Results from Sample
+     - assume distribution is negatively skewed
+**** What Statistics?
+     - how to evaluate difference if confidence intervals less applicable?
+     - A: where do the sample means fall on the distribution of sample means
+**** Z-Scores of Sample Means
+     - (8.35 - 8.2 ) /  0.16323296235748463
+       - (sample mean - pop mean / sample error)
+     - Z_L \approx 0.918932045547861
+**** Probability Sample Mean Is at Least...
+     - calculate probability from cdf/z-score
+       1 - st.norm.cdf(10.06230589874905)
+       1 - st.norm.cdf(0.918932045547861)
+     - without 1-: probability that lower than
+**** What Does This Mean?
+     - like this (just show to 20), was not a proper experiment
+       - lacked control conditions
+**** Wrap-Up
+     | treatment                     | dependent variables |
+     |-------------------------------+---------------------|
+     | bieber tweeter                | klout scores        |
+     | song about hypothesis testing | engagement and learning scores |
+*** Lesson 9: Hypothesis Testing
+**** Alpha Levels
+     - levels of Likelihood, \alpha levels
+       - .05 (5%)
+       - .01 (1%)
+       - .001 (0.1%)
+***** quotes
+      - criterion for deciding whether something is likely or unlikely
+**** Z-Critical Value 0.05
+     - /critical region/: tail of distribution
+       - /z-critical value/ z^*: cutoff for critical region
+     - z-critical value for probability 0.05 =st.norm.ppf(95. / 100)=
+       - 5 percent above
+       - 1.6448536269514722
+**** Critical Values 0.01
+     - 2.3263478740408408 (=st.norm.ppf(99. / 100)=)
+**** Critical Values 0.001
+     - 3.0902323061678461 (=st.norm.ppf(99.9 / 100)=)
