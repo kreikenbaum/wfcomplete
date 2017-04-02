@@ -30339,3 +30339,144 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        (=-xd - 2.262 * .42=, =-xd - 2.262 * .42=)
        - failed =-xd + st.t.ppf(1-0.025, n-1) * sem=
          (sem \approx 0.42163702135578385)
+*** Lesson 11: t-Tests, Part 3
+**** Independent Samples
+     - lesson 10's samples were dependent
+       - advantages: controls for individual differences
+	 - fewer subjects
+	   - cost-effective
+	   - less time
+       - disadvantages
+	 - carry-over effects
+	   - f.ex. teaching methods
+	 - order may influence results
+     - now: independent
+       - advantages/disadvantages inverse of dependent samples
+       - experimental or observational
+**** Standard Error
+     - changes
+     - MSE = S / \radic(n) = \radic(S_1^2 + S_2^2) / \radic(n) = \radic((S_1^2 + S_2^2)/n) = \radic(S_1^2/n_1 + S_2^2/n_2)
+     - df = (n_1-1) + (n_2-1) = n_1+n_2-2
+       - without software, smaller of each
+     - t-statistic = [(!x!_1 - !x!_2) - (\mu_1 - \mu_2)] / MSE
+**** Meal Prices
+     - just need sample averages, size of sample and stds for t-tests,
+       no population parameters
+     - logitudinal: track single persons
+     - in spreadsheet: =stdev()= for standard deviation
+**** Meal Price t-Statistic
+     SEM written as S_{!x!_G-!x!_W}
+**** Calculate t-Statistic
+     - t = (xw - xg) / SEM = 2.5769390582356815
+**** t-Critical Values
+     - n = 18+14-2, \alpha = 0.05
+     - st.t.ppf(1-0.025, 18+14-2) \approx 2.0422724563012373
+**** Acne Medication
+     - two treatments
+     #+BEGIN_SRC python
+       a = pd.Series([40, 36, 20, 32, 45, 28])
+       b = pd.Series([41, 39, 18, 23, 35])
+       t = (a.mean() - b.mean()) / math.sqrt(a.std()**2/len(a) + b.std()**2/len(b))
+     #+END_SRC
+**** Acne Medication - t-Critical Values
+     - \alpha = 0.05, two-tailed
+     - =import scipy.stats as st=
+     - =st.t.ppf(0.025, len(a)+len(b)-2)=
+**** Shoes - 95% CI
+     - !x! \pm t \cdot SE
+     - \pm !x! == !x_F! - !x_M!
+     - \pm t == st.t.ppf(0.025, f.count()+m.count()-2)
+     - SEM == math.sqrt(fstd**2/f.count() + mstd**2/m.count())
+**** Shoes - Calculate CI
+     - (-18.192841871177293, 48.478556156891585)
+       - (f.mean() - m.mean()) \pm st.t.ppf(1-0.025, f.count()+m.count()-2) * sem
+     - negative: males can own more shoes than females
+**** Gender and Shoes
+     - 0.05478242400037163 can be attribued to gender
+       - =r_squared = t**2 / (t**2 + f.count() + m.count() - 2)=
+***** quotes
+      - What proportion of the difference in pairs of shoes owned can
+        be attributed to gender?
+**** Pooled Variance Sum of Squares
+     - change standard error
+     - pool variances
+       S_p^2: sp2 = (ss_1 + ss_2) /  (df_1 + df_2)
+     #+BEGIN_SRC python
+       >>> x = pd.Series([5,6,1,-4])
+       >>> y = pd.Series([3,7,8])
+       >>> xdiff = x - x.mean()
+       >>> ydiff = y-y.mean()
+       >>> xsq = xdiff**2
+       >>> ysq = ydiff ** 2
+       >>> yss = ysq.sum()
+       >>> xss = xsq.sum()
+       >>> sp2 = (yss+xss) / (x.count()+y.count()-2)
+       15.199999999999999
+     #+END_SRC
+**** Corrected Standard Error
+     - S_{!x!-!y!} (SEM corr) =  math.sqrt(sp2/x.count() + sp2/y.count())
+**** t-Statistic
+     = [(!x! - !y!) - (\mu_x - \mu_Y)] / S_{!x!-!y!}
+     = (!x! - !y!) / S_{!x!-!y!}       (\mu_x - \mu_Y) is expected to be 0
+     = 4 / S_{!x!-!y!}
+     \approx 1.343320988518935
+**** t-Critical and Decision
+     - df = x.count()+y.count()-2
+     - t-critical: st.t.ppf(1-0.025, x.count()+y.count()-2)
+     - accept the null (H_0: \mu_X = \mu_Y)
+**** Assumptions
+     0. [@0] in general, use pooled variance
+     1. X,Y random samples, from independent populations
+     2. both approximately normal [less important for size \ge 30]
+     3. sample data can estimate population
+     4. roughly equal sizes, can use pooled estimate
+*** Problem Set 11
+**** 2. t-test
+     #+BEGIN_SRC python
+       n1 = 52; n2 = 57; sp2 = 5.1; x1 = 12; x2 = 8
+       sem = math.sqrt(sp2/n1 + sp2/n2)
+       t = (x1 - x2 -3) / sem # H_0: \mu_1-\mu_2 = 3
+       st.t.ppf(1-0.025, n1+n2-2)
+     #+END_SRC
+**** 3. t-test
+     - n1 = 207; n2 = 220; sums1 = 481; sums2 =322; x1 = 35.8; x2=31.6
+     - sp2 = (sums1+sums2) / (n1+n2-2.)
+     - sem = math.sqrt(sp2/n1 + sp2/n2)
+     - t = (x1 - x2) / sem
+     - st.t.ppf(0.005, n1+n2-2)
+**** 4. t-Critical Value
+     - input: 0.05, one-tailed, N=25
+     - st.t.ppf(1-0.05, 25-2) # 2 degrees of freedom
+**** 8. True or False?
+     - T: Statistical significance tells us that the sample statistics
+       we have are most likely not due to chance.
+     - F: An advantage of repeated-measures designs is they are less
+       affected by carryover effects than between-suject designs.
+**** up to 13
+     #+BEGIN_SRC python
+       >>> x = pd.Series([2,-3,5,4,7])
+       >>> y = pd.Series([10,13,15,10])
+       >>> xdiff = x-x.mean()
+       >>> xd2 = xdiff ** 2
+       >>> sumsx = xd2.sum()
+       >>> ydiff = y-y.mean()
+       >>> yd2 = ydiff ** 2
+       >>> sumsy = yd2.sum()
+       >>> sp2 = (sums1 + sums2) / (x.count()+y.count()-2)
+       >>> n1=5; n2=4
+       >>> sem = math.sqrt(sp2/n1 + sp2/n2)
+       >>> t = -9/sem #x.mean()-y.mean()
+       >>> st.t.ppf(1-0.01/2, x.count()+y.count()-2)
+     #+END_SRC
+**** 14. Independent Variable
+     - independent variable: type of incentive
+**** 15. Dependent Variable
+***** quotes
+      number of good behaviors in single 20-minute clas period
+**** 16. Null Hypothesis
+     no difference in number of good behaviors
+**** 17. Degrees of Freedom
+     df = 18 (10+10-2)
+**** 18. t-Critical Values
+     st.t.ppf(1-0.05/2, 18)
+     2.1009220402409601
