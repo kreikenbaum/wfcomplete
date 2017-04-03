@@ -30578,3 +30578,143 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 **** 18. t-Critical Values
      st.t.ppf(1-0.05/2, 18)
      2.1009220402409601
+*** Lesson 14: Correlation
+**** Relationships
+     - so far: one variable
+     - now: two variables
+     - changes collection and visualization
+     - analysis is similar
+     - f.ex. similar:
+       - height and weight,
+       - time studying and grade
+       - weather outside and ankle injuries
+**** The Variables x and y
+     |                                   x |                            y |
+     | predictor, explanatory, independent | outcome, response, dependent |
+     |                        miles on car |                 value of car |
+     |-------------------------------------+------------------------------|
+     |                               60000 |                        12000 |
+     |                               80000 |                        10000 |
+     |                               90000 |                         9000 |
+     |                              100000 |                         7500 |
+     |                              120000 |                         6000 |
+**** Show Relationship
+     - via scatterplot
+     - have to be numeric
+**** Scatterplot
+     - plot on x-y graph
+     - here: just linear relationship
+**** Stronger Relationship
+     - show by drawing ellipse, compute ratio axes: major / minor
+**** As x Increases
+     - find direction of relationship
+       - positive: x increases, and y increases
+       - negative: x increases, and y decreases
+**** Strength and Direction
+     - /correlation/: relationship strength
+**** Correlation Coefficient
+     - /correlation coefficient/ quantifies correlation
+       r = cov(X, Y) / (S_X \cdot S_Y) = cov_{X, Y} / (S_X \cdot S_Y)
+***** quotes
+      - r^2 = % of the variation in y explained by the variation in x
+**** Create Scatterplot
+     - in spreadsheet
+       select multiple rows (?)
+     - in python
+       plt.scatter(b['age'], b['party'])
+**** Calculate r
+     - in spreadsheet
+       =PEARSON(xstart:xend, ystart:yend)
+     - in python
+       =b[ ['age','pets', 'party'] ].corr()=
+**** Hypothesis Testing for \rho
+     - sample might show correlation, but population does not, or vice
+       versa
+     - /true correlation/ \rho (rho) : correlation for population
+     - r: correlation for sample
+     - type of t-test
+***** quotes
+      - H_0: \rho = 0
+      - H_A:
+        - \rho < 0 negative directional
+        - \rho > 0 positive directional
+        - \rho \neq 0 non-directional
+      - t = r \radic(N-2) / \radic(1-r^2)
+        - df = N-2
+**** Testing for Significance
+     - t = r \radic(N-2) / \radic(1-r^2)      [ not used ]
+     - df = N-2 (N values for both X and Y)
+     - t =2.71 (given)
+     - t-critical: 2.0686576104190406 (\alpha = 0.05, df =23, as N=25)
+     - reject H_0
+**** Find p
+     - t = -1.2787; df = 59
+       - 2*st.t.cdf(-1.2787, 59)
+         0.20600970222302847
+     - t = 3.1146; df = 59
+       - 2*(1-st.t.cdf(3.1146, 59))
+	 0.0028418814404695958
+     - http://www.graphpad.com/quickcalcs/pValue2/
+**** Add Outlier
+     - own: clean pandas data
+       #+BEGIN_SRC python
+         a = pd.read_csv('/home/web/Downloads/corr.csv')
+	 a['icons'][25] = 150
+	 a['icons'][40] = 150
+	 a[['icons']] = a[['icons']].apply(pd.to_numeric)
+       #+END_SRC
+     - correlation coefficient
+       #+BEGIN_SRC python
+         b = a['age']
+	 c = a['pets']
+	 b[61] = 20
+	 c[61] = 8
+	 b.corr(c)
+       #+END_SRC
+     - 0.2314809164214815
+     - outliers change correlation coefficient massively
+**** Correlation vs. Causation
+     - how to make sure of causation
+***** quotes
+      - having more pets doesn't cause you to age
+**** Fallacies
+     - /third variable problem/: f.ex. motivation influences post SAT
+       scores and college grades
+     - /post hoc fallacy/: maybe violent people also play violent games
+***** quotes
+      - ambiguous temporal precedence
+*** Problem Set 14
+**** 6. Decision Based on t-Statistic
+     - t = 2.306, n1 = 45, n2=45
+       - st.t.cdf(2.306, 88)
+	 0.98826956198037796
+       - reject null
+**** 7. Writing Down Dreams
+     #+BEGIN_SRC python
+     a.corr()
+     #+END_SRC
+     0.954145
+**** 13. Increase Sample Size
+     - the bigger the sample, the smaller Pearson's r needs to be for
+       significance
+**** 14. Direction of Relationship
+     #+BEGIN_SRC python
+       a.plot(kind='scatter', x=a.columns[1], y=a.columns[2])
+     #+END_SRC
+     scatter plot of variables in a (0nd column has name)
+**** 16. Compute r
+     =a.corr()= \approx 0.589313
+**** 17. Coefficient of Determination
+     0.589313**2 \approx 0.347289811969
+     (how much of one explained by other)
+     r^2
+**** 18. Calculate p
+     - r^2 == 0.347289811969, compute p, n1=40, n2=40
+     - compute t
+       0.347289811969 = t**2 / (t**2 + 78)
+       (t**2 + 78) * 0.347289811969 = t**2
+       78 * 0.347289811969 = 0.652710188031 * t**2
+       78 * 0.347289811969 / 0.652710188031 = t**2
+       t = math.sqrt(78 * 0.347289811969 / 0.652710188031)
+       st.t.cdf(6.442184033360461, 78)
+       \approx 0.99999999555835972
