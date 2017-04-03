@@ -29198,7 +29198,7 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        - svm-train.c: replace =do_cross_validation=
        - svm-predict.c: replace =predict(input,output)=
        - eval.cpp: set which score to use: =double (*validation_function)...=.
-** TODO Intro to Data Analysis
+** MOVE Intro to Data Analysis
 *** Data Analysis Process
 **** Introduction
      - analyse data sets
@@ -29749,7 +29749,105 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        - and elements via =.loc[date, name]= or =.iloc[name]=
 	 - even without .loc
      - =.values= gives just values without indices
+**** Calculating Correlation
+     - Pearson's r
+     - standardize all variables's x and y values: subtract mean, divide by std
+     - pass =ddof=0= to =.std=
+     - algo
+       1. standardize: express as number of stds above/below mean
+	  - spreads out values
+	  - sets 0,0 to middle
+       2. multiply each pair of values, take average
+       3. (sum up?)
+     - range from -1 to 1
+     - my solution:
+       #+BEGIN_SRC python
+         x = (x - x.mean()) / x.std(ddof=0)
+         y = (y - y.mean()) / y.std(ddof=0)
+         return (x*y).mean()
+       #+END_SRC
+     - use numpy's version, but good to know on your own
+***** quotes
+      - many times when you're standardizing variables, it doesn't
+        matter too much whether you take the corrected or uncorrected
+        standard deviation, but to calculate pearson's r specifically,
+        it's important to take the uncorrected standard deviation
+**** Pandas Axis Names
+     - axis=0, axis=1, axis='index', axis='columns'
+     - confusing:
+       - =axis='columns'= gives mean of each row (column is fixed)
+       - =axis='index'= gives mean of each column
+       - try out
+**** DataFrame Vectorized Operations
+     - matches by index and column, not position
+     - shift frame: =df.shift()=
+       - example:
+	 =def get_hourly_entries_and_exits(entries_and_exits):=
+              =return (entries_and_exits - entries_and_exits.shift())[1:]=
+**** DataFrame applymap()
+     - applies function to every element
+**** DataFrame apply()
+     - applies to each column
+     - takes =axis= arg
+**** DataFrame apply() Use Case 2
+     - reduce dataframe to series
+       - column
+**** Adding a DataFrame to a Series
+     - df.add(s, axis='index')
+       - add series by row
+     - if add by index, non-matching: NaNs
+**** Standardizing Each Column Again
+     - by column
+       =((df - df.mean()) / df.std(ddof=0))=
+     - by row
+       =(df.subtract(df.mean(axis=1), axis=0).divide(df.std(axis=1), axis=0))=
+       - hers
+	 df.subtract(df.mean(axis='columns'),
+             axis='index').divide(df.std(axis='columns'), axis='index')
+**** Pandas groupby()
+     =df.groupby('account_key').sum()=
+     - show average usage per station
+       =print subway.groupby('station').mean()['ENTRIESn_hourly'].sort_values()=
+**** Calculating Hourly Entries and Exits
+ =def to_apply(entries_and_exits):=
+     =return (entries_and_exits - entries_and_exits.shift())[1:]=
 
+ =def get_hourly_entries_and_exits(entries_and_exits):=
+     =return entries_and_exits.groupby('UNIT')[['ENTRIESn', 'EXITSn']].apply(to_apply)=
+***** quotes
+ Thus, to correctly calculate the hourly entries and exits, it was necessary to group by station and day, then calculate the hourly entries and exits within each day.
+
+ Write a function to do that. You should use the apply() function to call the function you wrote previously. You should also make sure you restrict your grouped data to just the entries and exits columns, since your function may cause an error if it is called on non-numerical data types.
+**** Combining Pandas DataFrames
+     - pandas =merge= combines tables
+     - duplicates rows if duplicate entries exist
+       #+BEGIN_SRC python
+         submissions.merge(enrollments, on='account_key', how='left')
+       #+END_SRC
+       - how: keep which rows 'left' keeps all from left, 'right' from
+         right, 'inner': only common, 'outer': keep all rows
+	 - filled with NaN
+     - my solution:
+       #+BEGIN_SRC python
+         def combine_dfs(subway_df, weather_df):
+             return weather_df.merge(subway_df, on=['DATEn', 'latitude', 'longitude'], how='inner')
+       #+END_SRC
+     - her solution:
+       - look at =head(3)= for fields
+       - decide =on=: date, hour, lat, lon
+       - =left_on= / =right_on=: column names on left/right table
+**** Plotting for DataFrames
+     #+BEGIN_SRC python
+       filename = '/home/web/keep/nyc_subway_weather.csv'
+       subway_df = pd.read_csv(filename)
+       data = subway_df.groupby(['latitude', 'longitude'], as_index=False).sum()[['latitude', 'longitude', 'ENTRIESn_hourly', 'EXITSn_hourly']]
+       plt.scatter(data['longitude'], data['latitude'], s=data['ENTRIESn_hourly']/data['ENTRIESn_hourly'].std()*50, alpha=0.5, color='orange')
+       import mplleaflet
+       mplleaflet.show()
+     #+END_SRC
+     - hers
+**** Three-Dimensional Data
+     - use panels: http://pandas.pydata.org/pandas-docs/stable/dsintro.html#panel
 ** TODO Intro to Inferential Statistics
 *** Introduction and Lesson 7 Review
 **** Lauren's Intro Video
