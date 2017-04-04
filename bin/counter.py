@@ -320,8 +320,17 @@ def dict_to_panchenko(counter_dict, dirname='p_batch'):
         if e.errno != errno.EEXIST:
             raise
     for (k, v) in counter_dict.iteritems():
-        with file(os.path.join(dirname, 'output-tcp', k), 'w') as f:
-            list_to_panchenko(v, f)
+        if 'background' in k:
+            count = 0
+            for instance in v:
+                with file(os.path.join(
+                        dirname, 'output-tcp', '{}-{}'.format(k, count)),
+                          'w') as f:
+                    list_to_panchenko([instance], f)
+                    count += 1
+        else:
+            with file(os.path.join(dirname, 'output-tcp', k), 'w') as f:
+                list_to_panchenko(v, f)
 
 
 def dict_to_wang(counter_dict):

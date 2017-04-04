@@ -9916,6 +9916,656 @@
          >>> st.norm.ppf(0.5) # get z-score from table entry
          0
        #+END_SRC
+** Intro to Data Analysis
+*** Data Analysis Process
+**** Introduction
+     - analyse data sets
+     - perform own questions
+**** Problems Solved by Data Analysts
+     - analyse udacity student data
+     - other problems
+       - netflix movie recommendations
+       - facebook: news
+       - okcupid: matches
+	 - best questions on first date:
+	   - like horror movies
+	   - travel around another country alone
+	   - go live on a sailboat
+       - walmart: what to stock
+       - bill james: top performers
+       - pharma companies: chemical compounds
+**** Data Analysis Process
+     1. question phase
+        - f.ex. characteristics of students who pass projects
+	  - or how to stock store
+     2. wrangling phase
+        1. data acquisition
+        2. data cleaning
+     3. explore phase
+        - "build intuition"
+        - "find patterns"
+     4. Drawing Conclusions Phase
+        - predict: what will users like
+        - conclude
+     5. Communication Phase
+        - blog post, paper, email, powerpoint, conversation
+        - data visualization helps
+
+     0. [@0] Phases 2 and 3 are intertwined
+
+     1. [@0] sometimes need to go back to Question from all steps
+**** Intro to CSV
+     - data from files, API, scraping web page, combining different formats
+     - here: CSV, /comma/-separated
+**** Fixing Data Types
+     - right now: strings, but could convert data types later
+     - better: convert now
+     - run starter code
+**** Questions about Student Data
+     - how long to finish
+     - hers:
+       - average time
+       - relates to completed
+       - engagement changes over time
+       - how often to submit before passes
+**** Investigating the Data
+     - less engaged students than enrolled
+**** Problems in the Data
+     - see above
+     - columnt name is =account_key= twice, =acct= once
+**** Missing Engagement Records
+     - important to investigate
+       - otherwise might be missing important stuff
+     - algo
+       1. identify surprising data points, if any
+       2. print out a few
+       3. fix problems
+	  - td: remove students that were enrolled only one day
+	  - td: remove test accounts
+**** Refining the Question: Explore Phase
+     - q: daily engagement differences depending on whether project is passed
+     - problems:
+       - also data without project submission
+       - different lengths
+       - engagement in courses not related
+     - revision: only data from first week, exclude students who cancel
+       within a week
+**** Indulge Curiosity
+     - getting better sense of data is almost always useful
+***** quotes
+      - exploring your data is never a waste of time for a data analyst
+**** Debugging Data Analysis Code 
+     1. Identify surprising data points
+     2. Print out one or a few surprising points
+     3. Fix any problems you find
+**** Making Histograms
+     - histograms bit broken due to number of bins
+     - visual inspection helps to distinguish
+**** Are your Results Just Noise?
+     - results are only tentative
+     - have not statistically been validated
+**** Correlation Does Not Imply Causation
+     - per capita cheese consumption correlated to number of people who
+       died by becoming tangled in their bedsheets
+     - lurking variables:
+       - level of interest
+       - background knowledge
+     - to find out, run an A/B test
+**** Predicting Based on Many Features
+     - which students are likely to pass the first project?
+     - heuristics can help, but ML is often better
+       - interaction of features
+**** Communication
+     - last phase
+     - example
+       - difference in total minutes
+	 - report average minutes
+       - difference in days visited
+	 - show histograms
+	   - polish visualizations
+***** quotes
+      - "what findings are most interesting?"
+      - "how will you present them?"
+      - it's a good idea to spend some time polishing them. You want to
+        make them look nicer and explain what trends you're
+        noticing. You always know what you made a plot of, but your
+        reader doesn't
+**** Improving Plots and Sharing Findings
+     - mlp plots look better with seaborn, just
+       =import seaborn as sns=
+**** Data Analysis and Related Terms
+     - data science (and analysis)
+     - data engineering
+     - big data
+**** Quiz Solutions
+     #+BEGIN_SRC python
+     # CSVs in Python
+       import unicodecsv
+
+       def read_csv(filename):
+           with open(filename, 'rb') as f:
+               reader = unicodecsv.DictReader(f)
+               return list(reader)
+
+       enrollments = read_csv('enrollments.csv')
+       daily_engagement = read_csv('daily_engagement.csv')
+       project_submissions = read_csv('project_submissions.csv')
+     # Investigating the Data
+       len(enrollments)
+
+       unique_enrolled_students = set()
+       for enrollment in enrollments:
+           unique_enrolled_students.add(enrollment['account_key'])
+       len(unique_enrolled_students)
+
+       len(daily_engagement)
+
+       unique_engagement_students = set()
+       for engagement_record in daily_engagement:
+           unique_engagement_students.add(engagement_record['acct'])
+       len(unique_engagement_students)
+
+       len(project_submissions)
+
+       unique_project_submitters = set()
+       for submission in project_submissions:
+           unique_project_submitters.add(submission['account_key'])
+       len(unique_project_submitters)
+     # Problems in the Data
+       for engagement_record in daily_engagement:
+           engagement_record['account_key'] = engagement_record['acct']
+           del[engagement_record['acct']]
+     # Missing engagement records
+       for enrollment in enrollments:
+           student = enrollment['account_key']
+           if student not in unique_engagement_students:
+               print enrollment
+               break
+     # Checking for more problem records
+       num_problem_students = 0
+       for enrollment in enrollments:
+           student = enrollment['account_key']
+           if (student not in unique_engagement_students and 
+                   enrollment['join_date'] != enrollment['cancel_date']):
+               print enrollment
+               num_problem_students += 1
+
+       num_problem_students
+     # Refining the Question
+       paid_students = {}
+       for enrollment in non_udacity_enrollments:
+           if (not enrollment['is_canceled'] or
+                   enrollment['days_to_cancel'] > 7):
+               account_key = enrollment['account_key']
+               enrollment_date = enrollment['join_date']
+               if (account_key not in paid_students or
+                       enrollment_date > paid_students[account_key]):
+                   paid_students[account_key] = enrollment_date
+       len(paid_students)
+     # Getting Data from First Week - fixed later
+       def within_one_week(join_date, engagement_date):
+           time_delta = engagement_date - join_date
+           return time_delta.days >= 0 and time_delta.days < 7
+
+       def remove_free_trial_cancels(data):
+           new_data = []
+           for data_point in data:
+               if data_point['account_key'] in paid_students:
+                   new_data.append(data_point)
+           return new_data
+
+       paid_enrollments = remove_free_trial_cancels(non_udacity_enrollments)
+       paid_engagement = remove_free_trial_cancels(non_udacity_engagement)
+       paid_submissions = remove_free_trial_cancels(non_udacity_submissions)
+
+       print len(paid_enrollments)
+       print len(paid_engagement)
+       print len(paid_submissions)
+
+       paid_engagement_in_first_week = []
+       for engagement_record in paid_engagement:
+           account_key = engagement_record['account_key']
+           join_date = paid_students[account_key]
+           engagement_record_date = engagement_record['utc_date']
+
+           if within_one_week(join_date, engagement_record_date):
+                paid_engagement_in_first_week.append(engagement_record)
+
+       len(paid_engagement_in_first_week)
+     # Debugging Data Analysis Code
+       student_with_max_minutes = None
+       max_minutes = 0
+
+       for student, total_minutes in total_minutes_by_account.items():
+           if total_minutes > max_minutes:
+               max_minutes = total_minutes
+               student_with_max_minutes = student
+
+       max_minutes
+
+       for engagement_record in paid_engagement_in_first_week:
+           if engagement_record['account_key'] == student_with_max_minutes:
+               print engagement_record
+     # Alternatively, you can find the account key with the maximum minutes using this shorthand notation:
+       max(total_minutes_by_account.items(), key=lambda pair: pair[1])
+     #Lessons Completed in First Week
+       from collections import defaultdict
+
+       def group_data(data, key_name):
+           grouped_data = defaultdict(list)
+           for data_point in data:
+               key = data_point[key_name]
+               grouped_data[key].append(data_point)
+           return grouped_data
+
+       engagement_by_account = group_data(paid_engagement_in_first_week,
+                                          'account_key')
+
+       def sum_grouped_items(grouped_data, field_name):
+           summed_data = {}
+           for key, data_points in grouped_data.items():
+               total = 0
+               for data_point in data_points:
+                   total += data_point[field_name]
+               summed_data[key] = total
+           return summed_data
+
+       total_minutes_by_account = sum_grouped_items(engagement_by_account,
+                                                    'total_minutes_visited')
+
+       import numpy as np
+
+       def describe_data(data):
+           print 'Mean:', np.mean(data)
+           print 'Standard deviation:', np.std(data)
+           print 'Minimum:', np.min(data)
+           print 'Maximum:', np.max(data)
+
+       describe_data(total_minutes_by_account.values())
+
+       lessons_completed_by_account = sum_grouped_items(engagement_by_account,
+                                                        'lessons_completed')
+       describe_data(lessons_completed_by_account.values())
+
+     # Number of Visits in the First Week
+       for engagement_record in paid_engagement:
+           if engagement_record['num_courses_visited'] > 0:
+               engagement_record['has_visited'] = 1
+           else:
+               engagement_record['has_visited'] = 0
+       days_visited_by_account = sum_grouped_items(engagement_by_account,
+                                                   'has_visited')
+       describe_data(days_visited_by_account.values())
+
+     # Splitting out Passing Students
+       subway_project_lesson_keys = ['746169184', '3176718735']
+
+       pass_subway_project = set()
+
+       for submission in paid_submissions:
+           project = submission['lesson_key']
+           rating = submission['assigned_rating']
+
+           if ((project in subway_project_lesson_keys) and
+                   (rating == 'PASSED' or rating == 'DISTINCTION')):
+               pass_subway_project.add(submission['account_key'])
+
+       len(pass_subway_project)
+
+       passing_engagement = []
+       non_passing_engagement = []
+
+       for engagement_record in paid_engagement_in_first_week:
+           if engagement_record['account_key'] in pass_subway_project:
+               passing_engagement.append(engagement_record)
+           else:
+               non_passing_engagement.append(engagement_record)
+
+       print len(passing_engagement)
+       print len(non_passing_engagement)
+
+     # Comparing the Two Student Groups
+       passing_engagement_by_account = group_data(passing_engagement,
+                                                  'account_key')
+       non_passing_engagement_by_account = group_data(non_passing_engagement,
+                                                      'account_key')
+
+       print 'non-passing students:'
+       non_passing_minutes = sum_grouped_items(
+           non_passing_engagement_by_account,
+           'total_minutes_visited'
+       )
+       describe_data(non_passing_minutes.values())
+
+       print 'passing students:'
+       passing_minutes = sum_grouped_items(
+           passing_engagement_by_account,
+           'total_minutes_visited'
+       )
+       describe_data(passing_minutes.values())
+
+       print 'non-passing students:'
+       non_passing_lessons = sum_grouped_items(
+           non_passing_engagement_by_account,
+           'lessons_completed'
+       )
+       describe_data(non_passing_lessons.values())
+
+       print 'passing students:'
+       passing_lessons = sum_grouped_items(
+           passing_engagement_by_account,
+           'lessons_completed'
+       )
+       describe_data(passing_lessons.values())
+
+       print 'non-passing students:'
+       non_passing_visits = sum_grouped_items(
+           non_passing_engagement_by_account, 
+           'has_visited'
+       )
+       describe_data(non_passing_visits.values())
+
+       print 'passing students:'
+       passing_visits = sum_grouped_items(
+           passing_engagement_by_account,
+           'has_visited'
+       )
+       describe_data(passing_visits.values())
+
+     # Making Histograms
+       %pylab inline
+
+       import matplotlib.pyplot as plt
+       import numpy as np
+
+       # Summarize the given data
+       def describe_data(data):
+           print 'Mean:', np.mean(data)
+           print 'Standard deviation:', np.std(data)
+           print 'Minimum:', np.min(data)
+           print 'Maximum:', np.max(data)
+           plt.hist(data)
+
+     # Improving Plots and Sharing Findings
+       import seaborn as sns
+
+       plt.hist(non_passing_visits.values(), bins=8)
+       plt.xlabel('Number of days')
+       plt.title('Distribution of classroom visits in the first week ' +
+                 'for students who do not pass the subway project')
+
+       plt.hist(passing_visits.values(), bins=8)
+       plt.xlabel('Number of days')
+       plt.title('Distribution of classroom visits in the first week ' +
+                 'for students who pass the subway project')
+
+     #+END_SRC
+*** NumPy and Pandas for 1D data
+**** Introduction
+     - Panda easier, makes it run faster
+     - numpy
+**** Quiz: Gapminder Data
+     - site gapminder
+     - QUESTIONS:
+       - determine life expectany from GDP
+	 - from school completion rates
+	 - from employment levels
+       - school completion rate vs employment
+	 - correlation positive or negative
+       - male vs female completion rate
+	 - correlated?
+     - HERS:
+       - employment in US/another country varied over time?
+       - highest and lowest employment levels?
+         - which countries have them
+	 - where is us on the spectrum
+       - same questions for other variables
+       - how do these variables relate to each other
+       - where is US on that spectrum
+       - can you see global recessions?
+**** One-Dimensional Data in NumPy and Pandas
+     - =import pandas as pd=
+     - =a = pd.read_csv('testfilename')=
+     - =a['acct'].unique()=
+**** NumPy Arrays
+     | pandas           | numpy   |
+     |------------------+---------|
+     | series           | array   |
+     | - more features  | simpler |
+     | - based on numpy |         | 
+     - vs python lists
+       - similar
+	 - access elements by position
+	 - access range =a[1:3]=
+	 - loop
+       - different
+	 - same data type for all elements
+	 - convenient functions
+	   - =mean=, =std=
+	   - faster for numpy arrays, than lists
+	 - can be multi-dimensional
+     - numpy:
+       - =employment.argmax= returns index of biggest arg
+       - element given by =.dtype=
+       - =|S22=: string of length at most 22
+**** Vectorized Operations
+     - vector addition [1,2,3] + [4,5,6]
+       - = [5,7.9] (linear algebra, numpy)
+       - = [1,2,3,4,5,6] (python list concatenation)
+       - error (many languages)
+**** Multiplying by a Scalar
+     - [1,2,3] * 3
+       - = [1,2,3,1,2,3,1,2,3] (python)
+       - = [3,6,9] (numpy, linalg)
+       - error (common)
+**** Calculate Overall Completion Rate
+     - math: + - * / **
+     - logical: & | ~ (on booleans, on numbers: bitwise)
+     - comparison: == < > <= >=
+**** Standardizing Data
+     - data point compared to population?
+     - in standard deviations
+     - vectorized operations let you skip for-loops etc
+**** NumPy Index Arrays
+     - =a[b]= with b array of same length gives those elements in a
+       where b is true
+     - =a[a > 2]= every element where a > 2, also =b = a>2, a[b]=
+**** + vs. +=
+     #+BEGIN_SRC python
+       a = np.array([1,2,3,4])
+       b = a
+       a += np.array([1,1,1,1]) # or a = a + ...
+       print b
+     #+END_SRC
+     - += prints [2,3,4,5]
+     - = + prints [1,2,3,4]
+***** quotes
+      - += operates _in-place_ while + does not
+**** In-Place vs. Not In-Place
+     #+BEGIN_SRC python
+       a = np.array([1,2,3,4])
+       slice = a[:3]
+       slice[0] = 100
+       print a
+     #+END_SRC
+     - prints [100,2,3,4]
+     - =[:3]= creates /view/ of array
+**** Pandas Series
+     - =s.describe()= prints stats
+     - seemingly positive correlation between gdp and life expectancy
+**** Series Indexes
+     - add index to series
+       =a = pd.Series(employment, index=countries)=
+     - access via =loc=
+       =a.loc['Albania']=
+     - access position of max via =argmax=
+     - get index via f.ex. =a.iloc[3]=
+**** Vectorized Operations and Series Indexes
+     - same indices: added
+     - also for other order
+     - other indicies: NaN (maybe substituted if not existing)
+**** Filling Missing Values
+     - fill out unknowns
+       =s1.add(s2, fill_value=0)=
+     - drop unknowns afterwards:
+       =.dropnan()=
+**** Pandas Series apply()
+     - if sth not built-in
+       =s.apply(lambda x: x+3)=
+**** Plotting in Pandas
+     =country = 'Zimbabwe'=
+     =gdp.loc[country].plot()=
+**** Conclusion
+     - numpy and pandas for 1d-data
+     - cleaner and faster
+*** NumPy and Pandas for 2D-data
+**** Introduction
+     - new data: new york subway
+     - 2d data sets
+**** Subway Data
+     - questions
+       - (of course) weather vs subway usage
+       - day_of_week vs subway usage
+       - plot usage during day(s)
+       - when was the most usage?
+	 - day, weather
+       - heat map of station usage (entries and exits)
+	 - approximate where people go to work, where they sleep, ...
+     - hers
+       - what variables are related to subway ridership? (if work for subway)
+       - which stations have the most riders?
+       - patterns over time? rush hour?
+       - memorial day?
+       - weather?
+       - weather patterns independently of subway?
+	 - rising temperatures
+**** Two-Dimensional NumPy Arrays
+     - pure python: list of lists
+     - numpy: 2d-array
+       - start with this
+     - pandas: dataframe
+     - differences:
+       - memory efficiency
+       - access via =a[1,3]=
+       - stats, f.ex. =mean=, of entire array
+     - code:
+       - place of global max:
+	 =(day, place) = np.unravel_index(ridership.argmax(), ridership.shape)]=
+       - select column's mean:
+	 =mean_for_max = ridership[:,place].mean()=
+**** NumPy Axis
+     - =axis=0=: calculate for each column
+       - =axis=1=: for each row
+       - try out
+**** NumPy and Pandas Data Types
+     - each np array has only /one/ data type, even if different values exist
+     - numpy converts these
+     - benefit of panda
+**** Accessing Elements of a DataFrame
+     - station names as column names, index for dates
+     - access rows via =.loc=
+       - and elements via =.loc[date, name]= or =.iloc[name]=
+	 - even without .loc
+     - =.values= gives just values without indices
+**** Calculating Correlation
+     - Pearson's r
+     - standardize all variables's x and y values: subtract mean, divide by std
+     - pass =ddof=0= to =.std=
+     - algo
+       1. standardize: express as number of stds above/below mean
+	  - spreads out values
+	  - sets 0,0 to middle
+       2. multiply each pair of values, take average
+       3. (sum up?)
+     - range from -1 to 1
+     - my solution:
+       #+BEGIN_SRC python
+         x = (x - x.mean()) / x.std(ddof=0)
+         y = (y - y.mean()) / y.std(ddof=0)
+         return (x*y).mean()
+       #+END_SRC
+     - use numpy's version, but good to know on your own
+***** quotes
+      - many times when you're standardizing variables, it doesn't
+        matter too much whether you take the corrected or uncorrected
+        standard deviation, but to calculate pearson's r specifically,
+        it's important to take the uncorrected standard deviation
+**** Pandas Axis Names
+     - axis=0, axis=1, axis='index', axis='columns'
+     - confusing:
+       - =axis='columns'= gives mean of each row (column is fixed)
+       - =axis='index'= gives mean of each column
+       - try out
+**** DataFrame Vectorized Operations
+     - matches by index and column, not position
+     - shift frame: =df.shift()=
+       - example:
+	 =def get_hourly_entries_and_exits(entries_and_exits):=
+              =return (entries_and_exits - entries_and_exits.shift())[1:]=
+**** DataFrame applymap()
+     - applies function to every element
+**** DataFrame apply()
+     - applies to each column
+     - takes =axis= arg
+**** DataFrame apply() Use Case 2
+     - reduce dataframe to series
+       - column
+**** Adding a DataFrame to a Series
+     - df.add(s, axis='index')
+       - add series by row
+     - if add by index, non-matching: NaNs
+**** Standardizing Each Column Again
+     - by column
+       =((df - df.mean()) / df.std(ddof=0))=
+     - by row
+       =(df.subtract(df.mean(axis=1), axis=0).divide(df.std(axis=1), axis=0))=
+       - hers
+	 df.subtract(df.mean(axis='columns'),
+             axis='index').divide(df.std(axis='columns'), axis='index')
+**** Pandas groupby()
+     =df.groupby('account_key').sum()=
+     - show average usage per station
+       =print subway.groupby('station').mean()['ENTRIESn_hourly'].sort_values()=
+**** Calculating Hourly Entries and Exits
+ =def to_apply(entries_and_exits):=
+     =return (entries_and_exits - entries_and_exits.shift())[1:]=
+
+ =def get_hourly_entries_and_exits(entries_and_exits):=
+     =return entries_and_exits.groupby('UNIT')[['ENTRIESn', 'EXITSn']].apply(to_apply)=
+***** quotes
+ Thus, to correctly calculate the hourly entries and exits, it was necessary to group by station and day, then calculate the hourly entries and exits within each day.
+
+ Write a function to do that. You should use the apply() function to call the function you wrote previously. You should also make sure you restrict your grouped data to just the entries and exits columns, since your function may cause an error if it is called on non-numerical data types.
+**** Combining Pandas DataFrames
+     - pandas =merge= combines tables
+     - duplicates rows if duplicate entries exist
+       #+BEGIN_SRC python
+         submissions.merge(enrollments, on='account_key', how='left')
+       #+END_SRC
+       - how: keep which rows 'left' keeps all from left, 'right' from
+         right, 'inner': only common, 'outer': keep all rows
+	 - filled with NaN
+     - my solution:
+       #+BEGIN_SRC python
+         def combine_dfs(subway_df, weather_df):
+             return weather_df.merge(subway_df, on=['DATEn', 'latitude', 'longitude'], how='inner')
+       #+END_SRC
+     - her solution:
+       - look at =head(3)= for fields
+       - decide =on=: date, hour, lat, lon
+       - =left_on= / =right_on=: column names on left/right table
+**** Plotting for DataFrames
+     #+BEGIN_SRC python
+       filename = '/home/web/keep/nyc_subway_weather.csv'
+       subway_df = pd.read_csv(filename)
+       data = subway_df.groupby(['latitude', 'longitude'], as_index=False).sum()[['latitude', 'longitude', 'ENTRIESn_hourly', 'EXITSn_hourly']]
+       plt.scatter(data['longitude'], data['latitude'], s=data['ENTRIESn_hourly']/data['ENTRIESn_hourly'].std()*50, alpha=0.5, color='orange')
+       import mplleaflet
+       mplleaflet.show()
+     #+END_SRC
+     - hers
+**** Three-Dimensional Data
+     - use panels: http://pandas.pydata.org/pandas-docs/stable/dsintro.html#panel
 ** TODO [#A] vorlesungsnotizen sv2/3 :hannover_laptop:
 *** [#A] zu stufen der mustererkennung
 ** TODO [#A] [[./roc.pdf][Fawcett - An introduction to ROC analysis]]
@@ -29198,656 +29848,6 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        - svm-train.c: replace =do_cross_validation=
        - svm-predict.c: replace =predict(input,output)=
        - eval.cpp: set which score to use: =double (*validation_function)...=.
-** MOVE Intro to Data Analysis
-*** Data Analysis Process
-**** Introduction
-     - analyse data sets
-     - perform own questions
-**** Problems Solved by Data Analysts
-     - analyse udacity student data
-     - other problems
-       - netflix movie recommendations
-       - facebook: news
-       - okcupid: matches
-	 - best questions on first date:
-	   - like horror movies
-	   - travel around another country alone
-	   - go live on a sailboat
-       - walmart: what to stock
-       - bill james: top performers
-       - pharma companies: chemical compounds
-**** Data Analysis Process
-     1. question phase
-        - f.ex. characteristics of students who pass projects
-	  - or how to stock store
-     2. wrangling phase
-        1. data acquisition
-        2. data cleaning
-     3. explore phase
-        - "build intuition"
-        - "find patterns"
-     4. Drawing Conclusions Phase
-        - predict: what will users like
-        - conclude
-     5. Communication Phase
-        - blog post, paper, email, powerpoint, conversation
-        - data visualization helps
-
-     0. [@0] Phases 2 and 3 are intertwined
-
-     1. [@0] sometimes need to go back to Question from all steps
-**** Intro to CSV
-     - data from files, API, scraping web page, combining different formats
-     - here: CSV, /comma/-separated
-**** Fixing Data Types
-     - right now: strings, but could convert data types later
-     - better: convert now
-     - run starter code
-**** Questions about Student Data
-     - how long to finish
-     - hers:
-       - average time
-       - relates to completed
-       - engagement changes over time
-       - how often to submit before passes
-**** Investigating the Data
-     - less engaged students than enrolled
-**** Problems in the Data
-     - see above
-     - columnt name is =account_key= twice, =acct= once
-**** Missing Engagement Records
-     - important to investigate
-       - otherwise might be missing important stuff
-     - algo
-       1. identify surprising data points, if any
-       2. print out a few
-       3. fix problems
-	  - td: remove students that were enrolled only one day
-	  - td: remove test accounts
-**** Refining the Question: Explore Phase
-     - q: daily engagement differences depending on whether project is passed
-     - problems:
-       - also data without project submission
-       - different lengths
-       - engagement in courses not related
-     - revision: only data from first week, exclude students who cancel
-       within a week
-**** Indulge Curiosity
-     - getting better sense of data is almost always useful
-***** quotes
-      - exploring your data is never a waste of time for a data analyst
-**** Debugging Data Analysis Code 
-     1. Identify surprising data points
-     2. Print out one or a few surprising points
-     3. Fix any problems you find
-**** Making Histograms
-     - histograms bit broken due to number of bins
-     - visual inspection helps to distinguish
-**** Are your Results Just Noise?
-     - results are only tentative
-     - have not statistically been validated
-**** Correlation Does Not Imply Causation
-     - per capita cheese consumption correlated to number of people who
-       died by becoming tangled in their bedsheets
-     - lurking variables:
-       - level of interest
-       - background knowledge
-     - to find out, run an A/B test
-**** Predicting Based on Many Features
-     - which students are likely to pass the first project?
-     - heuristics can help, but ML is often better
-       - interaction of features
-**** Communication
-     - last phase
-     - example
-       - difference in total minutes
-	 - report average minutes
-       - difference in days visited
-	 - show histograms
-	   - polish visualizations
-***** quotes
-      - "what findings are most interesting?"
-      - "how will you present them?"
-      - it's a good idea to spend some time polishing them. You want to
-        make them look nicer and explain what trends you're
-        noticing. You always know what you made a plot of, but your
-        reader doesn't
-**** Improving Plots and Sharing Findings
-     - mlp plots look better with seaborn, just
-       =import seaborn as sns=
-**** Data Analysis and Related Terms
-     - data science (and analysis)
-     - data engineering
-     - big data
-**** Quiz Solutions
-     #+BEGIN_SRC python
-     # CSVs in Python
-       import unicodecsv
-
-       def read_csv(filename):
-           with open(filename, 'rb') as f:
-               reader = unicodecsv.DictReader(f)
-               return list(reader)
-
-       enrollments = read_csv('enrollments.csv')
-       daily_engagement = read_csv('daily_engagement.csv')
-       project_submissions = read_csv('project_submissions.csv')
-     # Investigating the Data
-       len(enrollments)
-
-       unique_enrolled_students = set()
-       for enrollment in enrollments:
-           unique_enrolled_students.add(enrollment['account_key'])
-       len(unique_enrolled_students)
-
-       len(daily_engagement)
-
-       unique_engagement_students = set()
-       for engagement_record in daily_engagement:
-           unique_engagement_students.add(engagement_record['acct'])
-       len(unique_engagement_students)
-
-       len(project_submissions)
-
-       unique_project_submitters = set()
-       for submission in project_submissions:
-           unique_project_submitters.add(submission['account_key'])
-       len(unique_project_submitters)
-     # Problems in the Data
-       for engagement_record in daily_engagement:
-           engagement_record['account_key'] = engagement_record['acct']
-           del[engagement_record['acct']]
-     # Missing engagement records
-       for enrollment in enrollments:
-           student = enrollment['account_key']
-           if student not in unique_engagement_students:
-               print enrollment
-               break
-     # Checking for more problem records
-       num_problem_students = 0
-       for enrollment in enrollments:
-           student = enrollment['account_key']
-           if (student not in unique_engagement_students and 
-                   enrollment['join_date'] != enrollment['cancel_date']):
-               print enrollment
-               num_problem_students += 1
-
-       num_problem_students
-     # Refining the Question
-       paid_students = {}
-       for enrollment in non_udacity_enrollments:
-           if (not enrollment['is_canceled'] or
-                   enrollment['days_to_cancel'] > 7):
-               account_key = enrollment['account_key']
-               enrollment_date = enrollment['join_date']
-               if (account_key not in paid_students or
-                       enrollment_date > paid_students[account_key]):
-                   paid_students[account_key] = enrollment_date
-       len(paid_students)
-     # Getting Data from First Week - fixed later
-       def within_one_week(join_date, engagement_date):
-           time_delta = engagement_date - join_date
-           return time_delta.days >= 0 and time_delta.days < 7
-
-       def remove_free_trial_cancels(data):
-           new_data = []
-           for data_point in data:
-               if data_point['account_key'] in paid_students:
-                   new_data.append(data_point)
-           return new_data
-
-       paid_enrollments = remove_free_trial_cancels(non_udacity_enrollments)
-       paid_engagement = remove_free_trial_cancels(non_udacity_engagement)
-       paid_submissions = remove_free_trial_cancels(non_udacity_submissions)
-
-       print len(paid_enrollments)
-       print len(paid_engagement)
-       print len(paid_submissions)
-
-       paid_engagement_in_first_week = []
-       for engagement_record in paid_engagement:
-           account_key = engagement_record['account_key']
-           join_date = paid_students[account_key]
-           engagement_record_date = engagement_record['utc_date']
-
-           if within_one_week(join_date, engagement_record_date):
-                paid_engagement_in_first_week.append(engagement_record)
-
-       len(paid_engagement_in_first_week)
-     # Debugging Data Analysis Code
-       student_with_max_minutes = None
-       max_minutes = 0
-
-       for student, total_minutes in total_minutes_by_account.items():
-           if total_minutes > max_minutes:
-               max_minutes = total_minutes
-               student_with_max_minutes = student
-
-       max_minutes
-
-       for engagement_record in paid_engagement_in_first_week:
-           if engagement_record['account_key'] == student_with_max_minutes:
-               print engagement_record
-     # Alternatively, you can find the account key with the maximum minutes using this shorthand notation:
-       max(total_minutes_by_account.items(), key=lambda pair: pair[1])
-     #Lessons Completed in First Week
-       from collections import defaultdict
-
-       def group_data(data, key_name):
-           grouped_data = defaultdict(list)
-           for data_point in data:
-               key = data_point[key_name]
-               grouped_data[key].append(data_point)
-           return grouped_data
-
-       engagement_by_account = group_data(paid_engagement_in_first_week,
-                                          'account_key')
-
-       def sum_grouped_items(grouped_data, field_name):
-           summed_data = {}
-           for key, data_points in grouped_data.items():
-               total = 0
-               for data_point in data_points:
-                   total += data_point[field_name]
-               summed_data[key] = total
-           return summed_data
-
-       total_minutes_by_account = sum_grouped_items(engagement_by_account,
-                                                    'total_minutes_visited')
-
-       import numpy as np
-
-       def describe_data(data):
-           print 'Mean:', np.mean(data)
-           print 'Standard deviation:', np.std(data)
-           print 'Minimum:', np.min(data)
-           print 'Maximum:', np.max(data)
-
-       describe_data(total_minutes_by_account.values())
-
-       lessons_completed_by_account = sum_grouped_items(engagement_by_account,
-                                                        'lessons_completed')
-       describe_data(lessons_completed_by_account.values())
-
-     # Number of Visits in the First Week
-       for engagement_record in paid_engagement:
-           if engagement_record['num_courses_visited'] > 0:
-               engagement_record['has_visited'] = 1
-           else:
-               engagement_record['has_visited'] = 0
-       days_visited_by_account = sum_grouped_items(engagement_by_account,
-                                                   'has_visited')
-       describe_data(days_visited_by_account.values())
-
-     # Splitting out Passing Students
-       subway_project_lesson_keys = ['746169184', '3176718735']
-
-       pass_subway_project = set()
-
-       for submission in paid_submissions:
-           project = submission['lesson_key']
-           rating = submission['assigned_rating']
-
-           if ((project in subway_project_lesson_keys) and
-                   (rating == 'PASSED' or rating == 'DISTINCTION')):
-               pass_subway_project.add(submission['account_key'])
-
-       len(pass_subway_project)
-
-       passing_engagement = []
-       non_passing_engagement = []
-
-       for engagement_record in paid_engagement_in_first_week:
-           if engagement_record['account_key'] in pass_subway_project:
-               passing_engagement.append(engagement_record)
-           else:
-               non_passing_engagement.append(engagement_record)
-
-       print len(passing_engagement)
-       print len(non_passing_engagement)
-
-     # Comparing the Two Student Groups
-       passing_engagement_by_account = group_data(passing_engagement,
-                                                  'account_key')
-       non_passing_engagement_by_account = group_data(non_passing_engagement,
-                                                      'account_key')
-
-       print 'non-passing students:'
-       non_passing_minutes = sum_grouped_items(
-           non_passing_engagement_by_account,
-           'total_minutes_visited'
-       )
-       describe_data(non_passing_minutes.values())
-
-       print 'passing students:'
-       passing_minutes = sum_grouped_items(
-           passing_engagement_by_account,
-           'total_minutes_visited'
-       )
-       describe_data(passing_minutes.values())
-
-       print 'non-passing students:'
-       non_passing_lessons = sum_grouped_items(
-           non_passing_engagement_by_account,
-           'lessons_completed'
-       )
-       describe_data(non_passing_lessons.values())
-
-       print 'passing students:'
-       passing_lessons = sum_grouped_items(
-           passing_engagement_by_account,
-           'lessons_completed'
-       )
-       describe_data(passing_lessons.values())
-
-       print 'non-passing students:'
-       non_passing_visits = sum_grouped_items(
-           non_passing_engagement_by_account, 
-           'has_visited'
-       )
-       describe_data(non_passing_visits.values())
-
-       print 'passing students:'
-       passing_visits = sum_grouped_items(
-           passing_engagement_by_account,
-           'has_visited'
-       )
-       describe_data(passing_visits.values())
-
-     # Making Histograms
-       %pylab inline
-
-       import matplotlib.pyplot as plt
-       import numpy as np
-
-       # Summarize the given data
-       def describe_data(data):
-           print 'Mean:', np.mean(data)
-           print 'Standard deviation:', np.std(data)
-           print 'Minimum:', np.min(data)
-           print 'Maximum:', np.max(data)
-           plt.hist(data)
-
-     # Improving Plots and Sharing Findings
-       import seaborn as sns
-
-       plt.hist(non_passing_visits.values(), bins=8)
-       plt.xlabel('Number of days')
-       plt.title('Distribution of classroom visits in the first week ' +
-                 'for students who do not pass the subway project')
-
-       plt.hist(passing_visits.values(), bins=8)
-       plt.xlabel('Number of days')
-       plt.title('Distribution of classroom visits in the first week ' +
-                 'for students who pass the subway project')
-
-     #+END_SRC
-*** NumPy and Pandas for 1D data
-**** Introduction
-     - Panda easier, makes it run faster
-     - numpy
-**** Quiz: Gapminder Data
-     - site gapminder
-     - QUESTIONS:
-       - determine life expectany from GDP
-	 - from school completion rates
-	 - from employment levels
-       - school completion rate vs employment
-	 - correlation positive or negative
-       - male vs female completion rate
-	 - correlated?
-     - HERS:
-       - employment in US/another country varied over time?
-       - highest and lowest employment levels?
-         - which countries have them
-	 - where is us on the spectrum
-       - same questions for other variables
-       - how do these variables relate to each other
-       - where is US on that spectrum
-       - can you see global recessions?
-**** One-Dimensional Data in NumPy and Pandas
-     - =import pandas as pd=
-     - =a = pd.read_csv('testfilename')=
-     - =a['acct'].unique()=
-**** NumPy Arrays
-     | pandas           | numpy   |
-     |------------------+---------|
-     | series           | array   |
-     | - more features  | simpler |
-     | - based on numpy |         | 
-     - vs python lists
-       - similar
-	 - access elements by position
-	 - access range =a[1:3]=
-	 - loop
-       - different
-	 - same data type for all elements
-	 - convenient functions
-	   - =mean=, =std=
-	   - faster for numpy arrays, than lists
-	 - can be multi-dimensional
-     - numpy:
-       - =employment.argmax= returns index of biggest arg
-       - element given by =.dtype=
-       - =|S22=: string of length at most 22
-**** Vectorized Operations
-     - vector addition [1,2,3] + [4,5,6]
-       - = [5,7.9] (linear algebra, numpy)
-       - = [1,2,3,4,5,6] (python list concatenation)
-       - error (many languages)
-**** Multiplying by a Scalar
-     - [1,2,3] * 3
-       - = [1,2,3,1,2,3,1,2,3] (python)
-       - = [3,6,9] (numpy, linalg)
-       - error (common)
-**** Calculate Overall Completion Rate
-     - math: + - * / **
-     - logical: & | ~ (on booleans, on numbers: bitwise)
-     - comparison: == < > <= >=
-**** Standardizing Data
-     - data point compared to population?
-     - in standard deviations
-     - vectorized operations let you skip for-loops etc
-**** NumPy Index Arrays
-     - =a[b]= with b array of same length gives those elements in a
-       where b is true
-     - =a[a > 2]= every element where a > 2, also =b = a>2, a[b]=
-**** + vs. +=
-     #+BEGIN_SRC python
-       a = np.array([1,2,3,4])
-       b = a
-       a += np.array([1,1,1,1]) # or a = a + ...
-       print b
-     #+END_SRC
-     - += prints [2,3,4,5]
-     - = + prints [1,2,3,4]
-***** quotes
-      - += operates _in-place_ while + does not
-**** In-Place vs. Not In-Place
-     #+BEGIN_SRC python
-       a = np.array([1,2,3,4])
-       slice = a[:3]
-       slice[0] = 100
-       print a
-     #+END_SRC
-     - prints [100,2,3,4]
-     - =[:3]= creates /view/ of array
-**** Pandas Series
-     - =s.describe()= prints stats
-     - seemingly positive correlation between gdp and life expectancy
-**** Series Indexes
-     - add index to series
-       =a = pd.Series(employment, index=countries)=
-     - access via =loc=
-       =a.loc['Albania']=
-     - access position of max via =argmax=
-     - get index via f.ex. =a.iloc[3]=
-**** Vectorized Operations and Series Indexes
-     - same indices: added
-     - also for other order
-     - other indicies: NaN (maybe substituted if not existing)
-**** Filling Missing Values
-     - fill out unknowns
-       =s1.add(s2, fill_value=0)=
-     - drop unknowns afterwards:
-       =.dropnan()=
-**** Pandas Series apply()
-     - if sth not built-in
-       =s.apply(lambda x: x+3)=
-**** Plotting in Pandas
-     =country = 'Zimbabwe'=
-     =gdp.loc[country].plot()=
-**** Conclusion
-     - numpy and pandas for 1d-data
-     - cleaner and faster
-*** NumPy and Pandas for 2D-data
-**** Introduction
-     - new data: new york subway
-     - 2d data sets
-**** Subway Data
-     - questions
-       - (of course) weather vs subway usage
-       - day_of_week vs subway usage
-       - plot usage during day(s)
-       - when was the most usage?
-	 - day, weather
-       - heat map of station usage (entries and exits)
-	 - approximate where people go to work, where they sleep, ...
-     - hers
-       - what variables are related to subway ridership? (if work for subway)
-       - which stations have the most riders?
-       - patterns over time? rush hour?
-       - memorial day?
-       - weather?
-       - weather patterns independently of subway?
-	 - rising temperatures
-**** Two-Dimensional NumPy Arrays
-     - pure python: list of lists
-     - numpy: 2d-array
-       - start with this
-     - pandas: dataframe
-     - differences:
-       - memory efficiency
-       - access via =a[1,3]=
-       - stats, f.ex. =mean=, of entire array
-     - code:
-       - place of global max:
-	 =(day, place) = np.unravel_index(ridership.argmax(), ridership.shape)]=
-       - select column's mean:
-	 =mean_for_max = ridership[:,place].mean()=
-**** NumPy Axis
-     - =axis=0=: calculate for each column
-       - =axis=1=: for each row
-       - try out
-**** NumPy and Pandas Data Types
-     - each np array has only /one/ data type, even if different values exist
-     - numpy converts these
-     - benefit of panda
-**** Accessing Elements of a DataFrame
-     - station names as column names, index for dates
-     - access rows via =.loc=
-       - and elements via =.loc[date, name]= or =.iloc[name]=
-	 - even without .loc
-     - =.values= gives just values without indices
-**** Calculating Correlation
-     - Pearson's r
-     - standardize all variables's x and y values: subtract mean, divide by std
-     - pass =ddof=0= to =.std=
-     - algo
-       1. standardize: express as number of stds above/below mean
-	  - spreads out values
-	  - sets 0,0 to middle
-       2. multiply each pair of values, take average
-       3. (sum up?)
-     - range from -1 to 1
-     - my solution:
-       #+BEGIN_SRC python
-         x = (x - x.mean()) / x.std(ddof=0)
-         y = (y - y.mean()) / y.std(ddof=0)
-         return (x*y).mean()
-       #+END_SRC
-     - use numpy's version, but good to know on your own
-***** quotes
-      - many times when you're standardizing variables, it doesn't
-        matter too much whether you take the corrected or uncorrected
-        standard deviation, but to calculate pearson's r specifically,
-        it's important to take the uncorrected standard deviation
-**** Pandas Axis Names
-     - axis=0, axis=1, axis='index', axis='columns'
-     - confusing:
-       - =axis='columns'= gives mean of each row (column is fixed)
-       - =axis='index'= gives mean of each column
-       - try out
-**** DataFrame Vectorized Operations
-     - matches by index and column, not position
-     - shift frame: =df.shift()=
-       - example:
-	 =def get_hourly_entries_and_exits(entries_and_exits):=
-              =return (entries_and_exits - entries_and_exits.shift())[1:]=
-**** DataFrame applymap()
-     - applies function to every element
-**** DataFrame apply()
-     - applies to each column
-     - takes =axis= arg
-**** DataFrame apply() Use Case 2
-     - reduce dataframe to series
-       - column
-**** Adding a DataFrame to a Series
-     - df.add(s, axis='index')
-       - add series by row
-     - if add by index, non-matching: NaNs
-**** Standardizing Each Column Again
-     - by column
-       =((df - df.mean()) / df.std(ddof=0))=
-     - by row
-       =(df.subtract(df.mean(axis=1), axis=0).divide(df.std(axis=1), axis=0))=
-       - hers
-	 df.subtract(df.mean(axis='columns'),
-             axis='index').divide(df.std(axis='columns'), axis='index')
-**** Pandas groupby()
-     =df.groupby('account_key').sum()=
-     - show average usage per station
-       =print subway.groupby('station').mean()['ENTRIESn_hourly'].sort_values()=
-**** Calculating Hourly Entries and Exits
- =def to_apply(entries_and_exits):=
-     =return (entries_and_exits - entries_and_exits.shift())[1:]=
-
- =def get_hourly_entries_and_exits(entries_and_exits):=
-     =return entries_and_exits.groupby('UNIT')[['ENTRIESn', 'EXITSn']].apply(to_apply)=
-***** quotes
- Thus, to correctly calculate the hourly entries and exits, it was necessary to group by station and day, then calculate the hourly entries and exits within each day.
-
- Write a function to do that. You should use the apply() function to call the function you wrote previously. You should also make sure you restrict your grouped data to just the entries and exits columns, since your function may cause an error if it is called on non-numerical data types.
-**** Combining Pandas DataFrames
-     - pandas =merge= combines tables
-     - duplicates rows if duplicate entries exist
-       #+BEGIN_SRC python
-         submissions.merge(enrollments, on='account_key', how='left')
-       #+END_SRC
-       - how: keep which rows 'left' keeps all from left, 'right' from
-         right, 'inner': only common, 'outer': keep all rows
-	 - filled with NaN
-     - my solution:
-       #+BEGIN_SRC python
-         def combine_dfs(subway_df, weather_df):
-             return weather_df.merge(subway_df, on=['DATEn', 'latitude', 'longitude'], how='inner')
-       #+END_SRC
-     - her solution:
-       - look at =head(3)= for fields
-       - decide =on=: date, hour, lat, lon
-       - =left_on= / =right_on=: column names on left/right table
-**** Plotting for DataFrames
-     #+BEGIN_SRC python
-       filename = '/home/web/keep/nyc_subway_weather.csv'
-       subway_df = pd.read_csv(filename)
-       data = subway_df.groupby(['latitude', 'longitude'], as_index=False).sum()[['latitude', 'longitude', 'ENTRIESn_hourly', 'EXITSn_hourly']]
-       plt.scatter(data['longitude'], data['latitude'], s=data['ENTRIESn_hourly']/data['ENTRIESn_hourly'].std()*50, alpha=0.5, color='orange')
-       import mplleaflet
-       mplleaflet.show()
-     #+END_SRC
-     - hers
-**** Three-Dimensional Data
-     - use panels: http://pandas.pydata.org/pandas-docs/stable/dsintro.html#panel
 ** TODO Intro to Inferential Statistics
 *** Introduction and Lesson 7 Review
 **** Lauren's Intro Video
@@ -30718,3 +30718,137 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        t = math.sqrt(78 * 0.347289811969 / 0.652710188031)
        st.t.cdf(6.442184033360461, 78)
        \approx 0.99999999555835972
+**** 21. Decision Based on p
+     t = math.sqrt((n-1) * rsq / (1-rsq)) # or -2
+     p = 2*(1-st.t.cdf(t, n-1))
+     p \approx 0.032458578113412129
+*** Lesson 15: Regression
+**** Intro to Linear Regression
+     - relationship between two numerical variables
+     - linear: straight line
+***** quotes
+      - regression line
+      - line of best fit
+**** Airplane Flights
+     - dan m
+     - vacation
+       - budget of $500
+       - miles vs plane ticket
+       - expected price \circ y
+**** Symbolize Regression Equation
+     - many ways to write it, f.ex.
+       \circ y = mx+b
+     - here: \circ y = bx+a
+**** Guess Best Fit Line
+     - how to find/determine optimal approximation
+       - minimize |expected value - real value| difference
+**** Minimize Sum of Squares
+     - standard: minimize sum of squares
+**** Calculate r
+     - spreadsheet
+       =pearson(a2:a10;b2:b10)
+     - python
+       =a = read_csv('filename')=
+       =a.corr()=
+       =r = a.corr().iloc[0].iloc[1]=
+       0.90900364935371991
+**** Calculate Standard Deviations
+     y = bx + a
+     b = r (S_y / S_x)
+     S_x = 2315.336825  (get from =a.describe()=)
+     S_y = 508.187002
+     b = 0.19951474635753103
+**** Find y-Intercept
+     - needs slope and point on regression line
+**** What Point Does the Line Go Through?
+     - goes through (!x!, !y!)
+       xbar = 2601.111111
+       ybar = 680.347778
+**** Calculate y-Intercept
+     y = bx + a
+     a = y - bx
+     a = ybar - b * xbar
+     \approx 160.12555555555548
+**** Travel 4000 Miles
+     x = 4000
+     y = b * 4000 + a
+     \approx 959.44673962681281
+**** Additional Cost per Mile
+     b \approx 0.19951474635753103
+**** Cost to Travel 0 Miles
+     a \approx 161.38775419668866
+**** Travel on a Budget
+     - 500$ max, how far?
+     - (a - 500)/-b
+       \approx 1697.1790405733577
+     - x = (a - y)/-b
+**** Which Has More Error?
+     - prediction fails
+     - std as measure how far scores from mean
+**** Standard Error of Estimate
+     - /standard error of the estimate/
+       \radic(\sum (y - \circ y)^2 / (N-2))
+**** Confidence Intervals
+     - how far above/below expected value
+     - how close slope to true slope
+**** Hypothesis Testing for Slope
+     - same outcome as test for r
+     - \beta_1: population slope
+     - \beta_0: population y-intercept
+     - b: sample slope
+     - a: sample y-intercept
+     - hypothesis H_0: \beta_1 = 0, H_A: \beta_1 (< or > or \neq) 0
+**** t-Test for Slope
+     - use computer to compute
+     - df: N-2 (N is number of data points)
+     - example: N=9, \alpha=0.05 non-directional, t=5.77
+     - solution: st.t.ppf(0.025, 7) \approx -2.3646242510103002 < t-statistic
+       - evidence to reject H_0, seems to be correlated
+**** R Output
+     - Call: (Im(formulat = y \sim x)
+     - Pr(>|t|) is 0.000684
+     - alternative: =st.linregress(data)=
+       LinregressResult(slope=0.19951474650948434,
+       intercept=161.38775380144125, rvalue=0.9090036493537198,
+       pvalue=0.00068400647307440357, stderr=0.034576077344512048)
+**** Factors Affecting Linear Regression
+     - outliers
+**** Summary of Linear Regression
+     - \circ y = r(S_y/S_x) x + !y! - r(S_y/S_x)!x!
+     - /residual/: Y_i - \circ Y_i
+**** Intro to Multiple Regression
+     - multiple predictors
+       \circ y = predictor_1 \cdot x_1 + predictor_2 \cdot bx_2 + ... + predictor_N \cdot x_N
+     - student effort in math class
+       - value math
+       - enjoy math
+       - relationship to teacher
+     - /multiple correlation coefficient/ R
+     - R^2 how much of y depends on xes
+**** Causation
+     - reminder: just correlation shown, not causaation
+**** Applets
+     http://www.uvm.edu/~dhowell/fundamentals7/SeeingStatisticsApplets/Applets.html
+*** Problem Set 15
+**** 1. Stem Cells & Vision - Slope
+     - spreadsheet
+       1. pearson(a1:a10,b1:b10)
+       2. stabw(a1:a10)
+       3. stabw(b1:b10)
+       4. 1 * 3/2
+       5. mittelwert(b1:b10) - 4 * mittelwert(a1:a10)
+     - python
+       - read, clean data
+       - =st.linregress(data)=
+**** 2. Stem Cells & Vision - r^2
+     - =st.linregress(data).rvalue**2=
+     - use "caused", was experimental study
+**** 5. Stem Cells & Vision - # of Stem Cells
+     - from 0 to 70 photoreceptor activity, how many cells
+       - a = st.linregress(data).intercept
+	 b = st.linregress(data).slope
+	 (a-70)/-b
+       - \approx 126.25350479244122
+**** 17. Definition of Std Error of Estimate
+***** quotes
+      - the average deviation of Y scores around the regression line
