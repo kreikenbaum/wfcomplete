@@ -30987,3 +30987,870 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
      3.8414588206941236
 **** 22. Calculate \chi^2
      88.648796387152103
+
+** Data Analysis with R
+*** What is EDA?
+**** Data is Ubiquitous
+     - lots of data everywhere
+**** Why learn EDA?
+     - explanatory data analysis
+       - numerical and graphical methods
+       - before rigorous statistical analysis
+       - defends against bad data
+     - Netflix prize
+       - clusters of movies, colored
+***** quotes
+      So what's getting ubiquitous and cheap?
+        Data
+      And what is complementary to data?
+        Analysis.
+          - Hal Varian
+**** Aude's Interest in Data
+     - Aude Hofleitner
+       - trillions of rows of data
+	 - investigate and have ideas what might be interesting
+	 - charts/maps
+       - understanding world or changing facebook
+**** Goals of EDA
+     - initial interaction with data
+     - relationships
+     - distributions: normally etc
+     - understand data before hypothesis
+**** The Growth of Televisions
+     - just cnet reviews
+     - graphics
+**** Our Approach for This Course
+     - play with data
+       - let data speak directly
+***** quotes
+      - On average people should be more skeptical when they see
+        numbers. They should be more willing to play around with the
+        data themselves. -- Nate Silver
+**** Aude Explores Coordinated Migration
+     - given hometown, what is probability of living in certain cities
+     - expected: most likely city is hometown
+     - saw: different from hometown
+     - wondered if code/data was wrong, but ok
+     - put cities on map
+     - small cities moving to current city
+     - used d3.js
+***** quotes
+      - curious and sceptical at the same time
+**** Course Overview
+     - R
+     - R studio
+*** R Basics
+**** Why R
+     - leading tool
+     - many packages
+**** RStudio Layout
+     (install via tgz file from rstudio link,
+     run with
+     #+BEGIN_SRC sh
+       env http_proxy='http://127.0.0.1:8080' https_proxy='http://127.0.0.1:8080' bin/rstudio
+     #+END_SRC
+     | file    | environment or history |
+     | console | files plots or etc     |
+**** Demystifying R
+     - c, nchar, data, str, dim, names, row.names, head, tail
+     - access members: $
+     - mean(x): mean of values
+**** Read and Subset Data
+     - =getwd()= current dir
+     - =setwd(dirname)= set
+     - =read.csv(filename)=
+     - =statesInfo <- read.csv('stateData.csv')=
+     - =View(statesInfo)= shows in separate window
+     - =subset(statesInfo, state.region == 1)= part of statesInfo with setting
+       - =statesInfo[statesInfo$state.region == 1, ]= same
+**** R Markdown Documents
+     - install polymode
+     - install markdown-mode
+     - =mtcars <- subset(mtcars, select = -year)= drop column
+     - =rm(cond)= delete variable from workspace
+     - =mtcars$weight_class <- ifelse(cond, 'heavy', mtcars$weight_class)=
+       conditionally set to heavy if cond is true. ternary operator
+**** Factor Variables
+     - =summary(reddit)= shows summary of all stats
+     - =table(reddit$employment.status)= shows different options with values
+     - =levels(reddit$age.range)= just the options
+**** Ordered Factors
+     - should be possible to order f.ex. age and income
+**** Setting Levels of Ordered Factors
+     #+BEGIN_SRC R
+ a <- c("Under 18", "18-24", "25-34", "35-44", "45-54", "55-64", "65 or Above")
+ reddit$age.range <- factor(reddit$age.range, a)
+     #+END_SRC
+     his:
+     reddit$age.range <- factor(reddit$age.range, a, ordered=T)
+**** Data Munging
+     - often, data noisy
+     - needs to clean up: /data munging/
+       - data munging course
+**** Advice for Data Scientists
+     - Eytan Bakshy (fb)
+       - advice: find interesting data sets, work with it
+     - Sean Taylor
+       - good questions is the most interesting
+       - motivates you
+***** quotes
+      - like a journalist
+*** Explore One Variable
+**** Welcome!
+     - single variable
+     - box plot
+     - histogram
+**** What to Do First?
+     - what question are you trying to answer
+       - even for simple question: learn about surprises in data
+     - want to understand most important variables
+**** Pseudo-Facebook User Data
+     - =list.files()= show current dir
+     - fake data
+     - =fb <- read.csv('pseudo_facebook.tsv', sep = '\t')= tab-delimited
+**** Histogram of Users' Birthdays
+     - =names(pf)= all variables
+     - =library(ggplot2)= load library
+     - =qplot(x = dob_day , data = pf)= plot =dob_day= from pf data
+     - =qplot(x = dob_day , data=pf, binwidth=1)=
+**** Moira's Investigation
+     - perceived audience matches real audience?
+     - shows own post, asked: how many people saw this?
+       - mismatch
+**** Perceived Audience Size
+     - people underestimated audience
+     - first thing: R's ggplot, histogram of guesses
+**** Faceting
+     - split data
+     - =facet_wrap(formula)=, =facet_wrap(~variable)=
+       - =qplot(x = dob_day , data=pf, binwidth=1) + facet_wrap(~dob_month)=
+     - also =facet_grid(formula)=,
+       - =facet_grid(vertical~horizontal)=
+**** Be Skeptical Outliers and Anomalies
+     - which type of outlier/anomaly?
+       - accurate data about extreme case
+       - bad data/limitations of data
+	 - normal value replace by extreme, and vice versa
+	   - f.ex. income information "top-coded", high income replace
+             by another value
+**** Moira's Outlier
+     - cut outlier: 10 million views
+     - adjust axes
+     - decided: bad data about extreme case
+**** Friend Count
+     - long-tailed data
+     - =qplot(x = friend_count , data=pf, bins=50)=
+**** Limiting the Axes
+     - =qplot(x = friend_count , data=pf, xlim=c(0, 1000))= simple limit
+     - =qplot(x = friend_count , data=pf) + scale_x_continuous(limits=c(0, 1000), breaks=seq(0, 1000, 50))=
+       - pass to limiter, add background lines
+     - qplot(x = friend_count , data=pf) + scale_x_continuous(limits=c(0, 1000), breaks=seq(0, 1000, 50)) + facet_wrap(~gender, ncol =2)
+       - split data by gender
+     - theirs: = qplot(x = friend_count, data = pf) + facet_grid(gender ~ .)=
+**** Omitting NA Observations
+     - NA: not applicable, unlabeled,
+       - as handled by R
+     - just gender:
+       #+BEGIN_SRC R
+     qplot(x = friend_count , data=subset(pf, !is.na(gender))) + scale_x_continuous(limits=c(0, 1000), breaks=seq(0, 1000, 50)) + facet_wrap(~gender, ncol =2) # just gender
+     qplot(x = friend_count , data=na.omit(pf)) + scale_x_continuous(limits=c(0, 1000), breaks=seq(0, 1000, 50)) + facet_wrap(~gender, ncol =2) # all NAs
+       #+END_SRC
+**** Statistics 'by' Gender
+     - =by(pf$friend_count, pf$gender, summary)=
+       - show friend count, split by gender, apply summary method
+**** Tenure
+     - =qplot(tenure, data=pf, binwidth=20, color=I('green'), fill=I('cyan'))=
+     - =qplot(tenure/365, data=pf, color=I('green'), fill=I('cyan'), bins=50)=
+     - => qplot(tenure/365, data=pf, color=I('black'), fill=I('#ffee00')) + scale_x_continuous(breaks=seq(1,7,1), limit=c(0, 7))= with yearly labels
+**** Labeling Plots
+     - labels can comment what the code was intended to do
+     #+BEGIN_SRC R
+ qplot(tenure/365, data=pf, xlab = 'Number of years using Facebook', ylab = 'Number of users in sample', color=I('black'), fill=I('#ffee00')) + scale_x_continuous(breaks=seq(1,7,1), limit=c(0, 7))
+     #+END_SRC
+**** User Ages
+     - =qplot(age, data=pf, xlab = 'Ages of facebook users', binwidth=1) + scale_x_continuous(limit=c(12, 90), breaks=seq(1, 100, 10))=
+**** Lada's Money Bag Meme
+     - Lada Adamic(fb)
+     - information flow
+     - memes recur, are often low-level
+**** Transforming Data
+     - =summary(log10(pf$friend_count + 1))= (log analysis)
+     - install.packages('gridExtra')
+       library(gridExtra)
+       - install library
+     - create three histograms, combine
+       #+BEGIN_SRC R
+       p1 = qplot(friend_count, data=pf) + scale_x_log10()
+       p2 = qplot(friend_count, data=pf) + scale_x_sqrt()
+       p3 = qplot(friend_count, data=pf)
+       grid.arrange(p1, p2, p3, ncol=1)
+       #+END_SRC
+     - also
+       =p1 = qplot(log10(friend_count +1), data=pf)=
+     - also
+       - p3 = qplot(friend_count, data=pf)
+	 p2 <- p3 + scale_x_log10() (f.ex.)
+       - p3 = ggplot(aes(x = friend_count), data = pf) + geom_histogram()
+**** Frequency Polygons
+     - like histograms, with lines
+     - qplot(friend_count, data=pf, geom='freqpoly', color=gender) + scale_x_log10()
+       - assign gender to color, show lines, not bars
+     - qplot(friend_count, ..count../sum(..count..), ylab='Proportion of users with that percentage', data=pf, geom='freqpoly', color=gender) + scale_x_log10()
+       - y-scale both by totals
+**** Likes on the Web
+     - by(pf$www_likes, pf$gender, sum)
+       - counts number of =www_likes= by gender
+**** Box Plots
+     - qplot(x=gender, y=friend_count, data=subset(pf, !is.na(pf$gender)), geom='boxplot') + scale_y_continuous(limit=c(0, 1000))
+     - theirs
+       qplot(x=gender, y=friend_count, data=subset(pf, !is.na(pf$gender)), geom='boxplot', ylim=c(0, 1000))
+       - both remove values before computation
+     - better: coord_cartesian layer
+       qplot(x=gender, y=friend_count, data=subset(pf, !is.na(pf$gender)), geom='boxplot') + coord_cartesian(ylim=c(0, 1000))
+**** Box Plots, Quartiles, and Friendships
+     - zoom in
+       qplot(x=gender, y=friend_count, data=subset(pf, !is.na(pf$gender)), geom='boxplot') + coord_cartesian(ylim=c(0, 250))
+     - boxplots also show outliers
+**** Getting Logical
+     - percentage who liked via mobile
+       out = factor( ifelse(pf$mobile_likes > 0, 1, 0))
+       summary(out)["1"] / (summary(out)["0"] + summary(out)["1"]) * 100
+     - theirs
+       sum(pf$mobile_check_in == 1) / length(pf$mobile_check_in)
+*** Problem Set: Explore One Variable
+**** Data Wrangling with R
+***** quotes
+      tidyr -a package that reshapes the layout of your data
+      dplyr - a package that helps you transform tidy, tabular data
+*** Explore Two Variables
+**** Scatterplots and Perceived Audience Size
+     - perceived audience much lower
+     - show f.ex. perceived vs actual
+**** Scatterplots
+     - sort age
+       w = table(fb$age)
+       sort(w)
+     - qplot(x=age, y=friend_count, data=fb)
+**** ggplot Syntax
+     - ggplot(aes(x = age, y = friend_count), data = pf) +
+       xlim(13, 90) + geom_point()
+**** Overplotting
+     - too many points
+       - set alpha parameter
+     - ggplot(aes(x = age, y = friend_count), data = fb) +
+       xlim(13, 90) + geom_jitter(alpha=1/20)
+       - jitter: adds x incertainty
+       - xlim: limits x values
+**** coord_trans()
+     - ggplot(aes(x = age, y = friend_count), data = fb) +
+       xlim(13, 90) + geom_point(alpha=1/20) + coord_trans(y="sqrt")
+       - transforms coordinates
+     - ggplot(aes(x = age, y = friend_count), data = fb) +
+       xlim(13, 90) + geom_jitter(alpha=1/20,
+       position=position_jitter(h=0)) + coord_trans(y="sqrt")
+       - with jitter (plain call failed)
+     - ggplot(aes(x = age, y = log10(friendships_initiated)+1), data =
+       fb) + xlim(13, 90) + geom_point(alpha=1/20)
+       - mine: show log scaled friendships
+**** Conditional Means
+     #+BEGIN_SRC R
+       age_groups <- group_by(pf, age)
+       pf.fc_by_age <- summarize(age_groups,
+                 friend.count.mean = mean(friend_count),
+                 friend.count.median = median(friend_count),
+                 n = n())
+       pf.fc_by_age <- arrange(pf.fc_by_age, age)
+     #+END_SRC
+     - friend count stats by age
+     #+BEGIN_SRC R
+       pf.fc_by_age <- pf %>%
+           group_by(age) %>%
+           summarise(friend.count.mean = mean(friend_count),
+                     friend.count.median = median(friend_count),
+                     n = n()) %>%
+           arrange(age)
+     #+END_SRC
+**** Overlaying Summaries with Raw Data
+     #+BEGIN_SRC R
+       ggplot(aes(x = age, y = friend_count), data = pf) +
+           geom_point(alpha=1/20,
+                      position = position_jitter(h=0),
+                      color = 'orange') +
+           coord_trans(y = 'sqrt') +
+           geom_line(stat = 'summary', fun.y = mean) +
+           geom_line(stat = 'summary', fun.y = quantile, fun.args=list(probs=.1),
+                     color = 'blue') +
+           geom_line(stat = 'summary', fun.y = quantile, fun.args=list(probs=.5),
+                     color = 'blue') +
+           geom_line(stat = 'summary', fun.y = quantile, fun.args=list(probs=.9),
+                     color = 'blue') +
+           coord_cartesian(xlim=c(13, 90))
+     #+END_SRC
+     - draw percentiles and mean to scatter plot
+**** Moira: Histogram Summary & Scatterplots
+     - pair raw and summary data
+       - histograms
+	 - here: difference in %: predicted - real
+**** Correlation
+     - cor.test(fb$age, fb$friend_count)
+       - correlation coefficient, CI, hypothesis, etc
+     - with(pf, cor.test(age, friend_count))
+       - same, bound object to pf/fb
+**** Correlation on Subsets
+     with(subset(pf, age<=70), cor.test(age, friend_count))
+     - analysis on subset of data
+     - shows correlation
+**** Correlation Methods
+     with(subset(pf, age<=70), cor.test(age, friend_count, method = 'spearman'))
+     - "monotonous" correlation
+**** Create Scatterplots
+     - ggplot(aes(x=likes_received, y=www_likes_received), data=fb)
+       +geom_point(alpha=1/300) + scale_x_log10() + scale_y_log10()
+     - with(fb, qplot(likes_received, www_likes_received, log="xy"))
+**** Strong Correlations
+     #+BEGIN_SRC R
+       ggplot(aes(x=likes_received, y=www_likes_received), data=fb)+
+           geom_point() +
+           xlim(0, quantile(fb$likes_received, 0.95)) +
+           ylim(0, quantile(fb$www_likes_received, 0.95)) +
+           geom_smooth(method = 'lm', color='red')
+     #+END_SRC
+     cor.test(fb$www_likes_received, fb$likes_received)
+**** Moira on Correlation
+     - some kind of measure the same thing,
+       - f.ex. number of posts, number of status updates, number of
+         picture uploads
+**** Noisy Scatterplots
+     - before
+       ggplot(aes(x=Month%%12, y=Temp), data=Mitchell) + geom_point()
+     - cor.test(Mitchell$Temp, Mitchell$Month %% 12)
+**** Understanding Noise: Age to Age Months
+     - what they wanted
+       pf$age_with_months <- pf$age + (12-pf$dob_month)/12
+     - what I did first
+       pf$age_with_months <- paste(pf$age, pf$dob_month)
+**** Age with Months Means
+     #+BEGIN_SRC R
+       pf.fc_by_age_months <- pf %>%
+           group_by(age_with_months) %>%
+           summarise(friend_count_mean = mean(friend_count),
+                     friend_count_median = median(friend_count),
+                     n = n()) %>%
+           arrange(age_with_months)
+     #+END_SRC
+**** Noise in Conditional Means
+     #+BEGIN_SRC R
+       ggplot(aes(x=age_with_months, y=friend_count_mean), data=pf.fc_by_age_months) +
+           geom_line() +
+           xlim(c(13,71))
+     #+END_SRC
+**** Smoothing Conditional Means
+     #+BEGIN_SRC R
+       p1 <- ggplot(aes(x=age, y=friend.count.mean),
+                    data=pf.fc_by_age) +
+           geom_line() +
+           xlim(c(13,71))
+       p2 <- ggplot(aes(x=age_with_months, y=friend_count_mean),
+                    data=pf.fc_by_age_months) +
+           geom_line() +
+           xlim(c(13,71)) +
+           geom_smooth()
+       p3 <- ggplot(aes(x=round(age /5)*5, y=friend_count),
+                    data=pf) +
+           geom_line(stat = 'summary', fun.y = mean) +
+           xlim(c(13,71))
+       library(gridExtra)
+       grid.arrange(p1, p2, p3, ncol=1)
+     #+END_SRC
+     - bias-variance trade-off
+**** Which Plot to Choose?
+     - create multiple visualizations
+*** test
+**** Analyzing Two Variables
+     - show plot carat vs price, omit top 1% of each
+     #+BEGIN_SRC R
+       ggplot(aes(x=carat, y=price), data=diamonds) +
+           geom_point(alpha=1/100) +
+           xlim(0, quantile(diamonds$carat, 0.99)) +
+           ylim(0, quantile(diamonds$price, 0.99))
+     #+END_SRC
+     - count(diamonds$volume == 0)
+       count numer of ...
+       - in =plyr= package
+**** Adjustments - price vs volume
+     #+BEGIN_SRC R
+       ggplot(data = subset(diamonds, volume<800 & volume != 0),
+              aes(x=volume, y=price)) +
+           geom_point(alpha=1/100) +
+           geom_smooth(method='lm')
+     #+END_SRC
+     plot line through stuff
+**** Mean Price by Clarity
+     #+BEGIN_SRC R
+       diamondsByClarity <- diamonds %>%
+           group_by(clarity) %>%
+           summarize(mean_price = mean(price),
+                     median_price = median(price),
+                     min_price = min(price),
+                     max_price = max(price),
+                     n = n())
+     #+END_SRC
+**** Bar Charts of Mean Price
+     #+BEGIN_SRC R
+       p1 <- ggplot(aes(x=color, y=mean_price), data=diamonds_mp_by_color) + geom_col()
+       p2 <- ggplot(aes(x=clarity, y=mean_price), data=diamonds_mp_by_clarity) + geom_col()
+       grid.arrange(p1, p2, ncol=1)
+     #+END_SRC
+     - plain =boxplot()= does not work with grid.arrange
+**** gapminder
+     #+BEGIN_SRC python
+       >>> a = pd.read_csv('indicatorpolityiv - Data.csv')
+       >>> a.plot()
+       >>> import seaborn as sns
+       >>> import matplotlib.pyplot as plt
+       >>> plt.ion()
+       >>> plt.show()
+       >>> b = a.set_index('Democracy, based on PolityIV')
+       >>> b.plot()
+       >>> c = b.transpose()
+       >>> c['Saxony'].plot()
+       >>> c[c.columns[:10]].plot()
+       >>> d = pd.read_csv('indicator temporary life_expectancy_at_birth20130718 - Data.csv')
+       >>> e = d.set_index('LEX, IHME')
+       >>> c.columns
+       >>> c['United States']
+       >>> c.count()
+       >>> f.count()
+       >>> os.listdir('.')
+       ['Handling_and_Processing_Strings_in_R.paste.pdf', 'indicator WB data GDP pc ppp - Data.csv', 'indicator temporary life_expectancy_at_birth20130718 - Data.csv', 'indicatorpolityiv - Data.csv', 'cDLXZgs.jpg', 'rstudio-1.0.136-amd64-debian.tar.gz', 'decentraleyes-1.3.7-an+fx+sm.xpi', 'tumblr_m47z1e9m1I1qa0uujo1_1280.jpg.gif']
+       >>> g = pd.read_csv('indicator WB data GDP pc ppp - Data.csv')
+       >>> h = g.set_index('GDP per capity, 2005 ppp, WB data')
+       >>> i = h.transpose()
+     #+END_SRC
+*** Explore Many Variables
+**** Perceived Audience Size by Age
+     - colored by age, showed no extra pattern
+**** Third Qualitative Variable
+     #+BEGIN_SRC R
+       ggplot(aes(x=gender, y=age), data=subset(pf, !is.na(gender))) +
+           geom_boxplot() +
+           stat_summary(fun.y = mean, geom = 'point', shape = 4)
+     #+END_SRC
+     - adds x for mean to boxplot
+     #+BEGIN_SRC R
+       pf %>%
+           group_by(age, gender) %>%
+           summarize(mean_friend_count = mean(friend_count),
+                     median_friend_count = median(friend_count),
+                     n = n()) %>%
+           ungroup() %>%
+           arrange(age)
+     #+END_SRC
+     summarizes by two groups
+**** Plotting Conditional Summaries
+     - mine: color=gender did not work with plain ggplot
+     #+BEGIN_SRC R
+       qplot(age, median_friend_count,
+             data=subset(pf.fc_by_age_gender, !is.na(gender)),
+             color=gender, geom="line")
+     #+END_SRC
+     - solution: aesthetic wrapper
+     #+BEGIN_SRC R
+       ggplot(aes(x=age, y=median_friend_count), data=pf.fc_by_age_gender) +
+           geom_line(aes(color=gender))
+     #+END_SRC
+**** Thinking in Ratios
+     - ratio of female to male?
+**** Wide and Long Format
+     - =dcast= want dataframe
+     #+BEGIN_SRC R
+       pf.fc_by_age_gender.wide <- dcast(pf.fc_by_age_gender,
+             age ~ gender,
+             value.var = 'median_friend_count')
+     #+END_SRC
+     - left of tilde: keep
+     - right of tilde: split by this
+     - value.var: this value in table
+**** Ratio Plot
+     #+BEGIN_SRC R
+       ggplot(aes(x=age, y=female/male), data=pf.fc_by_age_gender.wide) +
+           geom_line() +
+           geom_hline(aes(yintercept=1), linetype=2)
+     #+END_SRC
+     =geom_hline= adds a horizontal line
+**** Third Quantitative Variable
+     - fb$year_joined <- floor(2014 - fb$tenure/365)
+**** Cut a Variable
+     fb$year_joined.bucket <- cut(fb$year_joined, c(2004, 2009, 2011, 2012, 2014))
+     cut(fb$year_joined, c(2009, 2011, 2012, 2014), include.lowest = TRUE)
+     - slice to separate parts
+**** Plotting It All Together
+     #+BEGIN_SRC R
+       ggplot(aes(x=age, y=friend_count), data=subset(fb, !is.na(year_joined.bucket))) +
+           geom_line(aes(color=year_joined.bucket),
+                     stat = 'summary', fun.y = median)
+     #+END_SRC
+**** Plot the Grand Mean
+     #+BEGIN_SRC R
+       ggplot(aes(x=age, y=friend_count), data=subset(fb, !is.na(year_joined.bucket))) +
+           geom_line(aes(color=year_joined.bucket),
+                     stat = 'summary', fun.y = mean) +
+           geom_line(stat = 'summary', fun.y = mean, linetype=2)
+     #+END_SRC
+     - many more recently joined
+**** Friending Rate
+     #+BEGIN_SRC R
+       friend_rate <- with(subset(fb, fb$tenure > 0), friend_count / tenure)
+     #+END_SRC
+**** Friendships Initiated
+     #+BEGIN_SRC R
+       ggplot(aes(x=tenure, y=friendships_initiated/tenure),
+              data=subset(fb, tenure > 0)) +
+           geom_line(aes(color=year_joined.bucket),
+                     stat = 'summary', fun.y = mean,
+                     alpha=0.5)
+     #+END_SRC
+**** Bias Variance Trade off Revisited
+     reduce noise by binning x-axis
+     #+BEGIN_SRC R
+       ggplot(aes(x=7*round(tenure/7), y=friendships_initiated/tenure),
+              data=subset(fb, tenure > 0)) +
+           geom_line(aes(color=year_joined.bucket),
+                     stat = 'summary', fun.y = mean,
+                     alpha=0.5)
+     #+END_SRC
+     smoothe graph
+     #+BEGIN_SRC R
+       ggplot(aes(x = 7 * round(tenure / 7), y = friendships_initiated / tenure),
+              data = subset(fb, tenure > 0)) +
+           geom_smooth(aes(color = year_joined.bucket))
+     #+END_SRC
+**** Sean's NFL Fan Sentiment Study
+     - 5 minute ratio positive/negative words
+     - compute moving average
+       - 1 day worked better than 5 min
+     - spline for global view
+     - 7day moving average
+       - includes only last game sentiment
+       - shows story about season well
+     - combine with splines
+**** Introducing the Yogurt Dataset
+     - and now for something completely different
+     - previously: facebook
+     - purchase data of yogurt
+       - other structure
+	 - fb: one row per individual
+       - yogurt
+	 - one row per purchase
+**** Histograms Revisited
+     - read
+       yo = read.csv('yogurt.csv')
+     - convert id to factor
+       yo$id <- factor(yo$id)
+     - show structure
+       str(yo)
+**** Number of Purchases
+     - show how many different prices
+       length(unique(yo$price))
+     - transform function
+       #+BEGIN_SRC R
+         yo$all.purchases = yo$blueberry + yo$plain + yo$strawberry + yo$pina.colada + yo$mixed.berry
+       #+END_SRC
+     - video solution
+       #+BEGIN_SRC R
+         yo <- transform(yo, all.purchases = strawberry + blueberry +
+         pina.colada + plain + mixed.berry)
+       #+END_SRC
+**** Prices Over Time
+     - ggplot(aes(x=time, y=price), data=yo) + geom_point(alpha=1/10)
+**** Sampling Observations
+     - sample units to easily display raw data
+     - here: small sample of households
+       - /subsample/
+     - later: within-household variation
+**** Looking at Samples of Households
+     - make reproducible
+       set.seed(4230)
+     - select sample (16 ids)
+       sample.ids <- sample(leels(yo$id), 16)sample.ids <- sample(leels(yo$id), 16)
+     - one panel per household, mark purchase size
+       #+BEGIN_SRC R
+         ggplot(aes(x=time, y=price),
+                data=subset(yo, id %in% sample.ids)) +
+             facet_wrap( ~ id ) +
+             geom_line() +
+             geom_point(aes(size = all.purchases), pch = 1)
+       #+END_SRC
+***** quotes
+      - Use the pch or shape parameter to specify the symbol when
+        plotting points. Scroll down to 'Plotting Points' on [[http://www.statmethods.net/advgraphs/parameters.html][QuickR's
+        Graphical Parameters]].
+      - show colors for yogurt types
+       #+BEGIN_SRC R
+         ggplot(aes(x=time, y=price),
+                data=subset(yo, id %in% sample.ids)) +
+             facet_wrap( ~ id ) +
+             geom_line() +
+             geom_point(aes(size = plain), color="grey", alpha=1/4) +
+             geom_point(aes(size = blueberry), color="blue", alpha=1/4) +
+             geom_point(aes(size = pina.colada), color="orange", alpha=1/4) +
+             geom_point(aes(size = mixed.berry), color="purple", alpha=1/4) +
+             geom_point(aes(size = strawberry), color="red", alpha=1/4)
+       #+END_SRC
+**** The Limits of Cross Sectional Data
+     - fb data is just a snapshot
+       - more possibilities with time series
+**** Many Variables
+     - rely on domain knowledge
+     - use visualization or summaries to inspire
+**** Scatterplot Matrices
+     - subset data, (omit derived variables and id)
+       pf_subset <- pf[,c(2, 15)]
+     - scatterplots plot
+       library(GGally)
+       theme_set(theme_minimal(20))
+       ggpairs(pf_subset[sample.int(nrow(pf_subset), 1000), ])
+     - subset gave just 2, all:
+       pf_subset <- pf[,seq(2, 15, 1)]
+     - categorical variables created "faceted histograms"
+     - useful starting point
+**** Even More Variables
+     - genomic data
+       - thousands of measurements
+     - read
+       nci <- read.table('nci.tsv')
+     - rename columns
+       colnames(nci) <- c(1:64)
+**** Heat Maps
+     - "melt" data to long format
+       library(reshape2)
+       nci.long.samp <- melt(as.matrix(nci[1:200, ]))
+       names(nci.long.samp) <- c('gene', 'case', 'value')
+     - make the heat map
+       #+BEGIN_SRC R
+         ggplot(aes(x=case, y=gene, fill=value),
+                data=nci.long.samp) +
+             geom_tile() +
+             scale_fill_gradientn(colours = colorRampPalette(c('blue', 'red'))(100))
+       #+END_SRC
+**** Analyzing Three or More Variables
+     - extend across many variables
+     - start with scatterplot extensions
+     - then large number of variables at once
+     - reshape data: broad data to aggregate data
+       - long to wide and back
+*** Problem Set: Explore Many Variables
+**** Price Histograms with Facet and Color
+     #+BEGIN_SRC R
+       ggplot(aes(x=price), data=diamonds) +
+           facet_wrap( ~ color) +
+           geom_histogram(aes(color=cut), bins=100) +
+           scale_x_log10()
+     #+END_SRC
+**** friendship proportions
+     pf$prop_initiated <- pf$friendships_initiated / pf$friend_count
+**** initiated vs tenure
+     ggplot(aes(x=tenure, y=prop_initiated), data=fb) +
+           geom_line(aes(color=year_joined.bucket),
+                     stat = 'summary', fun.y = median)
+**** smoothing
+     #+BEGIN_SRC R
+       ggplot(aes(x = 7 * round(tenure / 7), y=prop_initiated), data=fb) +
+             geom_smooth(aes(color=year_joined.bucket))
+
+       ggplot(aes(x =tenure, y=prop_initiated), data=fb) +
+             geom_smooth(aes(color=year_joined.bucket))
+     #+END_SRC
+**** mean inits per fb group
+     #+BEGIN_SRC R
+       group_by(subset(fb, !is.nan(prop_initiated)), year_joined.bucket) %>% summarize(m = mean(prop_initiated), n=n())
+     #+END_SRC
+**** Price/Carat Binned, Faceted, & Colored
+     #+BEGIN_SRC R
+       ggplot(aes(x=cut, y=price/carat), data=diamonds) +
+           geom_jitter(aes(color=color)) +
+           facet_wrap(~ clarity)
+     #+END_SRC
+*** Diamonds and Price Predictions
+**** Welcome!
+     - diamonds have diverse history
+**** Scatterplot Review
+     #+BEGIN_SRC R
+       ggplot(aes(y=price, x=carat), data=diamonds) +
+           geom_point() +
+           ylim(0, quantile(diamonds$price, 0.99))
+     #+END_SRC
+**** Price and Carat Relationship
+     - dispersion increases as carat size increases
+     - maybe exponential
+     - add "linear trendline"
+       + stat_smooth(method = 'lm')
+**** Frances Gerety
+     - /bivariate/ relationship price-carat size
+     - diamonds are unique
+     - 1870: diamonds discovered in south africa
+     - 1888: de beers formed to control prices
+     - 1929: prices plummeted
+     - 1938: contact n.w. ayer&son: advertisement
+     - formed slogan: a diamond is forever
+**** The Rise of Diamonds
+     - first advertisement to create demand
+***** quotes
+      - most successful mass persuasion effort in history
+**** ggpairs Function
+     - packages
+       - ggally: plot
+       - memisc: summarize reression
+       - car: recode variables
+       - plyr: summaries and transformations
+     - code
+       #+BEGIN_SRC R
+         set.seed(20022012)
+         diamond_samp <- diamonds[sample(1:length(diamonds$price), 10000), ]
+         ggpairs(diamond_samp,
+                 lower = list(continuous = wrap("points", shape = I('.'))),
+                 upper = list(combo = wrap("box", outlier.shape = I('.'))),
+		 axisLabels = 'internal')
+       #+END_SRC
+         ggpairs(diamond_samp, params = c(shape = I('.'), outlier.shape = I('.')))
+     - lower triangle:
+       - grouped histograms for qualitative-qualitative pairs
+       - scatterplots for quantitative- quantitative pairs
+     - upper triangle:
+       - grouped histograms for qualitative-qualitative pairs (x
+         instead of y as grouping factor)
+       - boxplots for qualitative- quantitative pairs
+       - correlation for quantitative- quantitative pairs
+     - goal: price
+**** ggpairs Function
+     - weight \approx f(volume) \approx f(x \cdot y \cdot z)
+**** The Demand of Diamonds
+     - variance and price should increase
+     - code
+       #+BEGIN_SRC R
+ plot1 <- qplot(price, data=diamonds) +
+   ggtitle('Price')
+
+ plot2 <- qplot(price, data=diamonds) +
+   ggtitle('Price (log10)') +
+   scale_x_log10()
+
+ grid.arrange(plot1, plot2, ncol=2)
+       #+END_SRC
+**** Scatterplot Transformation
+     - cube root plot
+     #+BEGIN_SRC R
+       library(scales)
+       cuberoot_trans <- function() trans_new('cuberoot',
+                                              transform = function(x) x^(1/3),
+                                              inverse = function(x) x^3)
+
+       ggplot(aes(x=carat, y=price), data=diamonds) +
+           geom_point() +
+           scale_x_continuous(trans = cuberoot_trans()) +
+           scale_y_continuous(trans = log10_trans())
+     #+END_SRC
+**** Overplotting Revisited
+     - /overplotting/: multiple plots on same value
+     - show via
+       head(sort(table(diamonds$price), decreasing=T))
+     - solve
+       - jitter
+       - make smaller
+       - add transparency
+     - code
+       #+BEGIN_SRC R
+         ggplot(aes(carat, price), data = diamonds) +
+           geom_point(alpha=1/2, size=3/4, position='jitter') +
+           scale_x_continuous(trans = cuberoot_trans(), limits = c(0.2, 3),
+                              breaks = c(0.2, 0.5, 1, 2, 3)) +
+           scale_y_continuous(trans = log10_trans(), limits = c(350, 15000),
+                              breaks = c(350, 1000, 5000, 10000, 15000)) +
+           ggtitle('Price (log10) by Cube-Root of Carat')
+       #+END_SRC
+       - position='jitter'
+	 adds jitter
+       - size=3/4
+	 sets size in mm
+**** Plot Colors for Qualitative Factors
+     - clarity is a factors
+       - not important "in any discernible way"
+     - cut important
+**** Price vs. Carat and Clarity
+     #+BEGIN_SRC R
+ library(RColorBrewer)
+
+ ggplot(aes(x = carat, y = price, color=clarity), data = diamonds) +
+   geom_point(alpha = 0.5, size = 1, position = 'jitter') +
+   scale_color_brewer(type = 'div',
+     guide = guide_legend(title = 'Clarity', reverse = T,
+     override.aes = list(alpha = 1, size = 2))) +
+   scale_x_continuous(trans = cuberoot_trans(), limits = c(0.2, 3),
+     breaks = c(0.2, 0.5, 1, 2, 3)) +
+   scale_y_continuous(trans = log10_trans(), limits = c(350, 15000),
+     breaks = c(350, 1000, 5000, 10000, 15000)) +
+   ggtitle('Price (log10) by Cube-Root of Carat and Clarity')
+     #+END_SRC
+     - clarity explains a lot of the rest of the variance
+**** Price vs Carat and Cut
+     #+BEGIN_SRC R
+ ggplot(aes(x = carat, y = price, color=cut), data = diamonds) +
+   geom_point(alpha = 0.5, size = 1, position = 'jitter') +
+   scale_color_brewer(type = 'div',
+     guide = guide_legend(title = 'Cut', reverse = T,
+     override.aes = list(alpha = 1, size = 2))) +
+   scale_x_continuous(trans = cuberoot_trans(), limits = c(0.2, 3),
+     breaks = c(0.2, 0.5, 1, 2, 3)) +
+   scale_y_continuous(trans = log10_trans(), limits = c(350, 15000),
+     breaks = c(350, 1000, 5000, 10000, 15000)) +
+   ggtitle('Price (log10) by Cube-Root of Carat and Cut')
+     #+END_SRC
+**** Cut and Price
+     - cut accounts for outliers
+       table(diamonds$cut)
+**** Price vs Carat and Color
+     #+BEGIN_SRC R
+ ggplot(aes(x = carat, y = price, color=color), data = diamonds) +
+   geom_point(alpha = 0.5, size = 1, position = 'jitter') +
+   scale_color_brewer(type = 'div',
+     guide = guide_legend(title = 'Color',
+     override.aes = list(alpha = 1, size = 2))) +
+   scale_x_continuous(trans = cuberoot_trans(), limits = c(0.2, 3),
+     breaks = c(0.2, 0.5, 1, 2, 3)) +
+   scale_y_continuous(trans = log10_trans(), limits = c(350, 15000),
+     breaks = c(350, 1000, 5000, 10000, 15000)) +
+   ggtitle('Price (log10) by Cube-Root of Carat and Color')
+     #+END_SRC
+     - also remove reverse=T
+**** Color and Price
+     - alters price
+**** Linear Models in R
+     =log(price) ~ carat^(1/3)=
+**** Building the Linear Model
+     #+BEGIN_SRC R
+       diamondsbig$logprice = log(diamondsbig$price)
+       library(memisc)
+       m1 = lm(logprice~  I(carat^(1/3)),
+ data=diamondsbig[diamondsbig$price < 10000 & diamondsbig$cert == "GIA",])
+       m2 <- update(m1, ~ + carat)
+       m3 <- update(m2, ~ + cut)
+       m4 <- update(m1, ~ + color)
+       m5 <- update(m1, ~ + clarity)
+       mtable(m1, m2, m3, m4, m5)
+     #+END_SRC
+**** A Bigger, Better Data Set
+     - he wrote a python script
+     - downloadble via github.com/solomonm/diamonds-data
+     #+BEGIN_SRC R
+       diamondsBigSample$logprice = log(diamondsBigSample$price)
+       m1 <- lm(logprice~  I(carat^(1/3)), data=diamondsBigSample)
+       m2 <- update(m1, ~ . + carat)
+       m3 <- update(m2, ~ . + cut)
+       m4 <- update(m3, ~ . + color)
+       m5 <- update(m4, ~ . + clarity)
+     #+END_SRC
+**** Predictions
+     thisDiamond = data.frame(carat=1.00, cut = "V.Good", color = "I", clarity="VS1")
+     predict(m5, newdata = thisDiamond, interval="prediction", level = .95
+     - check
+       summary(diamondsBigSample[diamondsBigSample$carat == 1 & diamondsBigSample$cut == "V.Good" & diamondsBigSample$color == "I" & diamondsBigSample$clarity == "VS1",])
