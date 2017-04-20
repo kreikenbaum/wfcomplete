@@ -2,19 +2,21 @@
 #+TODO: KEYWORDS WRITE CHECK | EVA DANIEL FINAL
 #+TODO: RECHECK | EVA-AGAIN DANIEL FINAL
 #+TODO: WAIT | APPENDIX_DONE WAIT_FINISH
+\pagenumbering{roman}
 \listoffigures
 \listoftables
 * Configuration							    :ARCHIVE:
 #+LATEX_CLASS: scrreprt
 #+LATEX_CLASS_OPTIONS: [a4paper,10pt]
 #+LATEX_HEADER: \usepackage{adjustbox}
+#+LATEX_HEADER: \usepackage{float}
+#+LATEX_HEADER: \usepackage{hyperref}
+#+LATEX_HEADER: \usepackage{numprint}
 #+LATEX_HEADER: \usepackage{pgf}
 #+LATEX_HEADER: \usepackage{tikz}
 #+LATEX_HEADER: \usepackage{times}
-#+LATEX_HEADER: \usepackage{float}
 #+LATEX_HEADER: \restylefloat{table}
 #+LATEX_HEADER: \setlongtables
-#+LATEX_HEADER: \usepackage{numprint}
 #+LATEX_HEADER: \npdecimalsign{.}
 #+LATEX_HEADER: \nprounddigits{2}
 #+LATEX_HEADER: \npthousandthpartsep{}
@@ -74,67 +76,183 @@
 #+LATEX_HEADER: }}
 #+OPTIONS: H:6
 * Introduction
-** Short description why Tor is used
-   /Tor/[fn::https://www.torproject.org] is an anonymity network. It
-   protects whistleblowers, journalists, the people in oppressive
-   regimes, even the military, and "normal people", from
-   e.g. nation-states and businesses which want to follow user's
-   online steps.
+#+BEGIN_LaTeX
+  \pagenumbering{arabic}
+#+END_LaTeX
+  #+INDEX: Tor
+  #+INDEX: trace
+  #+INDEX: website fingerprinting
+  /Tor/\cite{tor-design} is a global anonymity network. It protects
+  whistleblowers, journalists, the people in oppressive
+  regimes\cite{jardine2016tor}, even the military, and regular
+  internet users, against e.g. nation-states or businesses which want
+  to follow user's online steps. It routes encrypted data traffic via
+  intermediaries, obscuring who connects to whom.
 
-   Web browsing with Tor is straightforward: simply download the /Tor
-   Browser Bundle/. It connects automatically to the Tor network and
-   protects online privacy.
-** Brief description of Website Fingerprinting Attacks
-   Several parties would like to attack this protection. One type of
-   attack that can be carried out with low-level technology is
-   /website fingerprinting/: The time and size of packets (called
-   /traces/) are recorded. This recording is compared to traces of
-   known sites. Newer attacks use Machine Learning to classify these.
-** What is the problem of current defenses?
-   At the start of the thesis, there existed mostly deterministic
-   defenses with high overhead (f.ex. over 220% bandwidth, and 300%
-   time\cite{a-systematic}). During the course of this thesis, the
-   stochastic defenses of \cite{wang2015walkie} and \cite{wtfpad},
-   with much lower overhead, were developed. This validates a
-   stochastic approach, yet improvements are possible in two areas:
-   (1) ease of installation, and configurability, and (2) more-closely
-   fitting cover traffic generation.
+  While the basic Tor software acts as a proxy for any kind of TCP
+  traffic, web browsing with Tor is
+  user-friendly\cite{usability:weis2006}: you just need to
+  \href{https://www.torproject.org/download/download-easy.html.en}{download  the Tor Browser Bundle}. It connects automatically to the Tor
+  network to cloak the client's web traffic.  \\
+  # NO reflow here!!!
 
-   Ad 1: \cite{wang2015walkie} alters the Firefox binary, while the
-   current \cite{wtfpad} needed much manual adjustment in our
-   attempts.
 
-   Ad 2: \cite{wang2015walkie} uses either a normal, or lognormal
-   distribution, not adjusting to HTTP-specifics, while \cite{wtfpad}
-   samples packets at the network layer. It aims at equalizing traffic
-   and non-traffic flow, as it derives its basic mechanism from
-   \cite{ShWa-Timing06}.
-** Brief description which novel defense is developed throughout this diploma thesis
-   A newly proposed defense samples from HTTP-specific
-   distributions\cite{newtrafficmodel}, which could optimize the
-   protection offered for given bandwidth. It is implemented in a
-   browser extension, which makes the code easier to install, configure,
-   and maintain.
-*** @DANIEL: mention 2017 paper which uses add-on? (konrad tweeted github repo)
+  As has often been the case with anonymity and privacy, several
+  parties try to attack Tor's protection. One mass-surveillance type
+  of attack that can be carried out passively with low-level
+  technology is /website fingerprinting/: The time and size of users'
+  data packets (called /traces/) are recorded. See Figure
+  \ref{fig:traces}. This recording is compared to previously recorded
+  traces of known sites. While older attacks
+  (\cite{ccsw09-fingerprinting}, \cite{Liberatore:2006}) just compared
+  single packet sizes, possibly by hand, newer attacks
+  (\cite{panchenko}, \cite{panchenko2}, \cite{realistic}) use machine
+  learning to classify traces, achieving high accuracy rates under
+  laboratory conditions.
+#+BEGIN_LaTeX
+\begin{figure}[htbp]
+\includegraphics[width=0.12\textwidth]{./pictures/craigslist_org@1445352269.png}
+\includegraphics[width=0.12\textwidth]{./pictures/craigslist_org@1445585277.png}
+\includegraphics[width=0.12\textwidth]{./pictures/craigslist_org@1445486337.png}\includegraphics[width=0.12\textwidth]{./pictures/craigslist_org@1445527033.png}\includegraphics[width=0.12 \textwidth]{./pictures/facebook_com@1445350531.png}
+\includegraphics[width=0.12 \textwidth]{./pictures/facebook_com@1445422155.png}
+\includegraphics[width=0.12 \textwidth]{./pictures/facebook_com@1445425799.png}
+\includegraphics[width=0.12 \textwidth]{./pictures/facebook_com@1445429729.png}
+\caption[Web trace data visualized]{Web trace data visualized. Box height signifies amount of data, width the duration until the next packet. The left 4 are for \url{http://craigslist.org}, the right for \url{http://facebook.com}}
+\label{fig:traces}
+\end{figure}
+#+END_LaTeX
+
+
+  With the advent of website fingerprinting (\cite{hintz02},
+  \cite{quantifying}, \cite{ssl-traffic-analysis}), defenses were
+  proposed. These evolved from /specific defenses/,
+  f.ex. packet-size-altering methods (\cite{httpos},
+  \cite{morphing09}) to /general defenses/, which transform groups of
+  web retrievals so that all members look the same.
+
+  At the start of the thesis, there existed mostly deterministic
+  defenses with high overhead (f.ex. over 220% bandwidth, and 300%
+  time\cite{a-systematic}). During the course of this thesis, the
+  stochastic defenses of \cite{wang2015walkie} and \cite{wtfpad},
+  with much lower overhead, were developed. This validates a
+  stochastic approach, yet improvements seem possible in two areas:
+  (1) ease of installation, and configurability, and (2) more-closely
+  fitting cover traffic generation.
+
+  Ad 1: \cite{wang2015walkie} alters the Firefox binary, while the
+  current version of \cite{wtfpad} needed much manual adjustment in
+  our attempts.
+
+  Ad 2: \cite{wang2015walkie} uses either a normal, or lognormal
+  distribution, not adjusting to HTTP-specifics, while \cite{wtfpad}
+  samples packets at the network layer. It aims at hiding that traffic
+  occurs, as it derives its basic mechanism from \cite{ShWa-Timing06}.
+** Thesis Aim
+   This thesis presents and tests a new defense against website
+   fingerprinting. This new defense creates HTTP\cite{rfc7230}-shaped
+   cover traffic: Each web request is augmented by
+   stochastically-drawn dummy HTTP traffic\cite{newtrafficmodel}. This
+   could optimize the protection offered for given bandwidth
+   overhead. It is implemented in a browser extension, which makes the
+   defense easier to install, configure, and maintain.
+** Thesis Structure
+   The following chapters try to solve the question whether the new
+   defense works more effectively than existing ones.
+
+   Chapter [[#ch2-background]] provides basic background for the IT-savvy
+   who have not yet encountered Tor, machine learning, or website
+   fingerprinting. For the Tor network, we treat its basic structure
+   and why website fingerprinting might be a credible threat. Machine
+   learning basic steps and algorithms are briefly skimmed. Finally,
+   website fingerprinting on Tor is presented. These parts can safely be
+   skipped if you know about them already.
+
+   The defense's why and how (motivation and design) is described in
+   chapter [[#ch3-newdefense]]. This also describes the bloom sort data
+   structure for stochastically saving object sizes.
+
+   Chapter [[#ch4-evaluation]] evaluates the defense. It first describes
+   the data-gathering process. Next, the website fingerprinting
+   attacks of \cite{panchenko2}, and \cite{ccsw09-fingerprinting} are
+   validated on defenseless data. This is followed by the evaluation
+   on data with cloaking.
+
+   These results are discussed and compared to literature results of
+   \cite{wang2015walkie} and \cite{wtfpad} in chapter [[#ch5-discussion]].
+
+   Chapter [[#ch6-conclusion]] summarizes the results, shows a path to
+   implementation, with both included and additional further work.
 * Background
+  :PROPERTIES:
+  :CUSTOM_ID: ch2-background
+  :END:
+  Website fingerprinting defenses are based on the Tor network,
+  machine-learning basics, and of course knowledge of attacks and
+  defenses themselves.
 ** The Tor Network
-   - network of servers (/onion routers/)
-     - bounce messages along path
-     - computationally secure cryptography\cite{applied96}
-   - message three hops
-     - onion proxy (most often software on own computer) connects to
-       network, acts as web / SOCKS proxy
+  #+INDEX: onion router
+  #+INDEX: onion proxy
+  #+INDEX: Tor!onion router
+  #+INDEX: Tor!onion proxy
+  #+INDEX: Tor!the onion router
+  #+CAPTION: \href{https://www.torproject.org/about/overview.html.en}{Connection through the Tor network}.
+  #+NAME: fig:tor-network
+  #+ATTR_LATEX: :float wrap :width 0.38\textwidth :placement {r}{0.4\textwidth}
+  [[./pictures/htw2.png]]
+
+  The Tor\cite{tor-design} network uses a semi-distributed
+  infrastructure where volunteer-run /onion routers/ pass the
+  messages, while their structure is provided by fixed /directory
+  servers/. A path through the onion routers is negotiated by the
+  /onion proxy/, a SOCKS\cite{rfc1928}-TCP proxy which most often runs
+  on the client computer.
+
+  To initialize a connection, the onion proxy selects three
+  globally-distributed hops. It makes a connection to the first,
+  establishes encryption, asks the first hop to make a connection to
+  the second, sets up its encryption, and from there to the third. The
+  third hop establishes a connection to its destination.
+
+  Each message is encrypted three times using same-length encryption
+  and sent along this path. The first router decrypts the first layer,
+  and so on, like layers of an onion. This explains Tor's name /the
+  onion router/.\\
 ** Machine Learning Algorithms
+     - steps\cite{rieckdiss}
+       - preprocessing
+       - feature extractions
+       - classification
+     - algorithms in classification (?)
+       - todo: ask kloft via mitarbeiter
 ** Tor Website Fingerprinting
+   As all traffic analysis\cite{introta}, website fingerprinting is
+   concerned only with message meta-data. It assumes that the
+   encryption is computationally secure\cite{applied96}, and tries to
+   find other information about the messages.
+
 - introduction into attack scenario for Tor Website Fingerprinting
 - discussion of related approaches used to evaluate your approach (e.g. Panchenko,
 Hermann)
 - discussion of state-of-the art defenses and drawbacks of these techniques
 - very brief description of other related approaches
 * Novel Defense
+  :PROPERTIES:
+  :CUSTOM_ID: ch3-newdefense
+  :END:
 * Evaluation
+  :PROPERTIES:
+  :CUSTOM_ID: ch4-evaluation
+  :END:
+
 * Discussion
+  :PROPERTIES:
+  :CUSTOM_ID: ch5-discussion
+  :END:
+
 * Conclusion
+  :PROPERTIES:
+  :CUSTOM_ID: ch6-conclusion
+  :END:
 \appendix
 \part{Appendix}
 * appendices (begin above this headline; this is for searching)     :ARCHIVE:
