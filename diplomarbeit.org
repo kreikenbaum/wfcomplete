@@ -82,17 +82,24 @@
   #+INDEX: Tor
   #+INDEX: trace
   #+INDEX: website fingerprinting
-  /Tor/\cite{tor-design} is a global anonymity network. It protects
+  In the wake of both the Snowden revelations in the western world,
+  and increased internet censorship in countries such as Iran,
+  Saudi-Arabia, and China\cite{china}, more and more
+  Internet users search for ways to keep online communication and web
+  browsing both private and free of censorship.
+
+  The /Tor/ project\cite{tor-design} provides this. It protects
   whistleblowers, journalists, the people in oppressive
   regimes\cite{jardine2016tor}, even the military, and regular
-  internet users, against e.g. nation-states or businesses which want
+  internet users, against e.g.\space{}nation-states or businesses which want
   to follow user's online steps. It routes encrypted data traffic via
   intermediaries, obscuring who connects to whom.
 
-  While the basic Tor software acts as a proxy for any kind of TCP
-  traffic, web browsing with Tor is
-  user-friendly\cite{usability:weis2006}: you just need to
-  \href{https://www.torproject.org/download/download-easy.html.en}{download  the Tor Browser Bundle}. It connects automatically to the Tor
+  # NO reflow here!!!
+  While basic Tor acts as a proxy for any kind of TCP traffic, web
+  browsing with Tor is user-friendly\cite{usability:weis2006}: you
+  just need to
+  \href{https://www.torproject.org/download/download-easy.html.en}{download the Tor Browser Bundle}. It connects automatically to the Tor
   network to cloak the client's web traffic.  \\
   # NO reflow here!!!
 
@@ -147,10 +154,10 @@
   distribution, not adjusting to HTTP-specifics, while \cite{wtfpad}
   samples packets at the network layer. It aims at hiding that traffic
   occurs, as it derives its basic mechanism from \cite{ShWa-Timing06}.
-** Thesis Aim
+** Thesis Contribution
    This thesis presents and tests a new defense against website
-   fingerprinting. This new defense creates HTTP\cite{rfc7230}-shaped
-   cover traffic: Each web request is augmented by
+   fingerprinting. This new defense mimics HTTP\cite{rfc7230}-shaped
+   cover traffic: Each web page retrieval is augmented by
    stochastically-drawn dummy HTTP traffic\cite{newtrafficmodel}. This
    could optimize the protection offered for given bandwidth
    overhead. It is implemented in a browser extension, which makes the
@@ -164,8 +171,9 @@
    fingerprinting. For the Tor network, we treat its basic structure
    and why website fingerprinting might be a credible threat. Machine
    learning basic steps and algorithms are briefly skimmed. Finally,
-   website fingerprinting on Tor is presented. These parts can safely be
-   skipped if you know about them already.
+   website fingerprinting on Tor is presented. These parts can safely
+   be skipped given previous knowledge.[fn::@Daniel: ist dieser Satz
+   zu flapsig, oder ok?]
 
    The defense's why and how (motivation and design) is described in
    chapter [[#ch3-newdefense]]. This also describes the bloom sort data
@@ -187,8 +195,8 @@
   :CUSTOM_ID: ch2-background
   :END:
   Website fingerprinting defenses are based on the Tor network,
-  machine-learning basics, and of course knowledge of attacks and
-  defenses themselves.
+  knowledge of previous attacks and defenses, and machine-learning
+  basics.  course themselves.
 ** The Tor Network
   #+INDEX: onion router
   #+INDEX: onion proxy
@@ -216,7 +224,33 @@
   Each message is encrypted three times using same-length encryption
   and sent along this path. The first router decrypts the first layer,
   and so on, like layers of an onion. This explains Tor's name /the
-  onion router/.\\
+  onion router/.
+
+  As a result of this setup, each hop can only see its direct
+  neighbors along the path. Even if one hop of a three-hop setup is
+  compromised, it can not link source and destination.
+** Tor Website Fingerprinting
+   As all traffic analysis\cite{introta}, website fingerprinting is
+   concerned only with message meta-data: who sends how much to
+   whom. It assumes that the system is computationally
+   secure\cite{applied96}: there are not enough resources, time, or
+   data to break it. Thus, traffic analysis tries to circumvent the
+   system, by analysing traffic patterns, as this can provide much
+   useful information\cite{applied96}.
+
+   Anyone who can see the data stream can attempt website
+   fingerprinting, without anyone realising it.
+
+- introduction into attack scenario for Tor Website Fingerprinting
+- discussion of related approaches used to evaluate your approach (e.g. Panchenko,
+Hermann)
+- discussion of state-of-the art defenses and drawbacks of these techniques
+- very brief description of other related approaches
+
+- Tor's built-in wf defenses
+  - fixed data cell size
+  - increased latency through routes
+  - multiplexes data
 ** Machine Learning Algorithms
      - steps\cite{rieckdiss}
        - preprocessing
@@ -224,17 +258,6 @@
        - classification
      - algorithms in classification (?)
        - todo: ask kloft via mitarbeiter
-** Tor Website Fingerprinting
-   As all traffic analysis\cite{introta}, website fingerprinting is
-   concerned only with message meta-data. It assumes that the
-   encryption is computationally secure\cite{applied96}, and tries to
-   find other information about the messages.
-
-- introduction into attack scenario for Tor Website Fingerprinting
-- discussion of related approaches used to evaluate your approach (e.g. Panchenko,
-Hermann)
-- discussion of state-of-the art defenses and drawbacks of these techniques
-- very brief description of other related approaches
 * Novel Defense
   :PROPERTIES:
   :CUSTOM_ID: ch3-newdefense

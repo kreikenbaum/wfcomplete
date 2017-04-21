@@ -5261,7 +5261,7 @@
             the average of the k-identifiability value for each
             instance in the test set.
 *** ref [[file:master.bib::Liberatore:2006][Liberatore & Levine 2006: Inferring Source Encrypted HTTP Connections]]
-** Malone@udacity - Intro to Machine Learning                            :ML:
+** Thrun_and_Malone@udacity - Intro to Machine Learning                  :ML:
 *** introduction
     - quizzes
     - exams at end
@@ -21990,7 +21990,12 @@ When a media query is true, the corresponding style sheet or style rules are app
       behaviors through Weibull analysis of dwell time.  In
       Proceedings of the 33rd international ACM SIGIR Conference,
       pages 379–386, 2010.
-** TODO [#C] [[./no.21.pdf][Jardine - Tor, what is it good for?]]
+** MOVE [[./no.21.pdf][Jardine - Tor, what is it good for?]]
+*** summary
+    - Tor used for both child porn and circumventing censorship
+      - "liberal" countries: main traffic is abuse
+      - other countries much use of bridges
+    - solution: policing Tor, taking out hidden sites
 *** ref [[file:master.bib::jardine2016tor][Jardine 2016: Tor]]
 ** TODO [#E] demultiply git/docs/ and chive/keepimport [|/home/web/keep]
 ** TODO [[./DOM3-Core.pdf][Document Object Model (DOM) Level 3 Core Specification]]
@@ -29850,7 +29855,7 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
        - svm-train.c: replace =do_cross_validation=
        - svm-predict.c: replace =predict(input,output)=
        - eval.cpp: set which score to use: =double (*validation_function)...=.
-** TODO Intro to Inferential Statistics
+** MOVE udacity - Intro to Inferential Statistics
 *** Introduction and Lesson 7 Review
 **** Lauren's Intro Video
 ***** quotes
@@ -30580,6 +30585,274 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 **** 18. t-Critical Values
      st.t.ppf(1-0.05/2, 18)
      2.1009220402409601
+*** Lesson 12: One-Way ANOVA
+**** Number of t-Tests
+     - 6 for 4 samples
+       (n! / (2! (n-2)!)) ==
+       (n)
+       (2)
+     - want sth simpler
+**** Extended t-Test Numerator
+     - t-statistic = !x!_1 -!x!_2 / \radic(S_p^2/n_1 + S_p^2/n_2)
+     - extend to quote
+       - divide by n-1 (sample)
+       - called /grand mean/ !x!_G
+***** quotes
+      - Find the average squared deviation of each sample mean from the
+        total mean
+**** Grand Mean
+     - \sum x_i + \sum y_i + \sum z_i / (n_x + n_y + n_z)
+     - same sample sizes: (!x! + !y! + !z!) / 3
+**** Between-Group Variability
+***** quotes
+      - Between-group variability
+        - The smaller the distance between sample means, the less likely
+	  population means will differ significantly.
+        - The greater the distance between sample means, the more likely
+	  population means will differ significantly.
+**** Significantly Different Means
+     - difference of means depends on mean and std
+***** quotes
+      - t = difference / error
+**** Sample Variability and Significance
+***** quotes
+      - Within-group variability
+        - The greater the variability of each individual sample, the less
+	  likely population means will differ significantly.
+        - The smaller the variability of each individual sample, the more
+	  likely population means will differ significantly.
+**** ANOVA
+     - one-way ANOVA for one independent variable
+     - ANalysis Of VAriance
+**** Hypotheses
+     - if anova reject null: next step to distinguish which sample is
+       different
+***** quotes
+      - H_0: \mu_1 = \mu_2 = \mu_3
+      - H_A: At least one pari of samples is significantly different
+**** Within-Group Variability
+     - if group increases in variability, chance of H_0 gets bigger
+**** Between-Group Variability
+     - if sample means get further apart, chance of H_A gets bigger
+**** F-Ratio
+     - within-group should be denominator: if increases, F decreases,
+       H_0 gets more probable
+     - numerator: differences between groups
+     - denominator: measure of error (difference of subjects within groups)
+***** quote
+      - F = ratio
+**** Formalize Within-Group Variability
+     - use grand mean !x!_G
+     - and squared deviation of this from sample mean
+***** quotes
+      - F = between-group-variability / within-group-variability
+        = n \sum[(!x!_k - !x!_G)^2/(k-1)]    / [\sum(x_i - !x!_k)^2 / df]
+      - df = N - k
+        = n_1 + n_2 + n_3 - k
+        = n_1 + n_2 + n_3 - 3
+**** Formula for F-Ratio
+***** quotes
+      - F = [SS_between / df_between] / [SS_within / df_within]
+        = MS_between / MS_within
+**** Degrees of Freedom
+     - df_between + df_within = k-1 + N-k = N-1 =: df_total
+       - Total degrees of freedom
+**** Total Variation
+     - SS_between + SS_within = SS_total = \sum(x_i - !x!_G)^2
+     - df_betwee + df_within = df_total = N-1
+**** F-Distribution
+     - never negative
+**** F-Distribution Shape
+     - positively skewed
+     - peaks at 1
+       - random: between-group/within-group equal
+     - one-directional test
+**** Sample Means and Grand Mean
+     - means of each and grand mean
+       13, 48 = np.mean([39, 45, 48,  60]), 45 = np.mean([65, 45, 32, 38]),
+     - x_G = np.mean([48, 45, 13]) \approx 35.333333333333336
+**** SS Between
+     SS_between = n \sum(x_k-x_G)^2 with n size of each sample
+     #+BEGIN_SRC python
+       s = np.array([15,12,14,11])
+       i = np.array([39,45,48,60])
+       l = np.array([65,45,32,38])
+       >>> np.mean([s,i,l])
+       35.333333333333336
+       >>> np.mean(i)
+       13.0
+       >>> np.mean(l)
+       48.0
+       >>> np.mean(l)
+       45.0
+       >>> np.mean(i)-np.mean([s,i,l])
+       12.666666666666664
+       >>> np.mean(l)-np.mean([s,i,l])
+       9.6666666666666643
+       >>> np.mean(s)-np.mean([s,i,l])
+       -22.333333333333336
+       >>> 12.666666666666664**2+9.6666666666666643**2+(-22.333333333333336)**2
+       752.6666666666666
+       >>> _ * 4
+       3010.6666666666665
+     #+END_SRC
+**** SS Within
+     =sum((s - s.mean())**2) + sum((i - i.mean())**2) + sum((l - l.mean())**2)=
+     862.0
+**** Degrees of Freedom
+     df_between = k-1 = 3(groups)- 1 = 2
+     df_within = N-k = 12(items)-3(groups) = 9
+**** Mean Squares
+     MS: divide SS by df
+     #+BEGIN_SRC python
+       MS_within = (sum((s - s.mean())**2) + sum((i - i.mean())**2) + sum((l - l.mean())**2))/9
+       MS_between = 3010.6666666666665/2
+     #+END_SRC
+**** F-Statistic
+     F = MS_between / MS_within
+**** decision
+     - =st.f_oneway(s, i, l)= does it all
+     - find critical value by =st.f.ppf(0.95, 2, 9)= (first: val, 2nd,3rd: dfs)
+       - or looking in table
+*** Problem Set 12
+    #+BEGIN_SRC python
+      >>> s1 = np.array([8, 7, 10, 6, 9])
+      >>> s2 = np.array([4, 6, 7, 4, 9])
+      >>> s3 = np.array([4, 4, 7, 2, 3])
+      >>> s1.mean()
+      8.0
+      >>> s3.mean()
+      6.0
+      >>> s3.mean()
+      4.0
+      >>> np.mean([s1, s2, s3])
+      6.0
+      >>> a = pd.DataFrame([s1, s2, s3])
+      >>> b = a.transpose()
+      >>> SS_between = ((b.mean() - b.mean().mean())**2).sum() * len(b)
+      # 40.0
+      >>> SS_within = ((b - b.mean())**2).sum().sum()
+      # 42.0
+      # df_between = 2 # (3 groups -1)
+      # df_within = 12 # (3 groups * 5 members - 3 groups)
+      >>> MS_between = SS_between / df_between
+      # 20.0
+      >>> MS_within = SS_within / df_within
+      # 3.5
+      >>> F = MS_between / MS_within
+      # 5.7142857142857144
+      >>> F_critical = st.f.ppf(0.95, df_between, df_within)
+      # 3.8852938346523933
+    #+END_SRC
+    - f-table at http://www.socr.ucla.edu/applets.dir/f_table.html
+*** Lesson 13: ANOVA, Continued
+**** F-Critical and Decision
+     - ANOVA Table
+       | SS_between = 54 | df_between = 2 | MS_between = 27 | F = 27 |
+       | SS_within = 6   | df_within=6    | MS_within = 1   |
+**** Deviation from Grand Mean
+     ((d - d.mean().mean())**2).sum().sum() == SS_between + SS_within
+**** Multiple Comparison Tests
+     - next step: some differ, but unclear which, needs to do Multiple
+       Comparison Tests
+     - use Tukey's HSD (honestly significant difference)
+***** quotes
+      Margin of error
+      = z* \cdot \sigma / \radic(n)
+      = t* \cdot s / \radic(n)
+      Tykey's HSD
+      = q* \radic(MS_within/n)
+      = q* S_p / \radic(n)
+      (q* is studentized range statistic)
+**** Which Differences Are Significant?
+     - HSD = q* \radic(MS_within / n-per-group)
+     - compute HSD: see code
+       - table at https://www2.stat.duke.edu/courses/Spring98/sta110c/qtable.html
+     - here HSD = 4.34 \radic(1/3) = 2.51
+       - all differences greater than 2.51 are significant
+     - only for same-size groups
+**** Cohen's d for Multiple Comparisons
+     - compute for each pair of groups
+     - can be negative
+***** quotes
+      d = (!x!_1 - !x!_2) / \radic(MS_within)
+**** η^2 (=eta-squared)
+     - \eta^2 = SS_between / SS_total
+       =  SS_between / (SS_between + SS_within)
+***** quotes
+      \eta^2 = proportions of total variation that is due to between-group
+      differences (explained variation)
+**** Calculate \eta^2
+     =eta2 = SS_between / (SS_between + SS_within)=
+     0.90000000000000002
+     - 90% of difference due to food type
+     - cohen: anything bigger than .14 is considered BIG
+**** Range of η^2
+     0 to 1
+**** Software Output
+     - Sig. is p-level
+     - for p-value .018:
+       - reject H_0 for 0.05, accept for 0.01
+***** quotes
+      F(2, 6) = 27   p < 0.05   \eta^2 = 0.90  By hand
+      F(2, 6) = 27   p = 0.001  \eta^2 = 0.90  Software
+**** Missing Mean Differences
+     - negative value in symmetric (A-B to B-A) column
+     - * == difference is significant at 0.05
+**** Different Sample Sizes
+     - see code
+     #+BEGIN_SRC python
+       x_g = np.nanmean(d.values)
+       SS_between = (d.count()*(d.mean() - x_g)**2).sum()
+       df_within = d.count().sum() - len(d.columns)
+       df_between = len(d.columns) -1
+     #+END_SRC
+**** Proportion Due to Drug Type
+     use \eta^2: SS_between / SS_total
+     \approx 0.86698410173074081
+***** quotes
+      - What proportion of the difference between tumor reductions is
+        due to the type of drug?
+**** Power
+     - better tests:
+       - more people
+       - similar groups (randomize)
+       - large dose of medication
+***** quotes
+      - type II errors: failiing to reject the null when we should have
+      - Larger samples result in higher power MSE = S / \radic(n)
+      - lower within-group variability leads to higher power
+      - choosing treatments with strong effect sizes will increase power
+**** ANOVA Assumptions and Wrap-Up
+     - normal distributions
+       - ok to violate if sample size large
+     - homogenous variance,
+       - ok to violate if nearly equal sample sizes and pairwise ratio
+         of variances \le 4
+     - independent observations
+       - random assignment to meet this condition
+     - summary:
+       - three or more samples
+       - check if any is significantly different
+       - between-group variability: how far apart each group
+	 - based on mean and deviation from grand mean
+       - within-group variability: how far inside group apart
+       - divide each by degrees of freedom
+	 - same as adding for each group
+       - F -statistic is ratio
+	 - check if falls in critical region
+       - if different, use Tukey's HSD to determine which one
+       - proportion in difference due to independent variable: \eta^2
+*** Problem Set 13
+**** 6. Hypotheses
+     null: "all _population_ means are equal"
+     alt: " at least two _population_ means are different
+**** 7. Post-hoc tests
+     - after difference
+**** 15. Normality Assumption
+***** quotes
+      - The normality assumption in ANOVA states:
+        The data from each sample fall along a normal curve
 *** Lesson 14: Correlation
 **** Relationships
      - so far: one variable
@@ -30990,7 +31263,7 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
 **** 22. Calculate \chi^2
      88.648796387152103
 
-** Data Analysis with R
+** MOVE udacity - Data Analysis with R
 *** What is EDA?
 **** Data is Ubiquitous
      - lots of data everywhere
@@ -31873,3 +32146,75 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
       - use "seq" for quantitative variables, except
       - "div" for when divergence from 0 is the thing to mark (0 is
         light, divergence darker)
+** MOVE [[/home/web/keep/foci12-final2.pdf][Lindskog_and_Winter - How the Great Firewall of China is Blocking Tor]]
+*** summary
+    0. [@0] Abstract
+
+       - How China blocks Tor
+
+    1. Introduction
+
+       - previously just IP blacklisting and HTTP header filtering
+
+       - now elaborate: detect Tor handshake, check Tor relay, block
+
+    2. Related Work
+
+       - Wilde: first analysis: unpublished Tor bridges are scanned,
+         after being identified by deep packet inspection
+
+       - due to old TLS client hello handshake
+
+    3. Experimental Setup
+
+       followed ethical standards and ISP rules
+
+       1. Vantage Points
+
+          - relay in russia,
+
+          - bridges in singapore and sweden
+
+          - clients in China: VPN (main) and SOCKS (verify results)
+
+       2. Shortcomings
+
+          - Chinese sophisticated, might own SOCKS proxies, and/or VPN
+
+          - VPN might filter internet
+
+    4. Analysis
+
+       1. How Are Bridges and Relays Blocked?
+
+          - seven directory authorities blocked on "IP" layer
+            (TCP/ICMP blocked)
+
+            - one unblocked
+
+          - to relay: SYN passed, SYN/ACK blocked
+
+          - GFC blocks IP:port tuples
+
+       2. How Long Do Bridges Remain Blocked?
+
+          - two ports, both blocked by GFC, one just whitelisted VPN
+
+          - able to reconnect after 12 hours, if all GFC connections
+            were blocked
+
+       3. Is the Public Network Reachable?
+
+    Rest:
+
+    - block patterns
+    - checks for TLS hello
+      - possible to fragment
+      - or use obfsproxy
+        - obfs2's hardcoded IPs blacklisted
+        - own obfs2 worked
+      - skype morph worked too
+      - server-fragmentation with window size worked easily, without
+        client modification
+*** quotes
+*** ref [[file:master.bib::china][Winter & Lindskog 2012: How Great Firewall]]
