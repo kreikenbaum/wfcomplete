@@ -214,11 +214,11 @@ While some similarity can be seen for each group, the "within-group" differences
    [[./pictures/htw2.png]]
 
    The Tor\cite{tor-design} network uses a semi-distributed
-   infrastructure where volunteer-run /onion routers/ pass the
-   messages, while their structure is provided by fixed /directory
-   servers/. A path through the onion routers is negotiated by the
-   /onion proxy/, a SOCKS\cite{rfc1928}-TCP proxy which most often runs
-   on the client computer.
+   infrastructure: Volunteer-run /onion routers/ pass the messages,
+   while their structure is provided by fixed /directory servers/. A
+   path through the onion routers is negotiated by the /onion proxy/,
+   a SOCKS\cite{rfc1928}-TCP proxy which most often runs on the client
+   computer.
 
    To initialize a connection, the onion proxy selects three
    globally-distributed hops. It makes a connection to the first,
@@ -235,10 +235,152 @@ While some similarity can be seen for each group, the "within-group" differences
    neighbors along the path. Even if one hop of a three-hop setup is
    compromised, directly linking source and destination becomes pretty
    hard.
+** Machine Learning
+   #+INDEX: machine learning
+   #+INDEX: ML
+   The term /machine learning/ (short: ML) consists of the two parts
+   "machine" and "learning". In this context, machine refers to a
+   computing machine[\sect1]\cite{turing1936a}, while learning here means
+   to improve prediction given training data
+   \cite[sec.1.4.0]{duda}. In the words of Tom
+   Mitchell\cite[sec.1.1]{mitchell}
+     #+BEGIN_QUOTE
+A computer program is said to *learn* from experience /E/ with
+respect to some class of tasks /T/ and performance measure /P/, if
+its performance at tasks in /T/, as measured by /P/, improves with
+experience /E/.
+     #+END_QUOTE
+
+     Machine learning can conceptually be split into three steps:
+     [[#ml-preprocess][preprocessing]], [[#ml-features][feature extraction]] and [[#ml-class][classification]][fn::Some
+     authors, e.g. \cite{meffert}, adds an additional
+     /Merkmalsreduktion/ (feature reduction) part after
+     /Merkmalsextraktion/ (feature extraction).] The first step
+     standardizes and cleans input data, the second transforms the raw
+     input data --- in our case, website retrieval traces[fn::in
+     =pcap= format] --- into characteristics --- in our case, numbers
+     for f.ex. the number of outgoing packets. The third step groups these
+     characteristics into categories.
+
+     A last section details [[#ml-measure][measures to evaluate machine learning
+     performance]].
+*** Preprocessing
+    :PROPERTIES:
+    :CUSTOM_ID: ml-preprocess
+    :END:
+    #+INDEX: preprocessing
+    #+INDEX: machine learning!preprocessing
+    The raw data often needs to be adjusted. F.ex. images need to
+    have their light level normalized\cite[sec.1.2.]{duda}. In our
+    case, several packets of our own capture were removed,
+    f.ex. TCP-ACKs, and either all traffic except to the bridge (see
+    [[#capture][Capture]]), if used, or traffic to the cover traffic server if no
+    bridge was used.[fn:: see code [[#1site_desc][=one_site=]] (filter), [[#7777][=7777.sh=]]
+    (server), [[#counter][=counter.py=]]]
+
+    The resultant intermediate data are tuples of =(packet size,
+    timing)=, with positive/negative marking outgoing/incoming
+    packets respectively.[fn::The assignment of positive/negative to
+    incoming and outgoing data is dependent on author, see section
+    [[#wf-original]].]
+*** Feature Extraction
+    :PROPERTIES:
+    :CUSTOM_ID: ml-features
+    :END:
+    #+INDEX: feature extraction
+    #+INDEX: machine learning!feature extraction
+    Feature extraction\cite[sec.1.3.1]{duda} transforms the
+    preprocessed raw data into features/characteristics suitable for
+    classification. For this, it uses domain-specific knowledge. In
+    website fingerprinting, among others the number and bytes of
+    both incoming and outgoing packets are counted, for example.
+
+    While the boundary of feature extraction to classification is
+    "somewhat arbitrary"\cite[sec.1.3.1]{duda}, feature extraction
+    deals with the, well, extraction of characteristics from the
+    underlying data.
+*** Classification
+    :PROPERTIES:
+    :CUSTOM_ID: ml-class
+    :END:
+    #+INDEX: classification
+    #+INDEX: machine learning!classification
+    Once the features' values are extracted, instances can be
+    assigned[fn::Here, we deal only with classification. Another
+    application is regression, where a real-valued function is
+    estimated.] to a class[fn::some classifiers also allow the
+    computation of class probabilities, etc].
+
+    In website fingerprinting, each instance is a numerical input
+    vector, which can be directly used by many classifiers. From
+    these, most classifiers, such as [[*Support Vector Machines][support vector machines]], form a
+    model from which further input data can be classified. Others,
+    such as [[*K-Nearest-Neighbor-Classifier][k-Nearest-Neighbors]] classify directly without an
+    intermediary model.
+*** Measuring Performance
+    :PROPERTIES:
+    :CUSTOM_ID: ml-measure
+    :END:
+    #+INDEX: Accuracy (acc)
+    #+INDEX: Area Under Curve
+    #+INDEX: AUC
+    #+INDEX: AUC$_{0.01}$
+    #+INDEX: AUC!bounded
+    #+INDEX: confusion matrix
+    #+INDEX: False Positive Rate
+    #+INDEX: fpr
+    #+INDEX: Receiver Operating Characteristic curve
+    #+INDEX: ROC curve
+    #+INDEX: True Positive Rate
+    #+INDEX: tpr
+    To evaluate website fingerprinting attacks and defenses, their
+    success needs to be measured.[fn::this section's definitions
+    follow \cite{powers}] Starting with binary classification, a
+    /confusion matrix/ helps to illustrate the different cases that
+    can occur. Each instance is categorized by its real and
+    predicted class --- in website fingerprinting, whether it /is/ a
+    sensitive website, and whether it is /classified/ as such. See
+    Table [[tab:confusion_matrix]].
+
+    #+CAPTION: Confusion matrix. Correctly classified cases are in bold.
+    #+NAME: tab:confusion_matrix
+    #+ATTR_LATEX: :align r|l l
+    |             | real 1                | real 2                |
+    |-------------+-----------------------+-----------------------|
+    | predicted 1 | *True Positives (TP)* | False Positives (FP)  |
+    | predicted 2 | False Negatives (FN)  | *True Negatives (TN)* |
+
+    From these absolute values, various metrics can be derived. The
+    main metrics used in website fingerprinting literature are
+    /Accuracy/ (short: acc)[fn::accuracy is mostly used in the
+    closed-world case], and /True/ and /False Positive Rate/ (short:
+    tpr and fpr)[fn::tpr and fpr are mostly used in the open-world
+    case]. These are defined as
+
+    #+ATTR_LATEX: :align r c l
+    | True Positive Rate  | := | $TP / (TP + FN)$                  |
+    | False Positive Rate | := | $FP / (FP + TN)$                  |
+    | Accuracy            | := | $(TP + TN) / (TP + FP + FN + TN)$ |
+
+    To show the classifier strictness tradeoff, a /Receiver
+    Operating Characteristic Curve/ (short: ROC-Curve) can be used.
+    This diagram contrasts classifier tpr vs fpr, see Figure
+    [[fig:roc-example]]. The /area under/ the /curve/ (short: AUC) can
+    be measured. The closer this value is to 1, the better. If one
+    is mainly interested in low fpr, the leftmost section of the
+    ROC-curve is of particular interest. The area under the curve
+    bounded up to a fpr value of 0.01 is denoted AUC_{0.01}.
+
+    #+CAPTION[ROC curve example]: Example Receiver Operating Characteristic (ROC) curve. Source: \cite[sec.11.18.8]{scikit-user-guide}.
+    #+ATTR_LATEX: :width 0.4\textwidth
+    #+NAME: fig:roc-example
+    [[./pictures/plot_roc.png]]
 ** Machine Learning Algorithms
    :PROPERTIES:
    :CUSTOM_ID: sub2-ml
    :END:
+   
+
      - steps\cite{rieckdiss}
        - preprocessing
        - feature extractions
@@ -262,7 +404,7 @@ While some similarity can be seen for each group, the "within-group" differences
    capture the data stream using f.ex. the
    =tcpdump=\cite{tcpdump8-manual} tool.
 
-
+   
 
 - introduction into attack scenario for Tor Website Fingerprinting
 - discussion of related approaches used to evaluate your approach (e.g. Panchenko,
