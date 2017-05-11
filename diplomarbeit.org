@@ -75,7 +75,7 @@
 #+LATEX_HEADER:   \end{tabular}
 #+LATEX_HEADER: }}
 #+OPTIONS: H:6
-* Introduction
+* CHECK Introduction
 #+BEGIN_LaTeX
   \pagenumbering{arabic}
 #+END_LaTeX
@@ -192,14 +192,14 @@ While some similarity can be seen for each group, the "within-group" differences
 
    Chapter [[#ch6-conclusion]] summarizes the results, shows a path to
    implementation, with both included and additional further work.
-* Background
+* Background [0/5]
   :PROPERTIES:
   :CUSTOM_ID: ch2-background
   :END:
   Understanding and countering website fingerprinting is helped by
   knowledge of [[#sub2-tor][the Tor network]], [[file:docs/master.bib::tcpdump8-manual][machine-learning basics]], and [[#sub2-wf][previous
   attacks and defenses]].
-** The Tor Network
+** CHECK The Tor Network
    :PROPERTIES:
    :CUSTOM_ID: sub2-tor
    :END:
@@ -235,71 +235,67 @@ While some similarity can be seen for each group, the "within-group" differences
    neighbors along the path. Even if one hop of a three-hop setup is
    compromised, directly linking source and destination becomes pretty
    hard.
-** Machine Learning
+** KEYWORDS Tor Website Fingerprinting
+   :PROPERTIES:
+   :CUSTOM_ID: sub2-wf
+   :END:
+   As all traffic analysis\cite{introta}, website fingerprinting is
+   concerned only with message meta-data: who sends how much to
+   whom. It assumes that the system itself is computationally
+   secure\cite{applied96}: there are not enough resources, time, or
+   data to break it. Thus, traffic analysis tries to circumvent the
+   system, by analysing traffic patterns, as this can provide much
+   useful information\cite{applied96}.
+
+   Anyone who can see the data stream can attempt website
+   fingerprinting, without anyone realising it. They simply need to
+   capture the data stream using f.ex. the
+   =tcpdump=\cite{tcpdump8-manual} tool.
+
+- introduction into attack scenario for Tor Website Fingerprinting
+- discussion of related approaches used to evaluate your approach (e.g. Panchenko,
+Hermann)
+- discussion of state-of-the art defenses and drawbacks of these techniques
+- very brief description of other related approaches
+
+- Tor's built-in wf defenses
+  - fixed data cell size
+  - increased latency through routes
+  - multiplexes data
+** KEYWORDS Machine Learning Algorithms
+     - algorithms in classification (?)
+       - todo: ask kloft via mitarbeiter
+** CHECK Machine Learning
+   :PROPERTIES:
+   :CUSTOM_ID: sub2-ml
+   :END:
    #+INDEX: machine learning
    #+INDEX: ML
    In /Machine Learning/ (short: ML), a computer\cite{turing1936a}
    algorithm extracts and generalizes patterns from learning
    data.\cite{rieckdiss} This is then used to classify further
    information (f.ex. for handwriting recognition), or to act on the
-   generalization (f.ex. for self-driving cars).
+   generalizations (f.ex. for self-driving cars).
 
-   The term /machine learning/  consists of the two parts
-   "machine" and "learning". In this context, machine refers to a
-   computing machine[\sect1], while learning here means
-   to improve prediction given training data
-   \cite[sec.1.4.0]{duda}. In the words of Tom
-   Mitchell\cite[sec.1.1]{mitchell}
-     #+BEGIN_QUOTE
-A computer program is said to *learn* from experience /E/ with
-respect to some class of tasks /T/ and performance measure /P/, if
-its performance at tasks in /T/, as measured by /P/, improves with
-experience /E/.
-     #+END_QUOTE
+   The machine learning process consists of at least two separate
+   steps: [[#ml-features][feature extraction]] transforms the raw input data --- in our
+   case, website traces --- into characteristics --- in our case,
+   numbers for f.ex. the number of outgoing packets. [[#ml-class][Classification]]
+   generalizes and assigns these characteristics into categories.
 
-     Machine learning can conceptually be split into three steps:
-     [[#ml-preprocess][preprocessing]], [[#ml-features][feature extraction]] and [[#ml-class][classification]][fn::Some
-     authors, e.g. \cite{meffert}, adds an additional
-     /Merkmalsreduktion/ (feature reduction) part after
-     /Merkmalsextraktion/ (feature extraction).] The first step
-     standardizes and cleans input data, the second transforms the raw
-     input data --- in our case, website retrieval traces[fn::in
-     =pcap= format] --- into characteristics --- in our case, numbers
-     for f.ex. the number of outgoing packets. The third step groups these
-     characteristics into categories.
-
-     A last section details [[#ml-measure][measures to evaluate machine learning
-     performance]].
-*** Preprocessing
-    :PROPERTIES:
-    :CUSTOM_ID: ml-preprocess
-    :END:
-    #+INDEX: preprocessing
-    #+INDEX: machine learning!preprocessing
-    The raw data often needs to be adjusted. F.ex. images need to
-    have their light level normalized\cite[sec.1.2.]{duda}. In our
-    case, several packets of our own capture were removed,
-    f.ex. TCP-ACKs, and either all traffic except to the bridge (see
-    [[#capture][Capture]]), if used, or traffic to the cover traffic server if no
-    bridge was used.[fn:: see code [[#1site_desc][=one_site=]] (filter), [[#7777][=7777.sh=]]
-    (server), [[#counter][=counter.py=]]]
-
-    The resultant intermediate data are tuples of =(packet size,
-    timing)=, with positive/negative marking outgoing/incoming
-    packets respectively.[fn::The assignment of positive/negative to
-    incoming and outgoing data is dependent on author, see section
-    [[#wf-original]].]
-*** Feature Extraction
+   A last section studies [[#ml-measure][measures to evaluate machine learning
+   performance]].
+*** WRITE Feature Extraction
     :PROPERTIES:
     :CUSTOM_ID: ml-features
     :END:
     #+INDEX: feature extraction
     #+INDEX: machine learning!feature extraction
-    Feature extraction\cite[sec.1.3.1]{duda} transforms the
-    preprocessed raw data into features/characteristics suitable for
-    classification. For this, it uses domain-specific knowledge. In
-    website fingerprinting, among others the number and bytes of
-    both incoming and outgoing packets are counted, for example.
+    Feature extraction\cite[sec.1.3.1]{duda} transforms (preprocessed)
+    input data into features/characteristics suitable for
+    classification. It uses domain-specific knowledge. In website
+    fingerprinting, the number and bytes of both incoming and outgoing
+    packets are an distinguishing feature, for example.
 
     While the boundary of feature extraction to classification is
     "somewhat arbitrary"\cite[sec.1.3.1]{duda}, feature extraction
@@ -381,47 +377,6 @@ experience /E/.
     #+ATTR_LATEX: :width 0.4\textwidth
     #+NAME: fig:roc-example
     [[./pictures/plot_roc.png]]
-** Machine Learning Algorithms
-   :PROPERTIES:
-   :CUSTOM_ID: sub2-ml
-   :END:
-   
-
-     - steps\cite{rieckdiss}
-       - preprocessing
-       - feature extractions
-       - classification
-     - algorithms in classification (?)
-       - todo: ask kloft via mitarbeiter
-** Tor Website Fingerprinting
-   :PROPERTIES:
-   :CUSTOM_ID: sub2-wf
-   :END:
-   As all traffic analysis\cite{introta}, website fingerprinting is
-   concerned only with message meta-data: who sends how much to
-   whom. It assumes that the system itself is computationally
-   secure\cite{applied96}: there are not enough resources, time, or
-   data to break it. Thus, traffic analysis tries to circumvent the
-   system, by analysing traffic patterns, as this can provide much
-   useful information\cite{applied96}.
-
-   Anyone who can see the data stream can attempt website
-   fingerprinting, without anyone realising it. They simply need to
-   capture the data stream using f.ex. the
-   =tcpdump=\cite{tcpdump8-manual} tool.
-
-   
-
-- introduction into attack scenario for Tor Website Fingerprinting
-- discussion of related approaches used to evaluate your approach (e.g. Panchenko,
-Hermann)
-- discussion of state-of-the art defenses and drawbacks of these techniques
-- very brief description of other related approaches
-
-- Tor's built-in wf defenses
-  - fixed data cell size
-  - increased latency through routes
-  - multiplexes data
 * gtd-Novel Defense                                                 :ARCHIVE:
 ** purpose: appetize and explain, finish thesis acceptably, defend Tor's users from this attack, get it into mainline Tor as an option/make it well-enough known, get an interesting job
 ** limits: see [[file:~/da/da.org::#limits][limits]]
