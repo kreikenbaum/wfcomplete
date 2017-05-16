@@ -12,6 +12,7 @@
   - -1, +1 as labels
 '''
 def xform_o_w(foreground, background, target_dir="open_world"):
+    pass
 
 def _add_background(foreground, name=None, background=None):
     '''@returns a combined instance with background set merged in'''

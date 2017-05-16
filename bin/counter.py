@@ -398,15 +398,16 @@ dirname'''
     counter_dict = _dirname_helper(dirname, clean=False)
     dict_to_panchenko(counter_dict)
 
-# td: read up on ordereddict, maybe replace
-
-
 def for_defenses(defenses, remove_small=True):
-    '''@return dict: {defense1: {domain1: [counter1_1, ..., counter1_N],
-    ..., domainN: [counterN_1, ... counterN_N]}, ..., defenseM:
-    {domain1: [counter1_1, ..., counter1_N], ..., domainN:
-    [counterN_1, ..., countersN_N]} for directories} in {@code
-    defenses}
+    '''For each defense, add its traces to return dict.  If empty take
+    from cwd.
+    :param defenses: list of all directories/scenarios to load
+    :param remove_small: remove traces too small to be of value
+    :returns: {defense1: {domain1: [counter1_1, ..., counter1_N], ...,
+              domainN: [counterN_1, ... counterN_N]}, ..., defenseM:
+              {domain1: [counter1_1, ..., counter1_N], ..., domainN:
+              [counterN_1, ..., countersN_N]} for directories} in
+              {@code defenses}
     '''
     out = {}
     if len(defenses) == 0:
