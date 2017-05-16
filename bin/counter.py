@@ -399,15 +399,14 @@ dirname'''
     dict_to_panchenko(counter_dict)
 
 def for_defenses(defenses, remove_small=True):
-    '''For each defense, add its traces to return dict.  If empty take
+    '''For each defense, add its traces to return dict. If empty take
     from cwd.
     :param defenses: list of all directories/scenarios to load
     :param remove_small: remove traces too small to be of value
     :returns: {defense1: {domain1: [counter1_1, ..., counter1_N], ...,
               domainN: [counterN_1, ... counterN_N]}, ..., defenseM:
               {domain1: [counter1_1, ..., counter1_N], ..., domainN:
-              [counterN_1, ..., countersN_N]} for directories} in
-              {@code defenses}
+              [counterN_1, ..., countersN_N]}}
     '''
     out = {}
     if len(defenses) == 0:
