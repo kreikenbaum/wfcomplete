@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''Analyses (Panchenko's) features returned from Counter class'''
 
+import datetime
 import doctest
 import logging
 import sys
