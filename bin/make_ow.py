@@ -11,7 +11,8 @@
 - other method: write to fitting libsvm file
   - -1, +1 as labels
 '''
-def xform_o_w(foreground, background, target_dir="open_world"):
+def to_open(foreground, background, target_dir="open_world", binarize=True):
+    """read foreground and background directories, combine into target_dir"""
     pass
 
 def _add_background(foreground, name=None, background=None):
