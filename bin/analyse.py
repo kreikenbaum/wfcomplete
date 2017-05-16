@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 '''Analyses (Panchenko's) features returned from Counter class'''
 
-# from scipy.stats.mstats import gmean
-# import collections
 import doctest
 import logging
 import sys
@@ -92,13 +90,11 @@ def _clf_params(clf):
     else:
         return _clf_name(clf)
 
-# td: if ever used, have a look at _scale (needs to reset SCALER)
-
-
-def _compare(X, y, X2, y2, clfs=GOOD):
-    for clf in clfs:
-        fit._eval(X, y, clf)
-        fit._eval(X2, y2, clf)
+## td: if ever used, have a look at _scale (needs to reset SCALER)
+# def _compare(X, y, X2, y2, clfs=GOOD):
+#     for clf in clfs:
+#         fit._eval(X, y, clf)
+#         fit._eval(X2, y2, clf)
 
 # courtesy of http://stackoverflow.com/a/38060351
 
@@ -194,7 +190,6 @@ def _size_increase(base, compare):
         keys = base.keys()
     for k in keys:
         diff[k] = float(compare[k][0]) / base[k][0]
-#    return 100 * (gmean(diff.values()) -1)
     return 100 * (np.mean(diff.values()) - 1)
 
 
@@ -344,7 +339,7 @@ def _add_background(foreground, name=None, background=None):
     '''@returns a combined instance with background set merged in'''
     if name:
         date = date_of_scenario(name)
-        nextbg = min(BGS, key = lambda x: abs(date_of_scenario(x) - f))
+        nextbg = min(BGS, key=lambda x: abs(date_of_scenario(x) - f))
         background = counter.all_from_dir(background)
         # search next BG, load to background-var
     foreground['background'] = background['background']
@@ -574,45 +569,10 @@ def main(argv, with_svm=True, cumul=True):
     defenses = counter.for_defenses(argv[1:])
     if 'background' in defenses.values()[0]:
         if len(defenses) > 1:
-            logging.warn('only first class chosen for open world analysis')
+            logging.warn('only first scenario chosen for open world analysis')
         return open_world(defenses.values()[0])
     else:
         closed_world(defenses, argv[1], with_svm=with_svm, cumul=cumul)
-
-    # fit._eval(X, y, svm.SVC(kernel='linear')) #problematic, but best
-    # random forest
-    # feature importance
-    # forest = ensemble.ExtraTreesClassifier(n_estimators=250)
-    # forest.fit(X, y)
-    # forest.feature_importances_
-    # extratree param
-    # for num in range(50, 400, 50):
-    #     fit._eval(X, y, ensemble.ExtraTreesClassifier(n_estimators=num))
-    # linear params
-    # cstart, cstop = -5, 5
-    # Cs = np.logspace(cstart, cstop, base=10, num=(abs(cstart - cstop)+1))
-    # for c in Cs:
-    #     fit._eval(X, y, svm.SVC(C=c, kernel='linear'))
-    # metrics (single)
-    # from scipy.spatial import distance
-    # for dist in [distance.braycurtis, distance.canberra,
-    #              distance.chebyshev, distance.cityblock, distance.correlation,
-    #              distance.cosine, distance.euclidean, distance.sqeuclidean]:
-    #     fit._eval(X, y, neighbors.KNeighborsClassifier(metric='pyfunc', func=dist))3
-    # td: knn + levenshtein
-    # import math
-    # def mydist(x, y):
-    #     fixedm = distance.sqeuclidean(x[:8], y[:8])
-    #     xbounds1 = (10, 10+x[8])
-    #     ybounds1 = (10, 10+y[8])
-    #     variable1 = gdl.metric(x[xbounds1[0]:xbounds1[1]],
-    #                            y[ybounds1[0]:ybounds1[1]])
-    #     xbounds2 = (10+x[8], 10+x[8]+x[9])
-    #     ybounds2 = (10+x[8], 10+x[8]+y[9])
-    #     variable2 = gdl.metric(x[xbounds2[0]:xbounds2[1]],
-    #                            y[ybounds2[0]:ybounds2[1]])
-    #     return math.sqrt(fixedm + variable1 + variable2)
-#    (X, y ,y_dom) = counter.to_features_cumul(counters)
 
 # OLDER DATA (without bridge)
 # sys.argv = ['', 'disabled/05-12@10']

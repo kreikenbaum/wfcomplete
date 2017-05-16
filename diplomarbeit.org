@@ -239,22 +239,29 @@ While some similarity can be seen for each group, the "within-group" differences
    :PROPERTIES:
    :CUSTOM_ID: sub2-wf
    :END:
-   As all traffic analysis\cite{introta}, website fingerprinting is
-   concerned only with message meta-data: who sends how much to
-   whom. It assumes that the system itself is computationally
-   secure\cite{applied96}: there are not enough resources, time, or
-   data to break it. Thus, traffic analysis tries to circumvent the
-   system, by analysing traffic patterns, as this can provide much
-   useful information\cite{applied96}.
+   #+INDEX: traffic analysis
+   What does an adversary do if he cannot decrypt and the message
+   traffic of a cryptographic system he is interested in? One
+   alternative is to inspect the traffic itself for patterns. This
+   process is called /traffic analysis/\cite{introta} (short: TA) and
+   yields much useful information\cite{applied96}.
 
-   Anyone who can see the data stream can attempt website
-   fingerprinting, without anyone realising it. They simply need to
-   capture the data stream using f.ex. the
+   Website fingerprinting needs only message meta-data: who sends how
+   much data when. It assumes that the system itself is
+   computationally secure\cite{applied96}: there are not enough
+   resources, time, or data to break it. Analysing traffic patterns
+   can circumvent the system. Anyone who can see the data stream can
+   carry out this attack, without anyone being the wiser. They simply
+   need to capture the data stream using f.ex. the
    =tcpdump=\cite{tcpdump8-manual} tool.
 
-- introduction into attack scenario for Tor Website Fingerprinting
-- discussion of related approaches used to evaluate your approach (e.g. Panchenko,
-Hermann)
+   Depending on attack, a trace is munged differently:
+   \cite{ccsw09-fingerprinting} simply extracts the packet sizes
+   whereas \cite{panchenko} computes several HTTP-specific features.
+
+   These extracted /features/ are assigned to web sites using machine
+   learning techniques reviewed in section [[#sub2-ml]].
+
 - discussion of state-of-the art defenses and drawbacks of these techniques
 - very brief description of other related approaches
 
@@ -262,30 +269,28 @@ Hermann)
   - fixed data cell size
   - increased latency through routes
   - multiplexes data
-** KEYWORDS Machine Learning Algorithms
-     - algorithms in classification (?)
-       - todo: ask kloft via mitarbeiter
 ** CHECK Machine Learning
    :PROPERTIES:
    :CUSTOM_ID: sub2-ml
    :END:
    #+INDEX: machine learning
    #+INDEX: ML
-   In /Machine Learning/ (short: ML), a computer\cite{turing1936a}
-   algorithm extracts and generalizes patterns from learning
-   data.\cite{rieckdiss} This is then used to classify further
-   information (f.ex. for handwriting recognition), or to act on the
-   generalizations (f.ex. for self-driving cars).
+   Let us review basics of /Machine Learning/ (ML): a
+   computer\cite{turing1936a} algorithm extracts and generalizes
+   patterns from learning data.\cite{rieckdiss} This is then used to
+   classify further patterns (f.ex. for handwriting recognition),
+   or to act on the generalizations (f.ex. for self-driving cars).
 
    The machine learning process consists of at least two separate
-   steps: [[#ml-features][feature extraction]] transforms the raw input data --- in our
-   case, website traces --- into characteristics --- in our case,
-   numbers for f.ex. the number of outgoing packets. [[#ml-class][Classification]]
-   generalizes and assigns these characteristics into categories.
+   steps: domain-specific [[#ml-features][feature extraction]] transforms the raw input
+   data --- in our case, website traces --- into characteristics ---
+   in our case, numbers for f.ex. the number of outgoing
+   packets. [[#ml-class][Classification]] then generalizes and assigns these
+   characteristics into categories.
 
    A last section studies [[#ml-measure][measures to evaluate machine learning
    performance]].
-*** WRITE Feature Extraction
+*** KEYWORDS Feature Extraction
     :PROPERTIES:
     :CUSTOM_ID: ml-features
     :END:
@@ -293,9 +298,11 @@ Hermann)
     #+INDEX: machine learning!feature extraction
     Feature extraction\cite[sec.1.3.1]{duda} transforms (preprocessed)
     input data into features/characteristics suitable for
-    classification. It uses domain-specific knowledge. In website
-    fingerprinting, the number and bytes of both incoming and outgoing
-    packets are an distinguishing feature, for example.
+    classification.
+
+
+- discussion of related approaches used to evaluate your approach (e.g. Panchenko,
+Hermann)
 
     While the boundary of feature extraction to classification is
     "somewhat arbitrary"\cite[sec.1.3.1]{duda}, feature extraction
@@ -377,6 +384,9 @@ Hermann)
     #+ATTR_LATEX: :width 0.4\textwidth
     #+NAME: fig:roc-example
     [[./pictures/plot_roc.png]]
+** KEYWORDS Machine Learning Algorithms
+     - algorithms in classification (?)
+       - todo: ask kloft via mitarbeiter
 * gtd-Novel Defense                                                 :ARCHIVE:
 ** purpose: appetize and explain, finish thesis acceptably, defend Tor's users from this attack, get it into mainline Tor as an option/make it well-enough known, get an interesting job
 ** limits: see [[file:~/da/da.org::#limits][limits]]
