@@ -387,6 +387,182 @@ Hermann)
 ** KEYWORDS Machine Learning Algorithms
      - algorithms in classification (?)
        - todo: ask kloft via mitarbeiter
+*** Support Vector Machines
+    #+INDEX: classifier!Support Vector Machine
+    #+INDEX: classifier!SVM
+    #+INDEX: Support Vector Machine
+    #+INDEX: SVM
+    #+INDEX: linear classifier
+    #+INDEX: binary classification
+    #+INDEX: classification!binary
+    Support Vector Machines (short: SVM) are a /linear classifier/:
+    they find a linear boundary between points, see Figure
+    [[fig:linear_boundary]] for a simple example.
+
+    #+CAPTION[Example binary linear classification]: Example binary linear classification from \cite[Figure 1.5]{iml}.
+    #+ATTR_LATEX: :width 0.4\textwidth
+    #+NAME: fig:linear_boundary
+    [[./pictures/iml_fig1.5.png]]
+
+    [fn::This and the following parts are mostly based on
+    \cite[ch.6f]{iml}] Given a set $X = \{x_1, ..., x_n\}$ with a dot
+    product $\langle\cdot, \cdot\rangle: X \times X \to \mathbb R$ and tuples $(x_1, y_1), ...,
+    (x_m, y_m)$, with $x_i \in X, y_i \in \{-1, 1\}$ as a /binary
+    classification/ task.
+
+    The SVM's job is to find a hyperplane[fn::as \cite[ch.4.1]{esl}
+    mention, this is actually an affine set, as it need not pass
+    through the origin. Keeping with tradition, it will be called
+    hyperplane in this thesis (as long as those things formed by
+    quarks are still called atoms \ldots).]
+    #+BEGIN_LaTeX
+      \[\{x \in X \mid \langle w, x \rangle +b = 0\}\]
+    #+END_LaTeX
+    such that $\langle w, x_i \rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle
+    +b < 0$ whenever $y_i = -1$. With added normalization, this can
+    be compressed to the form \[y_i \cdot (\langle w, xi \rangle +b) \ge 1.\]
+**** Soft Margin Classifiers
+     :PROPERTIES:
+     :CUSTOM_ID: soft-margin-svm
+     :END:
+     #+INDEX: margin
+     #+INDEX: SVM!margin
+     #+INDEX: soft-margin
+     #+INDEX: SVM!soft-margin
+     #+INDEX: classifier!soft-margin
+     #+INDEX: C
+     #+INDEX: SVM!C
+     A support vector machine tries to find a hyperplane between two
+     groups of points and maximize its distance to the closest points,
+     called /margin/. What happens if the points lie such that a line
+     cannot be found, as f.ex. in Figure [[fig:non-linear-data]]?
+
+     #+CAPTION[Example simple non-linearly separable data]: Non-linearly separable data; source: \url{https://en.wikipedia.org/wiki/File:Separability_NO.svg}
+     #+ATTR_LATEX: :width 0.4\textwidth
+     #+NAME: fig:non-linear-data
+     [[./pictures/Separability_NO.eps]]
+
+     To solve this, a /soft-margin classifier/ introduces slack
+     variables $\xi \ge 0$, which it tries to reduce while maximizing the
+     margin.
+
+     This alters the equations to $y_i( \langle w, xi \rangle +b) \ge 1 - \xi_i$ for the
+     optimization problem
+
+     \[\min_{w, b, \xi} \frac{1}{2} ||w||^2 + \frac{C}{m} \sum_{i=1..m} \xi_i\]
+
+     The /error term/ $C$ weighs minimizing training errors against
+     maximizing the margin\cite[sec.7.2.1]{iml}.
+**** Multi-Class Strategies
+     :PROPERTIES:
+     :CUSTOM_ID: multi-class
+     :END:
+     #+INDEX: binary classification
+     #+INDEX: multi-class classification
+     #+INDEX: classification!binary
+     #+INDEX: classification!multi-class
+     The SVMs as described above solve the binary classification
+     problem \cite[sec.1.1.3]{iml}: they propose a boundary between
+     two classes of objects.
+
+     In website fingerprinting[fn::as in f.ex.\space{}handwriting
+     recognition], there are most often more classes than two.
+
+     Several strategies exist to distinguish more than two
+     classes. The main are to train one classifier for each class ---
+     called /One-Vs-Rest/ (OVR) --- and one for each class-class
+     combination --- called /One-Vs-One/ (OVO). One-Vs-Rest trains
+     fewer classifiers, while One-Vs-One trains more, but evaluates
+     fewer samples per fitting.\cite[sec.4.12.3]{scikit-user-guide}.
+**** Kernel Trick
+     #+INDEX: kernel
+     #+INDEX: kernel!radial basis function
+     #+INDEX: kernel!RBF
+     Straight lines do not always distinguish classes correctly, as
+     f.ex. example in Figure [[hastie_kerneltrick]]. This would seem a
+     drawback to using Support Vector Machines, yet they can compute
+     these not only on the original data, but also on a projected
+     space. This allows for complex decision boundaries. By using the
+     kernel trick\cite[sec.2.2.2]{kernels}[fn::A kernel is a function
+     with specific properties. The dot product is such a kernel. The
+     kernel trick enables a algorithm with a kernel to use any other
+     kernel], a SVM can not only use the dot product $\langle.,.\rangle$, but
+     another kernel $k(., .)$ instead.
+
+     #+CAPTION: Kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left side shows linear boundaries on $X$ and $Y$ --- the right side linear boundaries computed with added $X^2$, $Y^2$ and $XY$.
+     #+NAME: hastie_kerneltrick
+     [[./pictures/hastie.png]]
+
+     The kernel used by default by \cite{Hsu10apractical} for SVMs is
+     the (gaussian) /radial basis function/ (short: RBF)
+     kernel\cite[sec.2.3]{kernels} \[k(x, y) = \exp \left ( - { \|x -
+     y\|^2 \over 2 \gamma^2 } \right )\] This is also used by
+     \cite{panchenko2}. While the algorithms still finds a straight
+     line in a projected space, the resulting decision boundaries in
+     the original feature space are more varied.
+**** Parameter Estimation
+     #+INDEX: cross-validation
+     #+INDEX: grid search
+     #+INDEX: $\gamma$ (gamma)
+     #+INDEX: gamma
+     Each [[#soft-margin-svm][soft margin classifier has an error term $C$]] which states
+     how much to penalize outliers. The gaussian radial basis
+     function kernel used by \cite{panchenko2} also has a $\gamma$ (gamma)
+     term which varies the width of the area, see Figure
+     [[fig:C-gamma-effect]].
+
+     #+CAPTION[Example svm-rbf classification with different parameters for $C$ and \gamma]: Example svm-rbf classification with different parameters for $C$ and \gamma. Source \cite[Figure 42.328]{scikit-user-guide}, recreated for higher resolution.
+     #+ATTR_LATEX: :width 0.4\textwidth
+     #+NAME: fig:C-gamma-effect
+     [[./pictures/skl-fig-42.328.png]]
+#     [[./pictures/skl-fig-42.328.eps]]
+
+     These parameters have to be provided externally for the Support
+     Vector Machine to achieve high
+     accuracy. \cite[sec.3.2]{Hsu10apractical} recommend grid-search
+     with cross-validation to find optimal parameters.
+
+     In /grid-search/, several parameters of $C$ and $\gamma$ are
+     evaluated, and the best one, depending on the metric, is chosen.
+
+     In /cross-validation/, the data set is split into $k$ disjoint
+     subsets, called /folds/, of equal size. Of those, $k-1$ are used
+     combinedly for training the classifier, while the last is used
+     for prediction evaluation. This is done $k$ times, and averaged
+     for the result.
+
+     It might be possible to evaluate these meta-parameters together
+     with the main classification problem \cite[secs.2.8.3, 6.7]{esl},
+     but analogously to \cite[sec.2.8.3]{esl}, this would probably
+     become "combinatorially hard".
+
+*** K-Nearest-Neighbor-Classifier
+    #+INDEX: classifier!kNN
+    #+INDEX: classifier!k-nearest-neighbors
+    #+INDEX: kNN
+    #+INDEX: k-nearest-neighbors
+    The /k-nearest-neighbors/ (short: kNN) classifier
+    (\cite[sec.1.3.2]{iml} \cite[sec.13.3]{esl}
+    \cite[sec.8.2]{mitchell}) classifies data points based on the
+    known class[es] of their neighbors: for each item to be
+    classified, determine the (f.ex.\space{}k=5) closest neighbors by a
+    given metric. If all neighbors' classes agree, or based on a
+    majority decision, the item's class is set to theirs. See Figure
+    [[fig:knn-example]].
+
+    It is successful "in a large number of classification and
+    regression problems"\cite[sec.4.6]{scikit-user-guide}, despite its
+    simplicity.
+
+    This classifier works best if all classes have the same number of
+    (training) instances. Otherwise, it is of course probable that the
+    classes with the higher number of instances will be chosen as
+    targets of classification more often.
+
+     #+CAPTION[k-nearest-neighbors illustrated]: The left picture shows the five closest neighbors around the test instance $x_q$, which is then classified as =-=. The right shows the k==1-decision boundary around several training instances (the area where a test instance would be classified as the point). Source \cite[Figure 8.1]{mitchell}
+     #+NAME: fig:knn-example
+     #+ATTR_LATEX: :width 0.7\textwidth
+     [[./pictures/mitchell-fig8.1.png]]
 * gtd-Novel Defense                                                 :ARCHIVE:
 ** purpose: appetize and explain, finish thesis acceptably, defend Tor's users from this attack, get it into mainline Tor as an option/make it well-enough known, get an interesting job
 ** limits: see [[file:~/da/da.org::#limits][limits]]
