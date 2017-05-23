@@ -43,9 +43,9 @@ def _binarize(counter_dict, bg_label='background', fg_label='foreground'):
     out = {}
     out[bg_label] = counter_dict[bg_label]
     out[fg_label] = []
-    for (k, v) in counter_dict.iteritems():
+    for (k, its_counters) in counter_dict.iteritems():
         if k != bg_label:
-            out[fg_label].extend(v)
+            out[fg_label].extend(its_counters)
     return out
 
 
@@ -56,16 +56,16 @@ def _bytes_mean_std(counter_dict):
     '''
     out = {}
     for (domain, counter_list) in counter_dict.iteritems():
-        total = [counter.get_total_in() for counter in counter_list]
+        total = [counter_.get_total_in() for counter_ in counter_list]
         out[domain] = (np.mean(total), np.std(total))
     return out
 
 
-def _class_predictions(y2, y2_predict):
-    '''@return list: for each class in y2: what was it predicted to be'''
-    out = [[] for _ in range(y2[-1] + 1)] # different empty arrays
-    for (idx, elem) in enumerate(y2):
-        out[elem].append(y2_predict[idx])
+def _class_predictions(cls, cls_predict):
+    ''':returns: list: for each class in cls: what was it predicted to be'''
+    out = [[] for _ in range(cls[-1] + 1)] # different empty arrays
+    for (idx, elem) in enumerate(cls):
+        out[elem].append(cls_predict[idx])
     return out
 
 
@@ -97,11 +97,9 @@ def _clf_params(clf):
 #         fit._eval(X, y, clf)
 #         fit._eval(X2, y2, clf)
 
-# courtesy of http://stackoverflow.com/a/38060351
-
-
-def _dict_elementwise(func, d1, d2):
-    return {k: func(d1[k], d2[k]) for k in d1}
+def _dict_elementwise(func, dict_1, dict_2):
+    ''':return: {k: func(dict_1, dict_2)} for all keys k in dict_1'''
+    return {k: func(dict_1[k], dict_2[k]) for k in dict_1}
 
 
 def _find_domain(mean_per_dir, mean):
@@ -124,7 +122,7 @@ def _format_row(row):
 def _gen_url_list(y, y_domains):
     '''@return list of urls, the index is the class'''
     out = []
-    for i in range(y[-1] + 1):
+    for _ in range(y[-1] + 1):
         out.append([])
     for (idx, cls) in enumerate(y):
         if not out[cls]:
@@ -141,7 +139,7 @@ def _mean(counter_dict):
     '''
     out = {}
     for (domain, counter_list) in counter_dict.iteritems():
-        total = [counter.get_total_both() for counter in counter_list]
+        total = [counter_.get_total_both() for counter_ in counter_list]
         out[domain] = np.mean(total)
     return out
 
@@ -152,10 +150,10 @@ def _misclassification_rates(train, test, clf=GOOD[0]):
     '''@return (mis-)classification rates per class in test'''
     (X, y, y_d) = counter.to_features_cumul(counter.outlier_removal(train))
     clf.fit(fit._scale(X, clf), y)
-    (X2, y2, y2d) = counter.to_features_cumul(test)
-    X2 = fit._scale(X2, clf)
-    return _predict_percentages(_class_predictions(y2, clf.predict(X2)),
-                                _gen_url_list(y2, y2d))
+    (X_test, y_test, y_testd) = counter.to_features_cumul(test)
+    X_test = fit._scale(X_test, clf)
+    return _predict_percentages(_class_predictions(y_test, clf.predict(X_test)),
+                                _gen_url_list(y_test, y_testd))
 
 
 def _predict_percentages(class_predictions_list, url_list):
@@ -332,12 +330,12 @@ picks best result'''
         ALL_MAP[name] = clf
     print '10-fold result: {}'.format(clf.best_score_)
 
-    
-BGS = ["background--2016-08-17", "background--2016-11-18", "background--2016-11-22"]
-
 
 def _add_background(foreground, name=None, background=None):
     '''@returns a combined instance with background set merged in'''
+    BGS = ["background--2016-08-17", "background--2016-11-18",
+           "background--2016-11-22"]
+
     if name:
         date = date_of_scenario(name)
         nextbg = min(BGS, key=lambda x: abs(date_of_scenario(x) - f))
@@ -575,6 +573,7 @@ def main(argv, with_svm=True, cumul=True):
     else:
         closed_world(defenses, argv[1], with_svm=with_svm, cumul=cumul)
 
+# pylint: disable=line-too-long
 # OLDER DATA (without bridge)
 # sys.argv = ['', 'disabled/05-12@10']
 # next: traces in between
@@ -672,8 +671,10 @@ def main(argv, with_svm=True, cumul=True):
 # sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git', 'bin')); reload(fit)
 # if by hand: change to the right directory before importing
 # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')); os.nice(20)
+# pylint: enable=line-too-long
 doctest.testmod()
-# this is currently the top-level application, thus logging outside of __main__
+# this is currently the top-level application, thus logging outside of
+# __main__
 logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 
 if __name__ == "__main__":
