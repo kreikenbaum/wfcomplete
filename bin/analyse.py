@@ -56,7 +56,7 @@ def _bytes_mean_std(counter_dict):
     '''
     out = {}
     for (domain, counter_list) in counter_dict.iteritems():
-        total = [counter_.get_total_in() for counter_ in counter_list]
+        total = [i.get_total_in() for i in counter_list]
         out[domain] = (np.mean(total), np.std(total))
     return out
 
@@ -139,21 +139,20 @@ def _mean(counter_dict):
     '''
     out = {}
     for (domain, counter_list) in counter_dict.iteritems():
-        total = [counter_.get_total_both() for counter_ in counter_list]
+        total = [i.get_total_both() for i in counter_list]
         out[domain] = np.mean(total)
     return out
-
-# td: simple doctest/unit test
 
 
 def _misclassification_rates(train, test, clf=GOOD[0]):
     '''@return (mis-)classification rates per class in test'''
-    (X, y, y_d) = counter.to_features_cumul(counter.outlier_removal(train))
+    (X, y, _) = counter.to_features_cumul(counter.outlier_removal(train))
     clf.fit(fit._scale(X, clf), y)
     (X_test, y_test, y_testd) = counter.to_features_cumul(test)
     X_test = fit._scale(X_test, clf)
-    return _predict_percentages(_class_predictions(y_test, clf.predict(X_test)),
-                                _gen_url_list(y_test, y_testd))
+    return _predict_percentages(
+        _class_predictions(y_test, clf.predict(X_test)),
+        _gen_url_list(y_test, y_testd))
 
 
 def _predict_percentages(class_predictions_list, url_list):
@@ -172,7 +171,7 @@ def _std(counter_dict):
     '''
     out = {}
     for (domain, counter_list) in counter_dict.iteritems():
-        total = [counter.get_total_both() for counter in counter_list]
+        total = [i.get_total_both() for i in counter_list]
         out[domain] = np.std(total)
     return out
 
@@ -198,17 +197,15 @@ def _size_increase_helper(two_defenses):
 
 
 def size_increase_from_argv(defense_argv, remove_small=True):
-    '''computes sizes increases from sys.argv-like list, argv[1] is baseline'''
+    '''computes sizes increases from sys.argv-like list, argv[1] is
+baseline'''
     defenses = counter.for_defenses(
         defense_argv[1:], remove_small=remove_small)
     stats = {k: _bytes_mean_std(v) for (k, v) in defenses.iteritems()}
     out = {}
-    for d in defense_argv[2:]:
-        out[d] = _size_increase(stats[defense_argv[1]], stats[d])
+    for i in defense_argv[2:]:
+        out[i] = _size_increase(stats[defense_argv[1]], stats[i])
     return out
-
-
-# unused, but could be useful
 
 
 def _times_mean_std(counter_dict):
