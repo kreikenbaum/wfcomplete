@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 '''Analyses (Panchenko's) features returned from Counter class'''
-
 import datetime
 import doctest
 import logging
 import sys
 import time
+from types import NoneType
+
 import numpy as np
 from sklearn import cross_validation, ensemble, multiclass, neighbors, svm, tree
 
@@ -216,7 +217,7 @@ def _times_mean_std(counter_dict):
     '''
     out = {}
     for (domain, counter_list) in counter_dict.iteritems():
-        total = [counter.timing[-1][0] for counter in counter_list]
+        total = [i.timing[-1][0] for i in counter_list]
         out[domain] = (np.mean(total), np.std(total))
     return out
 
@@ -256,20 +257,20 @@ validate, test)
     >> _tvts([[1], [1], [1], [2], [2], [2]], [1, 1, 1, 2, 2, 2])
     ([[1], [2]], [[1], [2]], [[1], [2]], [1, 2], [1, 2], [1, 2]) # modulo order
     '''
-    X1, Xtmp, y1, ytmp = cross_validation.train_test_split(
+    X1, Xtmp, y1, ytmp = cross_validation.train_test_split( #pylint: disable=invalid-name
         X, y, train_size=1. / 3, stratify=y)
-    X2, X3, y2, y3 = cross_validation.train_test_split(
+    X2, X3, y2, y3 = cross_validation.train_test_split( #pylint: disable=invalid-name
         Xtmp, ytmp, train_size=.5, stratify=ytmp)
     return (X1, X2, X3, y1, y2, y3)
 
 
 def _verbose_test_11(X, y, clf):
     '''cross-test (1) estimator on (1) X, y, print results and estimator name'''
-    t = time.time()
+    now = time.time()
     print _clf_params(clf),
     res = fit._eval(X, y, clf)
     print res.mean()
-    logging.info('time: %s', time.time() - t)
+    logging.info('time: %s', time.time() - now)
     logging.debug('res: %s', res)
 
 
@@ -295,23 +296,23 @@ def class_stats_to_table(class_stats):
         print '|'
 
 
-def compare_stats(dirs):
-    '''@return a dict {dir1: {domain1: {...}, ..., domainN: {...}},
-    dir2:..., ..., dirN: ...} with domain mean, standard distribution
+def compare_stats(scenarios):
+    '''@return a dict {scenario1: {domain1: {...}, ..., domainN: {...}},
+    scenario2:..., ..., scenarioN: ...} with domain mean, standard distribution
     and labels'''
-    defenses = counter.for_defenses(dirs)
+    defenses = counter.for_defenses(scenarios)
     means = {k: _mean(v) for (k, v) in defenses.iteritems()}
     stds = {k: _std(v) for (k, v) in defenses.iteritems()}
     out = []
-    for d in dirs:
-        logging.info('version: %s', d)
-        el = {"plugin-version": d,
-              "plugin-enabled": False if 'disabled' in d else True}
-        for site in defenses[d]:
-            tmp = dict(el)
+    for scenario in scenarios:
+        logging.info('version: %s', scenario)
+        default = {"plugin-version": scenario,
+                   "plugin-enabled": 'disabled' not in scenario}
+        for site in defenses[scenario]:
+            tmp = dict(default)
             tmp['website'] = site
-            tmp['mean'] = means[d][site]
-            tmp['std'] = stds[d][site]
+            tmp['mean'] = means[scenario][site]
+            tmp['std'] = stds[scenario][site]
             out.append(tmp)
     return out
 
@@ -328,16 +329,15 @@ picks best result'''
     print '10-fold result: {}'.format(clf.best_score_)
 
 
+BGS = ["background--2016-08-17", "background--2016-11-18",
+       "background--2016-11-22"]
 def _add_background(foreground, name=None, background=None):
     '''@returns a combined instance with background set merged in'''
-    BGS = ["background--2016-08-17", "background--2016-11-18",
-           "background--2016-11-22"]
-
     if name:
         date = date_of_scenario(name)
-        nextbg = min(BGS, key=lambda x: abs(date_of_scenario(x) - f))
-        background = counter.all_from_dir(background)
-        # search next BG, load to background-var
+        nextbg = min(BGS,
+                     key=lambda x: abs(date_of_scenario(x) - date))
+        background = counter.all_from_dir(nextbg)
     foreground['background'] = background['background']
     return foreground
 
@@ -369,26 +369,27 @@ def open_world(defense, y_bound=0.05):
     '''open-world (SVM) test on data, optimized on bounded auc.
 
     @return (fpr, tpr, optimal_clf, roc_plot_mpl)'''
+    # _train combines training and testing data and _test is grid-validation
     assert 'background' in defense, '''no "background" set in defense data'''
     defense = _binarize(defense)
     X, y, _ = counter.to_features_cumul(defense)
-    Xtt, Xv, ytt, yv = cross_validation.train_test_split(
+    X_train, X_test, y_train, y_test = cross_validation.train_test_split(
         X, y, train_size=2. / 3, stratify=y)
-    result = fit.my_grid(Xtt, ytt, auc_bound=y_bound)#, n_jobs=1)
+    result = fit.my_grid(X_train, y_train, auc_bound=y_bound)#, n_jobs=1)
 #    clf = fit.sci_grid(X_train, y_train, c=2**15, gamma=2**-45,
 #                   grid_args={"scoring": scorer})
-    fpr, tpr, _, prob = fit.roc(result.clf, Xtt, ytt, Xv, yv)
+    fpr, tpr, _, prob = fit.roc(result.clf, X_train, y_train, X_test, y_test)
     print 'bounded auc: {} (C: {}, gamma: {})'.format(
-        fit.bounded_auc_score(result.clf, Xv, yv, 0.01),
+        fit.bounded_auc_score(result.clf, X_test, y_test, 0.01),
         result.clf.estimator.C, result.clf.estimator.gamma)
     return (fpr, tpr, result, plot_data.roc(fpr, tpr), prob)
 
 
-def closed_world(defenses, def0, cumul=True, with_svm=True, cc=False):
+def closed_world(defenses, def0, cumul=True, with_svm=True, common=False):
     '''cross test on dirs: 1st has training data, rest have test
 
     =argv= is like sys.argv, =cumul= triggers CUMUL, else version 1,
-    =cc= determines whether to reduce the test data to common keys.
+    =common= determines whether to reduce the test data to common keys.
 
     If defenses has only one set, it is cross-validated etc. If there
     are more than one, the first is taken as baseline and training,
@@ -402,23 +403,23 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, cc=False):
 
     # training set
     (train, test) = _tts(defenses[def0])
-    CLFS = GOOD[:]
+    clfs = GOOD[:]
     if with_svm:
         if def0 in SVC_TTS_MAP and cumul:
             logging.info('reused svc: %s for defense: %s',
                          SVC_TTS_MAP[def0],
                          def0)
-            CLFS.append(SVC_TTS_MAP[def0])
+            clfs.append(SVC_TTS_MAP[def0])
         else:
-            t = time.time()
+            now = time.time()
             (clf, _, _) = fit.helper(
                 counter.outlier_removal(train, 2), cumul)
-            logging.debug('parameter search took: %s', time.time() - t)
+            logging.debug('parameter search took: %s', time.time() - now)
             if cumul:
                 SVC_TTS_MAP[def0] = clf
-                CLFS.append(SVC_TTS_MAP[def0])
+                clfs.append(SVC_TTS_MAP[def0])
             else:
-                CLFS.append(clf)
+                clfs.append(clf)
 
     # X,y for eval
     if cumul:
@@ -427,7 +428,7 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, cc=False):
         (X, y, _) = counter.to_features(counter.outlier_removal(test, 1))
     # evaluate accuracy on all of unaddoned
     print 'cross-validation on X,y'
-    for clf in CLFS:
+    for clf in clfs:
         _verbose_test_11(X, y, clf)
 
     # vs test sets
@@ -437,7 +438,7 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, cc=False):
             continue
         print '\ntrain: {} VS {} (overhead {}%)'.format(
             def0, defense, _size_increase(stats[def0], stats[defense]))
-        if cc and its_counters.keys() != its_counters0.keys():
+        if common and its_counters.keys() != its_counters0.keys():
             # td: refactor code duplication with above (search for keys = ...)
             keys = set(its_counters0.keys())
             keys = keys.intersection(its_counters.keys())
@@ -451,33 +452,34 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, cc=False):
         if cumul:
             (X2, y2, _) = counter.to_features_cumul(its_counters)
         else:
-            l = _dict_elementwise(max,
-                                  counter._find_max_lengths(its_counters0),
-                                  counter._find_max_lengths(its_counters))
+            max_len = _dict_elementwise(
+                max,
+                counter._find_max_lengths(its_counters0),
+                counter._find_max_lengths(its_counters))
             (X, y, _) = counter.to_features(
-                counter.outlier_removal(its_counters0, 2), l)
+                counter.outlier_removal(its_counters0, 2), max_len)
             (X2, y2, _) = counter.to_features(
-                counter.outlier_removal(its_counters, 1), l)
-        for clf in CLFS:
-            t = time.time()
+                counter.outlier_removal(its_counters, 1), max_len)
+        for clf in clfs:
+            now = time.time()
             print '{}: {}'.format(_clf_name(clf), _xtest(X, y, X2, y2, clf)),
-            print '({} seconds)'.format(time.time() - t)
+            print '({} seconds)'.format(time.time() - now)
 
 
-def gen_class_stats_list(defenses,
-                         defense0='auto',
+def gen_class_stats_list(scenarios,
+                         scenario0='auto',
                          clfs=[GOOD[0]]):
-    '''@return list of _misclassification_rates() with defense name'''
-    if defense0 == 'auto':
-        defense0 = [x for x in defenses if 'disabled' in x][0]
-        if defense0 in SVC_TTS_MAP:
-            clfs.append(SVC_TTS_MAP[defense0])
+    '''@return list of _misclassification_rates() with scenario name'''
+    if scenario0 == 'auto':
+        scenario0 = [x for x in scenarios if 'disabled' in x][0]
+        if scenario0 in SVC_TTS_MAP:
+            clfs.append(SVC_TTS_MAP[scenario0])
     out = []
     for clf in clfs:
-        for c in defenses:
+        for scenario in scenarios:
             res = _misclassification_rates(
-                defenses[defense0], defenses[c], clf=clf)
-            res['id'] = '{} with {}'.format(c, _clf_name(clf))
+                scenarios[scenario0], scenarios[scenario], clf=clf)
+            res['id'] = '{} with {}'.format(scenario, _clf_name(clf))
             out.append(res)
     return out
 
@@ -507,7 +509,7 @@ def outlier_removal_levels(defense, clf=None):
         for test_lvl in [-1, 1, 2, 3]:
             (X, y, _) = counter.to_features_cumul(
                 counter.outlier_removal(train, train_lvl))
-            if type(clf) is type(None):
+            if isinstance(clf, NoneType):
                 clf = fit.my_grid(X, y)
             (X, y, _) = counter.to_features_cumul(
                 counter.outlier_removal(test, test_lvl))
