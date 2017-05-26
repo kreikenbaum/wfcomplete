@@ -36,7 +36,6 @@ json_only = True
 # td: remove this maybe (level==-1 did not increase accuracy vs 1)
 minmax = None
 
-
 def _append_features(keys, filename):
     '''appends features in trace file of name "filename" to keys.
 
@@ -77,7 +76,7 @@ def _find_max_lengths(counters):
     '''determines maximum lengths of variable-length features'''
     max_lengths = counters.values()[0][0].variable_lengths()
     all_lengths = []
-    for domain, domain_values in counters.iteritems():
+    for _, domain_values in counters.iteritems():
         for trace in domain_values:
             all_lengths.append(trace.variable_lengths())
     for lengths in all_lengths:
@@ -272,14 +271,14 @@ from_panchenko_data()'''
         yield (os.path.basename(filename), out)
 
 
-def all_from_wang(dirname="batch", cw=True):
+def all_from_wang(dirname="batch", closed_world=True):
     '''creates dict of Counters from wang's =batch/=-directory'''
     class_names = []
     try:
         with open("batch_list") as f:
             for line in f:
-                (id, name) = line.split(':')
-                assert int(id) is len(class_names)
+                (i, name) = line.split(':')
+                assert int(i) is len(class_names)
                 class_names.append(name.strip())
     except IOError:
         pass
@@ -288,12 +287,12 @@ def all_from_wang(dirname="batch", cw=True):
         if filename[-1] is 'f':
             continue
         # td: need to deal with open world traces later
-        if cw and '-' not in filename:
+        if closed_world and '-' not in filename:
             continue
         (cls, inst) = os.path.basename(filename).split('-')
         if class_names:
             cls = class_names[int(cls)]
-        if not cls in out:
+        if cls not in out:
             out[cls] = []
         with open(filename) as f:
             out[cls].append(Counter.from_wang(filename, cls, inst))
@@ -303,34 +302,33 @@ def all_from_wang(dirname="batch", cw=True):
 def dict_to_cai(counter_dict, writeto):
     '''write counter_dict's entries to writeto'''
     for counter_list in counter_dict.values():
-        for c in counter_list:
-            writeto.write('{}\n'.format(c.to_cai()))
+        for i in counter_list:
+            writeto.write('{}\n'.format(i.to_cai()))
 
 
 def dict_to_panchenko(counter_dict, dirname='p_batch'):
     '''write counters in counter_dict to dirname/output-tcp/'''
     try:
         os.mkdir(dirname)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
+    except OSError as ex:
+        if ex.errno != errno.EEXIST:
             raise
     try:
         os.mkdir(os.path.join(dirname, 'output-tcp'))
-    except OSError as e:
-        if e.errno != errno.EEXIST:
+    except OSError as ex:
+        if ex.errno != errno.EEXIST:
             raise
-    for (k, v) in counter_dict.iteritems():
+    for (k, counter_list) in counter_dict.iteritems():
         if 'background' in k:
             count = 0
-            for instance in v:
+            for instance in counter_list:
                 with file(os.path.join(
-                        dirname, 'output-tcp', '{}-{}'.format(k, count)),
-                          'w') as f:
+                    dirname, 'output-tcp', '{}-{}'.format(k, count)), 'w') as f:
                     list_to_panchenko([instance], f)
                     count += 1
         else:
             with file(os.path.join(dirname, 'output-tcp', k), 'w') as f:
-                list_to_panchenko(v, f)
+                list_to_panchenko(counter_list, f)
 
 
 def dict_to_wang(counter_dict):
@@ -375,7 +373,7 @@ def dir_to_herrmann(dirname, clean=True):
     '''write all traces in defense in dirname to herrmann libsvm file'''
     counter_dict = _dirname_helper(dirname, clean)
     # 2. write to file
-    X, y, yd = to_features_herrmann(counter_dict)
+    X, y, _ = to_features_herrmann(counter_dict)
     if dirname is '.':
         dirname = os.getcwd()
     to_libsvm(X, y, fname='her_svm')
@@ -431,8 +429,8 @@ def from_json(jsonstring):
 
 def list_to_panchenko(counter_list, outfile):
     '''write counters to outfile, one per line'''
-    for c in counter_list:
-        outfile.write(c.to_panchenko() + '\n')
+    for i in counter_list:
+        outfile.write(i.to_panchenko() + '\n')
 
 
 def save(counter_dict, prefix=''):
@@ -1033,7 +1031,9 @@ if __name__ == "__main__":
     try:
         COUNTERS = Counter.from_(*sys.argv)
     except OSError:
-        print 'needs a directory with pcap files named domain@timestamp (google.com@1234234234) or json files name domain.json (google.com.json)'
+        print '''needs a directory with pcap files named
+        domain@timestamp (google.com@1234234234) or json files name
+        domain.json (google.com.json)'''
         sys.exit(1)
 
     if not json_only:

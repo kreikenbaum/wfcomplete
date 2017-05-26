@@ -388,12 +388,14 @@ def open_world(defense, y_bound=0.05):
 def closed_world(defenses, def0, cumul=True, with_svm=True, common=False):
     '''cross test on dirs: 1st has training data, rest have test
 
-    =argv= is like sys.argv, =cumul= triggers CUMUL, else version 1,
-    =common= determines whether to reduce the test data to common keys.
-
-    If defenses has only one set, it is cross-validated etc. If there
-    are more than one, the first is taken as baseline and training,
-    while the others are tested against this.
+    :param: defenses contains scenario dirs like sys.argv.  If
+            defenses has only one set, it is cross-validated etc.  If
+            there are more than one, the first is taken as baseline
+            and training, while the others are tested against this.
+            As example, search for sys.argv = ... lines below
+    :param: cumul triggers CUMUL, else version 1,
+    :param: common determines whether to reduce the test data to
+            common keys.
     '''
     stats = {k: _bytes_mean_std(v) for (k, v) in defenses.iteritems()}
     # durations = {k: _average_duration(v) for (k,v) in defenses.iteritems()}
