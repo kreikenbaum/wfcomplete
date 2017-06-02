@@ -129,12 +129,12 @@ def _remove_small_classes(counter_dict):
     '''@return dict with removed traces if there are less than
 MIN_CLASS_SIZE per url'''
     out = {}
-    for (k, v) in counter_dict.iteritems():
-        if len(v) < MIN_CLASS_SIZE:
+    for (k, counter_list) in counter_dict.iteritems():
+        if len(counter_list) < MIN_CLASS_SIZE:
             logging.warn('class %s had only %s instances, removed',
-                         k, len(v))
+                         k, len(counter_list))
         else:
-            out[k] = v
+            out[k] = counter_list
     return out
 
 
@@ -396,25 +396,26 @@ dirname'''
     counter_dict = _dirname_helper(dirname, clean=False)
     dict_to_panchenko(counter_dict)
 
-def for_defenses(defenses, remove_small=True):
-    '''For each defense, add its traces to return dict. If empty take
+def for_defenses(scenarios, remove_small=True):
+    '''For each scenario, add its traces to return dict. If empty take
     from cwd.
-    :param defenses: list of all directories/scenarios to load
+    :param scenarios: list of all directories/scenarios to load
     :param remove_small: remove traces too small to be of value
-    :returns: {defense1: {domain1: [counter1_1, ..., counter1_N], ...,
-              domainN: [counterN_1, ... counterN_N]}, ..., defenseM:
+    :returns: {scenario1: {domain1: [counter1_1, ..., counter1_N], ...,
+              domainN: [counterN_1, ... counterN_N]}, ..., scenarioM:
               {domain1: [counter1_1, ..., counter1_N], ..., domainN:
               [counterN_1, ..., countersN_N]}}
     '''
     out = {}
-    if len(defenses) == 0:
+    if len(scenarios) == 0:
         out['.'] = all_from_dir('.', remove_small=remove_small)
-    for d in defenses:
-        if d not in DEFENSES:
-            DEFENSES[d] = all_from_dir(d, remove_small=remove_small)
+    for scenario in scenarios:
+        if scenario not in DEFENSES:
+            DEFENSES[scenario] = all_from_dir(scenario,
+                                              remove_small=remove_small)
         else:
-            logging.info('reused defense: %s', d)  # debug?
-        out[d] = DEFENSES[d]
+            logging.info('reused scenario: %s', scenario)  # debug?
+        out[scenario] = DEFENSES[scenario]
     return out
 
 
@@ -452,36 +453,36 @@ def to_features(counters, max_lengths=None):
     if not max_lengths:
         max_lengths = _find_max_lengths(counters)
 
-    X_in = []
-    out_y = []
+    X = []
+    y = []
     class_number = 0
     domain_names = []
     for domain, dom_counters in counters.iteritems():
         for count in dom_counters:
             if not count.warned:
-                _trace_append(X_in, out_y, domain_names,
+                _trace_append(X, y, domain_names,
                               count.panchenko(max_lengths), class_number, domain)
             else:
                 logging.warn('%s: one discarded', domain)
         class_number += 1
-    return (np.array(X_in), np.array(out_y), domain_names)
+    return (np.array(X), np.array(y), domain_names)
 
 
 def to_features_cumul(counter_dict):
     '''transforms counter data to CUMUL-feature vector pair (X,y)'''
-    X_in = []
+    X = []
     out_y = []
     class_number = 0
     domain_names = []
     for domain, dom_counters in counter_dict.iteritems():
         if domain == "background":
-            _trace_list_append(X_in, out_y, domain_names,
+            _trace_list_append(X, out_y, domain_names,
                                dom_counters, "cumul", -1, "background")
         else:
-            _trace_list_append(X_in, out_y, domain_names,
+            _trace_list_append(X, out_y, domain_names,
                                dom_counters, "cumul", class_number, domain)
             class_number += 1
-    return (np.array(X_in), np.array(out_y), domain_names)
+    return (np.array(X), np.array(out_y), domain_names)
 
 
 def to_features_herrmann(counter_dict):
@@ -492,20 +493,20 @@ def to_features_herrmann(counter_dict):
             psizes.update(counter.packets)
     list_psizes = list(psizes)
     # 3. for each counter: line: 'class, p1_occurs, ..., pn_occurs
-    X_in = []
+    X = []
     class_number = 0
     domain_names = []
     out_y = []
     for domain, dom_counters in counter_dict.iteritems():
         for count in dom_counters:
             if not count.warned:
-                X_in.append(count.herrmann(list_psizes))
+                X.append(count.herrmann(list_psizes))
                 out_y.append(class_number)
                 domain_names.append(domain)
             else:
                 logging.warn('%s: one discarded', domain)
         class_number += 1
-    return (np.array(X_in), np.array(out_y), domain_names)
+    return (np.array(X), np.array(out_y), domain_names)
 
 
 def to_libsvm(X, y, fname='libsvm_in'):
@@ -514,9 +515,9 @@ def to_libsvm(X, y, fname='libsvm_in'):
     for i, row in enumerate(X):
         f.write(str(y[i]))
         f.write(' ')
-        for no, val in enumerate(row):
+        for count, val in enumerate(row):
             if val != 0:
-                f.write('{}:{} '.format(no + 1, val))
+                f.write('{}:{} '.format(count + 1, val))
         f.write('\n')
 
 
@@ -718,13 +719,13 @@ class Counter(object):
                 logging.warn('packetsize == 0 in cumul')
 
         features = [in_count, out_count, out_size, in_size]
-        cumulFeatures = np.interp(np.linspace(c_abs[0], c_abs[-1],
-                                              num_features + 1),
-                                  c_abs,
-                                  c_rel)
-        # could be cumulFeatures[1:], but never change a running system
-        for el in itertools.islice(cumulFeatures, 1, None):
-            features.append(el)
+        cumul_features = np.interp(np.linspace(c_abs[0], c_abs[-1],
+                                               num_features + 1),
+                                   c_abs,
+                                   c_rel)
+        # could be cumul_features[1:], but never change a running system
+        for elem in itertools.islice(cumul_features, 1, None):
+            features.append(elem)
 
         return features
 
@@ -876,10 +877,10 @@ class Counter(object):
         if not name:
             name = self.name.split('@')[0]
         out = name
-        for p in self.packets:
-            while abs(p) >= 512:
-                out += ' {}'.format('+' if np.sign(p) == 1 else '-')
-                p -= np.sign(p) * 600
+        for packet in self.packets:
+            while abs(packet) >= 512:
+                out += ' {}'.format('+' if np.sign(packet) == 1 else '-')
+                packet -= np.sign(packet) * 600
         return out
 
     def to_json(self):
@@ -919,24 +920,21 @@ class Counter(object):
 
 
 class MinMaxer(object):
-
     '''keeps min and max scores
 
-    >>> a = MinMaxer(); a.setIf(4,13); a.setIf(3,7); a.max
+    >>> a = MinMaxer(); a.set_if(4,13); a.set_if(3,7); a.max
     13
     '''
-
     def __init__(self):
         self.min = sys.maxint
         self.max = - sys.maxint - 1
 
-    def setIf(self, minval, maxval):
+    def set_if(self, minval, maxval):
+        '''if minval or maxval exceed existing values, replace them'''
         if maxval > self.max:
             self.max = maxval
         if minval < self.min:
             self.min = minval
-
-# outlier removal
 
 
 def p_or_tiny(counter_list):
@@ -956,7 +954,7 @@ def p_or_median(counter_list):
     global minmax
     if minmax is None:
         minmax = MinMaxer()
-    minmax.setIf(0.2 * med, 1.8 * med)
+    minmax.set_if(0.2 * med, 1.8 * med)
 
     return [x for x in counter_list
             if x.get_total_in() >= 0.2 * med and x.get_total_in() <= 1.8 * med]
@@ -977,7 +975,7 @@ def p_or_quantiles(counter_list):
     global minmax
     if minmax is None:
         minmax = MinMaxer()
-    minmax.setIf(q1 - 1.5 * (q3 - q1), q3 + 1.5 * (q3 - q1))
+    minmax.set_if(q1 - 1.5 * (q3 - q1), q3 + 1.5 * (q3 - q1))
     for counter in counter_list:
         if (counter.get_total_in() >= (q1 - 1.5 * (q3 - q1)) and
                 counter.get_total_in() <= (q3 + 1.5 * (q3 - q1))):
@@ -1006,9 +1004,9 @@ def outlier_removal(counter_dict, level=2):
 
     levels from 1 to 3 use panchenko's levels, -1 uses previous global minmax'''
     out = {}
-    for (k, v) in counter_dict.iteritems():
+    for (k, counter_list) in counter_dict.iteritems():
         try:
-            out[k] = p_or_tiny(v[:])
+            out[k] = p_or_tiny(counter_list[:])
             out[k] = p_or_toolong(out[k])
             if level == -1:
                 out[k] = p_or_test(out[k])
@@ -1019,7 +1017,8 @@ def outlier_removal(counter_dict, level=2):
             if not out[k]:
                 raise ValueError
             logging.debug('%15s: outlier_removal(%d) removed %d from %d',
-                          k, level, (len(v) - len(out[k])), len(v))
+                          k, level, (len(counter_list) - len(out[k])),
+                          len(counter_list))
         except (ValueError, IndexError):  # somewhere, list got to []
             logging.warn('%s discarded in outlier removal', k)
     return out
