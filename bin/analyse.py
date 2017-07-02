@@ -327,6 +327,7 @@ picks best result'''
                          cumul=True, folds=10)
         ALL_MAP[name] = clf
     print '10-fold result: {}'.format(clf.best_score_)
+    return clf
 
 
 BGS = ["background--2016-08-17", "background--2016-11-18",
@@ -368,7 +369,7 @@ def date_of_scenario(name):
 def open_world(defense, y_bound=0.05):
     '''open-world (SVM) test on data, optimized on bounded auc.
 
-    @return (fpr, tpr, optimal_clf, roc_plot_mpl)'''
+    :return: (fpr, tpr, optimal_clf, roc_plot_mpl)'''
     # _train combines training and testing data and _test is grid-validation
     assert 'background' in defense, '''no "background" set in defense data'''
     defense = _binarize(defense)
@@ -572,7 +573,7 @@ def main(argv, with_svm=True, cumul=True):
             logging.warn('only first scenario chosen for open world analysis')
         return open_world(defenses.values()[0])
     else:
-        closed_world(defenses, argv[1], with_svm=with_svm, cumul=cumul)
+        return closed_world(defenses, argv[1], with_svm=with_svm, cumul=cumul)
 
 # pylint: disable=line-too-long
 # OLDER DATA (without bridge)

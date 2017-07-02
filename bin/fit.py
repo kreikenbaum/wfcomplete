@@ -68,7 +68,7 @@ def _eval(X, y, clf, folds=FOLDS):
 
 
 def _lb(*args, **kwargs):
-    '''facade for _binarize, list wrap'''
+    '''facade for list(_binarize(...))'''
     return list(_binarize(*args, **kwargs))
 
 
