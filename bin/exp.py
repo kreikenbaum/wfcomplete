@@ -31,7 +31,7 @@ def run_exp(scenario, _rnd):
         'gamma': result.clf.estimator.gamma,
         'sites': counters.keys(),
         'score': result.best_score_,
-        'C_gamma_result': format_results(result.results)
+        'C_gamma_result': _format_results(result.results)
     }
 
 
@@ -39,6 +39,7 @@ def _format_results(results):
     out = []
     for ((c, gamma), score) in results.iteritems():
         out.append([c, gamma, score])
+    return out
 
 
 @ex.automain
