@@ -16,12 +16,6 @@ DIR = '/home/uni/da/git/data/'
 ex = Experiment('wf_alternatives')
 ex.observers.append(MongoObserver.create())
 
-def format_results(results):
-    out = []
-    for ((c, gamma), score) in results.iteritems():
-        out.append([c, gamma, score])
-
-
 @ex.config
 def my_config_cw():
     scenario = 'disabled/06-09@10'
@@ -39,6 +33,12 @@ def run_exp(scenario, _rnd):
         'score': result.best_score_,
         'C_gamma_result': format_results(result.results)
     }
+
+
+def _format_results(results):
+    out = []
+    for ((c, gamma), score) in results.iteritems():
+        out.append([c, gamma, score])
 
 
 @ex.automain
