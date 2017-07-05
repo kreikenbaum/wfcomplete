@@ -120,9 +120,12 @@ def _sci_fit(C, gamma, step, X, y, scoring=None, probability=False):
 
 def _search_range(best_param, step=1):
     '''@return new array of parameters to search in, with logspaced steps'''
-    _step = 2.**step
-    return [best_param / (_step**2), best_param / _step, best_param,
-            best_param * _step, best_param * _step**2]
+    expstep = 2.**step
+    return [best_param / (expstep**2),
+            best_param / expstep,
+            best_param,
+            best_param * expstep,
+            best_param * expstep**2]
 
 
 def _stop(y, step, result, previous, C=1, best=1):
