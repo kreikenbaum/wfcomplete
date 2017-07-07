@@ -460,8 +460,9 @@ def to_features(counters, max_lengths=None):
     for domain, dom_counters in counters.iteritems():
         for count in dom_counters:
             if not count.warned:
-                _trace_append(X, y, domain_names,
-                              count.panchenko(max_lengths), class_number, domain)
+                _trace_append(
+                    X, y, domain_names,
+                    count.panchenko(max_lengths), class_number, domain)
             else:
                 logging.warn('%s: one discarded', domain)
         class_number += 1
@@ -668,12 +669,14 @@ class Counter(object):
                 tmp.timing.append([float(secs), -int(negcount)])
         return tmp
 
+
     def _variable_lengths(self):
         '''does the computation of lengths, assumes that variable is filled'''
         out = {}
         for k, feature in self.variable.iteritems():
             out[k] = len(feature)
         return out
+
 
     def check(self):
         '''if wrong, set warned flag and @return =false=, else =true='''
@@ -684,6 +687,7 @@ class Counter(object):
             return False
         else:
             return True
+
 
     def cumul(self, num_features=100):
         '''@return CUMUL feature vector: inCount, outCount, outSize, inSize++'''
@@ -724,6 +728,7 @@ class Counter(object):
                                    c_abs,
                                    c_rel)
         # could be cumul_features[1:], but never change a running system
+        # that is, without tests ;-)
         for elem in itertools.islice(cumul_features, 1, None):
             features.append(elem)
 
@@ -736,6 +741,12 @@ class Counter(object):
         except IndexError:
             # panchenko input data
             return DURATION_LIMIT_SECS
+
+
+    def get_tpi(self):
+        ''':returns: total incoming packet count'''
+        return _num_packets(self.packets)[0]
+
 
     def get_total_in(self):
         '''returns total incoming bytes'''
