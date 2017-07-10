@@ -6,11 +6,43 @@
 import collections
 import csv
 import doctest
-import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import metrics
 
 import Gnuplot
+
+def _replace(stringlist):
+    '''removes nonparseable stuff
+    >>> _replace(['hi', '-', r'\open '])
+    ['hi', '_', '']
+    '''
+    out = []
+    for s in stringlist:
+        out.append(s
+                   .replace('-', '_')
+                   .replace(r"\open ", "")
+                   .replace(r" \close", ""))
+    return out
+
+def _size_table_to_data(readable):
+    '''read readable data, which contains org-export-table in csv format'''
+    read = []
+    reader = csv.reader(readable)
+    DataRecord = collections.namedtuple('DataRecord', _replace(reader.next()))
+    for row in reader:
+        read.append(DataRecord._make(row))
+    return read
+
+def _to_color(value):
+    '''gives color to hls-hue'''
+    import colorsys
+    return colorsys.hls_to_rgb(value, 0.5, 1)
+
+def _to_hex(a):
+    '''color tuple to hex string'''
+    return "0x{:02x}{:02x}{:02x}".format(int(255 * a[0]),
+                                         int(255 * a[1]),
+                                         int(255 * a[2]))
 
 def _color_cycle(steps=6):
     '''yields steps of different colors
@@ -77,39 +109,6 @@ def plot_flavours(plot, data):
         plot.replot(Gnuplot.Data([(x.size, x.cumul) for x in its_datas],
                                  title=flavor))
 
-def _replace(stringlist):
-    '''removes nonparseable stuff
-    >>> _replace(['hi', '-', r'\open '])
-    ['hi', '_', '']
-    '''
-    out = []
-    for s in stringlist:
-        out.append(s
-                   .replace('-', '_')
-                   .replace(r"\open ", "")
-                   .replace(r" \close", ""))
-    return out
-
-def _size_table_to_data(readable):
-    '''read readable data, which contains org-export-table in csv format'''
-    read = []
-    reader = csv.reader(readable)
-    DataRecord = collections.namedtuple('DataRecord', _replace(reader.next()))
-    for row in reader:
-        read.append(DataRecord._make(row))
-    return read
-
-def _to_color(value):
-    '''gives color to hls-hue'''
-    import colorsys
-    return colorsys.hls_to_rgb(value, 0.5, 1)
-
-def _to_hex(a):
-    '''color tuple to hex string'''
-    return "0x{:02x}{:02x}{:02x}".format(int(255 * a[0]),
-                                         int(255 * a[1]),
-                                         int(255 * a[2]))
-
 def counters(counter_list, gnuplotter=None, label=None, color="blue"):
     '''counter's cumul data in color. in gnuplotter is not None, do reuse.
 
@@ -160,31 +159,6 @@ def many_defenses(places, defs=['simple1/10', '22.0/10aI'],
             tmp_defs = ['disabled/bridge']; tmp_defs.append(d)
             plot = defenses(places, tmp_defs, u)
             save(plot, "{}__{}_vs_disabled".format(u, d.replace('/', '@')))
-
-def roc(fpr, tpr, title="ROC curve", plot=None):
-    '''@return plot object with roc curve, use =.savefig(filename)=
-to save, and =.show()= to display.
-    @params If =plot=, draw another curve into existing plot'''
-    if not plot:
-        plot = _init_roc()
-    curve = plt.plot(
-        fpr, tpr,
-        label='{} (AUC = {:0.2f})'.format(title, metrics.auc(fpr, tpr)))
-    one_percent = [y for (x,y) in zip(fpr, tpr) if x >= 0.01][0]
-    line = plt.plot([0, 1], [one_percent] *2, "red", label='1% fpr')
-    #plt.legend([curve, line], loc="lower right")
-    return plot
-
-def _init_roc():
-    '''initializes ROC plot'''
-    out = plt.figure()
-    plt.plot([0, 1], [0, 1], 'k--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title("Receiver Operating Characteristic (ROC) Curve")
-    return out
 
 def save(gnuplotter, prefix='plot', type_='eps'):
     '''saves plot to dated file'''
