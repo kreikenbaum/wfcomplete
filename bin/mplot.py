@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+import stats
+
 
 def _init_roc():
     '''initializes ROC plot'''
@@ -29,21 +31,42 @@ to save, and =.show()= to display.
     return plot
 
 
-def total_packets_in(counter_dict):
-    '''plots total incoming packets stat, absolute and with kde
+def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):
+    '''plots total incoming packets stat, rugplot with kde
 
     - plot size histogram colored by domain
       - with kde
+    Usage:
+       total_packets_in(scenarios.values()[0], scenarios.values()[0].keys()[:4])
     '''
+    plt.xscale("log")
+    if not subkeys: subkeys = counter_dict.keys()
+    for (k, v) in counter_dict.iteritems():
+        if k not in subkeys:
+            continue
+        #        sns.distplot(stats.tpi(v), hist=False, rug=True, label=k)
+        sns.distplot(stats.tpi(v), label=k, ax=ax)
 
+    if not ax:
+        plt.title("Total number of incoming packets")
+        plt.xlabel("number of incoming packets")
+        plt.ylabel("relative histogram with kernel-density-estimation")
+        plt.legend()
+    else:
+        ax.legend()
+    if save:
+        plt.savefig("/tmp/total_packets_in_"+'_'.join(subkeys)+".pdf")
+
+''' usage
+reload(mplot)
+fig, axes = plt.subplots(2, 1, sharex=True)
+mplot.total_packets_in(s, s.keys()[:4], axes[0])
+mplot.total_packets_in(s3, s3.keys()[:4], axes[1])
+plt.suptitle("Total number of incoming packets")
+axes[0].set_xlim(min(min([stats.tpi(v) for v in s.values()])), max(max([stats.tpi(v) for v in s3.values()])))
+axes[1].set_xlim(min(min([stats.tpi(v) for v in s.values()])), max(max([stats.tpi(v) for v in s3.values()])))
+axes[0].set_title("no defense")
+axes[1].set_title("early defense")
+fig.text(0.04, 0.5, "relative histograms with kernel-density-estimation", va="center", rotation="vertical")
+plt.savefig("/tmp/total_packets_in_"+'_'.join(s3.keys()[:4])+".pdf")
 '''
-0. [@0] take 10 old sites
-   - [later: take those combined with 100-defenses for difference]
-   - load via
-1. compute =totalnumber_in= mean and std for each element
-   0. [@0] =total_number_in= as of danezis
-   1. use panchenko 1 or 2 (better 1, labeled)'s extraction to
-      get per-trace
-   2. compute stats? or just use seaborn?
-2. plot with different colors, see if 10 ok, or needs less
-'''    

@@ -567,13 +567,13 @@ def main(argv, with_svm=True, cumul=True):
     if len(argv) == 1:
         argv.append('.')
     # by hand: defenses = counter.for_defenses(sys.argv[1:])
-    defenses = counter.for_defenses(argv[1:])
-    if 'background' in defenses.values()[0]:
-        if len(defenses) > 1:
+    scenarios = counter.for_defenses(argv[1:])
+    if 'background' in scenarios.values()[0]:
+        if len(scenarios) > 1:
             logging.warn('only first scenario chosen for open world analysis')
-        return open_world(defenses.values()[0])
+        return open_world(scenarios.values()[0])
     else:
-        return closed_world(defenses, argv[1], with_svm=with_svm, cumul=cumul)
+        return closed_world(scenarios, argv[1], with_svm=with_svm, cumul=cumul)
 
 # pylint: disable=line-too-long
 # OLDER DATA (without bridge)
@@ -671,13 +671,18 @@ def main(argv, with_svm=True, cumul=True):
 # disabled/p-foreground-data/30/output-tcp
 
 # sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git', 'bin')); reload(fit)
+
+
 # if by hand: change to the right directory before importing
-# import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')); os.nice(20)
+# import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')); _=os.nice(20)
 # pylint: enable=line-too-long
 doctest.testmod()
+
+
 # this is currently the top-level application, thus logging outside of
 # __main__
 logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
+
 
 if __name__ == "__main__":
     main(sys.argv)

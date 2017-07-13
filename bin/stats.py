@@ -3,7 +3,7 @@ import numpy as np
 
 import collections
 
-Stats = collections.namedtuple('Stats', ['tpi_mean', 'tpi_std'])
+Stats = collections.namedtuple('Stats', ['tpi', 'tpi_mean', 'tpi_std'])
 
 
 def total_packets_in_stats(counter_dict):
@@ -14,5 +14,6 @@ def total_packets_in_stats(counter_dict):
         out[k] = (np.mean(tpi_list), np.std(tpi_list, ddof=1))
 
 
-def _tpi_per_list(counter_list):
+def tpi(counter_list):
+    '''returns total incoming packets for each counter in list'''
     return [x.get_tpi() for x in counter_list]
