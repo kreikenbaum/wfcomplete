@@ -675,14 +675,12 @@ def main(argv, with_svm=True, cumul=True):
 
 # if by hand: change to the right directory before importing
 # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')); _=os.nice(20)
+
 # pylint: enable=line-too-long
-doctest.testmod()
-
-
 # this is currently the top-level application, thus logging outside of
 # __main__
 logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
-
+doctest.testmod()
 
 if __name__ == "__main__":
     main(sys.argv)

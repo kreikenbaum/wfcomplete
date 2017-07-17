@@ -57,7 +57,7 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):
     if save:
         plt.savefig("/tmp/total_packets_in_"+'_'.join(subkeys)+".pdf")
 
-''' usage
+''' two plots in one figure with one title etc
 reload(mplot)
 fig, axes = plt.subplots(2, 1, sharex=True)
 mplot.total_packets_in(s, s.keys()[:4], axes[0])
@@ -70,3 +70,12 @@ axes[1].set_title("early defense")
 fig.text(0.04, 0.5, "relative histograms with kernel-density-estimation", va="center", rotation="vertical")
 plt.savefig("/tmp/total_packets_in_"+'_'.join(s3.keys()[:4])+".pdf")
 '''
+
+''' three plots ...
+argv = ['', 'disabled/bridge--2016-07-06', 'wtf-pad/bridge--2016-07-05', 'tamaraw']
+scenarios = counter.for_defenses(argv[1:])
+fig, axes = plt.subplots(3, 1, sharex=True)
+for (name, counters) in scenarios:
+
+
+(s1, s2, s3) = scenarios.keys()
