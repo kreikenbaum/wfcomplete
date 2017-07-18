@@ -933,7 +933,7 @@ class Counter(object):
 class MinMaxer(object):
     '''keeps min and max scores
 
-    >>> a = MinMaxer(); a.set_if(4,13); a.set_if(3,7); a.max
+    >>> mm = MinMaxer(); mm.set_if(4,13); mm.set_if(3,7); mm.max
     13
     '''
     def __init__(self):
@@ -942,10 +942,8 @@ class MinMaxer(object):
 
     def set_if(self, minval, maxval):
         '''if minval or maxval exceed existing values, replace them'''
-        if maxval > self.max:
-            self.max = maxval
-        if minval < self.min:
-            self.min = minval
+        self.max = max(self.max, maxval)
+        self.min = min(self.min, minval)
 
 
 def p_or_tiny(counter_list):

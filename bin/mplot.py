@@ -75,7 +75,20 @@ plt.savefig("/tmp/total_packets_in_"+'_'.join(s3.keys()[:4])+".pdf")
 argv = ['', 'disabled/bridge--2016-07-06', 'wtf-pad/bridge--2016-07-05', 'tamaraw']
 scenarios = counter.for_defenses(argv[1:])
 fig, axes = plt.subplots(3, 1, sharex=True)
-for (name, counters) in scenarios:
+plt.suptitle("Total number of incoming packets")
+mm = counter.MinMaxer()
+for (i, (name, counter_dict)) in enumerate(scenarios.items()):
+    mplot.total_packets_in(counter_dict, counter_dict.keys()[:4], axes[i])
+    mm.set_if(min(min([stats.tpi(v) for v in counter_dict.values()])),
+              max(max([stats.tpi(v) for v in counter_dict.values()])))
+    if i:
+        axes[i].set_title(name)
+for (i, _) in enumerate(scenarios):
+    axes[i].set_xlim(mm.min, mm.max)
+fig.text(0, 0.5, "relative histograms with kernel-density-estimation",
+         va="center", rotation="vertical")
+fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+'''
+# todo: outlier removal for tamaraw (see youtube), (?avoid sina.com?)
 
-
-(s1, s2, s3) = scenarios.keys()
+#(s1, s2, s3) = scenarios.keys()
