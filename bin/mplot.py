@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
+sns.set_palette("colorblind") # optional, uglier, but helpful
 
 import stats
 
@@ -73,21 +74,27 @@ plt.savefig("/tmp/total_packets_in_"+'_'.join(s3.keys()[:4])+".pdf")
 
 ''' three plots ...
 argv = ['', 'disabled/bridge--2016-07-06', 'wtf-pad/bridge--2016-07-05', 'tamaraw']
-scenarios = counter.for_defenses(argv[1:])
+scenarios = counter.for_scenarios(argv[1:], or_level=2)
 fig, axes = plt.subplots(3, 1, sharex=True)
-plt.suptitle("Total number of incoming packets")
+plt.suptitle("Number of incoming packets per trace")
 mm = counter.MinMaxer()
+keys = scenarios.values()[0].keys()
+keys.remove('sina.com.cn') # chinese sites are problematic via tor
+sitenum = 4
 for (i, (name, counter_dict)) in enumerate(scenarios.items()):
-    mplot.total_packets_in(counter_dict, counter_dict.keys()[:4], axes[i])
-    mm.set_if(min(min([stats.tpi(v) for v in counter_dict.values()])),
-              max(max([stats.tpi(v) for v in counter_dict.values()])))
-    if i:
-        axes[i].set_title(name)
+    mplot.total_packets_in(counter_dict, keys[:sitenum], axes[i])
+    subset = [counter_dict[x] for x in keys[:sitenum]]
+    mm.set_if(min(min([stats.tpi(v) for v in subset])),
+              max(max([stats.tpi(v) for v in subset])))
+    axes[i].set_title(name)
 for (i, _) in enumerate(scenarios):
     axes[i].set_xlim(mm.min, mm.max)
 fig.text(0, 0.5, "relative histograms with kernel-density-estimation",
          va="center", rotation="vertical")
 fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+plt.savefig("/tmp/total_packets_in_"
+            + '_'.join(scenarios).replace('/', '___')+'__'
+            +'_'.join(keys[:sitenum])+"__palette_colorblind.pdf")
 '''
 # todo: outlier removal for tamaraw (see youtube), (?avoid sina.com?)
 

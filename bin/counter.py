@@ -28,13 +28,11 @@ TOR_DATA_CELL_SIZE = 512
 
 TIME_SEPARATOR = '@'
 
-# defense->counter_dict cache-map
-DEFENSES = {}
+# scenario->counter_dict cache-map, array of these per or-level
+SCENARIOS = [{}, {}, {}, {}]
 
 # module-globals
 json_only = True
-# td: remove this maybe (level==-1 did not increase accuracy vs 1)
-minmax = None
 
 def _append_features(keys, filename):
     '''appends features in trace file of name "filename" to keys.
@@ -211,7 +209,7 @@ def _sum_stream(packets):
 # td: use glob.iglob? instead of os.walk?
 
 
-def all_from_dir(dirname, remove_small=True):
+def all_from_dir(dirname, remove_small=True, or_level=0):
     '''All packets traces of the name domain@tstamp are parsed to
     Counters. If there are JSON files created by =save()=, use those
     instead of the pcap files for their domains. If there are neither,
@@ -241,6 +239,8 @@ def all_from_dir(dirname, remove_small=True):
         out = all_from_panchenko(dirname)
     if not out:
         raise IOError('no counters in path "{}"'.format(dirname))
+    if or_level:
+        out = outlier_removal(out, or_level)
     if remove_small:
         return _remove_small_classes(out)
     else:
@@ -354,7 +354,7 @@ def _dirname_helper(dirname, clean=True):
         os.chdir(dirname)
         counter_dict = all_from_dir('.', remove_small=clean)
         if clean:
-            counter_dict = outlier_removal(counter_dict)
+            counter_dict = outlier_removal(counter_dict, 3)
     finally:
         os.chdir(previous_dir)
     return counter_dict
@@ -396,7 +396,7 @@ dirname'''
     counter_dict = _dirname_helper(dirname, clean=False)
     dict_to_panchenko(counter_dict)
 
-def for_defenses(scenarios, remove_small=True):
+def for_scenarios(scenarios, remove_small=True, or_level=0):
     '''For each scenario, add its traces to return dict. If empty take
     from cwd.
     :param scenarios: list of all directories/scenarios to load
@@ -408,14 +408,15 @@ def for_defenses(scenarios, remove_small=True):
     '''
     out = {}
     if len(scenarios) == 0:
-        out['.'] = all_from_dir('.', remove_small=remove_small)
+        out['.'] = all_from_dir('.',
+                                remove_small=remove_small, or_level=or_level)
     for scenario in scenarios:
-        if scenario not in DEFENSES:
-            DEFENSES[scenario] = all_from_dir(scenario,
-                                              remove_small=remove_small)
+        if scenario not in SCENARIOS[or_level]:
+            SCENARIOS[or_level][scenario] = all_from_dir(
+                scenario, remove_small=remove_small, or_level=or_level)
         else:
             logging.info('reused scenario: %s', scenario)  # debug?
-        out[scenario] = DEFENSES[scenario]
+        out[scenario] = SCENARIOS[or_level][scenario]
     return out
 
 
@@ -960,11 +961,6 @@ def p_or_tiny(counter_list):
 def p_or_median(counter_list):
     '''removes if total_in < 0.2 * median or > 1.8 * median'''
     med = np.median([counter.get_total_in() for counter in counter_list])
-    global minmax
-    if minmax is None:
-        minmax = MinMaxer()
-    minmax.set_if(0.2 * med, 1.8 * med)
-
     return [x for x in counter_list
             if x.get_total_in() >= 0.2 * med and x.get_total_in() <= 1.8 * med]
 
@@ -980,23 +976,11 @@ def p_or_quantiles(counter_list):
     q3 = np.percentile(counter_total_in, 75)
 
     out = []
-    # td: remove -1-code
-    global minmax
-    if minmax is None:
-        minmax = MinMaxer()
-    minmax.set_if(q1 - 1.5 * (q3 - q1), q3 + 1.5 * (q3 - q1))
     for counter in counter_list:
         if (counter.get_total_in() >= (q1 - 1.5 * (q3 - q1)) and
                 counter.get_total_in() <= (q3 + 1.5 * (q3 - q1))):
             out.append(counter)
     return out
-
-
-def p_or_test(counter_list):
-    '''outlier removal if training values are known'''
-    return [x for x in counter_list
-            if x.get_total_in() >= minmax.min
-            and x.get_total_in() <= minmax.max]
 
 
 def p_or_toolong(counter_list):
@@ -1011,14 +995,15 @@ def outlier_removal(counter_dict, level=2):
     '''apply outlier removal to input of form
     {'domain1': [counter, ...], ... 'domainN': [..]}
 
-    levels from 1 to 3 use panchenko's levels, -1 uses previous global minmax'''
+    panchenko's levels:: 1: minimal, 2: quantile-based, 3: median'''
     out = {}
     for (k, counter_list) in counter_dict.iteritems():
         try:
             out[k] = p_or_tiny(counter_list[:])
             out[k] = p_or_toolong(out[k])
-            if level == -1:
-                out[k] = p_or_test(out[k])
+            # git commit d785e461978211b3f15a6c32f5ad399858ce8a1b still has this
+            # if level == -1:
+            #     out[k] = p_or_test(out[k])
             if level > 2:
                 out[k] = p_or_median(out[k])
             if level > 1:

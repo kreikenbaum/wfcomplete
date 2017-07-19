@@ -200,7 +200,7 @@ def _size_increase_helper(two_defenses):
 def size_increase_from_argv(defense_argv, remove_small=True):
     '''computes sizes increases from sys.argv-like list, argv[1] is
 baseline'''
-    defenses = counter.for_defenses(
+    defenses = counter.for_scenarios(
         defense_argv[1:], remove_small=remove_small)
     stats = {k: _bytes_mean_std(v) for (k, v) in defenses.iteritems()}
     out = {}
@@ -300,7 +300,7 @@ def compare_stats(scenarios):
     '''@return a dict {scenario1: {domain1: {...}, ..., domainN: {...}},
     scenario2:..., ..., scenarioN: ...} with domain mean, standard distribution
     and labels'''
-    defenses = counter.for_defenses(scenarios)
+    defenses = counter.for_scenarios(scenarios)
     means = {k: _mean(v) for (k, v) in defenses.iteritems()}
     stds = {k: _std(v) for (k, v) in defenses.iteritems()}
     out = []
@@ -538,7 +538,7 @@ def size_test(argv, outlier_removal=True):
     '''1. collect traces
     2. create stats
     3. evaluate for each vs first'''
-    defenses = counter.for_defenses(argv[1:], remove_small=outlier_removal)
+    defenses = counter.for_scenarios(argv[1:], remove_small=outlier_removal)
     stats = {k: _bytes_mean_std(v) for (k, v) in defenses.iteritems()}
     defense0 = argv[1]
     for defense in argv[2:]:
@@ -566,8 +566,8 @@ def main(argv, with_svm=True, cumul=True):
     '''loads stuff, triggers either open or closed-world eval'''
     if len(argv) == 1:
         argv.append('.')
-    # by hand: defenses = counter.for_defenses(sys.argv[1:])
-    scenarios = counter.for_defenses(argv[1:])
+    # by hand: defenses = counter.for_scenarios(sys.argv[1:])
+    scenarios = counter.for_scenarios(argv[1:])
     if 'background' in scenarios.values()[0]:
         if len(scenarios) > 1:
             logging.warn('only first scenario chosen for open world analysis')
@@ -670,17 +670,13 @@ def main(argv, with_svm=True, cumul=True):
 
 # disabled/p-foreground-data/30/output-tcp
 
-# sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git', 'bin')); reload(fit)
-
 
 # if by hand: change to the right directory before importing
-# import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')); _=os.nice(20)
+# import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')); _=os.nice(20); sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git', 'bin')); logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 
 # pylint: enable=line-too-long
-# this is currently the top-level application, thus logging outside of
-# __main__
-logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 doctest.testmod()
 
 if __name__ == "__main__":
+    logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
     main(sys.argv)

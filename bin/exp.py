@@ -27,7 +27,7 @@ def my_config_cw():
     
 @ex.capture
 def run_exp(scenario, _rnd):
-    counters = counter.for_defenses([os.path.join(DIR, scenario)]).values()[0]
+    counters = counter.for_scenarios([os.path.join(DIR, scenario)]).values()[0]
     result = analyse.simulated_original(counters)
     import pdb; pdb.set_trace()
     return {
