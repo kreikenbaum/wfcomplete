@@ -75,11 +75,12 @@ plt.savefig("/tmp/total_packets_in_"+'_'.join(s3.keys()[:4])+".pdf")
 ''' three plots ...
 argv = ['', 'disabled/bridge--2016-07-06', 'wtf-pad/bridge--2016-07-05', 'tamaraw']
 scenarios = counter.for_scenarios(argv[1:], or_level=2)
-fig, axes = plt.subplots(3, 1, sharex=True)
+fig, axes = plt.subplots(len(scenarios), 1, sharex=True)
 plt.suptitle("Number of incoming packets per trace")
 mm = counter.MinMaxer()
 keys = scenarios.values()[0].keys()
-keys.remove('sina.com.cn') # chinese sites are problematic via tor
+# some chinese sites were problematic via tor
+if 'sina.com.cn' in keys: keys.remove('sina.com.cn') 
 sitenum = 4
 for (i, (name, counter_dict)) in enumerate(scenarios.items()):
     mplot.total_packets_in(counter_dict, keys[:sitenum], axes[i])

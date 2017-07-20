@@ -436,7 +436,7 @@ While some similarity can be seen for each group, the "within-group" differences
     ROC-curve is of particular interest. The area under the curve
     bounded up to a fpr value of 0.01 is denoted AUC_{0.01}.
 
-    #+CAPTION[ROC curve example]: Example Receiver Operating Characteristic (ROC) curve. Source: \cite[sec.11.18.8]{scikit-user-guide}.
+    #+CAPTION[ROC curve example]: Example Receiver Operating Characteristic (ROC) curve \cite[sec.11.18.8]{scikit-user-guide}.
     #+ATTR_LATEX: :width 0.4\textwidth
     #+NAME: fig:roc-example
     [[./pictures/plot_roc.png]]
@@ -621,15 +621,14 @@ While some similarity can be seen for each group, the "within-group" differences
      #+NAME: fig:knn-example
      #+ATTR_LATEX: :width 0.7\textwidth
      [[./pictures/mitchell-fig8.1.png]]
-** WRITE Tor Website Fingerprinting Defenses                     :nextaction:
-   - discussion of state-of-the art defenses and drawbacks of these techniques
-
+** CHECK Tor Website Fingerprinting Defenses
    This section describes defenses against WF as described
    [[#sub2-wf][previously]]. As most Machine Learning, it uses statistical
    properties of the underlying data. It could possibly be defeated by
-   shuffling these properties.
+   shuffling these properties. The total number of incoming packets is
+   a feature used by almost all modern defenses:
 
-   # created using mplot.py:total_packets_in, see name for scenarios and sites 
+   # created using mplot.py:total_packets_in, see name for scenarios+sites
    #+CAPTION: distribution of number of total incoming packets
    #+NAME: fig:total_packets_in
    #+ATTR_LATEX: :float nil
@@ -637,33 +636,47 @@ While some similarity can be seen for each group, the "within-group" differences
 
    As seen in Figure [[fig:total_packets_in]], \cite{wtfpad}'s publicly
    available implementation of his own WTF-PAD and
-   tamaraw\cite{a-systematic} both create additional packets, but keep
+   tamaraw\cite{a-systematic} both create additional packets, but
    preserve site separation and ordering. Contrast this with an early
-   version of this thesis' defense in Figure [[fig:total_packets_in_thesis]]:
+   version of this thesis' defense in Figure
+   [[fig:total_packets_in_thesis]]
 
-   # created using mplot.py:total_packets_in with disabled/05-12 ?and 0.18...?
+   # created using mplot.py:total_packets_in, see name for scenarios+sites
    #+CAPTION: distribution of number of total incoming packets, thesis defense
    #+NAME: fig:total_packets_in_thesis
    #+ATTR_LATEX: :float nil
-   [[./pictures/total_packets_in_yahoo.com_wikipedia.org_baidu.com_google.com.pdf]]
+   [[./pictures/total_packets_in_disabled___bridge--2016-07-21_0.22___5aI--2016-07-19__msn.com_buzzfeed.com_youtube.com_xvideos.com__palette_colorblind.pdf]]
 
-   Not only are the means of all distributions increased, their
-   variances have been increased even more, to the point of them
-   overlapping.
+   Each site's variances have been increased to the point of them
+   overlapping. This overhead is also tunable, with the above scenario
+   using little overhead. For slightly more overhead, compare Figure 
+   [[fig:total_packets_in_thesis_20]]
 
-   - maybe
-   This knowledge helps in understanding and creating defenses. As of
-   \cite{a-systematic}, \cite{ccs2014-critical} and \cite{panchenko2},
-   [[#base-rate][the Base Rate Fallacy]] creates problems for /some/
-   WF-adversaries. This means that finding people who might have
-   accessed a certain site is easier than making sure that they really
-   visited the site.
+   # created using mplot.py:total_packets_in, see name for scenarios+sites
+   #+CAPTION: distribution of number of total incoming packets, thesis defense
+   #+NAME: fig:total_packets_in_thesis_20
+   #+ATTR_LATEX: :float  
+   [[./pictures/total_packets_in_disabled___bridge--2016-09-09_0.22___20aI--2016-09-10__msn.com_buzzfeed.com_youtube.com_xvideos.com__palette_colorblind.pdf]]
+
+   These figures illustrate that this thesis' defense more effectively
+   munges websites fingerprinting traces, and is also tunable.
+
+   While it was possible to get \cite{wtfpad} to run given the
+   provided source code, \cite{wang2015walkie}'s state-of-the-art
+   defense needed to be compared using his reported values. As
+   \cite{wang2015walkie} uses simple statistical distributions in
+   addition to a novel single-duplex method, it could arguably also be
+   augmented by HTTP-specific cover traffic distributions.
+
 
   - sota
     - new
     - walkie
     - juarez
-** KEYWORDS Summary
+** WRITE Summary                                                 :nextaction:
+   - presented tor, wf attacks, basics of ml with metrics, wf
+     defenses, first look at new defense
+   - next section: new defense
 * gtd-Novel Defense                                                 :ARCHIVE:
 ** purpose: appetize and explain, finish thesis acceptably, defend Tor's users from this attack, get it into mainline Tor as an option/make it well-enough known, get an interesting job
 ** limits: see [[file:~/da/da.org::#limits][limits]]
@@ -724,6 +737,12 @@ While some similarity can be seen for each group, the "within-group" differences
         - \cite{koehler1996base} in general (original authors sceptical, too)
         - rieck\cite{rieckdiss} had success in IDS
 
+   This knowledge helps in understanding and creating defenses. As of
+   \cite{a-systematic}, \cite{ccs2014-critical} and \cite{panchenko2},
+   [[#base-rate][the Base Rate Fallacy]] creates problems for /some/
+   WF-adversaries. This means that finding people who might have
+   accessed a certain site is easier than making sure that they really
+   visited the site.
 * After Appendices, Bibliography and Index
 \bibliography{docs/master}
 \bibliographystyle{plain}
