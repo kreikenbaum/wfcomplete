@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_palette("colorblind") # optional, uglier, but helpful
 
-import stats
+import scenario
 
 
 def _init_roc():
@@ -46,7 +46,7 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):
         if k not in subkeys:
             continue
         #        sns.distplot(stats.tpi(v), hist=False, rug=True, label=k)
-        sns.distplot(stats.tpi(v), label=k, ax=ax)
+        sns.distplot(scenario.tpi(v), label=k, ax=ax)
 
     if not ax:
         plt.title("Total number of incoming packets")
@@ -64,8 +64,8 @@ fig, axes = plt.subplots(2, 1, sharex=True)
 mplot.total_packets_in(s, s.keys()[:4], axes[0])
 mplot.total_packets_in(s3, s3.keys()[:4], axes[1])
 plt.suptitle("Total number of incoming packets")
-axes[0].set_xlim(min(min([stats.tpi(v) for v in s.values()])), max(max([stats.tpi(v) for v in s3.values()])))
-axes[1].set_xlim(min(min([stats.tpi(v) for v in s.values()])), max(max([stats.tpi(v) for v in s3.values()])))
+axes[0].set_xlim(min(min([scenario.tpi(v) for v in s.values()])), max(max([scenario.tpi(v) for v in s3.values()])))
+axes[1].set_xlim(min(min([scenario.tpi(v) for v in s.values()])), max(max([scenario.tpi(v) for v in s3.values()])))
 axes[0].set_title("no defense")
 axes[1].set_title("early defense")
 fig.text(0.04, 0.5, "relative histograms with kernel-density-estimation", va="center", rotation="vertical")
@@ -85,9 +85,9 @@ sitenum = 4
 for (i, (name, counter_dict)) in enumerate(scenarios.items()):
     mplot.total_packets_in(counter_dict, keys[:sitenum], axes[i])
     subset = [counter_dict[x] for x in keys[:sitenum]]
-    mm.set_if(min(min([stats.tpi(v) for v in subset])),
-              max(max([stats.tpi(v) for v in subset])))
-    axes[i].set_title(name)
+    mm.set_if(min(min([scenario.tpi(v) for v in subset])),
+              max(max([scenario.tpi(v) for v in subset])))
+    axes[i].set_title('scenario: {}'.format(scenario.Scenario(name)))
 for (i, _) in enumerate(scenarios):
     axes[i].set_xlim(mm.min, mm.max)
 fig.text(0, 0.5, "relative histograms with kernel-density-estimation",

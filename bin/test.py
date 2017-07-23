@@ -10,8 +10,10 @@ import numpy as np
 import analyse
 import counter
 import fit
+import scenario
 
 fit.FOLDS = 2
+
 
 class TestCounter(unittest.TestCase):
     '''tests the counter module'''
@@ -110,6 +112,7 @@ test + + + +
         self.assertEquals(list(y.flatten()), [0, 0])
         self.assertEquals(yd, ['url', 'url'])
 
+
 class TestAnalyse(unittest.TestCase):
     '''tests the analyse module'''
 
@@ -121,7 +124,7 @@ class TestAnalyse(unittest.TestCase):
                                  'a': self.c_list[:],
                                  'b': self.c_list[:]}
 
-
+    # todo: use doctest.DocFileSuite
     def test_doc(self):
         (fail_num, _) = doctest.testmod(analyse)
         self.assertEqual(0, fail_num)
@@ -182,6 +185,7 @@ class TestAnalyse(unittest.TestCase):
                                250./3-100)
 #                               100.*(pow(1./2, 1./3)-1))#harmonic
 
+
 class TestFit(unittest.TestCase):
     '''tests the fit module'''
 
@@ -197,7 +201,7 @@ class TestFit(unittest.TestCase):
 
 
     def test_doc(self):
-        (fail_num, _) = doctest.testmod(analyse)
+        (fail_num, _) = doctest.testmod(fit)
         self.assertEqual(0, fail_num)
 
 
@@ -238,6 +242,12 @@ class TestFit(unittest.TestCase):
         # 2. check that fpr/tpr has good structure (rises straight up to 0.9fpr)
         self.assertEqual(tpr[0], 0.9, self.string.format(tpr, fpr))
         self.assertEqual(fpr[0], 0, self.string.format(tpr, fpr))
+
+
+class TestScenario(unittest.TestCase):
+    def test_doc(self):
+        (fail_num, _) = doctest.testmod(scenario)
+        self.assertEqual(0, fail_num)
 
 
 class MockWriter(object):
