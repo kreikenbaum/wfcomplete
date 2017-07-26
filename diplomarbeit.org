@@ -11,6 +11,8 @@
 #+LATEX_CLASS: scrreprt
 #+LATEX_CLASS_OPTIONS: [a4paper,10pt]
 #+LATEX_HEADER: \usepackage{adjustbox}
+#+LATEX_HEADER: \usepackage{algorithm}
+#+LATEX_HEADER: \usepackage[noend]{algpseudocode}
 #+LATEX_HEADER: \usepackage{float}
 #+LATEX_HEADER: \usepackage{hyperref}
 #+LATEX_HEADER: \usepackage{numprint}
@@ -76,6 +78,9 @@
 #+LATEX_HEADER:                                     % verteidigen muessen.
 #+LATEX_HEADER:   \end{tabular}
 #+LATEX_HEADER: }}
+#+LATEX_HEADER: \makeatletter
+#+LATEX_HEADER: \def\BState{\State\hskip-\ALG@thistlm}
+#+LATEX_HEADER: \makeatother
 #+OPTIONS: H:6
 * EVA Introduction
 #+BEGIN_LaTeX
@@ -672,17 +677,7 @@ While some similarity can be seen for each group, the "within-group" differences
    glimpse at this thesis' new defense.
 
    The next section presents the novel defense in depth.
-* gtd-Novel Defense                                                 :ARCHIVE:
-** purpose: appetize and explain, finish thesis acceptably, defend Tor's users from this attack, get it into mainline Tor as an option/make it well-enough known, get an interesting job
-** limits: see [[file:~/da/da.org::#limits][limits]]
-** vision: reads, understands concept, is engaged emotionally and convinced intelectually
-** brainstorm                                                    :nextaction:
-   - next action: algorithm
-** TODO organize
-*** new defense
-**** [possible to cache sizes using (new) stochastic data structure]
-***** but currently needs to be tuned by hand, see future work
-* Novel Defense                                                    :nextaction:
+* CHECK Novel Defense
   :PROPERTIES:
   :CUSTOM_ID: ch3-newdefense
   :END:
@@ -702,11 +697,65 @@ While some similarity can be seen for each group, the "within-group" differences
   request is covered by an additional HTML request, and each
   additional request is covered by additional traffic with a given
   probability.
-* Evaluation
+
+#+BEGIN_LaTeX
+\begin{algorithm}
+\caption{Generate Cover Traffic}\label{euclid}
+\begin{algorithmic}[1]
+\Procedure{OnRequest}{$\textit{url}$}
+\If {$! \textit{isRegistered}(\textit{hostnameOf}(\textit{url}))$}
+  \State $\textit{targetHttpSize} \leftarrow \textit{randomHttpSize}()$
+  \State $\textit{urlHttpSize} \leftarrow \textit{lookupOrGuessHttpSize}(\textit{url})$
+  \State $\textit{coverHttpSize} \leftarrow \textit{targetHttpSize} - \textit{urlHttpSize}$
+  \State $\textit{targetNumEmbedded} \leftarrow \textit{randomNumEmbedded}()$
+  \State $\textit{urlNumEmbedded} \leftarrow \textit{lookupOrGuessNumEmbedded}(\textit{url})$
+  \State $\textit{coverNumEmbedded} \leftarrow \textit{targetNumEmbedded} - \textit{urlNumEmbedded}$
+  \State $\textit{requestCoverSized}(\textit{coverHttpSize})$
+  \State $\textit{registerHost}(\textit{hostnameOf}(\textit{url}), \textit{coverNumEmbedded}, \textit{urlNumEmbedded})$
+\Else
+  \State $\textit{requestProbability} \leftarrow \textit{computeProbability}(\textit{hostnameOf}(\textit{url}))$
+  \While {$\textit{requestProbability} > 1$}
+    \State $\textit{requestCoverSized}(\textit{randomEmbeddedSize}())$
+    \State $\textit{updateHosts}(\textit{url})$
+    \State $\textit{requestProbability} \leftarrow \textit{requestProbability} -1$
+  \EndWhile
+  \If {$\textit{withProbability}(\textit{requestProbability})$}
+    \State $\textit{requestCoverSized}(\textit{randomEmbeddedSize}())$
+    \State $\textit{updateHosts}(\textit{url})$
+  \EndIf
+\EndIf
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+#+END_LaTeX
+
+The algorithm randomly draws from appropriate HTTP-related
+distributions.\cite{newtrafficmodel}
+
+/registerHost/, /isRegistered/, /computeProbability/ and /updateHosts/
+access a data structure that saves the recently active hosts with
+their number of embedded objects and the cover requests that still
+need to be sent.
+
+The /lookupOrGuess.../-functions need data structures to map urls to
+both HTTP sizes and number of embedded objects. These change over
+time, just compare the topmost plots of Figures [[fig:total_packets_in]]
+and [[fig:total_packets_in_thesis]]. As can be seen in the next chapter,
+the amazingly good defense that was achieved with up-to-date data (see
+next chapter) decreased over time to that of guessing. These data
+structures use Bloom-filter\cite{Bloom70space/timetrade-offs} based
+binning to save values related to urls in a fixed space, while not
+allowing an adversary to exactly determine which urls are saved.
+* Evaluation                                                     :nextaction:
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
   :END:
-
+** purpose: see [[*gtd][gtd]]                                                 :nextaction:
+** limits: [[file:~/da/da.org::#limits][limits]]
+** vision
+** brainstorm
+   - check that very-low-accuracy scenario are just after implementing
+     all (0.18/0.15)
 * Discussion
   :PROPERTIES:
   :CUSTOM_ID: ch5-discussion
@@ -755,3 +804,9 @@ While some similarity can be seen for each group, the "within-group" differences
 \bibliographystyle{plain}
 \input{diplomarbeit.ind}
 * END: /above/ this headline are INDEX, and BIBLIOGRAPHY, etc       :ARCHIVE:
+* gtd                                                 :ARCHIVE:
+** purpose
+appetize and explain, finish thesis acceptably, defend Tor's users from this attack, get it into mainline Tor as an option/make it well-enough known, get an interesting job
+** limits: see [[file:~/da/da.org::#limits][limits]]
+** vision: reads, understands concept, is engaged emotionally and convinced intelectually
+** brainstorm
