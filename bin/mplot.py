@@ -58,6 +58,20 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):
     if save:
         plt.savefig("/tmp/total_packets_in_"+'_'.join(subkeys)+".pdf")
 
+
+#def trace(trace, ax=None):
+'''best way (off of head)
+- load as pandas dataframe data
+- data.T.plot(kind='bar')'''
+
+'''other ways
+- plt.bar
+  - needs to set lots of options to look good, even with seaborn'''
+
+
+
+### usage examples
+## total_packets_in
 ''' two plots in one figure with one title etc
 reload(mplot)
 fig, axes = plt.subplots(2, 1, sharex=True)
