@@ -144,48 +144,6 @@ class TestAnalyse(unittest.TestCase):
         self.assertTrue(np.array_equal(Xa, Xc))
 
 
-    def test__size_increase_equal(self):
-        self.assertEqual(analyse._size_increase(self.base_mock,
-                                                {'a': (10, -1), 'b': (10, -1)}),
-                         0)
-
-    def test__size_increase_same_half(self):
-        self.assertEqual(analyse._size_increase(self.base_mock,
-                                                {'a': (5, -1), 'b': (5, -1)}),
-                         -50)
-
-    def test__size_increase_same_double(self):
-        self.assertEqual(analyse._size_increase(self.base_mock,
-                                                {'a': (20, -1), 'b': (20, -1)}),
-                         100)
-
-    def test__size_increase_one_double(self):
-        self.assertAlmostEqual(
-            analyse._size_increase(self.base_mock,
-                                   {'a': (10, -1), 'b': (20, -1)}),
-            50)
-#                               100*(pow(2, 1./2) - 1))#harmonic
-
-    def test__size_increase_both_different(self):
-        self.assertEqual(analyse._size_increase(self.base_mock,
-                                                {'a': (5, -1), 'b': (20, -1)}),
-                         25)
-#                         0)# harmonic
-
-    def test__size_increase_three_one(self):
-        self.assertAlmostEqual(analyse._size_increase(
-            self.base_mock2, {'a': (10, -1), 'b': (10, -1), 'c': (20, -1)}),
-                               100/3.)
-#                               100.*(pow(2, 1./3)-1))#harmonic
-
-
-    def test__size_increase_three_one_reverted(self):
-        self.assertAlmostEqual(analyse._size_increase(
-            {'a': (10, -1), 'b': (10, -1), 'c': (20, -1)}, self.base_mock2),
-                               250./3-100)
-#                               100.*(pow(1./2, 1./3)-1))#harmonic
-
-
 class TestFit(unittest.TestCase):
     '''tests the fit module'''
 
@@ -248,6 +206,48 @@ class TestScenario(unittest.TestCase):
     def test_doc(self):
         (fail_num, _) = doctest.testmod(scenario)
         self.assertEqual(0, fail_num)
+
+
+    def test__size_increase_equal(self):
+        self.assertEqual(scenario._size_increase(self.base_mock,
+                                                {'a': (10, -1), 'b': (10, -1)}),
+                         0)
+
+    def test__size_increase_same_half(self):
+        self.assertEqual(scenario._size_increase(self.base_mock,
+                                                {'a': (5, -1), 'b': (5, -1)}),
+                         -50)
+
+    def test__size_increase_same_double(self):
+        self.assertEqual(scenario._size_increase(self.base_mock,
+                                                {'a': (20, -1), 'b': (20, -1)}),
+                         100)
+
+    def test__size_increase_one_double(self):
+        self.assertAlmostEqual(
+            scenario._size_increase(self.base_mock,
+                                   {'a': (10, -1), 'b': (20, -1)}),
+            50)
+#                               100*(pow(2, 1./2) - 1))#harmonic
+
+    def test__size_increase_both_different(self):
+        self.assertEqual(scenario._size_increase(self.base_mock,
+                                                {'a': (5, -1), 'b': (20, -1)}),
+                         25)
+#                         0)# harmonic
+
+    def test__size_increase_three_one(self):
+        self.assertAlmostEqual(scenario._size_increase(
+            self.base_mock2, {'a': (10, -1), 'b': (10, -1), 'c': (20, -1)}),
+                               100/3.)
+#                               100.*(pow(2, 1./3)-1))#harmonic
+
+
+    def test__size_increase_three_one_reverted(self):
+        self.assertAlmostEqual(scenario._size_increase(
+            {'a': (10, -1), 'b': (10, -1), 'c': (20, -1)}, self.base_mock2),
+                               250./3-100)
+#                               100.*(pow(1./2, 1./3)-1))#harmonic
 
 
 class MockWriter(object):

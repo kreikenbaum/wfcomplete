@@ -470,6 +470,7 @@ def outlier_removal_levels(scenario, clf=None):
 
     @param scenario: one "set" of data {site_1: counters, ..., site_n: counters}
     # outlier removal on both at the same time
+    '''
     print 'combined outlier removal'
     for lvl in [1, 2, 3]:
         scenario_with_or = counter.outlier_removal(scenario, lvl)

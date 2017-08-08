@@ -35,7 +35,8 @@ def run_exp(scenario, _rnd):
         'gamma': result.clf.estimator.gamma,
         'sites': counters.keys(),
         'score': result.best_score_,
-        'C_gamma_result': _format_results(result.results)
+        'C_gamma_result': _format_results(result.results),
+        'size_increase': scenario.size_increase(scenario, counters)
     }
 
 
