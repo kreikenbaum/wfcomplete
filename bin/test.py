@@ -117,8 +117,6 @@ class TestAnalyse(unittest.TestCase):
     '''tests the analyse module'''
 
     def setUp(self):
-        self.base_mock = {'a': (10, -1), 'b': (10, -1)}
-        self.base_mock2 = {'a': (10, -1), 'b': (10, -1), 'c': (10, -1)}
         self.c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]]
         self.bg_mock = {'background': self.c_list[:],
                                  'a': self.c_list[:],
@@ -203,6 +201,11 @@ class TestFit(unittest.TestCase):
 
 
 class TestScenario(unittest.TestCase):
+    def setUp(self):
+        self.base_mock = {'a': (10, -1), 'b': (10, -1)}
+        self.base_mock2 = {'a': (10, -1), 'b': (10, -1), 'c': (10, -1)}
+
+
     def test_doc(self):
         (fail_num, _) = doctest.testmod(scenario)
         self.assertEqual(0, fail_num)

@@ -11,6 +11,8 @@ import datetime
 import doctest
 import os
 
+import counter
+
 
 #Stats = collections.namedtuple('Stats', ['tpi', 'tpi_mean', 'tpi_std'])
 
