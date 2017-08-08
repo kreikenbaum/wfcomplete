@@ -51,18 +51,6 @@ def _binarize(counter_dict, bg_label='background', fg_label='foreground'):
     return out
 
 
-def _bytes_mean_std(counter_dict):
-    '''@return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
-    >>> _bytes_mean_std({'yahoo.com': [counter._test(3)]})
-    {'yahoo.com': (1800.0, 0.0)}
-    '''
-    out = {}
-    for (domain, counter_list) in counter_dict.iteritems():
-        total = [i.get_total_in() for i in counter_list]
-        out[domain] = (np.mean(total), np.std(total))
-    return out
-
-
 def _class_predictions(cls, cls_predict):
     ''':returns: list: for each class in cls: what was it predicted to be'''
     out = [[] for _ in range(cls[-1] + 1)] # different empty arrays
@@ -175,38 +163,6 @@ def _std(counter_dict):
     for (domain, counter_list) in counter_dict.iteritems():
         total = [i.get_total_both() for i in counter_list]
         out[domain] = np.std(total)
-    return out
-
-
-def _size_increase(base, compare):
-    '''@return how much bigger/smaller is =compare= than =base= (in %)'''
-    diff = {}
-    if base.keys() != compare.keys():
-        keys = set(base.keys())
-        keys = keys.intersection(compare.keys())
-        logging.warn("keys are different, just used %d common keys: %s",
-                     len(keys), keys)
-    else:
-        keys = base.keys()
-    for k in keys:
-        diff[k] = float(compare[k][0]) / base[k][0]
-    return 100 * (np.mean(diff.values()) - 1)
-
-
-def _size_increase_helper(two_scenarios):
-    return _size_increase(two_scenarios[two_scenarios.keys()[0]],
-                          two_scenarios[two_scenarios.keys()[1]])
-
-
-def size_increase_from_argv(scenario_argv, remove_small=True):
-    '''computes sizes increases from sys.argv-like list, argv[1] is
-baseline'''
-    scenarios = counter.for_scenarios(
-        scenario_argv[1:], remove_small=remove_small)
-    stats = {k: _bytes_mean_std(v) for (k, v) in scenarios.iteritems()}
-    out = {}
-    for i in scenario_argv[2:]:
-        out[i] = _size_increase(stats[scenario_argv[1]], stats[i])
     return out
 
 
@@ -376,7 +332,7 @@ def closed_world(scenarios, def0, cumul=True, with_svm=True, common=False):
     :param: common determines whether to reduce the test data to
             common keys.
     '''
-    stats = {k: _bytes_mean_std(v) for (k, v) in scenarios.iteritems()}
+    stats = {k: scenario._bytes_mean_std(v) for (k, v) in scenarios.iteritems()}
     # durations = {k: _average_duration(v) for (k,v) in scenarios.iteritems()}
 
     # no-split, best result of 10-fold tts
@@ -495,32 +451,6 @@ def outlier_removal_levels(scenario, clf=None):
                 counter.outlier_removal(test, test_lvl))
             print "level train: {}, test: {}".format(train_lvl, test_lvl)
             _verbose_test_11(X, y, clf)
-
-
-def site_sizes(stats):
-    '''@return {'url1': [size0, ..., sizeN-1], ..., urlM: [...]}
-
-    stats = {k: _bytes_mean_std(v) for (k,v) in scenarios.iteritems()}'''
-    scenarios = stats.keys()
-    scenarios.sort()
-    out = {}
-    for url in stats[scenarios[0]].keys():
-        out[url] = []
-        for scenario in scenarios:
-            out[url].append(stats[scenario][url][0])
-    return out
-
-
-def size_test(argv, outlier_removal=True):
-    '''1. collect traces
-    2. create stats
-    3. evaluate for each vs first'''
-    scenarios = counter.for_scenarios(argv[1:], remove_small=outlier_removal)
-    stats = {k: _bytes_mean_std(v) for (k, v) in scenarios.iteritems()}
-    scenario0 = argv[1]
-    for scenario in argv[2:]:
-        print '{}: {}'.format(scenario, _size_increase(stats[scenario0],
-                                                      stats[scenario]))
 
 
 def top_30(mean_per_dir):
