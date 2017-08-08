@@ -23,28 +23,14 @@ class Scenario(object):
         '''
         >>> Scenario('disabled/2016-11-13').date
         datetime.date(2016, 11, 13)
-        >>> str(Scenario('disabled/2016-11-13'))
+        >>> Scenario('disabled/2016-11-13').name # same as str(Scenario...)
         'disabled'
-        >>> Scenario('disabled/2016-11-13').name
-        'disabled'
-        >>> Scenario('disabled/05-12@10').date
-        datetime.date(2016, 5, 12)
         >>> Scenario('disabled/05-12@10').size
         '10'
-        >>> Scenario('disabled/bridge--2016-07-06').date
-        datetime.date(2016, 7, 6)
-        >>> hasattr(Scenario('disabled/bridge--2016-07-06'), "settting")
+        >>> hasattr(Scenario('disabled/bridge--2016-07-06'), "setting")
         False
-        >>> Scenario('./0.22/10aI--2016-11-04-50-of-100').date
-        datetime.date(2016, 11, 4)
-        >>> Scenario('./0.22/10aI--2016-11-04-50-of-100').name
-        '0.22'
         >>> Scenario('./0.22/10aI--2016-11-04-50-of-100').setting
         '10aI'
-        >>> Scenario('wtf-pad/bridge--2016-07-05').date
-        datetime.date(2016, 7, 5)
-        >>> Scenario('wtf-pad/bridge--2016-07-05').name
-        'wtf-pad'
         '''
         (self.name, date) = os.path.normpath(name).rsplit('/', 1)
         if '@' in date:
@@ -68,7 +54,7 @@ class Scenario(object):
 
 
 def _size_increase(base, compare):
-    '''@return how much bigger/smaller is =compare= than =base= (in %)'''
+    '''@return how much bigger/smaller =compare= is than =base= (in %)'''
     diff = {}
     if base.keys() != compare.keys():
         keys = set(base.keys())

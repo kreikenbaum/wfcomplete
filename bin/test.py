@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 '''unit tests counter, analyse and fix modules'''
+import datetime
 import doctest
 import logging
 import os
@@ -209,6 +210,25 @@ class TestScenario(unittest.TestCase):
     def test_doc(self):
         (fail_num, _) = doctest.testmod(scenario)
         self.assertEqual(0, fail_num)
+
+    def test__parse_id(self):
+        self.assertEqual('disabled',
+                         str(scenario.Scenario('disabled/2016-11-13')))
+        self.assertEqual(datetime.date(2016, 5, 12),
+                         scenario.Scenario('disabled/05-12@10').date)
+        self.assertEqual(datetime.date(2016, 7, 6),
+                         scenario.Scenario('disabled/bridge--2016-07-06').date)
+        self.assertEqual(datetime.date(2016, 11, 4),
+                         scenario.Scenario('./0.22/10aI--2016-11-04-50-of-100')
+                         .date)
+        self.assertEqual('0.22',
+                         scenario.Scenario('./0.22/10aI--2016-11-04-50-of-100')
+                         .name)
+        self.assertEqual(datetime.date(2016, 7, 5),
+                         scenario.Scenario('wtf-pad/bridge--2016-07-05').date)
+        self.assertEqual('wtf-pad',
+                         scenario.Scenario('wtf-pad/bridge--2016-07-05').name)
+        
 
 
     def test__size_increase_equal(self):
