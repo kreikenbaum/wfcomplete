@@ -205,7 +205,7 @@ While some similarity can be seen for each group, the "within-group" differences
 
    Chapter [[#ch6-conclusion]] summarizes the results, shows a path to
    implementation, with both included and additional further work.
-* DANIEL_BUT_NEEDS_SUBPARTS Background [9/9]                     :nextaction:
+* DANIEL_BUT_NEEDS_SUBPARTS Background [9/9]
   :PROPERTIES:
   :CUSTOM_ID: ch2-background
   :END:
@@ -393,7 +393,7 @@ While some similarity can be seen for each group, the "within-group" differences
     internal model from which further input data is
     classified. Others, notably [[*K-Nearest-Neighbor-Classifier][k-Nearest-Neighbors]], classify directly
     without an intermediary model.
-*** DANIEL Measuring Performance                                 :nextaction:
+*** DANIEL Measuring Performance
     :PROPERTIES:
     :CUSTOM_ID: ml-measure
     :END:
@@ -750,17 +750,108 @@ next chapter) decreased over time to that of guessing. These data
 structures use Bloom-filter\cite{Bloom70space/timetrade-offs} based
 binning to save values related to urls in a fixed space, while not
 allowing an adversary to exactly determine which urls are saved.
+** Caching approximate sizes using Bloom Filters
+   :PROPERTIES:
+   :CUSTOM_ID: cache_size
+   :END:
+   #+INDEX: a
+   #+INDEX: flavour!a
+   #+INDEX: b
+   #+INDEX: flavour!b
+   The above defense might further improve if the sizes of the webpage
+   to be loaded are known beforehand: Cover traffic could be tailored
+   more exactly. This knowledge even enables some new defenses, as
+   shown by \cite{effective}.
+
+
+   Caching visited page's sizes only might yield an exact log of the
+   visited web pages to an attacker who gains control over the
+   defended computer. A data structure that stochastically saves
+   approximate sizes might solve this problem. Bloom
+   Filters\cite{Bloom70space/timetrade-offs} have the additional
+   advantage of a fixed size. Their otherwise disadvantageous small
+   error probability is an advantage in this situation, as it further
+   confounds possible attackers.
+
+
+   The problem in caching sizes of a fixed set of pages is that page
+   sizes change over time, making this cache increasingly less
+   accurate.
+
+   -- continue here
+
+   A webpage is modeled by its HTML size and its number of embedded
+   objects. In a closed world[fn::if the client can only browse to
+   a limited number of URLs], it is possible to cache all
+   sizes[fn::See appendices [[#find sizes of HTML-documents]] and
+   [[#number_embedded]] for how the sizes were determined]
+   beforehand. If a size is unknown, random variates from the
+   [[#HTTP traffic model][HTTP traffic model]] are used.[fn:: The
+   size of each embedded dummy object is always drawn from the HTTP
+   traffic model.]
+
+   Using known sizes is called the /cache/ flavour and denoted by
+   =a= in tables etc. In the /nocache/ flavour, denoted by =b=,
+   sizes are always guessed.
+
+   To cache sizes, an approximate-size data structure based on
+   Bloom filters is used.
+*** Bloom Filter
+    Bloom filters\cite{Bloom70space/timetrade-offs}[fn::
+    \cite{Broder02networkapplications} contains a Bloom filter
+    overview with applications] are a stochastic fixed-width data
+    structure to test membership in a set. They work similarly to
+    hash-coding[fn::see \cite{Bloom70space/timetrade-offs} for
+    hash-coding. Shortly: elements are hashed and certain places
+    is checked for whether it contains this hash.], yet require
+    significantly less space, which they trade for a small /error
+    rate/[fn::This error rate is dependent on the size of the Bloom
+    filter and the number of inserted elements.]: they work
+    flawlessly if an element is inside the set, yet might wrongly
+    state that an element is inside, when it is not.
+*** Application: Bloom Sort
+    Sizes can be saved approximately based on Bloom filters: they
+    are sorted into bins based on the target distribution. For each
+    bin, a Bloom filter is created. An element is added to this
+    filter if its size is inside the bin.
+
+    To approximate the size of an element, all filters are
+    checked. If one filter reports containment, its size is
+    chosen. If zero report containment, the size is not known; if
+    two or more report containment, it is saved wrongly. In the
+    latter cases, the default distribution is used.[fn::See [[#bloom-sort]]
+    for implementation details.]
+
+    This data structure has the additional advantage that, even if
+    visited page sizes were saved, an adversary could not safely
+    detemine that pages were visited due to the Bloom Filter's
+    false positive errors.
 ** purpose
-appetize and explain, finish thesis acceptably, defend Tor's users from this attack, get it into mainline Tor as an option/make it well-enough known, get an interesting job
+- appetize and explain, finish thesis acceptably, defend Tor's users
+  from this attack, get it into mainline Tor as an option/make it
+  well-enough known, get an interesting job
+- make defense sexy
 ** limits: see [[file:~/da/da.org::#limits][limits]]
 ** vision: reads, understands concept, is engaged emotionally and convinced intellectually
 ** brainstorm
    - make clearer,
+     - trim down, maybe rewrite
+     - or just tell elena about the defense
    - maybe separate section for bloom-stuff
      - copy from old thesis, at least look at
        - [[file:~/da/old.org::#cache_size][Choice: Cache (approximate) sizes using Bloom Filters]]
-** next action:
-* Evaluation
+   - eval: section on newly-created bloom filter (at certain time)
+     1. check when introduced
+        - when timing data was fixed
+     2. present results of defense at that point
+        - closest in time afterwards
+          - up to, say, two weeks?
+            - or another time
+          - check for good results
+            - that are not contradicted by other results
+** organize
+** next action: copy-paste bloom part
+* Evaluation                                            :nextaction:
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
   :END:
@@ -772,12 +863,48 @@ appetize and explain, finish thesis acceptably, defend Tor's users from this att
      novel defense performs better and when worse than juarez' etc's
      implementation
 ** brainstorm
-   - check that very-low-accuracy scenario (good) are dated right after
-     implementing all (0.18/0.15)
-   - herrmann: good accuracy: should be random guessing (Tor should
-     hide sizes)
-     - seems like connection establishment leaks data
-** organize
+** organize                                            :nextaction:
+   1. results/
+      - relevante Ergebnisse
+        - was
+          - bloom: ergebnisse direkt danach
+            - evtl. kontrast mit spaeter auf selbem page-satz
+            - wie
+              1. schauen wann (git log -p)
+                 - enabled am
+                   #+BEGIN_QUOTE
+commit 0c59e55d5abf24bb1fb74c1c205c7d513a937b32
+Author: Michael Kreikenbaum <michael.kreikenbaum@gmail.com>
+Date:   Fri Apr 1 13:51:07 2016 +0200
+                   #+END_QUOTE
+                 - erster Datensatz
+                   - name/ort
+                   - am (
+                     - 21. Jun 2016
+                     - (date --date=@1466502799)
+                       - datum aus 0.15.3/json-10/0/amazon.com.json
+              2. datensaetze in naehe suchen mit varianten
+                 - alle json-10er
+                 - hier sieht man:
+                   - cache hat 0.78% acc
+                   - nocache hat 0.94
+              3. eval
+              4. wenn resultate: mit spaeteren varianten vergleichen
+          - generell:
+            - einfach noch einmal auf selben daten
+              - disabled
+              - tamaraw
+              - wtf-pad
+              - @30
+              - @5
+              - (simple)?
+          - mention pic in sec 2
+   2. check that very-low-accuracy scenario (good) are dated right after
+      implementing all (0.18/0.15)
+   3. herrmann: good accuracy: should be random guessing (Tor should
+      hide sizes)
+      - seems like connection establishment leaks data
+** next action
 * Discussion
   :PROPERTIES:
   :CUSTOM_ID: ch5-discussion

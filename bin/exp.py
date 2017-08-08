@@ -22,7 +22,7 @@ ex.observers.append(MongoObserver.create())
 
 @ex.config
 def my_config_cw():
-    scenario = 'disabled/06-09@10'
+    scenario = 'wtf-pad/bridge--2017-01-08'
 
     
 @ex.capture
@@ -48,6 +48,7 @@ def _format_results(results):
 
 @ex.automain
 def my_main(scenario):
+    _=os.nice(20)
     db = pymongo.MongoClient().sacred
     if scenario in db.runs.distinct("config.scenario", {"status": "COMPLETED"}):
         raise Exception("scenario already in database")

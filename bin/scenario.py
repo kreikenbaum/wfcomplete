@@ -12,7 +12,7 @@ import doctest
 import os
 
 
-Stats = collections.namedtuple('Stats', ['tpi', 'tpi_mean', 'tpi_std'])
+#Stats = collections.namedtuple('Stats', ['tpi', 'tpi_mean', 'tpi_std'])
 
 
 class Scenario(object):

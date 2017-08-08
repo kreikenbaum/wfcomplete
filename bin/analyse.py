@@ -193,20 +193,20 @@ def _size_increase(base, compare):
     return 100 * (np.mean(diff.values()) - 1)
 
 
-def _size_increase_helper(two_defenses):
-    return _size_increase(two_defenses[two_defenses.keys()[0]],
-                          two_defenses[two_defenses.keys()[1]])
+def _size_increase_helper(two_scenarios):
+    return _size_increase(two_scenarios[two_scenarios.keys()[0]],
+                          two_scenarios[two_scenarios.keys()[1]])
 
 
-def size_increase_from_argv(defense_argv, remove_small=True):
+def size_increase_from_argv(scenario_argv, remove_small=True):
     '''computes sizes increases from sys.argv-like list, argv[1] is
 baseline'''
-    defenses = counter.for_scenarios(
-        defense_argv[1:], remove_small=remove_small)
-    stats = {k: _bytes_mean_std(v) for (k, v) in defenses.iteritems()}
+    scenarios = counter.for_scenarios(
+        scenario_argv[1:], remove_small=remove_small)
+    stats = {k: _bytes_mean_std(v) for (k, v) in scenarios.iteritems()}
     out = {}
-    for i in defense_argv[2:]:
-        out[i] = _size_increase(stats[defense_argv[1]], stats[i])
+    for i in scenario_argv[2:]:
+        out[i] = _size_increase(stats[scenario_argv[1]], stats[i])
     return out
 
 
@@ -301,15 +301,15 @@ def compare_stats(scenarios):
     '''@return a dict {scenario1: {domain1: {...}, ..., domainN: {...}},
     scenario2:..., ..., scenarioN: ...} with domain mean, standard distribution
     and labels'''
-    defenses = counter.for_scenarios(scenarios)
-    means = {k: _mean(v) for (k, v) in defenses.iteritems()}
-    stds = {k: _std(v) for (k, v) in defenses.iteritems()}
+    scenarios = counter.for_scenarios(scenarios)
+    means = {k: _mean(v) for (k, v) in scenarios.iteritems()}
+    stds = {k: _std(v) for (k, v) in scenarios.iteritems()}
     out = []
     for scenario in scenarios:
         logging.info('version: %s', scenario)
         default = {"plugin-version": scenario,
                    "plugin-enabled": 'disabled' not in scenario}
-        for site in defenses[scenario]:
+        for site in scenarios[scenario]:
             tmp = dict(default)
             tmp['website'] = site
             tmp['mean'] = means[scenario][site]
@@ -344,14 +344,14 @@ def _add_background(foreground, name=None, background=None):
     return foreground
 
 
-def open_world(defense, y_bound=0.05):
+def open_world(scenario, y_bound=0.05):
     '''open-world (SVM) test on data, optimized on bounded auc.
 
     :return: (fpr, tpr, optimal_clf, roc_plot_mpl)'''
     # _train combines training and testing data and _test is grid-validation
-    assert 'background' in defense, '''no "background" set in defense data'''
-    defense = _binarize(defense)
-    X, y, _ = counter.to_features_cumul(defense)
+    assert 'background' in scenario, '''no "background" set in scenario data'''
+    scenario = _binarize(scenario)
+    X, y, _ = counter.to_features_cumul(scenario)
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(
         X, y, train_size=2. / 3, stratify=y)
     result = fit.my_grid(X_train, y_train, auc_bound=y_bound)#, n_jobs=1)
@@ -364,11 +364,11 @@ def open_world(defense, y_bound=0.05):
     return (fpr, tpr, result, plot_data.roc(fpr, tpr), prob)
 
 
-def closed_world(defenses, def0, cumul=True, with_svm=True, common=False):
+def closed_world(scenarios, def0, cumul=True, with_svm=True, common=False):
     '''cross test on dirs: 1st has training data, rest have test
 
-    :param: defenses contains scenario dirs like sys.argv.  If
-            defenses has only one set, it is cross-validated etc.  If
+    :param: scenarios contains scenario dirs like sys.argv.  If
+            scenarios has only one set, it is cross-validated etc.  If
             there are more than one, the first is taken as baseline
             and training, while the others are tested against this.
             As example, search for sys.argv = ... lines below
@@ -376,18 +376,18 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, common=False):
     :param: common determines whether to reduce the test data to
             common keys.
     '''
-    stats = {k: _bytes_mean_std(v) for (k, v) in defenses.iteritems()}
-    # durations = {k: _average_duration(v) for (k,v) in defenses.iteritems()}
+    stats = {k: _bytes_mean_std(v) for (k, v) in scenarios.iteritems()}
+    # durations = {k: _average_duration(v) for (k,v) in scenarios.iteritems()}
 
     # no-split, best result of 10-fold tts
-    simulated_original(defenses[def0], def0)
+    simulated_original(scenarios[def0], def0)
 
     # training set
-    (train, test) = _tts(defenses[def0])
+    (train, test) = _tts(scenarios[def0])
     clfs = GOOD[:]
     if with_svm:
         if def0 in SVC_TTS_MAP and cumul:
-            logging.info('reused svc: %s for defense: %s',
+            logging.info('reused svc: %s for scenario: %s',
                          SVC_TTS_MAP[def0],
                          def0)
             clfs.append(SVC_TTS_MAP[def0])
@@ -413,12 +413,12 @@ def closed_world(defenses, def0, cumul=True, with_svm=True, common=False):
         _verbose_test_11(X, y, clf)
 
     # vs test sets
-    its_counters0 = defenses[def0]
-    for (defense, its_counters) in defenses.iteritems():
-        if defense == def0:
+    its_counters0 = scenarios[def0]
+    for (scenario, its_counters) in scenarios.iteritems():
+        if scenario == def0:
             continue
         print '\ntrain: {} VS {} (overhead {}%)'.format(
-            def0, defense, _size_increase(stats[def0], stats[defense]))
+            def0, scenario, _size_increase(stats[def0], stats[scenario]))
         if common and its_counters.keys() != its_counters0.keys():
             # td: refactor code duplication with above (search for keys = ...)
             keys = set(its_counters0.keys())
@@ -465,24 +465,22 @@ def gen_class_stats_list(scenarios,
     return out
 
 
-def outlier_removal_levels(defense, clf=None):
+def outlier_removal_levels(scenario, clf=None):
     '''tests different outlier removal schemes and levels
 
-    SET EITHER DEFENSE XOR TRAIN_TEST
-    @param defense: one "set" of data {site_1: counters, ..., site_n: counters}
-    @param train_test: tuple of two "sets" (train, test) each like defense'''
+    @param scenario: one "set" of data {site_1: counters, ..., site_n: counters}
     # outlier removal on both at the same time
     print 'combined outlier removal'
     for lvl in [1, 2, 3]:
-        defense_with_or = counter.outlier_removal(defense, lvl)
-        (train, test) = _tts(defense_with_or)
+        scenario_with_or = counter.outlier_removal(scenario, lvl)
+        (train, test) = _tts(scenario_with_or)
         (X, y, _) = counter.to_features_cumul(train)
         if clf is None:
             clf = fit.my_grid(X, y)
         (X, y, _) = counter.to_features_cumul(test)
         print "level: {}".format(lvl)
         _verbose_test_11(X, y, clf)
-    (train, test) = _tts(defense)
+    (train, test) = _tts(scenario)
 
     # separate outlier removal on train and test set
     print 'separate outlier removal for training and test data'
@@ -501,14 +499,14 @@ def outlier_removal_levels(defense, clf=None):
 def site_sizes(stats):
     '''@return {'url1': [size0, ..., sizeN-1], ..., urlM: [...]}
 
-    stats = {k: _bytes_mean_std(v) for (k,v) in defenses.iteritems()}'''
-    defenses = stats.keys()
-    defenses.sort()
+    stats = {k: _bytes_mean_std(v) for (k,v) in scenarios.iteritems()}'''
+    scenarios = stats.keys()
+    scenarios.sort()
     out = {}
-    for url in stats[defenses[0]].keys():
+    for url in stats[scenarios[0]].keys():
         out[url] = []
-        for defense in defenses:
-            out[url].append(stats[defense][url][0])
+        for scenario in scenarios:
+            out[url].append(stats[scenario][url][0])
     return out
 
 
@@ -516,12 +514,12 @@ def size_test(argv, outlier_removal=True):
     '''1. collect traces
     2. create stats
     3. evaluate for each vs first'''
-    defenses = counter.for_scenarios(argv[1:], remove_small=outlier_removal)
-    stats = {k: _bytes_mean_std(v) for (k, v) in defenses.iteritems()}
-    defense0 = argv[1]
-    for defense in argv[2:]:
-        print '{}: {}'.format(defense, _size_increase(stats[defense0],
-                                                      stats[defense]))
+    scenarios = counter.for_scenarios(argv[1:], remove_small=outlier_removal)
+    stats = {k: _bytes_mean_std(v) for (k, v) in scenarios.iteritems()}
+    scenario0 = argv[1]
+    for scenario in argv[2:]:
+        print '{}: {}'.format(scenario, _size_increase(stats[scenario0],
+                                                      stats[scenario]))
 
 
 def top_30(mean_per_dir):
@@ -544,7 +542,7 @@ def main(argv, with_svm=True, cumul=True):
     '''loads stuff, triggers either open or closed-world eval'''
     if len(argv) == 1:
         argv.append('.')
-    # by hand: defenses = counter.for_scenarios(sys.argv[1:])
+    # by hand: scenarios = counter.for_scenarios(sys.argv[1:])
     scenarios = counter.for_scenarios(argv[1:])
     if 'background' in scenarios.values()[0]:
         if len(scenarios) > 1:
@@ -577,8 +575,8 @@ def main(argv, with_svm=True, cumul=True):
 # CLASSIFICATION RESULTS PER CLASS
 
 # some_30 = top_30(means)
-# timing = {k: _average_duration(v) for (k,v) in defenses.iteritems()}
-# outlier_removal_levels(defenses[sys.argv[1]]) #td: try out
+# timing = {k: _average_duration(v) for (k,v) in scenarios.iteritems()}
+# outlier_removal_levels(scenarios[sys.argv[1]]) #td: try out
 
 # PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
 # PANCHENKO_30 = os.path.join('..', 'sw', 'p', 'subsets', '30', 'foreground-data', 'output-tcp')
@@ -637,9 +635,12 @@ def main(argv, with_svm=True, cumul=True):
 # 'disabled/bridge--2016-09-21-100', 'disabled/bridge--2016-09-26-100',
 # 'disabled/bridge--2016-09-26-100-with-errs']
 
-# NEW
+# NOT SO NEW
 # sys.argv = ['', './disabled/bridge--2016-11-21']
 # sys.argv = ['', './disabled/bridge--2016-11-04-100@50', './0.22/10aI--2016-11-04-50-of-100', './disabled/bridge--2016-11-27']
+# NEWER
+# christmas
+# wtf-pad 2017
 
 
 # TOP
