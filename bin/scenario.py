@@ -32,17 +32,28 @@ class Scenario(object):
         >>> Scenario('./0.22/10aI--2016-11-04-50-of-100').setting
         '10aI'
         '''
-        (self.name, date) = os.path.normpath(name).rsplit('/', 1)
+        try:
+            (self.name, date) = os.path.normpath(name).rsplit('/', 1)
+        except ValueError:
+            self.name = os.path.normpath(name)
+            return
         if '@' in date:
             (date, self.size) = date.split('@')
         date = date.replace('bridge--', '')
         if '--' in date:
             (self.setting, date) = date.split('--')
         # the following discards subset info: 10aI--2016-11-04-50-of-100
-        tmp = [int(x) for x in date.split('-')[:3]]
-        if len(tmp) == 2:
-            tmp.insert(0, 2016)
-        self.date = datetime.date(*tmp)
+        try:
+            tmp = [int(x) for x in date.split('-')[:3]]
+            if len(tmp) == 2:
+                tmp.insert(0, 2016)
+            try:
+                self.date = datetime.date(*tmp)
+            except TypeError:
+                self.setting = date
+        except ValueError:
+            assert not hasattr(self, "setting")
+            self.setting = date
 
 
     def __str__(self):
