@@ -18,7 +18,7 @@ import counter
 
 
 class Scenario(object):
-    '''just meta-information object'''
+    '''meta-information object with optional loading of traces'''
     def __init__(self, name):
         '''
         >>> Scenario('disabled/2016-11-13').date
@@ -63,6 +63,12 @@ class Scenario(object):
             out += ' with setting {}'.format(self.setting)
         return out
 
+def size_increase(name, trace_dict=None):
+    s = Scenario(name)
+    if not trace_dict:
+        s.load_traces
+    return -1
+
 
 def _size_increase(base, compare):
     '''@return how much bigger/smaller =compare= is than =base= (in %)'''
@@ -94,14 +100,14 @@ baseline'''
     return out
 
 # todo: code duplication: total_packets_in_stats
-def _bytes_mean_std(counter_dict):
+def _bytes_mean_std(trace_dict):
     '''@return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
     >>> _bytes_mean_std({'yahoo.com': [counter._test(3)]})
     {'yahoo.com': (1800.0, 0.0)}
     '''
     out = {}
-    for (domain, counter_list) in counter_dict.iteritems():
-        total = [i.get_total_in() for i in counter_list]
+    for (domain, trace_list) in trace_dict.iteritems():
+        total = [i.get_total_in() for i in trace_list]
         out[domain] = (np.mean(total), np.std(total))
     return out
 
@@ -134,17 +140,17 @@ def size_test(argv, outlier_removal=True):
 
 
 # todo: code duplication: _bytes_mean_std
-def total_packets_in_stats(counter_dict):
-    '''Returns: dict - (mean, std) of each counter's total_packets_in'''
+def total_packets_in_stats(trace_dict):
+    '''Returns: dict - (mean, std) of each trace's total_packets_in'''
     out = {}
-    for (k, v) in counter_dict.iteritems():
+    for (k, v) in trace_dict.iteritems():
         tpi_list = _tpi_per_list(v)
         out[k] = (np.mean(tpi_list), np.std(tpi_list, ddof=1))
 
 
-def tpi(counter_list):
-    '''returns total incoming packets for each counter in list'''
-    return [x.get_tpi() for x in counter_list]
+def tpi(trace_list):
+    '''returns total incoming packets for each trace in list'''
+    return [x.get_tpi() for x in trace_list]
 
 
 doctest.testmod()

@@ -211,6 +211,7 @@ class TestScenario(unittest.TestCase):
         (fail_num, _) = doctest.testmod(scenario)
         self.assertEqual(0, fail_num)
 
+
     def test__parse_id(self):
         self.assertEqual('disabled',
                          str(scenario.Scenario('disabled/2016-11-13')))
@@ -239,8 +240,10 @@ class TestScenario(unittest.TestCase):
         self.assertEqual('json-10-nocache',
                          scenario.Scenario('0.15.3/json-10-nocache').setting)
         
+    def test_size_increase_same(self):
+        self.assertEqual(scenario.size_increase('disabled/05-12@10'), 0)
 
-
+        
     def test__size_increase_equal(self):
         self.assertEqual(scenario._size_increase(self.base_mock,
                                                 {'a': (10, -1), 'b': (10, -1)}),

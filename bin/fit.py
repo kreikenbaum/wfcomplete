@@ -144,7 +144,7 @@ def _stop(y, step, result, previous, C=1, best=1, delta=0.001):
     '''
     return (step < 0.001 or
             C < 1e-50 or
-            (len(previous) > 3  # some tries and with same val and > guess
+            (len(previous) > 3  # some tries and with similar val > random guess
              and max([abs(x - result) for x in previous[-3:]]) < delta
              and (result
                  > best * 1.1 * max(collections.Counter(y).values()) / len(y))))
