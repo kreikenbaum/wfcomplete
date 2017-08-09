@@ -128,7 +128,7 @@ def _search_range(best_param, step=1):
             best_param * expstep**2]
 
 
-def _stop(y, step, result, previous, C=1, best=1):
+def _stop(y, step, result, previous, C=1, best=1, delta=0.001):
     '''@return True if grid should stop
 
     >>> _stop([1,1,2,2,3,3], 0.0001, 0.5, 0.4) # stop due to step
@@ -144,9 +144,10 @@ def _stop(y, step, result, previous, C=1, best=1):
     '''
     return (step < 0.001 or
             C < 1e-50 or
-            (len(previous) > 3 and  # some tries and with same val and > guess
-             max([abs(x - result) for x in previous[-3:]]) < 0.00001 and
-             result > best * 1.1 * max(collections.Counter(y).values()) / len(y)))
+            (len(previous) > 3  # some tries and with same val and > guess
+             and max([abs(x - result) for x in previous[-3:]]) < delta
+             and (result
+                 > best * 1.1 * max(collections.Counter(y).values()) / len(y))))
 
 
 def bounded_auc_score(clf, X, y, y_bound=0.01):
