@@ -77,6 +77,12 @@ class Scenario(object):
             self.traces = counter.all_from_dir(os.path.join(DIR, self.path))
         return self.traces
 
+    def size_increase(self, trace_dict=None):
+        if not trace_dict:
+            trace_dict = self.get_traces()
+
+        return -1
+
 
 def list_all(path=DIR):
     '''lists all scenarios in =path='''
@@ -99,13 +105,6 @@ def list_all(path=DIR):
     return out
 
 
-def size_increase(name, trace_dict=None):
-    s = Scenario(name)
-    if not trace_dict:
-        s.get_traces()
-    else:
-        s.traces = trace_dict
-    return -1
 
 
 def date_from_trace(name):
