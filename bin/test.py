@@ -265,8 +265,10 @@ class TestScenario(unittest.TestCase):
     def test_size_increase__empty(self):
         trace = counter._test(0)
         s = scenario.Scenario('wtf-pad/2015-01-01')
+        logging.disable(logging.WARNING)
         s.traces = {'msn.com': [trace], 'google.com': [trace]}
         self.assertEqual(-100, s.size_increase())
+        logging.disable(logging.NOTSET)
 
 
     def test__size_increase_computation_equal(self):

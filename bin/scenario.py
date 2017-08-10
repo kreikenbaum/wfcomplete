@@ -84,11 +84,11 @@ class Scenario(object):
 
 
     def size_increase(self, trace_dict=None):
-        if not trace_dict:
-            trace_dict = self.get_traces()
         closest_disabled = self._closest_disabled()
         if closest_disabled == self:
             return 0
+        if not trace_dict:
+            trace_dict = self.get_traces()
         return size_increase(closest_disabled.get_traces(), trace_dict)
 
 
