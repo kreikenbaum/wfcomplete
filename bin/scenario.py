@@ -16,12 +16,13 @@ import counter
 
 
 DIR = os.path.join(os.path.expanduser('~'), 'da', 'git', 'data')
+TRACE_ARGS = { "remove_small": True, "or_level": 2 }
 #Stats = collections.namedtuple('Stats', ['tpi', 'tpi_mean', 'tpi_std'])
 
 
 class Scenario(object):
     '''meta-information object with optional loading of traces'''
-    def __init__(self, name):
+    def __init__(self, name, trace_args=TRACE_ARGS):
         '''
         >>> Scenario('disabled/2016-11-13').date
         datetime.date(2016, 11, 13)
@@ -32,6 +33,7 @@ class Scenario(object):
         >>> Scenario('./0.22/10aI--2016-11-04-50-of-100').setting
         '10aI'
         '''
+        self.trace_args = trace_args
         self.path = os.path.normpath(name)
         try:
             (self.name, date) = self.path.rsplit('/', 1)
@@ -76,7 +78,8 @@ class Scenario(object):
     def get_traces(self):
         '''@return dict {domain1: [trace1, ..., traceN], ..., domainM: [...]}'''
         if not hasattr(self, "traces"):
-            self.traces = counter.all_from_dir(os.path.join(DIR, self.path))
+            self.traces = counter.all_from_dir(os.path.join(DIR, self.path),
+                                               **self.trace_args)
         return self.traces
 
 
@@ -86,7 +89,6 @@ class Scenario(object):
         closest_disabled = self._closest_disabled()
         if closest_disabled == self:
             return 0
-        import pdb; pdb.set_trace()
         return size_increase(closest_disabled.get_traces(), trace_dict)
 
 
