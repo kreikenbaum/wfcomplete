@@ -39,7 +39,7 @@ def run_exp(scenario, trace_args, _rnd):
         'sites': traces.keys(),
         'score': result.best_score_,
         'C_gamma_result': _format_results(result.results),
-        'outlier_removal_level': s.trace_args['or_level'],
+        'outlier_removal': s.trace_args,
         'size_increase': s.size_increase()
     }
 
@@ -60,4 +60,4 @@ def my_main(scenario):
     return run_exp()
 
 # inspect database:
-# db.runs.aggregate([{$match: {"$and": [{"config.scenario": {"$exists": 1}}, {"result.score": {"$exists": 1}}]}}, {$project: {"config.scenario": 1, "result.score": 1}},{$group: {_id: "$config.scenario", "score": {$max: "$result.score"}}}])
+# use sacred; db.runs.aggregate([{$match: {"$and": [{"config.scenario": {"$exists": 1}}, {"result.score": {"$exists": 1}}]}}, {$project: {"config.scenario": 1, "result.score": 1}},{$group: {_id: "$config.scenario", "score": {$max: "$result.score"}}}])
