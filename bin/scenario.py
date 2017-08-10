@@ -14,6 +14,7 @@ import os
 import counter
 
 
+DIR = os.path.join(os.path.expanduser('~'), 'da', 'git', 'data')
 #Stats = collections.namedtuple('Stats', ['tpi', 'tpi_mean', 'tpi_std'])
 
 
@@ -32,10 +33,11 @@ class Scenario(object):
         >>> Scenario('./0.22/10aI--2016-11-04-50-of-100').setting
         '10aI'
         '''
+        self.path = name
         try:
-            (self.name, date) = os.path.normpath(name).rsplit('/', 1)
+            (self.name, date) = os.path.normpath(self.path).rsplit('/', 1)
         except ValueError:
-            self.name = os.path.normpath(name)
+            self.name = os.path.normpath(self.path)
             return
         if '@' in date:
             (date, self.size) = date.split('@')
@@ -63,13 +65,53 @@ class Scenario(object):
             out += ' with setting {}'.format(self.setting)
         return out
 
+
+    def date_from_trace(self):
+        trace = self.get_traces().values()[0][0]
+        return datetime.datetime.fromtimestamp(float(trace.name.split('@')[1]))
+
+
+    def get_traces(self):
+        '''@return dict {domain1: [trace1, ..., traceN], ..., domainM: [...]}'''
+        if not hasattr(self, "traces"):
+            self.traces = counter.all_from_dir(os.path.join(DIR, self.path))
+        return self.traces
+
+
+def list_all(path=DIR):
+    '''lists all scenarios in =path='''
+    out = []
+    for (dirname, _, _) in os.walk(path):
+        out.append(dirname)
+    out[:] = filter(lambda x: (not '/batch' in x
+                               and not '/bg' in x
+                               and not '/broken' in x
+                               and not '/or' in x
+                               and not '/output' in x
+                               and not '/ow' in x
+                               and not '/path' in x
+                               and not '/p_batch' in x
+                               and not '/results' in x
+    ), out)
+    out[:] = [x for (i, x) in enumerate(out[:-1]) if x not in out[i+1]]
+    out[:] = [x.replace(path + '/', '') for x in out]
+    # tmp
+    return out
+
+
 def size_increase(name, trace_dict=None):
     s = Scenario(name)
     if not trace_dict:
-        s.load_traces
+        s.get_traces()
+    else:
+        s.traces = trace_dict
     return -1
 
 
+def date_from_trace(name):
+    trace = Scenario(name).load_traces().values()[0][0]
+
+############# COPIED CODE
 def _size_increase(base, compare):
     '''@return how much bigger/smaller =compare= is than =base= (in %)'''
     diff = {}

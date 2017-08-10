@@ -239,11 +239,25 @@ class TestScenario(unittest.TestCase):
                          scenario.Scenario('0.15.3/json-10-nocache').name)
         self.assertEqual('json-10-nocache',
                          scenario.Scenario('0.15.3/json-10-nocache').setting)
+
+
+    def test_list_all(self):
+        self.assertTrue('disabled/2016-06-30' in scenario.list_all())
+
+
+    def test_date_from_trace(self):
+        trace = counter._test(3)
+        trace.name = u'./msn.com@1467754328'
+        scenario = scenario.Scenario('wtf-pad/bridge--2016-07-05')
+        scenario.traces = {'msn.com' : [trace]}
+        self.assertEqual(scenario.date_from_trace(),
+                         datetime.datetime(2016, 7, 5, 23, 32, 8))
         
-    def test_size_increase_same(self):
+
+    def test_size_increase__disabled(self):
         self.assertEqual(scenario.size_increase('disabled/05-12@10'), 0)
 
-        
+
     def test__size_increase_equal(self):
         self.assertEqual(scenario._size_increase(self.base_mock,
                                                 {'a': (10, -1), 'b': (10, -1)}),
