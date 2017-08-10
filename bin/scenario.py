@@ -83,10 +83,11 @@ class Scenario(object):
     def size_increase(self, trace_dict=None):
         if not trace_dict:
             trace_dict = self.get_traces()
-        closest = self._closest_disabled()
-        if closest == self:
+        closest_disabled = self._closest_disabled()
+        if closest_disabled == self:
             return 0
-        return _size_increase(closest.get_traces(), trace_dict)
+        import pdb; pdb.set_trace()
+        return size_increase(closest_disabled.get_traces(), trace_dict)
 
 
     def _closest_disabled(self):
@@ -122,6 +123,11 @@ def _filter_all(all_, extra_filter=None):
         out[:] = [x for x in out if extra_filter in x]
     return out
 
+
+def size_increase(base_trace_dict, compare_trace_dict):
+    base = _bytes_mean_std(base_trace_dict)
+    compare = _bytes_mean_std(compare_trace_dict)
+    return _size_increase_computation(base, compare)
 
 ############# COPIED CODE
 def _size_increase_computation(base, compare):
