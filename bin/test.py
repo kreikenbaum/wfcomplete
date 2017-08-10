@@ -239,62 +239,73 @@ class TestScenario(unittest.TestCase):
                          scenario.Scenario('0.15.3/json-10-nocache').name)
         self.assertEqual('json-10-nocache',
                          scenario.Scenario('0.15.3/json-10-nocache').setting)
-
-
-    def test_list_all(self):
-        self.assertTrue('disabled/2016-06-30' in scenario.list_all())
+        self.assertEqual(
+            'bridge', scenario.Scenario('disabled/bridge--2016-07-06').setting)
+        #'disabled/nobridge--2016-12-26-with7777' # what to do?
 
 
     def test_date_from_trace(self):
         trace = counter._test(3)
         trace.name = u'./msn.com@1467754328'
-        scenario = scenario.Scenario('wtf-pad/bridge--2016-07-05')
-        scenario.traces = {'msn.com' : [trace]}
-        self.assertEqual(scenario.date_from_trace(),
-                         datetime.datetime(2016, 7, 5, 23, 32, 8))
+        s = scenario.Scenario('wtf-pad/bridge--2016-07-05')
+        s.traces = {'msn.com' : [trace]}
+        self.assertEqual(datetime.date(2016, 7, 5), s.date_from_trace())
         
 
+    def test__filter_all(self):
+        self.assertTrue('disabled/2016-06-30' in scenario._filter_all(
+            ['disabled', 'disabled/2016-06-30']))
+
+
     def test_size_increase__disabled(self):
-        self.assertEqual(scenario.size_increase('disabled/05-12@10'), 0)
+        self.assertEqual(
+            0, scenario.Scenario('disabled/05-12@10').size_increase())
 
 
-    def test__size_increase_equal(self):
-        self.assertEqual(scenario._size_increase(self.base_mock,
+    def test_size_increase__empty(self):
+        trace = counter._test(0)
+        s = scenario.Scenario('wtf-pad/2015-01-01')
+        s.traces = {'msn.com': [trace], 'apple.com': [trace]}
+        self.assertEqual(-100, s.size_increase())
+
+
+    def test__size_increase_computation_equal(self):
+        self.assertEqual(scenario._size_increase_computation(self.base_mock,
                                                 {'a': (10, -1), 'b': (10, -1)}),
                          0)
 
-    def test__size_increase_same_half(self):
-        self.assertEqual(scenario._size_increase(self.base_mock,
+    def test__size_increase_computation_same_half(self):
+        self.assertEqual(scenario._size_increase_computation(self.base_mock,
                                                 {'a': (5, -1), 'b': (5, -1)}),
                          -50)
 
-    def test__size_increase_same_double(self):
-        self.assertEqual(scenario._size_increase(self.base_mock,
+    def test__size_increase_computation_same_double(self):
+        self.assertEqual(scenario._size_increase_computation(self.base_mock,
                                                 {'a': (20, -1), 'b': (20, -1)}),
                          100)
 
-    def test__size_increase_one_double(self):
+    def test__size_increase_computation_one_double(self):
         self.assertAlmostEqual(
-            scenario._size_increase(self.base_mock,
+            scenario._size_increase_computation(self.base_mock,
                                    {'a': (10, -1), 'b': (20, -1)}),
             50)
 #                               100*(pow(2, 1./2) - 1))#harmonic
 
-    def test__size_increase_both_different(self):
-        self.assertEqual(scenario._size_increase(self.base_mock,
+    def test__size_increase_computation_both_different(self):
+        self.assertEqual(scenario._size_increase_computation(self.base_mock,
                                                 {'a': (5, -1), 'b': (20, -1)}),
                          25)
 #                         0)# harmonic
 
-    def test__size_increase_three_one(self):
-        self.assertAlmostEqual(scenario._size_increase(
+    def test__size_increase_computation_three_one(self):
+        self.assertAlmostEqual(scenario._size_increase_computation(
             self.base_mock2, {'a': (10, -1), 'b': (10, -1), 'c': (20, -1)}),
                                100/3.)
 #                               100.*(pow(2, 1./3)-1))#harmonic
 
 
-    def test__size_increase_three_one_reverted(self):
-        self.assertAlmostEqual(scenario._size_increase(
+    def test__size_increase_computation_three_one_reverted(self):
+        self.assertAlmostEqual(scenario._size_increase_computation(
             {'a': (10, -1), 'b': (10, -1), 'c': (20, -1)}, self.base_mock2),
                                250./3-100)
 #                               100.*(pow(1./2, 1./3)-1))#harmonic

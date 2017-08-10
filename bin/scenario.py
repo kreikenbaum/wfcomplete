@@ -9,6 +9,7 @@ import numpy as np
 import collections
 import datetime
 import doctest
+import logging
 import os
 
 import counter
@@ -28,20 +29,17 @@ class Scenario(object):
         'disabled'
         >>> Scenario('disabled/05-12@10').size
         '10'
-        >>> hasattr(Scenario('disabled/bridge--2016-07-06'), "setting")
-        False
         >>> Scenario('./0.22/10aI--2016-11-04-50-of-100').setting
         '10aI'
         '''
-        self.path = name
+        self.path = os.path.normpath(name)
         try:
-            (self.name, date) = os.path.normpath(self.path).rsplit('/', 1)
+            (self.name, date) = self.path.rsplit('/', 1)
         except ValueError:
             self.name = os.path.normpath(self.path)
             return
         if '@' in date:
             (date, self.size) = date.split('@')
-        date = date.replace('bridge--', '')
         if '--' in date:
             (self.setting, date) = date.split('--')
         # the following discards subset info: 10aI--2016-11-04-50-of-100
@@ -54,8 +52,11 @@ class Scenario(object):
             except TypeError:
                 self.setting = date
         except ValueError:
-            assert not hasattr(self, "setting")
             self.setting = date
+
+
+    def __eq__(self, other):
+        return self.path == other
 
 
     def __str__(self):
@@ -68,7 +69,8 @@ class Scenario(object):
 
     def date_from_trace(self):
         trace = self.get_traces().values()[0][0]
-        return datetime.datetime.fromtimestamp(float(trace.name.split('@')[1]))
+        return datetime.datetime.fromtimestamp(
+            float(trace.name.split('@')[1])).date()
 
 
     def get_traces(self):
@@ -77,41 +79,52 @@ class Scenario(object):
             self.traces = counter.all_from_dir(os.path.join(DIR, self.path))
         return self.traces
 
+
     def size_increase(self, trace_dict=None):
         if not trace_dict:
             trace_dict = self.get_traces()
+        closest = self._closest_disabled()
+        if closest == self:
+            return 0
+        return _size_increase(closest.get_traces(), trace_dict)
 
-        return -1
+
+    def _closest_disabled(self):
+        disableds = list_all(extra_filter='disabled')
+        return min(disableds, key=lambda x: abs(self.date - x.date))
 
 
-def list_all(path=DIR):
+def list_all(path=DIR, extra_filter=None):
     '''lists all scenarios in =path='''
     out = []
     for (dirname, _, _) in os.walk(path):
         out.append(dirname)
-    out[:] = filter(lambda x: (not '/batch' in x
-                               and not '/bg' in x
-                               and not '/broken' in x
-                               and not '/or' in x
-                               and not '/output' in x
-                               and not '/ow' in x
-                               and not '/path' in x
-                               and not '/p_batch' in x
-                               and not '/results' in x
-    ), out)
-    out[:] = [x for (i, x) in enumerate(out[:-1]) if x not in out[i+1]]
-    out[:] = [x.replace(path + '/', '') for x in out]
-    # tmp
+    out[:] = [x.replace(path+'/', './') for x in out]
+    return [Scenario(x) for x in _filter_all(out, extra_filter=extra_filter)]
+
+def _filter_all(all_, extra_filter=None):
+    out = filter(lambda x: (not '/background' in x
+                            and not '/batch' in x
+                            and not '/bg' in x
+                            and not '/broken' in x
+                            and not '/or' in x
+                            and not '/output' in x
+                            and not '/ow' in x
+                            and not '/path' in x
+                            and not '/p_batch' in x
+                            and not '/results' in x
+                            and not 'subsets/' in x
+    ), all_)
+    out[:] = [x for (i, x) in enumerate(out[:-1]) if (
+        x not in out[i+1]
+        or x+'-with-errors' == out[i+1])] + [out[-1]]
+    if extra_filter:
+        out[:] = [x for x in out if extra_filter in x]
     return out
 
 
-
-
-def date_from_trace(name):
-    trace = Scenario(name).load_traces().values()[0][0]
-
 ############# COPIED CODE
-def _size_increase(base, compare):
+def _size_increase_computation(base, compare):
     '''@return how much bigger/smaller =compare= is than =base= (in %)'''
     diff = {}
     if base.keys() != compare.keys():
@@ -126,8 +139,8 @@ def _size_increase(base, compare):
     return 100 * (np.mean(diff.values()) - 1)
 
 def _size_increase_helper(two_scenarios):
-    return _size_increase(two_scenarios[two_scenarios.keys()[0]],
-                          two_scenarios[two_scenarios.keys()[1]])
+    return _size_increase_computation(two_scenarios[two_scenarios.keys()[0]],
+                                      two_scenarios[two_scenarios.keys()[1]])
 
 def size_increase_from_argv(scenario_argv, remove_small=True):
     '''computes sizes increases from sys.argv-like list, argv[1] is
@@ -137,7 +150,7 @@ baseline'''
     stats = {k: _bytes_mean_std(v) for (k, v) in scenarios.iteritems()}
     out = {}
     for i in scenario_argv[2:]:
-        out[i] = _size_increase(stats[scenario_argv[1]], stats[i])
+        out[i] = _size_increase_computation(stats[scenario_argv[1]], stats[i])
     return out
 
 # todo: code duplication: total_packets_in_stats
