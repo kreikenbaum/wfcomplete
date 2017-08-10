@@ -87,9 +87,8 @@ class Scenario(object):
         closest_disabled = self._closest_disabled()
         if closest_disabled == self:
             return 0
-        if not trace_dict:
-            trace_dict = self.get_traces()
-        return size_increase(closest_disabled.get_traces(), trace_dict)
+        return size_increase(closest_disabled.get_traces(),
+                             trace_dict or self.get_traces())
 
 
     def _closest_disabled(self):
@@ -131,7 +130,6 @@ def size_increase(base_trace_dict, compare_trace_dict):
     compare = _bytes_mean_std(compare_trace_dict)
     return _size_increase_computation(base, compare)
 
-############# COPIED CODE
 def _size_increase_computation(base, compare):
     '''@return how much bigger/smaller =compare= is than =base= (in %)'''
     diff = {}
@@ -146,6 +144,23 @@ def _size_increase_computation(base, compare):
         diff[k] = float(compare[k][0]) / base[k][0]
     return 100 * (np.mean(diff.values()) - 1)
 
+# todo: code duplication: total_packets_in_stats
+def _bytes_mean_std(trace_dict):
+    '''@return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
+    >>> _bytes_mean_std({'yahoo.com': [counter._test(3)]})
+    {'yahoo.com': (1800.0, 0.0)}
+    '''
+    out = {}
+    for (domain, trace_list) in trace_dict.iteritems():
+        total = [i.get_total_in() for i in trace_list]
+        out[domain] = (np.mean(total), np.std(total))
+    return out
+
+
+def tpi(trace_list):
+    '''returns total incoming packets for each trace in list'''
+    return [x.get_tpi() for x in trace_list]
+############# COPIED CODE, needed?
 def _size_increase_helper(two_scenarios):
     return _size_increase_computation(two_scenarios[two_scenarios.keys()[0]],
                                       two_scenarios[two_scenarios.keys()[1]])
@@ -161,17 +176,6 @@ baseline'''
         out[i] = _size_increase_computation(stats[scenario_argv[1]], stats[i])
     return out
 
-# todo: code duplication: total_packets_in_stats
-def _bytes_mean_std(trace_dict):
-    '''@return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
-    >>> _bytes_mean_std({'yahoo.com': [counter._test(3)]})
-    {'yahoo.com': (1800.0, 0.0)}
-    '''
-    out = {}
-    for (domain, trace_list) in trace_dict.iteritems():
-        total = [i.get_total_in() for i in trace_list]
-        out[domain] = (np.mean(total), np.std(total))
-    return out
 
 # unused
 def site_sizes(stats):
@@ -208,11 +212,6 @@ def total_packets_in_stats(trace_dict):
     for (k, v) in trace_dict.iteritems():
         tpi_list = _tpi_per_list(v)
         out[k] = (np.mean(tpi_list), np.std(tpi_list, ddof=1))
-
-
-def tpi(trace_list):
-    '''returns total incoming packets for each trace in list'''
-    return [x.get_tpi() for x in trace_list]
 
 
 doctest.testmod()
