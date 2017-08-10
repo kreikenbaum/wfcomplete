@@ -13,7 +13,7 @@ from sklearn.metrics import precision_recall_fscore_support
 
 import analyse
 import counter
-import scenario
+from scenario import Scenario, TRACE_ARGS # scenario name already used
 
 DIR = '/home/uni/da/git/data/'
 
@@ -23,13 +23,15 @@ ex.observers.append(MongoObserver.create())
 
 @ex.config
 def my_config_cw():
-    my_scenario = scenario.Scenario('disabled/06-09@10/')
-#    scenario = scenario.Scenario('wtf-pad/bridge--2017-01-08')
+    scenario = 'disabled/06-09@10/'
+    trace_args = TRACE_ARGS
+#    scenario = Scenario('wtf-pad/bridge--2017-01-08')
 
     
 @ex.capture
-def run_exp(my_scenario, _rnd):
-    traces = my_scenario.get_traces()
+def run_exp(scenario, trace_args, _rnd):
+    s = Scenario(scenario, trace_args)
+    traces = s.get_traces()
     result = analyse.simulated_original(traces)
     return {
         'C': result.clf.estimator.C,
@@ -37,8 +39,8 @@ def run_exp(my_scenario, _rnd):
         'sites': traces.keys(),
         'score': result.best_score_,
         'C_gamma_result': _format_results(result.results),
-        'outlier_removal_level': scenario.trace_args['or_level'],
-        'size_increase': scenario.size_increase()
+        'outlier_removal_level': s.trace_args['or_level'],
+        'size_increase': s.size_increase()
     }
 
 
@@ -50,11 +52,10 @@ def _format_results(results):
 
 
 @ex.automain
-def my_main(my_scenario):
+def my_main(scenario):
     _=os.nice(20)
     db = pymongo.MongoClient().sacred
-    if scenario.path in db.runs.distinct("config.scenario",
-                                         {"status": "COMPLETED"}):
+    if scenario in db.runs.distinct("config.scenario", {"status": "COMPLETED"}):
         raise Exception("scenario already in database")
     return run_exp()
 
