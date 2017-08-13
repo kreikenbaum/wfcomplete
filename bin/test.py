@@ -250,11 +250,17 @@ class TestScenario(unittest.TestCase):
         s = scenario.Scenario('wtf-pad/bridge--2016-07-05')
         s.traces = {'msn.com' : [trace]}
         self.assertEqual(datetime.date(2016, 7, 5), s.date_from_trace())
-        
+
+
+    def test_sample(self):
+        s = scenario.Scenario('somescenario/2012-07-05')
+        s.traces = {'msn.com' : [counter._test(3)] * 30}
+        self.assertEqual(len(s.get_sample(10)['msn.com']), 10)
+
 
     def test__filter_all(self):
         self.assertTrue('disabled/2016-06-30' in scenario._filter_all(
-            ['disabled', 'disabled/2016-06-30']))
+            ['disabled', 'disabled/2016-06-30'], True))
 
 
     def test_size_increase__disabled(self):

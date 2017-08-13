@@ -11,6 +11,7 @@ import datetime
 import doctest
 import logging
 import os
+import random
 
 import counter
 
@@ -69,11 +70,23 @@ class Scenario(object):
         return out
 
 
+    def __repr__(self):
+        return '<scenario.Scenario({})>'.format(self.path)
+
+        
     def date_from_trace(self):
         trace = self.get_traces().values()[0][0]
         return datetime.datetime.fromtimestamp(
             float(trace.name.split('@')[1])).date()
 
+
+    def get_sample(self, size, random_seed=None):
+        '''@return sample of traces, each domain has size size'''
+        random.seed(random_seed)
+        out = {}
+        for (domain, trace_list) in self.get_traces().iteritems():
+            out[domain] = random.sample(trace_list, size)
+        return out
 
     def get_traces(self):
         '''@return dict {domain1: [trace1, ..., traceN], ..., domainM: [...]}'''
@@ -96,18 +109,21 @@ class Scenario(object):
         return min(disableds, key=lambda x: abs(self.date - x.date))
 
 
-def list_all(path=DIR, extra_filter=None):
-    '''lists all scenarios in =path='''
+def list_all(extra_filter=None, include_bg=False, path=DIR):
+    '''lists all scenarios in =path=.'''
     out = []
     for (dirname, _, _) in os.walk(path):
+        if extra_filter and not extra_filter in dirname:
+            continue
         out.append(dirname)
     out[:] = [x.replace(path+'/', './') for x in out]
-    return [Scenario(x) for x in _filter_all(out, extra_filter=extra_filter)]
+    return [Scenario(x) for x in _filter_all(
+        out, include_bg=include_bg)]
 
-def _filter_all(all_, extra_filter=None):
-    out = filter(lambda x: (not '/background' in x
-                            and not '/batch' in x
-                            and not '/bg' in x
+def _filter_all(all_, include_bg):
+    '''If extra_filter is not None, only load scenario names matching the filter
+    include_bg does at it says'''
+    out = filter(lambda x: (not '/batch' in x
                             and not '/broken' in x
                             and not '/or' in x
                             and not '/output' in x
@@ -116,12 +132,13 @@ def _filter_all(all_, extra_filter=None):
                             and not '/p_batch' in x
                             and not '/results' in x
                             and not 'subsets/' in x
+                            and (include_bg
+                                 or (not '/background' in x
+                                     and not '/bg' in x))
     ), all_)
     out[:] = [x for (i, x) in enumerate(out[:-1]) if (
         x not in out[i+1]
         or x+'-with-errors' == out[i+1])] + [out[-1]]
-    if extra_filter:
-        out[:] = [x for x in out if extra_filter in x]
     return out
 
 

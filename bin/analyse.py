@@ -253,23 +253,23 @@ def class_stats_to_table(class_stats):
         print '|'
 
 
-def compare_stats(scenarios):
+def compare_stats(scenario_names):
     '''@return a dict {scenario1: {domain1: {...}, ..., domainN: {...}},
     scenario2:..., ..., scenarioN: ...} with domain mean, standard distribution
     and labels'''
-    scenarios = counter.for_scenarios(scenarios)
-    means = {k: _mean(v) for (k, v) in scenarios.iteritems()}
-    stds = {k: _std(v) for (k, v) in scenarios.iteritems()}
+    scenario_dicts = counter.for_scenarios(scenario_names)
+    means = {k: _mean(v) for (k, v) in scenario_dicts.iteritems()}
+    stds = {k: _std(v) for (k, v) in scenario_dicts.iteritems()}
     out = []
-    for scenario in scenarios:
-        logging.info('version: %s', scenario)
-        default = {"plugin-version": scenario,
-                   "plugin-enabled": 'disabled' not in scenario}
-        for site in scenarios[scenario]:
+    for scenario_name in scenario_names:
+        logging.info('version: %s', scenario_name)
+        default = {"plugin-version": scenario_name,
+                   "plugin-enabled": 'disabled' not in scenario_name}
+        for site in scenario_dicts[scenario_name]:
             tmp = dict(default)
             tmp['website'] = site
-            tmp['mean'] = means[scenario][site]
-            tmp['std'] = stds[scenario][site]
+            tmp['mean'] = means[scenario_name][site]
+            tmp['std'] = stds[scenario_name][site]
             out.append(tmp)
     return out
 
@@ -300,13 +300,13 @@ def _add_background(foreground, name=None, background=None):
     return foreground
 
 
-def open_world(scenario, y_bound=0.05):
+def open_world(scenario_dict, y_bound=0.05):
     '''open-world (SVM) test on data, optimized on bounded auc.
 
     :return: (fpr, tpr, optimal_clf, roc_plot_mpl)'''
     # _train combines training and testing data and _test is grid-validation
-    assert 'background' in scenario, '''no "background" set in scenario data'''
-    scenario = _binarize(scenario)
+    assert 'background' in scenario_dict, '''no "background" set in scenario data'''
+    scenario_dict = _binarize(scenario_dict)
     X, y, _ = counter.to_features_cumul(scenario)
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(
         X, y, train_size=2. / 3, stratify=y)
