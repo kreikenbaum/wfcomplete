@@ -97,16 +97,16 @@ class Scenario(object):
 
 
     def size_increase(self, trace_dict=None):
-        closest_disabled = self._closest_disabled()
+        closest_disabled = self._closest("disabled")
         if closest_disabled == self:
             return 0
         return size_increase(closest_disabled.get_traces(),
                              trace_dict or self.get_traces())
 
 
-    def _closest_disabled(self):
-        disableds = list_all(extra_filter='disabled')
-        return min(disableds, key=lambda x: abs(self.date - x.date))
+    def _closest(self, filter_, include_bg=False):
+        filtered = list_all(extra_filter=filter_, include_bg=include_bg)
+        return min(filtered, key=lambda x: abs(self.date - x.date))
 
 
 def list_all(extra_filter=None, include_bg=False, path=DIR):

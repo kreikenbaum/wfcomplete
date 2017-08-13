@@ -268,6 +268,11 @@ class TestScenario(unittest.TestCase):
             0, scenario.Scenario('disabled/05-12@10').size_increase())
 
 
+    def test__closest_bg(self):
+        s = scenario.Scenario('disabled/background--2016-08-17')
+        self.assertEqual(s, s._closest('background', include_bg=True))
+
+
     def test_size_increase__empty(self):
         trace = counter._test(0)
         s = scenario.Scenario('wtf-pad/2015-01-01')
