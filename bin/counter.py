@@ -549,19 +549,22 @@ class Counter(object):
     def from_(*args):
         '''helper method to handle empty argument'''
         logging.info('args: %s, length: %d', args, len(args))
-        if len(args) == 2:
-            if os.path.isdir(args[1]):
-                os.chdir(args[1])
-                out = all_from_dir('.')
-            else:
+        if len(args) == 1:
+            if os.path.isfile(args[0]):
                 out = {}
-                _append_features(out, args[1])
-        elif len(args) > 2:
+                _append_features(out, args[0])
+            else: # this filename
+                out = all_from_dir('.')
+        if len(args) > 2:
             out = {}
             for filename in args[1:]:
                 _append_features(out, filename)
-        else:
-            out = all_from_dir('.')
+        elif len(args) == 2:
+            if os.path.isdir(args[1]):
+                out = all_from_dir(args[1])
+            else:
+                out = {}
+                _append_features(out, args[1])
         return out
 
     @staticmethod
@@ -601,11 +604,13 @@ class Counter(object):
     @staticmethod
     def from_pcap(filename):
         '''Creates Counter from pcap file. Less efficient than above.'''
-        tmp = Counter.from_pcap_old(filename)
-        if not tmp.warned:
-            return tmp
-        else:
-            print '.',
+        try:
+            tmp = Counter.from_pcap_quick(filename)
+            if not tmp.warned:
+                return tmp
+        except ValueError:
+            pass
+        print '.',
 
         tmp = Counter(filename)
 
@@ -626,7 +631,7 @@ class Counter(object):
 
 
     @staticmethod
-    def from_pcap_old(filename):
+    def from_pcap_quick(filename):
         '''creates Counter from pcap file'''
         tmp = Counter(filename)
 
@@ -639,6 +644,7 @@ class Counter(object):
         for line in iter(tshark.stdout.readline, ''):
             try:
                 (src, size, time) = line.split()
+                int(size) # needs exception to warn to use slow method
             except ValueError:
                 tmp.warned = True
                 logging.debug('file: %s had problems in line \n%s\n',
