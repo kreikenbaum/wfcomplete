@@ -16,7 +16,7 @@ import scenario
 fit.FOLDS = 2
 
 
-VERYQUICK = os.getenv('VERYQUICK', os.getenv('VERY', False) and QUICK)
+VERYQUICK = os.getenv('VERYQUICK', False)
 QUICK = os.getenv('QUICK', False) or VERYQUICK
 
 
@@ -133,20 +133,6 @@ class TestAnalyse(unittest.TestCase):
         self.assertEqual(0, fail_num)
 
 
-    def test__binarize(self):
-        res = analyse._binarize(self.bg_mock)
-        self.assertEquals(res['background'], self.c_list)
-#        self.assertEquals(res['foreground'], 2 * self.c_list)
-        self.assertEquals(len(res['foreground']), 2 * len(self.c_list))
-
-    def test__binarize_tf_cumul(self):
-        Xa, ya, _ = counter.to_features_cumul(analyse._binarize(self.bg_mock))
-        Xc, yc, _ = counter.to_features_cumul(self.bg_mock)
-        yc = fit._lb(yc)
-        self.assertTrue(np.array_equal(ya, yc))
-        self.assertTrue(np.array_equal(Xa, Xc))
-
-
 class TestFit(unittest.TestCase):
     '''tests the fit module'''
 
@@ -221,6 +207,11 @@ class TestScenario(unittest.TestCase):
     def setUp(self):
         self.base_mock = {'a': (10, -1), 'b': (10, -1)}
         self.base_mock2 = {'a': (10, -1), 'b': (10, -1), 'c': (10, -1)}
+        logging.disable(logging.WARNING)
+
+
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
 
 
     def test_doc(self):
@@ -228,7 +219,7 @@ class TestScenario(unittest.TestCase):
         self.assertEqual(0, fail_num)
 
 
-    def test__parse_id(self):
+    def test___init__(self):
         self.assertEqual('disabled',
                          str(scenario.Scenario('disabled/2016-11-13')))
         self.assertEqual(datetime.date(2016, 5, 12),
@@ -260,6 +251,38 @@ class TestScenario(unittest.TestCase):
         #'disabled/nobridge--2016-12-26-with7777' # what to do?
 
 
+    def test_binarize_fake(self):
+        c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]]
+        bg_mock = {'background': c_list[:],
+                   'a': c_list[:],
+                   'b': c_list[:]}
+        s = scenario.Scenario('asdf/12-12@20')
+        s.traces = bg_mock
+        res = s.binarize().get_traces()
+        self.assertEquals(res['background'], c_list)
+        self.assertEquals(len(res['foreground']), 2 * len(c_list))
+
+
+    def test__binarize_fake_vs_fit(self):
+        c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]]
+        bg_mock = {'background': c_list[:],
+                   'a': c_list[:],
+                   'b': c_list[:]}
+        s = scenario.Scenario('asdf/12-12@20')
+        s.traces = bg_mock
+        Xa, ya, _ = s.to_features_cumul()
+        Xc, yc, _ = counter.to_features_cumul(self.bg_mock)
+        yc = fit._lb(yc)
+        self.assertTrue(np.array_equal(ya, yc))
+        self.assertTrue(np.array_equal(Xa, Xc))
+
+
+    @unittest.skipIf(QUICK, "slow test skipped")
+    def test_binarize_real(self):
+        s = scenario.Scenario('wtf-pad/bridge--2016-07-05')
+        self.assertTrue(2, len(s.get_open_world().binarize().get_traces().keys()))
+
+
     def test_date_from_trace(self):
         trace = counter._test(3)
         trace.name = u'./msn.com@1467754328'
@@ -268,21 +291,16 @@ class TestScenario(unittest.TestCase):
         self.assertEqual(datetime.date(2016, 7, 5), s.date_from_trace())
 
 
-    def test_sample(self):
-        s = scenario.Scenario('somescenario/2012-07-05')
-        s.traces = {'msn.com' : [counter._test(3)] * 30}
-        self.assertEqual(len(s.get_sample(10)['msn.com']), 10)
-
-
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_get_open_world(self):
         s = scenario.Scenario('disabled/05-12@10')
         self.assertTrue('background' in s.get_open_world().get_traces())
 
 
-    def test__filter_all(self):
-        self.assertTrue('disabled/2016-06-30' in scenario._filter_all(
-            ['disabled', 'disabled/2016-06-30'], True))
+    def test_sample(self):
+        s = scenario.Scenario('somescenario/2012-07-05')
+        s.traces = {'msn.com' : [counter._test(3)] * 30}
+        self.assertEqual(len(s.get_sample(10)['msn.com']), 10)
 
 
     def test_size_increase__disabled(self):
@@ -290,18 +308,21 @@ class TestScenario(unittest.TestCase):
             0, scenario.Scenario('disabled/05-12@10').size_increase())
 
 
-    def test__closest_bg(self):
-        s = scenario.Scenario('disabled/background--2016-08-17')
-        self.assertEqual(s, s._closest('background', include_bg=True))
-
-
     def test_size_increase__empty(self):
         trace = counter._test(0)
         s = scenario.Scenario('wtf-pad/2015-01-01')
-        logging.disable(logging.WARNING)
         s.traces = {'msn.com': [trace], 'google.com': [trace]}
         self.assertEqual(-100, s.size_increase())
-        logging.disable(logging.NOTSET)
+
+
+    def test__filter_all(self):
+        self.assertTrue('disabled/2016-06-30' in scenario._filter_all(
+            ['disabled', 'disabled/2016-06-30'], True))
+
+
+    def test__closest_bg(self):
+        s = scenario.Scenario('disabled/background--2016-08-17')
+        self.assertEqual(s, s._closest('background', include_bg=True))
 
 
     def test__size_increase_computation_equal(self):

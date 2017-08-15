@@ -75,6 +75,19 @@ class Scenario(object):
         return '<scenario.Scenario({})>'.format(self.path)
 
         
+    def binarize(self, bg_label='background', fg_label='foreground'):
+        '''@return scenario with bg_label as-is, others combined to fg_label'''
+        out = copy.copy(self)
+        traces = {}
+        traces[bg_label] = self.get_traces()[bg_label]
+        traces[fg_label] = []
+        for (domain, its_traces) in self.get_traces().iteritems():
+            if domain != bg_label:
+                traces[fg_label].extend(its_traces)
+        setattr(out, 'traces', traces)
+        return out
+
+
     def date_from_trace(self):
         trace = self.get_traces().values()[0][0]
         return datetime.datetime.fromtimestamp(

@@ -34,21 +34,10 @@ ALL_MAP = {}
 
 # td: check if correct to use like this (or rather like _size_increase)
 # td: think if remove (not used)
-def _average_duration(counter_dict):
+def _average_duration(trace_dict):
     '''@return the average duration over all traces'''
-    mean_std = _times_mean_std(counter_dict)
+    mean_std = _times_mean_std(trace_dict)
     return np.mean([x[0] for x in mean_std.values()])
-
-
-def _binarize(counter_dict, bg_label='background', fg_label='foreground'):
-    '''@return counter_dict with "background" url as-is, all others combined'''
-    out = {}
-    out[bg_label] = counter_dict[bg_label]
-    out[fg_label] = []
-    for (k, its_counters) in counter_dict.iteritems():
-        if k != bg_label:
-            out[fg_label].extend(its_counters)
-    return out
 
 
 def _class_predictions(cls, cls_predict):
@@ -99,7 +88,7 @@ def _find_domain(mean_per_dir, mean):
             if domain_mean == mean:
                 return domain
 
-# td: ref: counters == counter_list?
+# td: ref: traces == trace_list?
 
 
 def _format_row(row):
@@ -122,14 +111,14 @@ def _gen_url_list(y, y_domains):
     return out
 
 
-def _mean(counter_dict):
+def _mean(trace_dict):
     '''@return a dict of {domain1: mean1, ... domainN: meanN}
     >>> _mean({'yahoo.com': [counter._test(3)]})
     {'yahoo.com': 1800.0}
     '''
     out = {}
-    for (domain, counter_list) in counter_dict.iteritems():
-        total = [i.get_total_both() for i in counter_list]
+    for (domain, trace_list) in trace_dict.iteritems():
+        total = [i.get_total_both() for i in trace_list]
         out[domain] = np.mean(total)
     return out
 
@@ -154,57 +143,57 @@ def _predict_percentages(class_predictions_list, url_list):
     return out
 
 
-def _std(counter_dict):
+def _std(trace_dict):
     '''@return a dict of {domain1: std1, ... domainN: stdN}
     >>> _std({'yahoo.com': [counter._test(3)]})
     {'yahoo.com': 0.0}
     '''
     out = {}
-    for (domain, counter_list) in counter_dict.iteritems():
-        total = [i.get_total_both() for i in counter_list]
+    for (domain, trace_list) in trace_dict.iteritems():
+        total = [i.get_total_both() for i in trace_list]
         out[domain] = np.std(total)
     return out
 
 
-def _times_mean_std(counter_dict):
+def _times_mean_std(trace_dict):
     '''analyse timing data (time overhead)
 
     @return a dict of {domain1: (mean1,std1)}, ... domainN: (meanN, stdN)}
     with mean and standard of timing data
     '''
     out = {}
-    for (domain, counter_list) in counter_dict.iteritems():
-        total = [i.timing[-1][0] for i in counter_list]
+    for (domain, trace_list) in trace_dict.iteritems():
+        total = [i.timing[-1][0] for i in trace_list]
         out[domain] = (np.mean(total), np.std(total))
     return out
 
 
-def _tts(counter_dict, test_size=1.0 / 3):
-    '''train-test-split: splits counter_dict in train_dict and test_dict
+def _tts(trace_dict, test_size=1.0 / 3):
+    '''train-test-split: splits trace_dict in train_dict and test_dict
 
     test_size = deep_len(test)/deep_len(train+test)
     uses cross_validation.train_test_split
-    @return (train_dict, test_dict) which together yield counter_dict
+    @return (train_dict, test_dict) which together yield trace_dict
     >>> len(_tts({'yahoo.com': map(counter._test, [3,3,3])})[0]['yahoo.com'])
     2
     >>> len(_tts({'yahoo.com': map(counter._test, [3,3,3])})[1]['yahoo.com'])
     1
     '''
     ids = []
-    for url in counter_dict:
-        for i in range(len(counter_dict[url])):
+    for url in trace_dict:
+        for i in range(len(trace_dict[url])):
             ids.append((url, i))
     (train_ids, test_ids) = cross_validation.train_test_split(
         ids, test_size=test_size)
     train = {}
     test = {}
-    for url in counter_dict:
+    for url in trace_dict:
         train[url] = []
         test[url] = []
     for (url, index) in train_ids:
-        train[url].append(counter_dict[url][index])
+        train[url].append(trace_dict[url][index])
     for (url, index) in test_ids:
-        test[url].append(counter_dict[url][index])
+        test[url].append(trace_dict[url][index])
     return (train, test)
 
 
@@ -274,13 +263,13 @@ def compare_stats(scenario_names):
     return out
 
 
-def simulated_original(counters, name=None):
+def simulated_original(traces, name=None):
     '''simulates original panchenko: does 10-fold cv on _all_ data, just
 picks best result'''
     if name is not None and name in ALL_MAP:
         clf = ALL_MAP[name]
     else:
-        clf = fit.helper(counter.outlier_removal(counters, 2),
+        clf = fit.helper(counter.outlier_removal(traces, 2),
                          cumul=True, folds=10)
         ALL_MAP[name] = clf
     print '10-fold result: {}'.format(clf.best_score_)
@@ -300,14 +289,12 @@ def _add_background(foreground, name=None, background=None):
     return foreground
 
 
-def open_world(scenario_dict, y_bound=0.05):
+def open_world(scenario_obj, y_bound=0.05):
     '''open-world (SVM) test on data, optimized on bounded auc.
 
     :return: (fpr, tpr, optimal_clf, roc_plot_mpl)'''
     # _train combines training and testing data and _test is grid-validation
-    assert 'background' in scenario_dict, '''no "background" set in scenario data'''
-    scenario_dict = _binarize(scenario_dict)
-    X, y, _ = counter.to_features_cumul(scenario)
+    X, y, _ = scenario_obj.to_features_cumul()
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(
         X, y, train_size=2. / 3, stratify=y)
     result = fit.my_grid(X_train, y_train, auc_bound=y_bound)#, n_jobs=1)
@@ -369,34 +356,34 @@ def closed_world(scenarios, def0, cumul=True, with_svm=True, common=False):
         _verbose_test_11(X, y, clf)
 
     # vs test sets
-    its_counters0 = scenarios[def0]
-    for (scenario, its_counters) in scenarios.iteritems():
+    its_traces0 = scenarios[def0]
+    for (scenario, its_traces) in scenarios.iteritems():
         if scenario == def0:
             continue
         print '\ntrain: {} VS {} (overhead {}%)'.format(
             def0, scenario, _size_increase(stats[def0], stats[scenario]))
-        if common and its_counters.keys() != its_counters0.keys():
+        if common and its_traces.keys() != its_traces0.keys():
             # td: refactor code duplication with above (search for keys = ...)
-            keys = set(its_counters0.keys())
-            keys = keys.intersection(its_counters.keys())
+            keys = set(its_traces0.keys())
+            keys = keys.intersection(its_traces.keys())
             tmp = {}
             tmp0 = {}
             for key in keys:
-                tmp0[key] = its_counters0[key]
-                tmp[key] = its_counters[key]
-            its_counters0 = tmp0
-            its_counters = tmp
+                tmp0[key] = its_traces0[key]
+                tmp[key] = its_traces[key]
+            its_traces0 = tmp0
+            its_traces = tmp
         if cumul:
-            (X2, y2, _) = counter.to_features_cumul(its_counters)
+            (X2, y2, _) = counter.to_features_cumul(its_traces)
         else:
             max_len = _dict_elementwise(
                 max,
-                counter._find_max_lengths(its_counters0),
-                counter._find_max_lengths(its_counters))
+                counter._find_max_lengths(its_traces0),
+                counter._find_max_lengths(its_traces))
             (X, y, _) = counter.to_features(
-                counter.outlier_removal(its_counters0, 2), max_len)
+                counter.outlier_removal(its_traces0, 2), max_len)
             (X2, y2, _) = counter.to_features(
-                counter.outlier_removal(its_counters, 1), max_len)
+                counter.outlier_removal(its_traces, 1), max_len)
         for clf in clfs:
             now = time.time()
             print '{}: {}'.format(_clf_name(clf), _xtest(X, y, X2, y2, clf)),
@@ -424,7 +411,7 @@ def gen_class_stats_list(scenarios,
 def outlier_removal_levels(scenario, clf=None):
     '''tests different outlier removal schemes and levels
 
-    @param scenario: one "set" of data {site_1: counters, ..., site_n: counters}
+    @param scenario: one "set" of data {site_1: traces, ..., site_n: traces}
     # outlier removal on both at the same time
     '''
     print 'combined outlier removal'
@@ -474,13 +461,14 @@ def main(argv, with_svm=True, cumul=True):
     if len(argv) == 1:
         argv.append('.')
     # by hand: scenarios = counter.for_scenarios(sys.argv[1:])
-    scenarios = counter.for_scenarios(argv[1:])
-    if 'background' in scenarios.values()[0]:
+    scenarios = [scenario.Scenario(x) for x in argv[1:]]
+    if 'background' in scenarios.values()[0].path:
         if len(scenarios) > 1:
             logging.warn('only first scenario chosen for open world analysis')
-        return open_world(scenarios.values()[0])
+        return open_world(scenarios[0])
     else:
-        return closed_world(scenarios, argv[1], with_svm=with_svm, cumul=cumul)
+        return closed_world([x.get_traces() for x in scenarios],
+                            argv[1], with_svm=with_svm, cumul=cumul)
 
 # pylint: disable=line-too-long
 # OLDER DATA (without bridge)
@@ -514,7 +502,7 @@ def main(argv, with_svm=True, cumul=True):
 # PANCHENKO_bg = os.path.join('..', 'sw', 'p', 'subsets', 'background-1200', 'output-tcp')
 # PANCHENKO_100 = os.path.join('..', 'sw', 'p', 'subsets', '30', 'foreground-data', 'output-tcp')
 # PANCHENKO_bg2 = os.path.join('..', 'sw', 'p', 'subsets', 'background-4000', 'output-tcp')
-# counters = counter.all_from_panchenko(PANCHENKO_PATH)
+# traces = counter.all_from_panchenko(PANCHENKO_PATH)
 
 # variants
 # RETRO
