@@ -1,1 +1,1 @@
-python -m unittest test.TestAnalyse test.TestCounter test.TestScenario
+VERYQUICK='true' ./test.py

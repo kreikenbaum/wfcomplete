@@ -3,6 +3,7 @@
 
 - computes trace statistics
 - scenario name/date
+- load traces
 '''
 import numpy as np
 
@@ -18,7 +19,6 @@ import counter
 
 DIR = os.path.join(os.path.expanduser('~'), 'da', 'git', 'data')
 TRACE_ARGS = { "remove_small": True, "or_level": 2 }
-#Stats = collections.namedtuple('Stats', ['tpi', 'tpi_mean', 'tpi_std'])
 
 
 class Scenario(object):
@@ -107,6 +107,11 @@ class Scenario(object):
     def _closest(self, filter_, include_bg=False):
         filtered = list_all(extra_filter=filter_, include_bg=include_bg)
         return min(filtered, key=lambda x: abs(self.date - x.date))
+
+
+    def get_open_world(self):
+        '''@return scenario with added background traces'''
+        pass
 
 
 def list_all(extra_filter=None, include_bg=False, path=DIR):

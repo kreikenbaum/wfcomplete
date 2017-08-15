@@ -16,6 +16,10 @@ import scenario
 fit.FOLDS = 2
 
 
+VERYQUICK = os.getenv('VERYQUICK', os.getenv('VERY', False) and QUICK)
+QUICK = os.getenv('QUICK', False) or VERYQUICK
+
+
 class TestCounter(unittest.TestCase):
     '''tests the counter module'''
 
@@ -154,19 +158,27 @@ class TestFit(unittest.TestCase):
         self.string = 'tpr: {}, fpr: {}'
         fit.FOLDS = 2
         reload(logging)
-        logging.basicConfig(level=logging.ERROR) # reduce fit verbosity
+        logging.disable(logging.WARNING)
 
 
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
+
+
+    @unittest.skipIf(VERYQUICK, "slow test skipped")
     def test_doc(self):
         (fail_num, _) = doctest.testmod(fit)
         self.assertEqual(0, fail_num)
 
 
+    @unittest.skipIf(QUICK, "slow test skipped")
     def test_ow(self):
         '''tests normal open world grid search'''
         result = fit.my_grid(self.X, self.y, auc_bound=0.3)
         self.assertAlmostEqual(result.best_score_, 0.3)
 
+
+    @unittest.skipIf(QUICK, "slow test skipped")
     def test_ow_roc(self):
         '''tests roc for normal open world grid search'''
         (clf, _, _) = fit.my_grid(self.X, self.y, auc_bound=0.3)
@@ -174,6 +186,8 @@ class TestFit(unittest.TestCase):
         self.assertEqual(list(fpr)[:2], [0, 1])
         self.assertEqual(list(tpr)[:2], [1, 1])
 
+
+    @unittest.skipIf(QUICK, "slow test skipped")
     def test_ow_random_minus(self):
         '''tests some class bleed-off: some negatives with same
         feature as positives'''
@@ -188,6 +202,8 @@ class TestFit(unittest.TestCase):
         self.assertEqual(tpr[1], 1, self.string.format(tpr, fpr))
         self.assertEqual(fpr[1], 0.1, self.string.format(tpr, fpr))
 
+
+    @unittest.skipIf(QUICK, "slow test skipped")
     def test_ow_random_plus(self):
         '''tests some class bleed-off: some positives with same
         feature as negatives'''
@@ -256,6 +272,11 @@ class TestScenario(unittest.TestCase):
         s = scenario.Scenario('somescenario/2012-07-05')
         s.traces = {'msn.com' : [counter._test(3)] * 30}
         self.assertEqual(len(s.get_sample(10)['msn.com']), 10)
+
+
+    def test_get_open_world(self):
+        s = scenario.Scenario('disabled/05-12@10')
+        self.assertTrue('background' in s.get_open_world())
 
 
     def test__filter_all(self):
