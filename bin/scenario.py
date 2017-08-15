@@ -94,6 +94,30 @@ class Scenario(object):
             float(trace.name.split('@')[1])).date()
 
 
+    def get_features_cumul(self):
+        '''@return traces converted to CUMUL's X, y, y_domains'''
+        X = []
+        out_y = []
+        class_number = 0
+        domain_names = []
+        for domain, dom_counters in self.get_traces().iteritems():
+            if domain == "background":
+                _trace_list_append(X, out_y, domain_names,
+                                   dom_counters, "cumul", -1, "background")
+            else:
+                _trace_list_append(X, out_y, domain_names,
+                                   dom_counters, "cumul", class_number, domain)
+                class_number += 1
+        return (np.array(X), np.array(out_y), domain_names)
+
+    def get_open_world(self):
+        '''@return scenario with traces and added background traces'''
+        bg = self._closest('background', include_bg=True)
+        self.get_traces()
+        out = copy.copy(self)
+        out.traces['background'] = bg.get_traces()['background']
+        return out
+
     def get_sample(self, size, random_seed=None):
         '''@return sample of traces, each domain has size size'''
         random.seed(random_seed)
@@ -121,15 +145,6 @@ class Scenario(object):
     def _closest(self, filter_, include_bg=False):
         filtered = list_all(extra_filter=filter_, include_bg=include_bg)
         return min(filtered, key=lambda x: abs(self.date - x.date))
-
-
-    def get_open_world(self):
-        '''@return scenario with traces and added background traces'''
-        bg = self._closest('background', include_bg=True)
-        self.get_traces()
-        out = copy.copy(self)
-        out.traces['background'] = bg.get_traces()['background']
-        return out
 
 
 def list_all(extra_filter=None, include_bg=False, path=DIR):
@@ -242,8 +257,7 @@ def size_test(argv, outlier_removal=True):
     for scenario in argv[2:]:
         print '{}: {}'.format(scenario, _size_increase(stats[scenario0],
                                                       stats[scenario]))
-
-
+### END CODPIED CODE
 
 # todo: code duplication: _bytes_mean_std
 def total_packets_in_stats(trace_dict):
@@ -252,6 +266,29 @@ def total_packets_in_stats(trace_dict):
     for (k, v) in trace_dict.iteritems():
         tpi_list = _tpi_per_list(v)
         out[k] = (np.mean(tpi_list), np.std(tpi_list, ddof=1))
+
+
+def _trace_append(X, y, y_names, x_add, y_add, name_add):
+    '''appends single trace to X, y, y_names
+    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); X
+    [[1, 2, 3]]
+    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); y_n
+    ['test']
+    >>> X=[]; y=[]; y_n=[]; _trace_append(X,y,y_n,[1,2,3],0,'test'); y
+    [0]'''
+    X.append(x_add)
+    y.append(y_add)
+    y_names.append(name_add)
+
+
+def _trace_list_append(X, y, y_names, trace_list, method, list_id, name):
+    '''appends list of traces to X, y, y_names'''
+    for trace in trace_list:
+        if not trace.warned:
+            _trace_append(
+                X, y, y_names, trace.__getattribute__(method)(), list_id, name)
+        else:
+            logging.warn('%s: one discarded', name)
 
 
 doctest.testmod()

@@ -270,10 +270,10 @@ class TestScenario(unittest.TestCase):
                    'b': c_list[:]}
         s = scenario.Scenario('asdf/12-12@20')
         s.traces = bg_mock
-        Xa, ya, _ = s.to_features_cumul()
-        Xc, yc, _ = counter.to_features_cumul(self.bg_mock)
+        Xa, ya, _ = s.binarize().get_features_cumul()
+        Xc, yc, _ = counter.to_features_cumul(bg_mock)
         yc = fit._lb(yc)
-        self.assertTrue(np.array_equal(ya, yc))
+        self.assertTrue(np.array_equal(ya, yc), "ya: {}\nyc: {}".format(ya, yc))
         self.assertTrue(np.array_equal(Xa, Xc))
 
 
