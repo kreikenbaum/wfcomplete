@@ -8,6 +8,7 @@
 import numpy as np
 
 import collections
+import copy
 import datetime
 import doctest
 import logging
@@ -110,8 +111,12 @@ class Scenario(object):
 
 
     def get_open_world(self):
-        '''@return scenario with added background traces'''
-        pass
+        '''@return scenario with traces and added background traces'''
+        bg = self._closest('background', include_bg=True)
+        self.get_traces()
+        out = copy.copy(self)
+        out.traces['background'] = bg.get_traces()['background']
+        return out
 
 
 def list_all(extra_filter=None, include_bg=False, path=DIR):

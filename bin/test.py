@@ -274,9 +274,10 @@ class TestScenario(unittest.TestCase):
         self.assertEqual(len(s.get_sample(10)['msn.com']), 10)
 
 
+    @unittest.skipIf(QUICK, "slow test skipped")
     def test_get_open_world(self):
         s = scenario.Scenario('disabled/05-12@10')
-        self.assertTrue('background' in s.get_open_world())
+        self.assertTrue('background' in s.get_open_world().get_traces())
 
 
     def test__filter_all(self):
