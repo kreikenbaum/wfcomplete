@@ -64,19 +64,19 @@
 #+LATEX_HEADER: %{3.2 cm} bei Verwendung von scrreprt, gegebenenfalls kleiner, falls der Titel der Arbeit sehr lang sein sollte
 #+LATEX_HEADER: {\large
 #+LATEX_HEADER:   \begin{tabular}{llll}
-#+LATEX_HEADER:     eingereicht von:    & Michael Kreikenbaum && \\ % 
+#+LATEX_HEADER:     eingereicht von:    & Michael Kreikenbaum && \\ %
 #+LATEX_HEADER:     geboren am:         & 13.09.1981 && \\
 #+LATEX_HEADER:     in:                 & Northeim && \\
 #+LATEX_HEADER:     &&&\\
 #+LATEX_HEADER:     Gutachter:          & Prof. Dr. Konrad Rieck (Universität Braunschweig) && \\
-#+LATEX_HEADER: 		        & Prof. Dr. Marius Kloft && \\% Bitte Namen der Gutachter(innen) anstelle der Punkte eintragen
-#+LATEX_HEADER: 				 % bei zwei männlichen Gutachtern kann das (innen) weggestrichen werden
+#+LATEX_HEADER: 		        & Prof. Dr. Marius Kloft && \\%
+#+LATEX_HEADER: 				 %
 #+LATEX_HEADER:     &&&\\
-#+LATEX_HEADER:     eingereicht am:     & \dots\dots \\ % Bitte lassen Sie
-#+LATEX_HEADER:                                     % diese beiden Felder leer.
-#+LATEX_HEADER:                                     % Loeschen Sie ggf. das letzte Feld, wenn
-#+LATEX_HEADER:                                     % Sie Ihre Arbeit laut Pruefungsordnung nicht
-#+LATEX_HEADER:                                     % verteidigen muessen.
+#+LATEX_HEADER:     eingereicht am:     & \dots\dots \\ %
+#+LATEX_HEADER:                                     %
+#+LATEX_HEADER:                                     %
+#+LATEX_HEADER:                                     %
+#+LATEX_HEADER:                                     %
 #+LATEX_HEADER:   \end{tabular}
 #+LATEX_HEADER: }}
 #+LATEX_HEADER: \makeatletter
@@ -718,10 +718,10 @@ While some similarity can be seen for each group, the "within-group" differences
 \Procedure{OnRequest}{$\textit{url}$}
 \If {$! \textit{isRegistered}(\textit{hostnameOf}(\textit{url}))$}
   \State $\textit{targetHttpSize} \leftarrow \textit{randomHttpSize}()$
-  \State $\textit{urlHttpSize} \leftarrow \textit{lookupOrGuessHttpSize}(\textit{url})$
-  \State $\textit{coverHttpSize} \leftarrow \textit{targetHttpSize} - \textit{urlHttpSize}$
   \State $\textit{targetNumEmbedded} \leftarrow \textit{randomNumEmbedded}()$
+  \State $\textit{urlHttpSize} \leftarrow \textit{lookupOrGuessHttpSize}(\textit{url})$
   \State $\textit{urlNumEmbedded} \leftarrow \textit{lookupOrGuessNumEmbedded}(\textit{url})$
+  \State $\textit{coverHttpSize} \leftarrow \textit{targetHttpSize} - \textit{urlHttpSize}$
   \State $\textit{coverNumEmbedded} \leftarrow \textit{targetNumEmbedded} - \textit{urlNumEmbedded}$
   \State $\textit{requestCoverSized}(\textit{coverHttpSize})$
   \State $\textit{registerHost}(\textit{hostnameOf}(\textit{url}), \textit{coverNumEmbedded}, \textit{urlNumEmbedded})$
@@ -759,14 +759,7 @@ next chapter) decreased over time to that of guessing. These data
 structures use Bloom-filter\cite{Bloom70space/timetrade-offs} based
 binning to save values related to urls in a fixed space, while not
 allowing an adversary to exactly determine which urls are saved.
-** Caching approximate sizes using Bloom Filters
-   :PROPERTIES:
-   :CUSTOM_ID: cache_size
-   :END:
-   #+INDEX: a
-   #+INDEX: flavour!a
-   #+INDEX: b
-   #+INDEX: flavour!b
+** Caching via Bloom-Filters
    The above defense might further improve if the sizes of the webpage
    to be loaded are known beforehand: Cover traffic could be tailored
    more exactly. This knowledge even enables some new defenses, as
@@ -788,259 +781,6 @@ allowing an adversary to exactly determine which urls are saved.
    error probability is an advantage in this situation, as it further
    confounds possible attackers.
 
-
-   -- continue here
-
-
-   To cache sizes, an approximate-size data structure based on
-   Bloom filters is used.
-****** Application: Bloom Sort
-       Sizes can be saved approximately based on Bloom filters: they
-       are sorted into bins based on the target distribution. For each
-       bin, a Bloom filter is created. An element is added to this
-       filter if its size is inside the bin.
-
-       To approximate the size of an element, all filters are
-       checked. If one filter reports containment, its size is
-       chosen. If zero report containment, the size is not known; if
-       two or more report containment, it is saved wrongly. In the
-       latter cases, the default distribution is used.[fn::See [[#bloom-sort]]
-       for implementation details.]
-
-       This data structure has the additional advantage that, even if
-       visited page sizes were saved, an adversary could not safely
-       detemine that pages were visited due to the Bloom Filter's
-       false positive errors.
-*** Bloom Filter
-    Bloom filters\cite{Bloom70space/timetrade-offs}[fn::
-    \cite{Broder02networkapplications} contains a Bloom filter
-    overview with applications] are a stochastic fixed-width data
-    structure to test membership in a set. They work similarly to
-    hash-coding[fn::see \cite{Bloom70space/timetrade-offs} for
-    hash-coding. Shortly: elements are hashed and certain places
-    is checked for whether it contains this hash.], yet require
-    significantly less space, which they trade for a small /error
-    rate/[fn::This error rate is dependent on the size of the Bloom
-    filter and the number of inserted elements.]: they work
-    flawlessly if an element is inside the set, yet might wrongly
-    state that an element is inside, when it is not.
-*** Application: Bloom Sort
-    Sizes can be saved approximately based on Bloom filters: they
-    are sorted into bins based on the target distribution. For each
-    bin, a Bloom filter is created. An element is added to this
-    filter if its size is inside the bin.
-
-    To approximate the size of an element, all filters are
-    checked. If one filter reports containment, its size is
-    chosen. If zero report containment, the size is not known; if
-    two or more report containment, it is saved wrongly. In the
-    latter cases, the default distribution is used.[fn::See [[#bloom-sort]]
-    for implementation details.]
-
-    This data structure has the additional advantage that, even if
-    visited page sizes were saved, an adversary could not safely
-    detemine that pages were visited due to the Bloom Filter's
-    false positive errors.
-   If a size is unknown, random variates from \cite{newtrafficmodel}
-   are used.
-** KEYWORDS Bloom-Cache
-*** CHECK Cached: Size of HTML-Documents
-    :PROPERTIES:
-    :CUSTOM_ID: find sizes of HTML-documents
-    :END:
-    The HTTP traffic model\cite{newtrafficmodel}'s statistical size
-    generation is based on application-level[fn::the data sizes
-    transported by TCP] sizes on the network, as its authors analysed
-    logfiles of the Squid[fn:: \url{http://www.squid-cache.org}] proxy.
-
-    These sizes could not be trivially obtained from the HTTP
-    =Content-Length=-header\cite[sec.3.3.2]{rfc7230}, as it does not
-    represent additional headers and size-reduction via
-    compression. Thus, the sizes were determined by retrieving the
-    files with =wget= via Squid, and reading the sizes from the Squid
-    log.
-
-    Retrieval is implemented in the =html_top_100.sh= script.  It
-    initially empties Squid's log file and cache by restarting
-    it. Afterwards, the main experiment pages are retrieved with
-    =wget= via Squid.
-
-    From Squid's =access.log= log file, the sizes are extracted via the
-    command
-
-    #+BEGIN_SRC sh
-      sudo cat /var/log/squid3/access.log | tr -s ' ' | cut -d ' ' -f 5,7 >
-      HTML-sizes
-    #+END_SRC
-
-    These sizes are then converted to a JSON\cite{rfc7159}-array via
-    the =htmlSizeToJSON.py=-file. It also checks for duplicate sizes
-    for each file-URL, choosing the lower one. This could increase
-    traffic, but the opposite might be too little traffic, thus easier
-    website fingerprinting, which should be avoided.
-**** WAIT github link for =html_top_100= script, and htmlsizetojson.py
-*** WRITE Cached: Number of Embedded Objects
-    :PROPERTIES:
-    :CUSTOM_ID: number_embedded
-    :END:
-    The second parameter for generating cover traffic is the number
-    of embedded objects per HTML-page.
-
-    These are extracted via the python script ~htmlToNumEmbedded.py~
-    which is called for each of the top-100's main web pages by
-    ~retrieve-100-embedded.sh~.
-
-    To extract, python's lxml module to parse the HTML's
-    DOM extracts the URLs of embedded files from the features of
-    several tags, f.ex.\space{}the =src= element of =img= tags.
-
-    This approximation currently omits some possibly embedded elements,
-    f.ex.\space{}those embedded in css files and =style= tags via the =@url=
-    css-directive. It seems better for cover traffic to slightly
-    underestimate the number of embedded elements. This might generate
-    more traffic than strictly necessary, but here, safe seems better
-    than sorry.
-**** WAIT link to lxml website
-**** WAIT github links
-*** WRITE Error estimation of Bloom Sort
-    - error both ways, and difference bin-size to real size
-   - sources of error
-     - filter tells that is has element when it has not
-   - how does error appear
-     - collision: one of several, the other might be true
-     - replacement: simulates being another url
-   - rates of error
-     - "add" the error rates of the filters? (times population density?)
-   - error estimation?
-     - +: fixed size
-     - -: error both ways, and difference bin-size to real size
-*** WRITE Bloom usage and implementation
-    - Bloom sort
-      - error rate computation
-    - size taken from example...
-      - maybe change when altered
-*** WRITE Bloom-sort
-    :PROPERTIES:
-    :CUSTOM_ID: bloom-sort
-    :END:
-     By ordering data into bins, it becomes possible to use Bloom filters
-     for the estimation of sizes, using one Bloom filter for each bin.
-
-     To achieve this, sensible separation criteria (called /splits/) for
-     the bins need to be found. Afterwards, each bin needs to be assigned
-     a value (called /size/) for all contained elements. See appendix
-     [[#bloom-params]] on determining the sizes and splits.
-
-     This data-structure, called /Bloom-sort/ is initialized with an
-     array of splits, and an array of sizes. The sizes-array needs to
-     have one more element than the splits-array, as the bins are bounded
-     on the left by 0, and on the right by infinity.
-
-     #+BEGIN_SRC js
-       /**
-        ,* @param {sizes Array} array of values for each bin, must be sorted
-        ,* @param {splits Array} array of bin borders, must be sorted
-       ,*/
-       function BloomSort(sizes, splits) {
-           this.sizes = sizes;
-           this.splits = splits;
-           this.filters = [];
-           for ( let i = 0; i < sizes.length; i++ ) {
-               this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH);
-           }
-       }
-     #+END_SRC
-
-     Thus, you get
-     \[-\infty \le \text{size}_0 \le \text{split}_0 \le \text{size}_1 \le \text{split}_1 \le ... \le \text{split}_{n-1} \le \text{size}_n < \infty\]
-     Given the splits, it becomes possible to add the elements to their
-     bins:
-
-     #+BEGIN_SRC js
-       BloomSort.prototype.add = function(id, size) {
-           this.filters[_.sortedIndex(this.splits, size)].add(id);
-       };
-     #+END_SRC
-
-     where =_.sortedIndex()= gives the index at which =size= would be
-     inserted into the sorted =this.splits= array.
-
-     The retrieval of element sizes looks into each Bloom filter,
-     checking whether it might contain the element =id=. If one Bloom
-     filter reports containment, its corresponding element- =size= is
-     returned. If several or no Bloom filters report containment, an
-     exception is thrown. The exception is used to allow all possible
-     return values, not blocking one of them, say =-1=, for the error
-     condition.
-     #+BEGIN_SRC js
-       /** determines size of element, raises exception if unclear */
-       BloomSort.prototype.query = function(id) {
-           let pos = -1;
-           for ( let i = 0; i < this.filters.length; i++ ) {
-               if ( this.filters[i].test(id) ) {
-                   if ( pos === -1 ) {
-                       pos = i;
-                   } else {
-                       throw {
-                           name: 'BloomError',
-                           message: 'Contains multiple entries'
-                       };
-                   }
-               }
-           }
-           if ( pos === -1 ) {
-               throw {
-                   name: 'BloomError',
-                   message: 'Contains no entries'
-               };
-           }
-           return this.sizes[pos];
-       };
-     #+END_SRC
-
-     It is initialized with
-     #+BEGIN_SRC js
-     let htmlSizes = new BloomSort.BloomSort([400, 1000, 20000], [700, 10000]);
-     #+END_SRC
-
-     then adding elements via =htmlSizes.add("http://google.com/", 613)=
-     and querying via =htmlSizes.query("http://google.com/")=, which
-     would yield =400=. See usage in =size-cache=.
-
-     - link to main bloom-sort, create custom-id there
-**** WAIT github link
-*** CHECK Determining Bloom-Sort Parameters
-    :PROPERTIES:
-    :CUSTOM_ID: bloom-params
-    :END:
-    It is impractical to store the sizes of many URLs, as this would
-    greatly increase the size of the addon. A possibility to save space
-    is to use Bloom Filters to aggregate groups of URLs with similar
-    values, as described in [[#bloom-sort][Bloom-sort]].
-
-    Each group needs borders (given via the /splits/ method parameter)
-    and a size to represents its contained elements.
-
-    Determining the optimal number of groups, splits and sizes is a
-    topic of [[#future-work][further work]]. Here, initially the quantiles of the
-    HTTP-model\cite{newtrafficmodel} were used. When the data were to
-    be inserted, it turned out that especially the numbers of embedded
-    elements did not match the theoretically proposed groups:
-
-    For three groups, the splits would be given by the 33 1/3 and 66
-    2/3 quantiles, as 0.0107 and 1.481. This would create two
-    single-valued groups, which only would contain the elements 0
-    and 1. The next group would contain all other elements: The
-    (representative) sizes of the groups were given as 7.915E-05,
-    0.188, and 8.260 (quantiles 16 1/6, 50, and 83 5/6).
-
-    The actual data to be inserted (see [[#number_embedded][Cached: Number of Embedded
-    Objects]]) had the /splits/ (quantiles) at 10 2/3 and 36 2/3 and the
-    /sizes/ (middle quantile) at 6, 20, and 59 2/3.
-
-    In addition to using the observed sizes for the Bloom filter, the
-    number of groups was increased to 5.
-**** WAIT [#C] graphics: histogram with bins (colored bars, black bin limits)
 * Evaluation
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
