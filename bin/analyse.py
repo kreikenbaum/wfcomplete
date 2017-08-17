@@ -12,7 +12,7 @@ from sklearn import cross_validation, ensemble, multiclass, neighbors, svm, tree
 
 import counter
 import fit
-import plot_data
+import mplot
 import scenario
 
 LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
@@ -294,7 +294,9 @@ def open_world(scenario_obj, y_bound=0.05):
 
     :return: (fpr, tpr, optimal_clf, roc_plot_mpl)'''
     # _train combines training and testing data and _test is grid-validation
-    X, y, _ = scenario_obj.to_features_cumul()
+    if 'background' not in scenario_obj.get_traces():
+        scenario_obj = scenario_obj.get_open_world()
+    X, y, _ = scenario_obj.binarize().get_features_cumul()
     X_train, X_test, y_train, y_test = cross_validation.train_test_split(
         X, y, train_size=2. / 3, stratify=y)
     result = fit.my_grid(X_train, y_train, auc_bound=y_bound)#, n_jobs=1)
@@ -304,7 +306,7 @@ def open_world(scenario_obj, y_bound=0.05):
     print 'bounded auc: {} (C: {}, gamma: {})'.format(
         fit.bounded_auc_score(result.clf, X_test, y_test, 0.01),
         result.clf.estimator.C, result.clf.estimator.gamma)
-    return (fpr, tpr, result, plot_data.roc(fpr, tpr), prob)
+    return (fpr, tpr, result, mplot.roc(fpr, tpr), prob)
 
 
 def closed_world(scenarios, def0, cumul=True, with_svm=True, common=False):
@@ -472,7 +474,7 @@ def main(argv, with_svm=True, cumul=True):
 
 # pylint: disable=line-too-long
 # OLDER DATA (without bridge)
-# sys.argv = ['', 'disabled/05-12@10']
+# sys.argv = ['', 'disabled/05-12@10']w
 # next: traces in between
 # sys.argv = ['', 'disabled/06-09@10', '0.18.2/json-10/a-i-noburst', '0.18.2/json-10/a-ii-noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache']
 # sys.argv = ['', 'disabled/06-17@10-from', '0.18.2/json-10/a-i-noburst', '0.18.2/json-10/a-ii-noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older

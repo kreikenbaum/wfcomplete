@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn import metrics
 sns.set_palette("colorblind") # optional, uglier, but helpful
 
 import scenario
