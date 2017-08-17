@@ -37,7 +37,7 @@
 #+LATEX_HEADER:
 #+LATEX_HEADER: \begin{center}
 #+LATEX_HEADER:   \vspace{0.1 cm} % WAR: \vspace{0.5 cm}
-#+LATEX_HEADER:   \huge{\bf Defending against Tor Website Fingerprinting with Selective Cover Traffic} \\ % Hier fuegen Sie den Titel Ihrer Arbeit ein.
+#+LATEX_HEADER:   \huge{\textbf{Defending against Tor Website Fingerprinting with Selective Cover Traffic}} \\ % Hier fuegen Sie den Titel Ihrer Arbeit ein.
 #+LATEX_HEADER:   \vspace{1.1cm} % WAR: \vspace{1.5cm}
 #+LATEX_HEADER:   \LARGE  Diplomarbeit \\ % Geben Sie anstelle der Punkte an, ob es sich um eine
 #+LATEX_HEADER:                 % Diplomarbeit, eine Masterarbeit oder eine Bachelorarbeit handelt.
@@ -455,7 +455,7 @@ While some similarity can be seen for each group, the "within-group" differences
     [[./pictures/plot_roc.png]]
 ** PENDING Machine Learning Algorithms
      - algorithms in classification (?)
-       - todo: ask kloft via mitarbeiter
+       - TODO: ask kloft via mitarbeiter
 *** Support Vector Machines
     #+INDEX: classifier!Support Vector Machine
     #+INDEX: classifier!SVM
@@ -689,21 +689,27 @@ While some similarity can be seen for each group, the "within-group" differences
   :PROPERTIES:
   :CUSTOM_ID: ch3-newdefense
   :END:
-  This thesis' defense aims to improve installation, HTTP-specific
-  cover traffic and configurability.
+  [[file:~/da/da.org::*Novel%20Defense][gtd]]
+
+  The last chapter showed that WF could be a serious attack on online
+  anonymity and privacy. As specific defenses could be circumvented, a
+  general defense against WF is needed. This should provide adequate
+  protection for an acceptable increase in bandwidth and delay.
+
+  This thesis' defense aims to improve installation and
+  configurability, and finely tailor cover traffic to mimic web
+  traffic.
 
   Ease-of-installation and configuring the amount of cover traffic is
   provided by using Firefox's Addon-SDK. Add-ons can be downloaded via
   [[https://addons.mozilla.org][Mozilla's Addon Page]] with automatic updates.
 
   The created traffic is based on the HTTP model by
-  \cite{newtrafficmodel}: it sets a target size of the main HTML
-  document and number of embedded objects. From this, the requests's
-  actual HTML size and number of embedded objects are subtracted to
-  set the amount of cover traffic for this web page. The first HTML
-  request is covered by an additional HTML cover-request, and each
-  additional request is covered by embedded cover-requests with a
-  given probability.
+  \cite{newtrafficmodel}: for each web page retrieval, it sets target
+  retrieval sizes. From these, the retrieval's actual parameters are
+  subtracted to set the amount of cover traffic for this web page. 
+
+  Each request is potentially covered by a simultaneous cover-request:
 
 #+BEGIN_LaTeX
 \begin{algorithm}
@@ -767,38 +773,44 @@ allowing an adversary to exactly determine which urls are saved.
    shown by \cite{effective}.
 
 
+   The problem in caching sizes of a fixed set of pages is that page
+   sizes change over time, making this cache increasingly less
+   accurate.
+
    Caching visited page's sizes only might yield an exact log of the
    visited web pages to an attacker who gains control over the
    defended computer. A data structure that stochastically saves
-   approximate sizes might solve this problem. Bloom
-   Filters\cite{Bloom70space/timetrade-offs} have the additional
+   approximate sizes might solve this problem.
+
+
+   Bloom Filters\cite{Bloom70space/timetrade-offs} have the additional
    advantage of a fixed size. Their otherwise disadvantageous small
    error probability is an advantage in this situation, as it further
    confounds possible attackers.
 
 
-   The problem in caching sizes of a fixed set of pages is that page
-   sizes change over time, making this cache increasingly less
-   accurate.
-
    -- continue here
 
-   A webpage is modeled by its HTML size and its number of embedded
-   objects. In a closed world[fn::if the client can only browse to
-   a limited number of URLs], it is possible to cache all
-   sizes[fn::See appendices [[#find sizes of HTML-documents]] and
-   [[#number_embedded]] for how the sizes were determined]
-   beforehand. If a size is unknown, random variates from the
-   [[#HTTP traffic model][HTTP traffic model]] are used.[fn:: The
-   size of each embedded dummy object is always drawn from the HTTP
-   traffic model.]
-
-   Using known sizes is called the /cache/ flavour and denoted by
-   =a= in tables etc. In the /nocache/ flavour, denoted by =b=,
-   sizes are always guessed.
 
    To cache sizes, an approximate-size data structure based on
    Bloom filters is used.
+****** Application: Bloom Sort
+       Sizes can be saved approximately based on Bloom filters: they
+       are sorted into bins based on the target distribution. For each
+       bin, a Bloom filter is created. An element is added to this
+       filter if its size is inside the bin.
+
+       To approximate the size of an element, all filters are
+       checked. If one filter reports containment, its size is
+       chosen. If zero report containment, the size is not known; if
+       two or more report containment, it is saved wrongly. In the
+       latter cases, the default distribution is used.[fn::See [[#bloom-sort]]
+       for implementation details.]
+
+       This data structure has the additional advantage that, even if
+       visited page sizes were saved, an adversary could not safely
+       detemine that pages were visited due to the Bloom Filter's
+       false positive errors.
 *** Bloom Filter
     Bloom filters\cite{Bloom70space/timetrade-offs}[fn::
     \cite{Broder02networkapplications} contains a Bloom filter
@@ -829,32 +841,207 @@ allowing an adversary to exactly determine which urls are saved.
     visited page sizes were saved, an adversary could not safely
     detemine that pages were visited due to the Bloom Filter's
     false positive errors.
-** purpose
-- appetize and explain, finish thesis acceptably, defend Tor's users
-  from this attack, get it into mainline Tor as an option/make it
-  well-enough known, get an interesting job
-- make defense sexy
-** limits: see [[file:~/da/da.org::#limits][limits]]
-** vision: reads, understands concept, is engaged emotionally and convinced intellectually
-** brainstorm
-   - make clearer,
-     - trim down, maybe rewrite
-     - or just tell elena about the defense
-   - maybe separate section for bloom-stuff
-     - copy from old thesis, at least look at
-       - [[file:~/da/old.org::#cache_size][Choice: Cache (approximate) sizes using Bloom Filters]]
-   - eval: section on newly-created bloom filter (at certain time)
-     1. check when introduced
-        - when timing data was fixed
-     2. present results of defense at that point
-        - closest in time afterwards
-          - up to, say, two weeks?
-            - or another time
-          - check for good results
-            - that are not contradicted by other results
-** organize
-** next action: copy-paste bloom part
-* Evaluation                                            :nextaction:
+   If a size is unknown, random variates from \cite{newtrafficmodel}
+   are used.
+** KEYWORDS Bloom-Cache
+*** CHECK Cached: Size of HTML-Documents
+    :PROPERTIES:
+    :CUSTOM_ID: find sizes of HTML-documents
+    :END:
+    The HTTP traffic model\cite{newtrafficmodel}'s statistical size
+    generation is based on application-level[fn::the data sizes
+    transported by TCP] sizes on the network, as its authors analysed
+    logfiles of the Squid[fn:: \url{http://www.squid-cache.org}] proxy.
+
+    These sizes could not be trivially obtained from the HTTP
+    =Content-Length=-header\cite[sec.3.3.2]{rfc7230}, as it does not
+    represent additional headers and size-reduction via
+    compression. Thus, the sizes were determined by retrieving the
+    files with =wget= via Squid, and reading the sizes from the Squid
+    log.
+
+    Retrieval is implemented in the =html_top_100.sh= script.  It
+    initially empties Squid's log file and cache by restarting
+    it. Afterwards, the main experiment pages are retrieved with
+    =wget= via Squid.
+
+    From Squid's =access.log= log file, the sizes are extracted via the
+    command
+
+    #+BEGIN_SRC sh
+      sudo cat /var/log/squid3/access.log | tr -s ' ' | cut -d ' ' -f 5,7 >
+      HTML-sizes
+    #+END_SRC
+
+    These sizes are then converted to a JSON\cite{rfc7159}-array via
+    the =htmlSizeToJSON.py=-file. It also checks for duplicate sizes
+    for each file-URL, choosing the lower one. This could increase
+    traffic, but the opposite might be too little traffic, thus easier
+    website fingerprinting, which should be avoided.
+**** WAIT github link for =html_top_100= script, and htmlsizetojson.py
+*** WRITE Cached: Number of Embedded Objects
+    :PROPERTIES:
+    :CUSTOM_ID: number_embedded
+    :END:
+    The second parameter for generating cover traffic is the number
+    of embedded objects per HTML-page.
+
+    These are extracted via the python script ~htmlToNumEmbedded.py~
+    which is called for each of the top-100's main web pages by
+    ~retrieve-100-embedded.sh~.
+
+    To extract, python's lxml module to parse the HTML's
+    DOM extracts the URLs of embedded files from the features of
+    several tags, f.ex.\space{}the =src= element of =img= tags.
+
+    This approximation currently omits some possibly embedded elements,
+    f.ex.\space{}those embedded in css files and =style= tags via the =@url=
+    css-directive. It seems better for cover traffic to slightly
+    underestimate the number of embedded elements. This might generate
+    more traffic than strictly necessary, but here, safe seems better
+    than sorry.
+**** WAIT link to lxml website
+**** WAIT github links
+*** WRITE Error estimation of Bloom Sort
+    - error both ways, and difference bin-size to real size
+   - sources of error
+     - filter tells that is has element when it has not
+   - how does error appear
+     - collision: one of several, the other might be true
+     - replacement: simulates being another url
+   - rates of error
+     - "add" the error rates of the filters? (times population density?)
+   - error estimation?
+     - +: fixed size
+     - -: error both ways, and difference bin-size to real size
+*** WRITE Bloom usage and implementation
+    - Bloom sort
+      - error rate computation
+    - size taken from example...
+      - maybe change when altered
+*** WRITE Bloom-sort
+    :PROPERTIES:
+    :CUSTOM_ID: bloom-sort
+    :END:
+     By ordering data into bins, it becomes possible to use Bloom filters
+     for the estimation of sizes, using one Bloom filter for each bin.
+
+     To achieve this, sensible separation criteria (called /splits/) for
+     the bins need to be found. Afterwards, each bin needs to be assigned
+     a value (called /size/) for all contained elements. See appendix
+     [[#bloom-params]] on determining the sizes and splits.
+
+     This data-structure, called /Bloom-sort/ is initialized with an
+     array of splits, and an array of sizes. The sizes-array needs to
+     have one more element than the splits-array, as the bins are bounded
+     on the left by 0, and on the right by infinity.
+
+     #+BEGIN_SRC js
+       /**
+        ,* @param {sizes Array} array of values for each bin, must be sorted
+        ,* @param {splits Array} array of bin borders, must be sorted
+       ,*/
+       function BloomSort(sizes, splits) {
+           this.sizes = sizes;
+           this.splits = splits;
+           this.filters = [];
+           for ( let i = 0; i < sizes.length; i++ ) {
+               this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH);
+           }
+       }
+     #+END_SRC
+
+     Thus, you get
+     \[-\infty \le \text{size}_0 \le \text{split}_0 \le \text{size}_1 \le \text{split}_1 \le ... \le \text{split}_{n-1} \le \text{size}_n < \infty\]
+     Given the splits, it becomes possible to add the elements to their
+     bins:
+
+     #+BEGIN_SRC js
+       BloomSort.prototype.add = function(id, size) {
+           this.filters[_.sortedIndex(this.splits, size)].add(id);
+       };
+     #+END_SRC
+
+     where =_.sortedIndex()= gives the index at which =size= would be
+     inserted into the sorted =this.splits= array.
+
+     The retrieval of element sizes looks into each Bloom filter,
+     checking whether it might contain the element =id=. If one Bloom
+     filter reports containment, its corresponding element- =size= is
+     returned. If several or no Bloom filters report containment, an
+     exception is thrown. The exception is used to allow all possible
+     return values, not blocking one of them, say =-1=, for the error
+     condition.
+     #+BEGIN_SRC js
+       /** determines size of element, raises exception if unclear */
+       BloomSort.prototype.query = function(id) {
+           let pos = -1;
+           for ( let i = 0; i < this.filters.length; i++ ) {
+               if ( this.filters[i].test(id) ) {
+                   if ( pos === -1 ) {
+                       pos = i;
+                   } else {
+                       throw {
+                           name: 'BloomError',
+                           message: 'Contains multiple entries'
+                       };
+                   }
+               }
+           }
+           if ( pos === -1 ) {
+               throw {
+                   name: 'BloomError',
+                   message: 'Contains no entries'
+               };
+           }
+           return this.sizes[pos];
+       };
+     #+END_SRC
+
+     It is initialized with
+     #+BEGIN_SRC js
+     let htmlSizes = new BloomSort.BloomSort([400, 1000, 20000], [700, 10000]);
+     #+END_SRC
+
+     then adding elements via =htmlSizes.add("http://google.com/", 613)=
+     and querying via =htmlSizes.query("http://google.com/")=, which
+     would yield =400=. See usage in =size-cache=.
+
+     - link to main bloom-sort, create custom-id there
+**** WAIT github link
+*** CHECK Determining Bloom-Sort Parameters
+    :PROPERTIES:
+    :CUSTOM_ID: bloom-params
+    :END:
+    It is impractical to store the sizes of many URLs, as this would
+    greatly increase the size of the addon. A possibility to save space
+    is to use Bloom Filters to aggregate groups of URLs with similar
+    values, as described in [[#bloom-sort][Bloom-sort]].
+
+    Each group needs borders (given via the /splits/ method parameter)
+    and a size to represents its contained elements.
+
+    Determining the optimal number of groups, splits and sizes is a
+    topic of [[#future-work][further work]]. Here, initially the quantiles of the
+    HTTP-model\cite{newtrafficmodel} were used. When the data were to
+    be inserted, it turned out that especially the numbers of embedded
+    elements did not match the theoretically proposed groups:
+
+    For three groups, the splits would be given by the 33 1/3 and 66
+    2/3 quantiles, as 0.0107 and 1.481. This would create two
+    single-valued groups, which only would contain the elements 0
+    and 1. The next group would contain all other elements: The
+    (representative) sizes of the groups were given as 7.915E-05,
+    0.188, and 8.260 (quantiles 16 1/6, 50, and 83 5/6).
+
+    The actual data to be inserted (see [[#number_embedded][Cached: Number of Embedded
+    Objects]]) had the /splits/ (quantiles) at 10 2/3 and 36 2/3 and the
+    /sizes/ (middle quantile) at 6, 20, and 59 2/3.
+
+    In addition to using the observed sizes for the Bloom filter, the
+    number of groups was increased to 5.
+**** WAIT [#C] graphics: histogram with bins (colored bars, black bin limits)
+* Evaluation
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
   :END:
@@ -866,48 +1053,64 @@ allowing an adversary to exactly determine which urls are saved.
      novel defense performs better and when worse than juarez' etc's
      implementation
 ** brainstorm
-   - organize bin: capture files to separate folder
-   - document in [[~/da/thesis-github/README.org][github-readme]]: use which files how to capture
-** organize                                            :nextaction:
-   1. results/
-      - relevante Ergebnisse
-        - bloom: ergebnisse direkt danach
-          - evtl. kontrast mit spaeter auf selbem page-satz
-          - wie
-            1. schauen wann (git log -p)
-               - enabled am
-                 #+BEGIN_EXAMPLE
-                   commit 0c59e55d5abf24bb1fb74c1c205c7d513a937b32
-                   Author: Michael Kreikenbaum <michael.kreikenbaum@gmail.com>
-                   Date:   Fri Apr 1 13:51:07 2016 +0200
-                 #+END_EXAMPLE
-            2. datensaetze in naehe suchen mit varianten
-               - erster Datensatz: 0.15.3/cache-2015-06-09@10
-                 - hat 0.78% acc
-               - nocache (17.6.) hat 0.94
-        - generell:
-          - einfach noch einmal auf selben daten
-            - disabled
-            - tamaraw
-            - wtf-pad
-            - @30
-            - @5
-            - (simple)?
-        - mention pic in sec 2
-   2. mention herrmann: good accuracy: should be random guessing (Tor should
-      hide sizes)
-      - seems like connection establishment leaks data
+** organize
+*** results /relevante Ergebnisse [0/1]
+***** bloom: ergebnisse direkt danach
+****** evtl. kontrast mit spaeter auf selbem page-satz
+****** wie
+******* schauen wann (git log -p)
+******** enabled am
+#+BEGIN_EXAMPLE
+commit 0c59e55d5abf24bb1fb74c1c205c7d513a937b32
+Author: Michael Kreikenbaum <michael.kreikenbaum@gmail.com>
+Date:   Fri Apr 1 13:51:07 2016 +0200
+#+END_EXAMPLE
+******* datensaetze in naehe suchen mit varianten
+******** erster Datensatz: 0.15.3/cache-2015-06-09@10
+********* hat 0.78% acc
+******** nocache (17.6.) hat 0.94
+***** generell [0/1]:
+****** TODO einfach noch einmal auf selben daten
+******* disabled
+******* tamaraw
+******* wtf-pad
+******* @30
+******* @5
+******* (simple)?
+***** mention pic in sec 2
+*** mention herrmann: good accuracy: should be random guessing (Tor should
+hide sizes)
+**** seems like connection establishment leaks data
+*** [#C] organize bin: capture files to separate folder
+    and document in [[file:~/da/thesis-github/README.org][github-readme]]: use which files how to capture
+*** maybe   #+BEGIN_SRC org
+      Using known sizes is called the /cache/ flavour and denoted by
+      =a= in tables etc. In the /nocache/ flavour, denoted by =b=,
+      sizes are always guessed.
+ #+END_SRC
+*** eval: section on newly-created bloom filter (at certain time)
+**** check when introduced
+***** when timing data was fixed
+**** present results of defense at that point
+***** closest in time afterwards
+****** up to, say, two weeks?
+******* or another time
+****** check for good results
+******* that are not contradicted by other results
 ** next action
-* Discussion
+* Discussion [/10000]
   :PROPERTIES:
   :CUSTOM_ID: ch5-discussion
   :END:
 
-* Conclusions
+* Conclusions [0/10000]
   :PROPERTIES:
   :CUSTOM_ID: ch6-conclusion
   :END:
-** Future Work
+** Future Work [/1000]
+   :PROPERTIES:
+   :CUSTOM_ID: future-work
+   :END:
 *** purpose
 *** limits
 *** vision
@@ -952,4 +1155,3 @@ allowing an adversary to exactly determine which urls are saved.
 \bibliographystyle{plain}
 \input{diplomarbeit.ind}
 * END: /above/ this headline are INDEX, and BIBLIOGRAPHY, etc       :ARCHIVE:
-* gtd                                                 :ARCHIVE:
