@@ -10,7 +10,7 @@ const sizeCache = require("./size-cache.js");
 const stats = require("./stats.js");
 const LOAD = require('./proxy_sum_load.js');
 
-/** overhead of dummy traffic -1; 1.5 has overhead of 50% */
+/** overhead of dummy traffic; 1.5 created by *factor* 50 */
 const FACTOR = 1 + (Simple.prefs.factor / 100);
 
 /**
@@ -43,9 +43,10 @@ function CoverTraffic(targetURLSpec, load=LOAD) {
         this.target.numEmbedded = this.numStrategyDist(targetURLSpec);
     }
 
-    this.prob = Math.max(minProb_(this.site.numEmbedded),
-                         Math.min(this.target.numEmbedded / this.site.numEmbedded,
-                                  2*Simple.prefs.factor));
+  this.prob = Math.max(
+    minProb_(this.site.numEmbedded),
+    Math.min(this.target.numEmbedded / this.site.numEmbedded,
+             2 * Simple.prefs.factor));
     this.target.origNumEmbedded = this.target.numEmbedded;
 
     //    console.log(this);
@@ -67,6 +68,7 @@ CoverTraffic.prototype.finish = function() {
 // td: think about bursts at end, maybe browser connection-per-site delay is
 // enough to create multiple bursts
 CoverTraffic.prototype.loadNext = function() {
+  // todo: maybe just remove the redirect stuff, test if still good
     if ( this.redirects > 0 && stats.withProbability(Simple.prefs.redirect_p /100) ) {
         this.load.sized(Simple.prefs.min_size);
         this.redirects -= 1;
