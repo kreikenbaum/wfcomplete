@@ -550,7 +550,7 @@ class Counter(object):
         '''helper method to handle empty argument'''
         logging.info('args: %s, length: %d', args, len(args))
         if len(args) == 1:
-            if os.path.isfile(args[0]):
+            if os.path.isfile(args[0]) and '@' in args[0]:
                 out = {}
                 _append_features(out, args[0])
             else: # this filename

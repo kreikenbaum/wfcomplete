@@ -61,10 +61,7 @@ test + + + +
 
     def test_dict_to_panchenko(self):
         # test creation of panchenko dir, then back, check that the same
-        try:
-            testdir = tempfile.mkdtemp(dir="/run/user/{}".format(os.geteuid()))
-        except OSError:
-            testdir = tempfile.mkdtemp()
+        testdir = temp_dir()
         counter.dict_to_panchenko({'a': self.c_list}, testdir)
         restored = counter.all_from_panchenko(testdir + '/output-tcp')
         self.assertEqual(
@@ -116,6 +113,14 @@ test + + + +
         self.assertEquals(list(X.flatten()), [1, 1])
         self.assertEquals(list(y.flatten()), [0, 0])
         self.assertEquals(yd, ['url', 'url'])
+
+
+    def test__from(self):
+        emptydir = temp_dir()
+        os.chdir(emptydir)
+        with self.assertRaises(IOError):
+            counter.Counter.from_('path/to/counter.py',)
+
 
 
 class TestAnalyse(unittest.TestCase):
@@ -374,6 +379,13 @@ class MockWriter(object):
 
     def write(self, line):
         self.data += line
+
+
+def temp_dir():
+    try:
+        return tempfile.mkdtemp(dir="/run/user/{}".format(os.geteuid()))
+    except OSError:
+        return tempfile.mkdtemp()
 
 
 if __name__ == '__main__':
