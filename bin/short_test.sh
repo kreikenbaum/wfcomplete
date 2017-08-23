@@ -1,1 +1,2 @@
-VERYQUICK='true' ./test.py
+DIR=$(dirname $0)
+VERYQUICK='true' $DIR/test.py

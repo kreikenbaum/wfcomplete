@@ -19,8 +19,8 @@ from pyshark.capture.capture import TSharkCrashException
 DURATION_LIMIT_SECS = 8 * 60
 # HOME_IP = '134.76.96.47' #td: get ips
 HOME_IP = '134.169.109.25'
-#LOGLEVEL = logging.DEBUG
-LOGLEVEL = logging.INFO
+LOGLEVEL = logging.DEBUG
+#LOGLEVEL = logging.INFO
 LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 
 MIN_CLASS_SIZE = 30
@@ -640,7 +640,8 @@ class Counter(object):
                                         '-eip.src', '-eip.len',
                                         '-eframe.time_relative',
                                         '-r' + filename],
-                                  stdout=subprocess.PIPE)
+                                  stdout=subprocess.PIPE,
+                                  close_fds=True)
         for line in iter(tshark.stdout.readline, ''):
             try:
                 (src, size, time) = line.split()
@@ -1027,13 +1028,13 @@ doctest.testmod(optionflags=doctest.ELLIPSIS)
 if __name__ == "__main__":
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 
-    try:
-        COUNTERS = Counter.from_(*sys.argv)
-    except OSError:
-        print '''needs a directory with pcap files named
-        domain@timestamp (google.com@1234234234) or json files name
-        domain.json (google.com.json)'''
-        sys.exit(1)
+    #    try:
+    COUNTERS = Counter.from_(*sys.argv)
+    # except OSError:
+    #     print '''needs a directory with pcap files named
+    #     domain@timestamp (google.com@1234234234) or json files name
+    #     domain.json (google.com.json)'''
+    #     sys.exit(1)
 
     if not json_only:
         save(COUNTERS)
@@ -1043,4 +1044,4 @@ if __name__ == "__main__":
     # if not os.environ.get('PYTHONINSPECT') and not pythonapi.Py_InspectFlag > 0:
     #     for t in itertools.chain.from_iterable(COUNTERS.values()):
     # was [trace for domain in COUNTERS.values() for trace in domain]:
-    #         print t.timing
+    #         print 
