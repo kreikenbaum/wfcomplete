@@ -8,6 +8,7 @@ import json
 import logging
 import math
 import os
+import re
 import subprocess
 import sys
 
@@ -19,9 +20,10 @@ from pyshark.capture.capture import TSharkCrashException
 DURATION_LIMIT_SECS = 8 * 60
 # HOME_IP = '134.76.96.47' #td: get ips
 HOME_IP = '134.169.109.25'
-LOGLEVEL = logging.DEBUG
-#LOGLEVEL = logging.INFO
+#LOGLEVEL = logging.DEBUG
+LOGLEVEL = logging.INFO
 LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
+PROTOCOL_DISCARD = re.compile('ARP|CDP|ICMP|IGMP|LLMNR|SSDP|SSH|STP|UDP')
 
 MIN_CLASS_SIZE = 30
 TOR_DATA_CELL_SIZE = 512
@@ -32,7 +34,7 @@ TIME_SEPARATOR = '@'
 SCENARIOS = [{}, {}, {}, {}]
 
 # module-globals
-json_only = True
+json_only = False
 
 def _append_features(keys, filename):
     '''appends features in trace file of name "filename" to keys.
@@ -220,6 +222,7 @@ def all_from_dir(dirname, remove_small=True, or_level=0):
 
     filenames = glob.glob(os.path.join(dirname, "*"))
     for jfile in [x for x in filenames if '.json' in x]:
+        json_only = True
         domain = os.path.basename(jfile).replace('.json', '')
         logging.debug('traces for %s from JSON %s', domain, jfile)
         out[domain] = all_from_json(jfile)
@@ -546,7 +549,7 @@ class Counter(object):
         return 'counter (packet, time): {}'.format(self.timing)
 
     @staticmethod
-    def from_(*args):
+    def from_(*args, **kwargs):
         '''helper method to handle empty argument'''
         logging.info('args: %s, length: %d', args, len(args))
         if len(args) == 1:
@@ -561,7 +564,7 @@ class Counter(object):
                 _append_features(out, filename)
         elif len(args) == 2:
             if os.path.isdir(args[1]):
-                out = all_from_dir(args[1])
+                out = all_from_dir(args[1], **kwargs)
             else:
                 out = {}
                 _append_features(out, args[1])
@@ -618,10 +621,10 @@ class Counter(object):
         try:
             start = cap[0].sniff_time
             for pkt in cap:
-                if 'ip' not in pkt or int(pkt.ip.len) == '52':
+                if 'ip' not in pkt:
                     logging.debug('discarded from %s packet %s', filename, pkt)
                 else:
-                    tmp.extract_line(pkt.ip.src, pkt.ip.len,
+                    tmp.extract_line(pkt.ip.src, pkt.ip.dst, pkt.ip.len,
                                      (pkt.sniff_time - start).total_seconds())
         except (KeyError, TSharkCrashException, TypeError):
             tmp.warned = True
@@ -637,26 +640,33 @@ class Counter(object):
 
         tshark = subprocess.Popen(args=['tshark',
                                         '-Tfields',
-                                        '-eip.src', '-eip.len',
+                                        '-eip.src', '-eip.dst',
+                                        '-eip.len', '-e_ws.col.Protocol',
                                         '-eframe.time_relative',
                                         '-r' + filename],
                                   stdout=subprocess.PIPE,
                                   close_fds=True)
+        http=0
         for line in iter(tshark.stdout.readline, ''):
+            if PROTOCOL_DISCARD.search(line):
+                continue
+            if 'HTTP' in line:
+                http += 1
+                continue
+            if 'TCP' not in line:
+                logging.debug('discarded %s from %s', line, filename)
+                continue
             try:
-                (src, size, time) = line.split()
-                int(size) # needs exception to warn to use slow method
+                (src, dst, size, protocol, time) = line.split()
             except ValueError:
                 tmp.warned = True
-                logging.debug('file: %s had problems in line \n%s\n',
+                logging.info('file: %s had problems in line \n%s\n',
                               filename, line)
                 tshark.kill()
                 break
             else:
-                if int(size) == 52:
-                    logging.debug('discarded line %s from %s', line, file)
-                    continue
-                tmp.extract_line(src, int(size)+14, time)
+                tmp.extract_line(src, dst, int(size)+14, time, line)
+        logging.info('http packets discarded for %s: %d', filename, http)
         return tmp
 
 
@@ -809,16 +819,25 @@ class Counter(object):
             out += _pad(feature, pad_by[k])
         return out
 
-    def extract_line(self, src, size, tstamp):
+    def extract_line(self, src, dst, size, tstamp, line=''):
         '''aggregates stream values'''
+        try:
+            if int(size) == 52:
+                logging.debug('discarded %s from %s', line, self.name)
+                return
+        except ValueError:
+            self.warned = True # size no number
         if abs(int(size)) < TOR_DATA_CELL_SIZE:
             return
         if src == HOME_IP:  # outgoing negative as of panchenko 3.1
             self.packets.append(- int(size))
             self.timing.append((float(tstamp), - int(size)))
-        elif src:  # incoming positive
+        elif dst == HOME_IP:  # incoming positive
             self.packets.append(int(size))
             self.timing.append((float(tstamp), int(size)))
+        else:
+            logging.debug('%s from %s was not sent from/to host', line, self.name)
+            self.warned = True
 
     def _postprocess(self):
         '''sums up etc collected features'''
@@ -1029,7 +1048,7 @@ if __name__ == "__main__":
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 
     #    try:
-    COUNTERS = Counter.from_(*sys.argv)
+    COUNTERS = Counter.from_(*sys.argv, remove_small=False)
     # except OSError:
     #     print '''needs a directory with pcap files named
     #     domain@timestamp (google.com@1234234234) or json files name
