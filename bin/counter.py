@@ -557,7 +557,7 @@ class Counter(object):
                 out = {}
                 _append_features(out, args[0])
             else: # this filename
-                out = all_from_dir('.')
+                out = all_from_dir('.', **kwargs)
         if len(args) > 2:
             out = {}
             for filename in args[1:]:
@@ -666,7 +666,8 @@ class Counter(object):
                 break
             else:
                 tmp.extract_line(src, dst, int(size)+14, time, line)
-        logging.info('http packets discarded for %s: %d', filename, http)
+        if http:
+            logging.info('http packets discarded for %s: %d', filename, http)
         return tmp
 
 

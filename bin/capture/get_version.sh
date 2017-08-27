@@ -1,1 +1,1 @@
-./get_pref.sh 'extensions.@wf-cover.sdk.version'
+get_pref.sh 'extensions.@wf-cover.sdk.version'

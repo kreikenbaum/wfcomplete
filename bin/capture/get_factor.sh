@@ -1,2 +1,2 @@
-./get_pref.sh 'extensions.@wf-cover.factor'
+get_pref.sh 'extensions.@wf-cover.factor'
 
