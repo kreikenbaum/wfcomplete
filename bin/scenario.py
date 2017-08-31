@@ -72,7 +72,7 @@ class Scenario(object):
 
 
     def __repr__(self):
-        return '<scenario.Scenario({})>'.format(self.path)
+        return '<scenario.Scenario("{}")>'.format(self.path)
 
         
     def binarize(self, bg_label='background', fg_label='foreground'):
@@ -143,6 +143,7 @@ class Scenario(object):
 
 
     def _closest(self, filter_, include_bg=False):
+        '''@return closest scenario that matches filter'''
         filtered = list_all(extra_filter=filter_, include_bg=include_bg)
         return min(filtered, key=lambda x: abs(self.date - x.date))
 

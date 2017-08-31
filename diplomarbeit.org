@@ -9,6 +9,7 @@
 \listoffigures
 \listoftables
 * Configuration							    :ARCHIVE:
+#+BIBLIOGRAPHY: master plain option:-d
 #+LATEX_CLASS: scrreprt
 #+LATEX_CLASS_OPTIONS: [a4paper,10pt]
 #+LATEX_HEADER: \usepackage{adjustbox}
@@ -205,7 +206,7 @@ While some similarity can be seen for each group, the "within-group" differences
 
    Chapter [[#ch6-conclusion]] summarizes the results, shows a path to
    implementation, with both included and additional further work.
-* DANIEL_BUT_NEEDS_SUBPARTS Background [9/9]
+* DANIEL_BUT_NEEDS_SUBPARTS Background [8/9]
   :PROPERTIES:
   :CUSTOM_ID: ch2-background
   :END:
@@ -290,7 +291,7 @@ While some similarity can be seen for each group, the "within-group" differences
    What all methods have in common is that they extract numerical
    /features/ from the raw data, which is then classified using
    machine learning.
-** DANIEL_BUT_NEEDS_SUBPARTS Machine Learning
+** DANIEL Machine Learning
    :PROPERTIES:
    :CUSTOM_ID: sub2-ml
    :END:
@@ -311,7 +312,7 @@ While some similarity can be seen for each group, the "within-group" differences
 
    A last section presents [[#ml-measure][measures to evaluate machine learning
    performance]].
-*** EVA Feature Extraction
+*** DANIEL Feature Extraction
     :PROPERTIES:
     :CUSTOM_ID: ml-features
     :END:
@@ -631,7 +632,7 @@ While some similarity can be seen for each group, the "within-group" differences
      #+NAME: fig:knn-example
      #+ATTR_LATEX: :width 0.7\textwidth
      [[./pictures/mitchell-fig8.1.png]]
-** DANIEL Tor Website Fingerprinting Defenses
+** CHECK Tor Website Fingerprinting Defenses
    This section describes defenses against WF as described
    [[#sub2-wf][previously]]. As most Machine Learning, WF uses statistical
    properties of the underlying data. It could possibly be defeated by
@@ -673,7 +674,24 @@ While some similarity can be seen for each group, the "within-group" differences
    some of the Tor Browser Bundle's
    functionality\cite{tor-browser-design-impl} and were used in this
    thesis' to ease installation as compared to \cite{wtfpad} and
-   arguably also to \cite{wang2015walkie}.
+   arguably also to \cite{wang2015walkie}.\\
+
+
+   In 2017, the novel LLaMA defense was introduced in
+   \cite{DBLP:journals/popets/CherubinHJ17}. The paper acknowledges
+   the need for a client-side application-level defense. In contrast
+   to this thesis's defense, LLaMA uses a uniformly distributed delay
+   until the cover request, whose URL is from the list of previously
+   requested URLs.
+
+   This mimicks another request to the same page, thus has
+   approximately the correct size distributions, but does not cloak
+   the high-information initial HTTP request. Also, it is highly
+   deterministic for the first elements of cover traffic, until the
+   list of requested elements from this host is big enough to allow
+   for some randomness. The authors provided LLaMA as a secondary
+   defense to the server-side ALPaCA defense, and emphasize the draft
+   status of LLaMA\cite{LLaMA}.
 ** DANIEL Summary
    WF can deanonymize anonymous traffic. This can pose a huge problem
    f.ex. for whistleblowers. The previous sections gave a short
@@ -682,7 +700,7 @@ While some similarity can be seen for each group, the "within-group" differences
    glimpse at this thesis' new defense.
 
    The next section presents the novel defense in depth.
-* EVA Novel Defense [1/2]
+* DANIEL_BUT_NEEDS_SUBPARTS Novel Defense [1/2]
   :PROPERTIES:
   :CUSTOM_ID: ch3-newdefense
   :END:
@@ -702,70 +720,70 @@ While some similarity can be seen for each group, the "within-group" differences
   traffic to another size; and it caches certain page characteristics
   in order to control the amount of cover traffic.
 ** WRITE Modelling traffic
-  The created traffic is based on the HTTP
-  model\cite{newtrafficmodel}: for each web page retrieval, the
-  defense sets target retrieval sizes. From these, the retrieval's
-  actual parameters are subtracted to set the amount of cover traffic
-  for this web page.
+   The created traffic is based on the HTTP
+   model\cite{newtrafficmodel}: for each web page retrieval, the
+   defense sets target retrieval sizes. From these, the retrieval's
+   actual parameters are subtracted to set the amount of cover traffic
+   for this web page.
 
-  Each request is potentially covered by a simultaneous cover-request,
-  as seen in Algorithm \ref{algo1}.
+   Each request is potentially covered by a simultaneous cover-request,
+   as seen in Algorithm \ref{algo1}.
 
-#+BEGIN_EXPORT latex
-\begin{algorithm}
-\caption{Generate Cover Traffic}\label{covertraffic}
-\label{algo1}
-\begin{algorithmic}[1]
-\Procedure{OnHttpRequest}{$\textit{url}$}
-\If {$! \textit{isRegistered}(\textit{hostnameOf}(\textit{url}))$}
-  \State $\textit{targetHttpSize} \leftarrow \textit{randomHttpSize}()$
-  \State $\textit{targetNumEmbedded} \leftarrow \textit{randomNumEmbedded}()$
-  \State $\textit{urlHttpSize} \leftarrow \textit{lookupOrGuessHttpSize}(\textit{url})$
-  \State $\textit{urlNumEmbedded} \leftarrow \textit{lookupOrGuessNumEmbedded}(\textit{url})$
-  \State $\textit{coverHttpSize} \leftarrow \textit{targetHttpSize} - \textit{urlHttpSize}$
-  \State $\textit{coverNumEmbedded} \leftarrow \textit{targetNumEmbedded} - \textit{urlNumEmbedded}$
-  \State $\textit{requestCoverSized}(\textit{coverHttpSize})$
-  \State $\textit{registerHost}(\textit{hostnameOf}(\textit{url}), \textit{coverNumEmbedded}, \textit{urlNumEmbedded})$
-\Else
-  \State $\textit{requestProbability} \leftarrow \textit{computeProbability}(\textit{hostnameOf}(\textit{url}))$
-  \While {$\textit{requestProbability} > 1$}
-    \State $\textit{requestCoverSized}(\textit{randomEmbeddedSize}())$
-    \State $\textit{updateHosts}(\textit{hostnameOf}(\textit{url}))$
-    \State $\textit{requestProbability} \leftarrow \textit{requestProbability} -1$
-  \EndWhile
-  \If {$\textit{withProbability}(\textit{requestProbability})$}
-    \State $\textit{requestCoverSized}(\textit{randomEmbeddedSize}())$
-    \State $\textit{updateHosts}(\textit{hostnameOf}(\textit{url}))$
-  \EndIf
-\EndIf
-\EndProcedure
-\end{algorithmic}
-\end{algorithm}
-#+END_EXPORT
+ #+BEGIN_EXPORT latex
+ \begin{algorithm}
+ \caption{Generate Cover Traffic}\label{covertraffic}
+ \label{algo1}
+ \begin{algorithmic}[1]
+ \Procedure{OnHttpRequest}{$\textit{url}$}
+ \If {$! \textit{isRegistered}(\textit{hostnameOf}(\textit{url}))$}
+   \State $\textit{targetHttpSize} \leftarrow \textit{randomHttpSize}()$
+   \State $\textit{targetNumEmbedded} \leftarrow \textit{randomNumEmbedded}()$
+   \State $\textit{urlHttpSize} \leftarrow \textit{lookupOrGuessHttpSize}(\textit{url})$
+   \State $\textit{urlNumEmbedded} \leftarrow \textit{lookupOrGuessNumEmbedded}(\textit{url})$
+   \State $\textit{coverHttpSize} \leftarrow \textit{targetHttpSize} - \textit{urlHttpSize}$
+   \State $\textit{coverNumEmbedded} \leftarrow \textit{targetNumEmbedded} - \textit{urlNumEmbedded}$
+   \State $\textit{requestCoverSized}(\textit{coverHttpSize})$
+   \State $\textit{registerHost}(\textit{hostnameOf}(\textit{url}), \textit{coverNumEmbedded}, \textit{urlNumEmbedded})$
+ \Else
+   \State $\textit{requestProbability} \leftarrow \textit{computeProbability}(\textit{hostnameOf}(\textit{url}))$
+   \While {$\textit{requestProbability} > 1$}
+     \State $\textit{requestCoverSized}(\textit{randomEmbeddedSize}())$
+     \State $\textit{updateHosts}(\textit{hostnameOf}(\textit{url}))$
+     \State $\textit{requestProbability} \leftarrow \textit{requestProbability} -1$
+   \EndWhile
+   \If {$\textit{withProbability}(\textit{requestProbability})$}
+     \State $\textit{requestCoverSized}(\textit{randomEmbeddedSize}())$
+     \State $\textit{updateHosts}(\textit{hostnameOf}(\textit{url}))$
+   \EndIf
+ \EndIf
+ \EndProcedure
+ \end{algorithmic}
+ \end{algorithm}
+ #+END_EXPORT
 
-The algorithm randomly draws from appropriate HTTP-related
-distributions.\cite{newtrafficmodel}
+ The algorithm randomly draws from appropriate HTTP-related
+ distributions.\cite{newtrafficmodel}
 
-/registerHost/, /isRegistered/, /computeProbability/ and /updateHosts/
-access a data structure that saves the recently active hosts with
-their number of embedded objects and the cover requests that still
-need to be sent.
+ /registerHost/, /isRegistered/, /computeProbability/ and /updateHosts/
+ access a data structure that saves the recently active hosts with
+ their number of embedded objects and the cover requests that still
+ need to be sent.
 
-The /lookupOrGuess.../-functions need data structures to map urls to
-both HTTP sizes and number of embedded objects. These change over
-time, just compare the topmost plots of Figures [[fig:total_packets_in]]
-and [[fig:total_packets_in_thesis]]. As can be seen in the next chapter,
-the amazingly good defense that was achieved with up-to-date data (see
-next chapter) decreased over time to that of guessing. These data
-structures use Bloom-filter\cite{Bloom70space/timetrade-offs} based
-binning to save values related to urls in a fixed space, while not
-allowing an adversary to exactly determine which urls are saved.
+ The /lookupOrGuess.../-functions need data structures to map urls to
+ both HTTP sizes and number of embedded objects. These change over
+ time, just compare the topmost plots of Figures [[fig:total_packets_in]]
+ and [[fig:total_packets_in_thesis]]. As can be seen in the next chapter,
+ the amazingly good defense that was achieved with up-to-date data (see
+ next chapter) decreased over time to that of guessing. These data
+ structures use Bloom-filter\cite{Bloom70space/timetrade-offs} based
+ binning to save values related to urls in a fixed space, while not
+ allowing an adversary to exactly determine which urls are saved.
 
 
-Ease-of-installation and configuring the amount of cover traffic is
-provided by using Firefox's Addon-SDK. Add-ons can be downloaded via
-[[https://addons.mozilla.org][Mozilla's Addon Page]] with automatic updates.
-** EVA Caching via Bloom-Filters
+ Ease-of-installation and configuring the amount of cover traffic is
+ provided by using Firefox's Addon-SDK. Add-ons can be downloaded via
+ [[https://addons.mozilla.org][Mozilla's Addon Page]] with automatic updates.
+** DANIEL Caching via Bloom-Filters
    The above defense might further improve if the sizes of the webpage
    to be loaded are known beforehand: Cover traffic could be tailored
    more exactly, increasing obfuscation and/or reducing

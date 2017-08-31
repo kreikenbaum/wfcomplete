@@ -6,6 +6,8 @@ import os
 prefline = os.popen('get_pref.sh "extensions.xpiState"').read()
 state = json.loads(json.loads(prefline))
 if state['app-profile']['@wf-cover']['e']:
-    print 'addon enabled'
+    print 'enabled'
+    exit(0)
 else:
-    print 'addon disabled'
+    print 'disabled'
+    exit(1)
