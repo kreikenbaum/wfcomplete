@@ -57,6 +57,11 @@ class Scenario(object):
                 self.setting = date
         except ValueError:
             self.setting = date
+        try:
+            with open(os.path.join(DIR, self.path, 'status')) as f:
+                self.status = f.read()
+        except IOError:
+            self.status = None
 
 
     def __eq__(self, other):

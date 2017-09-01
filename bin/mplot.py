@@ -73,23 +73,10 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):
 
 ### usage examples
 ## total_packets_in
-''' two plots in one figure with one title etc
-reload(mplot)
-fig, axes = plt.subplots(2, 1, sharex=True)
-mplot.total_packets_in(s, s.keys()[:4], axes[0])
-mplot.total_packets_in(s3, s3.keys()[:4], axes[1])
-plt.suptitle("Total number of incoming packets")
-axes[0].set_xlim(min(min([scenario.tpi(v) for v in s.values()])), max(max([scenario.tpi(v) for v in s3.values()])))
-axes[1].set_xlim(min(min([scenario.tpi(v) for v in s.values()])), max(max([scenario.tpi(v) for v in s3.values()])))
-axes[0].set_title("no defense")
-axes[1].set_title("early defense")
-fig.text(0.04, 0.5, "relative histograms with kernel-density-estimation", va="center", rotation="vertical")
-plt.savefig("/tmp/total_packets_in_"+'_'.join(s3.keys()[:4])+".pdf")
-'''
-
 ''' three plots ...
 argv = ['', 'disabled/bridge--2016-07-06', 'wtf-pad/bridge--2016-07-05', 'tamaraw']
-scenarios = counter.for_scenarios(argv[1:], or_level=2)
+#scenarios = counter.for_scenarios(argv[1:], or_level=2)
+scenarios = {x: scenario.Scenario(x, trace_args={'or_level':2}).get_traces() for x in argv[1:]}
 fig, axes = plt.subplots(len(scenarios), 1, sharex=True)
 plt.suptitle("Number of incoming packets per trace")
 mm = counter.MinMaxer()
