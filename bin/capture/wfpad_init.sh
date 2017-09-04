@@ -23,7 +23,7 @@ ssh $BRIDGE -x 'tor -f ~/sw/obfsproxy_wfpadtools/test/torrc.server > /tmp/tor.lo
 my_delay.sh $1
 ## tbb message
 # better: check torrc whether activated, if not message
-echo "set the line 'Bridge localhost:30100' in the Tor Browser Bundle's settings"
+echo "set the line 'Bridge 127.0.0.1:30100' in the Tor Browser Bundle's settings"
 
 
 
