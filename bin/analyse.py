@@ -465,12 +465,12 @@ def main(argv, with_svm=True, cumul=True):
         argv.append('.')
     # by hand: scenarios = counter.for_scenarios(sys.argv[1:])
     scenarios = [scenario.Scenario(x, smart=True) for x in argv[1:]]
-    if 'background' in scenarios[0].get_traces()[0].path:
+    if 'background' in scenarios[0].get_traces():
         if len(scenarios) > 1:
             logging.warn('only first scenario chosen for open world analysis')
         return open_world(scenarios[0])
     else:
-        return closed_world({x: scenarios[x].get_traces() for x in scenarios},
+        return closed_world({x.path: x.get_traces() for x in scenarios},
                             argv[1], with_svm=with_svm, cumul=cumul)
 
 
