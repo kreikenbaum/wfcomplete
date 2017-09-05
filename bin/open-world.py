@@ -12,4 +12,4 @@ if __name__ == "__main__":
         analyse.open_world(scenario.Scenario(os.getcwd()))
     elif len(sys.argv) > 2:
         logging.warn('only first scenario chosen for open world analysis')
-    analyse.open_world(scenario.Scenario(sys.argv[1]))
+    analyse.open_world(scenario.Scenario(sys.argv[1]), smart=True)
