@@ -464,7 +464,7 @@ def main(argv, with_svm=True, cumul=True):
     if len(argv) == 1:
         argv.append('.')
     # by hand: scenarios = counter.for_scenarios(sys.argv[1:])
-    scenarios = {x: scenario.Scenario(x, smart=True) for x in argv[1:]}
+    scenarios = [scenario.Scenario(x, smart=True) for x in argv[1:]]
     if 'background' in scenarios.values()[0].path:
         if len(scenarios) > 1:
             logging.warn('only first scenario chosen for open world analysis')
