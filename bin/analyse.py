@@ -312,11 +312,12 @@ def open_world(scenario_obj, y_bound=0.05):
 def closed_world(scenarios, def0, cumul=True, with_svm=True, common=False):
     '''cross test on dirs: 1st has training data, rest have test
 
-    :param: scenarios contains scenario dirs like sys.argv.  If
-            scenarios has only one set, it is cross-validated etc.  If
-            there are more than one, the first is taken as baseline
-            and training, while the others are tested against this.
-            As example, search for sys.argv = ... lines below
+    :param: scenarios: dict name : traces
+
+        If scenarios has only one set, it is cross-validated etc.  If
+        there are more than one, the first is taken as baseline and
+        training, while the others are tested against this.
+
     :param: cumul triggers CUMUL, else version 1,
     :param: common determines whether to reduce the test data to
             common keys.
@@ -359,11 +360,11 @@ def closed_world(scenarios, def0, cumul=True, with_svm=True, common=False):
 
     # vs test sets
     its_traces0 = scenarios[def0]
-    for (scenario, its_traces) in scenarios.iteritems():
-        if scenario == def0:
+    for (scenario_path, its_traces) in scenarios.iteritems():
+        if scenario_path == def0:
             continue
         print '\ntrain: {} VS {} (overhead {}%)'.format(
-            def0, scenario, _size_increase(stats[def0], stats[scenario]))
+            def0, scenario_path, _size_increase(stats[def0], stats[scenario_path]))
         if common and its_traces.keys() != its_traces0.keys():
             # td: refactor code duplication with above (search for keys = ...)
             keys = set(its_traces0.keys())
@@ -402,23 +403,23 @@ def gen_class_stats_list(scenarios,
             clfs.append(SVC_TTS_MAP[scenario0])
     out = []
     for clf in clfs:
-        for scenario in scenarios:
+        for scenario_path in scenarios:
             res = _misclassification_rates(
-                scenarios[scenario0], scenarios[scenario], clf=clf)
-            res['id'] = '{} with {}'.format(scenario, _clf_name(clf))
+                scenarios[scenario0], scenarios[scenario_path], clf=clf)
+            res['id'] = '{} with {}'.format(scenario_path, _clf_name(clf))
             out.append(res)
     return out
 
 
-def outlier_removal_levels(scenario, clf=None):
+def outlier_removal_levels(scenario_path, clf=None):
     '''tests different outlier removal schemes and levels
 
-    @param scenario: one "set" of data {site_1: traces, ..., site_n: traces}
+    @param scenario_path: one "set" of data {site_1: traces, ..., site_n: traces}
     # outlier removal on both at the same time
     '''
     print 'combined outlier removal'
     for lvl in [1, 2, 3]:
-        scenario_with_or = counter.outlier_removal(scenario, lvl)
+        scenario_with_or = counter.outlier_removal(scenario_path, lvl)
         (train, test) = _tts(scenario_with_or)
         (X, y, _) = counter.to_features_cumul(train)
         if clf is None:
@@ -426,7 +427,7 @@ def outlier_removal_levels(scenario, clf=None):
         (X, y, _) = counter.to_features_cumul(test)
         print "level: {}".format(lvl)
         _verbose_test_11(X, y, clf)
-    (train, test) = _tts(scenario)
+    (train, test) = _tts(scenario_path)
 
     # separate outlier removal on train and test set
     print 'separate outlier removal for training and test data'
@@ -469,7 +470,7 @@ def main(argv, with_svm=True, cumul=True):
             logging.warn('only first scenario chosen for open world analysis')
         return open_world(scenarios[0])
     else:
-        return closed_world([scenarios[x].get_traces() for x in scenarios],
+        return closed_world({x: scenarios[x].get_traces() for x in scenarios},
                             argv[1], with_svm=with_svm, cumul=cumul)
 
 
