@@ -463,117 +463,19 @@ def main(argv, with_svm=True, cumul=True):
     if len(argv) == 1:
         argv.append('.')
     # by hand: scenarios = counter.for_scenarios(sys.argv[1:])
-    scenarios = [scenario.Scenario(x) for x in argv[1:]]
+    scenarios = {x: scenario.Scenario(x, smart=True) for x in argv[1:]}
     if 'background' in scenarios.values()[0].path:
         if len(scenarios) > 1:
             logging.warn('only first scenario chosen for open world analysis')
         return open_world(scenarios[0])
     else:
-        return closed_world([x.get_traces() for x in scenarios],
+        return closed_world([scenarios[x].get_traces() for x in scenarios],
                             argv[1], with_svm=with_svm, cumul=cumul)
 
+
 # pylint: disable=line-too-long
-# OLDER DATA (without bridge)
-# sys.argv = ['', 'disabled/05-12@10']w
-# next: traces in between
-# sys.argv = ['', 'disabled/06-09@10', '0.18.2/json-10/a-i-noburst', '0.18.2/json-10/a-ii-noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache']
-# sys.argv = ['', 'disabled/06-17@10-from', '0.18.2/json-10/a-i-noburst', '0.18.2/json-10/a-ii-noburst', '0.15.3/json-10/cache', '0.15.3/json-10/nocache'] #older
-# missing:
-# sys.argv = ['', 'disabled/06-17@10-from', 'retro/0', 'retro/1', 'retro/10', 'retro/20', 'retro/30', 'retro/5', '0.15.3/json-10/0', '0.15.3/json-10/1', '0.15.3/json-10/10', '0.15.3/json-10/20', '0.15.3/json-10/30', '0.15.3/json-10/40', '0.15.3/json-10/5', '0.19/0-ai', '0.19/0-bii', '0.19/20-bi', '0.19/20-bii', '0.19/aii-factor=0', '0.21']
-# sys.argv = ['', 'disabled/2016-06-30', 'retro/0', 'retro/1', 'retro/10',
-# 'retro/20', 'retro/30', 'retro/5', '0.15.3/json-10/0',
-# '0.15.3/json-10/1', '0.15.3/json-10/10', '0.15.3/json-10/20',
-# '0.15.3/json-10/30', '0.15.3/json-10/40', '0.15.3/json-10/5',
-# '0.19/0-ai', '0.19/0-bii', '0.19/20-bi', '0.19/20-bii',
-# '0.19/aii-factor=0', '0.21']
-
-# sys.argv = ['', 'disabled/wtf-pad', 'wtf-pad']
-# sys.argv = ['', 'disabled/06-17@100/', '0.18.2/json-100/b-i-noburst']
-# sys.argv = ['', 'disabled/06-17@10-from', '0.20/0-ai', '0.20/0-bi',
-# '0.20/20-ai', '0.20/20-bi', '0.20/40-bi', '0.20/0-aii', '0.20/0-bii',
-# '0.20/20-aii', '0.20/20-bii', '0.20/40-aii', '0.20/40-bii']
-
-# CLASSIFICATION RESULTS PER CLASS
-
-# some_30 = top_30(means)
-# timing = {k: _average_duration(v) for (k,v) in scenarios.iteritems()}
-# outlier_removal_levels(scenarios[sys.argv[1]]) #td: try out
-
-# PANCHENKO_PATH = os.path.join('..', 'sw', 'p', 'foreground-data', 'output-tcp')
-# PANCHENKO_30 = os.path.join('..', 'sw', 'p', 'subsets', '30', 'foreground-data', 'output-tcp')
-# PANCHENKO_bg = os.path.join('..', 'sw', 'p', 'subsets', 'background-1200', 'output-tcp')
-# PANCHENKO_100 = os.path.join('..', 'sw', 'p', 'subsets', '30', 'foreground-data', 'output-tcp')
-# PANCHENKO_bg2 = os.path.join('..', 'sw', 'p', 'subsets', 'background-4000', 'output-tcp')
-# traces = counter.all_from_panchenko(PANCHENKO_PATH)
-
-# variants
-# RETRO
-# ['retro/bridge/100--2016-09-15', 'retro/bridge/50--2016-09-16']
-# ['retro/bridge/200--2016-10-02/', 'retro/bridge/200--2016-10-02-with-errs/']
-# MAIN 0.22
-#['0.22/10aI--2016-07-08', '0.22/30aI--2016-07-13', '0.22/50aI--2016-07-13', '0.22/5aII--2016-07-18', '0.22/5aI--2016-07-19', '0.22/10-maybe-aI--2016-07-23', '0.22/5aI--2016-07-25', '0.22/30aI--2016-07-25', '0.22/50aI--2016-07-26', '0.22/2aI--2016-07-23', '0.22/5aI--2016-08-26', '0.22/5aII--2016-08-25', '0.22/5bI--2016-08-27', '0.22/5bII--2016-08-27', '0.22/20aI--2016-09-10', '0.22/20aII--2016-09-10', '0.22/20bII--2016-09-12', '0.22/20bI--2016-09-13']
-# SIMPLE
-#['simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/5--2016-07-17', 'simple2/20']
-
-# COMPLETE
-# 07-06
-# sys.argv = ['', 'disabled/bridge--2016-07-06', 'retro/bridge/30', 'retro/bridge/70', 'retro/bridge/50']
-# sys.argv = ['', 'disabled/bridge--2016-07-06', 'simple1/50', 'simple2/30', 'simple2/30-burst', 'simple1/10', 'simple2/20']
-# sys.argv = ['', 'disabled/bridge--2016-07-06', 'wtf-pad/bridge--2016-07-05', 'tamaraw']
-# sys.argv = ['', 'disabled/bridge--2016-07-06', '0.22/10aI', '0.22/5aI--2016-07-19', '0.22/5aII--2016-07-18', '0.22/2aI--2016-07-23']
-# sys.argv = ['', 'disabled/bridge--2016-07-06', '0.22/10aI--2016-07-08/', 'wtf-pad/bridge--2016-07-05', '0.22/30aI--2016-07-13/', '0.22/50aI--2016-07-13/']
-# 07-21
-# sys.argv = ['', 'disabled/bridge--2016-07-21', 'simple2/5--2016-07-17', '0.22/5aII--2016-07-18/', '0.22/5aI--2016-07-19/', '0.22/10-maybe-aI--2016-07-23/', '0.22/2aI--2016-07-23/', '0.22/30aI--2016-07-25/', '0.22/50aI--2016-07-26/', '0.22/5aI--2016-07-25/', '0.15.3/bridge']
-# 08-14/15
-# sys.argv = ['', 'disabled/bridge--2016-08-14', 'disabled/bridge--2016-08-15']
-# 08-29 (also just FLAVORS)
-# sys.argv = ['', 'disabled/bridge--2016-08-29', '0.22/5aI--2016-08-26', '0.22/5aII--2016-08-25', '0.22/5bI--2016-08-27', '0.22/5bII--2016-08-27']
-# 09-09 (also just FLAVORS)
-# sys.argv = ['', 'disabled/bridge--2016-09-09', '0.22/20aI--2016-09-10', '0.22/20aII--2016-09-10', '0.22/20bI--2016-09-13', '0.22/20bII--2016-09-12']
-# 09-18 (also just RETRO)
-# sys.argv = ['', 'disabled/bridge--2016-09-18', 'retro/bridge/100--2016-09-15', 'retro/bridge/50--2016-09-16']
-#'disabled/bridge--2016-09-30'
-# 09-23 (also just SIMPLE)
-# sys.argv = ['', 'disabled/bridge--2016-09-21-100', 'simple2/5--2016-09-23-100/']
-# sys.argv = ['', 'disabled/bridge--2016-09-26-100', 'simple2/5--2016-09-23-100/']
-# sys.argv = ['', 'disabled/bridge--2016-09-26-100-with-errs', 'simple2/5--2016-09-23-100/']
-# 10-06 (also just FLAVORS)
-# sys.argv = ['', "disabled/bridge--2016-10-06-with-errors",
-# "0.22/20aI--2016-10-07", "0.22/20aI--2016-10-07-with-errors",
-# "0.22/20aII--2016-10-07", "0.22/20aII--2016-10-07-with-errors",
-# "0.22/20bI--2016-10-08", "0.22/20bI--2016-10-08-with-errors",
-# "0.22/20bII--2016-10-08", "0.22/20bII--2016-10-08-with-errors",
-# "0.22/5aI--2016-10-09", "0.22/5aI--2016-10-09-with-errors",
-# "0.22/5aII--2016-10-09", "0.22/5aII--2016-10-09-with-errors",
-# "0.22/5bI--2016-10-10", "0.22/5bI--2016-10-10-with-errors",
-# "0.22/5bII--2016-10-10", "0.22/5bII--2016-10-10-with-errors"]
-
-# DISABLED
-# 30
-# sys.argv = ['', 'disabled/bridge--2016-07-06', 'disabled/bridge--2016-07-21', 'disabled/bridge--2016-08-14', 'disabled/bridge--2016-08-15', 'disabled/bridge--2016-08-29', 'disabled/bridge--2016-09-09', 'disabled/bridge--2016-09-18', 'disabled/bridge--2016-09-30', "disabled/bridge--2016-10-06-with-errors", "disabled/bridge--2016-10-16", "disabled/bridge--2016-10-16-with-errors"]
-# 100
-# sys.argv = ['', 'disabled/bridge--2016-08-30-100',
-# 'disabled/bridge--2016-09-21-100', 'disabled/bridge--2016-09-26-100',
-# 'disabled/bridge--2016-09-26-100-with-errs']
-
-# NOT SO NEW
-# sys.argv = ['', './disabled/bridge--2016-11-21']
-# sys.argv = ['', './disabled/bridge--2016-11-04-100@50', './0.22/10aI--2016-11-04-50-of-100', './disabled/bridge--2016-11-27']
-# NEWER
-# christmas
-# wtf-pad 2017
-
-
-# TOP
-# sys.argv = ['', 'disabled/bridge--2016-07-21', 'simple2/5--2016-07-17', '0.22/5aI--2016-07-19']
-# sys.argv = ['', 'disabled/bridge--2016-07-06', 'wtf-pad/bridge--2016-07-05']
-
-# disabled/p-foreground-data/30/output-tcp
-
-
-# if by hand: change to the right directory before importing
+# ====== BY HAND ========
 # import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')); _=os.nice(20); sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git', 'bin')); logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
-
 # pylint: enable=line-too-long
 doctest.testmod()
 

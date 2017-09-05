@@ -24,7 +24,7 @@ TRACE_ARGS = { "remove_small": True, "or_level": 2 }
 
 class Scenario(object):
     '''meta-information object with optional loading of traces'''
-    def __init__(self, name, trace_args=TRACE_ARGS):
+    def __init__(self, name, trace_args=TRACE_ARGS, smart=False):
         '''
         >>> Scenario('disabled/2016-11-13').date
         datetime.date(2016, 11, 13)
@@ -37,6 +37,8 @@ class Scenario(object):
         '''
         self.trace_args = trace_args
         self.path = os.path.normpath(name)
+        if smart and not self.valid():
+            self.path = list_all(self.path)[0].path
         try:
             (self.name, date) = self.path.rsplit('/', 1)
         except ValueError:
@@ -97,6 +99,11 @@ class Scenario(object):
         trace = self.get_traces().values()[0][0]
         return datetime.datetime.fromtimestamp(
             float(trace.name.split('@')[1])).date()
+
+
+    def valid(self):
+        '''@return whether the path is at least a directory'''
+        return os.path.isdir(os.path.join(DIR, self.path))
 
 
     def get_features_cumul(self):
