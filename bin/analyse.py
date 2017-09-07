@@ -276,19 +276,6 @@ picks best result'''
     return clf
 
 
-BGS = ["background--2016-08-17", "background--2016-11-18",
-       "background--2016-11-22"]
-def _add_background(foreground, name=None, background=None):
-    '''@returns a combined instance with background set merged in'''
-    if name:
-        date = scenario.Scenario(name).date
-        nextbg = min(BGS,
-                     key=lambda x: abs(scenario.Scenario(x).date - date))
-        background = counter.all_from_dir(nextbg)
-    foreground['background'] = background['background']
-    return foreground
-
-
 def open_world(scenario_obj, y_bound=0.05):
     '''open-world (SVM) test on data, optimized on bounded auc.
 
@@ -303,7 +290,8 @@ def open_world(scenario_obj, y_bound=0.05):
 #    clf = fit.sci_grid(X_train, y_train, c=2**15, gamma=2**-45,
 #                   grid_args={"scoring": scorer})
     fpr, tpr, _, prob = fit.roc(result.clf, X_train, y_train, X_test, y_test)
-    print 'bounded auc: {} (C: {}, gamma: {})'.format(
+    print '{}-bounded auc: {} (C: {}, gamma: {})'.format(
+        y_bound,
         fit.bounded_auc_score(result.clf, X_test, y_test, 0.01),
         result.clf.estimator.C, result.clf.estimator.gamma)
     return (fpr, tpr, result, mplot.roc(fpr, tpr), prob)
