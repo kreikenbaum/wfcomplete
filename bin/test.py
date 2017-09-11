@@ -253,6 +253,8 @@ class TestScenario(unittest.TestCase):
                          scenario.Scenario('0.15.3/json-10-nocache').setting)
         self.assertEqual(
             'bridge', scenario.Scenario('disabled/bridge--2016-07-06').setting)
+        self.assertEqual(datetime.date(2017, 9, 6),
+                         scenario.Scenario("wtf-pad/bridge--2017-09-06").date)
         #'disabled/nobridge--2016-12-26-with7777' # what to do?
 
 
