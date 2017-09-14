@@ -8820,8 +8820,898 @@
     - tf–idf is the product of two statistics, term frequency and
       inverse document frequency. Various ways for determining the
       exact values of both statistics exist.
-** TODO [#C] vorlesungsnotizen sv2/3                        :hannover_laptop:
-*** [#A] zu stufen der mustererkennung
+** TODO [#A] (ch5+7) [[./McGrawHill_-_Machine_Learning_-Tom_Mitchell.pdf][Mitchell - Machine Learning]]                         :ML:
+*** TODO read extract ch. 5
+*** TODO complete ch. 7
+*** [#B] sec 8.2: KNN
+    aka read up knn links (mitchell)
+*** summary
+    1. INTRODUCTION
+
+       0. [@0]
+
+          - programming computers to learn
+
+       1. WELL-POSED LEARNING PROBLEMS
+
+          - definition: see quotes
+
+          - fits many examples from simple (db query optimizer) to
+            complex (robot car driver, checkers play algorithm)
+
+       2. DESIGNING A LEARNING SYSTEM
+
+          0. [@0]
+
+             - checkers
+
+               - performance measure: percent of games won in world tournament
+
+          1. Choosing the Training Experience
+
+             - direct feedback vs indirect feedback
+
+               - best moves, vs
+
+               - sequence of game moves
+
+             - learner control over learning sequence
+
+               - teacher selects, vs learner asks, vs learner explores
+
+             - examples vs reality
+
+               - training set complete enough?
+
+             Decision: plays against itself (+: no trainer, as much
+             data as time permits)
+
+             - Example
+               A checkers learning problem:
+               - Task T: playing checkers
+               - Performance measure P: percent of games won in the world tournament
+               - Training experience E: games played against itself
+               In order to complete the design of the learning system, we must now choose
+               1. the exact type of knowledge to be,learned
+               2. a representation for this target knowledge
+               3. a learning mechanism
+          2. Choosing the Target Function
+
+             - 1st idea: maps state to next move
+
+             - 2nd idea (better to compute): maps board state B to real number
+
+               - won\to 100, lost \to -100, tie \to 0
+
+               - compute back from every state, assuming optimal
+                 strategy of both
+
+               - nonoperational: hard to compute
+
+               - operational approximation V^{\tilde} : B \to {real numbers}
+
+          3. Choosing a Representation for the Target Function
+
+             - possibilities: table with values, neural network,
+               polynomial based on board state, ...
+
+             - here, simple choice: linear function with weights
+
+               d(x) = w0 + w1 x1 + ... + w6 x6
+
+               with weights as number of b/w pieces/kings/threatened by other
+
+          4. Choosing a Function Approximation Algorithm
+
+             training data, f.ex ((0, 1, 0, 0, 0, 0), -100) (black won)
+
+             1. Estimating training values
+
+                - simple approach: assign value of successor (next
+                  state that can be played by this side)
+
+                  #+BEGIN_EXAMPLE
+                  V_train(b) = V^{\tilde}(successor(b)) (ref:1.1)
+                  #+END_EXAMPLE
+
+             2. Estimating the Weights
+
+                - minimize the squared error \sum (V_train - V^{\tilde})^2
+
+                - method: least mean squares, for each instance (b, V_train(b))
+
+                  w_i = w_i + \eta (V_train(b) -v^{\tilde}(b)) x_i
+
+          5. The Final Design
+
+             four parts
+
+             1. Performance System: must solve task (f.ex. playing checkers)
+
+                - input: new problem (new game)
+
+                - output: solution (game trace)
+
+             2. Critic:
+
+                - input solution (game trace)
+
+                - output: training examples of target function (similar to [[(1.1)]])
+
+             3. Generalizer
+
+                - input: training examples
+
+                - output: estimate of target function (f.ex. via LMS)
+
+             4. Experiment Generator: practice problems that maximize learning
+
+                - input: hypothesis/target function
+
+                - output: game start state
+
+             summary
+
+             - for good performance the solution should be modelable
+               similar to the linear approach
+
+             - and depend mostly on the six features used for learning
+
+       3. PERSPECTIVES AND ISSUES IN MACHINE LEARNING
+
+          learning as searching the hypothesis space
+
+          1. Issues in Machine Learning
+
+             - which algorithms to use?
+
+             - "how much training data is sufficient"?
+
+             - how much can prior knowledge help? (perfect and approximate)
+
+             - how to choose next training experience?
+
+             - what functions to learn? (automatable?)
+
+             - automatically change representation to better
+               learn target ufnction?
+
+       4. HOW TO READ THIS BOOK
+
+          - any sequence
+
+          - best first read chapters 1 and 2
+
+          - (interesting to me)
+
+            2. [@2] inductive bias, ordering of hypotheses
+
+            5. [@5] estimation theory, central limit theorem
+
+            6. bayesian
+
+            7. weighted majority: combine multiple methods
+
+       5. SUMMARY AND FURTHER READING
+
+          - ml useful in
+
+            - data mining (large dbs)
+
+            - domains poorly understood by humans (face recognition)
+
+            - adapt to changing conditions (stock, "adapt to changing reading
+              interests of individuals")
+
+          - many domains
+
+          - well-defined: task, performance metric, source of training
+            experience
+
+          - learning as searching the hypothesis space
+
+    2. CONCEPT LEARNING AND THE GENERAL-TO-SPECIFIC ORDERING
+
+       concept learning: "acquiring the definition of a general
+       category given a sample of positive and negative training
+       examples of the category."
+
+       search a predifined set of hypotheses for those that fit best
+
+       1. INTRODUCTION
+
+          - "Concept learning. Inferring a boolean-valued function from
+            training examples of its input and output."
+
+       2. A CONCEPT LEARNING TASK
+
+          0. [@0]
+
+             - enjoysports: given sky, airtemp, humidity, wind, water,
+               forecast, predict if aldo enjoys water sports that day
+
+             - simple representation: conjuction of constraints
+
+          1. Notation
+
+             - set of Instances X
+
+             - target concept c: X \to {0, 1}
+
+             - training example (x \in X, c(x))
+
+               - positive if c(x) = 1, negative if c(x) = 0
+
+             - hypothesis h \in H, h: X \to {0, 1}
+
+               - aim: h = c for x \in X
+
+          2. The Inductive Learning Hypothesis
+
+             "Any hypothesis found to approximate the target function
+             well over a sufficiently large set of training examples
+             will also approximate the target function well over other
+             unobserved examples." (?stupid?)
+
+       3. CONCEPT LEARNING AS SEARCH
+
+          0. [@0]
+
+             - distinct instances: possible combinations
+
+             - syntactically different instances: possible
+               combinations with \emptyset and ? on each place
+
+             - semantically different instances: \emptyset always classifies
+               as false, thus 1+ possible combinations with ? on each place
+
+          1. General-to-Specific Ordering of Hypotheses
+
+             - order hypotheses by moregeneral-than-or-equal-to
+
+               - superset of hypotheses (see quotes)
+
+               - is a partial ordering
+
+               - algorithm based on this (see quotes)
+
+       4. FIND-S: FINDING A MAXIMALLY SPECIFIC HYPOTHESIS
+
+          - start with (\empty, ..., \empty)
+
+          - first example as new hypothesis
+
+          - generalises to h \to (Sunny, Warm, ?, Strong, Warm, Same)
+
+          - ignores all negative examples as they should not match
+
+            - assumption: H contains correct hypothesis and no
+              contradictions
+
+          - gives (one) most specific hypothesis that fits all
+
+       5. VERSION SPACES AND THE CANDIDATE-ELIMINATION ALGORITHM
+
+          0. [@0]
+
+             - candidate-elimination gives all fitting results
+
+               - as with find-s: problem with noisy data
+
+          1. Representation
+
+             - consistent hypothesis: fits all examples (def see quotes)
+
+             - version space: all hypotheses in H consistent with
+               training examples D (def see quotes)
+
+          2. The LIST-THEN-ELIMINATE Algorithm
+
+             - list all, eliminate non-fitting
+
+             - guaranteed to terminate (on finite H), simple
+
+             - takes too long
+
+          3. A More Compact Representation for Version Spaces
+
+             - save only the most general and most specific consistent
+               hypotheses (see defs quotes, and
+               moregeneral-than-or-equal-to)
+
+             - all instances in between are equal to the version space
+               (theorem see quotes)
+
+          4. CANDIDATE-ELIMINATION Learning Algorithm
+
+       7. [@7] INDUCTIVE BIAS
+
+          1. A Biased Hypothesis Space
+
+             hypothesis space might be limited in advance, precluding
+             perfect solution
+
+          2. An Unbiased Learner
+
+             - if the full hypothesis space is allowed, it gets very big
+
+             - ...
+
+    5. [@5] EVALUATING HYPOTHESES
+
+       0. [@0]
+
+          - dealing with limited training data
+
+            - generalize accuracy to all data
+
+            - one outperforming other on training, does it also
+              outperform on whole data
+
+            - how to best learn hypothesis and estimate its accuracy
+
+       1. MOTIVATION
+
+          problems with limited data
+
+          - bias in the estimate: tends to some non-optimal solution,
+            especially for a "very rich hypothesis space,"
+
+          - variance in the estimate: even if unbiased, the less data,
+            the higher the variance of results
+
+       2. ESTIMATING HYPOTHESIS ACCURACY
+
+          0. [@0]
+
+             - setting: n elements drawn with probability given by D from
+               population X
+
+             - estimate accuracy of hypothesis h given accuracy over n elements
+
+             - how correct is this estimate?
+
+          1. Sample Error and True Error
+
+             - sample error: misclassification rate on sample (see quotes)
+
+             - true error: misclassification rate on whole
+               distribution (see quotes)
+
+             - how good an approximation is the sample error?
+
+          2. Confidence Intervals for Discrete-Valued Hypotheses
+
+             - sample error and number of samples estimate true error
+               (see quotes)
+
+             - this works well if error not to close to 0 or 1 and n
+               big enough (see quotes)
+
+       3. BASICS OF SAMPLING THEORY
+
+          1. Error Estimation and Estimating Binomial Proportions
+
+             - measure sample error \to experiment with random outcome
+
+             - follows Binomial distribution
+
+               - for np(1-p) \ge 5, you can use normal distribution
+
+          2. The Binomial Distribution
+
+             - weird coin with probability p for heads.
+
+               - How many heads r after n tosses
+
+               - r/n estimates p
+
+             - corresponds to estimation of error:
+
+               - p to error_{D}(h)
+
+               - r/n to error_{S}(h)
+
+             - general: base experiment with binary outcome repeated n times
+
+          3. Mean and Variance
+
+             - mean
+
+             - variance, standard distribution
+
+          4. Estimators, Bias, and Variance
+
+             - error_{S}(h) is an estimator for error_{D}(h): random
+               variable to estimate "underlying population"
+
+             - estimation bias is how much an estimator is wrong on
+               average
+
+               - with bias = 0, it is called an /unbiased estimator/ for p
+
+               - hypothesis h and sample S must be chosen independently
+
+               - /estimation bias/ is a number, vs /inductive bias/ a
+                 set of estimations
+
+             - if several unbiased estimators exist, best choose that
+               with the smallest variance
+
+             - error standard deviation grows with p, shrinks with
+               \sqrt(n) (see quote)
+
+          5. Confidence Intervals
+
+             - confidence interval: contains param p with prob N% (see
+               quotes)
+
+             - approximate error_{D} with error_{S}
+
+             - approximate binomial with normal distribution
+
+             - z-tables for normal distribution: z_{N} is "half the width
+               of the interval measured in standard deviations"
+
+             - use normal-binomial approximation for n \ge 30 or np(1-p)\ge5
+
+          6. Two-sided and One-sided Bounds
+
+             - with error, one-sided bound is often sufficient:
+
+             - 100(1-a)% two-sided confidence interval implies
+               100(1-a/2)% one-sided c.i. (symmetry of N)
+
+       4. A GENERAL APPROACH FOR DERIVING CONFIDENCE INTERVALS
+
+          (which param, esti, pdf, interval bounds) see quotes
+
+          1. Central Limit Theorem
+
+             - n iid variables Y1, ..., Yn (independent, identically
+               distributed)
+
+               - Y'_n := 1/n \sum_{i=1}^n Y_i
+
+               - n \to \infty: mean(Y'_n) \to mean(Y)
+
+                 - and std \to \sigma/\sqrt{n}
+
+               - can use normal distribution to estimate, for n \ge 30
+
+       5. DIFFERENCE IN ERROR OF TWO HYPOTHESES
+
+          0. [@0]
+
+             - evaluate two hypotheses h_1, h_2, tested on samples S_1,
+               S_2 with sizes |S_1| = n_1, |S_2| = n_2
+
+             - estimate difference d = error_D(h_1) - error_D(h_2)
+               between true errors by d^ = error_{S_1}(h_1) - error_{S_2}(h_2)
+
+               - difference of normal distributions is normal \to d^ assumed normal
+
+               - variance of d^ is sum of variances of error_{S_{i}}(h_i) [[(mi5.12)]]
+
+             - single sample S \to smaller variance (no variance of S_1 \neq S_2)
+
+          1. Hypothesis Testing
+
+             - compare hypotheses h1, h2
+
+               - error_{s_1}(h_1) = 0.30
+
+               - error_{s_1}(h_2) = 0.20
+
+             - observed difference of d^ = .10
+
+               - probability that h1 is still better than h2?
+
+                 1. compute variance as of [[(mi5.12)]]
+
+                 2. look up z-value from table, "halve" for one-sided
+
+                 3. see that: 95% confidence level.
+
+       6. COMPARING LEARNING ALGORITHMS
+
+          0. [@0]
+
+             - compare learning algorithms L1, L2 instead of hypotheses
+
+             - find out if error of L1 <, >, or = error of L2
+
+               - use training set S_0 and test set T_0
+
+             - algorithm: average of cross-validated error difference (see quotes)
+
+             - confidence interval \delta \pm t_{N, k-1} s_{\delta}
+
+               - t_{N, k-1} similar to z_N, goes to z_N as (k-1) \to \infty
+
+               - s_{\delta} = \sqrt{1 / (k(k-1)) \sum_{i=1}^k (\delta_i - \delta)^2}
+
+             - note: same set, different to hypothesis testing
+
+          1. Paired t Tests
+
+             first reading: skip or skim this section
+
+          2. Practical Considerations
+
+             - assumption of 1): iid normal variables
+
+               - invalid for limited data
+
+             - either cross-test: split data into test sets, train on rest
+
+             - or randomly draw at least 30 elements, use rest as training
+
+               - problem: not independent any more
+
+               - advantage: resample as often as you want, reduce variance
+
+       7. SUMMARY AND FURTHER READING
+
+          main points:
+
+          - estimate confidence interval as of [[(5.1)]]
+
+          - general: identify parameter
+            \to get estimator for it
+            \to is random variable
+            \to check confidence interval
+
+          - estimation bias: estimators mean is different from parameter mean
+
+          - variance of estimator: decreases with size of sample
+
+          - compare two learning algos: cross-validate difference of error rates
+
+          - assumptions:
+
+            - approximate binomial distribution with normal distribution + variance
+
+            - and assume distribution fixed
+
+    7. [@7] COMPUTATIONAL LEARNING THEORY
+
+       0. [@0]
+
+          - which conditions enable/forbid successful learning?
+
+          - when is success assured?
+
+       1. INTRODUCTION
+
+          - classes of problems? (difficult/easy)
+
+          - how much data needed? (necessary/sufficient)
+
+          - smart sampling vs random sampling
+
+          - computational complexity of classes
+
+          - estimate number of errors made before learning target
+
+          - how much sample and computation complexity and mistake
+            bound is necessary (see quotes)
+
+       2. PROBABLY LEARNING AN APPROXIMATELY CORRECT HYPOTHESIS
+
+          binary noise-free training data, can be extended somewhat
+
+          1. The Problem Setting
+
+             - X all possible instances (f.ex. people = { {young,
+               short}, {old, tall}})
+
+             - C target concepts, c \in C: X \to {0,1} (f.ex. people who
+               are skiers)
+
+             - D distribution over X (f.ex. largest sports store
+               switzerland)
+
+             - learner L draws x from D, tests with other x from D
+
+          2. Error of a Hypothesis
+
+             - (see quotes, see also ch.5)
+
+             - true error of hypothesis: how often wrong re distribution/class
+
+             - training error: how much of training data classified wrongly
+
+             - re sample error: same, but statements assumed
+               independent of training data and h
+
+          3. PAC Learnability
+
+             - error bounded by \epsilon
+
+             - sucess rate bounded by \delta (suceed in at least 1-\delta cases)
+
+             - C pak-learnable (see quote) if in fixed max error rate
+               and failure rate, learnable in polynomial(\epsilon, \delta, n,
+               size(c))
+
+             - assumptions:
+
+               - H contains small-error hypothesis
+
+       3. SAMPLE COMPLEXITY FOR FINITE HYPOTHESIS SPACES
+
+          0. [@0]
+
+             - how many training samples needed until perfectly fitting
+               hypothesis is found
+
+             - assumption: *consistent learners*: can learn perfect
+               hypothesis
+
+             - bound number of hypotheses needed to probably (p > 1-\delta)
+               learn an approximate (error \epsilon) hypothesis: m (see quotes)
+
+          1. Agnostic Learning and Inconsistent Hypotheses
+
+    8. INSTANCE-BASED LEARNING
+
+       0. [@0]
+
+          - store training examples, do not generalize until
+            classification time ("lazy")
+
+          - advantage: target function can be estimated locally
+
+       1. INTRODUCTION
+
+          - learning === storing all training samples
+
+          - classifying === retrieve (some) samples, approximate (locally)
+
+          - disadvantage: can have high cost for classifying
+
+          - sections:
+
+            2. [@2] knn,
+
+            3. locally weighted regression,
+
+            4. rbf-networks: mix between local-data and nn
+
+            5. case-based reasoning: symbolic representation,
+               knowledge-based inference
+
+            6. general differences lazy vs eager learning
+
+       2. k-NEAREST NEIGHBOR LEARNING
+
+          0. [@0]
+
+             - points in \R^n
+
+             - discrete-valued: see what closest points classify as
+               (based on euclidean distance), classify to majority
+
+               - with k==1, just closest point
+
+             - decision boundary: convex polygons around points (k==1?)
+
+             - real-valued: use mean of k closest points
+
+          1. Distance-Weighted NEAREST NEIGHBOR Algorithm (p.245)
+*** quotes
+    1. INTRODUCTION
+       1. WELL-POSED LEARNING PROBLEMS
+          - Definition: A computer program is said to learn from
+            experience E with respect to some class of tasks T and
+            performance measure P, if its performance at tasks in T,
+            as measured by P, improves with experience E.
+    2. CONCEPT LEARNING AND THE GENERAL-TO-SPECIFIC ORDERING
+       3. [@3] CONCEPT LEARNING AS SEARCH
+          - Definition: Let hj and hk be boolean-valued functions
+            defined over X. Then hj is *moregeneral-than-or-equal-to* hk
+            (written h_{j} \ge_{g} h_{k} ) if and only if
+
+            (\forall x \in X)[(hk(x) = 1) \to (hj(x) = 1)]
+          - FIND-S Algorithm.
+            1. Initialize h to the most specific hypothesis in H
+            2. For each positive training instance x
+               - For each attribute constraint a_i in h
+                 - If the constraint a_i is satisfied by x
+                   - Then do nothing
+                   - Else replace a_i in h by the next more general
+                     constraint that is satisfied by x
+            3. Output hypothesis h
+       5. [@5] VERSION SPACES AND THE CANDIDATE-ELIMINATION ALGORITHM
+          1. Representation
+             - A hypothesis h is *consistent* with a set of training
+               examples D if and only if h(x) = c(x) for each example
+               (x, c(x)) in D.
+
+               Consistent(h, D) \equiv (\forall(x, c(x)) \in D) h(x) = c(x)
+             - The *version space*, denoted VS_{H, D} with respect to
+               hypothesis space H and training examples D, is the
+               subset of hypotheses from H consistent with the
+               training examples in D.
+
+               VS_{H, D} \equiv {h \in H | Consistent(h, D)}
+          3. [@3] A More Compact Representation for Version Spaces
+             - Definition: The *general boundary* G, with respect to
+               hypothesis space H and training data D, is the set of
+               maximally general members of H consistent with D.
+
+               G = {g \in H | Consistent(g, D)
+                    \wedge (\not\exists g' \in H) [(g' >_{g} g) \wedge Consistent(g', D)]]
+             - Definition: The *specific boundary* S, with respect to
+               hypothesis space H and training data D, is the set of
+               minimally general (i.e., maximally specific) members of
+               H consistent with D.
+
+               S = {s \in H | Consistent(s, D)
+                    \wedge (\not\exists s' \in H) [(s >_{g} s') \wedge Consistent(s', D)]]
+             - Theorem 2.1. *Version space representation
+               theorem*. Let X be an arbitrary set of instances and
+               let H be a set of boolean-valued hypotheses defined
+               over X. Let c : X \to {O, 1) be an arbitrary target
+               concept defined over X, and let D be an arbitrary set
+               of training examples {<x, c(x)>). For all X, H, c, and
+               D such that S and G are well defined,
+
+               VS_{H, D} = {h \in H | (\exists s \in S, g \in G)(g \ge_{g} h \ge_{g} s)}
+    5. [@5] EVALUATING HYPOTHESES
+       1. ESTIMATING HYPOTHESIS ACCURACY
+          1. Sample Error and True Error
+             - Definition: The *sample error* (denoted error_{S}(h)) of
+               hypothesis h with respect to target function f and data
+               sample S is
+
+               error_{S}(h) \equiv 1/n \sum_{x \in S} \delta(f(x), h(x))
+
+               Where n is the number of examples in S, and the
+               quantity \delta(f(x), h(x)) is 1 if f(x) \neq h(x) , and 0
+               otherwise
+             - Definition: The *true error* (denoted error_{D}(h)) of
+               hypothesis h with respect to target function f and
+               distribution D, is the probability that h will
+               misclassify an instance drawn at random according to D.
+
+               error_{D}(h) \equiv Pr_{x \in D}[f(x) \neq h(x)]
+          2. Confidence Intervals for Discrete-Valued Hypotheses
+             - [confidence interval z_N = 1.96 for 95% confidence interval]
+               error_{S} \pm z_{N} \sqrt(error_{S}(h)(1- error_{S}(h)) / n)          (ref:5.1)
+             - n \cdot error_{S}(h) (1-error_{S}(h)) \ge 5
+       3. [@3] BASICS OF SAMPLING THEORY
+          4. [@4] Estimators, Bias, and Variance
+             - The *estimation bias* of an estimator Y for an arbitrary
+               parameter p is
+
+               E[Y] - p
+             - In general, given r errors in a sample of n
+               independently drawn test examples, the standard
+               deviation for errors(h) is given by
+
+               \sigma_{errors_{S}(h)} = \sigma_{r} / n = \sqrt{p(1-p) / n} (5.8)
+             - which can be approximated by substituting r/n =
+               errors_{S}(h) for p
+          5. Confidence Intervals
+             - An N% *confidence interval* for some parameter p is an
+               interval that is expected with probability N% to
+               contain p .
+             - if a random variable Y obeys a Normal distribution with
+               mean \mu and standard deviation \sigma , then the measured
+               random value y of Y will fall into the following
+               interval N% of the time
+
+               \mu \pm z_{N }\sigma
+
+               Equivalently, the mean \mu will fall into the following
+               interval N% of the time
+
+               y \pm z_{N} \sigma
+       4. A GENERAL APPROACH FOR DERIVING CONFIDENCE INTERVALS
+          0. [@0]
+             1. Identify the underlying population parameter p to
+                be estimated, for example, error_{D}(h).
+             2. Define the estimator Y (e.g., error_{S}(h)). It is
+                desirable to choose a minimum-variance, unbiased
+                estimator.
+             3. Determine the probability distribution D_{Y} that governs
+                the estimator Y, including its mean and variance.
+             4. Determine the N% confidence interval by finding
+                thresholds L and U such that N% of the mass in the
+                probability distribution D_{Y} falls between L and U.
+          1. Central Limit Theorem
+             - *Central Limit Theorem*. Consider a set of independent,
+               identically distributed random variables Y1 ... Yn,
+               governed by an arbitrary probability distribution with
+               mean p and finite variance \sigma^2. Define the sample mean,
+               Y'_n := 1/n \sum_{i=1}^n Y_i. Then as n \to \infty, the distribution
+               governing
+
+               (Y'_n - \mu) / (\sigma / \sqrt{n})
+
+               approaches a Normal distribution, with zero mean and
+               standard deviation equal to 1.
+       5. DIFFERENCE IN ERROR OF TWO HYPOTHESES
+          0. [@0]
+             - d^ \equiv error_{S_1}(h_1) - error_{S_2}(h_2)
+             - \sigma_{d^}^{2} \approx
+               [error_{S_1}(h_1) (1 - error_{S_1}(h_1))] /n_1
+               + [error_{S_2}(h_2) (1 - error_{S_2}(h_2))] /n_2         (ref:mi5.12)
+       6. COMPARING LEARNING ALGORITHMS
+          - Learning procedure
+            1. Partition the available data D0 into k disjoint subsets
+               T1, T2, ..., Tk of equal size, where this size is at
+               least 30.
+            2. for i in range(1,k+1):
+               S_i = D0 \ Ti
+               h_A = L_A(S_i)
+               h_B = L_B(S_i)
+               \delta_i = error_{Ti}(h_A) - error_{Ti}(h_B)
+            3. Return the value \delta, where
+
+               \delta = 1/k \sum_{i=1}^k \delta_i
+    7. [@7] COMPUTATIONAL LEARNING THEORY
+       1. INTRODUCTION
+          - *Sample complexity*. How many training examples are needed
+            for a learner to converge (with high probability) to a
+            successful hypothesis?
+          - *Computational complexity*. How much computational effort
+            is needed for a learner to converge (with high
+            probability) to a successful hypothesis?
+          - *Mistake bound*. How many training examples will the
+            learner misclassify before converging to a successful
+            hypothesis?
+       2. PROBABLY LEARNING AN APPROXIMATELY CORRECT HYPOTHESIS
+          *PAC*: probably approximately correct model
+          2. [@2] Error of a Hypothesis
+             - Error of a Hypothesis
+               - The *true error* (denoted error_{D}(h)) of hypothesis h
+                 with respect to target concept c and distribution D is
+                 the probability that h will misclassify an instance
+                 drawn at random according to D.
+
+                 error_{D}(h) \equiv Pr_{x \in D} [c(x) \neq h(x)]
+          3. PAC Learnability
+             - classes of target concepts that can be reliably learned
+               from a reasonable number of randomly drawn training
+               examples and a reasonable amount of computation.
+             - Consider a concept class C defined over a set of
+               instances X of length n and a learner L using
+               hypothesis space H . C is *PAC-learnable* by L using H
+               if for all c \in C, distributions D over X, \epsilon such that 0
+               < \epsilon < 1/2, and \delta such that 0 < \delta < 1/2, learner L will
+               with probability at least (1 - \delta) output a hypothesis h
+               \in H such that error_{D}(h) \le \epsilon, in time that is polynomial
+               in 1/\epsilon, 1/\delta, n, and size(c).
+       3. SAMPLE COMPLEXITY FOR FINITE HYPOTHESIS SPACES
+          - The reason is that in most practical settings the factor
+            that most limits success of the learner is the limited
+            availability of training data.
+          - Consider a hypothesis space H, target concept c, instance
+            distribution \cal D, and set of training examples D of c. The
+            version space VS_{H,D} is said to be *\epsilon-exhausted* with
+            respect to c and \cal D, if every hypothesis h in VS_{H,D} has
+            error less than \epsilon with respect to c and \cal D.
+
+            (\forall h \in VS_{H, D}) error_{\cal D}(h) < \epsilon
+          - *\epsilon-exhausting the version space*. If the hypothesis space H
+            is finite, and D is a sequence of m \ge 1 independent
+            randomly drawn examples of some target concept c, then for
+            any 0 \le \epsilon \le 1, the probability that the version space VS_{H,
+            \cal D} is not \epsilon-exhausted (with respect to c) is less
+            than or equal to |H| e^{-\epsilon m}
+          - m \ge 1/\epsilon (ln |H| + ln (1/\delta))
+    8. INSTANCE-BASED LEARNING
+       1. INTRODUCTION
+          - conceptually straightforward approaches to approximating
+            real-valued or discrete-valued target functions
+          - has significant advantages when the target function is
+            very complex, but can still be described by a collection
+            of less complex local approximations.
+
+*** ref [[file:master.bib::mitchell][Mitchell: Machine Learning]]
 ** TODO [#B] [[./roc.pdf][Fawcett - An introduction to ROC analysis]]
 *** summary
     intro to ROC graphs, usage guide
@@ -9889,896 +10779,6 @@
            \varphi = {h \over n}
          #+END_SRC
 *** ref [[file:master.bib::Bloom70space/timetrade-offs][Bloom 1970: Space Time Trade]]
-** TODO [#B] PART -s 1,5,7 [[./McGrawHill_-_Machine_Learning_-Tom_Mitchell.pdf][Mitchell - Machine Learning]]                   :ML:
-*** [#B] sec 8.2: KNN
-    aka read up knn links (mitchell)
-*** summary
-    1. INTRODUCTION
-
-       0. [@0]
-
-          - programming computers to learn
-
-       1. WELL-POSED LEARNING PROBLEMS
-
-          - definition: see quotes
-
-          - fits many examples from simple (db query optimizer) to
-            complex (robot car driver, checkers play algorithm)
-
-       2. DESIGNING A LEARNING SYSTEM
-
-          0. [@0]
-
-             - checkers
-
-               - performance measure: percent of games won in world tournament
-
-          1. Choosing the Training Experience
-
-             - direct feedback vs indirect feedback
-
-               - best moves, vs
-
-               - sequence of game moves
-
-             - learner control over learning sequence
-
-               - teacher selects, vs learner asks, vs learner explores
-
-             - examples vs reality
-
-               - training set complete enough?
-
-             Decision: plays against itself (+: no trainer, as much
-             data as time permits)
-
-             - Example
-               A checkers learning problem:
-               - Task T: playing checkers
-               - Performance measure P: percent of games won in the world tournament
-               - Training experience E: games played against itself
-               In order to complete the design of the learning system, we must now choose
-               1. the exact type of knowledge to be,learned
-               2. a representation for this target knowledge
-               3. a learning mechanism
-          2. Choosing the Target Function
-
-             - 1st idea: maps state to next move
-
-             - 2nd idea (better to compute): maps board state B to real number
-
-               - won\to 100, lost \to -100, tie \to 0
-
-               - compute back from every state, assuming optimal
-                 strategy of both
-
-               - nonoperational: hard to compute
-
-               - operational approximation V^{\tilde} : B \to {real numbers}
-
-          3. Choosing a Representation for the Target Function
-
-             - possibilities: table with values, neural network,
-               polynomial based on board state, ...
-
-             - here, simple choice: linear function with weights
-
-               d(x) = w0 + w1 x1 + ... + w6 x6
-
-               with weights as number of b/w pieces/kings/threatened by other
-
-          4. Choosing a Function Approximation Algorithm
-
-             training data, f.ex ((0, 1, 0, 0, 0, 0), -100) (black won)
-
-             1. Estimating training values
-
-                - simple approach: assign value of successor (next
-                  state that can be played by this side)
-
-                  #+BEGIN_EXAMPLE
-                  V_train(b) = V^{\tilde}(successor(b)) (ref:1.1)
-                  #+END_EXAMPLE
-
-             2. Estimating the Weights
-
-                - minimize the squared error \sum (V_train - V^{\tilde})^2
-
-                - method: least mean squares, for each instance (b, V_train(b))
-
-                  w_i = w_i + \eta (V_train(b) -v^{\tilde}(b)) x_i
-
-          5. The Final Design
-
-             four parts
-
-             1. Performance System: must solve task (f.ex. playing checkers)
-
-                - input: new problem (new game)
-
-                - output: solution (game trace)
-
-             2. Critic:
-
-                - input solution (game trace)
-
-                - output: training examples of target function (similar to [[(1.1)]])
-
-             3. Generalizer
-
-                - input: training examples
-
-                - output: estimate of target function (f.ex. via LMS)
-
-             4. Experiment Generator: practice problems that maximize learning
-
-                - input: hypothesis/target function
-
-                - output: game start state
-
-             summary
-
-             - for good performance the solution should be modelable
-               similar to the linear approach
-
-             - and depend mostly on the six features used for learning
-
-       3. PERSPECTIVES AND ISSUES IN MACHINE LEARNING
-
-          learning as searching the hypothesis space
-
-          1. Issues in Machine Learning
-
-             - which algorithms to use?
-
-             - "how much training data is sufficient"?
-
-             - how much can prior knowledge help? (perfect and approximate)
-
-             - how to choose next training experience?
-
-             - what functions to learn? (automatable?)
-
-             - automatically change representation to better
-               learn target ufnction?
-
-       4. HOW TO READ THIS BOOK
-
-          - any sequence
-
-          - best first read chapters 1 and 2
-
-          - (interesting to me)
-
-            2. [@2] inductive bias, ordering of hypotheses
-
-            5. [@5] estimation theory, central limit theorem
-
-            6. bayesian
-
-            7. weighted majority: combine multiple methods
-
-       5. SUMMARY AND FURTHER READING
-
-          - ml useful in
-
-            - data mining (large dbs)
-
-            - domains poorly understood by humans (face recognition)
-
-            - adapt to changing conditions (stock, "adapt to changing reading
-              interests of individuals")
-
-          - many domains
-
-          - well-defined: task, performance metric, source of training
-            experience
-
-          - learning as searching the hypothesis space
-
-    2. CONCEPT LEARNING AND THE GENERAL-TO-SPECIFIC ORDERING
-
-       concept learning: "acquiring the definition of a general
-       category given a sample of positive and negative training
-       examples of the category."
-
-       search a predifined set of hypotheses for those that fit best
-
-       1. INTRODUCTION
-
-          - "Concept learning. Inferring a boolean-valued function from
-            training examples of its input and output."
-
-       2. A CONCEPT LEARNING TASK
-
-          0. [@0]
-
-             - enjoysports: given sky, airtemp, humidity, wind, water,
-               forecast, predict if aldo enjoys water sports that day
-
-             - simple representation: conjuction of constraints
-
-          1. Notation
-
-             - set of Instances X
-
-             - target concept c: X \to {0, 1}
-
-             - training example (x \in X, c(x))
-
-               - positive if c(x) = 1, negative if c(x) = 0
-
-             - hypothesis h \in H, h: X \to {0, 1}
-
-               - aim: h = c for x \in X
-
-          2. The Inductive Learning Hypothesis
-
-             "Any hypothesis found to approximate the target function
-             well over a sufficiently large set of training examples
-             will also approximate the target function well over other
-             unobserved examples." (?stupid?)
-
-       3. CONCEPT LEARNING AS SEARCH
-
-          0. [@0]
-
-             - distinct instances: possible combinations
-
-             - syntactically different instances: possible
-               combinations with \emptyset and ? on each place
-
-             - semantically different instances: \emptyset always classifies
-               as false, thus 1+ possible combinations with ? on each place
-
-          1. General-to-Specific Ordering of Hypotheses
-
-             - order hypotheses by moregeneral-than-or-equal-to
-
-               - superset of hypotheses (see quotes)
-
-               - is a partial ordering
-
-               - algorithm based on this (see quotes)
-
-       4. FIND-S: FINDING A MAXIMALLY SPECIFIC HYPOTHESIS
-
-          - start with (\empty, ..., \empty)
-
-          - first example as new hypothesis
-
-          - generalises to h \to (Sunny, Warm, ?, Strong, Warm, Same)
-
-          - ignores all negative examples as they should not match
-
-            - assumption: H contains correct hypothesis and no
-              contradictions
-
-          - gives (one) most specific hypothesis that fits all
-
-       5. VERSION SPACES AND THE CANDIDATE-ELIMINATION ALGORITHM
-
-          0. [@0]
-
-             - candidate-elimination gives all fitting results
-
-               - as with find-s: problem with noisy data
-
-          1. Representation
-
-             - consistent hypothesis: fits all examples (def see quotes)
-
-             - version space: all hypotheses in H consistent with
-               training examples D (def see quotes)
-
-          2. The LIST-THEN-ELIMINATE Algorithm
-
-             - list all, eliminate non-fitting
-
-             - guaranteed to terminate (on finite H), simple
-
-             - takes too long
-
-          3. A More Compact Representation for Version Spaces
-
-             - save only the most general and most specific consistent
-               hypotheses (see defs quotes, and
-               moregeneral-than-or-equal-to)
-
-             - all instances in between are equal to the version space
-               (theorem see quotes)
-
-          4. CANDIDATE-ELIMINATION Learning Algorithm
-
-       7. [@7] INDUCTIVE BIAS
-
-          1. A Biased Hypothesis Space
-
-             hypothesis space might be limited in advance, precluding
-             perfect solution
-
-          2. An Unbiased Learner
-
-             - if the full hypothesis space is allowed, it gets very big
-
-             - ...
-
-    5. [@5] EVALUATING HYPOTHESES
-
-       0. [@0]
-
-          - dealing with limited training data
-
-            - generalize accuracy to all data
-
-            - one outperforming other on training, does it also
-              outperform on whole data
-
-            - how to best learn hypothesis and estimate its accuracy
-
-       1. MOTIVATION
-
-          problems with limited data
-
-          - bias in the estimate: tends to some non-optimal solution,
-            especially for a "very rich hypothesis space,"
-
-          - variance in the estimate: even if unbiased, the less data,
-            the higher the variance of results
-
-       2. ESTIMATING HYPOTHESIS ACCURACY
-
-          0. [@0]
-
-             - setting: n elements drawn with probability given by D from
-               population X
-
-             - estimate accuracy of hypothesis h given accuracy over n elements
-
-             - how correct is this estimate?
-
-          1. Sample Error and True Error
-
-             - sample error: misclassification rate on sample (see quotes)
-
-             - true error: misclassification rate on whole
-               distribution (see quotes)
-
-             - how good an approximation is the sample error?
-
-          2. Confidence Intervals for Discrete-Valued Hypotheses
-
-             - sample error and number of samples estimate true error
-               (see quotes)
-
-             - this works well if error not to close to 0 or 1 and n
-               big enough (see quotes)
-
-       3. BASICS OF SAMPLING THEORY
-
-          1. Error Estimation and Estimating Binomial Proportions
-
-             - measure sample error \to experiment with random outcome
-
-             - follows Binomial distribution
-
-               - for np(1-p) \ge 5, you can use normal distribution
-
-          2. The Binomial Distribution
-
-             - weird coin with probability p for heads.
-
-               - How many heads r after n tosses
-
-               - r/n estimates p
-
-             - corresponds to estimation of error:
-
-               - p to error_{D}(h)
-
-               - r/n to error_{S}(h)
-
-             - general: base experiment with binary outcome repeated n times
-
-          3. Mean and Variance
-
-             - mean
-
-             - variance, standard distribution
-
-          4. Estimators, Bias, and Variance
-
-             - error_{S}(h) is an estimator for error_{D}(h): random
-               variable to estimate "underlying population"
-
-             - estimation bias is how much an estimator is wrong on
-               average
-
-               - with bias = 0, it is called an /unbiased estimator/ for p
-
-               - hypothesis h and sample S must be chosen independently
-
-               - /estimation bias/ is a number, vs /inductive bias/ a
-                 set of estimations
-
-             - if several unbiased estimators exist, best choose that
-               with the smallest variance
-
-             - error standard deviation grows with p, shrinks with
-               \sqrt(n) (see quote)
-
-          5. Confidence Intervals
-
-             - confidence interval: contains param p with prob N% (see
-               quotes)
-
-             - approximate error_{D} with error_{S}
-
-             - approximate binomial with normal distribution
-
-             - z-tables for normal distribution: z_{N} is "half the width
-               of the interval measured in standard deviations"
-
-             - use normal-binomial approximation for n \ge 30 or np(1-p)\ge5
-
-          6. Two-sided and One-sided Bounds
-
-             - with error, one-sided bound is often sufficient:
-
-             - 100(1-a)% two-sided confidence interval implies
-               100(1-a/2)% one-sided c.i. (symmetry of N)
-
-       4. A GENERAL APPROACH FOR DERIVING CONFIDENCE INTERVALS
-
-          (which param, esti, pdf, interval bounds) see quotes
-
-          1. Central Limit Theorem
-
-             - n iid variables Y1, ..., Yn (independent, identically
-               distributed)
-
-               - Y'_n := 1/n \sum_{i=1}^n Y_i
-
-               - n \to \infty: mean(Y'_n) \to mean(Y)
-
-                 - and std \to \sigma/\sqrt{n}
-
-               - can use normal distribution to estimate, for n \ge 30
-
-       5. DIFFERENCE IN ERROR OF TWO HYPOTHESES
-
-          0. [@0]
-
-             - evaluate two hypotheses h_1, h_2, tested on samples S_1,
-               S_2 with sizes |S_1| = n_1, |S_2| = n_2
-
-             - estimate difference d = error_D(h_1) - error_D(h_2)
-               between true errors by d^ = error_{S_1}(h_1) - error_{S_2}(h_2)
-
-               - difference of normal distributions is normal \to d^ assumed normal
-
-               - variance of d^ is sum of variances of error_{S_{i}}(h_i) [[(mi5.12)]]
-
-             - single sample S \to smaller variance (no variance of S_1 \neq S_2)
-
-          1. Hypothesis Testing
-
-             - compare hypotheses h1, h2
-
-               - error_{s_1}(h_1) = 0.30
-
-               - error_{s_1}(h_2) = 0.20
-
-             - observed difference of d^ = .10
-
-               - probability that h1 is still better than h2?
-
-                 1. compute variance as of [[(mi5.12)]]
-
-                 2. look up z-value from table, "halve" for one-sided
-
-                 3. see that: 95% confidence level.
-
-       6. COMPARING LEARNING ALGORITHMS
-
-          0. [@0]
-
-             - compare learning algorithms L1, L2 instead of hypotheses
-
-             - find out if error of L1 <, >, or = error of L2
-
-               - use training set S_0 and test set T_0
-
-             - algorithm: average of cross-validated error difference (see quotes)
-
-             - confidence interval \delta \pm t_{N, k-1} s_{\delta}
-
-               - t_{N, k-1} similar to z_N, goes to z_N as (k-1) \to \infty
-
-               - s_{\delta} = \sqrt{1 / (k(k-1)) \sum_{i=1}^k (\delta_i - \delta)^2}
-
-             - note: same set, different to hypothesis testing
-
-          1. Paired t Tests
-
-             first reading: skip or skim this section
-
-          2. Practical Considerations
-
-             - assumption of 1): iid normal variables
-
-               - invalid for limited data
-
-             - either cross-test: split data into test sets, train on rest
-
-             - or randomly draw at least 30 elements, use rest as training
-
-               - problem: not independnt any more
-
-               - advantage: resample as often as you want, reduce variance
-
-       7. SUMMARY AND FURTHER READING
-
-          main points:
-
-          - estimate confidence interval as of [[(5.1)]]
-
-          - general: identify parameter
-            \to get estimator for it
-            \to is random variable
-            \to check confidence interval
-
-          - estimation bias: estimators mean is different from parameter mean
-
-          - variance of estimator: decreases with size of sample
-
-          - compare two learning algos: cross-validate difference of error rates
-
-          - assumptions:
-
-            - approximate binomial distribution with normal distribution + variance
-
-            - and assume distribution fixed
-
-    7. [@7] COMPUTATIONAL LEARNING THEORY
-
-       0. [@0]
-
-          - which conditions enable/forbid successful learning?
-
-          - when is success assured?
-
-       1. INTRODUCTION
-
-          - classes of problems? (difficult/easy)
-
-          - how much data needed? (necessary/sufficient)
-
-          - smart sampling vs random sampling
-
-          - computational complexity of classes
-
-          - estimate number of errors made before learning target
-
-          - how much sample and computation complexity and mistake
-            bound is necessary (see quotes)
-
-       2. PROBABLY LEARNING AN APPROXIMATELY CORRECT HYPOTHESIS
-
-          binary noise-free training data, can be extended somewhat
-
-          1. The Problem Setting
-
-             - X all possible instances (f.ex. people = { {young,
-               short}, {old, tall}})
-
-             - C target concepts, c \in C: X \to {0,1} (f.ex. people who
-               are skiers)
-
-             - D distribution over X (f.ex. largest sports store
-               switzerland)
-
-             - learner L draws x from D, tests with other x from D
-
-          2. Error of a Hypothesis
-
-             - (see quotes, see also ch.5)
-
-             - true error of hypothesis: how often wrong re distribution/class
-
-             - training error: how much of training data classified wrongly
-
-             - re sample error: same, but statements assumed
-               independent of training data and h
-
-          3. PAC Learnability
-
-             - error bounded by \epsilon
-
-             - sucess rate bounded by \delta (suceed in at least 1-\delta cases)
-
-             - C pak-learnable (see quote) if in fixed max error rate
-               and failure rate, learnable in polynomial(\epsilon, \delta, n,
-               size(c))
-
-             - assumptions:
-
-               - H contains small-error hypothesis
-
-       3. SAMPLE COMPLEXITY FOR FINITE HYPOTHESIS SPACES
-
-          0. [@0]
-
-             - how many training samples needed until perfectly fitting
-               hypothesis is found
-
-             - assumption: *consistent learners*: can learn perfect
-               hypothesis
-
-             - bound number of hypotheses needed to probably (p > 1-\delta)
-               learn an approximate (error \epsilon) hypothesis: m (see quotes)
-
-          1. Agnostic Learning and Inconsistent Hypotheses
-
-    8. INSTANCE-BASED LEARNING
-
-       0. [@0]
-
-          - store training examples, do not generalize until
-            classification time ("lazy")
-
-          - advantage: target function can be estimated locally
-
-       1. INTRODUCTION
-
-          - learning === storing all training samples
-
-          - classifying === retrieve (some) samples, approximate (locally)
-
-          - disadvantage: can have high cost for classifying
-
-          - sections:
-
-            2. [@2] knn,
-
-            3. locally weighted regression,
-
-            4. rbf-networks: mix between local-data and nn
-
-            5. case-based reasoning: symbolic representation,
-               knowledge-based inference
-
-            6. general differences lazy vs eager learning
-
-       2. k-NEAREST NEIGHBOR LEARNING
-
-          0. [@0]
-
-             - points in \R^n
-
-             - discrete-valued: see what closest points classify as
-               (based on euclidean distance), classify to majority
-
-               - with k==1, just closest point
-
-             - decision boundary: convex polygons around points (k==1?)
-
-             - real-valued: use mean of k closest points
-
-          1. Distance-Weighted NEAREST NEIGHBOR Algorithm (p.245)
-*** quotes
-    1. INTRODUCTION
-       1. WELL-POSED LEARNING PROBLEMS
-          - Definition: A computer program is said to learn from
-            experience E with respect to some class of tasks T and
-            performance measure P, if its performance at tasks in T,
-            as measured by P, improves with experience E.
-    2. CONCEPT LEARNING AND THE GENERAL-TO-SPECIFIC ORDERING
-       3. [@3] CONCEPT LEARNING AS SEARCH
-          - Definition: Let hj and hk be boolean-valued functions
-            defined over X. Then hj is *moregeneral-than-or-equal-to* hk
-            (written h_{j} \ge_{g} h_{k} ) if and only if
-
-            (\forall x \in X)[(hk(x) = 1) \to (hj(x) = 1)]
-          - FIND-S Algorithm.
-            1. Initialize h to the most specific hypothesis in H
-            2. For each positive training instance x
-               - For each attribute constraint a_i in h
-                 - If the constraint a_i is satisfied by x
-                   - Then do nothing
-                   - Else replace a_i in h by the next more general
-                     constraint that is satisfied by x
-            3. Output hypothesis h
-       5. [@5] VERSION SPACES AND THE CANDIDATE-ELIMINATION ALGORITHM
-          1. Representation
-             - A hypothesis h is *consistent* with a set of training
-               examples D if and only if h(x) = c(x) for each example
-               (x, c(x)) in D.
-
-               Consistent(h, D) \equiv (\forall(x, c(x)) \in D) h(x) = c(x)
-             - The *version space*, denoted VS_{H, D} with respect to
-               hypothesis space H and training examples D, is the
-               subset of hypotheses from H consistent with the
-               training examples in D.
-
-               VS_{H, D} \equiv {h \in H | Consistent(h, D)}
-          3. [@3] A More Compact Representation for Version Spaces
-             - Definition: The *general boundary* G, with respect to
-               hypothesis space H and training data D, is the set of
-               maximally general members of H consistent with D.
-
-               G = {g \in H | Consistent(g, D)
-                    \wedge (\not\exists g' \in H) [(g' >_{g} g) \wedge Consistent(g', D)]]
-             - Definition: The *specific boundary* S, with respect to
-               hypothesis space H and training data D, is the set of
-               minimally general (i.e., maximally specific) members of
-               H consistent with D.
-
-               S = {s \in H | Consistent(s, D)
-                    \wedge (\not\exists s' \in H) [(s >_{g} s') \wedge Consistent(s', D)]]
-             - Theorem 2.1. *Version space representation
-               theorem*. Let X be an arbitrary set of instances and
-               let H be a set of boolean-valued hypotheses defined
-               over X. Let c : X \to {O, 1) be an arbitrary target
-               concept defined over X, and let D be an arbitrary set
-               of training examples {<x, c(x)>). For all X, H, c, and
-               D such that S and G are well defined,
-
-               VS_{H, D} = {h \in H | (\exists s \in S, g \in G)(g \ge_{g} h \ge_{g} s)}
-    5. [@5] EVALUATING HYPOTHESES
-       1. ESTIMATING HYPOTHESIS ACCURACY
-          1. Sample Error and True Error
-             - Definition: The *sample error* (denoted error_{S}(h)) of
-               hypothesis h with respect to target function f and data
-               sample S is
-
-               error_{S}(h) \equiv 1/n \sum_{x \in S} \delta(f(x), h(x))
-
-               Where n is the number of examples in S, and the
-               quantity \delta(f(x), h(x)) is 1 if f(x) \neq h(x) , and 0
-               otherwise
-             - Definition: The *true error* (denoted error_{D}(h)) of
-               hypothesis h with respect to target function f and
-               distribution D, is the probability that h will
-               misclassify an instance drawn at random according to D.
-
-               error_{D}(h) \equiv Pr_{x \in D}[f(x) \neq h(x)]
-          2. Confidence Intervals for Discrete-Valued Hypotheses
-             - [confidence interval z_N = 1.96 for 95% confidence interval]
-               error_{S} \pm z_{N} \sqrt(error_{S}(h)(1- error_{S}(h)) / n)          (ref:5.1)
-             - n \cdot error_{S}(h) (1-error_{S}(h)) \ge 5
-       3. [@3] BASICS OF SAMPLING THEORY
-          4. [@4] Estimators, Bias, and Variance
-             - The *estimation bias* of an estimator Y for an arbitrary
-               parameter p is
-
-               E[Y] - p
-             - In general, given r errors in a sample of n
-               independently drawn test examples, the standard
-               deviation for errors(h) is given by
-
-               \sigma_{errors_{S}(h)} = \sigma_{r} / n = \sqrt{p(1-p) / n} (5.8)
-             - which can be approximated by substituting r/n =
-               errors_{S}(h) for p
-          5. Confidence Intervals
-             - An N% *confidence interval* for some parameter p is an
-               interval that is expected with probability N% to
-               contain p .
-             - if a random variable Y obeys a Normal distribution with
-               mean \mu and standard deviation \sigma , then the measured
-               random value y of Y will fall into the following
-               interval N% of the time
-
-               \mu \pm z_{N }\sigma
-
-               Equivalently, the mean \mu will fall into the following
-               interval N% of the time
-
-               y \pm z_{N} \sigma
-       4. A GENERAL APPROACH FOR DERIVING CONFIDENCE INTERVALS
-          0. [@0]
-             1. Identify the underlying population parameter p to
-                be estimated, for example, error_{D}(h).
-             2. Define the estimator Y (e.g., error_{S}(h)). It is
-                desirable to choose a minimum-variance, unbiased
-                estimator.
-             3. Determine the probability distribution D_{Y} that governs
-                the estimator Y, including its mean and variance.
-             4. Determine the N% confidence interval by finding
-                thresholds L and U such that N% of the mass in the
-                probability distribution D_{Y} falls between L and U.
-          1. Central Limit Theorem
-             - *Central Limit Theorem*. Consider a set of independent,
-               identically distributed random variables Y1 ... Yn,
-               governed by an arbitrary probability distribution with
-               mean p and finite variance \sigma^2. Define the sample mean,
-               Y'_n := 1/n \sum_{i=1}^n Y_i. Then as n \to \infty, the distribution
-               governing
-
-               (Y'_n - \mu) / (\sigma / \sqrt{n})
-
-               approaches a Normal distribution, with zero mean and
-               standard deviation equal to 1.
-       5. DIFFERENCE IN ERROR OF TWO HYPOTHESES
-          0. [@0]
-             - d^ \equiv error_{S_1}(h_1) - error_{S_2}(h_2)
-             - \sigma_{d^}^{2} \approx
-               [error_{S_1}(h_1) (1 - error_{S_1}(h_1))] /n_1
-               + [error_{S_2}(h_2) (1 - error_{S_2}(h_2))] /n_2         (ref:mi5.12)
-       6. COMPARING LEARNING ALGORITHMS
-          - Learning procedure
-            1. Partition the available data D0 into k disjoint subsets
-               T1, T2, ..., Tk of equal size, where this size is at
-               least 30.
-            2. for i in range(1,k+1):
-               S_i = D0 \ Ti
-               h_A = L_A(S_i)
-               h_B = L_B(S_i)
-               \delta_i = error_{Ti}(h_A) - error_{Ti}(h_B)
-            3. Return the value \delta, where
-
-               \delta = 1/k \sum_{i=1}^k \delta_i
-    7. [@7] COMPUTATIONAL LEARNING THEORY
-       1. INTRODUCTION
-          - *Sample complexity*. How many training examples are needed
-            for a learner to converge (with high probability) to a
-            successful hypothesis?
-          - *Computational complexity*. How much computational effort
-            is needed for a learner to converge (with high
-            probability) to a successful hypothesis?
-          - *Mistake bound*. How many training examples will the
-            learner misclassify before converging to a successful
-            hypothesis?
-       2. PROBABLY LEARNING AN APPROXIMATELY CORRECT HYPOTHESIS
-          *PAC*: probably approximately correct model
-          2. [@2] Error of a Hypothesis
-             - Error of a Hypothesis
-               - The *true error* (denoted error_{D}(h)) of hypothesis h
-                 with respect to target concept c and distribution D is
-                 the probability that h will misclassify an instance
-                 drawn at random according to D.
-
-                 error_{D}(h) \equiv Pr_{x \in D} [c(x) \neq h(x)]
-          3. PAC Learnability
-             - classes of target concepts that can be reliably learned
-               from a reasonable number of randomly drawn training
-               examples and a reasonable amount of computation.
-             - Consider a concept class C defined over a set of
-               instances X of length n and a learner L using
-               hypothesis space H . C is *PAC-learnable* by L using H
-               if for all c \in C, distributions D over X, \epsilon such that 0
-               < \epsilon < 1/2, and \delta such that 0 < \delta < 1/2, learner L will
-               with probability at least (1 - \delta) output a hypothesis h
-               \in H such that error_{D}(h) \le \epsilon, in time that is polynomial
-               in 1/\epsilon, 1/\delta, n, and size(c).
-       3. SAMPLE COMPLEXITY FOR FINITE HYPOTHESIS SPACES
-          - The reason is that in most practical settings the factor
-            that most limits success of the learner is the limited
-            availability of training data.
-          - Consider a hypothesis space H, target concept c, instance
-            distribution \cal D, and set of training examples D of c. The
-            version space VS_{H,D} is said to be *\epsilon-exhausted* with
-            respect to c and \cal D, if every hypothesis h in VS_{H,D} has
-            error less than \epsilon with respect to c and \cal D.
-
-            (\forall h \in VS_{H, D}) error_{\cal D}(h) < \epsilon
-          - *\epsilon-exhausting the version space*. If the hypothesis space H
-            is finite, and D is a sequence of m \ge 1 independent
-            randomly drawn examples of some target concept c, then for
-            any 0 \le \epsilon \le 1, the probability that the version space VS_{H,
-            \cal D} is not \epsilon-exhausted (with respect to c) is less
-            than or equal to |H| e^{-\epsilon m}
-          - m \ge 1/\epsilon (ln |H| + ln (1/\delta))
-    8. INSTANCE-BASED LEARNING
-       1. INTRODUCTION
-          - conceptually straightforward approaches to approximating
-            real-valued or discrete-valued target functions
-          - has significant advantages when the target function is
-            very complex, but can still be described by a collection
-            of less complex local approximations.
-
-*** ref [[file:master.bib::mitchell][Mitchell: Machine Learning]]
 ** TODO [#B] [[./guyon03a.pdf][An Introduction to Variable and Feature Selection]]
 ** TODO PART [#B] [[./minion-design.pdf][Mixminion: Design of a Type III Anonymous Remailer Protocol]]
 *** TODO at least dummy problem
@@ -19414,6 +19414,8 @@ When a media query is true, the corresponding style sheet or style rules are app
       behaviors through Weibull analysis of dwell time.  In
       Proceedings of the 33rd international ACM SIGIR Conference,
       pages 379–386, 2010.
+** TODO [#C] vorlesungsnotizen sv2/3                        :hannover_laptop:
+*** [#A] zu stufen der mustererkennung
 ** TODO [#E] demultiply git/docs/ and chive/keepimport [|/home/web/keep]
 ** TODO [[./DOM3-Core.pdf][Document Object Model (DOM) Level 3 Core Specification]]
 *** part: read some to quote for [[file:~/da/git/diplomarbeit.org::*Estimate%20Parameter:%20Number%20of%20Embedded%20Objects][Estimate Parameter: Number of Embedded Objects]]
