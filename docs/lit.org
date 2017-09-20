@@ -1,6 +1,7 @@
 #+PRIORITIES: A E E
 #+TODO: DOC PART TODO | META DONE
 [[./master.bib]]
+#* sort first by prio (p), then by todo state reversed (O)
 ** META [[~/chive/locallit.org]]
 ** DONE [[./2015-asiaccs.pdf][Arp - Torben: A Practical Side-Channel Attack for Deanonymizing Tor Communication]]
 *** quotes
@@ -15538,1409 +15539,6 @@ V.L. Voydock and S.T. Kent. Security Mechanisms in High-Level Network Protocols.
              - the Bayes error rate — the most important property of
                any classifier.
 *** ref [[file:master.bib::duda][Duda et al. 2000: Pattern Classification]]
-** TODO [#D] [[./user_guide_0.16.1.pdf][Pedregosa - scikit-learn user guide]] [0/3]
-*** TODO [#D] 42.21. sklearn.metrics: Metrics: sklearn.metrics.auc, see [[file:~/da/da.org::*open%20world][open world]]
-*** TODO [#D] 4.13.5 Tree-based feature selection
-    feature_importances: gini or obb-score, see todo
-*** TODO [#E] 11.1.2 Concatenating multiple feature extraction methods
-*** summary
-    1. AN INTRODUCTION TO MACHINE LEARNING WITH SCIKIT-LEARN
-
-       1. Machine learning: the problem setting
-
-          - supervised learning
-
-            - classification: classes
-
-            - regression: continuous variables
-
-          - unsupervised learning:
-
-            - clustering: similar examples within the data
-
-            - distribution of data: density estimation
-
-          - training set and testing set:
-
-            - training: learn properties
-
-            - testing: test properties
-
-       2. Loading an example dataset
-
-          - from sklearn import datasets
-
-          - digits = datasets.load_digits()
-
-          - digits.data: features
-
-          - digits.target: class
-
-          - digits.images[0] (here)
-
-       3. Learning and predicting
-
-          - =estimator= offers =fit(X, y)= and =predict(T)=
-
-          - from sklearn import svm
-
-          - clf = svm.SVC(gamma=0.001, C=100.)
-
-          - clf.fit(digits.data[:-1], digits.target[:-1])
-
-          - clf.predict(digits.data[-1])
-
-       4. Model persistence
-
-          - from sklearn.externals import joblib
-
-          - joblib.dump(clf, 'filename.pkl')
-
-          - clf2 = joblib.load('filename.pkl')
-
-            followed by clf2.predict(...)
-
-    2. A TUTORIAL ON STATISTICAL-LEARNING FOR SCIENTIFIC DATA
-       PROCESSING
-
-       1. Statistical learning: the setting and the estimator object
-          in scikit-learn
-
-          data: often 2d-array
-          estimator: estimates (fit, ..., params at object creation)
-
-       2. Supervised learning: predicting an output variable from
-          high-dimensional observations
-
-          1. Nearest neighbor and the curse of dimensionality
-
-             toy problem: classifying irises
-
-             - import numpy as np
-             - from sklearn import datasets
-             - iris = datasets.load_iris()
-             - iris_X = iris.data
-             - iris_y = iris.target
-             - np.unique(iris_y)
-
-             - k-Nearest neighbors classifier
-
-               - simplest classifier
-
-             - The curse of dimensionality
-
-               the number of points needed scales exponentially with the
-               dimension
-
-          2. Linear model: from regression to sparsity
-
-             1. linear regression
-
-                fit line X \beta + \epsilon to data points
-
-             2. Shrinkage
-
-                problem with few data points per dimension, solve via
-                Ridge (uses l_{2}-Norm)
-
-             3. Sparsity
-
-                it helps to reduce non-informative variables. Ridge
-                reduces, Lasso sets to 0 (good on large datasets), as
-                does LassoLARS (few observations)
-
-             4. Classification
-
-                for classification-regression, better use sigmoid instead
-                of linear (LogisticRegression)
-
-          3. Support vector machines (SVMs)
-
-             1. Linear SVMs
-
-                C is regularization parameter:
-
-                "a small value for C means the margin is calculated using
-                many or all of the observations around the separating line
-                (more regularization); a large value for C means the
-                margin is calculated on observations close to the
-                separating line (less regularization)."
-
-                thus: bigger C, less values considered (always those
-                close to separating line)
-
-                "For many estimators, including the SVMs, having datasets
-                with *unit standard deviation* for each feature is
-                important to get good prediction."
-
-             2. Using kernels
-
-                different fitting functions: linear, poly, rbf
-
-       3. Model selection: choosing estimators and their parameters
-
-          1. Score, and cross-validated scores
-
-             - score: bigger is better
-
-             - k-fold cross-validation:
-
-               - import numpy as np
-               - X_folds = np.array_split(X_digits, 3)
-               - y_folds = np.array_split(y_digits, 3)
-               - scores = list()
-               - for k in range(3):
-                 - X_train = list(X_folds)
-                 - X_test  = X_train.pop(k)
-                 - X_train = np.concatenate(X_train)
-                 - y_train = list(y_folds)
-                 - y_test  = y_train.pop(k)
-                 - y_train = np.concatenate(y_train)
-                 - scores.append(svc.fit(X_train, y_train).score(X_test, y_test))
-
-          2. Cross-validation generators
-
-             X-validation (Kfold, Loo, etc) are available via
-
-             =sklearn.cross_validation=
-
-             - "To compute the score method of an estimator, the sklearn
-               exposes a helper function:
-
-               #+BEGIN_SRC python
-                 cross_validation.cross_val_score(svc, X_digits, y_digits, cv=kfold, n_jobs=-1)
-               #+END_SRC
-
-          3. Grid-search and cross-validated estimators
-
-             1. Grid-search
-
-                automatic parameter search
-
-                #+BEGIN_SRC python
-                  # previously created a SVM named svc
-                  from sklearn.grid_search import GridSearchCV
-                  Cs = np.logspace(-6, -1, 10)
-                  clf = GridSearchCV(estimator=svc, param_grid=dict(C=Cs), n_jobs=-1)
-                  clf.fit(X_digits[:1000], y_digits[:1000])
-                  clf.best_score_
-                  clf.best_estimator_.C
-                #+END_SRC
-
-             2. Cross-validated estimators
-
-                with CV added to name: search automatically
-
-                (but not svm)
-
-       4. Unsupervised learning: seeking representations of the data
-
-          1. Clustering: grouping observations together
-
-             when categorization data not at hand
-
-             1. K-means clustering
-                #+BEGIN_SRC python
-                  from sklearn import cluster, datasets
-                  iris = datasets.load_iris()
-                  X_iris = iris.data
-                  y_iris = iris.target
-                  k_means = cluster.KMeans(n_clusters=3)
-                  k_means.fit(X_iris)
-                  print(k_means.labels_[::10])
-                #+END_SRC
-
-                iris: almost correct with 8 clusters, off on border with 3
-
-             2. Hierarchical agglomerative clustering: Ward
-
-                hierarchy of clusters
-
-                - agglomerative (bottom-up)
-
-                  "This approach is particularly interesting when the
-                  clusters of interest are made of only a few
-                  observations. When the number of clusters is large, it
-                  is much more computationally efficient than k-means."
-
-                - divisive (top-down)
-
-                  "For estimating large numbers of clusters, this
-                  approach is both slow (due to all observations starting
-                  as one cluster, which it splits recursively) and
-                  statistically ill-posed."
-
-             3. Connectivity-constrained clustering
-
-                - cluster depending on adjacency
-
-                - f.ex. used to find separating lines in lena picture
-
-             4. Feature agglomeration
-
-                - defeat curse of dimensionality by merging "similar
-                  features"
-
-          2. Decompositions: from a signal to components and loadings
-
-             decompose signal X into components C and loadings C
-
-             1. Principal component analysis: PCA
-
-                - extracts combinations which explain "maximum
-                  variance" (see quotes)
-
-             2. Independent Component Analysis: ICA
-
-                - might work better for analysis of non-gaussian data
-                  comparison (example see quotes)
-
-       5. Putting it all together
-
-          1. Pipelining
-
-             - combined estimators
-               #+BEGIN_SRC python
-                 from sklearn import linear_model, decomposition, datasets
-                 from sklearn.pipeline import Pipeline
-                 #...
-                 pca = decomposition.PCA()
-                 pipe = Pipeline(steps=[('pca', pca), ('logistic', logistic)])
-                 # prediction
-                 n_components = [20, 40, 64]
-                 Cs = np.logspace(-4, 4, 3)
-                 estimator = GridSearchCV(pipe,
-                 dict(pca__n_components=n_components,
-                 logistic__C=Cs))
-                 estimator.fit(X_digits, y_digits)
-               #+END_SRC
-
-          2. Face recognition with eigenfaces
-
-             0. [@0] imports
-                #+BEGIN_SRC python
-                  from sklearn.cross_validation import train_test_split
-                  from sklearn.metrics import classification_report
-                  from sklearn.metrics import confusion_matrix
-                #+END_SRC
-
-             1. get and prepare data
-                #+BEGIN_SRC python
-                  X_train, X_test, y_train, y_test = train_test_split(
-                      X, y, test_size=0.25)
-                #+END_SRC
-
-             2. do PCA
-
-             3. apply PCA to data
-
-             4. train svm
-                #+BEGIN_SRC python
-                  clf = GridSearchCV(SVC(kernel='rbf', class_weight='auto'), param_grid)
-                  clf = clf.fit(X_train_pca, y_train)
-                #+END_SRC
-                ('auto' is deprecated, use 'balanced' instead)
-
-             5. evaluate
-                #+BEGIN_SRC python
-                  y_pred = clf.predict(X_test_pca)
-                  print(classification_report(y_test, y_pred, target_names=target_names))
-                  print(confusion_matrix(y_test, y_pred, labels=range(n_classes)))
-                #+END_SRC
-
-          3. Open problem: Stock Market Structure
-
-             predict variation in Google stock price
-
-       6. Finding help
-
-          1. The project mailing list
-
-             "If you encounter a bug with scikit-learn or something
-             that needs clarification in the docstring or the online
-             documentation, please feel free to ask on [[http://scikit-learn.sourceforge.net/support.html][the Mailing
-             List]]"
-
-          2. Q&A communities with Machine Learning practitioners
-
-             - http://metaoptimize.com/qa
-
-    4. [@4] SUPERVISED LEARNING
-
-       1. Generalized Linear Models
-
-          y ˆ (w, x) = w 0 + w 1 x 1 + ... + w p x p
-
-          1. Ordinary Least Squares
-             #+BEGIN_SRC python
-               from sklearn import linear_model
-               clf = linear_model.LinearRegression()
-               clf.fit ([[0, 0], [1, 1], [2, 2]], [0, 1, 2])
-             #+END_SRC
-
-          2. Ridge Regression
-
-             penalty term for size of parameters: min ||Xw − y||^2 + α||w||^2
-
-             #+BEGIN_SRC python
-               clf = linear_model.Ridge (alpha = .5)
-             #+END_SRC
-
-             evaluate alpha:
-             #+BEGIN_SRC python
-               clf = linear_model.RidgeCV(alphas=[0.1, 1.0, 10.0])
-               clf.fit([[0, 0], [0, 0], [1, 1]], [0, .1, 1])
-               clf.alpha_
-             #+END_SRC
-
-             also has CV method
-
-          3. Lasso
-
-             for sparse parameters
-
-             #+BEGIN_SRC python
-               clf = linear_model.Lasso(alpha = 0.1)
-               clf.fit([[0, 0], [1, 1]], [0, 1])
-               clf.predict([[1, 1]])
-             #+END_SRC
-
-          4. Elastic Net
-
-             - sparse model like Lasso with regularization Ridge
-
-             - correlated features
-               #+BEGIN_SRC python
-                 from sklearn.linear_model import ElasticNet
-                 enet = ElasticNet(alpha=alpha, l1_ratio=0.7)
-                 y_pred_enet = enet.fit(X_train, y_train).predict(X_test)
-               #+END_SRC
-
-          5. Multi-task Lasso
-
-             - simultaneously evaluate n lassos
-               #+BEGIN_SRC python
-                 from sklearn.linear_model import MultiTaskLasso, Lasso
-                 rng = np.random.RandomState(42)
-                 # Generate some 2D coefficients with sine waves with random frequency and phase
-                 n_samples, n_features, n_tasks = 100, 30, 40
-                 n_relevant_features = 5
-                 coef = np.zeros((n_tasks, n_features))
-                 times = np.linspace(0, 2 * np.pi, n_tasks)
-                 for k in range(n_relevant_features):
-                     coef[:, k] = np.sin((1. + rng.randn(1)) * times + 3 * rng.randn(1))
-                 X = rng.randn(n_samples, n_features)
-                 Y = np.dot(X, coef.T) + rng.randn(n_samples, n_tasks)
-                 coef_lasso_ = np.array([Lasso(alpha=0.5).fit(X, y).coef_ for y in Y.T])
-                 coef_multi_task_lasso_ = MultiTaskLasso(alpha=1.).fit(X, Y).coef_
-               #+END_SRC
-
-          6. Least Angle Regression
-
-             - high-dimensional data
-               #+BEGIN_SRC python
-                 from sklearn import linear_model
-                 clf = linear_model.Lars(n_nonzero_coefs=1)
-                 clf.fit([[-1, 1], [0, 0], [1, 1]], [-1.1111, 0, -1.1111])
-               #+END_SRC
-
-          7. LARS Lasso
-
-             point 6) with Lasso
-             #+BEGIN_SRC python
-               clf = linear_model.LassoLars(alpha=.1)
-               clf.fit([[0, 0], [1, 1]], [0, 1])
-             #+END_SRC
-
-          8. Orthogonal Matching Pursuit (OMP)
-
-             #+BEGIN_SRC python
-               from sklearn.linear_model import OrthogonalMatchingPursuit
-               from sklearn.linear_model import OrthogonalMatchingPursuitCV
-               omp = OrthogonalMatchingPursuit(n_nonzero_coefs=n_nonzero_coefs)
-               omp.fit(X, y)
-               # plot the noisy reconstruction with number of non-zeros set by CV
-               omp_cv = OrthogonalMatchingPursuitCV()
-               omp_cv.fit(X, y_noisy)
-             #+END_SRC
-
-             - arg min ||y − Xγ||^{2}_{2} subject to ||γ||_{0} ≤ n_{nonzero_coefs}
-
-          9. Bayesian Regression
-
-             1. Bayesian Ridge Regression
-
-               #+BEGIN_SRC python
-                 from sklearn import linear_model
-                 X = [[0., 0.], [1., 1.], [2., 2.], [3., 3.]]
-                 Y = [0., 1., 2., 3.]
-                 clf = linear_model.BayesianRidge()
-                 clf.fit(X, Y)
-               #+END_SRC
-                - adapts, but costly (see quotes)
-
-             2. Automatic Relevance Determination - ARD
-
-       11. [@11] Ensemble methods
-
-           0. [@0]
-
-              - combine estimators
-
-              - averaging methods: concurrently: bagging methods,
-                forests of randomized trees
-
-              - boosting methods: subsequently
-
-           1. Bagging meta-estimator
-
-              - several instances on subsets of data (and features)
-
-                - combine those
-
-              - method to reduce variance
-
-              - difference of drawing subsets: just so, with
-                replacement, subsets of features, both features and
-                samples
-              #+BEGIN_SRC python
-              from sklearn.ensemble import BaggingClassifier
-              from sklearn.neighbors import KNeighborsClassifier
-              bagging = BaggingClassifier(KNeighborsClassifier(),
-              max_samples=0.5, max_features=0.5)
-              #+END_SRC
-
-           2. Forests of randomized trees
-
-              based on decision trees, perturb-and-combine, multi-output
-
-              1. Random Forests
-
-                 - sample drawn with replacement
-
-                 - each node chooses best of a random subset of features
-
-                 - this implementation averages probabilitic
-                   prediction of trees, instead of adding the votes
-
-              2. Extremely Randomized Trees
-
-                 - difference: randomly draw threshholds for each
-                   feature and use the best of these
-
-                   - use whole dataset to bootstrap
-
-              3. Parameters
-
-                 - best to cross-validate parameters
-
-                   - n_estimators, max_features, max_depth, min_samples_split
-
-              4. Parallelization
-
-                 possible, but might not give linear speedup
-
-              5. Feature importance evaluation
-
-                 - depth of feature relates to rank
-
-                 - averaging over several trees reduces variance
-
-              6. Totally Random Trees Embedding
-
-                 - encodes the leaves
-
-                 - maybe used by k-forest
-
-                 - example see 11.11.8 "Hashing feature transformation
-                   using Totally Random Trees"
-
-           3. AdaBoost
-
-       12. Multiclass and multilabel algorithms
-
-           change ways in which multi-class classification is
-           approached
-
-           1. Multilabel classification format
-
-              - use MultiLabelBinarizer to switch set to 0/1 labels
-                #+BEGIN_SRC python
-                  from sklearn.preprocessing import MultiLabelBinarizer
-                  Y = [[2, 3, 4], [2], [0, 1, 3], [0, 1, 2, 3, 4], [0, 1, 2]]
-                  MultiLabelBinarizer().fit_transform(Y)
-                #+END_SRC
-
-           2. One-Vs-The-Rest
-
-              - efficient and interpretable
-                #+BEGIN_SRC python
-                  from sklearn import datasets
-                  from sklearn.multiclass import OneVsRestClassifier
-                  from sklearn.svm import LinearSVC
-                  iris = datasets.load_iris()
-                  X, y = iris.data, iris.target
-                  OneVsRestClassifier(LinearSVC(random_state=0)).fit(X, y).predict(X)
-                #+END_SRC
-
-              - can also use multi-label
-
-           3. One-Vs-One
-
-    5. Unsupervised learning
-
-       7. [@7] Novelty and Outlier Detection
-
-          0. [@0] 
-
-             - novelty: have training data without outliers
-
-             - outlier: contained in training data, needs to fit
-               "central mode"
-
-          2. [@2] Outlier Detection
-
-    6. Model selection and evaluation
-
-       1. Cross-validation: evaluating estimator performance
-
-          - example usage of
-            #+BEGIN_SRC python
-              X_train, X_test, y_train, y_test = cross_validation.train_test_split(
-                  iris.data, iris.target, test_size=0.4, random_state=0)
-            #+END_SRC
-
-       2. Grid Search: Searching for estimator parameters
-
-          0. [@0]
-
-             - for *hyperparameters*: need to be set explicitly, example:
-               C, kernel, gamma for SVM
-
-          3. [@3] Tips for parameter search
-
-             - specify explicit metric (default is accuracy_score)
-
-               - good for unbalanced classification
-
-             - split train and test set
-
-             - exploit parallelism
-
-          4. Alternatives to brute force parameter search
-
-             3. [@3] (? - p.278) Out of Bag Estimates
-
-                - for bagging methods: they leave out part of the data
-
-                - use that to estimate scores
-
-       3. Model evaluation: quantifying the quality of predictions
-
-          0. [@0]
-
-             - 3 ways to evaluate model
-
-               - =score= method
-
-               - scoring parameter, f.ex. in cv (see below)
-
-               - classification metrics etc in =metrics= module
-
-               - (4: dummy estimators as baseline)
-
-          1. The =scoring= parameter: defining model evaluation rules
-
-             eval tools as =cross_val_score= and grid search take
-             scoring parameter, to control which metric they
-             optimize/compute
-
-             1. Common cases: predefined values
-
-                use f.ex. (for full list see chapter 6.3.1)
-                #+BEGIN_SRC python
-                  cross_val_score(clf, X, y, scoring='neg_log_loss')
-                #+END_SRC
-
-             2. Defining your scoring strategy from metric functions
-
-                - if not in list
-
-                - possible to use another method
-
-                - params: method, =greater_is_better=,
-                  =needs_threshold=, additional parameters
-                  #+BEGIN_SRC python
-                    ftwo_scorer = make_scorer(bounded_auc, bound=0.01, needs_threshold=True)
-                    grid = GridSearchCV(LinearSVC(), param_grid={'C': [1, 10]}, scoring=ftwo_scorer)
-                  #+END_SRC
-
-                - use given method, or implement own (takes params
-                  =(base, prediction)=)
-
-             3. Implementing your own scoring object
-
-                - skip =make_scorer= factory, implement own
-
-                - params =(estimator, X, y)=
-
-                - return float, higher better
-
-          2. Classification metrics
-
-             several metrics to help: =matthews_corrcoef=,
-             =roc_curve=, ...
-
-             1. From binary to multiclass and multilabel
-
-    7. Dataset transformations
-
-       3. [@3] Preprocessing data
-
-          make data "more suitable for downstream estimators"
-
-          1. Standardization, or mean removal and variance scaling
-
-             - set to zero mean and unit variance
-               #+BEGIN_SRC python
-                 X_scaled = preprocessing.scale(X)
-               #+END_SRC
-
-             - save values to apply to test data later
-               #+BEGIN_SRC python
-                 scaler = preprocessing.StandardScaler().fit(X)
-                 scaler.transform(X)
-               #+END_SRC
-
-             - Scaling features to a range
-
-               instead of fixed variance, set to range
-
-               - initialize: =min_max_scaler = preprocessing.MinMaxScaler()=
-
-               - train: =X_train_minmax = min_max_scaler.fit_transform(X_train)=
-
-             - test: =X_test_minmax = min_max_scaler.transform(X_test)=
-    11. [@11] Examples
-
-        18. [@18] Model Selection
-
-            4. [@4] Receiver Operating Characteristic (ROC) with cross
-               validation
-
-               - TPR on y-axis, FPR on x-axis
-
-               - several measurements, average
-
-               - area-under-curve important measure
-
-               - make 2-class
-                 #+BEGIN_SRC python
-                   # make 2-class: exclude third class
-                   X, y = X[y != 2], y[y != 2]
-
-                   cv = StratifiedKFold(y, n_folds=6)
-                   classifier = svm.SVC(kernel='linear', probability=True)
-                 #+END_SRC
-
-               - compute tpr, fpr
-                 #+BEGIN_SRC python
-                   for i, (train, test) in enumerate(cv):
-                       probas_ = classifier.fit(X[train], y[train]).predict_proba(X[test])
-                       fpr, tpr, thresholds = roc_curve(y[test], probas_[:, 1])
-                       roc_auc = auc(fpr, tpr)
-                 #+END_SRC
-
-            8. [@8] Receiver Operating Characteristic (ROC)
-
-               - top left point ideal, larger area under curve (AUC)
-                 better, steeper better
-
-               - typically binary classification, extendable by
-                 binarizing (and optionally additional
-                 micro-averaging)
-
-               - binarize data:
-                 #+BEGIN_SRC python
-                   y = label_binarize(y, classes=[0, 1, 2])
-                 #+END_SRC
-
-               - split data:
-                 #+BEGIN_SRC python
-                   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.5)
-                 #+END_SRC
-
-               - get class scores (after possible grid-search)
-                 #+BEGIN_SRC python
-                   y_score = classifier.fit(X_train, y_train).decision_function(X_test)
-                   fpr = dict()
-                   tpr = dict()
-                   roc_auc = dict()
-                   for i in range(n_classes):
-                       fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
-                       roc_auc[i] = auc(fpr[i], tpr[i])
-                 #+END_SRC
-*** quotes
-    2. [@2] A tutorial on statistical-learning for scientific data processing
-       1. Statistical learning: the setting and the estimator object
-          in scikit-learn
-          - import pylab as pl
-            pl.imshow
-       4. [@4] Unsupervised learning: seeking representations of the data
-          2. [@2] Decompositions: from a signal to components and loadings
-             - Create a signal with only 2 useful dimensions, analyse
-               #+BEGIN_SRC python
-                 x1 = np.random.normal(size=100)
-                 x2 = np.random.normal(size=100)
-                 x3 = x1 + x2
-                 X = np.c_[x1, x2, x3]
-                 from sklearn import decomposition
-                 pca = decomposition.PCA()
-                 pca.fit(X)
-                 PCA(copy=True, n_components=None, whiten=False)
-                 print(pca.explained_variance_)
-                 pca.n_components = 2
-                 X_reduced = pca.fit_transform(X)
-                 X_reduced
-               #+END_SRC
-             - Combine signals
-               #+BEGIN_SRC python
-                 time = np.linspace(0, 10, 2000)
-                 s1 = np.sin(2 * time) # Signal 1 : sinusoidal signal
-                 s2 = np.sign(np.sin(3 * time)) # Signal 2 : square signal
-                 S = np.c_[s1, s2]
-                 S += 0.2 * np.random.normal(size=S.shape) # Add noise
-                 S /= S.std(axis=0) # Standardize data
-                 # Mix data
-                 A = np.array([[1, 1], [0.5, 2]]) # Mixing matrix
-                 X = np.dot(S, A.T) # Generate observations
-                 ica = decomposition.FastICA() # Compute ICA
-                 S_ = ica.fit_transform(X) # Get the estimated sources
-                 A_ = ica.mixing_.T
-                 np.allclose(X, np.dot(S_, A_) + ica.mean_)
-               #+END_SRC
-    4. [@4] Supervised learning
-       1. Generalized Linear Models
-          2. [@2] Ridge Regression
-             - Here, α ≥ 0 is a complexity parameter that controls the
-               amount of shrinkage: the larger the value of α, the
-               greater the amount of shrinkage and thus the
-               coefficients become more robust to collinearity.
-          3. [@3] Lasso
-             - The alpha parameter controls the degree of sparsity of
-               the coefficients estimated.
-          9. [@9] Bayesian Regression
-             - The advantages of Bayesian Regression are:
-               - It adapts to the data at hand.
-               - It can be used to include regularization parameters
-                 in the estimation procedure.
-               The disadvantages of Bayesian regression include:
-               - Inference of the model can be time consuming.
-       4. [@4] Support Vector Machines
-          1. Classification
-             1. Multi-class classification
-                - SVC and NuSVC implement the “one-against-one”
-                  approach (Knerr et al., 1990) for multi- class
-                  classification. If =n_class= is the number of
-                  classes, then =n_class * (n_class - 1) / 2=
-                  classifiers are constructed and each one trains data
-                  from two classes
-                - Note that the LinearSVC also implements an
-                  alternative multi-class strategy, the so-called
-                  multi-class SVM formulated by Crammer and Singer, by
-                  using the option
-                  =multi_class=’crammer_singer’=. This method is
-                  consistent, which is not true for one-vs-rest
-                  classification. In practice, one-vs-rest
-                  classification is usually preferred, since the
-                  results are mostly similar, but the runtime is
-                  significantly less.
-             2. Scores and probabilities
-                - When the constructor option =probability= is set to
-                  =True=, class membership probability estimates (from
-                  the methods =predict_proba= and =predict_log_proba=)
-                  are enabled.
-          5. [@5] Tips on Practical Use
-             - Avoiding data copy: For SVC, SVR, NuSVC and NuSVR, if
-               the data passed to certain methods is not C-ordered
-               contiguous, and double precision, it will be copied
-               before calling the underlying C implementation. You can
-               check whether a give numpy array is C-contiguous by
-               inspecting its =flags= attribute.
-             - *it is highly recommended to scale your data*
-             - In SVC, if data for classification are unbalanced
-               (e.g. many positive and few negative), set
-               =class_weight=’auto’= and/or try different penalty
-               parameters C.
-       6. [@6] Nearest Neighbors
-          0. [@0]
-             - Despite its simplicity, nearest neighbors has been successful in
-               a large number of classification and regression problems
-          2. [@2] Nearest Neighbors Classification
-             - RadiusNeighborsClassifier [...] For high-dimensional parameter
-               spaces, this method becomes less effective due to the so-called
-               “curse of dimensionality”.
-          4. [@4] Nearest Neighbor Algorithms
-             - Currently, algorithm = ’auto’ selects ’kd_tree’ if k < N/2 and
-               the ’effective_metric_’ is in the ’VALID_METRICS’ list of
-               ’kd_tree’. It selects ’ball_tree’ if k < N/2 and the
-               ’effective_metric_’ is not in the ’VALID_METRICS’ list of
-               ’kd_tree’. It selects ’brute’ if k >= N/2. This choice is based
-               on the assumption that the number of query points is at least
-               the same order as the number of training points, and that
-               leaf_size is close to its default value of 30.
-          6. [@6] Approximate Nearest Neighbors
-             - There are many efficient exact nearest neighbor search
-               algorithms for low dimensions d (approximately 50). However
-               these algorithms perform poorly with respect to space and query
-               time when d increases. These algorithms are not any better than
-               comparing query point to each point from the database in a high
-               dimension (see Brute Force). This is a well-known consequence of
-               the phenomenon called “The Curse of Dimensionality”. There are
-               certain applications where we do not need the exact nearest
-               neighbors but having a “good guess” would suffice. When answers
-               do not have to be exact, the LSHForest class implements an
-               approximate nearest neighbor search.
-       9. [@9] Naive Bayes
-          0. [@0]
-             - although naive Bayes is known as a decent classifier, it
-               is known to be a bad estimator, so the probability outputs
-               from predict_proba are not to be taken too seriously.
-          2. [@2] Multinomial Naive Bayes
-       10. Decision Trees
-           - DecisionTreeClassifier [...]
-             #+BEGIN_SRC python
-               from sklearn import tree
-               X = [[0, 0], [1, 1]]
-               Y = [0, 1]
-               clf = tree.DecisionTreeClassifier()
-               clf = clf.fit(X, Y)
-             #+END_SRC
-       11. Ensemble methods
-           2. [@2] Forests of randomized trees
-              - As other classifiers, forest classifiers have to be fitted with
-                two arrays: a sparse or dense array X of size [n_samples,
-                n_features] holding the training samples, and an array Y of size
-                [n_samples] holding the target values (class labels) for the
-                training samples:
-                #+BEGIN_SRC python
-                  from sklearn.ensemble import RandomForestClassifier
-                  X = [[0, 0], [1, 1]]
-                  Y = [0, 1]
-                  clf = RandomForestClassifier(n_estimators=10)
-                  clf = clf.fit(X, Y)
-                #+END_SRC
-              - The best parameter values should always be
-                cross-validated.
-       12. Multiclass and multilabel algorithms
-           3. [@3] One-Vs-One
-              - This is because each individual learning problem only
-                involves a small subset of the data whereas, with
-                one-vs-the-rest, the complete dataset is used
-                n_classes times.
-    5. Unsupervised learning
-       3. [@3] Clustering
-          2. [@2] K-means
-             - The KMeans algorithm clusters data by trying to separate
-               samples in n groups of equal variance, minimizing a
-               criterion known as the inertia <inertia> or
-               within-cluster sum-of-squares. This algorithm requires
-               the number of clusters to be specified.
-    6. MODEL SELECTION AND EVALUATION
-       1. Cross-validation: evaluating estimator performance
-          - Learning the parameters of a prediction function and
-            testing it on the same data is a methodological mistake
-       2. Grid Search: Searching for estimator parameters
-          3. [@3] Tips for parameter search
-             - When evaluating the resulting model it is important to
-               do it on held-out samples that were not seen during the
-               grid search process: it is recommended to split the
-               data into a development set (to be fed to the
-               GridSearchCV instance) and an evaluation set to compute
-               performance metrics.
-       3. Model evaluation: quantifying the quality of predictions
-          2. [@2] Classification metrics
-             - And some work with binary and multilabel (but not
-               multiclass) problems: [...]
-
-               =roc_auc_score(y_true, y_score[, average, ...])=
-               Compute Area Under the Curve (AUC) from prediction
-               scores
-    11. [@11] Examples
-        11. [@11] Ensemble methods
-            3. [@3] Feature importances with forests of trees
-                #+BEGIN_SRC python
-                  from sklearn.ensemble import ExtraTreesClassifier
-                  [...]
-                  # Build a forest and compute the feature importances
-                  forest = ExtraTreesClassifier(n_estimators=250,
-                  random_state=0)
-                  forest.fit(X, y)
-                  importances = forest.feature_importances_
-                #+END_SRC
-        18. [@18] Model Selection
-            3. [@3] Confusion matrix
-               - Example of confusion matrix usage to evaluate the
-                 quality of the output of a classifier on the iris
-                 data set.
-                 #+BEGIN_SRC python
-                   from sklearn.metrics import confusion_matrix
-                   def plot_confusion_matrix(cm, title='Confusion matrix', cmap=plt.cm.Blues):
-                       plt.imshow(cm, interpolation='nearest', cmap=cmap)
-                       plt.colorbar()
-                       tick_marks = np.arange(len(iris.target_names))
-                       plt.xticks(tick_marks, iris.target_names, rotation=45)
-                       plt.yticks(tick_marks, iris.target_names)
-                       plt.tight_layout()
-                   # Compute confusion matrix
-                   cm = confusion_matrix(y_test, y_pred)
-                   np.set_printoptions(precision=2)
-                   print(cm)
-                   plt.figure()
-                   plot_confusion_matrix(cm)
-                   # Normalize the confusion matrix by row (i.e by the number of samples
-                   # in each class)
-                   cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-                 #+END_SRC
-            8. [@8] Receiver Operating Characteristic (ROC)
-               - ROC curves typically feature true positive rate on
-                 the Y axis, and false positive rate on the X
-                 axis. This means that the top left corner of the plot
-                 is the “ideal” point - a false positive rate of zero,
-                 and a true positive rate of one.
-               - The “steepness” of ROC curves is also important,
-                 since it is ideal to maximize the true positive rate
-                 while minimizing the false positive rate.
-               - Python source code: plot_roc.py
-                 #+BEGIN_SRC python
-                   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.5)#, random_state=0)
-                   # Learn to predict each class against the other
-                   classifier = OneVsRestClassifier(svm.SVC(kernel='linear', probability=True))#, random_state=random_state))
-                   y_score = classifier.fit(X_train, y_train).decision_function(X_test)
-                   # Compute ROC curve and ROC area for each class
-                   fpr = dict()
-                   tpr = dict()
-                   roc_auc = dict()
-                   for i in range(n_classes):
-                       fpr[i], tpr[i], _ = roc_curve(y_test[:, i],
-                                                     y_score[:, i])
-                       roc_auc[i] = auc(fpr[i], tpr[i])
-                   # Plot of a ROC curve for a specific class
-                   plt.figure()
-                   plt.plot(fpr[2], tpr[2], label='ROC curve (area = %0.2f)' % roc_auc[2])
-                   plt.plot([0, 1], [0, 1], 'k--')
-                   plt.xlim([0.0, 1.0])
-                   plt.ylim([0.0, 1.05])
-                   plt.xlabel('False Positive Rate')
-                   plt.ylabel('True Positive Rate')
-                   plt.title('Receiver operating characteristic example')
-                   plt.legend(loc="lower right")
-                   plt.show()
-                 #+END_SRC
-            10. [@10] Sample pipeline for text feature extraction and evaluation
-                # multiprocessing requires the fork to happen in a
-                # __main__ protected block
-    12. Frequently Asked Questions
-        12. [@12] How do I deal with string data (or trees, graphs...)?
-            - Firstly, many estimators take precomputed
-              distance/similarity matrices, so if the dataset is not too
-              large, you can compute distances for all pairs of
-              inputs. If the dataset is large, you can use feature
-              vectors with only one “feature”, which is an index into a
-              separate data structure, and supply a custom metric
-              function that looks up the actual data in this data
-              structure. E.g., to use DBSCAN with Levenshtein distances:
-              #+BEGIN_SRC python
-                >>> from leven import levenshtein
-                >>> import numpy as np
-                >>> from sklearn.cluster import dbscan
-                >>> data = ["ACCTCCTAGAAG", "ACCTACTAGAAGTT", "GAATATTAGGCCGA"]
-                >>> def lev_metric(x, y):
-                ...
-                i, j = int(x[0]), int(y[0])
-                # extract indices
-                ...
-                return levenshtein(data[i], data[j])
-                ...
-                >>> X = np.arange(len(data)).reshape(-1, 1)
-                >>> X
-                array([[0],
-                [1],
-                [2]])
-                >>> dbscan(X, metric=lev_metric, eps=5, min_samples=2)
-                ([0, 1], array([ 0, 0, -1]))
-              #+END_SRC
-              (This uses the third-party edit distance package leven.)
-              Similar tricks can be used, with some care, for tree
-              kernels, graph kernels, etc.
-    19. [@19] 0.14
-        2. [@2] API changes summary
-           - ... =decision_function= method. This will return the
-             distance of each sample from the decision boundary for
-             each class, as long as the underlying estimators
-             implement the decision_function method.
-    42. [@42] Reference
-        5. [@5] sklearn.cross_validation: Cross Validation
-           7. [@7] sklearn.cross_validation.StratifiedKFold
-              - class sklearn.cross_validation.StratifiedKFold(y,
-                n_folds=3, indices=None, shuffle=False,
-                random_state=None)
-
-                Stratified K-Folds cross validation iterator.
-
-                Provides train/test indices to split data in train
-                test sets.
-
-                This cross-validation object is a variation of KFold
-                that returns stratified folds. The folds are made by
-                preserving the percentage of samples for each class.
-
-           10. [@10] sklearn.cross_validation.train_test_split
-               - sklearn.cross_validation.train_test_split(*arrays,
-                 **options)
-
-                 Split arrays or matrices into random train and test
-                 subsets
-
-                 Parameters
-                 - stratify : array-like or None (default is None)
-
-                   If not None, data is split in a stratified fashion,
-                   using this as the labels array.
-        9. [@9] sklearn.ensemble: Ensemble Methods
-           9. [@9] sklearn.ensemble.RandomForestClassifier
-              - class sklearn.ensemble.RandomForestClassifier(
-                n_estimators=10, criterion=’gini’, max_depth=None,
-                min_samples_split=2, min_samples_leaf=1,
-                min_weight_fraction_leaf=0.0, max_features=’auto’,
-                max_leaf_nodes=None, bootstrap=True, oob_score=False,
-                n_jobs=1, random_state=None, verbose=0,
-                warm_start=False, class_weight=None)
-
-                Methods
-
-                - apply(X)
-
-                 Apply trees in the forest to X, return leaf indices.
-                  - Parameters X : array-like or sparse matrix, shape =
-                    [n_samples, n_features]
-
-                    The input samples. Internally, it will be converted to
-                    dtype=np.float32 and if a sparse matrix is provided to
-                    a sparse csr_matrix.
-                  - Returns X_leaves : array_like, shape = [n_samples,
-                    n_estimators]
-
-                    For each datapoint x in X and for each tree in the
-                    forest, return the index of the leaf x ends up in.
-        13. [@13] sklearn.grid_search: Grid Search
-            0. [@0]
-               - User guide: See the Grid Search: Searching for
-                 estimator parameters section for further details.
-            1. sklearn.grid_search.GridSearchCV
-               - class sklearn.grid_search.GridSearchCV(estimator,
-                 param_grid, scoring=None, loss_func=None,
-                 score_func=None, fit_params=None, n_jobs=1, iid=True,
-                 refit=True, cv=None, verbose=0,
-                 pre_dispatch=‘2*n_jobs’, error_score=’raise’)
-               - Parameters:
-                 - verbose : integer
-
-                   Controls the verbosity: the higher, the more messages.
-                 - cv : integer or cross-validation generator, default=3
-
-                   If an integer is passed, it is the number of
-                   folds. Specific cross-validation objects can be
-                   passed, see sklearn.cross_validation module for the
-                   list of possible objects
-        21. [@21] sklearn.metrics: Metrics
-            2. [@2] Classification metrics
-               - sklearn.metrics.roc_curve(y_true, y_score,
-                 pos_label=None, sample_weight=None)
-
-                 Compute Receiver operating characteristic (ROC)
-
-                 Returns
-                 - fpr : array, shape = [>2] [...]
-
-                   Increasing false positive rates such that element i
-                   is the false positive rate of predictions with
-                   score >= thresholds[i].
-                 - tpr : array, shape = [>2]
-
-                   Increasing true positive rates such that element i
-                   is the true positive rate of predictions with score
-                   >= thresholds[i].
-                 - thresholds : array, shape = [n_thresholds]
-
-                   Decreasing thresholds on the decision function used
-                   to compute fpr and tpr.
-
-                 Notes
-                 - Since the thresholds are sorted from low to high
-                   values, they are reversed upon returning them to
-                   ensure they correspond to both fpr and tpr, which
-                   are sorted in reversed order during their
-                   calculation.
-            3. [@3] Regression metrics
-               - sklearn.metrics.r2_score(y_true, y_pred, sample_weight=None)
-                 [...]
-                 #+BEGIN_SRC python
-                   from sklearn.metrics import r2_score
-                   y_true = [3, -0.5, 2, 7]
-                   y_pred = [2.5, 0.0, 2, 8]
-                   r2_score(y_true, y_pred) # 0.948...
-                   y_true = [[0.5, 1], [-1, 1], [7, -6]]
-                   y_pred = [[0, 2], [-1, 2], [8, -5]]
-                   r2_score(y_true, y_pred)
-                 #+END_SRC
-        23. [@23] sklearn.multiclass: Multiclass and multilabel classification
-            2. [@2] sklearn.multiclass.OneVsRestClassifier
-               - class sklearn.multiclass.OneVsRestClassifier(estimator, n_jobs=1)
-                 - [...]
-                 - Parameters:
-                   - [...]
-                   - n_jobs : int, optional, default: 1
-
-                     The number of jobs to use for the computation. If
-                     -1 all CPUs are used. If 1 is given, no parallel
-                     computing code is used at all, which is useful
-                     for debugging. For n_jobs below -1, (n_cpus + 1 +
-                     n_jobs) are used. Thus for n_jobs = -2, all CPUs
-                     but one are used.
-        25. [@25] sklearn.neighbors: Nearest Neighbors
-            2. [@2] sklearn.neighbors.KNeighborsClassifier
-               - class
-                 sklearn.neighbors.KNeighborsClassifier(n_neighbors=5,
-                 weights=’uniform’, algorithm=’auto’,
-                 leaf_size=30, p=2, metric=’minkowski’,
-                 metric_params=None, **kwargs) [...]
-
-                 metric : string or DistanceMetric object
-                 (default = ‘minkowski’) the distance metric to
-                 use for the tree. The default metric is
-                 minkowski, and with p=2 is equivalent to the
-                 standard Euclidean metric. See the documentation
-                 of the Distance-Metric class for a list of
-                 available metrics.
-            10. [@10] sklearn.neighbors.DistanceMetric
-                - “braycurtis” | BrayCurtisDistance | sum(|x - y|)
-                  / (sum(|x|) + sum(|y|))
-        29. [@29] sklearn.pipeline: Pipeline
-            1. sklearn.pipeline.Pipeline
-               - class sklearn.pipeline.Pipeline(steps) Pipeline
-                 of transforms with a final
-                 estimator. Sequentially apply a list of
-                 transforms and a final estimator. Intermediate
-                 steps of the pipeline must be ‘transforms’, that
-                 is, they must implement fit and transform
-                 methods. The final estimator only needs to
-                 implement fit. The purpose of the pipeline is to
-                 assemble several steps that can be
-                 cross-validated together while setting different
-                 parameters. For this, it enables setting
-                 parameters of the various steps using their
-                 names and the parameter name separated by a
-                 ‘__’, as in the example below.
-
-                 Parameterssteps: list :List of (name, transform)
-                 tuples (implementing fit/transform) that are
-                 chained, in the order in which they are chained,
-                 with the last object an estimator.
-
-                 Examples
-                 #+BEGIN_SRC python
-                   >>> from sklearn import svm
-                   >>> from sklearn.datasets import samples_generator
-                   >>> from sklearn.feature_selection import SelectKBest
-                   >>> from sklearn.feature_selection import f_regression
-                   >>> from sklearn.pipeline import Pipeline
-                   >>> # generate some data to play with
-                   >>> X, y = samples_generator.make_classification(
-                   ...
-                   n_informative=5, n_redundant=0, random_state=42)
-                   >>> # ANOVA SVM-C
-                   >>> anova_filter = SelectKBest(f_regression, k=5)
-                   >>> clf = svm.SVC(kernel='linear')
-                   >>> anova_svm = Pipeline([('anova', anova_filter), ('svc', clf)])
-                   >>> # You can set the parameters using the names issued
-                   >>> # For instance, fit using a k of 10 in the SelectKBest
-                   >>> # and a parameter 'C' of the svm
-                   >>> anova_svm.set_params(anova__k=10, svc__C=.1).fit(X, y)
-                   ...
-                   Pipeline(steps=[...])
-                   >>> prediction = anova_svm.predict(X)
-                   >>> anova_svm.score(X, y)
-                   0.77...
-                 #+END_SRC
-        30. sklearn.preprocessing: Preprocessing and Normalization
-            7. [@7] sklearn.preprocessing.MinMaxScaler
-               - class
-                 sklearn.preprocessing.MinMaxScaler(feature_range=(0,
-                 1., copy=True)
-
-                 Standardizes features by scaling each feature to a
-                 given range.
-
-                 This estimator scales and translates each feature
-                 individually such that it is in the given range on
-                 the training set, i.e. between zero and one.
-            14. [@14] sklearn.preprocessing.label_binarize
-                - sklearn.preprocessing.label_binarize(y, classes,
-                  neg_label=0, pos_label=1, sparse_output=False,
-                  multilabel=None)
-
-                  Binarize labels in a one-vs-all fashion
-                  #+BEGIN_SRC python
-                    >>> label_binarize(['yes', 'no', 'no', 'yes'], classes=['no', 'yes'])
-                    array([[1], [0], [0], [1]])
-                  #+END_SRC
-        34. [@34] sklearn.svm: Support Vector Machines
-            - decision_function(X)
-
-              Distance of the samples X to the separating hyperplane.
-        35. sklearn.tree: Decision Trees
-            - class sklearn.tree.DecisionTreeClassifier(
-              criterion=’gini’, splitter=’best’, max_depth=None,
-              min_samples_split=2, min_samples_leaf=1,
-              min_weight_fraction_leaf=0.0, max_features=None,
-              random_state=None, max_leaf_nodes=None,
-              class_weight=None)
-
-              Attributes
-
-              - feature_importances_ : array of shape = [n_features]
-
-                The feature importances.
-    47. [@47] Chapter 47. How to optimize for speed
-        3. [@3] Profiling Python code
-           - It is however still interesting to check what’s happening
-             inside the =_nls_subproblem= function which is the
-             hotspot if we only consider Python code: it takes around
-             100% of the cumulated time of the module. In order to
-             better understand the profile of this specific function,
-             let us install line-prof and wire it to IPython:
-             #+BEGIN_SRC sh
-               pip install line-profiler
-             #+END_SRC
-*** ref [[file:master.bib::scikit-learn][Pedregosa et al. 2011: Scikit]]
-*** exercises
-**** Exercise digits-knn-linear
-     Try classifying the digits dataset with nearest neighbors and a
-     linear model. Leave out the last 10% and test prediction
-     performance on these observations.
-
-     from sklearn import datasets, neighbors, linear_model
-
-     digits = datasets.load_digits()
-     X_digits = digits.data
-     y_digits = digits.target
-***** Solution
-      #+BEGIN_SRC python
-        from sklearn import datasets, neighbors, linear_model
-        import numpy as np
-
-        digits = datasets.load_digits()
-        X_digits = digits.data
-        y_digits = digits.target
-
-        np.random.seed(0)
-        indices = np.random.permutation(len(y_digits))
-        percent = int(len(y_digits) * 0.9)
-
-        digits_X_train = X_digits[indices[:percent]]
-        digits_X_test = X_digits[indices[percent:]]
-        digits_y_train = y_digits[indices[:percent]]
-        digits_y_test = y_digits[indices[percent:]]
-
-        knn = neighbors.KNeighborsClassifier()
-        knn.fit(digits_X_train, digits_y_train)
-        knn.score(digits_X_test, digits_y_test)
-
-        lin = linear_model.LogisticRegression()
-        lin.fit(digits_X_train, digits_y_train)
-        lin.score(digits_X_test, digits_y_test)
-      #+END_SRC
-**** Exercise iris-svm
-     Try classifying classes 1 and 2 from the iris dataset with SVMs,
-     with the 2 first features. Leave out 10% of each class and test
-     prediction performance on these observations.
-***** Solution
-      #+BEGIN_SRC python
-        from sklearn import datasets, svm
-        import numpy as np
-
-        iris = datasets.load_iris()
-        X = iris.data
-        y = iris.target
-
-        # normalize std
-        s = np.std(X, 0)
-        for i in range(4):
-            X[:,i] /= s[i]
-
-        np.random.seed(0)
-        indices = np.random.permutation(len(y))
-        percent = int(len(y) * 0.9)
-
-        X_train = X[indices[:percent]]
-        X_test = X[indices[percent:]]
-        y_train = y[indices[:percent]]
-        y_test = y[indices[percent:]]
-
-        svc = svm.SVC(kernel='linear')
-        svc.fit(X_train, y_train)
-        print svc.score(X_test, y_test)
-
-        svcr = svm.SVC()
-        svcr.fit(X_train, y_train)
-        print svcr.score(X_test, y_test)
-      #+END_SRC
-**** Exercise kfold
-     On the digits dataset, plot the cross-validation score of a SVC
-     estimator with an linear kernel as a function of parameter C (use
-     a logarithmic grid of points, from 1 to 10).
-***** Solution
-      #+BEGIN_SRC python
-        import numpy as np
-        from sklearn import cross_validation, datasets, svm
-
-        C_s = np.logspace(-10, 0, 50)
-
-        digits = datasets.load_digits()
-        X = digits.data
-        y = digits.target
-
-        for C in C_s:
-            svc.C = C
-            score = cross_validation.cross_val_score(svc, X, y, n_jobs=1)
-            print '%f, %f, %f' % (C, np.mean(score), np.std(score))
-      #+END_SRC
-**** Exercise grid-optimal
-     On the diabetes dataset, find the optimal regularization
-     parameter alpha.
-***** Solution
-      #+BEGIN_SRC python
-        from sklearn import cross_validation, datasets, linear_model
-        import numpy as np
-
-        diabetes = datasets.load_diabetes()
-        X = diabetes.data[:150]
-        y = diabetes.target[:150]
-
-        lasso = linear_model.Lasso()
-        alphas = np.logspace(-4, -.5, 30)
-
-        from sklearn.grid_search import GridSearchCV
-        clf = GridSearchCV(estimator=lasso, param_grid=dict(alpha=alphas), n_jobs=-1)
-        clf.fit(X, y)
-        print clf.score(diabetes.data[150:], diabetes.target[150:])
-
-        # for a in alphas:
-        #     lasso.alpha = a
-        #     score = cross_validation.cross_val_score(lasso, X, y, n_jobs=1)
-        #     print '%f, %s' % (a, np.mean(score))
-      #+END_SRC
 ** TODO [#D] [[./201101-Evaluation_JMLT_Postprint-Colour.pdf][Powers - Evaluation: from precision, recall and f-measure to roc, informedness, markedness & correlation]]
 *** continue p. 41 "We now summarize..."
 *** summary
@@ -22478,6 +21076,1415 @@ When a media query is true, the corresponding style sheet or style rules are app
        3. Pluggable Transport To Parent Process Communication
 *** quotes
 *** ref [[file:master.bib::tor-spec-pt][Yawning 2015: Pluggable Transport Specification Version]]
+** PART [#B] [[./user_guide_0.16.1.pdf][Pedregosa - scikit-learn user guide]] [0/3]
+*** TODO [#B] scikit read up on 5.7.2 outlier detection
+    [2017-03-26 So]
+    [[file:~/da/git/docs/lit.org::*Probability%20of%20Obtaining%20Mean][Probability of Obtaining Mean]]
+*** TODO [#D] 42.21. sklearn.metrics: Metrics: sklearn.metrics.auc, see [[file:~/da/da.org::*open%20world][open world]]
+*** TODO [#D] 4.13.5 Tree-based feature selection
+    feature_importances: gini or obb-score, see todo
+*** TODO [#E] 11.1.2 Concatenating multiple feature extraction methods
+*** TODO [#F] metrics.adjusted_rand_score
+    [2017-01-23 Mo]
+    [[file:~/da/git/docs/lit.org::*summary][summary]]
+*** summary
+    1. AN INTRODUCTION TO MACHINE LEARNING WITH SCIKIT-LEARN
+
+       1. Machine learning: the problem setting
+
+          - supervised learning
+
+            - classification: classes
+
+            - regression: continuous variables
+
+          - unsupervised learning:
+
+            - clustering: similar examples within the data
+
+            - distribution of data: density estimation
+
+          - training set and testing set:
+
+            - training: learn properties
+
+            - testing: test properties
+
+       2. Loading an example dataset
+
+          - from sklearn import datasets
+
+          - digits = datasets.load_digits()
+
+          - digits.data: features
+
+          - digits.target: class
+
+          - digits.images[0] (here)
+
+       3. Learning and predicting
+
+          - =estimator= offers =fit(X, y)= and =predict(T)=
+
+          - from sklearn import svm
+
+          - clf = svm.SVC(gamma=0.001, C=100.)
+
+          - clf.fit(digits.data[:-1], digits.target[:-1])
+
+          - clf.predict(digits.data[-1])
+
+       4. Model persistence
+
+          - from sklearn.externals import joblib
+
+          - joblib.dump(clf, 'filename.pkl')
+
+          - clf2 = joblib.load('filename.pkl')
+
+            followed by clf2.predict(...)
+
+    2. A TUTORIAL ON STATISTICAL-LEARNING FOR SCIENTIFIC DATA
+       PROCESSING
+
+       1. Statistical learning: the setting and the estimator object
+          in scikit-learn
+
+          data: often 2d-array
+          estimator: estimates (fit, ..., params at object creation)
+
+       2. Supervised learning: predicting an output variable from
+          high-dimensional observations
+
+          1. Nearest neighbor and the curse of dimensionality
+
+             toy problem: classifying irises
+
+             - import numpy as np
+             - from sklearn import datasets
+             - iris = datasets.load_iris()
+             - iris_X = iris.data
+             - iris_y = iris.target
+             - np.unique(iris_y)
+
+             - k-Nearest neighbors classifier
+
+               - simplest classifier
+
+             - The curse of dimensionality
+
+               the number of points needed scales exponentially with the
+               dimension
+
+          2. Linear model: from regression to sparsity
+
+             1. linear regression
+
+                fit line X \beta + \epsilon to data points
+
+             2. Shrinkage
+
+                problem with few data points per dimension, solve via
+                Ridge (uses l_{2}-Norm)
+
+             3. Sparsity
+
+                it helps to reduce non-informative variables. Ridge
+                reduces, Lasso sets to 0 (good on large datasets), as
+                does LassoLARS (few observations)
+
+             4. Classification
+
+                for classification-regression, better use sigmoid instead
+                of linear (LogisticRegression)
+
+          3. Support vector machines (SVMs)
+
+             1. Linear SVMs
+
+                C is regularization parameter:
+
+                "a small value for C means the margin is calculated using
+                many or all of the observations around the separating line
+                (more regularization); a large value for C means the
+                margin is calculated on observations close to the
+                separating line (less regularization)."
+
+                thus: bigger C, less values considered (always those
+                close to separating line)
+
+                "For many estimators, including the SVMs, having datasets
+                with *unit standard deviation* for each feature is
+                important to get good prediction."
+
+             2. Using kernels
+
+                different fitting functions: linear, poly, rbf
+
+       3. Model selection: choosing estimators and their parameters
+
+          1. Score, and cross-validated scores
+
+             - score: bigger is better
+
+             - k-fold cross-validation:
+
+               - import numpy as np
+               - X_folds = np.array_split(X_digits, 3)
+               - y_folds = np.array_split(y_digits, 3)
+               - scores = list()
+               - for k in range(3):
+                 - X_train = list(X_folds)
+                 - X_test  = X_train.pop(k)
+                 - X_train = np.concatenate(X_train)
+                 - y_train = list(y_folds)
+                 - y_test  = y_train.pop(k)
+                 - y_train = np.concatenate(y_train)
+                 - scores.append(svc.fit(X_train, y_train).score(X_test, y_test))
+
+          2. Cross-validation generators
+
+             X-validation (Kfold, Loo, etc) are available via
+
+             =sklearn.cross_validation=
+
+             - "To compute the score method of an estimator, the sklearn
+               exposes a helper function:
+
+               #+BEGIN_SRC python
+                 cross_validation.cross_val_score(svc, X_digits, y_digits, cv=kfold, n_jobs=-1)
+               #+END_SRC
+
+          3. Grid-search and cross-validated estimators
+
+             1. Grid-search
+
+                automatic parameter search
+
+                #+BEGIN_SRC python
+                  # previously created a SVM named svc
+                  from sklearn.grid_search import GridSearchCV
+                  Cs = np.logspace(-6, -1, 10)
+                  clf = GridSearchCV(estimator=svc, param_grid=dict(C=Cs), n_jobs=-1)
+                  clf.fit(X_digits[:1000], y_digits[:1000])
+                  clf.best_score_
+                  clf.best_estimator_.C
+                #+END_SRC
+
+             2. Cross-validated estimators
+
+                with CV added to name: search automatically
+
+                (but not svm)
+
+       4. Unsupervised learning: seeking representations of the data
+
+          1. Clustering: grouping observations together
+
+             when categorization data not at hand
+
+             1. K-means clustering
+                #+BEGIN_SRC python
+                  from sklearn import cluster, datasets
+                  iris = datasets.load_iris()
+                  X_iris = iris.data
+                  y_iris = iris.target
+                  k_means = cluster.KMeans(n_clusters=3)
+                  k_means.fit(X_iris)
+                  print(k_means.labels_[::10])
+                #+END_SRC
+
+                iris: almost correct with 8 clusters, off on border with 3
+
+             2. Hierarchical agglomerative clustering: Ward
+
+                hierarchy of clusters
+
+                - agglomerative (bottom-up)
+
+                  "This approach is particularly interesting when the
+                  clusters of interest are made of only a few
+                  observations. When the number of clusters is large, it
+                  is much more computationally efficient than k-means."
+
+                - divisive (top-down)
+
+                  "For estimating large numbers of clusters, this
+                  approach is both slow (due to all observations starting
+                  as one cluster, which it splits recursively) and
+                  statistically ill-posed."
+
+             3. Connectivity-constrained clustering
+
+                - cluster depending on adjacency
+
+                - f.ex. used to find separating lines in lena picture
+
+             4. Feature agglomeration
+
+                - defeat curse of dimensionality by merging "similar
+                  features"
+
+          2. Decompositions: from a signal to components and loadings
+
+             decompose signal X into components C and loadings C
+
+             1. Principal component analysis: PCA
+
+                - extracts combinations which explain "maximum
+                  variance" (see quotes)
+
+             2. Independent Component Analysis: ICA
+
+                - might work better for analysis of non-gaussian data
+                  comparison (example see quotes)
+
+       5. Putting it all together
+
+          1. Pipelining
+
+             - combined estimators
+               #+BEGIN_SRC python
+                 from sklearn import linear_model, decomposition, datasets
+                 from sklearn.pipeline import Pipeline
+                 #...
+                 pca = decomposition.PCA()
+                 pipe = Pipeline(steps=[('pca', pca), ('logistic', logistic)])
+                 # prediction
+                 n_components = [20, 40, 64]
+                 Cs = np.logspace(-4, 4, 3)
+                 estimator = GridSearchCV(pipe,
+                 dict(pca__n_components=n_components,
+                 logistic__C=Cs))
+                 estimator.fit(X_digits, y_digits)
+               #+END_SRC
+
+          2. Face recognition with eigenfaces
+
+             0. [@0] imports
+                #+BEGIN_SRC python
+                  from sklearn.cross_validation import train_test_split
+                  from sklearn.metrics import classification_report
+                  from sklearn.metrics import confusion_matrix
+                #+END_SRC
+
+             1. get and prepare data
+                #+BEGIN_SRC python
+                  X_train, X_test, y_train, y_test = train_test_split(
+                      X, y, test_size=0.25)
+                #+END_SRC
+
+             2. do PCA
+
+             3. apply PCA to data
+
+             4. train svm
+                #+BEGIN_SRC python
+                  clf = GridSearchCV(SVC(kernel='rbf', class_weight='auto'), param_grid)
+                  clf = clf.fit(X_train_pca, y_train)
+                #+END_SRC
+                ('auto' is deprecated, use 'balanced' instead)
+
+             5. evaluate
+                #+BEGIN_SRC python
+                  y_pred = clf.predict(X_test_pca)
+                  print(classification_report(y_test, y_pred, target_names=target_names))
+                  print(confusion_matrix(y_test, y_pred, labels=range(n_classes)))
+                #+END_SRC
+
+          3. Open problem: Stock Market Structure
+
+             predict variation in Google stock price
+
+       6. Finding help
+
+          1. The project mailing list
+
+             "If you encounter a bug with scikit-learn or something
+             that needs clarification in the docstring or the online
+             documentation, please feel free to ask on [[http://scikit-learn.sourceforge.net/support.html][the Mailing
+             List]]"
+
+          2. Q&A communities with Machine Learning practitioners
+
+             - http://metaoptimize.com/qa
+
+    4. [@4] SUPERVISED LEARNING
+
+       1. Generalized Linear Models
+
+          y ˆ (w, x) = w 0 + w 1 x 1 + ... + w p x p
+
+          1. Ordinary Least Squares
+             #+BEGIN_SRC python
+               from sklearn import linear_model
+               clf = linear_model.LinearRegression()
+               clf.fit ([[0, 0], [1, 1], [2, 2]], [0, 1, 2])
+             #+END_SRC
+
+          2. Ridge Regression
+
+             penalty term for size of parameters: min ||Xw − y||^2 + α||w||^2
+
+             #+BEGIN_SRC python
+               clf = linear_model.Ridge (alpha = .5)
+             #+END_SRC
+
+             evaluate alpha:
+             #+BEGIN_SRC python
+               clf = linear_model.RidgeCV(alphas=[0.1, 1.0, 10.0])
+               clf.fit([[0, 0], [0, 0], [1, 1]], [0, .1, 1])
+               clf.alpha_
+             #+END_SRC
+
+             also has CV method
+
+          3. Lasso
+
+             for sparse parameters
+
+             #+BEGIN_SRC python
+               clf = linear_model.Lasso(alpha = 0.1)
+               clf.fit([[0, 0], [1, 1]], [0, 1])
+               clf.predict([[1, 1]])
+             #+END_SRC
+
+          4. Elastic Net
+
+             - sparse model like Lasso with regularization Ridge
+
+             - correlated features
+               #+BEGIN_SRC python
+                 from sklearn.linear_model import ElasticNet
+                 enet = ElasticNet(alpha=alpha, l1_ratio=0.7)
+                 y_pred_enet = enet.fit(X_train, y_train).predict(X_test)
+               #+END_SRC
+
+          5. Multi-task Lasso
+
+             - simultaneously evaluate n lassos
+               #+BEGIN_SRC python
+                 from sklearn.linear_model import MultiTaskLasso, Lasso
+                 rng = np.random.RandomState(42)
+                 # Generate some 2D coefficients with sine waves with random frequency and phase
+                 n_samples, n_features, n_tasks = 100, 30, 40
+                 n_relevant_features = 5
+                 coef = np.zeros((n_tasks, n_features))
+                 times = np.linspace(0, 2 * np.pi, n_tasks)
+                 for k in range(n_relevant_features):
+                     coef[:, k] = np.sin((1. + rng.randn(1)) * times + 3 * rng.randn(1))
+                 X = rng.randn(n_samples, n_features)
+                 Y = np.dot(X, coef.T) + rng.randn(n_samples, n_tasks)
+                 coef_lasso_ = np.array([Lasso(alpha=0.5).fit(X, y).coef_ for y in Y.T])
+                 coef_multi_task_lasso_ = MultiTaskLasso(alpha=1.).fit(X, Y).coef_
+               #+END_SRC
+
+          6. Least Angle Regression
+
+             - high-dimensional data
+               #+BEGIN_SRC python
+                 from sklearn import linear_model
+                 clf = linear_model.Lars(n_nonzero_coefs=1)
+                 clf.fit([[-1, 1], [0, 0], [1, 1]], [-1.1111, 0, -1.1111])
+               #+END_SRC
+
+          7. LARS Lasso
+
+             point 6) with Lasso
+             #+BEGIN_SRC python
+               clf = linear_model.LassoLars(alpha=.1)
+               clf.fit([[0, 0], [1, 1]], [0, 1])
+             #+END_SRC
+
+          8. Orthogonal Matching Pursuit (OMP)
+
+             #+BEGIN_SRC python
+               from sklearn.linear_model import OrthogonalMatchingPursuit
+               from sklearn.linear_model import OrthogonalMatchingPursuitCV
+               omp = OrthogonalMatchingPursuit(n_nonzero_coefs=n_nonzero_coefs)
+               omp.fit(X, y)
+               # plot the noisy reconstruction with number of non-zeros set by CV
+               omp_cv = OrthogonalMatchingPursuitCV()
+               omp_cv.fit(X, y_noisy)
+             #+END_SRC
+
+             - arg min ||y − Xγ||^{2}_{2} subject to ||γ||_{0} ≤ n_{nonzero_coefs}
+
+          9. Bayesian Regression
+
+             1. Bayesian Ridge Regression
+
+               #+BEGIN_SRC python
+                 from sklearn import linear_model
+                 X = [[0., 0.], [1., 1.], [2., 2.], [3., 3.]]
+                 Y = [0., 1., 2., 3.]
+                 clf = linear_model.BayesianRidge()
+                 clf.fit(X, Y)
+               #+END_SRC
+                - adapts, but costly (see quotes)
+
+             2. Automatic Relevance Determination - ARD
+
+       11. [@11] Ensemble methods
+
+           0. [@0]
+
+              - combine estimators
+
+              - averaging methods: concurrently: bagging methods,
+                forests of randomized trees
+
+              - boosting methods: subsequently
+
+           1. Bagging meta-estimator
+
+              - several instances on subsets of data (and features)
+
+                - combine those
+
+              - method to reduce variance
+
+              - difference of drawing subsets: just so, with
+                replacement, subsets of features, both features and
+                samples
+              #+BEGIN_SRC python
+              from sklearn.ensemble import BaggingClassifier
+              from sklearn.neighbors import KNeighborsClassifier
+              bagging = BaggingClassifier(KNeighborsClassifier(),
+              max_samples=0.5, max_features=0.5)
+              #+END_SRC
+
+           2. Forests of randomized trees
+
+              based on decision trees, perturb-and-combine, multi-output
+
+              1. Random Forests
+
+                 - sample drawn with replacement
+
+                 - each node chooses best of a random subset of features
+
+                 - this implementation averages probabilitic
+                   prediction of trees, instead of adding the votes
+
+              2. Extremely Randomized Trees
+
+                 - difference: randomly draw threshholds for each
+                   feature and use the best of these
+
+                   - use whole dataset to bootstrap
+
+              3. Parameters
+
+                 - best to cross-validate parameters
+
+                   - n_estimators, max_features, max_depth, min_samples_split
+
+              4. Parallelization
+
+                 possible, but might not give linear speedup
+
+              5. Feature importance evaluation
+
+                 - depth of feature relates to rank
+
+                 - averaging over several trees reduces variance
+
+              6. Totally Random Trees Embedding
+
+                 - encodes the leaves
+
+                 - maybe used by k-forest
+
+                 - example see 11.11.8 "Hashing feature transformation
+                   using Totally Random Trees"
+
+           3. AdaBoost
+
+       12. Multiclass and multilabel algorithms
+
+           change ways in which multi-class classification is
+           approached
+
+           1. Multilabel classification format
+
+              - use MultiLabelBinarizer to switch set to 0/1 labels
+                #+BEGIN_SRC python
+                  from sklearn.preprocessing import MultiLabelBinarizer
+                  Y = [[2, 3, 4], [2], [0, 1, 3], [0, 1, 2, 3, 4], [0, 1, 2]]
+                  MultiLabelBinarizer().fit_transform(Y)
+                #+END_SRC
+
+           2. One-Vs-The-Rest
+
+              - efficient and interpretable
+                #+BEGIN_SRC python
+                  from sklearn import datasets
+                  from sklearn.multiclass import OneVsRestClassifier
+                  from sklearn.svm import LinearSVC
+                  iris = datasets.load_iris()
+                  X, y = iris.data, iris.target
+                  OneVsRestClassifier(LinearSVC(random_state=0)).fit(X, y).predict(X)
+                #+END_SRC
+
+              - can also use multi-label
+
+           3. One-Vs-One
+
+    5. Unsupervised learning
+
+       7. [@7] Novelty and Outlier Detection
+
+          0. [@0] 
+
+             - novelty: have training data without outliers
+
+             - outlier: contained in training data, needs to fit
+               "central mode"
+
+          2. [@2] Outlier Detection
+
+    6. Model selection and evaluation
+
+       1. Cross-validation: evaluating estimator performance
+
+          - example usage of
+            #+BEGIN_SRC python
+              X_train, X_test, y_train, y_test = cross_validation.train_test_split(
+                  iris.data, iris.target, test_size=0.4, random_state=0)
+            #+END_SRC
+
+       2. Grid Search: Searching for estimator parameters
+
+          0. [@0]
+
+             - for *hyperparameters*: need to be set explicitly, example:
+               C, kernel, gamma for SVM
+
+          3. [@3] Tips for parameter search
+
+             - specify explicit metric (default is accuracy_score)
+
+               - good for unbalanced classification
+
+             - split train and test set
+
+             - exploit parallelism
+
+          4. Alternatives to brute force parameter search
+
+             3. [@3] (? - p.278) Out of Bag Estimates
+
+                - for bagging methods: they leave out part of the data
+
+                - use that to estimate scores
+
+       3. Model evaluation: quantifying the quality of predictions
+
+          0. [@0]
+
+             - 3 ways to evaluate model
+
+               - =score= method
+
+               - scoring parameter, f.ex. in cv (see below)
+
+               - classification metrics etc in =metrics= module
+
+               - (4: dummy estimators as baseline)
+
+          1. The =scoring= parameter: defining model evaluation rules
+
+             eval tools as =cross_val_score= and grid search take
+             scoring parameter, to control which metric they
+             optimize/compute
+
+             1. Common cases: predefined values
+
+                use f.ex. (for full list see chapter 6.3.1)
+                #+BEGIN_SRC python
+                  cross_val_score(clf, X, y, scoring='neg_log_loss')
+                #+END_SRC
+
+             2. Defining your scoring strategy from metric functions
+
+                - if not in list
+
+                - possible to use another method
+
+                - params: method, =greater_is_better=,
+                  =needs_threshold=, additional parameters
+                  #+BEGIN_SRC python
+                    ftwo_scorer = make_scorer(bounded_auc, bound=0.01, needs_threshold=True)
+                    grid = GridSearchCV(LinearSVC(), param_grid={'C': [1, 10]}, scoring=ftwo_scorer)
+                  #+END_SRC
+
+                - use given method, or implement own (takes params
+                  =(base, prediction)=)
+
+             3. Implementing your own scoring object
+
+                - skip =make_scorer= factory, implement own
+
+                - params =(estimator, X, y)=
+
+                - return float, higher better
+
+          2. Classification metrics
+
+             several metrics to help: =matthews_corrcoef=,
+             =roc_curve=, ...
+
+             1. From binary to multiclass and multilabel
+
+    7. Dataset transformations
+
+       3. [@3] Preprocessing data
+
+          make data "more suitable for downstream estimators"
+
+          1. Standardization, or mean removal and variance scaling
+
+             - set to zero mean and unit variance
+               #+BEGIN_SRC python
+                 X_scaled = preprocessing.scale(X)
+               #+END_SRC
+
+             - save values to apply to test data later
+               #+BEGIN_SRC python
+                 scaler = preprocessing.StandardScaler().fit(X)
+                 scaler.transform(X)
+               #+END_SRC
+
+             - Scaling features to a range
+
+               instead of fixed variance, set to range
+
+               - initialize: =min_max_scaler = preprocessing.MinMaxScaler()=
+
+               - train: =X_train_minmax = min_max_scaler.fit_transform(X_train)=
+
+             - test: =X_test_minmax = min_max_scaler.transform(X_test)=
+    11. [@11] Examples
+
+        18. [@18] Model Selection
+
+            4. [@4] Receiver Operating Characteristic (ROC) with cross
+               validation
+
+               - TPR on y-axis, FPR on x-axis
+
+               - several measurements, average
+
+               - area-under-curve important measure
+
+               - make 2-class
+                 #+BEGIN_SRC python
+                   # make 2-class: exclude third class
+                   X, y = X[y != 2], y[y != 2]
+
+                   cv = StratifiedKFold(y, n_folds=6)
+                   classifier = svm.SVC(kernel='linear', probability=True)
+                 #+END_SRC
+
+               - compute tpr, fpr
+                 #+BEGIN_SRC python
+                   for i, (train, test) in enumerate(cv):
+                       probas_ = classifier.fit(X[train], y[train]).predict_proba(X[test])
+                       fpr, tpr, thresholds = roc_curve(y[test], probas_[:, 1])
+                       roc_auc = auc(fpr, tpr)
+                 #+END_SRC
+
+            8. [@8] Receiver Operating Characteristic (ROC)
+
+               - top left point ideal, larger area under curve (AUC)
+                 better, steeper better
+
+               - typically binary classification, extendable by
+                 binarizing (and optionally additional
+                 micro-averaging)
+
+               - binarize data:
+                 #+BEGIN_SRC python
+                   y = label_binarize(y, classes=[0, 1, 2])
+                 #+END_SRC
+
+               - split data:
+                 #+BEGIN_SRC python
+                   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.5)
+                 #+END_SRC
+
+               - get class scores (after possible grid-search)
+                 #+BEGIN_SRC python
+                   y_score = classifier.fit(X_train, y_train).decision_function(X_test)
+                   fpr = dict()
+                   tpr = dict()
+                   roc_auc = dict()
+                   for i in range(n_classes):
+                       fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
+                       roc_auc[i] = auc(fpr[i], tpr[i])
+                 #+END_SRC
+*** quotes
+    2. [@2] A tutorial on statistical-learning for scientific data processing
+       1. Statistical learning: the setting and the estimator object
+          in scikit-learn
+          - import pylab as pl
+            pl.imshow
+       4. [@4] Unsupervised learning: seeking representations of the data
+          2. [@2] Decompositions: from a signal to components and loadings
+             - Create a signal with only 2 useful dimensions, analyse
+               #+BEGIN_SRC python
+                 x1 = np.random.normal(size=100)
+                 x2 = np.random.normal(size=100)
+                 x3 = x1 + x2
+                 X = np.c_[x1, x2, x3]
+                 from sklearn import decomposition
+                 pca = decomposition.PCA()
+                 pca.fit(X)
+                 PCA(copy=True, n_components=None, whiten=False)
+                 print(pca.explained_variance_)
+                 pca.n_components = 2
+                 X_reduced = pca.fit_transform(X)
+                 X_reduced
+               #+END_SRC
+             - Combine signals
+               #+BEGIN_SRC python
+                 time = np.linspace(0, 10, 2000)
+                 s1 = np.sin(2 * time) # Signal 1 : sinusoidal signal
+                 s2 = np.sign(np.sin(3 * time)) # Signal 2 : square signal
+                 S = np.c_[s1, s2]
+                 S += 0.2 * np.random.normal(size=S.shape) # Add noise
+                 S /= S.std(axis=0) # Standardize data
+                 # Mix data
+                 A = np.array([[1, 1], [0.5, 2]]) # Mixing matrix
+                 X = np.dot(S, A.T) # Generate observations
+                 ica = decomposition.FastICA() # Compute ICA
+                 S_ = ica.fit_transform(X) # Get the estimated sources
+                 A_ = ica.mixing_.T
+                 np.allclose(X, np.dot(S_, A_) + ica.mean_)
+               #+END_SRC
+    4. [@4] Supervised learning
+       1. Generalized Linear Models
+          2. [@2] Ridge Regression
+             - Here, α ≥ 0 is a complexity parameter that controls the
+               amount of shrinkage: the larger the value of α, the
+               greater the amount of shrinkage and thus the
+               coefficients become more robust to collinearity.
+          3. [@3] Lasso
+             - The alpha parameter controls the degree of sparsity of
+               the coefficients estimated.
+          9. [@9] Bayesian Regression
+             - The advantages of Bayesian Regression are:
+               - It adapts to the data at hand.
+               - It can be used to include regularization parameters
+                 in the estimation procedure.
+               The disadvantages of Bayesian regression include:
+               - Inference of the model can be time consuming.
+       4. [@4] Support Vector Machines
+          1. Classification
+             1. Multi-class classification
+                - SVC and NuSVC implement the “one-against-one”
+                  approach (Knerr et al., 1990) for multi- class
+                  classification. If =n_class= is the number of
+                  classes, then =n_class * (n_class - 1) / 2=
+                  classifiers are constructed and each one trains data
+                  from two classes
+                - Note that the LinearSVC also implements an
+                  alternative multi-class strategy, the so-called
+                  multi-class SVM formulated by Crammer and Singer, by
+                  using the option
+                  =multi_class=’crammer_singer’=. This method is
+                  consistent, which is not true for one-vs-rest
+                  classification. In practice, one-vs-rest
+                  classification is usually preferred, since the
+                  results are mostly similar, but the runtime is
+                  significantly less.
+             2. Scores and probabilities
+                - When the constructor option =probability= is set to
+                  =True=, class membership probability estimates (from
+                  the methods =predict_proba= and =predict_log_proba=)
+                  are enabled.
+          5. [@5] Tips on Practical Use
+             - Avoiding data copy: For SVC, SVR, NuSVC and NuSVR, if
+               the data passed to certain methods is not C-ordered
+               contiguous, and double precision, it will be copied
+               before calling the underlying C implementation. You can
+               check whether a give numpy array is C-contiguous by
+               inspecting its =flags= attribute.
+             - *it is highly recommended to scale your data*
+             - In SVC, if data for classification are unbalanced
+               (e.g. many positive and few negative), set
+               =class_weight=’auto’= and/or try different penalty
+               parameters C.
+       6. [@6] Nearest Neighbors
+          0. [@0]
+             - Despite its simplicity, nearest neighbors has been successful in
+               a large number of classification and regression problems
+          2. [@2] Nearest Neighbors Classification
+             - RadiusNeighborsClassifier [...] For high-dimensional parameter
+               spaces, this method becomes less effective due to the so-called
+               “curse of dimensionality”.
+          4. [@4] Nearest Neighbor Algorithms
+             - Currently, algorithm = ’auto’ selects ’kd_tree’ if k < N/2 and
+               the ’effective_metric_’ is in the ’VALID_METRICS’ list of
+               ’kd_tree’. It selects ’ball_tree’ if k < N/2 and the
+               ’effective_metric_’ is not in the ’VALID_METRICS’ list of
+               ’kd_tree’. It selects ’brute’ if k >= N/2. This choice is based
+               on the assumption that the number of query points is at least
+               the same order as the number of training points, and that
+               leaf_size is close to its default value of 30.
+          6. [@6] Approximate Nearest Neighbors
+             - There are many efficient exact nearest neighbor search
+               algorithms for low dimensions d (approximately 50). However
+               these algorithms perform poorly with respect to space and query
+               time when d increases. These algorithms are not any better than
+               comparing query point to each point from the database in a high
+               dimension (see Brute Force). This is a well-known consequence of
+               the phenomenon called “The Curse of Dimensionality”. There are
+               certain applications where we do not need the exact nearest
+               neighbors but having a “good guess” would suffice. When answers
+               do not have to be exact, the LSHForest class implements an
+               approximate nearest neighbor search.
+       9. [@9] Naive Bayes
+          0. [@0]
+             - although naive Bayes is known as a decent classifier, it
+               is known to be a bad estimator, so the probability outputs
+               from predict_proba are not to be taken too seriously.
+          2. [@2] Multinomial Naive Bayes
+       10. Decision Trees
+           - DecisionTreeClassifier [...]
+             #+BEGIN_SRC python
+               from sklearn import tree
+               X = [[0, 0], [1, 1]]
+               Y = [0, 1]
+               clf = tree.DecisionTreeClassifier()
+               clf = clf.fit(X, Y)
+             #+END_SRC
+       11. Ensemble methods
+           2. [@2] Forests of randomized trees
+              - As other classifiers, forest classifiers have to be fitted with
+                two arrays: a sparse or dense array X of size [n_samples,
+                n_features] holding the training samples, and an array Y of size
+                [n_samples] holding the target values (class labels) for the
+                training samples:
+                #+BEGIN_SRC python
+                  from sklearn.ensemble import RandomForestClassifier
+                  X = [[0, 0], [1, 1]]
+                  Y = [0, 1]
+                  clf = RandomForestClassifier(n_estimators=10)
+                  clf = clf.fit(X, Y)
+                #+END_SRC
+              - The best parameter values should always be
+                cross-validated.
+       12. Multiclass and multilabel algorithms
+           3. [@3] One-Vs-One
+              - This is because each individual learning problem only
+                involves a small subset of the data whereas, with
+                one-vs-the-rest, the complete dataset is used
+                n_classes times.
+    5. Unsupervised learning
+       3. [@3] Clustering
+          2. [@2] K-means
+             - The KMeans algorithm clusters data by trying to separate
+               samples in n groups of equal variance, minimizing a
+               criterion known as the inertia <inertia> or
+               within-cluster sum-of-squares. This algorithm requires
+               the number of clusters to be specified.
+    6. MODEL SELECTION AND EVALUATION
+       1. Cross-validation: evaluating estimator performance
+          - Learning the parameters of a prediction function and
+            testing it on the same data is a methodological mistake
+       2. Grid Search: Searching for estimator parameters
+          3. [@3] Tips for parameter search
+             - When evaluating the resulting model it is important to
+               do it on held-out samples that were not seen during the
+               grid search process: it is recommended to split the
+               data into a development set (to be fed to the
+               GridSearchCV instance) and an evaluation set to compute
+               performance metrics.
+       3. Model evaluation: quantifying the quality of predictions
+          2. [@2] Classification metrics
+             - And some work with binary and multilabel (but not
+               multiclass) problems: [...]
+
+               =roc_auc_score(y_true, y_score[, average, ...])=
+               Compute Area Under the Curve (AUC) from prediction
+               scores
+    11. [@11] Examples
+        11. [@11] Ensemble methods
+            3. [@3] Feature importances with forests of trees
+                #+BEGIN_SRC python
+                  from sklearn.ensemble import ExtraTreesClassifier
+                  [...]
+                  # Build a forest and compute the feature importances
+                  forest = ExtraTreesClassifier(n_estimators=250,
+                  random_state=0)
+                  forest.fit(X, y)
+                  importances = forest.feature_importances_
+                #+END_SRC
+        18. [@18] Model Selection
+            3. [@3] Confusion matrix
+               - Example of confusion matrix usage to evaluate the
+                 quality of the output of a classifier on the iris
+                 data set.
+                 #+BEGIN_SRC python
+                   from sklearn.metrics import confusion_matrix
+                   def plot_confusion_matrix(cm, title='Confusion matrix', cmap=plt.cm.Blues):
+                       plt.imshow(cm, interpolation='nearest', cmap=cmap)
+                       plt.colorbar()
+                       tick_marks = np.arange(len(iris.target_names))
+                       plt.xticks(tick_marks, iris.target_names, rotation=45)
+                       plt.yticks(tick_marks, iris.target_names)
+                       plt.tight_layout()
+                   # Compute confusion matrix
+                   cm = confusion_matrix(y_test, y_pred)
+                   np.set_printoptions(precision=2)
+                   print(cm)
+                   plt.figure()
+                   plot_confusion_matrix(cm)
+                   # Normalize the confusion matrix by row (i.e by the number of samples
+                   # in each class)
+                   cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+                 #+END_SRC
+            8. [@8] Receiver Operating Characteristic (ROC)
+               - ROC curves typically feature true positive rate on
+                 the Y axis, and false positive rate on the X
+                 axis. This means that the top left corner of the plot
+                 is the “ideal” point - a false positive rate of zero,
+                 and a true positive rate of one.
+               - The “steepness” of ROC curves is also important,
+                 since it is ideal to maximize the true positive rate
+                 while minimizing the false positive rate.
+               - Python source code: plot_roc.py
+                 #+BEGIN_SRC python
+                   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.5)#, random_state=0)
+                   # Learn to predict each class against the other
+                   classifier = OneVsRestClassifier(svm.SVC(kernel='linear', probability=True))#, random_state=random_state))
+                   y_score = classifier.fit(X_train, y_train).decision_function(X_test)
+                   # Compute ROC curve and ROC area for each class
+                   fpr = dict()
+                   tpr = dict()
+                   roc_auc = dict()
+                   for i in range(n_classes):
+                       fpr[i], tpr[i], _ = roc_curve(y_test[:, i],
+                                                     y_score[:, i])
+                       roc_auc[i] = auc(fpr[i], tpr[i])
+                   # Plot of a ROC curve for a specific class
+                   plt.figure()
+                   plt.plot(fpr[2], tpr[2], label='ROC curve (area = %0.2f)' % roc_auc[2])
+                   plt.plot([0, 1], [0, 1], 'k--')
+                   plt.xlim([0.0, 1.0])
+                   plt.ylim([0.0, 1.05])
+                   plt.xlabel('False Positive Rate')
+                   plt.ylabel('True Positive Rate')
+                   plt.title('Receiver operating characteristic example')
+                   plt.legend(loc="lower right")
+                   plt.show()
+                 #+END_SRC
+            10. [@10] Sample pipeline for text feature extraction and evaluation
+                # multiprocessing requires the fork to happen in a
+                # __main__ protected block
+    12. Frequently Asked Questions
+        12. [@12] How do I deal with string data (or trees, graphs...)?
+            - Firstly, many estimators take precomputed
+              distance/similarity matrices, so if the dataset is not too
+              large, you can compute distances for all pairs of
+              inputs. If the dataset is large, you can use feature
+              vectors with only one “feature”, which is an index into a
+              separate data structure, and supply a custom metric
+              function that looks up the actual data in this data
+              structure. E.g., to use DBSCAN with Levenshtein distances:
+              #+BEGIN_SRC python
+                >>> from leven import levenshtein
+                >>> import numpy as np
+                >>> from sklearn.cluster import dbscan
+                >>> data = ["ACCTCCTAGAAG", "ACCTACTAGAAGTT", "GAATATTAGGCCGA"]
+                >>> def lev_metric(x, y):
+                ...
+                i, j = int(x[0]), int(y[0])
+                # extract indices
+                ...
+                return levenshtein(data[i], data[j])
+                ...
+                >>> X = np.arange(len(data)).reshape(-1, 1)
+                >>> X
+                array([[0],
+                [1],
+                [2]])
+                >>> dbscan(X, metric=lev_metric, eps=5, min_samples=2)
+                ([0, 1], array([ 0, 0, -1]))
+              #+END_SRC
+              (This uses the third-party edit distance package leven.)
+              Similar tricks can be used, with some care, for tree
+              kernels, graph kernels, etc.
+    19. [@19] 0.14
+        2. [@2] API changes summary
+           - ... =decision_function= method. This will return the
+             distance of each sample from the decision boundary for
+             each class, as long as the underlying estimators
+             implement the decision_function method.
+    42. [@42] Reference
+        5. [@5] sklearn.cross_validation: Cross Validation
+           7. [@7] sklearn.cross_validation.StratifiedKFold
+              - class sklearn.cross_validation.StratifiedKFold(y,
+                n_folds=3, indices=None, shuffle=False,
+                random_state=None)
+
+                Stratified K-Folds cross validation iterator.
+
+                Provides train/test indices to split data in train
+                test sets.
+
+                This cross-validation object is a variation of KFold
+                that returns stratified folds. The folds are made by
+                preserving the percentage of samples for each class.
+
+           10. [@10] sklearn.cross_validation.train_test_split
+               - sklearn.cross_validation.train_test_split(*arrays,
+                 **options)
+
+                 Split arrays or matrices into random train and test
+                 subsets
+
+                 Parameters
+                 - stratify : array-like or None (default is None)
+
+                   If not None, data is split in a stratified fashion,
+                   using this as the labels array.
+        9. [@9] sklearn.ensemble: Ensemble Methods
+           9. [@9] sklearn.ensemble.RandomForestClassifier
+              - class sklearn.ensemble.RandomForestClassifier(
+                n_estimators=10, criterion=’gini’, max_depth=None,
+                min_samples_split=2, min_samples_leaf=1,
+                min_weight_fraction_leaf=0.0, max_features=’auto’,
+                max_leaf_nodes=None, bootstrap=True, oob_score=False,
+                n_jobs=1, random_state=None, verbose=0,
+                warm_start=False, class_weight=None)
+
+                Methods
+
+                - apply(X)
+
+                 Apply trees in the forest to X, return leaf indices.
+                  - Parameters X : array-like or sparse matrix, shape =
+                    [n_samples, n_features]
+
+                    The input samples. Internally, it will be converted to
+                    dtype=np.float32 and if a sparse matrix is provided to
+                    a sparse csr_matrix.
+                  - Returns X_leaves : array_like, shape = [n_samples,
+                    n_estimators]
+
+                    For each datapoint x in X and for each tree in the
+                    forest, return the index of the leaf x ends up in.
+        13. [@13] sklearn.grid_search: Grid Search
+            0. [@0]
+               - User guide: See the Grid Search: Searching for
+                 estimator parameters section for further details.
+            1. sklearn.grid_search.GridSearchCV
+               - class sklearn.grid_search.GridSearchCV(estimator,
+                 param_grid, scoring=None, loss_func=None,
+                 score_func=None, fit_params=None, n_jobs=1, iid=True,
+                 refit=True, cv=None, verbose=0,
+                 pre_dispatch=‘2*n_jobs’, error_score=’raise’)
+               - Parameters:
+                 - verbose : integer
+
+                   Controls the verbosity: the higher, the more messages.
+                 - cv : integer or cross-validation generator, default=3
+
+                   If an integer is passed, it is the number of
+                   folds. Specific cross-validation objects can be
+                   passed, see sklearn.cross_validation module for the
+                   list of possible objects
+        21. [@21] sklearn.metrics: Metrics
+            2. [@2] Classification metrics
+               - sklearn.metrics.roc_curve(y_true, y_score,
+                 pos_label=None, sample_weight=None)
+
+                 Compute Receiver operating characteristic (ROC)
+
+                 Returns
+                 - fpr : array, shape = [>2] [...]
+
+                   Increasing false positive rates such that element i
+                   is the false positive rate of predictions with
+                   score >= thresholds[i].
+                 - tpr : array, shape = [>2]
+
+                   Increasing true positive rates such that element i
+                   is the true positive rate of predictions with score
+                   >= thresholds[i].
+                 - thresholds : array, shape = [n_thresholds]
+
+                   Decreasing thresholds on the decision function used
+                   to compute fpr and tpr.
+
+                 Notes
+                 - Since the thresholds are sorted from low to high
+                   values, they are reversed upon returning them to
+                   ensure they correspond to both fpr and tpr, which
+                   are sorted in reversed order during their
+                   calculation.
+            3. [@3] Regression metrics
+               - sklearn.metrics.r2_score(y_true, y_pred, sample_weight=None)
+                 [...]
+                 #+BEGIN_SRC python
+                   from sklearn.metrics import r2_score
+                   y_true = [3, -0.5, 2, 7]
+                   y_pred = [2.5, 0.0, 2, 8]
+                   r2_score(y_true, y_pred) # 0.948...
+                   y_true = [[0.5, 1], [-1, 1], [7, -6]]
+                   y_pred = [[0, 2], [-1, 2], [8, -5]]
+                   r2_score(y_true, y_pred)
+                 #+END_SRC
+        23. [@23] sklearn.multiclass: Multiclass and multilabel classification
+            2. [@2] sklearn.multiclass.OneVsRestClassifier
+               - class sklearn.multiclass.OneVsRestClassifier(estimator, n_jobs=1)
+                 - [...]
+                 - Parameters:
+                   - [...]
+                   - n_jobs : int, optional, default: 1
+
+                     The number of jobs to use for the computation. If
+                     -1 all CPUs are used. If 1 is given, no parallel
+                     computing code is used at all, which is useful
+                     for debugging. For n_jobs below -1, (n_cpus + 1 +
+                     n_jobs) are used. Thus for n_jobs = -2, all CPUs
+                     but one are used.
+        25. [@25] sklearn.neighbors: Nearest Neighbors
+            2. [@2] sklearn.neighbors.KNeighborsClassifier
+               - class
+                 sklearn.neighbors.KNeighborsClassifier(n_neighbors=5,
+                 weights=’uniform’, algorithm=’auto’,
+                 leaf_size=30, p=2, metric=’minkowski’,
+                 metric_params=None, **kwargs) [...]
+
+                 metric : string or DistanceMetric object
+                 (default = ‘minkowski’) the distance metric to
+                 use for the tree. The default metric is
+                 minkowski, and with p=2 is equivalent to the
+                 standard Euclidean metric. See the documentation
+                 of the Distance-Metric class for a list of
+                 available metrics.
+            10. [@10] sklearn.neighbors.DistanceMetric
+                - “braycurtis” | BrayCurtisDistance | sum(|x - y|)
+                  / (sum(|x|) + sum(|y|))
+        29. [@29] sklearn.pipeline: Pipeline
+            1. sklearn.pipeline.Pipeline
+               - class sklearn.pipeline.Pipeline(steps) Pipeline
+                 of transforms with a final
+                 estimator. Sequentially apply a list of
+                 transforms and a final estimator. Intermediate
+                 steps of the pipeline must be ‘transforms’, that
+                 is, they must implement fit and transform
+                 methods. The final estimator only needs to
+                 implement fit. The purpose of the pipeline is to
+                 assemble several steps that can be
+                 cross-validated together while setting different
+                 parameters. For this, it enables setting
+                 parameters of the various steps using their
+                 names and the parameter name separated by a
+                 ‘__’, as in the example below.
+
+                 Parameterssteps: list :List of (name, transform)
+                 tuples (implementing fit/transform) that are
+                 chained, in the order in which they are chained,
+                 with the last object an estimator.
+
+                 Examples
+                 #+BEGIN_SRC python
+                   >>> from sklearn import svm
+                   >>> from sklearn.datasets import samples_generator
+                   >>> from sklearn.feature_selection import SelectKBest
+                   >>> from sklearn.feature_selection import f_regression
+                   >>> from sklearn.pipeline import Pipeline
+                   >>> # generate some data to play with
+                   >>> X, y = samples_generator.make_classification(
+                   ...
+                   n_informative=5, n_redundant=0, random_state=42)
+                   >>> # ANOVA SVM-C
+                   >>> anova_filter = SelectKBest(f_regression, k=5)
+                   >>> clf = svm.SVC(kernel='linear')
+                   >>> anova_svm = Pipeline([('anova', anova_filter), ('svc', clf)])
+                   >>> # You can set the parameters using the names issued
+                   >>> # For instance, fit using a k of 10 in the SelectKBest
+                   >>> # and a parameter 'C' of the svm
+                   >>> anova_svm.set_params(anova__k=10, svc__C=.1).fit(X, y)
+                   ...
+                   Pipeline(steps=[...])
+                   >>> prediction = anova_svm.predict(X)
+                   >>> anova_svm.score(X, y)
+                   0.77...
+                 #+END_SRC
+        30. sklearn.preprocessing: Preprocessing and Normalization
+            7. [@7] sklearn.preprocessing.MinMaxScaler
+               - class
+                 sklearn.preprocessing.MinMaxScaler(feature_range=(0,
+                 1., copy=True)
+
+                 Standardizes features by scaling each feature to a
+                 given range.
+
+                 This estimator scales and translates each feature
+                 individually such that it is in the given range on
+                 the training set, i.e. between zero and one.
+            14. [@14] sklearn.preprocessing.label_binarize
+                - sklearn.preprocessing.label_binarize(y, classes,
+                  neg_label=0, pos_label=1, sparse_output=False,
+                  multilabel=None)
+
+                  Binarize labels in a one-vs-all fashion
+                  #+BEGIN_SRC python
+                    >>> label_binarize(['yes', 'no', 'no', 'yes'], classes=['no', 'yes'])
+                    array([[1], [0], [0], [1]])
+                  #+END_SRC
+        34. [@34] sklearn.svm: Support Vector Machines
+            - decision_function(X)
+
+              Distance of the samples X to the separating hyperplane.
+        35. sklearn.tree: Decision Trees
+            - class sklearn.tree.DecisionTreeClassifier(
+              criterion=’gini’, splitter=’best’, max_depth=None,
+              min_samples_split=2, min_samples_leaf=1,
+              min_weight_fraction_leaf=0.0, max_features=None,
+              random_state=None, max_leaf_nodes=None,
+              class_weight=None)
+
+              Attributes
+
+              - feature_importances_ : array of shape = [n_features]
+
+                The feature importances.
+    47. [@47] Chapter 47. How to optimize for speed
+        3. [@3] Profiling Python code
+           - It is however still interesting to check what’s happening
+             inside the =_nls_subproblem= function which is the
+             hotspot if we only consider Python code: it takes around
+             100% of the cumulated time of the module. In order to
+             better understand the profile of this specific function,
+             let us install line-prof and wire it to IPython:
+             #+BEGIN_SRC sh
+               pip install line-profiler
+             #+END_SRC
+*** ref [[file:master.bib::scikit-learn][Pedregosa et al. 2011: Scikit]]
+*** exercises
+**** Exercise digits-knn-linear
+     Try classifying the digits dataset with nearest neighbors and a
+     linear model. Leave out the last 10% and test prediction
+     performance on these observations.
+
+     from sklearn import datasets, neighbors, linear_model
+
+     digits = datasets.load_digits()
+     X_digits = digits.data
+     y_digits = digits.target
+***** Solution
+      #+BEGIN_SRC python
+        from sklearn import datasets, neighbors, linear_model
+        import numpy as np
+
+        digits = datasets.load_digits()
+        X_digits = digits.data
+        y_digits = digits.target
+
+        np.random.seed(0)
+        indices = np.random.permutation(len(y_digits))
+        percent = int(len(y_digits) * 0.9)
+
+        digits_X_train = X_digits[indices[:percent]]
+        digits_X_test = X_digits[indices[percent:]]
+        digits_y_train = y_digits[indices[:percent]]
+        digits_y_test = y_digits[indices[percent:]]
+
+        knn = neighbors.KNeighborsClassifier()
+        knn.fit(digits_X_train, digits_y_train)
+        knn.score(digits_X_test, digits_y_test)
+
+        lin = linear_model.LogisticRegression()
+        lin.fit(digits_X_train, digits_y_train)
+        lin.score(digits_X_test, digits_y_test)
+      #+END_SRC
+**** Exercise iris-svm
+     Try classifying classes 1 and 2 from the iris dataset with SVMs,
+     with the 2 first features. Leave out 10% of each class and test
+     prediction performance on these observations.
+***** Solution
+      #+BEGIN_SRC python
+        from sklearn import datasets, svm
+        import numpy as np
+
+        iris = datasets.load_iris()
+        X = iris.data
+        y = iris.target
+
+        # normalize std
+        s = np.std(X, 0)
+        for i in range(4):
+            X[:,i] /= s[i]
+
+        np.random.seed(0)
+        indices = np.random.permutation(len(y))
+        percent = int(len(y) * 0.9)
+
+        X_train = X[indices[:percent]]
+        X_test = X[indices[percent:]]
+        y_train = y[indices[:percent]]
+        y_test = y[indices[percent:]]
+
+        svc = svm.SVC(kernel='linear')
+        svc.fit(X_train, y_train)
+        print svc.score(X_test, y_test)
+
+        svcr = svm.SVC()
+        svcr.fit(X_train, y_train)
+        print svcr.score(X_test, y_test)
+      #+END_SRC
+**** Exercise kfold
+     On the digits dataset, plot the cross-validation score of a SVC
+     estimator with an linear kernel as a function of parameter C (use
+     a logarithmic grid of points, from 1 to 10).
+***** Solution
+      #+BEGIN_SRC python
+        import numpy as np
+        from sklearn import cross_validation, datasets, svm
+
+        C_s = np.logspace(-10, 0, 50)
+
+        digits = datasets.load_digits()
+        X = digits.data
+        y = digits.target
+
+        for C in C_s:
+            svc.C = C
+            score = cross_validation.cross_val_score(svc, X, y, n_jobs=1)
+            print '%f, %f, %f' % (C, np.mean(score), np.std(score))
+      #+END_SRC
+**** Exercise grid-optimal
+     On the diabetes dataset, find the optimal regularization
+     parameter alpha.
+***** Solution
+      #+BEGIN_SRC python
+        from sklearn import cross_validation, datasets, linear_model
+        import numpy as np
+
+        diabetes = datasets.load_diabetes()
+        X = diabetes.data[:150]
+        y = diabetes.target[:150]
+
+        lasso = linear_model.Lasso()
+        alphas = np.logspace(-4, -.5, 30)
+
+        from sklearn.grid_search import GridSearchCV
+        clf = GridSearchCV(estimator=lasso, param_grid=dict(alpha=alphas), n_jobs=-1)
+        clf.fit(X, y)
+        print clf.score(diabetes.data[150:], diabetes.target[150:])
+
+        # for a in alphas:
+        #     lasso.alpha = a
+        #     score = cross_validation.cross_val_score(lasso, X, y, n_jobs=1)
+        #     print '%f, %s' % (a, np.mean(score))
+      #+END_SRC
 ** PART [[~/da/git/docs/onion-routing_pet2000.pdf][Towards an Analysis of Onion Routing Security]]
 *** ref: [[file:master.bib::onion-routing:pet2000][Syverson et al. 2000: Towards Analysis Onion Routing Security]]
 ** PART [[~/da/git/docs/onion-routing_ih96.pdf][Hiding Routing Information]]
