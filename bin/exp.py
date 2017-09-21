@@ -59,5 +59,7 @@ def my_main(scenario):
         raise Exception("scenario already in database")
     return run_exp()
 
-# inspect database:
+## inspect database:
 # use sacred; db.runs.aggregate([{$match: {"$and": [{"config.scenario": {"$exists": 1}}, {"result.score": {"$exists": 1}}]}}, {$project: {"config.scenario": 1, "result.score": 1}},{$group: {_id: "$config.scenario", "score": {$max: "$result.score"}}}])
+## check duplicates
+# db.runs.aggregate([{$match: {"$and": [{"config.scenario": {"$exists": 1}}, {"result.score": {"$exists": 1}}]}}, {$project: {"config.scenario": 1, "result.score": 1}},{$group: {_id: "$config.scenario", "score": {$push: "$result.score"}, "count": {$sum: 1}}}])

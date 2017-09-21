@@ -12,14 +12,14 @@ import pymongo
 import scenario
 
 class Result(object):
-    def __init__(self, scenario_, accuracy, git, time, status, size):
+    def __init__(self, scenario_, accuracy, git, time, type_, size):
         self.scenario = scenario_
         self.cumul = accuracy
         self.git = git
         self.date = time
         if not self.date and hasattr(self.scenario, "date"):
             self.date = self.scenario.date
-        self.status = status
+        self.type_ = type_
         self.size = size
 
     @staticmethod
@@ -32,45 +32,63 @@ class Result(object):
             size = len(entry['result']['sites'])
         except KeyError:
             size = entry['config']['size']
+        try:
+            type_ = entry['result']['type']
+        except KeyError:
+            if entry['status'] == 'COMPLETED':
+                type_ = "cumul"
+            else:
+                raise
         return Result(scenario.Scenario(entry['config']['scenario']),
                       entry['result']['score'],
                       git,
                       entry['stop_time'],
-                      entry['status'],
+                      type_,
                       size)
 
     def __add__(self, other):
         return Result(None, self.accuracy + other.accuracy, None, None)
 
     def __repr__(self):
-        return '<Result({!r}, {}, {}, {}, {})>'.format(
-            self.scenario, self.cumul, self.git, self.date, self.status)
+        return '<Result({!r}, {}, {}, {}, {}, {})>'.format(
+            self.scenario, self.cumul, self.git, self.date,
+            self.type_, self.size)
 
     def save(self):
         '''saves entry to mongodb if new'''
         obj = {"config": {"scenario": self.scenario, "size": self.size},
-               "result": {"score": self.cumul, "type": self.status},
+               "result": {"score": self.cumul, "type": self.type_},
                "stop_time": self.date, "status": "EXTERNAL"}
         if db.runs.count(obj) == 0:
             db.runs.insert_one(obj)
         else:
             logging.debug("%s@%s already in db", self.scenario, self.date)
 
-def import_to_mongo(csvfile, size):
+def import_to_mongo(csvfile, size, measure="cumul"):
     imported = []
     for el in csv.DictReader(csvfile):
         try:
             date = datetime.datetime.strptime(el['notes'], '%Y-%m-%d')
         except ValueError:
             date = None
-        if el['cumul']:
-            imported.append(Result(el['defense'], el['cumul'], None,
-                                   date, "cumul", size))
+        if el[measure]:
+            imported.append(Result(el['defense'], float(el[measure]), None,
+                                   date, measure, size))
         else:
             logging.warn("skipped %s", el)
     for el in imported:
         #print el
         el.save()
+
+def get_all(match={"$and": [{"config.scenario": {"$exists": 1}},
+                            {"result.score": {"$exists": 1}}]}):
+    return [Result.from_mongoentry(x) for x in
+            db.runs.find(match)]    
+        
+def sized(size):
+    return [x for x in get_all() if x.size == size]
+#    return get_all({"$or": [{"config.size": 10},
+#                            {"result.sites": {"$size": 10}}]})
 
 if __name__ == "__main__":
     client = pymongo.MongoClient()
