@@ -12,47 +12,57 @@ import pymongo
 import scenario
 
 class Result(object):
-    def __init__(self, scenario_, accuracy, git, time):
+    def __init__(self, scenario_, accuracy, git, time, status):
         self.scenario = scenario_
         self.cumul = accuracy
         self.git = git
         self.time = time
+        self.status = status
 
     @staticmethod
     def from_mongoentry(entry):
+        try:
+            git = entry['experiment']['repositories'][0]['commit']
+        except KeyError:
+            git = None
         return Result(scenario.Scenario(entry['config']['scenario']),
                       entry['result']['score'],
-                      entry['experiment']['repositories'][0]['commit'],
-                      entry['stop_time'])
+                      git,
+                      entry['stop_time'],
+                      entry['status'])
 
     def __add__(self, other):
         return Result(None, self.accuracy + other.accuracy, None, None)
 
     def __repr__(self):
-        return '<Result({}, {}, {}, {})>'.format(
-            self.scenario, self.cumul, self.git, self.time)
+        return '<Result({}, {}, {}, {}, {})>'.format(
+            self.scenario, self.cumul, self.git, self.time, self.status)
 
     def save(self):
-        '''saves entry to mongodb'''
-        db.runs.insert_one({"config": {"scenario": self.scenario},
-                            "result": {"score": self.cumul},
-                            "stop_time": self.time,
-                            "status": "EXTERNAL"})
+        '''saves entry to mongodb if new'''
+        obj = {"config": {"scenario": self.scenario},
+               "result": {"score": self.cumul, "type": self.status},
+               "stop_time": self.time, "status": "EXTERNAL"}
+        if db.runs.count(obj) == 0:
+            db.runs.insert_one(obj)
+        else:
+            logging.warn("%s@%s already in db", self.scenario, self.time)
 
 def import_to_mongo(csvfile):
     imported = []
     for el in csv.DictReader(csvfile):
         try:
-            date = datetime.datetime.strptime(el['notes'], '%Y-%m-%d').date()
+            date = datetime.datetime.strptime(el['notes'], '%Y-%m-%d')
         except ValueError:
             date = None
         if el['cumul']:
-            imported.append(Result(el['defense'], el['cumul'], None, date))
+            imported.append(Result(el['defense'], el['cumul'], None,
+                                   date, "cumul"))
         else:
-            logging.warn("skipped {}".format(str(el)))
+            logging.warn("skipped %s", el)
     for el in imported:
-        print el
-        #el.save()
+        #print el
+        el.save()
 
 if __name__ == "__main__":
     client = pymongo.MongoClient()

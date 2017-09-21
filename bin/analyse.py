@@ -458,8 +458,8 @@ def main(argv, with_svm=True, cumul=True):
             logging.warn('only first scenario chosen for open world analysis')
         return open_world(scenarios[0])
     else:
-        return closed_world({x.path: x.get_traces() for x in scenarios},
-                            argv[1], with_svm=with_svm, cumul=cumul)
+        closed_world({x.path: x.get_traces() for x in scenarios},
+                     scenarios[0].path, with_svm=with_svm, cumul=cumul)
 
 
 # pylint: disable=line-too-long
@@ -470,4 +470,5 @@ doctest.testmod()
 
 if __name__ == "__main__":
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
+    os.nice(20)
     main(sys.argv)
