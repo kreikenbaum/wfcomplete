@@ -20,8 +20,7 @@ import counter
 
 
 DIR = os.path.join(os.path.expanduser('~'), 'da', 'git', 'data')
-TRACE_ARGS = { "remove_small": config.REMOVE_SMALL,
-               "or_level": config.OR_LEVEL }
+TRACE_ARGS = {"remove_small": config.REMOVE_SMALL, "or_level": config.OR_LEVEL}
 
 
 class Scenario(object):
