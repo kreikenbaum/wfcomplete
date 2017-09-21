@@ -15,11 +15,13 @@ import logging
 import os
 import random
 
+import config
 import counter
 
 
 DIR = os.path.join(os.path.expanduser('~'), 'da', 'git', 'data')
-TRACE_ARGS = { "remove_small": True, "or_level": 2 }
+TRACE_ARGS = { "remove_small": config.REMOVE_SMALL,
+               "or_level": config.OR_LEVEL }
 
 
 class Scenario(object):
