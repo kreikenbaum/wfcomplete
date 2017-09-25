@@ -654,7 +654,7 @@ class Counter(object):
                 http += 1
                 continue
             if 'TCP' not in line:
-                logging.warn('discarded %s from %s', line, filename)
+                logging.warn('discarded\n%s\nfrom %s', line, filename)
                 continue
             try:
                 (src, dst, size, protocol, time) = line.split()
