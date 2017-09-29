@@ -56,13 +56,23 @@ class Result(object):
 
     def save(self):
         '''saves entry to mongodb if new'''
-        obj = {"config": {"scenario": self.scenario, "size": self.size},
-               "result": {"score": self.cumul, "type": self.type_},
-               "stop_time": self.date, "status": "EXTERNAL"}
+        obj = {
+            "_id": _next_id(),
+            "config": {"scenario": self.scenario, "size": self.size},
+            "result": {"score": self.cumul, "type": self.type_},
+            "stop_time": self.date, "status": "EXTERNAL"}
         if db.runs.count(obj) == 0:
             db.runs.insert_one(obj)
         else:
             logging.debug("%s@%s already in db", self.scenario, self.date)
+
+def _next_id():
+    '''@return next id for entry to db'''
+    return (db.runs
+            .find({}, {"_id": 1})
+            .sort("_id", pymongo.DESCENDING)
+            .limit(1)
+            .next())["_id"]
 
 def import_to_mongo(csvfile, size, measure="cumul"):
     imported = []
@@ -98,4 +108,4 @@ if __name__ == "__main__":
                                    {"result.score": {"$exists": 1}}]})]
     ## todo: filter to get only one element per scenario
     ### here or mongo?
-    # import_to_mongo(open('/home/uni/da/git/data/results/10sites.csv'))
+    # import_to_mongo(open('/home/uni/da/git/data/results/10sites.csv'), 10)
