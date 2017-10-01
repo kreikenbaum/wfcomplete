@@ -24,10 +24,3 @@ my_delay.sh $1
 ## tbb message
 # better: check torrc whether activated, if not message
 echo "set the line 'Bridge 127.0.0.1:30100' in the Tor Browser Bundle's settings"
-
-
-
-
-
-
-

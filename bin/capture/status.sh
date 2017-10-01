@@ -4,6 +4,8 @@ printf "wtf-pad: "
 get_local_wfpad.sh
 printf "tor: "
 get_local_tor.sh
+printf "cover server: "
+get_cover_server.sh
 echo ====== BRIDGESRV ========
 printf "wtf-pad: "
 ssh $BRIDGE -x ~/bin/capture/get_local_wfpad.sh
