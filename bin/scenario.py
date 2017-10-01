@@ -155,6 +155,14 @@ class Scenario(object):
                              trace_dict or self.get_traces())
 
 
+    def time_increase(self, trace_dict=None):
+        closest_disabled = self._closest("disabled")
+        if closest_disabled == self:
+            return 0
+        return time_increase(closest_disabled.get_traces(),
+                             trace_dict or self.get_traces())
+
+
     def _closest(self, filter_, include_bg=False):
         '''@return closest scenario that matches filter'''
         filtered = list_all(extra_filter=filter_, include_bg=include_bg)
@@ -195,11 +203,18 @@ def _filter_all(all_, include_bg):
 
 
 def size_increase(base_trace_dict, compare_trace_dict):
-    base = _bytes_mean_std(base_trace_dict)
-    compare = _bytes_mean_std(compare_trace_dict)
-    return _size_increase_computation(base, compare)
+    base = _mean_std(base_trace_dict, "total_bytes_in")
+    compare = _mean_std(compare_trace_dict, "total_bytes_in")
+    return _compute_increase(base, compare)
 
-def _size_increase_computation(base, compare):
+
+def time_increase(base_trace_dict, compare_trace_dict):
+    base = _mean_std(base_trace_dict, "duration")
+    compare = _mean_std(compare_trace_dict, "duration")
+    return _compute_increase(base, compare)
+
+
+def _compute_increase(base, compare):
     '''@return how much bigger/smaller =compare= is than =base= (in %)'''
     diff = {}
     if base.keys() != compare.keys():
@@ -213,15 +228,15 @@ def _size_increase_computation(base, compare):
         diff[k] = float(compare[k][0]) / base[k][0]
     return 100 * (np.mean(diff.values()) - 1)
 
-# todo: code duplication: total_packets_in_stats
-def _bytes_mean_std(trace_dict):
+
+def _mean_std(trace_dict, property_name):
     '''@return a dict of {domain1: (mean1,std1}, ... domainN: (meanN, stdN)}
-    >>> _bytes_mean_std({'yahoo.com': [counter._test(3)]})
+    >>> _mean_std({'yahoo.com': [counter._test(3)]}, "total_bytes_in")
     {'yahoo.com': (1800.0, 0.0)}
     '''
     out = {}
     for (domain, trace_list) in trace_dict.iteritems():
-        total = [i.get_total_in() for i in trace_list]
+        total = [getattr(i, property_name) for i in trace_list]
         out[domain] = (np.mean(total), np.std(total))
     return out
 
@@ -231,8 +246,8 @@ def tpi(trace_list):
     return [x.get_tpi() for x in trace_list]
 ############# COPIED CODE, needed?
 def _size_increase_helper(two_scenarios):
-    return _size_increase_computation(two_scenarios[two_scenarios.keys()[0]],
-                                      two_scenarios[two_scenarios.keys()[1]])
+    return _compute_increase(two_scenarios[two_scenarios.keys()[0]],
+                             two_scenarios[two_scenarios.keys()[1]])
 
 def size_increase_from_argv(scenario_argv, remove_small=True):
     '''computes sizes increases from sys.argv-like list, argv[1] is
@@ -242,7 +257,7 @@ baseline'''
     stats = {k: _bytes_mean_std(v) for (k, v) in scenarios.iteritems()}
     out = {}
     for i in scenario_argv[2:]:
-        out[i] = _size_increase_computation(stats[scenario_argv[1]], stats[i])
+        out[i] = _compute_increase(stats[scenario_argv[1]], stats[i])
     return out
 
 

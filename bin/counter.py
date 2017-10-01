@@ -753,7 +753,8 @@ class Counter(object):
 
         return features
 
-    def get_duration(self):
+    @property
+    def duration(self):
         '''@return duration of this trace'''
         try:
             return self.timing[-1][0]
@@ -766,8 +767,8 @@ class Counter(object):
         ''':returns: total incoming packet count'''
         return _num_packets(self.packets)[0]
 
-
-    def get_total_in(self):
+    @property
+    def total_bytes_in(self):
         '''returns total incoming bytes'''
         return _num_bytes(self.packets)[0]
 
@@ -982,30 +983,30 @@ def p_or_tiny(counter_list):
     1
     '''
     return [x for x in counter_list
-            if len(x.packets) >= 2 and x.get_total_in() >= 2 * 512]
+            if len(x.packets) >= 2 and x.total_bytes_in >= 2 * 512]
 
 
 def p_or_median(counter_list):
     '''removes if total_in < 0.2 * median or > 1.8 * median'''
-    med = np.median([counter.get_total_in() for counter in counter_list])
+    med = np.median([counter.total_bytes_in for counter in counter_list])
     return [x for x in counter_list
-            if x.get_total_in() >= 0.2 * med and x.get_total_in() <= 1.8 * med]
+            if x.total_bytes_in >= 0.2 * med and x.total_bytes_in <= 1.8 * med]
 
 
 def p_or_quantiles(counter_list):
     '''remove if total_in < (q1-1.5 * (q3-q1))
     or total_in > (q3+1.5 * (q3-q1)
-    >>> [x.get_total_in()/600 for x in p_or_quantiles(map(_test, [0, 2, 2, 2, 2, 2, 2, 4]))]
+    >>> [x.total_bytes_in/600 for x in p_or_quantiles(map(_test, [0, 2, 2, 2, 2, 2, 2, 4]))]
     [2, 2, 2, 2, 2, 2]
     '''
-    counter_total_in = [counter.get_total_in() for counter in counter_list]
+    counter_total_in = [counter.total_bytes_in for counter in counter_list]
     q1 = np.percentile(counter_total_in, 25)
     q3 = np.percentile(counter_total_in, 75)
 
     out = []
     for counter in counter_list:
-        if (counter.get_total_in() >= (q1 - 1.5 * (q3 - q1)) and
-                counter.get_total_in() <= (q3 + 1.5 * (q3 - q1))):
+        if (counter.total_bytes_in >= (q1 - 1.5 * (q3 - q1)) and
+                counter.total_bytes_in <= (q3 + 1.5 * (q3 - q1))):
             out.append(counter)
     return out
 
@@ -1015,7 +1016,7 @@ def p_or_toolong(counter_list):
 
     The capturing software seemingly did not remove the others, even
     though it should have.'''
-    return [x for x in counter_list if x.get_duration() < DURATION_LIMIT_SECS]
+    return [x for x in counter_list if x.duration < DURATION_LIMIT_SECS]
 
 
 def outlier_removal(counter_dict, level=2):

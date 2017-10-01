@@ -40,7 +40,8 @@ def run_exp(scenario, trace_args, _rnd):
         'score': result.best_score_,
         'C_gamma_result': _format_results(result.results),
         'outlier_removal': s.trace_args,
-        'size_increase': s.size_increase()
+        'size_increase': s.size_increase(),
+        'time_increase': s.time_increase()
     }
 
 
