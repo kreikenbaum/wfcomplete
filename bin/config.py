@@ -9,7 +9,7 @@ LOGLEVEL = logging.INFO
 
 logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 # outlier removal level: 2 is ...
-OR_LEVEL = 23
+OR_LEVEL = 2
 # remove domains with <= MIN_CLASS_SIZE instances
 REMOVE_SMALL = True
 # combine these
