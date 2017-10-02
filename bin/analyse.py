@@ -2,7 +2,6 @@
 '''Analyses (Panchenko's) features returned from Counter class'''
 import datetime
 import doctest
-import logging
 import sys
 import time
 from types import NoneType
@@ -10,15 +9,12 @@ from types import NoneType
 import numpy as np
 from sklearn import cross_validation, ensemble, multiclass, neighbors, svm, tree
 
+import config
 import counter
 import fit
 import mplot
 import scenario
 
-LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
-#LOGLEVEL = logging.DEBUG
-LOGLEVEL = logging.INFO
-#LOGLEVEL = logging.WARN
 TIME_SEPARATOR = '@'
 
 # classifiers
@@ -469,6 +465,5 @@ def main(argv, with_svm=True, cumul=True):
 doctest.testmod()
 
 if __name__ == "__main__":
-    logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
     os.nice(20)
     main(sys.argv)

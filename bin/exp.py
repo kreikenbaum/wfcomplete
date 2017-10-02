@@ -12,6 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import precision_recall_fscore_support
 
 import analyse
+import config
 import counter
 from scenario import Scenario, TRACE_ARGS # scenario name already used
 
@@ -29,7 +30,9 @@ def my_config_cw():
 
     
 @ex.capture
-def run_exp(scenario, trace_args, _rnd):
+def run_exp(scenario, remove_small, or_level, _rnd):
+    config.OR_LEVEL = or_level or config.OR_LEVEL
+    config.REMOVE_SMALL = remove_small or config.REMOVE_SMALL
     s = Scenario(scenario, trace_args)
     traces = s.get_traces()
     result = analyse.simulated_original(traces)

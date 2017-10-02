@@ -17,15 +17,14 @@ import numpy as np
 import pyshark
 from pyshark.capture.capture import TSharkCrashException
 
+import config
+
 DURATION_LIMIT_SECS = 8 * 60
 # HOME_IP = '134.76.96.47' #td: get ips
 HOME_IP = '134.169.109.25'
-#LOGLEVEL = logging.DEBUG
-LOGLEVEL = logging.INFO
-LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 PROTOCOL_DISCARD = re.compile('ARP|CDP|ICMP|IGMP|LLMNR|SSDP|SSH|STP|UDP')
 
-MIN_CLASS_SIZE = 30
+
 TOR_DATA_CELL_SIZE = 512
 
 TIME_SEPARATOR = '@'
@@ -127,10 +126,10 @@ def _pad(row, upto=300):
 
 def _remove_small_classes(counter_dict):
     '''@return dict with removed traces if there are less than
-MIN_CLASS_SIZE per url'''
+config.MIN_CLASS_SIZE per url'''
     out = {}
     for (k, counter_list) in counter_dict.iteritems():
-        if len(counter_list) < MIN_CLASS_SIZE:
+        if len(counter_list) < config.MIN_CLASS_SIZE:
             logging.warn('class %s had only %s instances, removed',
                          k, len(counter_list))
         else:
@@ -1047,8 +1046,6 @@ def outlier_removal(counter_dict, level=2):
 
 doctest.testmod(optionflags=doctest.ELLIPSIS)
 if __name__ == "__main__":
-    logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
-
     #    try:
     COUNTERS = Counter.from_(*sys.argv, remove_small=False)
     # except OSError:

@@ -1,12 +1,12 @@
 '''helper methods for fitting data, works mostly with X, y sets'''
 import collections
 import doctest
-import logging
 from sklearn import cross_validation, grid_search, metrics, multiclass
 from sklearn import preprocessing, svm
 # ensemble, metrics, neighbors, tree
 import numpy as np
 
+import config
 import counter
 
 JOBS_NUM = -1
@@ -259,5 +259,4 @@ def sci_grid(X, y, C=2**14, gamma=2**-10, step=2, scoring=None,
 doctest.testmod()
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.ERROR)
     print 'nothing to do, avoids joblib warning'

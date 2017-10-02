@@ -20,12 +20,11 @@ import counter
 
 
 DIR = os.path.join(os.path.expanduser('~'), 'da', 'git', 'data')
-TRACE_ARGS = {"remove_small": config.REMOVE_SMALL, "or_level": config.OR_LEVEL}
 
 
 class Scenario(object):
     '''meta-information object with optional loading of traces'''
-    def __init__(self, name, trace_args=TRACE_ARGS, smart=False):
+    def __init__(self, name, trace_args=None, smart=False):
         '''
         >>> Scenario('disabled/2016-11-13').date
         datetime.date(2016, 11, 13)
@@ -36,7 +35,7 @@ class Scenario(object):
         >>> Scenario('./0.22/10aI--2016-11-04-50-of-100').setting
         '10aI'
         '''
-        self.trace_args = trace_args
+        self.trace_args = trace_args or config.trace_args()
         self.path = os.path.normpath(name)
         if smart and not self.valid():
             self.path = list_all(self.path)[0].path
