@@ -1,6 +1,7 @@
 '''helper methods for fitting data, works mostly with X, y sets'''
 import collections
 import doctest
+import logging
 from sklearn import cross_validation, grid_search, metrics, multiclass
 from sklearn import preprocessing, svm
 # ensemble, metrics, neighbors, tree
