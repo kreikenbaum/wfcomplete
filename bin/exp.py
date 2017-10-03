@@ -14,7 +14,7 @@ from sklearn.metrics import precision_recall_fscore_support
 import analyse
 import config
 import counter
-from scenario import Scenario, TRACE_ARGS # scenario name already used
+from scenario import Scenario # "scenario" name already used
 
 DIR = '/home/uni/da/git/data/'
 
@@ -25,8 +25,8 @@ ex.observers.append(MongoObserver.create())
 @ex.config
 def my_config_cw():
     scenario = 'disabled/06-09@10/'
-    trace_args = TRACE_ARGS
-#    scenario = Scenario('wtf-pad/bridge--2017-01-08')
+    or_level = config.OR_LEVEL
+    remove_small = config.REMOVE_SMALL
 
     
 @ex.capture
@@ -86,4 +86,11 @@ def my_main(scenario):
 ## inspect database:
 # use sacred; db.runs.aggregate([{$match: {"$and": [{"config.scenario": {"$exists": 1}}, {"result.score": {"$exists": 1}}]}}, {$project: {"config.scenario": 1, "result.score": 1}},{$group: {_id: "$config.scenario", "score": {$max: "$result.score"}}}])
 ## check duplicates
-# db.runs.aggregate([{$match: {"$and": [{"config.scenario": {"$exists": 1}}, {"result.score": {"$exists": 1}}]}}, {$project: {"config.scenario": 1, "result.score": 1}},{$group: {_id: "$config.scenario", "score": {$push: "$result.score"}, "count": {$sum: 1}}}])
+# db.runs.aggregate([{"$match": {"$and": [
+#         {"config.scenario": {"$exists": 1}},
+#         {"result.score": {"$exists": 1}}]}},
+#     {"$project": {"config.scenario": 1, "result.score": 1}},
+#     {"$group": {
+#         "_id": "$config.scenario",
+#         "score": {"$push": "$result.score"},
+#         "count": {"$sum": 1}}}])

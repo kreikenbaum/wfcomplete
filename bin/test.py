@@ -4,6 +4,7 @@ import datetime
 import doctest
 import logging
 import os
+import subprocess
 import tempfile
 import unittest
 import numpy as np
@@ -116,11 +117,24 @@ test + + + +
 
 
     def test__from(self):
+        current = os.getcwd()
         emptydir = temp_dir()
         os.chdir(emptydir)
         with self.assertRaises(IOError):
             counter.Counter.from_('path/to/counter.py',)
+        os.chdir(current)
 
+
+
+class TestExp(unittest.TestCase):
+    '''tests the experimentation module'''
+    @unittest.skipIf(VERYQUICK, "slow test skipped")
+    def test_runs(self):
+#        subprocess.call("echo $PATH > /tmp/out",
+        with open(os.devnull, "w") as null:
+            subprocess.check_call(os.path.join(os.getcwd(), "./exp.py")
+                                  + " print_config > /dev/null",
+                                  stderr=null, stdout=null, shell=True)
 
 
 class TestAnalyse(unittest.TestCase):
