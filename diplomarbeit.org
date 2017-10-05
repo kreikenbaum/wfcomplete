@@ -810,7 +810,7 @@ While some similarity can be seen for each group, the "within-group" differences
 
    Dynamically updating the filter might solve problem /1/ and further
    help with problem /3/ (future work).
-* PENDING (write content) WRITE Evaluation [0/7]
+* WRITE Evaluation [0/7]
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
   :END:
@@ -831,6 +831,44 @@ While some similarity can be seen for each group, the "within-group" differences
      - firefox marionette
      - script at github
    - feature extraction and classification in python
+
+    :PROPERTIES:
+    :CUSTOM_ID: capture
+    :END:
+    #+INDEX: Bridge
+    #+INDEX: Tor!Bridge
+    #+CAPTION: Setup to capture web page traffic: Tor Browser on /Client/ machine, connects to Tor server on /Bridge/ machine, connects to Tor network, connects to web servers
+    #+ATTR_LATEX: :float nil :width 0.5\textwidth
+    [[./pictures/Setup.eps]] 
+
+    For the first captures, a single virtual machine hosted both the
+    WTF-PAD server and client. To simulate the distributed WTF-PAD
+    defense's network more closely, a second server was used.
+
+    Thus, a Tor bridge was introduced into the traffic
+    flow[fn::Bridges relay Tor traffic. They act as a gateway into the
+    network. Their main use is censorship avoidance\cite{tor2014}]. It
+    is required for WTF-PAD anyways, but other Tor traffic also uses
+    the bridge instance via Tor's =Bridge=
+    directive\cite[sec.client~options]{tor-manual}, to ease
+    comparability.
+
+    One host runs the Tor Browser Bundle[fn::at the current version]
+    and the cover traffic server (if needed), the other runs a Tor
+    server instance in bridge mode. For WTF-PAD, an additional server
+    transport program is run at the bridge, and a client transport at
+    the client[fn::WTF-PAD is run via the stand-alone programs. Tor's
+    built-in =ServerTransportPlugin= and =ClientTransportPlugin=
+    configuration naïvely failed].
+
+    This setup utilises the same bridge for WTF-PAD and the browser
+    extension.
+
+    Single traces are captured via the Python script ~one_site.py~,
+    see appendix [[#1site_desc]]. It cleans the cache between
+    captures[fn::by restarting the Tor Browser Bundle]. Evaluation
+    setup guides can be found in appendix [[#setup-details]].
+   
 ** CHECK WF Attack Evaluation
    :PROPERTIES:
    :CUSTOM_ID: sub4-tools
