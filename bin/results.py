@@ -28,7 +28,7 @@ class Result(object):
 
     @staticmethod
     def from_mongoentry(entry):
-        git = _nestedvalue_or_none(entry, 'experiment', 'repositories', 0, 'commit')
+        git = _value_or_none(entry, 'experiment', 'repositories', 0, 'commit')
         try:
             size = len(entry['result']['sites'])
         except KeyError:
@@ -40,8 +40,8 @@ class Result(object):
                 type_ = "cumul"
             else:
                 raise
-        size_overhead = _nestedvalue_or_none(entry, 'result', 'size_increase')
-        time_overhead = _nestedvalue_or_none(entry, 'result', 'time_increase')
+        size_overhead = _value_or_none(entry, 'result', 'size_increase')
+        time_overhead = _value_or_none(entry, 'result', 'time_increase')
         return Result(scenario.Scenario(entry['config']['scenario']),
                       entry['result']['score'],
                       git,
@@ -72,7 +72,7 @@ class Result(object):
             logging.debug("%s@%s already in db", self.scenario, self.date)
 
         
-def _nestedvalue_or_none(entry, *steps):
+def _value_or_none(entry, *steps):
     '''descends steps into entry, returns value or None if it does not exist'''
     try:
         for step in steps:
@@ -114,6 +114,7 @@ def get_all(match={"$and": [{"config.scenario": {"$exists": 1}},
     return [Result.from_mongoentry(x) for x in
             db.runs.find(match)]
 
+
 def to_table(results):
     '''@return table of results as a string'''
     tbl = prettytable.PrettyTable()
@@ -121,11 +122,32 @@ def to_table(results):
                        "time increase [in %]"]
     for result in results:
         tbl.add_row(name, score, si, ti)
+    TODO
         
 def sized(size):
     return [x for x in get_all() if x.size == size]
 #    return get_all({"$or": [{"config.size": 10},
 #                            {"result.sites": {"$size": 10}}]})
+
+def _duplicates(params=["config.scenario", "result.score"]):
+    '''@return all instances of experiments, projected to only params
+    >>> {x['_id']: x['result_score'] for x in _duplicates()}.iteritems().next()
+    (u'0.22/5aI--2016-07-25', [0.691191114775])
+    '''
+    db = pymongo.MongoClient().sacred
+    project = {key: 1 for key in params}
+    groups = {"_id": "$config.scenario", "count": {"$sum": 1}}
+    local = params[:]
+    local.remove('config.scenario')
+    for each in local:
+        groups[each.replace(".", "_")] = {"$push": "${}".format(each)}
+    return db.runs.aggregate([
+        {"$match": {"$and": [
+            {"config.scenario": {"$exists": 1}},
+            {"result.score": {"$exists": 1}}]}},
+        {"$project": project},
+        {"$group": groups}])
+
 
 if __name__ == "__main__":
     db = pymongo.MongoClient().sacred
@@ -137,5 +159,6 @@ if __name__ == "__main__":
     # import_to_mongo(open('/home/uni/da/git/data/results/10sites.csv'), 10)
 
 
-# todo = filter(lambda x: (x.size == 30 and "disabled" not in x.scenario.path and x.size_overhead is None), get_all())
-# for t in todo: os.system('''~/da/git/bin/exp.py -e with 'scenario = "{}"' '''.format(t.scenario.path))
+    # a = list(_duplicates(["config.scenario", "result.score", "result.size_increase", "result.time_increase", "status"]))
+    # todo = [x['_id'] for x in a if len(x['result_size_increase']) == 0]
+    # for t in todo: os.system('''~/da/git/bin/exp.py -e with 'scenario = "{}"' '''.format(t.scenario.path))

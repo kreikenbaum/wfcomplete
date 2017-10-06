@@ -7,6 +7,7 @@ LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 #LOGLEVEL = logging.WARN INFO DEBUG
 LOGLEVEL = logging.INFO
 
+reload(logging)
 logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 # outlier removal level: 2 is ...
 OR_LEVEL = 2

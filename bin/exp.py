@@ -55,26 +55,6 @@ def _format_results(results):
     return out
 
 
-def _duplicates(params=["config.scenario", "result.score"]):
-    '''@return all instances of experiments, projected to only params
-    >>> {x['_id']: x['result_score'] for x in _duplicates()}.iteritems().next()
-    (u'0.22/5aI--2016-07-25', [0.691191114775])
-    '''
-    db = pymongo.MongoClient().sacred
-    project = {key: 1 for key in params}
-    groups = {"_id": "$config.scenario", "count": {"$sum": 1}}
-    local = params[:]
-    local.remove('config.scenario')
-    for each in local:
-        groups[each.replace(".", "_")] = {"$push": "${}".format(each)}
-    return db.runs.aggregate([
-        {"$match": {"$and": [
-            {"config.scenario": {"$exists": 1}},
-            {"result.score": {"$exists": 1}}]}},
-        {"$project": project},
-        {"$group": groups}])
-
-
 @ex.automain
 def my_main(scenario):
     _=os.nice(20)
