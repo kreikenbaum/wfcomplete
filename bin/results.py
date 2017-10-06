@@ -72,7 +72,7 @@ def _next_id():
             .find({}, {"_id": 1})
             .sort("_id", pymongo.DESCENDING)
             .limit(1)
-            .next())["_id"]
+            .next())["_id"] + 1
 
 def import_to_mongo(csvfile, size, measure="cumul"):
     imported = []

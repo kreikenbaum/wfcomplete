@@ -11,7 +11,7 @@ import sys
 import threading
 import time
 import urlparse
-from marionette import Marionette
+from marionette_driver.marionette import Marionette
 
 def browse_to(page, bridge=None):
     '''creates a browser instance, packet dump, browses to page, kills both.
@@ -34,7 +34,6 @@ def _open_with_timeout(browser, page, timeout=600, burst_wait=3, bridge=None):
     '''
     client = Marionette('localhost', port=2828, socket_timeout=(timeout-30))
     client.start_session()
-    client.timeouts('page load', timeout * 1000) # not working
 
     (url, domain) = _normalize_url(page)
 
