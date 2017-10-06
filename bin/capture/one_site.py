@@ -13,6 +13,8 @@ import time
 import urlparse
 from marionette_driver.marionette import Marionette
 
+import config
+
 def browse_to(page, bridge=None):
     '''creates a browser instance, packet dump, browses to page, kills both.
     If bridge is not none, it is an IP-address. Just capture traffic to that.'''
@@ -126,7 +128,8 @@ def _normalize_url(url='google.com'):
 
 def _open_packet_dump(page, bridge):
     '''@returns a (tshark_subprocess_instance, filename) tuple'''
-    loc = os.path.join('/mnt/data', page + '@' + str(time.time()).split('.')[0])
+    loc = os.path.join(config.SAVETO,
+                       page + '@' + str(time.time()).split('.')[0])
     if not bridge:
         return (subprocess.Popen(['tshark', '-w' + loc]), loc)
     else:
