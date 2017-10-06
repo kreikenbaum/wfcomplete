@@ -147,7 +147,11 @@ class Scenario(object):
 
 
     def size_increase(self, trace_dict=None):
-        closest_disabled = self._closest("disabled")
+        try:
+            closest_disabled = self._closest("disabled")
+        except AttributeError:
+            self.date = self.date_from_trace()
+            closest_disabled = self._closest("disabled")
         if closest_disabled == self:
             return 0
         return size_increase(closest_disabled.get_traces(),

@@ -63,6 +63,7 @@ class Result(object):
 
     def save(self):
         '''saves entry to mongodb if new'''
+        db = pymongo.MongoClient().sacred
         obj = {
             "_id": _next_id(),
             "config": {"scenario": self.scenario, "size": self.size},
@@ -73,6 +74,16 @@ class Result(object):
         else:
             logging.debug("%s@%s already in db", self.scenario, self.date)
 
+
+    # add overhead-helper for those experiments that lacked it
+    # def _add_oh(self):
+    #     self.update(
+    #         {"result.size_increase": self.scenario.size_increase(),
+    #          "result.time_increase": self.scenario.time_increase()})
+    def update(self, addthis):
+        '''updates entry in db to also include addthis'''
+        db = pymongo.MongoClient().sacred
+        db.runs.find_one_and_update({"_id": self._id}, {"$set": addthis})
         
 def _value_or_none(entry, *steps):
     '''descends steps into entry, returns value or None if it does not exist'''
@@ -106,15 +117,16 @@ def import_to_mongo(csvfile, size, measure="cumul"):
         else:
             logging.warn("skipped %s", el)
     for el in imported:
-        #print el
         el.save()
 
-def get_all(match={"$and": [{"config.scenario": {"$exists": 1}},
-                            {"result.score": {"$exists": 1}}]}):
-    '''@return all runs that match match'''
+def get_all(match=None, restrict=True):
+    '''@return all runs (with scenario and score by default) that match match'''
+    matches = [{"config.scenario": {"$exists": 1}},
+               {"result.score": {"$exists": 1}}] if restrict else []
+    if match: matches.append(match)
     db = pymongo.MongoClient().sacred
     return [Result.from_mongoentry(x) for x in
-            db.runs.find(match)]
+            db.runs.find({"$and": matches})]
 
 
 def to_table(results):
@@ -164,5 +176,6 @@ if __name__ == "__main__":
     # a = list(_duplicates(["config.scenario", "result.score", "result.size_increase", "result.time_increase", "status"]))
     # todos = [x['_id'] for x in a if len(x['result_size_increase']) == 0]
     # for t in todo: os.system('''~/da/git/bin/exp.py -e with 'scenario = "{}"' '''.format(t.scenario.path))
-
+    # for t in todos: print(t); get_all({"config.scenario": t})[-1]._add_oh()
+    # # some non-existing ones were pop()ped from todos
     #db.runs.update({_id: 23}, {$set: {"stabus": "FABLED"}})
