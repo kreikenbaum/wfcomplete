@@ -135,3 +135,7 @@ if __name__ == "__main__":
     ## todo: filter to get only one element per scenario
     ### here or mongo?
     # import_to_mongo(open('/home/uni/da/git/data/results/10sites.csv'), 10)
+
+
+# todo = filter(lambda x: (x.size == 30 and "disabled" not in x.scenario.path and x.size_overhead is None), get_all())
+# for t in todo: os.system('''~/da/git/bin/exp.py -e with 'scenario = "{}"' '''.format(t.scenario.path))
