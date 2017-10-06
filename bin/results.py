@@ -164,3 +164,5 @@ if __name__ == "__main__":
     # a = list(_duplicates(["config.scenario", "result.score", "result.size_increase", "result.time_increase", "status"]))
     # todos = [x['_id'] for x in a if len(x['result_size_increase']) == 0]
     # for t in todo: os.system('''~/da/git/bin/exp.py -e with 'scenario = "{}"' '''.format(t.scenario.path))
+
+    #db.runs.update({_id: 23}, {$set: {"stabus": "FABLED"}})
