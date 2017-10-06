@@ -41,6 +41,7 @@ def run_exp(scenario, remove_small, or_level, _rnd):
         'gamma': result.clf.estimator.gamma,
         'sites': traces.keys(),
         'score': result.best_score_,
+        'type': "cumul",
         'C_gamma_result': _format_results(result.results),
         'outlier_removal': s.trace_args,
         'size_increase': s.size_increase(),
