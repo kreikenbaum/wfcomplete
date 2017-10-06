@@ -14,7 +14,7 @@ import scenario
 
 class Result(object):
     def __init__(self, scenario_, accuracy, git, time, type_, size,
-                 size_overhead=None, time_overhead=None):
+                 size_overhead=None, time_overhead=None, _id=None):
         self.scenario = scenario_
         self.cumul = accuracy
         self.git = git
@@ -25,6 +25,7 @@ class Result(object):
         self.size = size
         self.size_overhead = size_overhead
         self.time_overhead = time_overhead
+        self._id = _id
 
     @staticmethod
     def from_mongoentry(entry):
@@ -49,7 +50,8 @@ class Result(object):
                       type_,
                       size,
                       size_overhead,
-                      time_overhead)
+                      time_overhead,
+                      entry['_id'])
 
     def __add__(self, other):
         return Result(None, self.accuracy + other.accuracy, None, None)
@@ -160,5 +162,5 @@ if __name__ == "__main__":
 
 
     # a = list(_duplicates(["config.scenario", "result.score", "result.size_increase", "result.time_increase", "status"]))
-    # todo = [x['_id'] for x in a if len(x['result_size_increase']) == 0]
+    # todos = [x['_id'] for x in a if len(x['result_size_increase']) == 0]
     # for t in todo: os.system('''~/da/git/bin/exp.py -e with 'scenario = "{}"' '''.format(t.scenario.path))
