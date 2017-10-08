@@ -17,7 +17,7 @@ echo "{
         \"delay-to-duckstein\": $(ssh $BRIDGE -x /home/mkreik/bin/capture/get_delay.sh)
     },
     \"addon\": {
-        \"installed\": $(get_addon_enabled.py),
+        \"enabled\": $(get_addon_enabled.py),
         \"version\": $(get_version.sh),
         \"factor\":  $(get_factor.sh)
     }
