@@ -187,4 +187,4 @@ if __name__ == "__main__":
 # min(c, key=lambda x: abs(42 - x.time_overhead))
 # d = [x for x in get_all() if x.scenario.name == '0.22']
 # min(d, key=lambda x: abs(0.63 - x.cumul))
-
+# min(d, key=lambda x: abs(0.26 - x.cumul))
