@@ -76,10 +76,10 @@ class Result(object):
 
 
     # add overhead-helper for those experiments that lacked it
-    # def _add_oh(self):
-    #     self.update(
-    #         {"result.size_increase": self.scenario.size_increase(),
-    #          "result.time_increase": self.scenario.time_increase()})
+    def _add_oh(self):
+        self.update(
+            {"result.size_increase": self.scenario.size_increase(),
+             "result.time_increase": self.scenario.time_increase()})
     def update(self, addthis):
         '''updates entry in db to also include addthis'''
         db = pymongo.MongoClient().sacred
@@ -119,8 +119,8 @@ def import_to_mongo(csvfile, size, measure="cumul"):
     for el in imported:
         el.save()
 
-def get_all(match=None, restrict=True):
-    '''@return all runs (with scenario and score by default) that match match'''
+def list_all(match=None, restrict=True):
+    '''@return all runs (normally with scenario and score) that match match'''
     matches = [{"config.scenario": {"$exists": 1}},
                {"result.score": {"$exists": 1}}] if restrict else []
     if match: matches.append(match)
@@ -139,8 +139,8 @@ def to_table(results):
     TODO
         
 def sized(size):
-    return [x for x in get_all() if x.size == size]
-#    return get_all({"$or": [{"config.size": 10},
+    return [x for x in list_all() if x.size == size]
+#    return list_all({"$or": [{"config.size": 10},
 #                            {"result.sites": {"$size": 10}}]})
 
 def _duplicates(params=["config.scenario", "result.score"]):
@@ -176,6 +176,11 @@ if __name__ == "__main__":
     # a = list(_duplicates(["config.scenario", "result.score", "result.size_increase", "result.time_increase", "status"]))
     # todos = [x['_id'] for x in a if len(x['result_size_increase']) == 0]
     # for t in todo: os.system('''~/da/git/bin/exp.py -e with 'scenario = "{}"' '''.format(t.scenario.path))
-    # for t in todos: print(t); get_all({"config.scenario": t})[-1]._add_oh()
+    # for t in todos: print(t); list_all({"config.scenario": t})[-1]._add_oh()
     # # some non-existing ones were pop()ped from todos
     #db.runs.update({_id: 23}, {$set: {"stabus": "FABLED"}})
+    
+#     def _closest_size_oh(self, match):
+#        '''@return result with closest size overhead matching match'''
+        filtered = 
+
