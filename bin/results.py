@@ -180,7 +180,11 @@ if __name__ == "__main__":
     # # some non-existing ones were pop()ped from todos
     #db.runs.update({_id: 23}, {$set: {"stabus": "FABLED"}})
     
-#     def _closest_size_oh(self, match):
-#        '''@return result with closest size overhead matching match'''
-        filtered = 
+#  result with closest size overhead
+# b = [x for x in get_all() if x.scenario.name == '0.22' and x.size_overhead]
+# min(b, key=lambda x: abs(size - x.size_overhead))
+# c = [x for x in get_all() if x.scenario.name == '0.22' and x.time_overhead]
+# min(c, key=lambda x: abs(42 - x.time_overhead))
+# d = [x for x in get_all() if x.scenario.name == '0.22']
+# min(d, key=lambda x: abs(0.63 - x.cumul))
 
