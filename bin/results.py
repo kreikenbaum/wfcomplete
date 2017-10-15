@@ -8,7 +8,6 @@ import datetime
 import logging
 
 import pymongo
-import prettytable
 
 import scenario
 
@@ -129,15 +128,6 @@ def list_all(match=None, restrict=True):
             db.runs.find({"$and": matches})]
 
 
-def to_table(results):
-    '''@return table of results as a string'''
-    tbl = prettytable.PrettyTable()
-    tbl.field_names = ["scenario", "accuracy [in %]", "size increase [in %]",
-                       "time increase [in %]"]
-    for result in results:
-        tbl.add_row(name, score, si, ti)
-    TODO
-        
 def sized(size):
     return [x for x in list_all() if x.size == size]
 #    return list_all({"$or": [{"config.size": 10},
