@@ -52,13 +52,12 @@ class Result(object):
                       time_overhead,
                       entry['_id'])
 
-    def __add__(self, other):
-        return Result(None, self.accuracy + other.accuracy, None, None)
 
     def __repr__(self):
         return '<Result({!r}, {}, {}, {}, {}, size={}, size_overhead={}, time_overhead={})>'.format(
             self.scenario, self.cumul, self.git, self.date,
             self.type_, self.size, self.size_overhead, self.time_overhead)
+
 
     def save(self):
         '''saves entry to mongodb if new'''
@@ -118,6 +117,7 @@ def import_to_mongo(csvfile, size, measure="cumul"):
     for el in imported:
         el.save()
 
+
 def list_all(match=None, restrict=True):
     '''@return all runs (normally with scenario and score) that match match'''
     matches = [{"config.scenario": {"$exists": 1}},
@@ -158,19 +158,19 @@ if __name__ == "__main__":
     all_ = [Result.from_mongoentry(x) for x in
             db.runs.find({"$and": [{"config.scenario": {"$exists": 1}},
                                    {"result.score": {"$exists": 1}}]})]
-    ## todo: filter to get only one element per scenario
-    ### here or mongo?
-    # import_to_mongo(open('/home/uni/da/git/data/results/10sites.csv'), 10)
+## todo: filter to get only one element per scenario
+### here or mongo?
+# import_to_mongo(open('/home/uni/da/git/data/results/10sites.csv'), 10)
 
-
-    # a = list(_duplicates(["config.scenario", "result.score", "result.size_increase", "result.time_increase", "status"]))
-    # todos = [x['_id'] for x in a if len(x['result_size_increase']) == 0]
-    # for t in todo: os.system('''~/da/git/bin/exp.py -e with 'scenario = "{}"' '''.format(t.scenario.path))
-    # for t in todos: print(t); list_all({"config.scenario": t})[-1]._add_oh()
-    # # some non-existing ones were pop()ped from todos
-    #db.runs.update({_id: 23}, {$set: {"stabus": "FABLED"}})
+## add overheads to each scenario once
+# a = list(_duplicates(["config.scenario", "result.score", "result.size_increase", "result.time_increase", "status"]))
+# todos = [x['_id'] for x in a if len(x['result_size_increase']) == 0]
+# for t in todo: os.system('''~/da/git/bin/exp.py -e with 'scenario = "{}"' '''.format(t.scenario.path))
+# for t in todos: print(t); list_all({"config.scenario": t})[-1]._add_oh()
+# # some non-existing ones were pop()ped from todos
+#db.runs.update({_id: 23}, {$set: {"stabus": "FABLED"}})
     
-#  result with closest size overhead
+## result with closest ...
 # b = [x for x in get_all() if x.scenario.name == '0.22' and x.size_overhead]
 # min(b, key=lambda x: abs(size - x.size_overhead))
 # c = [x for x in get_all() if x.scenario.name == '0.22' and x.time_overhead]
