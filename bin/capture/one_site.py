@@ -62,6 +62,7 @@ def _navigate_or_fail(client, url, file_name):
     try:
         client.navigate(url)
     except:
+        import pdb; pdb.set_trace()
         os.rename(file_name,
                   '{}_{}'
                   .format(file_name, sys.exc_info()[1])
