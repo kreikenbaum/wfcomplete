@@ -182,7 +182,22 @@ if __name__ == "__main__":
 # b = [x for x in list_all() if (x.scenario.name == '0.22' or 'llama' in x.scenario) and x.size_overhead]
 # c = pd.DataFrame([x.__dict__ for x in b])
 # c['color'] = c['scenario'].map(lambda x: 'red' if 'llama' in x else 'blue')
-# c.plot.scatter('size_overhead', 'cumul', c=c.color)
+# c = c.rename(columns={'size_overhead': 'Size Overhead [%]', 'cumul': 'Accuracy', 'time_overhead': 'Time Overhead [%]'})
+# d = c.plot.scatter('Size Overhead [%]', 'Accuracy', c=c.color)
+# d.set_xbound(0)
+# d.set_ybound(0, 1)
+# d.set_title("Size Overhead to Accuracy Ratio of New Defense and LLaMA")
+# plt.tight_layout()
+
+## flavor comparison: no clear picture, but I seems better than II (bII fails)
+# def color(pandas_result):
+#     if 'llama' in pandas_result: return 'red'
+#     if 'aII' in pandas_result: return 'yellow'
+#     if 'aI' in pandas_result: return 'orange'
+#     if 'bII' in pandas_result: return 'blue'
+#     if 'bI' in pandas_result: return 'green'
+#     return 'grey'
+# c['color'] = c['scenario'].map(color)
 
 ## mongodb
 # db.runs.update({"_id" : 359}, {$unset: {'result.size_increase': 0}})
