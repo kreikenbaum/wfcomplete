@@ -66,6 +66,10 @@ class Scenario(object):
             self.status = None
 
 
+    def __contains__(self, item):
+        return item in self.path
+
+
     def __eq__(self, other):
         return self.path == other
 
@@ -146,7 +150,7 @@ class Scenario(object):
         return self.traces
 
 
-    def size_increase(self, trace_dict=None):
+    def _increase(self, method, trace_dict=None):
         try:
             closest_disabled = self._closest("disabled")
         except AttributeError:
@@ -154,16 +158,16 @@ class Scenario(object):
             closest_disabled = self._closest("disabled")
         if closest_disabled == self:
             return 0
-        return size_increase(closest_disabled.get_traces(),
-                             trace_dict or self.get_traces())
+        return method(closest_disabled.get_traces(),
+                      trace_dict or self.get_traces())
+
+
+    def size_increase(self, trace_dict=None):
+        return self._increase(size_increase, trace_dict)
 
 
     def time_increase(self, trace_dict=None):
-        closest_disabled = self._closest("disabled")
-        if closest_disabled == self:
-            return 0
-        return time_increase(closest_disabled.get_traces(),
-                             trace_dict or self.get_traces())
+        return self._increase(time_increase, trace_dict)
 
 
     def _closest(self, filter_, include_bg=False):

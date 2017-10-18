@@ -171,10 +171,18 @@ if __name__ == "__main__":
 #db.runs.update({_id: 23}, {$set: {"stabus": "FABLED"}})
     
 ## result with closest ...
-# b = [x for x in get_all() if x.scenario.name == '0.22' and x.size_overhead]
+# b = [x for x in list_all() if x.scenario.name == '0.22' and x.size_overhead]
 # min(b, key=lambda x: abs(size - x.size_overhead))
-# c = [x for x in get_all() if x.scenario.name == '0.22' and x.time_overhead]
+# c = [x for x in list_all() if x.scenario.name == '0.22' and x.time_overhead]
 # min(c, key=lambda x: abs(42 - x.time_overhead))
-# d = [x for x in get_all() if x.scenario.name == '0.22']
+# d = [x for x in list_all() if x.scenario.name == '0.22']
 # min(d, key=lambda x: abs(0.63 - x.cumul))
 # min(d, key=lambda x: abs(0.26 - x.cumul))
+## scatter plot of accuracy vs overhead
+# b = [x for x in list_all() if (x.scenario.name == '0.22' or 'llama' in x.scenario) and x.size_overhead]
+# c = pd.DataFrame([x.__dict__ for x in b])
+# c['color'] = c['scenario'].map(lambda x: 'red' if 'llama' in x else 'blue')
+# c.plot.scatter('size_overhead', 'cumul', c=c.color)
+
+## mongodb
+# db.runs.update({"_id" : 359}, {$unset: {'result.size_increase': 0}})
