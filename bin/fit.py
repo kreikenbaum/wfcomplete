@@ -55,7 +55,7 @@ def _bounded_roc(y_true, y_predict, y_bound, **kwargs):
 
 
 def _bounded_auc_eval(X, y, clf, y_bound):
-    '''evaluate clf X, y, give bounded auc score, 0 is positive class label'''
+    '''evaluate clf X, y, give bounded auc score, 1 is positive class label'''
     X = _scale(X, clf)
     y = list(_binarize(y, transform_to=1))
     return bounded_auc_score(clf, X, y, y_bound)
@@ -160,7 +160,7 @@ def bounded_auc_score(clf, X, y, y_bound=0.01):
     scorer = metrics.make_scorer(
         _bounded_auc, needs_proba=True, y_bound=y_bound)
     y = list(_binarize(y, transform_to=1))
-    return cross_validation.cross_val_score(
+    return 1/y_bound * cross_validation.cross_val_score(
         clf, X, y, cv=FOLDS, n_jobs=JOBS_NUM, scoring=scorer).mean()
 
 

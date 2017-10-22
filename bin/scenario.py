@@ -193,6 +193,7 @@ def list_all(extra_filter=None, include_bg=False, path=DIR):
     '''lists all scenarios in =path=.'''
     out = []
     for (dirname, _, _) in os.walk(path):
+        if dirname == path: continue
         if extra_filter and not extra_filter in dirname:
             continue
         out.append(dirname)
@@ -343,3 +344,9 @@ def _trace_list_append(X, y, y_names, trace_list, method, list_id, name):
 doctest.testmod()
 # parse older "json" status
 # json.loads(b.status.replace("'", '"').replace('False', 'false').replace('u"', '"'))
+
+# example open world
+# a = Scenario("0.15.3/1--2016-06-21@10")
+# b = a.get_open_world('auto')
+# X, y, _ = b.get_features_cumul()
+# c = my_grid(X, y, auc_bound=0.1)
