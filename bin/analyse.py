@@ -460,7 +460,7 @@ def main(argv, with_svm=True, cumul=True):
 
 # pylint: disable=line-too-long
 # ====== BY HAND ========
-# import os; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')); _=os.nice(20); sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git', 'bin')); logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
+# import os; import logging; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')); _=os.nice(20); sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git', 'bin')); logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 # pylint: enable=line-too-long
 doctest.testmod()
 

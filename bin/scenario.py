@@ -63,7 +63,7 @@ class Scenario(object):
             with open(os.path.join(DIR, self.path, 'status')) as f:
                 self.status = f.read()
         except IOError:
-            self.status = None
+            self.status = "null"
 
 
     def __contains__(self, item):
@@ -72,6 +72,10 @@ class Scenario(object):
 
     def __eq__(self, other):
         return self.path == other
+
+
+    def __len__(self):
+        return len(self.get_traces())
 
 
     def __str__(self):
@@ -126,20 +130,28 @@ class Scenario(object):
                 class_number += 1
         return (np.array(X), np.array(out_y), domain_names)
 
-    def get_open_world(self):
-        '''@return scenario with traces and added background traces'''
+    def get_open_world(self, num=None):
+        '''
+        @return scenario with traces and (num) added background traces
+        @param num: size of background set, if 'auto', use as many as fg set
+        '''
         bg = self._closest('background', include_bg=True)
         self.get_traces()
         out = copy.copy(self)
-        out.traces['background'] = bg.get_traces()['background']
+        if num:
+            if num == 'auto':
+                num = sum([len(x) for x in self.traces.values()])
+            out.traces['background'] = bg.get_sample(num)['background']
+        else:
+            out.traces['background'] = bg.get_traces()['background']
         return out
 
-    def get_sample(self, size, random_seed=None):
-        '''@return sample of traces, each domain has size size'''
+    def get_sample(self, num, random_seed=None):
+        '''@return sample of traces, each domain has num traces'''
         random.seed(random_seed)
         out = {}
         for (domain, trace_list) in self.get_traces().iteritems():
-            out[domain] = random.sample(trace_list, size)
+            out[domain] = random.sample(trace_list, num)
         return out
 
     def get_traces(self):
@@ -170,6 +182,7 @@ class Scenario(object):
         return self._increase(time_increase, trace_dict)
 
 
+    # idea: return list ordered by date-closeness
     def _closest(self, filter_, include_bg=False):
         '''@return closest scenario that matches filter'''
         filtered = list_all(extra_filter=filter_, include_bg=include_bg)
@@ -328,3 +341,5 @@ def _trace_list_append(X, y, y_names, trace_list, method, list_id, name):
 
 
 doctest.testmod()
+# parse older "json" status
+# json.loads(b.status.replace("'", '"').replace('False', 'false').replace('u"', '"'))

@@ -16,4 +16,4 @@ for name in state['app-profile']:
         out[name] = True
     else:
         out[name] = False
-print out
+print json.dumps(out)
