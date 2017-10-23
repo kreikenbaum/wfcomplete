@@ -23,14 +23,15 @@ def my_config():
     or_level = None
     remove_small = None
     auc_bound = 0.1
+    background_size = None # 'auto', number
 
     
 @ex.capture
-def run_exp(scenario, remove_small, or_level, auc_bound, _rnd):
+def run_exp(scenario, remove_small, or_level, auc_bound, background_size, _rnd):
     config.OR_LEVEL = or_level or config.OR_LEVEL
     config.REMOVE_SMALL = remove_small or config.REMOVE_SMALL
     s = Scenario(scenario)
-    X, y, d = a.get_open_world('auto').get_features_cumul()
+    X, y, d = a.get_open_world(background_size).get_features_cumul()
     result = my_grid(X, y, auc_bound=0.1)
     return {
         'C': result.clf.estimator.C,

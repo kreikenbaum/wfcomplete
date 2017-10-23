@@ -7,6 +7,7 @@ import csv
 import datetime
 import logging
 
+import prettytable
 import pymongo
 
 import scenario
@@ -89,6 +90,21 @@ class Result(object):
         db = pymongo.MongoClient().sacred
         db.runs.find_one_and_update({"_id": self._id}, {"$set": addthis})
         
+
+def to_table(results): #, fields, names=None):
+    '''@return table of results as a string'''
+    tbl = prettytable.PrettyTable()
+    tbl.field_names = [
+        "scenario", "accuracy [%]", "size increase [%]", "time increase [%]"]
+    #names if names else fields
+    for result in results:
+        tbl.add_row([result.scenario.name,
+                     result.cumul,
+                     result.size_overhead,
+                     result.time_overhead])
+    return tbl
+
+
 def _value_or_none(entry, *steps):
     '''descends steps into entry, returns value or None if it does not exist'''
     try:
