@@ -12,7 +12,7 @@ import pymongo
 import scenario
 
 class Result(object):
-    def __init__(self, scenario_, accuracy, git, time, type_, size,
+    def __init__(self, scenario_, accuracy, git, time, type_, size, open_world,
                  size_overhead=None, time_overhead=None, _id=None):
         self.scenario = scenario_
         self.cumul = accuracy
@@ -25,6 +25,7 @@ class Result(object):
         self.size_overhead = size_overhead
         self.time_overhead = time_overhead
         self._id = _id
+        self.open_world = open_world
 
     @staticmethod
     def from_mongoentry(entry):
@@ -40,6 +41,10 @@ class Result(object):
                 type_ = "cumul"
             else:
                 raise
+        try:
+            open_world = entry['experiment']['name'] == 'wf_open_world'
+        except KeyError:
+            open_world = False
         size_overhead = _value_or_none(entry, 'result', 'size_increase')
         time_overhead = _value_or_none(entry, 'result', 'time_increase')
         return Result(scenario.Scenario(entry['config']['scenario']),
@@ -48,6 +53,7 @@ class Result(object):
                       entry['stop_time'],
                       type_,
                       size,
+                      open_world,
                       size_overhead,
                       time_overhead,
                       entry['_id'])

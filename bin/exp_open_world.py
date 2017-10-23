@@ -13,7 +13,7 @@ import config
 import counter
 from scenario import Scenario # "scenario" name already used
 
-ex = Experiment('wf_alternatives')
+ex = Experiment('wf_open_world')
 ex.observers.append(MongoObserver.create())
 
 
@@ -22,19 +22,20 @@ def my_config():
     scenario = 'disabled/06-09@10/'
     or_level = None
     remove_small = None
+    auc_bound = 0.1
 
     
 @ex.capture
-def run_exp(scenario, remove_small, or_level, _rnd):
+def run_exp(scenario, remove_small, or_level, auc_bound, _rnd):
     config.OR_LEVEL = or_level or config.OR_LEVEL
     config.REMOVE_SMALL = remove_small or config.REMOVE_SMALL
     s = Scenario(scenario)
-    traces = s.get_traces()
-    result = analyse.simulated_original(traces)
+    X, y, d = a.get_open_world('auto').get_features_cumul()
+    result = my_grid(X, y, auc_bound=0.1)
     return {
         'C': result.clf.estimator.C,
         'gamma': result.clf.estimator.gamma,
-        'sites': traces.keys(),
+        'sites': s.get_traces().keys(),
         'score': result.best_score_,
         'type': "cumul",
         'C_gamma_result': _format_results(result.results),
