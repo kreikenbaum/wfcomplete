@@ -7,16 +7,11 @@ import numpy as np
 import pymongo
 from sacred import Experiment
 from sacred.observers import MongoObserver
-from sklearn import pipeline, cross_validation, model_selection, svm
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import precision_recall_fscore_support
 
 import analyse
 import config
 import counter
 from scenario import Scenario # "scenario" name already used
-
-DIR = '/home/uni/da/git/data/'
 
 ex = Experiment('wf_alternatives')
 ex.observers.append(MongoObserver.create())
