@@ -26,8 +26,8 @@ def my_config():
     
 @ex.capture
 def run_exp(scenario, remove_small, or_level, _rnd):
-    config.OR_LEVEL = or_level or config.OR_LEVEL
-    config.REMOVE_SMALL = remove_small or config.REMOVE_SMALL
+    config.OR_LEVEL = config.OR_LEVEL if or_level is None else or_level
+    config.REMOVE_SMALL = config.REMOVE_SMALL if remove_small is None else remove_small
     s = Scenario(scenario)
     traces = s.get_traces()
     result = analyse.simulated_original(traces)
