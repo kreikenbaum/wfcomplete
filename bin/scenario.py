@@ -20,6 +20,7 @@ import counter
 
 
 DIR = os.path.join(os.path.expanduser('~'), 'da', 'git', 'data')
+if os.uname()[1] == 'duckstein': DIR = os.path.join('/mnt', 'large')
 
 
 class Scenario(object):

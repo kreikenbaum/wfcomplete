@@ -12,7 +12,7 @@ from sklearn import cross_validation, ensemble, multiclass, neighbors, svm, tree
 import config
 import counter
 import fit
-import mplot
+#import mplot
 import scenario
 
 TIME_SEPARATOR = '@'
@@ -290,7 +290,8 @@ def open_world(scenario_obj, y_bound=0.05):
         y_bound,
         fit.bounded_auc_score(result.clf, X_test, y_test, 0.01),
         result.clf.estimator.C, result.clf.estimator.gamma)
-    return (fpr, tpr, result, mplot.roc(fpr, tpr), prob)
+    return (fpr, tpr, result, prob)
+#    return (fpr, tpr, result, mplot.roc(fpr, tpr), prob)
 
 
 def closed_world(scenarios, def0, cumul=True, with_svm=True, common=False):
