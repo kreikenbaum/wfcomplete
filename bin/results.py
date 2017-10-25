@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 '''stores/retrieves results from db
 
 target usage: load from different sources (or upload all to db),
@@ -13,8 +14,9 @@ import pymongo
 import scenario
 
 class Result(object):
-    def __init__(self, scenario_, accuracy, git, time, type_, size, open_world,
-                 size_overhead=None, time_overhead=None, _id=None):
+    def __init__(self, scenario_, accuracy, git, time, type_, size,
+                 open_world=False, size_overhead=None,
+                 time_overhead=None, _id=None):
         self.scenario = scenario_
         self.cumul = accuracy
         self.git = git
@@ -111,12 +113,13 @@ def _value_or_none(entry, *steps):
         for step in steps:
             entry = entry[step]
         return entry
-    except KeyError:
+    except (KeyError, IndexError):
         return None
 
 
 def _next_id():
     '''@return next id for entry to db'''
+    db = pymongo.MongoClient().sacred
     return (db.runs
             .find({}, {"_id": 1})
             .sort("_id", pymongo.DESCENDING)
@@ -176,10 +179,11 @@ def _duplicates(params=["config.scenario", "result.score"]):
 
 
 if __name__ == "__main__":
-    db = pymongo.MongoClient().sacred
-    all_ = [Result.from_mongoentry(x) for x in
-            db.runs.find({"$and": [{"config.scenario": {"$exists": 1}},
-                                   {"result.score": {"$exists": 1}}]})]
+    print _next_id()
+#    db = pymongo.MongoClient().sacred
+#    all_ = [Result.from_mongoentry(x) for x in
+#            db.runs.find({"$and": [{"config.scenario": {"$exists": 1}},
+#                                   {"result.score": {"$exists": 1}}]})]
 ## todo: filter to get only one element per scenario
 ### here or mongo?
 # import_to_mongo(open('/home/uni/da/git/data/results/10sites.csv'), 10)

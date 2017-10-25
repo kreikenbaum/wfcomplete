@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 '''Analyses (Panchenko's) features returned from Counter class'''
-import datetime
 import doctest
+import logging
 import sys
 import time
 from types import NoneType
@@ -9,7 +9,6 @@ from types import NoneType
 import numpy as np
 from sklearn import cross_validation, ensemble, multiclass, neighbors, svm, tree
 
-import config
 import counter
 import fit
 #import mplot
@@ -272,10 +271,31 @@ picks best result'''
     return clf
 
 
+def simulated_open_world(scenario_obj, auc_bound, bg_size):
+    '''
+1. optimize model based on accuracy
+   - load open-world traces
+   - grid search it
+2. predict values
+   - take best clf, predict
+3. compute fpr and tpr (can use sklearn for this)
+4. return all necessary values
+   - tpr
+   - fpr
+     - multi- and single class
+   - C
+   - gamma
+   - ?bounded auc?
+   - ?auc?
+   - accuracy
+'''
+    TODO_IMPLEMENT
+    return (result, tpr, fpr, auroc)
+
 def open_world(scenario_obj, y_bound=0.05):
     '''open-world (SVM) test on data, optimized on bounded auc.
 
-    :return: (fpr, tpr, optimal_clf, roc_plot_mpl)'''
+    :return: (fpr, tpr, optimal_clf, probabilities)'''
     # _train combines training and testing data and _test is grid-validation
     if 'background' not in scenario_obj.get_traces():
         scenario_obj = scenario_obj.get_open_world()

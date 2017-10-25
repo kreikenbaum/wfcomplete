@@ -938,7 +938,7 @@ class Counter(object):
         try:
             start_millis = int(float(rest_secs) * 1000)
         except ValueError:
-            (tmp_secs, err) = rest_secs.split('_')
+            (tmp_secs, err) = rest_secs.split('_', 1)
             start_millis = int(float(tmp_secs) * 1000)
             out += '_{}'.format(err.replace(' ', '_').replace('\n', ''))
         out += ' {}'.format(start_millis)

@@ -184,27 +184,30 @@ class Scenario(object):
 
 
     # idea: return list ordered by date-closeness
-    def _closest(self, filter_, include_bg=False):
+    def _closest(self, name_filter, include_bg=False, lambda_filter=None):
         '''@return closest scenario that matches filter'''
-        filtered = list_all(extra_filter=filter_, include_bg=include_bg)
+        filtered = list_all(name_filter, include_bg)
+        if lambda_filter:
+            filtered = filter(lambda_filter, filtered)
         return min(filtered, key=lambda x: abs(self.date - x.date))
 
 
-def list_all(extra_filter=None, include_bg=False, path=DIR):
+def list_all(name_filter=None, include_bg=False, path=DIR):
     '''lists all scenarios in =path=.'''
     out = []
     for (dirname, _, _) in os.walk(path):
         if dirname == path: continue
-        if extra_filter and not extra_filter in dirname:
+        if name_filter and not name_filter in dirname:
             continue
         out.append(dirname)
     out[:] = [x.replace(path+'/', './') for x in out]
     return [Scenario(x) for x in _filter_all(
         out, include_bg=include_bg)]
 
+
 def _filter_all(all_, include_bg):
-    '''If extra_filter is not None, only load scenario names matching the filter
-    include_bg does at it says'''
+    '''Filter out specific cases for scenario names,
+    @param include_bg if True include background scenarios, else omit'''
     out = filter(lambda x: (not '/batch' in x
                             and not '/broken' in x
                             and not '/or' in x

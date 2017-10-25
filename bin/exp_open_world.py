@@ -1,16 +1,15 @@
 #! /usr/bin/env python
+'''runs open world experiment, the "sacred" experimentation framework'''
 import logging
 import os
 
 
-import numpy as np
 import pymongo
 from sacred import Experiment
 from sacred.observers import MongoObserver
 
-import analyse
 import config
-import counter
+import fit
 from scenario import Scenario # "scenario" name already used
 
 ex = Experiment('wf_open_world')
@@ -23,26 +22,29 @@ def my_config():
     or_level = None
     remove_small = None
     auc_bound = 0.1
-    background_size = None # 'auto', number
+    background_size = None # 'auto', number, None
 
-    
+
 @ex.capture
 def run_exp(scenario, remove_small, or_level, auc_bound, background_size, _rnd):
     config.OR_LEVEL = or_level or config.OR_LEVEL
     config.REMOVE_SMALL = remove_small or config.REMOVE_SMALL
-    s = Scenario(scenario)
-    X, y, d = a.get_open_world(background_size).get_features_cumul()
-    result = my_grid(X, y, auc_bound=0.1)
+    scenario_obj = Scenario(scenario)
+    (result, fpr, tpr, auroc) = analyse.simulated_open_world(
+        scenario_obj, auc_bound, background_size)
     return {
         'C': result.clf.estimator.C,
         'gamma': result.clf.estimator.gamma,
-        'sites': s.get_traces().keys(),
+        'sites': scenario_obj.get_traces().keys(),
         'score': result.best_score_,
-        'type': "cumul",
+        'type': "accuracy",
         'C_gamma_result': _format_results(result.results),
-        'outlier_removal': s.trace_args,
-        'size_increase': s.size_increase(),
-        'time_increase': s.time_increase()
+        'outlier_removal': scenario_obj.trace_args,
+        'size_increase': scenario_obj.size_increase(),
+        'time_increase': scenario_obj.time_increase(),
+        'fpr': fpr,
+        'tpr': tpr,
+        'auroc': auroc
     }
 
 
@@ -55,7 +57,7 @@ def _format_results(results):
 
 @ex.automain
 def my_main(scenario):
-    _=os.nice(20)
+    _ = os.nice(20)
     db = pymongo.MongoClient().sacred
     if scenario in db.runs.distinct("config.scenario", {"status": "COMPLETED"}):
         logging.warn("scenario already in database")
