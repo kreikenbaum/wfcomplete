@@ -91,6 +91,27 @@ class Scenario(object):
         return '<scenario.Scenario("{}")>'.format(self.path)
 
         
+    # idea: return list ordered by date-closeness
+    def _closest(self, name_filter, include_bg=False, func_filter=None):
+        '''@return closest scenario that matches filter'''
+        filtered = list_all(name_filter, include_bg)
+        if func_filter:
+            filtered = filter(func_filter, filtered)
+        return min(filtered, key=lambda x: abs(self.date - x.date))
+
+
+    def _increase(self, method, trace_dict=None):
+        try:
+            closest_disabled = self._closest("disabled")
+        except AttributeError:
+            self.date = self.date_from_trace()
+            closest_disabled = self._closest("disabled")
+        if closest_disabled == self:
+            return 0
+        return method(closest_disabled.get_traces(),
+                      trace_dict or self.get_traces())
+
+
     def binarize(self, bg_label='background', fg_label='foreground'):
         '''@return scenario with bg_label as-is, others combined to fg_label'''
         out = copy.copy(self)
@@ -110,11 +131,6 @@ class Scenario(object):
             float(trace.name.split('@')[1])).date()
 
 
-    def valid(self):
-        '''@return whether the path is at least a directory'''
-        return os.path.isdir(os.path.join(DIR, self.path))
-
-
     def get_features_cumul(self):
         '''@return traces converted to CUMUL's X, y, y_domains'''
         X = []
@@ -130,6 +146,7 @@ class Scenario(object):
                                    dom_counters, "cumul", class_number, domain)
                 class_number += 1
         return (np.array(X), np.array(out_y), domain_names)
+
 
     def get_open_world(self, num=None):
         '''
@@ -149,6 +166,7 @@ class Scenario(object):
             out.traces['background'] = bg.get_traces()['background']
         return out
 
+
     def get_sample(self, num, random_seed=None):
         '''@return sample of traces, each domain has num traces'''
         random.seed(random_seed)
@@ -156,6 +174,7 @@ class Scenario(object):
         for (domain, trace_list) in self.get_traces().iteritems():
             out[domain] = random.sample(trace_list, num)
         return out
+
 
     def get_traces(self):
         '''@return dict {domain1: [trace1, ..., traceN], ..., domainM: [...]}'''
@@ -165,16 +184,9 @@ class Scenario(object):
         return self.traces
 
 
-    def _increase(self, method, trace_dict=None):
-        try:
-            closest_disabled = self._closest("disabled")
-        except AttributeError:
-            self.date = self.date_from_trace()
-            closest_disabled = self._closest("disabled")
-        if closest_disabled == self:
-            return 0
-        return method(closest_disabled.get_traces(),
-                      trace_dict or self.get_traces())
+    def valid(self):
+        '''@return whether the path is at least a directory'''
+        return os.path.isdir(os.path.join(DIR, self.path))
 
 
     def size_increase(self, trace_dict=None):
@@ -183,15 +195,6 @@ class Scenario(object):
 
     def time_increase(self, trace_dict=None):
         return self._increase(time_increase, trace_dict)
-
-
-    # idea: return list ordered by date-closeness
-    def _closest(self, name_filter, include_bg=False, func_filter=None):
-        '''@return closest scenario that matches filter'''
-        filtered = list_all(name_filter, include_bg)
-        if func_filter:
-            filtered = filter(func_filter, filtered)
-        return min(filtered, key=lambda x: abs(self.date - x.date))
 
 
 def list_all(name_filter=None, include_bg=False, path=DIR):

@@ -1,5 +1,5 @@
 '''configuration variables'''
-# logging
+### logging
 import logging
 
 LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
@@ -9,7 +9,11 @@ LOGLEVEL = logging.INFO
 
 reload(logging)
 logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
-# outlier removal level: 2 is ...
+
+#### OUTLIER REMOVAL
+# minimum class size 
+MIN_CLASS_SIZE = 30
+# level of outlier removal
 OR_LEVEL = 2
 # remove domains with <= MIN_CLASS_SIZE instances
 REMOVE_SMALL = True
@@ -17,5 +21,6 @@ REMOVE_SMALL = True
 def trace_args():
     '''@return combined values as used in code'''
     return {"remove_small": REMOVE_SMALL, "or_level": OR_LEVEL}
-# minimum class size 
-MIN_CLASS_SIZE = 30
+
+### CROSS-VALIDATION
+FOLDS = 10

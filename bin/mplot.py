@@ -1,9 +1,14 @@
+import itertools
+
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
-from sklearn import metrics
+from sklearn import metrics, model_selection
 sns.set_palette("colorblind") # optional, uglier, but helpful
 
+import config
 import scenario
+import results
 
 
 def _init_roc():
@@ -33,13 +38,13 @@ to save, and =.show()= to display.
     return plot
 
 
-def confusion(clf, X, y):
+def confusion(scenario_obj):
     '''plots confusion matrix'''
-    X1, X2, y1, y2 = model_selection.train_test_split(
-        X, y, train_size=0.9, stratify=y)
-    clf.fit(X1, y1)
-    y_pred = clf.predict(X2)
-    confmat = metrics.confusion_matrix(y2, y_pred)
+    X, y, d = scenario_obj.get_features_cumul()
+    bestres = max(results.for_scenario(scenario_obj), key=lambda x: x.cumul)
+    clf = bestres.get_classifier()
+    y_pred = model_selection.cross_val_predict(clf, X, y, cv=config.FOLDS)
+    confmat = metrics.confusion_matrix(y, y_pred)
     plot_confusion_matrix(confmat, d)
 
 

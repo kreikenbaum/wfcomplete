@@ -8,6 +8,8 @@ import csv
 import datetime
 import logging
 
+from sklearn import multiclass, svm
+
 import prettytable
 import pymongo
 
@@ -74,6 +76,12 @@ class Result(object):
         return '<Result({!r}, {}, {}, {}, {}, size={}, size_overhead={}, time_overhead={})>'.format(
             self.scenario, self.cumul, self.git, self.date,
             self.type_, self.size, self.size_overhead, self.time_overhead)
+
+
+    def get_classifier(self):
+        '''@return classifier that achieved this result'''
+        return multiclass.OneVsRestClassifier(
+            svm.SVC(C=c, gamma=gamma, class_weight="balanced"))
 
 
     def save(self):
