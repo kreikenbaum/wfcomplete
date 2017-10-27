@@ -273,9 +273,6 @@ picks best result'''
 
 def simulated_open_world(scenario_obj, auc_bound, bg_size):
     '''
-1. optimize model based on accuracy
-   - load open-world traces
-   - grid search it
 2. predict values
    - take best clf, predict
 3. compute fpr and tpr (can use sklearn for this)
@@ -289,7 +286,13 @@ def simulated_open_world(scenario_obj, auc_bound, bg_size):
    - ?auc?
    - accuracy
 '''
-    TODO_IMPLEMENT
+    X, y, _ = scenario_obj.get_open_world().get_features_cumul()
+    (bestclf, bestresult, results) = fit.my_grid(X, y)
+    Xtrain, ytrain, Xtest, ytest = cross_validation.train_test_split(
+        X, y, train_size=.9, stratify=y)
+
+
+    TODO
     return (result, tpr, fpr, auroc)
 
 def open_world(scenario_obj, y_bound=0.05):

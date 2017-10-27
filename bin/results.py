@@ -16,7 +16,7 @@ import scenario
 class Result(object):
     def __init__(self, scenario_, accuracy, git, time, type_, size,
                  open_world=False, size_overhead=None,
-                 time_overhead=None, _id=None):
+                 time_overhead=None, _id=None, gamma=None, c=None):
         self.scenario = scenario_
         self.cumul = accuracy
         self.git = git
@@ -29,10 +29,18 @@ class Result(object):
         self.time_overhead = time_overhead
         self._id = _id
         self.open_world = open_world
+        self.gamma = gamma
+        self.c = c
 
     @staticmethod
     def from_mongoentry(entry):
         git = _value_or_none(entry, 'experiment', 'repositories', 0, 'commit')
+        c = (_value_or_none(entry, 'result', 'C') or
+             _value_or_none(entry, 'result', 'clf', 'py/state', 'estimator',
+                            'py/state', 'C'))
+        gamma = (_value_or_none(entry, 'result', 'gamma') or
+                 _value_or_none(entry, 'result', 'clf', 'py/state', 'estimator',
+                                'py/state', 'gamma'))
         try:
             size = len(entry['result']['sites'])
         except KeyError:
@@ -57,9 +65,9 @@ class Result(object):
                       type_,
                       size,
                       open_world,
-                      size_overhead,
-                      time_overhead,
-                      entry['_id'])
+                      size_overhead=size_overhead, time_overhead=time_overhead,
+                      _id=entry['_id'],
+                      c=c, gamma=gamma)
 
 
     def __repr__(self):
@@ -125,6 +133,10 @@ def _next_id():
             .sort("_id", pymongo.DESCENDING)
             .limit(1)
             .next())["_id"] + 1
+
+
+def for_scenario(scenario_obj):
+    return [x for x in list_all() if x.scenario == scenario_obj]
 
 
 def import_to_mongo(csvfile, size, measure="cumul"):

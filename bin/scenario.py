@@ -136,6 +136,8 @@ class Scenario(object):
         @return scenario with traces and (num) added background traces
         @param num: size of background set, if 'auto', use as many as fg set
         '''
+        if 'background' in self.get_traces():
+            logging.warn("scenario's traces already contain background set")
         bg = self._closest('background', include_bg=True)
         self.get_traces()
         out = copy.copy(self)
@@ -184,11 +186,11 @@ class Scenario(object):
 
 
     # idea: return list ordered by date-closeness
-    def _closest(self, name_filter, include_bg=False, lambda_filter=None):
+    def _closest(self, name_filter, include_bg=False, func_filter=None):
         '''@return closest scenario that matches filter'''
         filtered = list_all(name_filter, include_bg)
-        if lambda_filter:
-            filtered = filter(lambda_filter, filtered)
+        if func_filter:
+            filtered = filter(func_filter, filtered)
         return min(filtered, key=lambda x: abs(self.date - x.date))
 
 

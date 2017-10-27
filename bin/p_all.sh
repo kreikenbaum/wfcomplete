@@ -1,6 +1,6 @@
 P_PATH=~/da/git/sw/p
-#SVM_PATH=$P_PATH
-SVM_PATH=$P_PATH/../libsvm-3.22
+SVM_PATH=$P_PATH/libsvm-3.20-src
+#SVM_PATH=$P_PATH/../libsvm-3.22
 TARGET=p_batch
 
 if [ $# -ge 1 ]; then

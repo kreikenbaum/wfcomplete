@@ -33,6 +33,51 @@ to save, and =.show()= to display.
     return plot
 
 
+def confusion(clf, X, y):
+    '''plots confusion matrix'''
+    X1, X2, y1, y2 = model_selection.train_test_split(
+        X, y, train_size=0.9, stratify=y)
+    clf.fit(X1, y1)
+    y_pred = clf.predict(X2)
+    confmat = metrics.confusion_matrix(y2, y_pred)
+    plot_confusion_matrix(confmat, d)
+
+
+# due to sklearn's plot_confusion_matrix.py
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print('Confusion matrix, without normalization')
+
+    print(cm)
+
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, cm[i, j],
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+
+
 def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):
     '''plots total incoming packets stat, rugplot with kde
 
