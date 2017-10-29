@@ -56,14 +56,14 @@ def _bounded_roc(y_true, y_predict, y_bound, **kwargs):
 
 def _bounded_auc_eval(X, y, clf, y_bound):
     '''evaluate clf X, y, give bounded auc score, 1 is positive class label'''
-    X = _scale(X, clf)
+    X = scale(X, clf)
     y = list(_binarize(y, transform_to=1))
     return bounded_auc_score(clf, X, y, y_bound)
 
 
 def _eval(X, y, clf, folds=FOLDS):
     '''evaluate estimator on X, y, @return result (ndarray)'''
-    X = _scale(X, clf)
+    X = scale(X, clf)
     return cross_validation.cross_val_score(clf, X, y, cv=folds,
                                             n_jobs=JOBS_NUM).mean()
 
@@ -73,18 +73,20 @@ def _lb(*args, **kwargs):
     return list(_binarize(*args, **kwargs))
 
 
-def _scale(X, clf):
+def scale(X, clf):
     '''ASSUMPTION: svc never called on two separate data sets in
-    sequence.  That is: _scale(X1_train, svc), _scale(X1_test, svc),
-    _scale(Y2_train, svc), _scale(Y2_test, svc), will not
-    happen. (without a _scale(..., non_svc) in between). The first is
+    sequence.  That is: scale(X1_train, svc), scale(X1_test, svc),
+    scale(Y2_train, svc), scale(Y2_test, svc), will not
+    happen. (without a scale(..., non_svc) in between). The first is
     treated as training data, the next/others as test.
+
+    To reset, just pass '' as =clf= (any that does not contain 'SVC').
 
     @return scaled X if estimator is SVM, else just X
     '''
     global scaler
     if 'SVC' in str(clf):
-        logging.debug("_scaled on %s", clf)
+        logging.debug("scaled on %s", clf)
         if not scaler:
             scaler = preprocessing.MinMaxScaler()
             return scaler.fit_transform(X)
@@ -227,8 +229,8 @@ def roc(clf, X_train, y_train, X_test, y_test):
 
     It uses the same scaling and binarization as my_grid.
     '''
-    fitted = clf.fit(_scale(X_train, clf), _lb(y_train, transform_to=1))
-    prob = fitted.predict_proba(_scale(X_test, clf))
+    fitted = clf.fit(scale(X_train, clf), _lb(y_train, transform_to=1))
+    prob = fitted.predict_proba(scale(X_test, clf))
     fpr, tpr, thresh = metrics.roc_curve(
         _lb(y_test, transform_to=1), prob[:, 1], 1)
     return fpr, tpr, thresh, prob

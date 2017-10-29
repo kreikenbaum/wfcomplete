@@ -7,7 +7,8 @@ import time
 from types import NoneType
 
 import numpy as np
-from sklearn import cross_validation, ensemble, multiclass, neighbors, svm, tree
+from sklearn import cross_validation, ensemble, multiclass, neighbors
+from sklearn import preprocessing, svm, tree
 
 import counter
 import fit
@@ -65,7 +66,7 @@ def _clf_params(clf):
     else:
         return _clf_name(clf)
 
-## td: if ever used, have a look at _scale (needs to reset SCALER)
+## td: if ever used, have a look at scale (needs to reset SCALER)
 # def _compare(X, y, X2, y2, clfs=GOOD):
 #     for clf in clfs:
 #         fit._eval(X, y, clf)
@@ -121,9 +122,9 @@ def _mean(trace_dict):
 def _misclassification_rates(train, test, clf=GOOD[0]):
     '''@return (mis-)classification rates per class in test'''
     (X, y, _) = counter.to_features_cumul(counter.outlier_removal(train))
-    clf.fit(fit._scale(X, clf), y)
+    clf.fit(fit.scale(X, clf), y)
     (X_test, y_test, y_testd) = counter.to_features_cumul(test)
-    X_test = fit._scale(X_test, clf)
+    X_test = fit.scale(X_test, clf)
     return _predict_percentages(
         _class_predictions(y_test, clf.predict(X_test)),
         _gen_url_list(y_test, y_testd))
@@ -217,8 +218,8 @@ def _verbose_test_11(X, y, clf):
 
 def _xtest(X_train, y_train, X_test, y_test, clf):
     '''cross_tests with estimator'''
-    clf.fit(fit._scale(X_train, clf), y_train)
-    return clf.score(fit._scale(X_test, clf), y_test)
+    clf.fit(fit.scale(X_train, clf), y_train)
+    return clf.score(fit.scale(X_test, clf), y_test)
 
 
 def class_stats_to_table(class_stats):
@@ -287,7 +288,8 @@ def simulated_open_world(scenario_obj, auc_bound, bg_size):
    - accuracy
 '''
     X, y, _ = scenario_obj.get_open_world().get_features_cumul()
-    (bestclf, bestresult, results) = fit.my_grid(X, y)
+    X = fit.scale(X, 'new scenario') # scale should be idempotent (redone l8r)
+    (bestclf, bestresult, results) = fit.my_grid(X, y) # auto scales
     Xtrain, ytrain, Xtest, ytest = cross_validation.train_test_split(
         X, y, train_size=.9, stratify=y)
 

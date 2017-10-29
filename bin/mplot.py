@@ -38,11 +38,8 @@ to save, and =.show()= to display.
     return plot
 
 
-def confusion(scenario_obj):
+def confusion(X, y, clf):
     '''plots confusion matrix'''
-    X, y, d = scenario_obj.get_features_cumul()
-    bestres = max(results.for_scenario(scenario_obj), key=lambda x: x.cumul)
-    clf = bestres.get_classifier()
     y_pred = model_selection.cross_val_predict(clf, X, y, cv=config.FOLDS)
     confmat = metrics.confusion_matrix(y, y_pred)
     plot_confusion_matrix(confmat, d)
