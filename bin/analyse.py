@@ -288,7 +288,7 @@ def simulated_open_world(scenario_obj, auc_bound, bg_size):
    - accuracy
 '''
     X, y, _ = scenario_obj.get_open_world().get_features_cumul()
-    X = fit.scale(X, 'new scenario') # scale should be idempotent (redone l8r)
+    X = preprocessing.MinMaxScaler().fit_transform(X) # scaling idempotent
     (bestclf, bestresult, results) = fit.my_grid(X, y) # auto scales
     Xtrain, ytrain, Xtest, ytest = cross_validation.train_test_split(
         X, y, train_size=.9, stratify=y)
