@@ -272,7 +272,7 @@ picks best result'''
     return clf
 
 
-def simulated_open_world(scenario_obj, auc_bound, bg_size):
+def simulated_open_world(scenario_obj, auc_bound, bg_size, previous=False):
     '''
 2. predict values
    - take best clf, predict
@@ -287,11 +287,15 @@ def simulated_open_world(scenario_obj, auc_bound, bg_size):
    - ?auc?
    - accuracy
 '''
-    X, y, _ = scenario_obj.get_open_world().get_features_cumul()
+    X, y, domains = scenario_obj.get_open_world().get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X) # scaling idempotent
-    (bestclf, bestresult, results) = fit.my_grid(X, y) # auto scales
-    Xtrain, ytrain, Xtest, ytest = cross_validation.train_test_split(
-        X, y, train_size=.9, stratify=y)
+    if previous:
+        result = max(results.for_scenario(a), key=lambda x: x.cumul)
+        clf = _clf(C=result.c, gamma=result.gamma, probability=True)
+    else:
+        (clf, _, _) = fit.my_grid(X, y) # auto scales
+    y_pred = model_selection.cross_val_predict(clf, X, y, cv=config.FOLDS)
+# mplot.confusion(y, y_pred, domains, "confusion matrix for {}".format(a.path))
 
 
     TODO

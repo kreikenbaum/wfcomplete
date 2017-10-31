@@ -148,7 +148,7 @@ class Scenario(object):
         return (np.array(X), np.array(out_y), domain_names)
 
 
-    def get_open_world(self, num=None):
+    def get_open_world(self, num="auto"):
         '''
         @return scenario with traces and (num) added background traces
         @param num: size of background set, if 'auto', use as many as fg set
@@ -158,6 +158,7 @@ class Scenario(object):
         bg = self._closest('background', include_bg=True)
         self.get_traces()
         out = copy.copy(self)
+        out.traces = copy.copy(self.traces)
         if num:
             if num == 'auto':
                 num = sum([len(x) for x in self.traces.values()])

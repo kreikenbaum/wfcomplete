@@ -2,6 +2,7 @@ import itertools
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from sklearn import metrics, model_selection
 sns.set_palette("colorblind") # optional, uglier, but helpful
@@ -38,46 +39,22 @@ to save, and =.show()= to display.
     return plot
 
 
-def confusion(X, y, clf):
+# parts due to sklearn's plot_confusion_matrix.py
+def confusion(y_true, y_pred, domains, title='Confusion matrix',
+              rotation=45):
     '''plots confusion matrix'''
-    y_pred = model_selection.cross_val_predict(clf, X, y, cv=config.FOLDS)
-    confmat = metrics.confusion_matrix(y, y_pred)
-    plot_confusion_matrix(confmat, d)
-
-
-# due to sklearn's plot_confusion_matrix.py
-def plot_confusion_matrix(cm, classes,
-                          normalize=False,
-                          title='Confusion matrix',
-                          cmap=plt.cm.Blues):
-    """
-    This function prints and plots the confusion matrix.
-    Normalization can be applied by setting `normalize=True`.
-    """
-    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    confmat = metrics.confusion_matrix(y_true, y_pred)
+    domainnames = [x[1] for x in sorted(set(zip(y_true, domains)))]
+    df = pd.DataFrame(confmat, index=domainnames, columns=domainnames)
+    heatmap = sns.heatmap(df)
+    loc, labels = plt.xticks()
+    heatmap.set_xticklabels(labels, rotation=rotation)
+    heatmap.set_yticklabels(labels[::-1], rotation=rotation)
     plt.title(title)
-    plt.colorbar()
-    tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=45)
-    plt.yticks(tick_marks, classes)
-
-    if normalize:
-        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-        print("Normalized confusion matrix")
-    else:
-        print('Confusion matrix, without normalization')
-
-    print(cm)
-
-    thresh = cm.max() / 2.
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, cm[i, j],
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
-
-    plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
+    plt.tight_layout()
+    return (confmat, heatmap)
 
 
 def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):
