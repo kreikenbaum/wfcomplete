@@ -2,8 +2,7 @@
 import collections
 import doctest
 import logging
-from sklearn import model_selection, grid_search, metrics, multiclass
-from sklearn import preprocessing, svm
+from sklearn import model_selection, metrics, multiclass, preprocessing, svm
 # ensemble, metrics, neighbors, tree
 import numpy as np
 
@@ -113,7 +112,7 @@ def _sci_fit(C, gamma, step, X, y, scoring=None, probability=False):
     logging.info('C: %s, gamma: %s, step: %s', C, gamma, step)
     cs = _search_range(C, step)
     gammas = _search_range(gamma, step)
-    clf = grid_search.GridSearchCV(
+    clf = model_selection.GridSearchCV(
         estimator=multiclass.OneVsRestClassifier(
             svm.SVC(class_weight="balanced", probability=probability)),
         param_grid={"estimator__C": cs, "estimator__gamma": gammas},
