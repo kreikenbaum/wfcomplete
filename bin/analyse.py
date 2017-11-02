@@ -18,7 +18,7 @@ import results
 #import mplot
 import scenario
 
-TIME_SEPARATOR = '@'
+#TIME_SEPARATOR = '@'
 
 # classifiers
 GOOD = [ensemble.ExtraTreesClassifier(n_estimators=250),
