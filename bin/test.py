@@ -180,7 +180,7 @@ class TestFit(unittest.TestCase):
     def test_ow(self):
         '''tests normal open world grid search'''
         result = fit.my_grid(self.X, self.y, auc_bound=0.3)
-        self.assertAlmostEqual(result.best_score_, 0.3)
+        self.assertAlmostEqual(result.best_score_, 1)
 
 
     @unittest.skipIf(QUICK, "slow test skipped")
