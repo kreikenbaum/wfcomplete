@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 '''Analyses (Panchenko's) features returned from Counter class'''
+from __future__ import print_function
 import doctest
 import logging
 import sys
@@ -211,9 +212,9 @@ validate, test)
 def _verbose_test_11(X, y, clf):
     '''cross-test (1) estimator on (1) X, y, print results and estimator name'''
     now = time.time()
-    print _clf_params(clf),
+    print(_clf_params(clf), end='')
     res = fit._eval(X, y, clf)
-    print res.mean()
+    print(res.mean(), end='')
     logging.info('time: %s', time.time() - now)
     logging.debug('res: %s', res)
 
@@ -224,20 +225,21 @@ def _xtest(X_train, y_train, X_test, y_test, clf):
     return clf.score(fit.scale(X_test, clf), y_test)
 
 
+## todo: maybe use prettytable
 def class_stats_to_table(class_stats):
     '''prints table from data in class_stats (gen_class_stats_list output)'''
     rows = class_stats[0].keys()
     rows.remove('id')
     cols = [j['id'] for j in class_stats]
-    print '| |',
+    print('| |', end='')
     for col in cols:
-        print '{} |'.format(col),
-    print ''
+        print('{} |'.format(col), end='')
+    print('')
     for row in rows:
-        print '| {}'.format(row),
+        print('| {}'.format(row), end='')
         for col in class_stats:
-            print '| {}'.format(col[row]),
-        print '|'
+            print('| {}'.format(col[row]), end='')
+        print('|')
 
 
 def compare_stats(scenario_names):
@@ -270,7 +272,7 @@ picks best result'''
         clf = fit.helper(counter.outlier_removal(traces, 2),
                          cumul=True, folds=10)
         ALL_MAP[name] = clf
-    print '10-fold result: {}'.format(clf.best_score_)
+    print('10-fold result: {}'.format(clf.best_score_))
     return clf
 
 
@@ -330,10 +332,10 @@ def open_world(scenario_obj, y_bound=0.05):
 #    clf = fit.sci_grid(X_train, y_train, c=2**15, gamma=2**-45,
 #                   grid_args={"scoring": scorer})
     fpr, tpr, _, prob = fit.roc(result.clf, X_train, y_train, X_test, y_test)
-    print '{}-bounded auc: {} (C: {}, gamma: {})'.format(
+    print('{}-bounded auc: {} (C: {}, gamma: {})'.format(
         y_bound,
         fit.bounded_auc_score(result.clf, X_test, y_test, 0.01),
-        result.clf.estimator.C, result.clf.estimator.gamma)
+        result.clf.estimator.C, result.clf.estimator.gamma))
     return (fpr, tpr, result, prob)
 #    return (fpr, tpr, result, mplot.roc(fpr, tpr), prob)
 
@@ -383,7 +385,7 @@ def closed_world(scenarios, def0, cumul=True, with_svm=True, common=False):
     else:
         (X, y, _) = counter.to_features(counter.outlier_removal(test, 1))
     # evaluate accuracy on all of unaddoned
-    print 'cross-validation on X,y'
+    print('cross-validation on X,y')
     for clf in clfs:
         _verbose_test_11(X, y, clf)
 
@@ -392,8 +394,9 @@ def closed_world(scenarios, def0, cumul=True, with_svm=True, common=False):
     for (scenario_path, its_traces) in scenarios.iteritems():
         if scenario_path == def0:
             continue
-        print '\ntrain: {} VS {} (overhead {}%)'.format(
-            def0, scenario_path, _size_increase(stats[def0], stats[scenario_path]))
+        print('\ntrain: {} VS {} (overhead {}%)'.format(
+            def0, scenario_path,
+            _size_increase(stats[def0], stats[scenario_path])))
         if common and its_traces.keys() != its_traces0.keys():
             # td: refactor code duplication with above (search for keys = ...)
             keys = set(its_traces0.keys())
@@ -418,8 +421,9 @@ def closed_world(scenarios, def0, cumul=True, with_svm=True, common=False):
                 counter.outlier_removal(its_traces, 1), max_len)
         for clf in clfs:
             now = time.time()
-            print '{}: {}'.format(_clf_name(clf), _xtest(X, y, X2, y2, clf)),
-            print '({} seconds)'.format(time.time() - now)
+            print('{}: {}'.format(_clf_name(clf), _xtest(X, y, X2, y2, clf)),
+                  end='')
+            print('({} seconds)'.format(time.time() - now))
 
 
 def gen_class_stats_list(scenarios,
@@ -446,7 +450,7 @@ def outlier_removal_levels(scenario_path, clf=None):
     @param scenario_path: one "set" of data {site_1: traces, ..., site_n: traces}
     # outlier removal on both at the same time
     '''
-    print 'combined outlier removal'
+    print('combined outlier removal')
     for lvl in [1, 2, 3]:
         scenario_with_or = counter.outlier_removal(scenario_path, lvl)
         (train, test) = _tts(scenario_with_or)
@@ -454,12 +458,12 @@ def outlier_removal_levels(scenario_path, clf=None):
         if clf is None:
             clf = fit.my_grid(X, y)
         (X, y, _) = counter.to_features_cumul(test)
-        print "level: {}".format(lvl)
+        print("level: {}".format(lvl))
         _verbose_test_11(X, y, clf)
     (train, test) = _tts(scenario_path)
 
     # separate outlier removal on train and test set
-    print 'separate outlier removal for training and test data'
+    print('separate outlier removal for training and test data')
     for train_lvl in [1, 2, 3]:
         for test_lvl in [-1, 1, 2, 3]:
             (X, y, _) = counter.to_features_cumul(
@@ -468,7 +472,7 @@ def outlier_removal_levels(scenario_path, clf=None):
                 clf = fit.my_grid(X, y)
             (X, y, _) = counter.to_features_cumul(
                 counter.outlier_removal(test, test_lvl))
-            print "level train: {}, test: {}".format(train_lvl, test_lvl)
+            print("level train: {}, test: {}".format(train_lvl, test_lvl))
             _verbose_test_11(X, y, clf)
 
 
