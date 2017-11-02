@@ -7,11 +7,13 @@ import time
 from types import NoneType
 
 import numpy as np
-from sklearn import cross_validation, ensemble, multiclass, neighbors
-from sklearn import preprocessing, svm, tree
+from sklearn import ensemble, metrics, model_selection, multiclass
+from sklearn import neighbors, preprocessing, svm, tree
 
+import config
 import counter
 import fit
+import results
 #import mplot
 import scenario
 
@@ -168,7 +170,7 @@ def _tts(trace_dict, test_size=1.0 / 3):
     '''train-test-split: splits trace_dict in train_dict and test_dict
 
     test_size = deep_len(test)/deep_len(train+test)
-    uses cross_validation.train_test_split
+    uses model_selection.train_test_split
     @return (train_dict, test_dict) which together yield trace_dict
     >>> len(_tts({'yahoo.com': map(counter._test, [3,3,3])})[0]['yahoo.com'])
     2
@@ -179,7 +181,7 @@ def _tts(trace_dict, test_size=1.0 / 3):
     for url in trace_dict:
         for i in range(len(trace_dict[url])):
             ids.append((url, i))
-    (train_ids, test_ids) = cross_validation.train_test_split(
+    (train_ids, test_ids) = model_selection.train_test_split(
         ids, test_size=test_size)
     train = {}
     test = {}
@@ -199,9 +201,9 @@ validate, test)
     >> _tvts([[1], [1], [1], [2], [2], [2]], [1, 1, 1, 2, 2, 2])
     ([[1], [2]], [[1], [2]], [[1], [2]], [1, 2], [1, 2], [1, 2]) # modulo order
     '''
-    X1, Xtmp, y1, ytmp = cross_validation.train_test_split( #pylint: disable=invalid-name
+    X1, Xtmp, y1, ytmp = model_selection.train_test_split( #pylint: disable=invalid-name
         X, y, train_size=1. / 3, stratify=y)
-    X2, X3, y2, y3 = cross_validation.train_test_split( #pylint: disable=invalid-name
+    X2, X3, y2, y3 = model_selection.train_test_split( #pylint: disable=invalid-name
         Xtmp, ytmp, train_size=.5, stratify=ytmp)
     return (X1, X2, X3, y1, y2, y3)
 
@@ -272,7 +274,8 @@ picks best result'''
     return clf
 
 
-def simulated_open_world(scenario_obj, auc_bound, bg_size, previous=False):
+def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
+                         bg_size="auto", previous=False):
     '''
 2. predict values
    - take best clf, predict
@@ -295,11 +298,23 @@ def simulated_open_world(scenario_obj, auc_bound, bg_size, previous=False):
     else:
         (clf, _, _) = fit.my_grid(X, y) # auto scales
     y_pred = model_selection.cross_val_predict(clf, X, y, cv=config.FOLDS)
-# mplot.confusion(y, y_pred, domains, "confusion matrix for {}".format(a.path))
+    confmat = metrics.confusion_matrix(y_true, y_pred)
+    (tpr, fpr) = trp_fpr(confmat)
 
 
     TODO
     return (result, tpr, fpr, auroc)
+
+
+# due to https://stackoverflow.com/questions/31324218
+def tpr_fpr(confusion_matrix):
+    '''@return array of (tpr, fpr) pairs'''
+    TP = np.diag(confusion_matrix) *1.0
+    FP = confusion_matrix.sum(axis=0) - TP
+    FN = confusion_matrix.sum(axis=1) - TP
+    TN = confusion_matrix.sum() - (FP + FN + TP)
+    return zip(TP/(TP+FN), FP/(FP+TN))
+
 
 def open_world(scenario_obj, y_bound=0.05):
     '''open-world (SVM) test on data, optimized on bounded auc.
@@ -309,7 +324,7 @@ def open_world(scenario_obj, y_bound=0.05):
     if 'background' not in scenario_obj.get_traces():
         scenario_obj = scenario_obj.get_open_world()
     X, y, _ = scenario_obj.binarize().get_features_cumul()
-    X_train, X_test, y_train, y_test = cross_validation.train_test_split(
+    X_train, X_test, y_train, y_test = model_selection.train_test_split(
         X, y, train_size=2. / 3, stratify=y)
     result = fit.my_grid(X_train, y_train, auc_bound=y_bound)#, n_jobs=1)
 #    clf = fit.sci_grid(X_train, y_train, c=2**15, gamma=2**-45,
