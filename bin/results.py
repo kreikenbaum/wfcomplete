@@ -4,6 +4,7 @@
 target usage: load from different sources (or upload all to db),
 then compute mean and variance/std
 '''
+from __future__ import print_function
 import csv
 import datetime
 import logging
@@ -199,7 +200,7 @@ def _duplicates(params=["config.scenario", "result.score"]):
 
 
 if __name__ == "__main__":
-    print _next_id()
+    print(_next_id())
 #    db = pymongo.MongoClient().sacred
 #    all_ = [Result.from_mongoentry(x) for x in
 #            db.runs.find({"$and": [{"config.scenario": {"$exists": 1}},
