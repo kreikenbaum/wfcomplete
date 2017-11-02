@@ -1,9 +1,9 @@
 '''helper methods for fitting data, works mostly with X, y sets'''
+from __future__ import print_function
 import collections
 import doctest
 import logging
 from sklearn import model_selection, metrics, multiclass, preprocessing, svm
-# ensemble, metrics, neighbors, tree
 import numpy as np
 
 import config
@@ -265,4 +265,4 @@ def sci_grid(X, y, C=2**14, gamma=2**-10, step=2, scoring=None,
 doctest.testmod()
 
 if __name__ == '__main__':
-    print 'nothing to do, avoids joblib warning'
+    print('nothing to do, avoids joblib warning')
