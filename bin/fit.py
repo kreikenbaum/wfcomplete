@@ -2,7 +2,7 @@
 import collections
 import doctest
 import logging
-from sklearn import cross_validation, grid_search, metrics, multiclass
+from sklearn import model_selection, grid_search, metrics, multiclass
 from sklearn import preprocessing, svm
 # ensemble, metrics, neighbors, tree
 import numpy as np
@@ -64,7 +64,7 @@ def _bounded_auc_eval(X, y, clf, y_bound):
 def _eval(X, y, clf, folds=FOLDS):
     '''evaluate estimator on X, y, @return result (ndarray)'''
     X = scale(X, clf)
-    return cross_validation.cross_val_score(clf, X, y, cv=folds,
+    return model_selection.cross_val_score(clf, X, y, cv=folds,
                                             n_jobs=JOBS_NUM).mean()
 
 
@@ -162,7 +162,7 @@ def bounded_auc_score(clf, X, y, y_bound=0.01):
     scorer = metrics.make_scorer(
         _bounded_auc, needs_proba=True, y_bound=y_bound)
     y = list(_binarize(y, transform_to=1))
-    return 1/y_bound * cross_validation.cross_val_score(
+    return 1/y_bound * model_selection.cross_val_score(
         clf, X, y, cv=FOLDS, n_jobs=JOBS_NUM, scoring=scorer).mean()
 
 
