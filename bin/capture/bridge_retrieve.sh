@@ -9,6 +9,7 @@ fi
 
 . config.py
 status.sh > $SAVETO/status
+check_name.py || (echo "status invalid"; exit 1)
 
 NUM_SITES=$1
 NUM_ITERATIONS=${2:-50}

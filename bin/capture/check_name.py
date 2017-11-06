@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-'''creates new capture directory and a symlink to it'''
+'''checks setting, creates new capture directory and a /now/-symlink to it'''
 import datetime
 import json
 import os
