@@ -1,20 +1,24 @@
 #! /usr/bin/env python
 '''checks setting, creates new capture directory and a /now/-symlink to it'''
 import datetime
+import logging
 import json
 import os
 import sys
 
 import config
 
-#CHECKS={
-
+#CHECKS={ ## later: map name to (lambda?): check these aspects
 
 def mkdiretc(name):
-    newdir = os.path.join(name, str(datetime.date.today()))
-    os.mkdir(newdir)
-    os.symlink(newdir, 'now')
-    sys.exit(0)
+    try:
+        newdir = os.path.join(name, str(datetime.date.today()))
+        os.mkdir(newdir)
+        os.symlink(newdir, 'now')
+        sys.exit(0)
+    except OSError:
+        logging.warn("%s already exists", newdir or "directory")
+        sys.exit(0)
 
 if __name__ == "__main__":
     os.chdir(config.SAVETO)
