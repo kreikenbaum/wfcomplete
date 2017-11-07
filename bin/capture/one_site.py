@@ -87,7 +87,10 @@ def _open_browser(exe='/home/mkreik/bin/tor-browser_en-US/Browser/firefox -mario
 #    browser =
 #    subprocess.Popen(args=['/home/mkreik/bin/tor-browser_en-US/Browser/firefox','-marionette'],
 #    cwd=exedir, stdout=subprocess.PIPE, env=env_with_debug);
-    browser = subprocess.Popen(args=[exewholepath, exeargs], cwd=exedir, stdout=subprocess.PIPE, env=env_with_debug)
+    browser = subprocess.Popen(
+        args=[exewholepath, exeargs], cwd=exedir, stdout=subprocess.PIPE,
+        stderr=open(os.path.join(config.SAVETO, "one_site_err.txt"), "a"),
+        env=env_with_debug)
 
     thread = threading.Thread(target=_wait_browser_ready,
                               kwargs={'browser': browser})
