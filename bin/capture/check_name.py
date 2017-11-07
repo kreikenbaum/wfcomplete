@@ -7,16 +7,23 @@ import sys
 
 import config
 
-os.chdir(config.SAVETO)
+#CHECKS={
 
-with open('status') as f:
-    status = json.load(f)
-    enabled = status['addon']['enabled']
-    if True in enabled.values():
-        print [x for x in enabled if enabled[x]]
-        sys.exit(1)
-    else:
-        newdir = os.path.join('disabled', str(datetime.date.today()))
-        os.mkdir(newdir)
-        os.symlink(newdir, 'now')
-        sys.exit(0)
+
+def mkdiretc(name):
+    newdir = os.path.join(name, str(datetime.date.today()))
+    os.mkdir(newdir)
+    os.symlink(newdir, 'now')
+    sys.exit(0)
+
+if __name__ == "__main__":
+    os.chdir(config.SAVETO)
+
+    with open('status') as f:
+        status = json.load(f)
+        enabled = status['addon']['enabled']
+        for (addon, is_enabled) in enabled.iteritems():
+            if is_enabled:
+                mkdiretc(addon.replace("@", ''))
+        else:
+            mkdiretc("disabled")
