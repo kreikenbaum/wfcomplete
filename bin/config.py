@@ -1,5 +1,5 @@
 '''configuration variables'''
-### logging
+#### LOGGING
 import logging
 
 LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
@@ -22,5 +22,9 @@ def trace_args():
     '''@return combined values as used in code'''
     return {"remove_small": REMOVE_SMALL, "or_level": OR_LEVEL}
 
-### CROSS-VALIDATION
+#### CROSS-VALIDATION
 FOLDS = 10
+JOBS_NUM = -3
+# JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
+## testing
+#JOBS_NUM = 1; FOLDS = 2

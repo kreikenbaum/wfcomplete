@@ -293,7 +293,7 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
    - accuracy
 '''
     X, y, domains = scenario_obj.get_open_world().get_features_cumul()
-    X = preprocessing.MinMaxScaler().fit_transform(X) # scaling idempotent
+    X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
     if previous:
         result = max(results.for_scenario(a), key=lambda x: x.cumul)
         clf = _clf(C=result.c, gamma=result.gamma, probability=True)

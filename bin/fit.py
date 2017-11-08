@@ -9,11 +9,6 @@ import numpy as np
 import config
 import counter
 
-JOBS_NUM = -1
-#JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
-FOLDS = 10
-#JOBS_NUM = 1; FOLDS = 2 # testing
-
 scaler = None
 
 Result = collections.namedtuple('Result', ['clf', 'best_score_', 'results'])
@@ -60,11 +55,11 @@ def _bounded_auc_eval(X, y, clf, y_bound):
     return bounded_auc_score(clf, X, y, y_bound)
 
 
-def _eval(X, y, clf, folds=FOLDS):
+def _eval(X, y, clf, folds=config.FOLDS):
     '''evaluate estimator on X, y, @return result (ndarray)'''
     X = scale(X, clf)
     return model_selection.cross_val_score(clf, X, y, cv=folds,
-                                            n_jobs=JOBS_NUM).mean()
+                                           n_jobs=config.JOBS_NUM).mean()
 
 
 def _lb(*args, **kwargs):
@@ -116,7 +111,7 @@ def _sci_fit(C, gamma, step, X, y, scoring=None, probability=False):
         estimator=multiclass.OneVsRestClassifier(
             svm.SVC(class_weight="balanced", probability=probability)),
         param_grid={"estimator__C": cs, "estimator__gamma": gammas},
-        n_jobs=JOBS_NUM, verbose=0, cv=FOLDS, scoring=scoring)
+        n_jobs=config.JOBS_NUM, verbose=0, cv=config.FOLDS, scoring=scoring)
     return clf.fit(X, y)
 
 
@@ -162,10 +157,11 @@ def bounded_auc_score(clf, X, y, y_bound=0.01):
         _bounded_auc, needs_proba=True, y_bound=y_bound)
     y = list(_binarize(y, transform_to=1))
     return 1/y_bound * model_selection.cross_val_score(
-        clf, X, y, cv=FOLDS, n_jobs=JOBS_NUM, scoring=scorer).mean()
+        clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
+        scoring=scorer).mean()
 
 
-def helper(counter_dict, outlier_removal=True, cumul=True, folds=FOLDS):
+def helper(counter_dict, outlier_removal=True, cumul=True, folds=config.FOLDS):
     '''@return grid-search on counter_dict result (clf, results)'''
     if outlier_removal:
         counter_dict = counter.outlier_removal(counter_dict)
@@ -178,7 +174,7 @@ def helper(counter_dict, outlier_removal=True, cumul=True, folds=FOLDS):
 
 
 def my_grid(X, y, C=2**14, gamma=2**-10, step=4, results=None,
-            auc_bound=None, previous=None, folds=FOLDS):
+            auc_bound=None, previous=None, folds=config.FOLDS):
     '''@param results are previously computed results {(C,gamma): accuracy, ...}
     @param auc_bound if this is set, use the bounded auc score with this y_bound
     @return Result(clf, best_score_, results) (namedtuple see above)'''
