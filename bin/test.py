@@ -10,11 +10,12 @@ import unittest
 import numpy as np
 
 import analyse
+import config
 import counter
 import fit
 import scenario
 
-fit.FOLDS = 2
+config.FOLDS = 2
 
 
 VERYQUICK = os.getenv('VERYQUICK', False)
@@ -270,6 +271,17 @@ class TestScenario(unittest.TestCase):
         self.assertEqual(datetime.date(2017, 9, 6),
                          scenario.Scenario("wtf-pad/bridge--2017-09-06").date)
         #'disabled/nobridge--2016-12-26-with7777' # what to do?
+
+
+
+    def test___equal__(self):
+        self.assertEqual(scenario.Scenario("wtf-pad/bridge--2017-09-06"),
+                         scenario.Scenario("wtf-pad/bridge--2017-09-06"))
+        self.assertNotEqual(scenario.Scenario("0.20/0-ai--2016-06-25"),
+                            scenario.Scenario("0.20/20-ai--2016-06-25"))
+        self.assertNotEqual(scenario.Scenario("0.20/0-ai--2016-06-25"),
+                            scenario.Scenario("0.20/0-aii--2016-06-25"))
+
 
 
     def test_binarize_fake(self):

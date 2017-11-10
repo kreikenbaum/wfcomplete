@@ -26,28 +26,6 @@ def _binarize(y, keep=-1, transform_to=0):
             yield transform_to
 
 
-#    p_ = clf.fit(X1, y1).predict_proba(X2)
-#    return _bounded_auc(y2, p_[:, 1], y_bound, pos_label=0)
-def _bounded_auc(y_true, y_predict, y_bound, **kwargs):
-    '''@return bounded auc of (probabilistic) fitted classifier on data.'''
-    newfpr, newtpr = _bounded_roc(y_true, y_predict, y_bound, **kwargs)
-    return metrics.auc(newfpr, newtpr)
-
-
-def _bounded_roc(y_true, y_predict, y_bound, **kwargs):
-    '''@return (fpr, tpr) within fpr-bounds'''
-    assert 0 <= y_bound <= 1
-    if y_predict.shape[1] == 2:
-        y_predict = y_predict[:, 1]
-    fpr, tpr, _ = metrics.roc_curve(y_true, y_predict, **kwargs)
-    # plot_data.roc(fpr, tpr).savefig('/tmp/roc.pdf')
-    # plt.close()
-    newfpr = [x for x in fpr if x < y_bound]
-    newfpr.append(y_bound)
-    newtpr = np.interp(newfpr, fpr, tpr)
-    return (newfpr, newtpr)
-
-
 def _bounded_auc_eval(X, y, clf, y_bound):
     '''evaluate clf X, y, give bounded auc score, 1 is positive class label'''
     X = scale(X, clf)

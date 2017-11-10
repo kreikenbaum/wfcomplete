@@ -225,6 +225,28 @@ def _xtest(X_train, y_train, X_test, y_test, clf):
     return clf.score(fit.scale(X_test, clf), y_test)
 
 
+#    p_ = clf.fit(X1, y1).predict_proba(X2)
+#    return bounded_auc(y2, p_[:, 1], y_bound, pos_label=0)
+def bounded_auc(y_true, y_predict, y_bound, **kwargs):
+    '''@return bounded auc of (probabilistic) fitted classifier on data.'''
+    newfpr, newtpr = _bounded_roc(y_true, y_predict, y_bound, **kwargs)
+    return metrics.auc(newfpr, newtpr)
+
+
+def bounded_roc(y_true, y_predict, y_bound, **kwargs):
+    '''@return (fpr, tpr) within fpr-bounds'''
+    assert 0 <= y_bound <= 1
+    if y_predict.shape[1] == 2:
+        y_predict = y_predict[:, 1]
+    fpr, tpr, _ = metrics.roc_curve(y_true, y_predict, **kwargs)
+    # plot_data.roc(fpr, tpr).savefig('/tmp/roc.pdf')
+    # plt.close()
+    newfpr = [x for x in fpr if x < y_bound]
+    newfpr.append(y_bound)
+    newtpr = np.interp(newfpr, fpr, tpr)
+    return (newfpr, newtpr)
+
+
 ## todo: maybe use prettytable
 def class_stats_to_table(class_stats):
     '''prints table from data in class_stats (gen_class_stats_list output)'''
@@ -303,7 +325,7 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
                                                    n_jobs=config.JOBS_NUM)
     confmat = metrics.confusion_matrix(y_true, y_pred)
     (tpr, fpr) = trp_fpr(confmat)
-
+    # auc = # todo
 
     TODO
     return (result, tpr, fpr, auroc)

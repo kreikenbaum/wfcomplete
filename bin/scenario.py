@@ -31,7 +31,7 @@ class Scenario(object):
         datetime.date(2016, 11, 13)
         >>> Scenario('disabled/2016-11-13').name # same as str(Scenario...)
         'disabled'
-        >>> Scenario('disabled/05-12@10').size
+        >>> Scenario('disabled/05-12@10').num_sites
         '10'
         >>> Scenario('./0.22/10aI--2016-11-04-50-of-100').setting
         '10aI'
@@ -46,7 +46,7 @@ class Scenario(object):
             self.name = os.path.normpath(self.path)
             return
         if '@' in date:
-            (date, self.size) = date.split('@')
+            (date, self.num_sites) = date.split('@')
         if '--' in date:
             (self.setting, date) = date.split('--')
         # the following discards subset info: 10aI--2016-11-04-50-of-100
@@ -72,16 +72,17 @@ class Scenario(object):
 
 
     def __eq__(self, other):
-        return self.path == other
+        return self.name == other.name and self.date == other.date
 
 
     def __len__(self):
-        return len(self.get_traces())
+        '''@return the total number of instances in this scenario'''
+        return sum((len(x) for x in self.get_traces().values()))
 
 
     def __str__(self):
         out = self.name
-        # python 3.6: =if 'setting in self=
+        # python 3.6: =if 'setting' in self=
         if hasattr(self, 'setting'):
             out += ' with setting {}'.format(self.setting)
         return out
@@ -126,6 +127,7 @@ class Scenario(object):
 
 
     def date_from_trace(self):
+        self.trace_args = {'remove_small': False, 'or_level': 0}
         trace = self.get_traces().values()[0][0]
         return datetime.datetime.fromtimestamp(
             float(trace.name.split('@')[1])).date()
