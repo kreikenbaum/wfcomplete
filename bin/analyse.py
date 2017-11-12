@@ -320,9 +320,10 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
         result = max(results.for_scenario(a), key=lambda x: x.cumul)
         clf = _clf(C=result.c, gamma=result.gamma, probability=True)
     else:
-        (clf, _, _) = fit.my_grid(X, y) # auto scales
-        y_pred = model_selection.cross_val_predict(clf, X, y, cv=config.FOLDS,
-                                                   n_jobs=config.JOBS_NUM)
+        (clf_noprob, _, _) = fit.my_grid(X, y) # auto scales
+        clf = _clf(C=clf.estimator.c, gamma=clf.estimator.gamma, probability=True)
+    y_pred = model_selection.cross_val_predict(clf, X, y, cv=config.FOLDS,
+                                               n_jobs=config.JOBS_NUM)
     confmat = metrics.confusion_matrix(y_true, y_pred)
     (tpr, fpr) = trp_fpr(confmat)
     # auc = # todo
