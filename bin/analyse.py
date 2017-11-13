@@ -310,7 +310,7 @@ picks best result'''
 
 def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
                          bg_size="auto", previous=False):
-    '''
+    '''@return (metrics for open world experiment
 2. predict values
    - take best clf, predict
 3. compute fpr and tpr (can use sklearn for this)
@@ -352,7 +352,7 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
         auroc = metrics.auc(fpr_array, tpr_array)
 
     TODO
-    return (result, tpr, fpr, auroc)
+    return (tpr, fpr, auroc, C, gamma, accuracy)
 
 
 # due to https://stackoverflow.com/questions/31324218
