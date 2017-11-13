@@ -2,6 +2,6 @@
 
 # wrapper (replaces python script)
 
-.config.py
+. config.py
 
 one_site.py $1 $BRIDGE

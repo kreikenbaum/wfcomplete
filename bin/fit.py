@@ -129,16 +129,6 @@ def _stop(y, step, result, previous, C=1, best=1, delta=0.01):
                  > best * 1.1 * max(collections.Counter(y).values()) / len(y))))
 
 
-def bounded_auc_score(clf, X, y, y_bound=0.01):
-    '''@return cross-validated bounded auc of clf on X and y'''
-    scorer = metrics.make_scorer(
-        _bounded_auc, needs_proba=True, y_bound=y_bound)
-    y = list(_binarize(y, transform_to=1))
-    return 1/y_bound * model_selection.cross_val_score(
-        clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
-        scoring=scorer).mean()
-
-
 def helper(counter_dict, outlier_removal=True, cumul=True, folds=config.FOLDS):
     '''@return grid-search on counter_dict result (clf, results)'''
     if outlier_removal:
