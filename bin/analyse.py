@@ -247,6 +247,16 @@ def bounded_roc(y_true, y_predict, y_bound, **kwargs):
     return (newfpr, newtpr)
 
 
+def bounded_auc_score(clf, X, y, y_bound=0.01):
+    '''@return cross-validated bounded auc of clf on X and y'''
+    scorer = metrics.make_scorer(
+        _bounded_auc, needs_proba=True, y_bound=y_bound)
+    y = list(_binarize(y, transform_to=1))
+    return 1/y_bound * model_selection.cross_val_score(
+        clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
+        scoring=scorer).mean()
+
+
 ## todo: maybe use prettytable
 def class_stats_to_table(class_stats):
     '''prints table from data in class_stats (gen_class_stats_list output)'''
@@ -314,19 +324,32 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
    - ?auc?
    - accuracy
 '''
-    X, y, domains = scenario_obj.get_open_world().get_features_cumul()
+    ow = scenario_obj.get_open_world()
+    if binarize:
+        ow = ow.binarize()
+    X, y, domains = ow.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
     if previous:
         result = max(results.for_scenario(a), key=lambda x: x.cumul)
-        clf = _clf(C=result.c, gamma=result.gamma, probability=True)
+        C = result.c
+        gamma = result.gamma
     else:
         (clf_noprob, _, _) = fit.my_grid(X, y) # auto scales
-        clf = _clf(C=clf.estimator.c, gamma=clf.estimator.gamma, probability=True)
+        C = clf.estimator.C
+        gamma=clf.estimator.gamma
+    clf = _clf(C=C, gamma=gamma)
     y_pred = model_selection.cross_val_predict(clf, X, y, cv=config.FOLDS,
                                                n_jobs=config.JOBS_NUM)
     confmat = metrics.confusion_matrix(y_true, y_pred)
-    (tpr, fpr) = trp_fpr(confmat)
-    # auc = # todo
+    (tpr, fpr) = tpr_fpr(confmat)
+    if binarize: # can (easily) compute auroc
+        clf = _clf(C=C, gamma=gamma, probability=True)
+        y_predprob = model_selection.cross_val_predict(clf, X, y,
+                                                       cv=config.FOLDS,
+                                                       n_jobs=config.JOBS_NUM,
+                                                       method="predict_proba")
+        fpr_array, tpr_array, _ = metrics.roc_curve(y_true, y_predprob)
+        auroc = metrics.auc(fpr_array, tpr_array)
 
     TODO
     return (result, tpr, fpr, auroc)
