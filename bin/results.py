@@ -11,7 +11,6 @@ import logging
 
 from sklearn import multiclass, svm
 
-import prettytable
 import pymongo
 
 import scenario
@@ -112,6 +111,7 @@ class Result(object):
 
 def to_table(results): #, fields, names=None):
     '''@return table of results as a string'''
+    import prettytable
     tbl = prettytable.PrettyTable()
     tbl.field_names = [
         "scenario", "accuracy [%]", "size increase [%]", "time increase [%]"]
