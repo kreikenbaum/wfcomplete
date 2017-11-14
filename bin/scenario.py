@@ -32,7 +32,7 @@ class Scenario(object):
         >>> Scenario('disabled/2016-11-13').name # same as str(Scenario...)
         'disabled'
         >>> Scenario('disabled/05-12@10').num_sites
-        '10'
+        10
         >>> Scenario('./0.22/10aI--2016-11-04-50-of-100').setting
         '10aI'
         '''
@@ -46,7 +46,11 @@ class Scenario(object):
             self.name = os.path.normpath(self.path)
             return
         if '@' in date:
-            (date, self.num_sites) = date.split('@')
+            (date, numstr) = date.split('@')
+            try:
+                self.num_sites = int(numstr)
+            except ValueError:
+                self.num_sites = int(numstr.split('-')[0])
         if '--' in date:
             (self.setting, date) = date.split('--')
         # the following discards subset info: 10aI--2016-11-04-50-of-100
@@ -71,8 +75,17 @@ class Scenario(object):
         return item in self.path
 
 
+    def _compareattr(self, other, attr):
+        '''@return true if other has attr iff self has attr and values same'''
+        return (hasattr(self, attr) and hasattr(other, attr)
+                and self.date == other.date
+                or (not hasattr(self, attr) and not hasattr(other, attr)))
+
     def __eq__(self, other):
-        return self.name == other.name and self.date == other.date
+        return (self.name == other.name
+                and self._compareattr(other, "date")
+                and self._compareattr(other, "num_sites"))
+
 
 
     def __len__(self):
@@ -91,13 +104,11 @@ class Scenario(object):
     def __repr__(self):
         return '<scenario.Scenario("{}")>'.format(self.path)
 
-        
-    # idea: return list ordered by date-closeness
+
+    # idea: return whole list ordered by date-closeness
     def _closest(self, name_filter, include_bg=False, func_filter=None):
-        '''@return closest scenario that matches filter'''
-        filtered = list_all(name_filter, include_bg)
-        if func_filter:
-            filtered = filter(func_filter, filtered)
+        '''@return closest scenario by date that matches filter'''
+        filtered = list_all(name_filter, include_bg, func_filter=func_filter)
         return min(filtered, key=lambda x: abs(self.date - x.date))
 
 
@@ -200,7 +211,7 @@ class Scenario(object):
         return self._increase(time_increase, trace_dict)
 
 
-def list_all(name_filter=None, include_bg=False, path=DIR):
+def list_all(name_filter=None, include_bg=False, func_filter=None, path=DIR):
     '''lists all scenarios in =path=.'''
     out = []
     for (dirname, _, _) in os.walk(path):
@@ -209,8 +220,11 @@ def list_all(name_filter=None, include_bg=False, path=DIR):
             continue
         out.append(dirname)
     out[:] = [x.replace(path+'/', './') for x in out]
-    return [Scenario(x) for x in _filter_all(
+    out = [Scenario(x) for x in _filter_all(
         out, include_bg=include_bg)]
+    if func_filter:
+        out = filter(func_filter, out)
+    return out
 
 
 def _filter_all(all_, include_bg):
@@ -218,6 +232,7 @@ def _filter_all(all_, include_bg):
     @param include_bg if True include background scenarios, else omit'''
     out = filter(lambda x: (not '/batch' in x
                             and not '/broken' in x
+                            and not '/foreground-data' in x
                             and not '/or' in x
                             and not '/output' in x
                             and not '/ow' in x

@@ -329,7 +329,7 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
     X, y, domains = ow.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
     if previous:
-        result = max(results.for_scenario(a), key=lambda x: x.cumul)
+        result = max(results.for_scenario(ow), key=lambda x: x.cumul)
         C = result.c
         gamma = result.gamma
         accuracy = result.cumul
@@ -341,7 +341,7 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
     y_pred = model_selection.cross_val_predict(clf, X, y, cv=config.FOLDS,
                                                n_jobs=config.JOBS_NUM)
     confmat = metrics.confusion_matrix(y, y_pred)
-    (tpr, fpr) = tpr_fpr(confmat)
+    (tpr, fpr) = tpr_fpr(_binmat(confmat))[1]
     if binarize: # can (easily) compute auroc
         clf = _clf(C=C, gamma=gamma, probability=True)
         y_predprob = model_selection.cross_val_predict(clf, X, y,
@@ -352,6 +352,11 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
         auroc = metrics.auc(fpr_array, tpr_array)
     else: auroc = None
     return (tpr, fpr, auroc, C, gamma, accuracy)
+
+
+def _binmat(confmat):
+    return np.array([[confmat[0][0], sum(confmat[0][1:])],
+                     [sum(confmat[1:][0]), sum(sum(confmat[1:][1:]))]])
 
 
 # due to https://stackoverflow.com/questions/31324218

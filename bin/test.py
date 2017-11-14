@@ -351,6 +351,8 @@ class TestScenario(unittest.TestCase):
     def test__filter_all(self):
         self.assertTrue('disabled/2016-06-30' in scenario._filter_all(
             ['disabled', 'disabled/2016-06-30'], True))
+        self.assertTrue('disabled/2016-06-30' in scenario._filter_all(
+            ['disabled', 'disabled/2016-06-30'], False))
 
 
     def test__closest_bg(self):
