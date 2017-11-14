@@ -325,8 +325,7 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
    - accuracy
 '''
     ow = scenario_obj.get_open_world()
-    if binarize:
-        ow = ow.binarize()
+    if binarize: ow = ow.binarize()
     X, y, domains = ow.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
     if previous:
@@ -350,8 +349,6 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
                                                        method="predict_proba")
         fpr_array, tpr_array, _ = metrics.roc_curve(y_true, y_predprob)
         auroc = metrics.auc(fpr_array, tpr_array)
-
-    TODO
     return (tpr, fpr, auroc, C, gamma, accuracy)
 
 
