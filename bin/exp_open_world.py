@@ -8,6 +8,7 @@ import pymongo
 from sacred import Experiment
 from sacred.observers import MongoObserver
 
+import analyse
 import config
 import fit
 from scenario import Scenario # "scenario" name already used
@@ -30,15 +31,14 @@ def run_exp(scenario, remove_small, or_level, auc_bound, background_size, _rnd):
     config.OR_LEVEL = or_level or config.OR_LEVEL
     config.REMOVE_SMALL = remove_small or config.REMOVE_SMALL
     scenario_obj = Scenario(scenario)
-    (result, fpr, tpr, auroc) = analyse.simulated_open_world(
+    (fpr, tpr, auroc, C, gamma, accuracy) = analyse.simulated_open_world(
         scenario_obj, auc_bound, background_size)
     return {
-        'C': result.clf.estimator.C,
-        'gamma': result.clf.estimator.gamma,
+        'C': C,
+        'gamma': gamma,
         'sites': scenario_obj.get_traces().keys(),
-        'score': result.best_score_,
+        'score': accuracy,
         'type': "accuracy",
-        'C_gamma_result': _format_results(result.results),
         'outlier_removal': scenario_obj.trace_args,
         'size_increase': scenario_obj.size_increase(),
         'time_increase': scenario_obj.time_increase(),

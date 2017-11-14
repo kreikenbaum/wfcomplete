@@ -332,14 +332,15 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
         result = max(results.for_scenario(a), key=lambda x: x.cumul)
         C = result.c
         gamma = result.gamma
+        accuracy = result.cumul
     else:
-        (clf_noprob, _, _) = fit.my_grid(X, y) # auto scales
-        C = clf.estimator.C
-        gamma=clf.estimator.gamma
+        (clf_noprob, accuracy, _) = fit.my_grid(X, y) # auto scales
+        C = clf_noprob.estimator.C
+        gamma=clf_noprob.estimator.gamma
     clf = _clf(C=C, gamma=gamma)
     y_pred = model_selection.cross_val_predict(clf, X, y, cv=config.FOLDS,
                                                n_jobs=config.JOBS_NUM)
-    confmat = metrics.confusion_matrix(y_true, y_pred)
+    confmat = metrics.confusion_matrix(y, y_pred)
     (tpr, fpr) = tpr_fpr(confmat)
     if binarize: # can (easily) compute auroc
         clf = _clf(C=C, gamma=gamma, probability=True)
@@ -347,8 +348,9 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
                                                        cv=config.FOLDS,
                                                        n_jobs=config.JOBS_NUM,
                                                        method="predict_proba")
-        fpr_array, tpr_array, _ = metrics.roc_curve(y_true, y_predprob)
+        fpr_array, tpr_array, _ = metrics.roc_curve(y, y_predprob)
         auroc = metrics.auc(fpr_array, tpr_array)
+    else: auroc = None
     return (tpr, fpr, auroc, C, gamma, accuracy)
 
 
