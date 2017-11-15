@@ -1,4 +1,4 @@
-#! /usr/bin/env/python
+#! /usr/bin/env python
 '''imports experiment data from duckstein into local db'''
 import json
 import results
