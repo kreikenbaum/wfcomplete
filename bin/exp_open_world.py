@@ -25,11 +25,11 @@ def my_config():
     auc_bound = 0.1
     background_size = None # 'auto', number, None
 
-
+# code duplication exp.py
 @ex.capture
 def run_exp(scenario, remove_small, or_level, auc_bound, background_size, _rnd):
-    config.OR_LEVEL = or_level or config.OR_LEVEL
-    config.REMOVE_SMALL = remove_small or config.REMOVE_SMALL
+    config.OR_LEVEL = config.OR_LEVEL if or_level is None else or_level
+    config.REMOVE_SMALL = config.REMOVE_SMALL if remove_small is None else remove_small
     scenario_obj = Scenario(scenario)
     (fpr, tpr, auroc, C, gamma, accuracy) = analyse.simulated_open_world(
         scenario_obj, auc_bound, background_size)
