@@ -310,20 +310,7 @@ picks best result'''
 
 def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
                          bg_size="auto", previous=False):
-    '''@return (metrics for open world experiment
-2. predict values
-   - take best clf, predict
-3. compute fpr and tpr (can use sklearn for this)
-4. return all necessary values
-   - tpr
-   - fpr
-     - multi- and single class
-   - C
-   - gamma
-   - ?bounded auc?
-   - ?auc?
-   - accuracy
-'''
+    '''@return metrics for open world experiment'''
     ow = scenario_obj.get_open_world()
     if binarize: ow = ow.binarize()
     X, y, domains = ow.get_features_cumul()

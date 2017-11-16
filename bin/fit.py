@@ -142,7 +142,7 @@ def helper(counter_dict, outlier_removal=True, cumul=True, folds=config.FOLDS):
 
 
 def my_grid(X, y, C=2**14, gamma=2**-10, step=4, results=None,
-            auc_bound=None, previous=None, folds=config.FOLDS):
+            auc_bound=None, previous=None, folds=config.FOLDS, delta=0.01):
     '''@param results are previously computed results {(C,gamma): accuracy, ...}
     @param auc_bound if this is set, use the bounded auc score with this y_bound
     @return Result(clf, best_score_, results) (namedtuple see above)'''

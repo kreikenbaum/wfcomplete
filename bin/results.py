@@ -18,7 +18,7 @@ import scenario
 class Result(object):
     def __init__(self, scenario_, accuracy, git, time, type_, size,
                  open_world=False, size_overhead=None,
-                 time_overhead=None, _id=None, gamma=None, c=None):
+                 time_overhead=None, _id=None, gamma=None, c=None, src=None):
         self.scenario = scenario_
         self.cumul = accuracy
         self.git = git
@@ -33,6 +33,7 @@ class Result(object):
         self.open_world = open_world
         self.gamma = gamma
         self.c = c
+        self.src = src
 
     @staticmethod
     def from_mongoentry(entry):
@@ -69,11 +70,12 @@ class Result(object):
                       open_world,
                       size_overhead=size_overhead, time_overhead=time_overhead,
                       _id=entry['_id'],
-                      c=c, gamma=gamma)
+                      c=c, gamma=gamma,
+                      src=entry)
 
 
     def __repr__(self):
-        return '<Result({!r}, {}, {}, {}, {}, size={}, size_overhead={}, time_overhead={})>'.format(
+        return '<Result({!r}, score={}, {}, {}, {}, size={}, size_overhead={}, time_overhead={})>'.format(
             self.scenario, self.cumul, self.git, self.date,
             self.type_, self.size, self.size_overhead, self.time_overhead)
 
