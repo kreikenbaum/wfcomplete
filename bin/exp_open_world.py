@@ -23,16 +23,18 @@ def my_config():
     or_level = None
     remove_small = None
     auc_bound = 0.1
-    background_size = None # 'auto', number, None
+    background_size = 'auto' #, number, None
+    binarize = False
 
 # code duplication exp.py
 @ex.capture
-def run_exp(scenario, remove_small, or_level, auc_bound, background_size, _rnd):
+def run_exp(scenario, remove_small, or_level, auc_bound,
+            background_size, binarize, _rnd):
     config.OR_LEVEL = config.OR_LEVEL if or_level is None else or_level
     config.REMOVE_SMALL = config.REMOVE_SMALL if remove_small is None else remove_small
     scenario_obj = Scenario(scenario)
     (fpr, tpr, auroc, C, gamma, accuracy) = analyse.simulated_open_world(
-        scenario_obj, auc_bound, background_size)
+        scenario_obj, binarize, auc_bound)
     return {
         'C': C,
         'gamma': gamma,
