@@ -372,8 +372,6 @@ doctest.testmod()
 # parse older "json" status
 # json.loads(b.status.replace("'", '"').replace('False', 'false').replace('u"', '"'))
 
-# example open world
-# a = Scenario("0.15.3/1--2016-06-21@10")
-# b = a.get_open_world('auto')
-# X, y, _ = b.get_features_cumul()
-# c = my_grid(X, y, auc_bound=0.1)
+## scenarios without result
+#a = {x: len(results.for_scenario(x)) for x in list_all()}
+#filter(lambda x: x[1] == 0, a.iteritems())

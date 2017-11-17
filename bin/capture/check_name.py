@@ -11,6 +11,7 @@ import config
 #CHECKS={ ## later: map name to (lambda?): check these aspects
 
 def mkdiretc(name):
+    '''creates directory "name"/date, and a "now"-symlink'''
     try:
         newdir = os.path.join(name, str(datetime.date.today()))
         os.mkdir(newdir)
