@@ -15,6 +15,7 @@ for line in runs.split('\n'):
                                stdin=subprocess.PIPE)
         imp.communicate(input=json.dumps(entry))
 
+os.system("ssh mkreik@duckstein 'mongoexport -d sacred -c runs > /home/mkreik/data/mongodump$(date +%F_%T)'")
 subprocess.call(
     ["ssh", "mkreik@duckstein",
      'mongo sacred --eval "printjson(db.dropDatabase())"'])
