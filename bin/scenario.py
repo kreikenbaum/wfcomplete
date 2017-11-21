@@ -108,6 +108,7 @@ class Scenario(object):
     # idea: return whole list ordered by date-closeness
     def _closest(self, name_filter, include_bg=False, func_filter=None):
         '''@return closest scenario by date that matches filter'''
+        assert self.valid()
         filtered = list_all(name_filter, include_bg, func_filter=func_filter)
         return min(filtered, key=lambda x: abs(self.date - x.date))
 

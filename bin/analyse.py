@@ -47,7 +47,7 @@ def _class_predictions(cls, cls_predict):
     return out
 
 
-def _clf(**svm_params):
+def clf(**svm_params):
     '''@return default classifier with additional params'''
     return multiclass.OneVsRestClassifier(
         svm.SVC(class_weight="balanced", **svm_params))
@@ -324,13 +324,13 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
         (clf_noprob, accuracy, _) = fit.my_grid(X, y) # auto scales
         C = clf_noprob.estimator.C
         gamma=clf_noprob.estimator.gamma
-    clf = _clf(C=C, gamma=gamma)
+    clf = clf(C=C, gamma=gamma)
     y_pred = model_selection.cross_val_predict(clf, X, y, cv=config.FOLDS,
                                                n_jobs=config.JOBS_NUM)
     confmat = metrics.confusion_matrix(y, y_pred)
     (tpr, fpr) = tpr_fpr(_binmat(confmat))[1]
     if binarize: # can (easily) compute auroc
-        clf = _clf(C=C, gamma=gamma, probability=True)
+        clf = clf(C=C, gamma=gamma, probability=True)
         y_predprob = model_selection.cross_val_predict(clf, X, y,
                                                        cv=config.FOLDS,
                                                        n_jobs=config.JOBS_NUM,

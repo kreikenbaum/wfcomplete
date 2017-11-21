@@ -13,6 +13,9 @@ import config
 def mkdiretc(name):
     '''creates directory "name"/date, and a "now"-symlink'''
     try:
+        os.mkdir(name)
+    except OSError: pass
+    try:
         newdir = os.path.join(name, str(datetime.date.today()))
         os.mkdir(newdir)
         os.symlink(newdir, 'now')
@@ -30,5 +33,6 @@ if __name__ == "__main__":
         for (addon, is_enabled) in enabled.iteritems():
             if is_enabled:
                 mkdiretc(addon.replace("@", ''))
+                break # better safe than sorry
         else:
             mkdiretc("disabled")
