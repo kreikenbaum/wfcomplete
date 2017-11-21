@@ -11,6 +11,7 @@ import collections
 import copy
 import datetime
 import doctest
+import glob
 import logging
 import os
 import random
@@ -48,9 +49,9 @@ class Scenario(object):
         if '@' in date:
             (date, numstr) = date.split('@')
             try:
-                self.num_sites = int(numstr)
+                self._num_sites = int(numstr)
             except ValueError:
-                self.num_sites = int(numstr.split('-')[0])
+                self._num_sites = int(numstr.split('-')[0])
         if '--' in date:
             (self.setting, date) = date.split('--')
         # the following discards subset info: 10aI--2016-11-04-50-of-100
@@ -110,6 +111,7 @@ class Scenario(object):
         '''@return closest scenario by date that matches filter'''
         assert self.valid()
         filtered = list_all(name_filter, include_bg, func_filter=func_filter)
+        filtered = filter(lambda x: x.num_sites == self.num_sites, filtered)
         return min(filtered, key=lambda x: abs(self.date - x.date))
 
 
@@ -123,6 +125,14 @@ class Scenario(object):
             return 0
         return method(closest_disabled.get_traces(),
                       trace_dict or self.get_traces())
+
+
+    @property
+    def num_sites(self):
+        if hasattr(self, "_num_sites"):
+            return self._num_sites
+        else:
+            return len(glob.glob(os.path.join(DIR, self.path, '*json')))
 
 
     def binarize(self, bg_label='background', fg_label='foreground'):

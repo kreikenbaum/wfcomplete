@@ -203,15 +203,12 @@ def _duplicates(params=["config.scenario", "result.score"]):
 
 if __name__ == "__main__":
     print(_next_id())
-#    db = pymongo.MongoClient().sacred
-#    all_ = [Result.from_mongoentry(x) for x in
-#            db.runs.find({"$and": [{"config.scenario": {"$exists": 1}},
-#                                   {"result.score": {"$exists": 1}}]})]
-## todo: filter to get only one element per scenario
-### here or mongo?
+
+
+### import csv to mongodb
 # import_to_mongo(open('/home/uni/da/git/data/results/10sites.csv'), 10)
 
-## add overheads to each scenario once
+### add overheads to each scenario once
 # a = list(_duplicates(["config.scenario", "result.score", "result.size_increase", "result.time_increase", "status"]))
 # todos = [x['_id'] for x in a if len(x['result_size_increase']) == 0]
 # for t in todo: os.system('''~/da/git/bin/exp.py -e with 'scenario = "{}"' '''.format(t.scenario.path))
@@ -219,7 +216,7 @@ if __name__ == "__main__":
 # # some non-existing ones were pop()ped from todos
 #db.runs.update({_id: 23}, {$set: {"stabus": "FABLED"}})
     
-## result with closest ...
+### result with closest ...
 # b = [x for x in list_all() if x.scenario.name == '0.22' and x.size_overhead]
 # min(b, key=lambda x: abs(size - x.size_overhead))
 # c = [x for x in list_all() if x.scenario.name == '0.22' and x.time_overhead]
