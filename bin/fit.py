@@ -8,29 +8,17 @@ import numpy as np
 
 import config
 import counter
+import mymetrics
 
 scaler = None
 
 Result = collections.namedtuple('Result', ['clf', 'best_score_', 'results'])
 
-def _binarize(y, keep=-1, transform_to=0):
-    '''binarize data in y: transform all values to =transform_to= except =keep=
-    >>> list(_binarize([0, -1, 1]))
-    [0, -1, 0]
-    >>> list(_binarize([0, -1, 1], transform_to=3))
-    [3, -1, 3]'''
-    for y_class in y:
-        if y_class == keep:
-            yield keep
-        else:
-            yield transform_to
-
-
 def _bounded_auc_eval(X, y, clf, y_bound):
     '''evaluate clf X, y, give bounded auc score, 1 is positive class label'''
     X = scale(X, clf)
-    y = list(_binarize(y, transform_to=1))
-    return bounded_auc_score(clf, X, y, y_bound)
+    y = _lb(y, transform_to=1)
+    return mymetrics.bounded_auc_score(clf, X, y, y_bound)
 
 
 def _eval(X, y, clf, folds=config.FOLDS):
@@ -41,8 +29,8 @@ def _eval(X, y, clf, folds=config.FOLDS):
 
 
 def _lb(*args, **kwargs):
-    '''facade for list(_binarize(...))'''
-    return list(_binarize(*args, **kwargs))
+    '''facade for list(binarize(...))'''
+    return list(mymetrics.binarize(*args, **kwargs))
 
 
 def scale(X, clf):
@@ -169,11 +157,11 @@ def my_grid(X, y, C=2**14, gamma=2**-10, step=4, results=None,
                 bestclf = clf
                 bestres = current
             logging.info('c: %8s g: %15s res: %.6f', c, g, current.mean())
-    previous.append(bestres.mean())
-    if _stop(y, step, bestres.mean(), previous, C, best=(auc_bound if
-                                                         auc_bound else 1)):
+    previous.append(np.mean(bestres))
+    if _stop(y, step, np.mean(bestres), previous, C, best=(auc_bound if
+                                                           auc_bound else 1)):
         logging.info('grid result: %s', bestclf)
-        return Result(bestclf, bestres.mean(), results)
+        return Result(bestclf, np.mean(bestres), results)
     if (bestclf.estimator.C in (_search_range(C, step)[0],
                                 _search_range(C, step)[-1])
             or bestclf.estimator.gamma in (_search_range(gamma, step)[0],

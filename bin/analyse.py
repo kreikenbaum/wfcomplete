@@ -47,7 +47,7 @@ def _class_predictions(cls, cls_predict):
     return out
 
 
-def clf(**svm_params):
+def _clf(**svm_params):
     '''@return default classifier with additional params'''
     return multiclass.OneVsRestClassifier(
         svm.SVC(class_weight="balanced", **svm_params))
@@ -225,39 +225,6 @@ def _xtest(X_train, y_train, X_test, y_test, clf):
     return clf.score(fit.scale(X_test, clf), y_test)
 
 
-#    p_ = clf.fit(X1, y1).predict_proba(X2)
-#    return bounded_auc(y2, p_[:, 1], y_bound, pos_label=0)
-def bounded_auc(y_true, y_predict, y_bound, **kwargs):
-    '''@return bounded auc of (probabilistic) fitted classifier on data.'''
-    newfpr, newtpr = _bounded_roc(y_true, y_predict, y_bound, **kwargs)
-    return metrics.auc(newfpr, newtpr)
-
-
-def bounded_roc(y_true, y_predict, y_bound, **kwargs):
-    '''@return (fpr, tpr) within fpr-bounds'''
-    assert 0 <= y_bound <= 1
-    if y_predict.shape[1] == 2:
-        y_predict = y_predict[:, 1]
-    fpr, tpr, _ = metrics.roc_curve(y_true, y_predict, **kwargs)
-    # plot_data.roc(fpr, tpr).savefig('/tmp/roc.pdf')
-    # plt.close()
-    newfpr = [x for x in fpr if x < y_bound]
-    newfpr.append(y_bound)
-    newtpr = np.interp(newfpr, fpr, tpr)
-    return (newfpr, newtpr)
-
-
-def bounded_auc_score(clf, X, y, y_bound=0.01):
-    '''@return cross-validated bounded auc of clf on X and y'''
-    scorer = metrics.make_scorer(
-        _bounded_auc, needs_proba=True, y_bound=y_bound)
-    y = list(_binarize(y, transform_to=1))
-    return 1/y_bound * model_selection.cross_val_score(
-        clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
-        scoring=scorer).mean()
-
-
-## todo: maybe use prettytable
 def class_stats_to_table(class_stats):
     '''prints table from data in class_stats (gen_class_stats_list output)'''
     rows = class_stats[0].keys()
@@ -311,26 +278,26 @@ picks best result'''
 def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
                          bg_size="auto", previous=False):
     '''@return metrics for open world experiment'''
-    ow = scenario_obj.get_open_world()
-    if binarize: ow = ow.binarize()
-    X, y, domains = ow.get_features_cumul()
+    scenario_obj = scenario_obj.get_open_world()
+    if binarize: scenario_obj = scenario_obj.binarize()
+    X, y, domains = scenario_obj.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
     if previous:
-        result = max(results.for_scenario(ow), key=lambda x: x.cumul)
+        result = max(results.for_scenario(scenario_obj), key=lambda x: x.cumul)
         C = result.c
         gamma = result.gamma
         accuracy = result.cumul
     else:
         (clf_noprob, accuracy, _) = fit.my_grid(X, y) # auto scales
         C = clf_noprob.estimator.C
-        gamma=clf_noprob.estimator.gamma
-    clf = clf(C=C, gamma=gamma)
+        gamma = clf_noprob.estimator.gamma
+    clf = _clf(C=C, gamma=gamma)
     y_pred = model_selection.cross_val_predict(clf, X, y, cv=config.FOLDS,
                                                n_jobs=config.JOBS_NUM)
     confmat = metrics.confusion_matrix(y, y_pred)
     (tpr, fpr) = tpr_fpr(_binmat(confmat))[1]
     if binarize: # can (easily) compute auroc
-        clf = clf(C=C, gamma=gamma, probability=True)
+        clf = _clf(C=C, gamma=gamma, probability=True)
         y_predprob = model_selection.cross_val_predict(clf, X, y,
                                                        cv=config.FOLDS,
                                                        n_jobs=config.JOBS_NUM,
@@ -372,7 +339,7 @@ def open_world(scenario_obj, y_bound=0.05):
     fpr, tpr, _, prob = fit.roc(result.clf, X_train, y_train, X_test, y_test)
     print('{}-bounded auc: {} (C: {}, gamma: {})'.format(
         y_bound,
-        fit.bounded_auc_score(result.clf, X_test, y_test, 0.01),
+        mymetrics.bounded_auc_score(result.clf, X_test, y_test, 0.01),
         result.clf.estimator.C, result.clf.estimator.gamma))
     return (fpr, tpr, result, prob)
 #    return (fpr, tpr, result, mplot.roc(fpr, tpr), prob)
