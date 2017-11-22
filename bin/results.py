@@ -18,7 +18,7 @@ import scenario
 class Result(object):
     def __init__(self, scenario_, accuracy, git, time, type_, size,
                  open_world=False, size_overhead=None,
-                 time_overhead=None, _id=None, gamma=None, c=None, src=None):
+                 time_overhead=None, _id=None, gamma=None, C=None, src=None):
         self.scenario = scenario_
         self.cumul = accuracy
         self.git = git
@@ -32,7 +32,7 @@ class Result(object):
         self._id = _id
         self.open_world = open_world
         self.gamma = gamma
-        self.c = c
+        self.C = C
         self.src = src
 
     @staticmethod
@@ -70,7 +70,7 @@ class Result(object):
                       open_world,
                       size_overhead=size_overhead, time_overhead=time_overhead,
                       _id=entry['_id'],
-                      c=c, gamma=gamma,
+                      C=c, gamma=gamma,
                       src=entry)
 
 
