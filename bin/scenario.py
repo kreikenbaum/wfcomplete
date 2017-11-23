@@ -388,3 +388,16 @@ doctest.testmod()
 ## scenarios without result
 #a = {x: len(results.for_scenario(x)) for x in list_all()}
 #filter(lambda x: x[1] == 0, a.iteritems())
+
+## weird scenario
+# import mplot
+# import results
+# from sklearn import model_selection, preprocessing
+# a = Scenario("disabled/bridge--2017-10-16")
+# b = results.for_scenario(a)[0]
+# X, y, domains = a.get_features_cumul()
+# X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
+# clf = b.get_classifier()
+# y_pred = model_selection.cross_val_predict(clf, X, y, cv=config.FOLDS,
+#                                                      n_jobs=config.JOBS_NUM)
+# c = mplot.confusion(y, y_pred, domains, rotation=90)

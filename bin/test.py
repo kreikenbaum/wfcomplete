@@ -133,9 +133,11 @@ class TestExp(unittest.TestCase):
     def test_runs(self):
 #        subprocess.call("echo $PATH > /tmp/out",
         with open(os.devnull, "w") as null:
-            subprocess.check_call(os.path.join(os.getcwd(), "./exp.py")
-                                  + " print_config > /dev/null",
-                                  stderr=null, stdout=null, shell=True)
+            subprocess.check_call(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             "./exp.py")
+                + " print_config > /dev/null",
+                stderr=null, stdout=null, shell=True)
 
 
 class TestAnalyse(unittest.TestCase):
