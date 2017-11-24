@@ -248,6 +248,11 @@ if __name__ == "__main__":
 ## mongodb
 # db.runs.update({"_id" : 359}, {$unset: {'result.size_increase': 0}})
 
-### create results on duckstein
+### CREATE RESULTS ON DUCKSTEIN
 ## list from [[file:scenario.py::##%20scenarios%20without%20result]]
 # mkreik@duckstein:~$ for i in 'disabled/bridge--2017-10-08' ... 'defense-client-nodelay/bridge--2017-09-25'; do exp.py with scenario=$i; done
+
+
+## rough plot all of size 30
+#d30 = pd.DataFrame([x.__dict__ for x in results.list_all() if x.scenario.num_sites == 30])
+# d30.plot.scatter('size_overhead', 'cumul')

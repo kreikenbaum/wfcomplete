@@ -5,6 +5,8 @@
 - scenario name/date
 - load traces
 '''
+from __future__ import print_function
+
 import numpy as np
 
 import collections
@@ -21,7 +23,8 @@ import counter
 
 
 DIR = os.path.join(os.path.expanduser('~'), 'da', 'git', 'data')
-if os.uname()[1] == 'duckstein': DIR = os.path.join('/mnt', 'large')
+if os.uname()[1] == 'duckstein':
+    DIR = os.path.join('/mnt', 'large')
 
 
 class Scenario(object):
@@ -37,6 +40,7 @@ class Scenario(object):
         >>> Scenario('./0.22/10aI--2016-11-04-50-of-100').setting
         '10aI'
         '''
+        self.traces = None
         self.trace_args = trace_args or config.trace_args()
         self.path = os.path.normpath(name)
         if smart and not self.valid():
@@ -113,7 +117,7 @@ size unless include_bg'''
         assert self.valid()
         filtered = list_all(name_filter, include_bg, func_filter=func_filter)
         if not include_bg:
-            filtered = filter(lambda x: x.num_sites == self.num_sites, filtered)
+            filtered = [x for x in filtered if x.num_sites == self.num_sites]
         return min(filtered, key=lambda x: abs(self.date - x.date))
 
 
@@ -131,6 +135,7 @@ size unless include_bg'''
 
     @property
     def num_sites(self):
+        '''number of sites in this capture'''
         if hasattr(self, "_num_sites"):
             return self._num_sites
         else:
@@ -151,6 +156,7 @@ size unless include_bg'''
 
 
     def date_from_trace(self):
+        '''retrieve date from traces'''
         self.trace_args = {'remove_small': False, 'or_level': 0}
         trace = self.get_traces().values()[0][0]
         return datetime.datetime.fromtimestamp(
@@ -181,16 +187,16 @@ size unless include_bg'''
         '''
         if 'background' in self.get_traces():
             logging.warn("scenario's traces already contain background set")
-        bg = self._closest('background', include_bg=True)
+        background = self._closest('background', include_bg=True)
         self.get_traces()
         out = copy.copy(self)
         out.traces = copy.copy(self.traces)
         if num:
             if num == 'auto':
                 num = sum([len(x) for x in self.traces.values()])
-            out.traces['background'] = bg.get_sample(num)['background']
+            out.traces['background'] = background.get_sample(num)['background']
         else:
-            out.traces['background'] = bg.get_traces()['background']
+            out.traces['background'] = background.get_traces()['background']
         return out
 
 
@@ -205,7 +211,7 @@ size unless include_bg'''
 
     def get_traces(self):
         '''@return dict {domain1: [trace1, ..., traceN], ..., domainM: [...]}'''
-        if not hasattr(self, "traces"):
+        if not self.traces:
             self.traces = counter.all_from_dir(os.path.join(DIR, self.path),
                                                **self.trace_args)
         return self.traces
@@ -217,10 +223,12 @@ size unless include_bg'''
 
 
     def size_increase(self, trace_dict=None):
+        '''@return size overhead of this vs closest disabled scenario'''
         return self._increase(size_increase, trace_dict)
 
 
     def time_increase(self, trace_dict=None):
+        '''@return time overhead of this vs closest disabled scenario'''
         return self._increase(time_increase, trace_dict)
 
 
@@ -228,7 +236,8 @@ def list_all(name_filter=None, include_bg=False, func_filter=None, path=DIR):
     '''lists all scenarios in =path=.'''
     out = []
     for (dirname, _, _) in os.walk(path):
-        if dirname == path: continue
+        if dirname == path:
+            continue
         if name_filter and not name_filter in dirname:
             continue
         out.append(dirname)
@@ -243,20 +252,19 @@ def list_all(name_filter=None, include_bg=False, func_filter=None, path=DIR):
 def _filter_all(all_, include_bg):
     '''Filter out specific cases for scenario names,
     @param include_bg if True include background scenarios, else omit'''
-    out = filter(lambda x: (not '/batch' in x
-                            and not '/broken' in x
-                            and not '/foreground-data' in x
-                            and not '/or' in x
-                            and not '/output' in x
-                            and not '/ow' in x
-                            and not '/path' in x
-                            and not '/p_batch' in x
-                            and not '/results' in x
-                            and not 'subsets/' in x
-                            and (include_bg
-                                 or (not '/background' in x
-                                     and not '/bg' in x))
-    ), all_)
+    out = [x for x in all_ if (not '/batch' in x
+                               and not '/broken' in x
+                               and not '/foreground-data' in x
+                               and not '/or' in x
+                               and not '/output' in x
+                               and not '/ow' in x
+                               and not '/path' in x
+                               and not '/p_batch' in x
+                               and not '/results' in x
+                               and not 'subsets/' in x
+                               and (include_bg
+                                    or (not '/background' in x
+                                        and not '/bg' in x)))]
     out[:] = [x for (i, x) in enumerate(out[:-1]) if (
         x not in out[i+1]
         or x+'-with-errors' == out[i+1])] + [out[-1]]
@@ -345,8 +353,8 @@ def size_test(argv, outlier_removal=True):
     stats = {k: _bytes_mean_std(v) for (k, v) in scenarios.iteritems()}
     scenario0 = argv[1]
     for scenario in argv[2:]:
-        print '{}: {}'.format(scenario, _size_increase(stats[scenario0],
-                                                      stats[scenario]))
+        print('{}: {}'.format(scenario, _size_increase(stats[scenario0],
+                                                       stats[scenario])))
 ### END CODPIED CODE
 
 # todo: code duplication: _bytes_mean_std
