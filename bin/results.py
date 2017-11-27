@@ -20,7 +20,7 @@ class Result(object):
                  open_world=False, size_overhead=None,
                  time_overhead=None, _id=None, gamma=None, C=None, src=None):
         self.scenario = scenario_
-        self.cumul = accuracy
+        self.score = accuracy
         self.git = git
         self.date = time
         if not self.date and hasattr(self.scenario, "date"):
@@ -76,7 +76,7 @@ class Result(object):
 
     def __repr__(self):
         return '<Result({!r}, score={}, {}, {}, {}, size={}, size_overhead={}, time_overhead={})>'.format(
-            self.scenario, self.cumul, self.git, self.date,
+            self.scenario, self.score, self.git, self.date,
             self.type_, self.size, self.size_overhead, self.time_overhead)
 
 
@@ -92,7 +92,7 @@ class Result(object):
         obj = {
             "_id": _next_id(),
             "config": {"scenario": self.scenario, "size": self.size},
-            "result": {"score": self.cumul, "type": self.type_},
+            "result": {"score": self.score, "type": self.type_},
             "stop_time": self.date, "status": "EXTERNAL"}
         if db.runs.count(obj) == 0:
             db.runs.insert_one(obj)
@@ -120,7 +120,7 @@ def to_table(results): #, fields, names=None):
     #names if names else fields
     for result in results:
         tbl.add_row([result.scenario.name,
-                     result.cumul,
+                     result.score,
                      result.size_overhead,
                      result.time_overhead])
     return tbl
@@ -222,13 +222,13 @@ if __name__ == "__main__":
 # c = [x for x in list_all() if x.scenario.name == '0.22' and x.time_overhead]
 # min(c, key=lambda x: abs(42 - x.time_overhead))
 # d = [x for x in list_all() if x.scenario.name == '0.22']
-# min(d, key=lambda x: abs(0.63 - x.cumul))
-# min(d, key=lambda x: abs(0.26 - x.cumul))
+# min(d, key=lambda x: abs(0.63 - x.score))
+# min(d, key=lambda x: abs(0.26 - x.score))
 ## scatter plot of accuracy vs overhead
 # b = [x for x in list_all() if (x.scenario.name == '0.22' or 'llama' in x.scenario) and x.size_overhead]
 # c = pd.DataFrame([x.__dict__ for x in b])
 # c['color'] = c['scenario'].map(lambda x: 'red' if 'llama' in x else 'blue')
-# c = c.rename(columns={'size_overhead': 'Size Overhead [%]', 'cumul': 'Accuracy', 'time_overhead': 'Time Overhead [%]'})
+# c = c.rename(columns={'size_overhead': 'Size Overhead [%]', 'score': 'Accuracy', 'time_overhead': 'Time Overhead [%]'})
 # d = c.plot.scatter('Size Overhead [%]', 'Accuracy', c=c.color)
 # d.set_xbound(0)
 # d.set_ybound(0, 1)
@@ -255,4 +255,4 @@ if __name__ == "__main__":
 
 ## rough plot all of size 30
 #d30 = pd.DataFrame([x.__dict__ for x in results.list_all() if x.scenario.num_sites == 30])
-# d30.plot.scatter('size_overhead', 'cumul')
+# d30.plot.scatter('size_overhead', 'score')

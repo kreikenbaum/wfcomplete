@@ -283,10 +283,10 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
     X, y, domains = scenario_obj.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
     if previous:
-        result = max(results.for_scenario(scenario_obj), key=lambda x: x.cumul)
+        result = max(results.for_scenario(scenario_obj), key=lambda x: x.score)
         C = result.c
         gamma = result.gamma
-        accuracy = result.cumul
+        accuracy = result.score
     else:
         (clf_noprob, accuracy, _) = fit.my_grid(X, y) # auto scales
         C = clf_noprob.estimator.C
