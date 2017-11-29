@@ -14,9 +14,6 @@ import sys
 
 import numpy as np
 
-import pyshark
-from pyshark.capture.capture import TSharkCrashException
-
 import config
 
 DURATION_LIMIT_SECS = 8 * 60
@@ -606,6 +603,9 @@ class Counter(object):
     @staticmethod
     def from_pcap(filename):
         '''Creates Counter from pcap file. Less efficient than above.'''
+        import pyshark
+        from pyshark.capture.capture import TSharkCrashException
+
         try:
             tmp = Counter.from_pcap_quick(filename)
             if not tmp.warned:

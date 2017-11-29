@@ -224,15 +224,16 @@ if __name__ == "__main__":
 # d = [x for x in list_all() if x.scenario.name == '0.22']
 # min(d, key=lambda x: abs(0.63 - x.score))
 # min(d, key=lambda x: abs(0.26 - x.score))
+
 ## scatter plot of accuracy vs overhead
-# b = [x for x in list_all() if (x.scenario.name == '0.22' or 'llama' in x.scenario) and x.size_overhead]
+# b = [x for x in list_all() if (x.scenario.name == '0.22' or 'llama' in x.scenario) and x.size_overhead and x.scenario.num_sites == 30]
 # c = pd.DataFrame([x.__dict__ for x in b])
 # c['color'] = c['scenario'].map(lambda x: 'red' if 'llama' in x else 'blue')
 # c = c.rename(columns={'size_overhead': 'Size Overhead [%]', 'score': 'Accuracy', 'time_overhead': 'Time Overhead [%]'})
 # d = c.plot.scatter('Size Overhead [%]', 'Accuracy', c=c.color)
 # d.set_xbound(0)
 # d.set_ybound(0, 1)
-# d.set_title("Size Overhead to Accuracy Ratio of New Defense and LLaMA")
+# d.set_title("Size Overhead to Accuracy Ratio of New Defense and LLaMA (on 30 sites)")
 # plt.tight_layout()
 
 ## flavor comparison: no clear picture, but I seems better than II (bII fails)

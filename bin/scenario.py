@@ -83,7 +83,7 @@ class Scenario(object):
     def _compareattr(self, other, attr):
         '''@return true if other has attr iff self has attr and values same'''
         return (hasattr(self, attr) and hasattr(other, attr)
-                and self.date == other.date
+                and getattr(self, attr) == getattr(other, attr)
                 or (not hasattr(self, attr) and not hasattr(other, attr)))
 
     def __eq__(self, other):
@@ -313,6 +313,30 @@ def _mean_std(trace_dict, property_name):
 def tpi(trace_list):
     '''returns total incoming packets for each trace in list'''
     return [x.get_tpi() for x in trace_list]
+
+
+def path_from_status(status, date=None):
+    '''@return the scenario path from the status.sh output'''
+    enableds = [x for x in status['addon']['enabled']
+                if status['addon']['enabled'][x] == True]
+    if len(enableds) > 1:
+        logging.err("more than 1 addon enabled: %s", enableds)
+    elif len(enableds) == 1:
+        name = enableds[0].replace('@', '')
+    else:
+        name = "disabled"
+    if not date:
+        date = datetime.date.today()
+    add = ''
+    if name == "wf-cover":
+        factor = status['addon']['factor']
+        if not factor:
+            factor = 50
+        add = factor + 'aI--'
+    if not date:
+        date = datetime.date.today()
+    return os.path.join(name, add + str(date))
+
 ############# COPIED CODE, needed?
 def _size_increase_helper(two_scenarios):
     return _compute_increase(two_scenarios[two_scenarios.keys()[0]],
