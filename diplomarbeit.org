@@ -810,7 +810,7 @@ While some similarity can be seen for each group, the "within-group" differences
 
    Dynamically updating the filter might solve problem /1/ and further
    help with problem /3/ (future work).
-* WRITE Evaluation [2/10]
+* WRITE Evaluation [2/11]
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
   :END:
@@ -949,6 +949,12 @@ While some similarity can be seen for each group, the "within-group" differences
 *** TODO Accuracy/Overhead for 100 Sites
 *** WRITE Low Accuracy on my Captures
     aka lower accuracy for my traces
+**** Executive summary
+     - later traces suck
+     - earlier ok
+     - so classification ok, but capture broken
+     - example
+**** Main
     - panchenko reported accuracy of ... for cumul-captures
     - his attack code consistently yielded the same accuracy as my
       reimplementation
@@ -976,17 +982,27 @@ While some similarity can be seen for each group, the "within-group" differences
       - [[./pictures/confmat-2017-10-16.pdf]]
     - case study:
       - capture at 2017-11-05 has accuracy 0.484712804799
-      - capture at 2016-06-07 has accuracy 0.903838890875
+      - capture at 2016-06-07 (06-17@100) has accuracy 0.903838890875
       - look at first site: msn.com
-        - instances after outlier removal
-          - 2017 has 50
-          - 2016 has 33
+        - instances after outlier removal (and minimal)
+          - 2017 has 50 (of 50)
+          - 2016 has 33 (of 38)
         - plot CUMUL:
           - [[./pictures/cumul-good-bad.pdf]]
-          - why so different?
-            - msn.com?
-              - confusion matrix:
-            - or capture?
+          - [[./pictures/cumul-good-bad-no-OR.pdf]]
+            # how produced:
+            #+BEGIN_SRC python
+              good = scenario.Scenario("disabled/06-17@100")
+              bad = scenario.Scenario("disabled/2017-11-05")
+              bad.trace_args = {'remove_small': False, 'or_level': 0} # same for good
+              g = gplot.counters(good.get_traces()['msn.com'], label=str(good.date))
+              gplot.counters(bad.get_traces()['msn.com'], g, label=str(bad.date), color="red")
+            #+END_SRC
+        - why so different?
+          - due to msn.com?
+          - or due to capture?
+          - solve: graphics for two other sites: 'ok.ru' 'ameblo.jp'
+*** TODO [#C] confusion matrix for 2016-06-07, get to work
 ** KEYWORDS Open World
    :PROPERTIES:
    :CUSTOM_ID: sub4-open

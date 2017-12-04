@@ -74,7 +74,7 @@ def _navigate_or_fail(client, url, file_name):
                 '{}_{}'.format(
                     file_name,
                     sys.exc_info()[1])
-                .replace(' ', '_').replace('\n', '')))
+                .replace(' ', '_').replace('\n', ''))
         except IOError:
             print 'failed with IOError'
             print file_name

@@ -7,6 +7,7 @@ then compute mean and variance/std
 from __future__ import print_function
 import csv
 import datetime
+import doctest
 import logging
 
 from sklearn import multiclass, svm
@@ -201,6 +202,7 @@ def _duplicates(params=["config.scenario", "result.score"]):
         {"$group": groups}])
 
 
+doctest.testmod()
 if __name__ == "__main__":
     print(_next_id())
 

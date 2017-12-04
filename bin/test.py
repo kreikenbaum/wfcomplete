@@ -14,6 +14,7 @@ import config
 import counter
 import fit
 import scenario
+import results
 
 config.FOLDS = 2
 
@@ -223,6 +224,15 @@ class TestFit(unittest.TestCase):
         # 2. check that fpr/tpr has good structure (rises straight up to 0.9fpr)
         self.assertEqual(tpr[0], 0.9, self.string.format(tpr, fpr))
         self.assertEqual(fpr[0], 0, self.string.format(tpr, fpr))
+
+
+class TestResult(unittest.TestCase):
+    '''tests the counter module'''
+
+    @unittest.skipIf(QUICK, "slow test skipped")
+    def test_doc(self):
+        (fail_num, _) = doctest.testmod(result, optionflags=doctest.ELLIPSIS)
+        self.assertEqual(0, fail_num)
 
 
 class TestScenario(unittest.TestCase):
