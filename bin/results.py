@@ -227,18 +227,33 @@ if __name__ == "__main__":
 # min(d, key=lambda x: abs(0.63 - x.score))
 # min(d, key=lambda x: abs(0.26 - x.score))
 
-## scatter plot of accuracy vs overhead
-# b = [x for x in list_all() if (x.scenario.name == '0.22' or 'llama' in x.scenario) and x.size_overhead and x.scenario.num_sites == 30]
+### scatter plot of accuracy vs overhead
+# import pandas as pd
+# b = [x for x in list_all() if (x.scenario.name == '0.22' or 'llama-nodelay' in x.scenario or 'disabled' in x.scenario) and x.scenario.num_sites == 30]
 # c = pd.DataFrame([x.__dict__ for x in b])
-# c['color'] = c['scenario'].map(lambda x: 'red' if 'llama' in x else 'blue')
+def color(name, _all):
+    '''@return color for scatter plot: colors from colorblind palette'''
+    palette = sns.color_palette("colorblind", 3)
+    if 'llama' in name:
+        return palette[0]
+    elif 'disabled' in name:
+        return palette[1]
+    elif '0.22' in name:
+        return palette[2]
+    else:
+        assert 'wtf (what a terrible failure)'
+# c['color'] = c['scenario'].map(color)
 # c = c.rename(columns={'size_overhead': 'Size Overhead [%]', 'score': 'Accuracy', 'time_overhead': 'Time Overhead [%]'})
 # d = c.plot.scatter('Size Overhead [%]', 'Accuracy', c=c.color)
-# d.set_xbound(0)
+# a = [mpatches.Patch(color=palette[0], label='LLaMA, no delay'), mpatches.Patch(color=palette[1], label='defenseless'), mpatches.Patch(color=palette[2], label="thesis' defense")]
+# d.legend(handles=a)
+# # d.set_xbound(0)
 # d.set_ybound(0, 1)
 # d.set_title("Size Overhead to Accuracy Ratio of New Defense and LLaMA (on 30 sites)")
 # plt.tight_layout()
 
-## flavor comparison: no clear picture, but I seems better than II (bII fails)
+
+### flavor comparison: no clear picture, but I seems better than II (bII fails)
 # def color(pandas_result):
 #     if 'llama' in pandas_result: return 'red'
 #     if 'aII' in pandas_result: return 'yellow'
@@ -248,7 +263,7 @@ if __name__ == "__main__":
 #     return 'grey'
 # c['color'] = c['scenario'].map(color)
 
-## mongodb
+### mongodb
 # db.runs.update({"_id" : 359}, {$unset: {'result.size_increase': 0}})
 
 ### CREATE RESULTS ON DUCKSTEIN
@@ -256,6 +271,19 @@ if __name__ == "__main__":
 # mkreik@duckstein:~$ for i in 'disabled/bridge--2017-10-08' ... 'defense-client-nodelay/bridge--2017-09-25'; do exp.py with scenario=$i; done
 
 
-## rough plot all of size 30
+### rough plot all of size 30
 #d30 = pd.DataFrame([x.__dict__ for x in results.list_all() if x.scenario.num_sites == 30])
 # d30.plot.scatter('size_overhead', 'score')
+
+
+
+
+## unused meta-color picker
+# def _color(name, all_names):
+#     '''@return color for scatter plot: colors from colorblind palette'''
+#     palette = sns.color_palette("colorblind", len(all_names))
+#     for (i, check_name) in enumerate(all_names):
+#         if name == check_name:
+#             return palette[i]
+#     else:
+#         assert 'wtf (what a terrible failure)'

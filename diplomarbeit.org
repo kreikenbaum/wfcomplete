@@ -810,7 +810,7 @@ While some similarity can be seen for each group, the "within-group" differences
 
    Dynamically updating the filter might solve problem /1/ and further
    help with problem /3/ (future work).
-* WRITE Evaluation [2/11]
+* WRITE Evaluation [1/11]
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
   :END:
@@ -888,7 +888,7 @@ While some similarity can be seen for each group, the "within-group" differences
    cases, the original CUMUL attack and the reimplementation had very
    similar results. This validates that the CUMUL-reimplementation was
    used as the main method of evaluating the extension.
-** WRITE (llama-delay-100) Closed World
+** WRITE Closed World
    :PROPERTIES:
    :CUSTOM_ID: sub4-closed
    :END:
@@ -897,10 +897,10 @@ While some similarity can be seen for each group, the "within-group" differences
    In a /closed-world/ evaluation, a fixed set of site traces are
    captured. The aim is to distinguish between these sites alone.
 
-   This thesis presents its findings on the first 100 sites from
-   Alexa's top million sites list[fn::
+   This thesis presents its findings on the first 30 and 100 sites
+   from Alexa's top million sites list[fn::
    \url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}] with
-   duplicate sites and sites with a high rate of error
+   duplicate sites and sites with a high error rate
    removed[fn::Original from 2016-06-30 available at
    https://github.com/kreikenbaum/website-fingerprinting-thesis/blob/master/data/top-1m.csv.zip,
    modified version at
@@ -909,9 +909,10 @@ While some similarity can be seen for each group, the "within-group" differences
 
    Table [[tab:closed_world]] compares
    LLaMAs\cite{DBLP:journals/popets/CherubinHJ17} performance with
-   this thesis' addon's. As LLaMAs original time overhead seems
-   prohibitive, the source code was edited (a constant was changed) to
-   disable the delay. This version is called /llama-nodelay/.
+   this thesis' addon's on 30 sites. As LLaMAs original time overhead
+   seems prohibitive, the source code was edited (a constant was
+   changed) to disable the delay. This version is called
+   /llama-nodelay/.
 
    #+CAPTION: comparison of LLaMA to this thesis's defense on 30 sites
    #+NAME: tab:closed_world
@@ -929,41 +930,69 @@ While some similarity can be seen for each group, the "within-group" differences
 
 
 
-   This shows that original LLaMA delays web surfing by an order of
-   magnitude. Compared to the modified version of LLaMA, the new
-   defense offers configurability and much lower both time and size
-   overhead.
+   This shows that original _LLaMA delays web surfing by an order of
+   magnitude_. Compared to the modified version of LLaMA, this thesis'
+   defense offers both configurability and lower time overhead, as
+   well as lower size overhead as compared to non-delayed LLaMA.
 
-   This configurability is shown in Figure [[fig:oh2acc]].
+   The thesis' configurability is shown in Figure [[fig:oh2acc]].
    #+CAPTION: Overhead to Accuracy Trade-Off for New Defense (\textcolor{blue}{blue}) and LLaMA (\textcolor{red}{red}) on 30 sites.
    #+NAME: fig:oh2acc
-   [[./pictures/oh2acc-llama-0.22.eps]]
-   # code: see [[file:bin/results.py::result%20with%20closest]]
-*** PENDING (llama-100) update comparison table to 100 sites
-*** TODO accuracy/overhead settings
-    - plot line through
-    - add legend
-    - add disabled
+   [[./pictures/oh2acc--llama-0.22-disabled.eps]]
+   # code: see [[file:bin/results.py::%20scatter%20plot%20of%20accuracy%20vs%20overhead]]
+*** TODO [#C] accuracy/overhead plot
+    - plot line through (see if e^{-x} works)
     - redo llama-delay @ 30
-**** PENDING recapture llama-delay @ 30, (?and disabled close?)   :duckstein:
-*** TODO Accuracy/Overhead for 100 Sites
+    - additional 0.22 data points in between groups (200--300% overheads)
+*** PENDING recapture llama-delay @ 30, (?and disabled close?)    :duckstein:
+    aka redo llama-delay on 30 sites (before/after disabled)
 *** WRITE Low Accuracy on my Captures
-    aka lower accuracy for my traces
-**** Executive summary
-     - later traces suck
-     - earlier ok
-     - so classification ok, but capture broken
-     - example
+    While these data points hint that the thesis's defense provides
+    better protection for the same overhead, or lower overhead for the
+    same protection, the current state-of-the-art compares results on
+    at least 100 sites.
+
+    Unfortunately, the capture's accuracy decayed over time, so that
+    both the reimplementation (and also a student group at mlsec.org)
+    was not able to provide good accuracy on recent data.
+
+    #+CAPTION: Accuracy Decay for Defenseless Data on 30 sites.
+    #+NAME: fig:date-vs-acc--30sites
+    [[./pictures/date-vs-acc--30sites.eps]]
+    # code: [[file:bin/mplot.py::def%20date_accuracy]]()
+
+    #+CAPTION: Accuracy Decay for Defenseless Data on 100 sites.
+    #+NAME: fig:date-vs-acc--100sites
+    [[./pictures/date-vs-acc--100sites.eps]]
+    # code: [[file:bin/mplot.py::def%20date_accuracy]](100)
+
+    This trend can be seen in for both 30 sites in Figure
+    [[fig:date-vs-acc--30sites]] and 100 sites in Figure
+    [[fig:date-vs-acc--100sites]].
+
+
+
+    In the 30-site confusion matrix in Figure [[fig:confmat-2017-10-16]],
+    there is no clear culprit: errors are mostly distributed.
+
+    #+CAPTION: Confusion matrix for 30 sites at 2017-10-16, overall accuracy at 58%.
+    #+NAME: fig:confmat-2017-10-16
+    [[./pictures/confmat-2017-10-16.pdf]]
+    # code: [[file:bin/mplot.py::def%20confusion]]
+
+
+    Just for comparison, a confusion matrix for a high-accuracy
+    capture at Figure [[fig:confmat-2016-08-15]]
+    #+CAPTION: Confusion matrix for 30 sites at 2016-08-15, overall accuracy at 98%.
+    #+NAME: fig:confmat-2016-08-15
+    [[./pictures/confmat-2016-08-15.eps]]
+    # code: [[file:bin/mplot.py::def%20confusion]], but how was y_pred created?
 **** Main
-    - panchenko reported accuracy of ... for cumul-captures
-    - his attack code consistently yielded the same accuracy as my
-      reimplementation
     - domains with differences?
     - trace pictures?
       - one for panchenkos (with alpha, overlay)
       - one for mine
       - maybe use CUMUL-pic
-    - others have not provided capture code
     - own available at github
     - several reasons
       1. some sites consistently problems loading
@@ -1002,7 +1031,9 @@ While some similarity can be seen for each group, the "within-group" differences
           - due to msn.com?
           - or due to capture?
           - solve: graphics for two other sites: 'ok.ru' 'ameblo.jp'
-*** TODO [#C] confusion matrix for 2016-06-07, get to work
+**** TODO comparison table for 100 sites
+**** TODO Accuracy/Overhead for 100 Sites
+**** TODO [#C] confusion matrix for 2016-06-07, get to work
 ** KEYWORDS Open World
    :PROPERTIES:
    :CUSTOM_ID: sub4-open

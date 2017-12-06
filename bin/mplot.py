@@ -12,35 +12,16 @@ import scenario
 import results
 
 
-def _init_roc():
-    '''initializes ROC plot'''
-    out = plt.figure()
-    plt.plot([0, 1], [0, 1], 'k--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title("Receiver Operating Characteristic (ROC) Curve")
-    return out
-
-
-def roc(fpr, tpr, title="ROC curve", plot=None):
-    '''@return plot object with roc curve, use =.savefig(filename)=
-to save, and =.show()= to display.
-    @params If =plot=, draw another curve into existing plot'''
-    if not plot:
-        plot = _init_roc()
-    curve = plt.plot(
-        fpr, tpr,
-        label='{} (AUC = {:0.2f})'.format(title, metrics.auc(fpr, tpr)))
-    one_percent = [y for (x,y) in zip(fpr, tpr) if x >= 0.01][0]
-    line = plt.plot([0, 1], [one_percent] *2, "red", label='1% fpr')
-    #plt.legend([curve, line], loc="lower right") # need to call at the very end
-    return plot
-
+### Confusion Matrix from Scenario
+# m = results.for_scenario(scenario.Scenario("disabled/bridge--2016-08-15"))[1]
+# X, y, yd = scenario.Scenario("disabled/bridge--2016-08-15").get_features_cumul()
+# X = preprocessing.MinMaxScaler().fit_transform(X)
+# y_pred = model_selection.cross_val_predict(m.get_classifier(), X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
+# confmat, heatmap = mplot.confusion_matrix(y, y_pred, yd, 'Confusion Matrix for disabled/bridge--2016-08-15', rotation=90)
+# plt.savefig('/tmp/confmat-2016-08-15.eps')
 
 # parts due to sklearn's plot_confusion_matrix.py
-def confusion(y_true, y_pred, domains, title='Confusion matrix',
+def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
               rotation=45):
     '''plots confusion matrix'''
     confmat = metrics.confusion_matrix(y_true, y_pred)
@@ -55,6 +36,47 @@ def confusion(y_true, y_pred, domains, title='Confusion matrix',
     plt.xlabel('Predicted label')
     plt.tight_layout()
     return (confmat, heatmap)
+
+
+def date_accuracy(size=30):
+    '''@return accuracy over time for disabled data of size =size='''
+    scenarios = [x for x in list_all() if x.scenario.num_sites == size and 'disabled' in x.scenario.name]
+    df = pd.DataFrame([x.__dict__ for x in scenarios])
+    df = df.rename(columns={'score': 'Accuracy [%]'})
+    df['Scenario Date [ordinal]'] = df['scenario'].map(
+        lambda x: x.date.toordinal())
+    plot = df.plot.scatter('Scenario Date [ordinal]', 'Accuracy [%]')
+    plot.legend(handles=[mpatches.Patch(color=sns.color_palette("colorblind", 1)[0], label='defenseless')])
+    plot.set_title("Accuracy Ratio by Date (on {} sites)".format(size))
+    plot.set_ybound(0, 1)
+    plt.tight_layout()
+    return plot
+
+
+def _init_roc():
+    '''initializes ROC plot'''
+    out = plt.figure()
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title("Receiver Operating Characteristic (ROC) Curve")
+    return out
+
+def roc(fpr, tpr, title="ROC curve", plot=None):
+    '''@return plot object with roc curve, use =.savefig(filename)=
+to save, and =.show()= to display.
+    @params If =plot=, draw another curve into existing plot'''
+    if not plot:
+        plot = _init_roc()
+    curve = plt.plot(
+        fpr, tpr,
+        label='{} (AUC = {:0.2f})'.format(title, metrics.auc(fpr, tpr)))
+    one_percent = [y for (x,y) in zip(fpr, tpr) if x >= 0.01][0]
+    line = plt.plot([0, 1], [one_percent] *2, "red", label='1% fpr')
+    #plt.legend([curve, line], loc="lower right") # need to call at the very end
+    return plot
 
 
 def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):
