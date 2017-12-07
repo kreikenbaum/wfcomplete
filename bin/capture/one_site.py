@@ -15,6 +15,8 @@ from marionette_driver.marionette import Marionette
 
 import config
 
+ERRFILENAME="/tmp/one_site_err.txt"
+
 def browse_to(page, bridge=None):
     '''creates a browser instance, packet dump, browses to page, kills both.
     If bridge is not none, it is an IP-address. Just capture traffic to that.'''
@@ -62,7 +64,7 @@ def _navigate_or_fail(client, url, file_name):
     try:
         client.navigate(url)
     except:
-        with open("/tmp/one_site_err.txt", "a") as f:
+        with open(ERRFILENAME, "a") as f:
             f.write('\nat ' + url)
             f.write(str(sys.exc_info()))
             f.write('\n')
@@ -97,7 +99,7 @@ def _open_browser(exe='/home/mkreik/bin/tor-browser_en-US/Browser/firefox -mario
 #    cwd=exedir, stdout=subprocess.PIPE, env=env_with_debug);
     browser = subprocess.Popen(
         args=[exewholepath, exeargs], cwd=exedir, stdout=subprocess.PIPE,
-        stderr=open(os.path.join(config.SAVETO, "one_site_err.txt"), "a"),
+        stderr=open(os.path.join(config.SAVETO, ERRFILENAME), "a"),
         env=env_with_debug)
 
     thread = threading.Thread(target=_wait_browser_ready,
