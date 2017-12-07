@@ -109,7 +109,7 @@ void alg_recommend2(float** feat, float* weight, int start, int end) {
 			printf("Current point: %d\n", i);
 			printf("Bad points:\n");
 			for (int k = 0; k < RECOPOINTS_NUM; k++) {
-				printf("%d, %f\n", recobadlist[k], dist(feat[i], feat[recobadlist[k]], weight, POWER));	
+				printf("%d, %f\n", recobadlist[k], dist(feat[i], feat[recobadlist[k]], weight, POWER));
 				baddist += dist(feat[i], feat[recobadlist[k]], weight, POWER);
 			}
 
@@ -138,13 +138,13 @@ void alg_recommend2(float** feat, float* weight, int start, int end) {
 			int countbad = 0;
 			for (int k = 0; k < RECOPOINTS_NUM; k++) {
 				float n = abs(feat[i][f] - feat[recogoodlist[k]][f]);
-				if (feat[i][f] == -1 or feat[recobadlist[k]][f] == -1) 
+				if (feat[i][f] == -1 or feat[recobadlist[k]][f] == -1)
 					n = 0;
 				if (n >= maxgood) maxgood = n;
 			}
 			for (int k = 0; k < RECOPOINTS_NUM; k++) {
 				float n = abs(feat[i][f] - feat[recobadlist[k]][f]);
-				if (feat[i][f] == -1 or feat[recobadlist[k]][f] == -1) 
+				if (feat[i][f] == -1 or feat[recobadlist[k]][f] == -1)
 					n = 0;
 				//if (f == 3) {
 				//	printf("%d %d %f %f\n", i, k, n, maxgood);
@@ -153,7 +153,7 @@ void alg_recommend2(float** feat, float* weight, int start, int end) {
 				if (n <= maxgood) countbad += 1;
 			}
 			badlist[f] = countbad;
-			if (countbad < minbadlist) minbadlist = countbad;	
+			if (countbad < minbadlist) minbadlist = countbad;
 			}
 		}
 
@@ -210,7 +210,7 @@ void alg_recommend2(float** feat, float* weight, int start, int end) {
 			printf("Current point: %d\n", i);
 			printf("Bad points:\n");
 			for (int k = 0; k < RECOPOINTS_NUM; k++) {
-				printf("%d, %f\n", recobadlist[k], dist(feat[i], feat[recobadlist[k]], weight, POWER));	
+				printf("%d, %f\n", recobadlist[k], dist(feat[i], feat[recobadlist[k]], weight, POWER));
 				baddist += dist(feat[i], feat[recobadlist[k]], weight, POWER);
 			}
 
@@ -283,7 +283,7 @@ void alg_recommend(float** feat, float* weight, float** reco) {
 			printf("Current point: %d\n", i);
 			printf("Bad points:\n");
 			for (int k = 0; k < RECOPOINTS_NUM; k++) {
-				printf("%d, %f\n", recobadlist[k], dist(feat[i], feat[recobadlist[k]], weight, POWER));	
+				printf("%d, %f\n", recobadlist[k], dist(feat[i], feat[recobadlist[k]], weight, POWER));
 				baddist += dist(feat[i], feat[recobadlist[k]], weight, POWER);
 			}
 
@@ -307,11 +307,11 @@ void alg_recommend(float** feat, float* weight, float** reco) {
 				//float dist1 = dist(feat[i], feat[ind1], weight, POWER);
 				//float dist2 = dist(feat[i], feat[ind2], weight, POWER);
 				for (int f = 0; f < FEAT_NUM; f++) {
-					tempweight[f] += abs(feat[i][f] - feat[ind1][f]); 
-					tempweight[f] -= abs(feat[i][f] - feat[ind2][f]); 
+					tempweight[f] += abs(feat[i][f] - feat[ind1][f]);
+					tempweight[f] -= abs(feat[i][f] - feat[ind2][f]);
 				}
 			}
-			
+
 			for (int f = 0; f < 25; f++) {
 				printf("Weight %d: Value %f, Change %f\n", f, weight[f], tempweight[f]);
 			}
@@ -332,7 +332,7 @@ void alg_recommend(float** feat, float* weight, float** reco) {
 			gooddist = 0;
 			printf("Bad points:\n");
 			for (int k = 0; k < RECOPOINTS_NUM; k++) {
-				printf("%d, %f\n", recobadlist[k], dist(feat[i], feat[recobadlist[k]], tempweight, POWER));	
+				printf("%d, %f\n", recobadlist[k], dist(feat[i], feat[recobadlist[k]], tempweight, POWER));
 				baddist += dist(feat[i], feat[recobadlist[k]], tempweight, POWER);
 			}
 
@@ -353,12 +353,12 @@ void alg_recommend(float** feat, float* weight, float** reco) {
 			//float dist1 = dist(feat[i], feat[ind1], weight, POWER);
 			//float dist2 = dist(feat[i], feat[ind2], weight, POWER);
 			for (int f = 0; f < FEAT_NUM; f++) {
-				reco[i][f] += abs(feat[i][f] - feat[ind1][f]); 
-				reco[i][f] -= abs(feat[i][f] - feat[ind2][f]); 
+				reco[i][f] += abs(feat[i][f] - feat[ind1][f]);
+				reco[i][f] -= abs(feat[i][f] - feat[ind2][f]);
 			}
 		}
 
-		
+
 /*
 		for (int rec = 0; rec < RECO_NUM; rec++) {
 			int ind1 = recobadlist[0];
@@ -391,11 +391,11 @@ void alg_recommend(float** feat, float* weight, float** reco) {
 		printf("\n");*/
 	}
 
-	
+
 	delete[] distlist;
 	delete[] recobadlist;
 	delete[] recogoodlist;
-	
+
 }
 
 //no longer used
@@ -465,10 +465,10 @@ void alg_mod_weight(float* weight, float** reco) {
 void alg_change_weight(float* featdist, float* weight, int* w0id, float* change, int changenum) {
 	//Changes weight, keeping sum_k featdist[k]*weight[k] constant, weights between 0 and 1
 	//change assumed to be legal, weights assumed to be legal. change aways positive
-	//change legal if w0 >= average. 
+	//change legal if w0 >= average.
 	//featdist[weightnum] can't be the largest!
 
-	
+
 	float C1 = 0;
 	float C2 = 0;
 
@@ -610,10 +610,10 @@ void accuracy(float** closedfeat, float* weight, float** openfeat, float & tp, f
 		if (trueclass == SITE_NUM) {
 			tn += thisacc;
 		}
-		else { 
+		else {
 			tp += thisacc;
 		}
-		
+
 	}
 
 	printf("\n");
@@ -622,7 +622,7 @@ void accuracy(float** closedfeat, float* weight, float** openfeat, float & tp, f
 	delete[] classlist;
 	delete[] opendistlist;
 	delete[] feat;
-	
+
 	tp /= SITE_NUM*TEST_NUM;
 	if (OPENTEST_NUM > 0)	tn /= OPENTEST_NUM;
 	else tn = 1;
@@ -635,7 +635,7 @@ int main(int argc, char** argv) {
 	int NEIGHBOUR_list [12] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15};
 
 	if(argc == 3 || argc == 6){
-		int OPENTEST_ind = atoi(argv[1]); 
+		int OPENTEST_ind = atoi(argv[1]);
 		int NEIGHBOUR_ind = atoi(argv[2]);
 
 		OPENTEST_NUM = OPENTEST_list[OPENTEST_ind % 12];
@@ -692,7 +692,7 @@ int main(int argc, char** argv) {
 					}
 					else {
 						feat[cur_site * INST_NUM + cur_inst][feat_count] = atof(tempstr.c_str());
-					}	
+					}
 					feat_count += 1;
 					tempstr = "";
 				}
@@ -700,7 +700,7 @@ int main(int argc, char** argv) {
 					tempstr += str[i];
 				}
 			}
-			
+
 		}
                 // printf("checkpoint 1.10\n");
 		for (int cur_inst = 0; cur_inst < TEST_NUM; cur_inst++) {
@@ -730,7 +730,7 @@ int main(int argc, char** argv) {
 					}
 					else {
 						testfeat[cur_site * TEST_NUM + cur_inst][feat_count] = atof(tempstr.c_str());
-					}	
+					}
 					feat_count += 1;
 					tempstr = "";
 				}
@@ -766,7 +766,7 @@ int main(int argc, char** argv) {
 					}
 					else {
 						opentestfeat[cur_site][feat_count] = atof(tempstr.c_str());
-					}	
+					}
 					feat_count += 1;
 					tempstr = "";
 				}

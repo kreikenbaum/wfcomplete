@@ -231,7 +231,7 @@ class TestResult(unittest.TestCase):
 
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_doc(self):
-        (fail_num, _) = doctest.testmod(result, optionflags=doctest.ELLIPSIS)
+        (fail_num, _) = doctest.testmod(results, optionflags=doctest.ELLIPSIS)
         self.assertEqual(0, fail_num)
 
 

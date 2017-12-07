@@ -16,6 +16,9 @@ import pymongo
 
 import scenario
 
+def _db():
+    return pymongo.MongoClient(serverSelectionTimeoutMS=10).sacred
+
 class Result(object):
     def __init__(self, scenario_, accuracy, git, time, type_, size,
                  open_world=False, size_overhead=None,
@@ -87,9 +90,8 @@ class Result(object):
             svm.SVC(C=self.C, gamma=self.gamma, class_weight="balanced"))
 
 
-    def save(self):
+    def save(self, db=_db()):
         '''saves entry to mongodb if new'''
-        db = pymongo.MongoClient().sacred
         obj = {
             "_id": _next_id(),
             "config": {"scenario": self.scenario, "size": self.size},
@@ -106,9 +108,8 @@ class Result(object):
         self.update(
             {"result.size_increase": self.scenario.size_increase(),
              "result.time_increase": self.scenario.time_increase()})
-    def update(self, addthis):
+    def update(self, addthis, db=_db()):
         '''updates entry in db to also include addthis'''
-        db = pymongo.MongoClient().sacred
         db.runs.find_one_and_update({"_id": self._id}, {"$set": addthis})
         
 
@@ -137,9 +138,8 @@ def _value_or_none(entry, *steps):
         return None
 
 
-def _next_id():
+def _next_id(db=_db()):
     '''@return next id for entry to db'''
-    db = pymongo.MongoClient().sacred
     return (db.runs
             .find({}, {"_id": 1})
             .sort("_id", pymongo.DESCENDING)
@@ -167,12 +167,11 @@ def import_to_mongo(csvfile, size, measure="cumul"):
         el.save()
 
 
-def list_all(match=None, restrict=True):
+def list_all(match=None, restrict=True, db=_db()):
     '''@return all runs (normally with scenario and score) that match match'''
     matches = [{"config.scenario": {"$exists": 1}},
                {"result.score": {"$exists": 1}}] if restrict else []
     if match: matches.append(match)
-    db = pymongo.MongoClient().sacred
     return [Result.from_mongoentry(x) for x in
             db.runs.find({"$and": matches})]
 
@@ -182,12 +181,11 @@ def sized(size):
 #    return list_all({"$or": [{"config.size": 10},
 #                            {"result.sites": {"$size": 10}}]})
 
-def _duplicates(params=["config.scenario", "result.score"]):
+def _duplicates(params=["config.scenario", "result.score"], db=_db()):
     '''@return all instances of experiments, projected to only params
     >>> {x['_id']: x['result_score'] for x in _duplicates()}.iteritems().next()
-    (u'0.22/5aI--2016-07-25', [0.691191114775])
+    (u'...)
     '''
-    db = pymongo.MongoClient().sacred
     project = {key: 1 for key in params}
     groups = {"_id": "$config.scenario", "count": {"$sum": 1}}
     local = params[:]
@@ -202,7 +200,8 @@ def _duplicates(params=["config.scenario", "result.score"]):
         {"$group": groups}])
 
 
-doctest.testmod()
+doctest.testmod(optionflags=doctest.ELLIPSIS)
+
 if __name__ == "__main__":
     print(_next_id())
 
@@ -229,24 +228,17 @@ if __name__ == "__main__":
 
 ### scatter plot of accuracy vs overhead
 # import pandas as pd
+# import matplotlib.patches as mpatches
+# import mplot
 # b = [x for x in list_all() if (x.scenario.name == '0.22' or 'llama-nodelay' in x.scenario or 'disabled' in x.scenario) and x.scenario.num_sites == 30]
 # c = pd.DataFrame([x.__dict__ for x in b])
-def color(name, _all):
-    '''@return color for scatter plot: colors from colorblind palette'''
-    palette = sns.color_palette("colorblind", 3)
-    if 'llama' in name:
-        return palette[0]
-    elif 'disabled' in name:
-        return palette[1]
-    elif '0.22' in name:
-        return palette[2]
-    else:
-        assert 'wtf (what a terrible failure)'
+# names = set([x.name for x in c['scenario']])
+# color = lambda x: mplot._color(x.name, names)
 # c['color'] = c['scenario'].map(color)
 # c = c.rename(columns={'size_overhead': 'Size Overhead [%]', 'score': 'Accuracy', 'time_overhead': 'Time Overhead [%]'})
 # d = c.plot.scatter('Size Overhead [%]', 'Accuracy', c=c.color)
-# a = [mpatches.Patch(color=palette[0], label='LLaMA, no delay'), mpatches.Patch(color=palette[1], label='defenseless'), mpatches.Patch(color=palette[2], label="thesis' defense")]
-# d.legend(handles=a)
+# d.legend(handles=[mpatches.Patch(color=color(scenario.Scenario(x)), label=x) for x in names])
+# old (could rename): # a = [mpatches.Patch(color=palette[0], label='LLaMA, no delay'), mpatches.Patch(color=palette[1], label='defenseless'), mpatches.Patch(color=palette[2], label="thesis' defense")]
 # # d.set_xbound(0)
 # d.set_ybound(0, 1)
 # d.set_title("Size Overhead to Accuracy Ratio of New Defense and LLaMA (on 30 sites)")
@@ -274,16 +266,3 @@ def color(name, _all):
 ### rough plot all of size 30
 #d30 = pd.DataFrame([x.__dict__ for x in results.list_all() if x.scenario.num_sites == 30])
 # d30.plot.scatter('size_overhead', 'score')
-
-
-
-
-## unused meta-color picker
-# def _color(name, all_names):
-#     '''@return color for scatter plot: colors from colorblind palette'''
-#     palette = sns.color_palette("colorblind", len(all_names))
-#     for (i, check_name) in enumerate(all_names):
-#         if name == check_name:
-#             return palette[i]
-#     else:
-#         assert 'wtf (what a terrible failure)'

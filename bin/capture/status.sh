@@ -20,5 +20,6 @@ echo "{
         \"enabled\": $(get_addon_enabled.py),
         \"version\": $(get_version.sh),
         \"factor\":  $(get_factor.sh)
-    }
+    },
+    \"host\": \"$(hostname -f)\"
 }"

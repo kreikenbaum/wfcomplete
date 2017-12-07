@@ -36,7 +36,7 @@ def extract(times, sizes, features):
             break
     for i in range(count, 300):
         features.append("X")
-        
+
     count = 0
     prevloc = 0
     for i in range(0, len(sizes)):
@@ -131,7 +131,7 @@ for site in range(0, numdomain):
             sizes.append(int(x[1]))
         f.close()
 
-        #Extract features. All features are non-negative numbers or X. 
+        #Extract features. All features are non-negative numbers or X.
         features = []
         extract(times, sizes, features)
 
@@ -161,7 +161,7 @@ for site in range(0, 9000):
         sizes.append(int(x[1]))
     f.close()
 
-    #Extract features. All features are non-negative numbers or X. 
+    #Extract features. All features are non-negative numbers or X.
     features = []
     extract(times, sizes, features)
 
