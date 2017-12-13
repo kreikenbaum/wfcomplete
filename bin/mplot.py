@@ -1,6 +1,7 @@
 import itertools
 
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -26,13 +27,22 @@ def _color(name, all_names):
         assert 'wtf (what a terrible failure)'
 
 
-### Confusion Matrix from Scenario
-# m = results.for_scenario(scenario.Scenario("disabled/bridge--2016-08-15"))[1]
-# X, y, yd = scenario.Scenario("disabled/bridge--2016-08-15").get_features_cumul()
-# X = preprocessing.MinMaxScaler().fit_transform(X)
-# y_pred = model_selection.cross_val_predict(m.get_classifier(), X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
-# confmat, heatmap = mplot.confusion_matrix(y, y_pred, yd, 'Confusion Matrix for disabled/bridge--2016-08-15', rotation=90)
-# plt.savefig('/tmp/confmat-2016-08-15.eps')
+def accuracy_vs_overhead(result_list, title="Size Overhead to Accuracy"):
+    df = pd.DataFrame([x.__dict__ for x in result_list])
+    names = set([x.name for x in df['scenario']])
+    color = lambda x: _color(x.name, names)
+    df['color'] = df['scenario'].map(color)
+    df = df.rename(columns={'size_overhead': 'Size Overhead [%]',
+                            'score': 'Accuracy'})
+    plot = df.plot.scatter('Size Overhead [%]', 'Accuracy', c=df.color)
+    plot.legend(handles=[mpatches.Patch(
+        color=color(scenario.Scenario(x)),
+        label=str(scenario.Scenario(x))) for x in names])
+    plot.set_ybound(0, 1)
+    plot.set_title(title)
+    plt.tight_layout()
+    return plot
+
 
 # parts due to sklearn's plot_confusion_matrix.py
 def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
@@ -120,7 +130,7 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):
         plt.savefig("/tmp/total_packets_in_"+'_'.join(subkeys)+".pdf")
 
 
-#def trace(trace, ax=None):
+# td: color
 '''best way (off of head)
 - load as pandas dataframe data
 - data.T.plot(kind='bar')'''
@@ -128,37 +138,51 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):
 '''other ways
 - plt.bar
   - needs to set lots of options to look good, even with seaborn'''
+def traces_cumul(scenario_obj, domain, legend=None, color="red", axes=None):
+    X, y, yd = scenario_obj.get_features_cumul()
+    data = [x[0] for x in zip(X[:,4:], yd) if x[1] == domain]
+    for datum in data:
+        line = plt.plot(datum, c=color)
+    return line
 
 
 
 ### usage examples
-## total_packets_in
-''' three plots ...
-argv = ['', 'disabled/bridge--2016-07-06', 'wtf-pad/bridge--2016-07-05', 'tamaraw']
-#scenarios = counter.for_scenarios(argv[1:], or_level=2)
-scenarios = {x: scenario.Scenario(x, trace_args={'or_level':2}).get_traces() for x in argv[1:]}
-fig, axes = plt.subplots(len(scenarios), 1, sharex=True)
-plt.suptitle("Number of incoming packets per trace")
-mm = counter.MinMaxer()
-keys = scenarios.values()[0].keys()
-# some chinese sites were problematic via tor
-if 'sina.com.cn' in keys: keys.remove('sina.com.cn') 
-sitenum = 4
-for (i, (name, counter_dict)) in enumerate(scenarios.items()):
-    mplot.total_packets_in(counter_dict, keys[:sitenum], axes[i])
-    subset = [counter_dict[x] for x in keys[:sitenum]]
-    mm.set_if(min(min([scenario.tpi(v) for v in subset])),
-              max(max([scenario.tpi(v) for v in subset])))
-    axes[i].set_title('scenario: {}'.format(scenario.Scenario(name)))
-for (i, _) in enumerate(scenarios):
-    axes[i].set_xlim(mm.min, mm.max)
-fig.text(0, 0.5, "relative histograms with kernel-density-estimation",
-         va="center", rotation="vertical")
-fig.tight_layout(rect=[0, 0.03, 1, 0.95])
-plt.savefig("/tmp/total_packets_in_"
-            + '_'.join(scenarios).replace('/', '___')+'__'
-            +'_'.join(keys[:sitenum])+"__palette_colorblind.pdf")
-'''
-# todo: outlier removal for tamaraw (see youtube), (?avoid sina.com?)
+
+## total_packets_in: three plots
+# argv = ['', 'disabled/bridge--2016-07-06', 'wtf-pad/bridge--2016-07-05', 'tamaraw']
+# #scenarios = counter.for_scenarios(argv[1:], or_level=2)
+# scenarios = {x: scenario.Scenario(x, trace_args={'or_level':2}).get_traces() for x in argv[1:]}
+# fig, axes = plt.subplots(len(scenarios), 1, sharex=True)
+# plt.suptitle("Number of incoming packets per trace")
+# mm = counter.MinMaxer()
+# keys = scenarios.values()[0].keys()
+# # some chinese sites were problematic via tor
+# if 'sina.com.cn' in keys: keys.remove('sina.com.cn')
+# sitenum = 4
+# for (i, (name, counter_dict)) in enumerate(scenarios.items()):
+#     mplot.total_packets_in(counter_dict, keys[:sitenum], axes[i])
+#     subset = [counter_dict[x] for x in keys[:sitenum]]
+#     mm.set_if(min(min([scenario.tpi(v) for v in subset])),
+#               max(max([scenario.tpi(v) for v in subset])))
+#     axes[i].set_title('scenario: {}'.format(scenario.Scenario(name)))
+# for (i, _) in enumerate(scenarios):
+#     axes[i].set_xlim(mm.min, mm.max)
+# fig.text(0, 0.5, "relative histograms with kernel-density-estimation",
+#          va="center", rotation="vertical")
+# fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+# plt.savefig("/tmp/total_packets_in_"
+#             + '_'.join(scenarios).replace('/', '___')+'__'
+#             +'_'.join(keys[:sitenum])+"__palette_colorblind.pdf")
+
+## Confusion Matrix from Scenario
+# m = results.for_scenario(scenario.Scenario("disabled/bridge--2016-08-15"))[1]
+# X, y, yd = scenario.Scenario("disabled/bridge--2016-08-15").get_features_cumul()
+# X = preprocessing.MinMaxScaler().fit_transform(X)
+# y_pred = model_selection.cross_val_predict(m.get_classifier(), X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
+# confmat, heatmap = mplot.confusion_matrix(y, y_pred, yd, 'Confusion Matrix for disabled/bridge--2016-08-15', rotation=90)
+# plt.savefig('/tmp/confmat-2016-08-15.eps')
+
+
 
 #(s1, s2, s3) = scenarios.keys()

@@ -252,7 +252,7 @@ class TestScenario(unittest.TestCase):
 
 
     def test___init__(self):
-        self.assertEqual('disabled',
+        self.assertEqual('no defense',
                          str(scenario.Scenario('disabled/2016-11-13')))
         self.assertEqual(datetime.date(2016, 5, 12),
                          scenario.Scenario('disabled/05-12@10').date)

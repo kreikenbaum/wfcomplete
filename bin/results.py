@@ -227,22 +227,9 @@ if __name__ == "__main__":
 # min(d, key=lambda x: abs(0.26 - x.score))
 
 ### scatter plot of accuracy vs overhead
-# import pandas as pd
-# import matplotlib.patches as mpatches
-# import mplot
 # b = [x for x in list_all() if (x.scenario.name == '0.22' or 'llama-nodelay' in x.scenario or 'disabled' in x.scenario) and x.scenario.num_sites == 30]
-# c = pd.DataFrame([x.__dict__ for x in b])
-# names = set([x.name for x in c['scenario']])
-# color = lambda x: mplot._color(x.name, names)
-# c['color'] = c['scenario'].map(color)
-# c = c.rename(columns={'size_overhead': 'Size Overhead [%]', 'score': 'Accuracy', 'time_overhead': 'Time Overhead [%]'})
-# d = c.plot.scatter('Size Overhead [%]', 'Accuracy', c=c.color)
-# d.legend(handles=[mpatches.Patch(color=color(scenario.Scenario(x)), label=x) for x in names])
-# old (could rename): # a = [mpatches.Patch(color=palette[0], label='LLaMA, no delay'), mpatches.Patch(color=palette[1], label='defenseless'), mpatches.Patch(color=palette[2], label="thesis' defense")]
-# # d.set_xbound(0)
-# d.set_ybound(0, 1)
-# d.set_title("Size Overhead to Accuracy Ratio of New Defense and LLaMA (on 30 sites)")
-# plt.tight_layout()
+# import mplot
+# mplot.accuracy_vs_overhead(b)
 
 
 ### flavor comparison: no clear picture, but I seems better than II (bII fails)

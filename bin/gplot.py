@@ -132,6 +132,7 @@ def counters(counter_list, gnuplotter=None, label=None, color="blue"):
         gnuplotter.replot(d)
     return gnuplotter
 
+
 def defenses(places, defs=['disabled/bridge', 'simple1/10'], url='google.com'):
     '''compares defenses at url
 

@@ -25,6 +25,9 @@ import counter
 DIR = os.path.join(os.path.expanduser('~'), 'da', 'git', 'data')
 if os.uname()[1] == 'duckstein':
     DIR = os.path.join('/mnt', 'large')
+RENAME = { "disabled": "no defense",
+           "llama": "LLaMA",
+           "0.22": "new defense" }
 
 
 class Scenario(object):
@@ -100,6 +103,8 @@ class Scenario(object):
 
     def __str__(self):
         out = self.name
+        for (pre, post) in RENAME.iteritems():
+            out = out.replace(pre, post)
         # python 3.6: =if 'setting' in self=
         if hasattr(self, 'setting'):
             out += ' with setting {}'.format(self.setting)
@@ -413,7 +418,7 @@ def _trace_list_append(X, y, y_names, trace_list, method, list_id, name):
             logging.warn('%s: one discarded', name)
 
 
-doctest.testmod()
+doctest.testmod(optionflags=doctest.ELLIPSIS)
 # parse older "json" status
 # json.loads(b.status.replace("'", '"').replace('False', 'false').replace('u"', '"'))
 
