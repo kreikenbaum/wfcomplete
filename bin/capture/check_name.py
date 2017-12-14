@@ -29,12 +29,19 @@ if __name__ == "__main__":
 
     with open('status') as f:
         status = json.load(f)
-        prefix = 'no' if status['config']['bridge'] == " (bridge unknown)"
-        prefix += 'bridge--'
+        prefix = ''
+        if status['config']['bridge'] == " (bridge unknown)":
+            prefix = 'no'
+        prefix += 'bridge'
         enabled = status['addon']['enabled']
         for (addon, is_enabled) in enabled.iteritems():
             if is_enabled:
-                mkdiretc(addon.replace("@", ''), prefix)
+                if addon == '@wf-cover':
+                    if status['addon']['factor']:
+                        prefix += '-{}aI'.format(status['addon']['factor'])
+                    else:
+                        prefix += '-50aI'
+                mkdiretc(addon.replace("@", ''), prefix + '--')
                 break # better safe than sorry
         else:
             mkdiretc("disabled", prefix)

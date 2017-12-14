@@ -251,5 +251,7 @@ if __name__ == "__main__":
 
 
 ### rough plot all of size 30
+# import pandas as pd
+# import results
 #d30 = pd.DataFrame([x.__dict__ for x in results.list_all() if x.scenario.num_sites == 30])
 # d30.plot.scatter('size_overhead', 'score')

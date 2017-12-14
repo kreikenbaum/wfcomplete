@@ -423,8 +423,8 @@ doctest.testmod(optionflags=doctest.ELLIPSIS)
 # json.loads(b.status.replace("'", '"').replace('False', 'false').replace('u"', '"'))
 
 ## scenarios without result
-#a = {x: len(results.for_scenario(x)) for x in list_all()}
-#filter(lambda x: x[1] == 0, a.iteritems())
+#a = {x: len(results.for_scenario(x)) for x in scenario.list_all()}
+# filter(lambda x: x not in ',[]', str([x[0].path for x in filter(lambda x: x[1] == 0, a.iteritems())])) # unfiltered starts with ...[x[0
 
 ## weird scenario
 # import mplot
