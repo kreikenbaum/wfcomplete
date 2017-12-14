@@ -227,14 +227,22 @@ if __name__ == "__main__":
 # min(d, key=lambda x: abs(0.26 - x.score))
 
 ### scatter plot of accuracy vs overhead
-# b = [x for x in list_all() if (x.scenario.name == '0.22' or 'llama-nodelay' in x.scenario or 'disabled' in x.scenario) and x.scenario.num_sites == 30]
+# b = [x for x in list_all() if (x.scenario.name == '0.22' or 'defense-client-nodelay' in x.scenario or 'disabled' in x.scenario) and x.scenario.num_sites == 30]
 # import mplot
-# mplot.accuracy_vs_overhead(b)
+# plot = mplot.accuracy_vs_overhead(b)
+# d30 = pd.DataFrame([x.__dict__ for x in results.list_all() if x.scenario.num_sites == 30 and '0.22' in x.scenario.name])
+# a = d30[['size_overhead', 'score']]
+# a.drop_duplicates(inplace=True) # and dropna()
+# mod = lmfit.models.ExponentialModel()
+# pars = mod.guess(a.score, x=a.size_overhead)
+# out = mod.fit(a.score, pars, x=a.size_overhead)
+# c = np.arange(plot.get_xbound()[1])
+# plt.plot(b, [out.eval(x=x) for x in b], color=sns.color_palette("colorblind")[2])) #color: hack, but worked
 
 
 ### flavor comparison: no clear picture, but I seems better than II (bII fails)
 # def color(pandas_result):
-#     if 'llama' in pandas_result: return 'red'
+#     if 'defense-client' in pandas_result: return 'red'
 #     if 'aII' in pandas_result: return 'yellow'
 #     if 'aI' in pandas_result: return 'orange'
 #     if 'bII' in pandas_result: return 'blue'

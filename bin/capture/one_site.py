@@ -65,10 +65,10 @@ def _navigate_or_fail(client, url, file_name):
         client.navigate(url)
     except:
         with open(ERRFILENAME, "a") as f:
-            f.write('\nat ' + url)
+            f.write('url: ' + url + "\n")
+            f.write('file: ' + file_name + "\n")
+            f.write('dir: ' + os.getcwd() + "\n\n")
             f.write(str(sys.exc_info()))
-            f.write('\n')
-            f.write(os.getcwd())
             f.write('\n')
         try:
             os.rename(
