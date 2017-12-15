@@ -1,8 +1,17 @@
 #! /usr/bin/env python
 '''imports experiment data from duckstein into local db'''
 import json
+import os
 import results
 import subprocess
+
+import pymongo
+
+try:
+    pymongo.MongoClient(serverSelectionTimeoutMS=10).server_info()
+except pymongo.errors.ServerSelectionTimeoutError:
+    print 'start local mongodb!'
+    exit(1)
 
 runs = subprocess.check_output(
     ["ssh", "mkreik@duckstein", "mongoexport -d sacred -c runs"])

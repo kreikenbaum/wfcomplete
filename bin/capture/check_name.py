@@ -41,7 +41,8 @@ if __name__ == "__main__":
                         prefix += '-{}aI'.format(status['addon']['factor'])
                     else:
                         prefix += '-50aI'
-                mkdiretc(addon.replace("@", ''), prefix + '--')
+                name = addon.replace("@", '')
                 break # better safe than sorry
         else:
-            mkdiretc("disabled", prefix)
+            name = "disabled"
+        mkdiretc(name, prefix + '--')

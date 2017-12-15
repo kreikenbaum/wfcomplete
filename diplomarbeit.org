@@ -810,7 +810,7 @@ While some similarity can be seen for each group, the "within-group" differences
 
    Dynamically updating the filter might solve problem /1/ and further
    help with problem /3/ (future work).
-* WRITE Evaluation [1/11]
+* WRITE Evaluation [1/10]
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
   :END:
@@ -894,11 +894,12 @@ While some similarity can be seen for each group, the "within-group" differences
    :END:
    #+INDEX: evaluation!closed-world
    #+INDEX: closed-world evaluation
-   In a /closed-world/ evaluation, a fixed set of site traces are
-   captured. The aim is to distinguish between these sites alone.
+   In a /closed-world/ evaluation, a fixed set of site's traces are
+   captured. The aim is to distinguish between these sites alone.\\
 
-   This thesis presents its findings on the first 30 and 100 sites
-   from Alexa's top million sites list[fn::
+
+   This thesis evaluates its addon on the top 30 and 100 sites from
+   Alexa's top million sites list[fn::
    \url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}] with
    duplicate sites and sites with many load errors
    removed[fn::Original from 2016-06-30 available at
@@ -916,21 +917,21 @@ While some similarity can be seen for each group, the "within-group" differences
 
    #+CAPTION: comparison of LLaMA to this thesis's defense on 30 sites
    #+NAME: tab:closed_world
-   #+ATTR_LATEX: :align |l||n{1}{2}|n{3}{2}|n{4}{2}|
+   #+ATTR_LATEX: :align |l||n{2}{2}|n{3}{2}|n{4}{2}|
    | <17>              |            <15> |            <15> |            <15> |
    | scenario          | \open accuracy [%] \close | \open size overhead [%] \close | \open time overhead [%] \close |
    |-------------------+-----------------+-----------------+-----------------|
-   | no defense (2017-10-06) |            0.96 |               0 |               0 |
+   | no defense (2017-10-06) |              96 |               0 |               0 |
    |-------------------+-----------------+-----------------+-----------------|
-   | llama (redo!)     |            0.26 |             295 |            2981 |
-   | 175aI--2017-10-15 |            0.34 |          390.85 |           103.2 |
+   | llama (redo!)     |              26 |             295 |            2981 |
+   | 175aI--2017-10-15 |              34 |          390.85 |           103.2 |
    |-------------------+-----------------+-----------------+-----------------|
-   | llama-nodelay     |            0.63 |          279.67 |           58.86 |
-   | 20aI--2016-10-07  |            0.63 |           72.47 |            1.50 |
+   | llama-nodelay     |              63 |          279.67 |           58.86 |
+   | 20aI--2016-10-07  |              63 |           72.47 |            1.50 |
 
 
 
-   This shows that original _LLaMA delays web surfing by an order of
+   This shows that _original LLaMA delays web surfing by an order of
    magnitude_. Compared to the modified version of LLaMA, this thesis'
    defense offers both configurability and lower time overhead, as
    well as lower size overhead as compared to non-delayed LLaMA.
@@ -941,7 +942,7 @@ While some similarity can be seen for each group, the "within-group" differences
    [[./pictures/oh2acc--llama-0.22-disabled.eps]]
    # code: see [[file:bin/results.py::%20scatter%20plot%20of%20accuracy%20vs%20overhead]]
 
-   @Daniel: es gibt auch    [[./pictures/oh2acc--llama-0.22-disabled-alternative-exp.pdf]], aber das sollte schon durch 0 gehen, oder?
+   @Daniel: es gibt auch    [[./pictures/oh2acc--llama-0.22-disabled-alternative-exp.pdf]], aber das sollte schon durch (0, 1) gehen, oder?
 *** PENDING (stackoverflow) [#C] accuracy/overhead plot  :duckstein:internet:
     :PROPERTIES:
     :Effort:   0:30
@@ -950,38 +951,45 @@ While some similarity can be seen for each group, the "within-group" differences
     CLOCK: [2017-12-07 Do 12:56]--[2017-12-07 Do 13:20] =>  0:24
     CLOCK: [2017-12-07 Do 11:09]--[2017-12-07 Do 11:40] =>  0:31
     :END:
-    - redo llama-delay @ 30
-      aka redo llama-delay on 30 sites (before/after disabled)
-      aka recapture llama-delay @ 30, (?and disabled close?)
+    - include llama-delay @ 30
     - additional 0.22 data points in between groups (200--300% overheads)
       - and tiny overhead (?=negative factor?)
-*** TODO [#D] text color for caption matching legend (see previous git)
+*** TODO [#B] accuracy/time plots: time to date
 *** WRITE Low Accuracy on my Captures
-    #+CAPTION: Accuracy Decay for Defenseless Data on 30 sites.
+    #+CAPTION: Accuracy Decay on 30 sites.
     #+NAME: fig:date-vs-acc--30sites
     #+ATTR_LATEX: :float wrap
     [[./pictures/date-vs-acc--30sites.eps]]
     # code: [[file:bin/mplot.py::def%20date_accuracy]]()
 
-    #+CAPTION: Accuracy Decay for Defenseless Data on 100 sites.
+    #+CAPTION: Accuracy Decay on 100 sites.
     #+NAME: fig:date-vs-acc--100sites
     #+ATTR_LATEX: :float wrap
     [[./pictures/date-vs-acc--100sites.eps]]
     # code: [[file:bin/mplot.py::def%20date_accuracy]](100)
-    The previous data hint that the thesis's defense provides better
+    The previous data show that the thesis's defense provides better
     protection for the same overhead and/or lower overhead for the
-    same protection, but the current state-of-the-art compares results
-    on at least 100 sites.
+    same protection on 30 sites. Yet, the current state-of-the-art
+    compares results on at least 100 sites.\\
 
 
-    Unfortunately, the capture's accuracies decayed over time, so that
-    both the reimplementation (and also a student group at University
-    of Brunswick) was not able to provide good accuracy on recent
-    data. The accuracy on 30 sites decayed from 97.93% on 2016-08-15
-    to 58.41% on 2017-10-16, as displayed in Figure
-    [[fig:date-vs-acc--30sites]]. On 100 sites, the accuracy likewise fell
-    from 90.57% on 2016-06-17 to 0.43463233995335082 on 2017-10-22, as
-    displayed in Figure [[fig:date-vs-acc--100sites]].
+    Comparison of 100 sites shows a problem: Accuracy for all captures
+    is markedly lower than that reported in the literature, both on 30
+    and 100 sites. This is true regardless of if data was captured
+    with defense or without. On 100 sites, the comparison to
+    literature results shows this handicap more clearly. As both
+    Panchenko's original implementation and the reimplementation yield
+    the same results, the cause is probably due to capture methodology.\\
+
+
+    Surprisingly, the capture's accuracies decayed over time: On
+    /recent data/, neither the wf-attack-reimplementation, Panchenkos
+    original, nor a student group at University of Brunswick was able
+    to provide good accuracy. The accuracy on 30 sites decayed /from
+    97.93%/ on 2016-08-15 /to 58.41%/ on 2017-10-16, as displayed in
+    Figure [[fig:date-vs-acc--30sites]]. On 100 sites, the accuracy
+    likewise fell /from 90.57%/ on 2016-06-17 /to 43.46%/ on
+    2017-10-22, as displayed in Figure [[fig:date-vs-acc--100sites]].\\
 
 
 
@@ -996,18 +1004,13 @@ While some similarity can be seen for each group, the "within-group" differences
     #+ATTR_LATEX: :float wrap
     [[./pictures/confmat-2017-10-16.pdf]]
     # code: [[file:bin/mplot.py::def%20confusion]]
-    Let's see if a single site causes this low accuracy: A confusion
-    matrix comparison from , a conIn the 30-site confusion matrix in
-    Figure [[fig:confmat-2017-10-16]], there is no clear culprit: errors
-    are mostly distributed.
+    Let's see if a single site or group of sites cause this low
+    accuracy: A high-accuracy confusion matrix from 2016-08-15 is
+    shown in Figure [[fig:confmat-2016-08-15]]. This is contrast with a
+    low-accuracy confusion matrix from 2017-10-16 in Figure
+    [[fig:confmat-2017-10-16]]. While there is much more class-bleed-off,
+    there is no clear culprit: errors are mostly distributed.\\
 
-
-
-    Just for comparison, a confusion matrix for a high-accuracy
-    capture at Figure [[fig:confmat-2016-08-15]]
-
-    As an example that existed on both captures, the site /msn.com/
-    was chosen. The CUMUL-features are shown in Figure [[fig:cumul-good-bad.pdf]].
 
     #+CAPTION: CUMUL-traces for site msn.com compared for both dates.
     #+NAME: fig:cumul-good-bad.pdf
@@ -1019,6 +1022,18 @@ While some similarity can be seen for each group, the "within-group" differences
     # palette = sns.color_palette("colorblind", 4)
     # g = gplot.counters(f['msn.com'], label=str(e.date), color=str(palette.as_hex()[0]))
     # g = gplot.counters(F['msn.com'], g, label=str(E.date), color=str(palette.as_hex()[2]))
+    A site that existed on both captures is /msn.com/. It was chosen
+    to illustrate the problem. The CUMUL-features are shown in Figure
+    [[fig:cumul-good-bad.pdf]].\\
+
+
+    For several low-accuracy retrievals, very little data is received
+    back from the server. This could possibly be due to cloudflare
+    recaptcha protection etc, which can sometimes be observed when
+    browsing with Tor. A possible solution as future work would be to
+    filter traces with fewer bytes incoming than outgoing, f.ex. Also,
+    the capture code could be adjusted to check the page text for the
+    recaptcha site.
 **** TODO comparison table for 100 sites
 **** TODO Accuracy/Overhead for 100 Sites
 ** KEYWORDS Open World
