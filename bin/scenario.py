@@ -238,6 +238,12 @@ size unless include_bg'''
         return self._increase(time_increase, trace_dict)
 
 
+    def values(self):
+        import pdb; pdb.set_trace()
+        return {a: getattr(self, a) for a in dir(self) if (
+            not callable(getattr(self, a)) and not a.startswith('__'))}
+
+
 def list_all(name_filter=None, include_bg=False, func_filter=None, path=DIR):
     '''lists all scenarios in =path=.'''
     out = []

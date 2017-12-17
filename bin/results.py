@@ -113,23 +113,32 @@ class Result(object):
         db.runs.find_one_and_update({"_id": self._id}, {"$set": addthis})
 
 
-    def values(self):
-        return {a: getattr(self, a) for a in dir(self) if not a.startswith('__')}
-        
+def _duplicates(params=["config.scenario", "result.score"], db=_db()):
+    '''@return all instances of experiments, projected to only params
+    >>> {x['_id']: x['result_score'] for x in _duplicates()}.iteritems().next()
+    (u'...)
+    '''
+    project = {key: 1 for key in params}
+    groups = {"_id": "$config.scenario", "count": {"$sum": 1}}
+    local = params[:]
+    local.remove('config.scenario')
+    for each in local:
+        groups[each.replace(".", "_")] = {"$push": "${}".format(each)}
+    return db.runs.aggregate([
+        {"$match": {"$and": [
+            {"config.scenario": {"$exists": 1}},
+            {"result.score": {"$exists": 1}}]}},
+        {"$project": project},
+        {"$group": groups}])
 
-def to_table(results): #, fields, names=None):
-    '''@return table of results as a string'''
-    import prettytable
-    tbl = prettytable.PrettyTable()
-    tbl.field_names = [
-        "scenario", "accuracy [%]", "size increase [%]", "time increase [%]"]
-    #names if names else fields
-    for result in results:
-        tbl.add_row([result.scenario.name,
-                     result.score,
-                     result.size_overhead,
-                     result.time_overhead])
-    return tbl
+
+def _next_id(db=_db()):
+    '''@return next id for entry to db'''
+    return (db.runs
+            .find({}, {"_id": 1})
+            .sort("_id", pymongo.DESCENDING)
+            .limit(1)
+            .next())["_id"] + 1
 
 
 def _value_or_none(entry, *steps):
@@ -140,15 +149,6 @@ def _value_or_none(entry, *steps):
         return entry
     except (KeyError, IndexError):
         return None
-
-
-def _next_id(db=_db()):
-    '''@return next id for entry to db'''
-    return (db.runs
-            .find({}, {"_id": 1})
-            .sort("_id", pymongo.DESCENDING)
-            .limit(1)
-            .next())["_id"] + 1
 
 
 def for_scenario(scenario_obj):
@@ -185,23 +185,19 @@ def sized(size):
 #    return list_all({"$or": [{"config.size": 10},
 #                            {"result.sites": {"$size": 10}}]})
 
-def _duplicates(params=["config.scenario", "result.score"], db=_db()):
-    '''@return all instances of experiments, projected to only params
-    >>> {x['_id']: x['result_score'] for x in _duplicates()}.iteritems().next()
-    (u'...)
-    '''
-    project = {key: 1 for key in params}
-    groups = {"_id": "$config.scenario", "count": {"$sum": 1}}
-    local = params[:]
-    local.remove('config.scenario')
-    for each in local:
-        groups[each.replace(".", "_")] = {"$push": "${}".format(each)}
-    return db.runs.aggregate([
-        {"$match": {"$and": [
-            {"config.scenario": {"$exists": 1}},
-            {"result.score": {"$exists": 1}}]}},
-        {"$project": project},
-        {"$group": groups}])
+def to_table(results): #, fields, names=None):
+    '''@return table of results as a string'''
+    import prettytable
+    tbl = prettytable.PrettyTable()
+    tbl.field_names = [
+        "scenario", "accuracy [%]", "size increase [%]", "time increase [%]"]
+    #names if names else fields
+    for result in results:
+        tbl.add_row([result.scenario.name,
+                     result.score,
+                     result.size_overhead,
+                     result.time_overhead])
+    return tbl
 
 
 doctest.testmod(optionflags=doctest.ELLIPSIS)
