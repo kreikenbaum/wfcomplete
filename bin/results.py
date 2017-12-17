@@ -111,6 +111,10 @@ class Result(object):
     def update(self, addthis, db=_db()):
         '''updates entry in db to also include addthis'''
         db.runs.find_one_and_update({"_id": self._id}, {"$set": addthis})
+
+
+    def values(self):
+        return {a: getattr(self, a) for a in dir(self) if not a.startswith('__')}
         
 
 def to_table(results): #, fields, names=None):

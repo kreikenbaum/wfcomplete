@@ -27,6 +27,7 @@ if os.uname()[1] == 'duckstein':
     DIR = os.path.join('/mnt', 'large')
 RENAME = { "disabled": "no defense",
            "llama": "LLaMA",
+           "defense-client": "LLaMA",
            "0.22": "new defense" }
 
 
