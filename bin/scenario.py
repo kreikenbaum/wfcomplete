@@ -7,9 +7,6 @@
 '''
 from __future__ import print_function
 
-import numpy as np
-
-import collections
 import copy
 import datetime
 import doctest
@@ -18,6 +15,7 @@ import logging
 import os
 import random
 
+import numpy as np
 import pandas as pd
 
 import config
@@ -39,7 +37,7 @@ RENAME = {
 class Scenario(object):
     '''meta-information object with optional loading of traces'''
     def __init__(self, name, trace_args=None, smart=False):
-        '''
+        ''' (further example usage in test.py)
         >>> Scenario('disabled/2016-11-13').date
         datetime.date(2016, 11, 13)
         >>> Scenario('disabled/2016-11-13').name # same as str(Scenario...)
@@ -246,10 +244,10 @@ size unless include_bg'''
     def to_series(self):
         '''@return __dict__-like with properties'''
         return pd.Series({a: getattr(self, a) for a in dir(self) if
-            not a.startswith('_')
-            and not a == 'trace_args'
-            and not a == 'traces'
-            and not callable(getattr(self, a))})
+                          not a.startswith('_')
+                          and not a == 'trace_args'
+                          and not a == 'traces'
+                          and not callable(getattr(self, a))})
 
 
 def list_all(name_filter=None, include_bg=False, func_filter=None, path=DIR):
@@ -293,12 +291,14 @@ def _filter_all(all_, include_bg):
 
 
 def size_increase(base_trace_dict, compare_trace_dict):
+    '''@return increase in incoming bytes from base to compare'''
     base = _mean_std(base_trace_dict, "total_bytes_in")
     compare = _mean_std(compare_trace_dict, "total_bytes_in")
     return _compute_increase(base, compare)
 
 
 def time_increase(base_trace_dict, compare_trace_dict):
+    '''@return increase in duration from base to compare'''
     base = _mean_std(base_trace_dict, "duration")
     compare = _mean_std(compare_trace_dict, "duration")
     return _compute_increase(base, compare)
@@ -339,9 +339,9 @@ def tpi(trace_list):
 def path_from_status(status, date=None):
     '''@return the scenario path from the status.sh output'''
     enableds = [x for x in status['addon']['enabled']
-                if status['addon']['enabled'][x] == True]
+                if status['addon']['enabled'][x] is True]
     if len(enableds) > 1:
-        logging.err("more than 1 addon enabled: %s", enableds)
+        logging.error("more than 1 addon enabled: %s", enableds)
     elif len(enableds) == 1:
         name = enableds[0].replace('@', '')
     else:
@@ -357,58 +357,6 @@ def path_from_status(status, date=None):
     if not date:
         date = datetime.date.today()
     return os.path.join(name, add + str(date))
-
-############# COPIED CODE, needed?
-def _size_increase_helper(two_scenarios):
-    return _compute_increase(two_scenarios[two_scenarios.keys()[0]],
-                             two_scenarios[two_scenarios.keys()[1]])
-
-def size_increase_from_argv(scenario_argv, remove_small=True):
-    '''computes sizes increases from sys.argv-like list, argv[1] is
-baseline'''
-    scenarios = counter.for_scenarios(
-        scenario_argv[1:], remove_small=remove_small)
-    stats = {k: _bytes_mean_std(v) for (k, v) in scenarios.iteritems()}
-    out = {}
-    for i in scenario_argv[2:]:
-        out[i] = _compute_increase(stats[scenario_argv[1]], stats[i])
-    return out
-
-
-# unused
-def site_sizes(stats):
-    '''@return {'url1': [size0, ..., sizeN-1], ..., urlM: [...]}
-
-    stats = {k: _bytes_mean_std(v) for (k,v) in scenarios.iteritems()}'''
-    scenarios = stats.keys()
-    scenarios.sort()
-    out = {}
-    for url in stats[scenarios[0]].keys():
-        out[url] = []
-        for scenario in scenarios:
-            out[url].append(stats[scenario][url][0])
-    return out
-
-
-def size_test(argv, outlier_removal=True):
-    '''1. collect traces
-    2. create stats
-    3. evaluate for each vs first'''
-    scenarios = counter.for_scenarios(argv[1:], remove_small=outlier_removal)
-    stats = {k: _bytes_mean_std(v) for (k, v) in scenarios.iteritems()}
-    scenario0 = argv[1]
-    for scenario in argv[2:]:
-        print('{}: {}'.format(scenario, _size_increase(stats[scenario0],
-                                                       stats[scenario])))
-### END CODPIED CODE
-
-# todo: code duplication: _bytes_mean_std
-def total_packets_in_stats(trace_dict):
-    '''Returns: dict - (mean, std) of each trace's total_packets_in'''
-    out = {}
-    for (k, v) in trace_dict.iteritems():
-        tpi_list = _tpi_per_list(v)
-        out[k] = (np.mean(tpi_list), np.std(tpi_list, ddof=1))
 
 
 def _trace_append(X, y, y_names, x_add, y_add, name_add):

@@ -30,34 +30,13 @@ def _avoid_safe_mode(exedir):
               os.path.join(exedir,
                            "TorBrowser/Data/Browser/profile.default/prefs.js"))
 
-def _open_with_timeout(browser, page, timeout=600, burst_wait=3, bridge=None):
-    '''navigates browser to url while capturing the packet dump, aborts
-    after timeout. If bridge, that is the IP address of the connected
-    bridge, just capture traffic to there (need to set this by hand)
 
-    '''
-    client = Marionette('localhost', port=2828, socket_timeout=(timeout-30))
-    client.start_session()
+def _kill(*processes):
+    '''cleans up after processes'''
+    for process in processes:
+        if process is not None:
+            process.terminate()
 
-    (url, domain) = _normalize_url(page)
-
-    (tshark_process, file_name) = _open_packet_dump(domain, bridge)
-#    thread = threading.Thread(target=client.navigate, args=(url,))
-    thread = threading.Thread(target=_navigate_or_fail,
-                              args=(client, url, file_name))
-    thread.daemon = True
-    thread.start()
-
-    #td: this is code duplication for both _open functions
-    start = time.time()
-    while thread.is_alive():
-        time.sleep(.1)
-        if time.time() - start > timeout:
-            _kill(browser, tshark_process)
-            os.rename(file_name, file_name + '_timeout')
-            raise SystemExit("download aborted after timeout")
-    time.sleep(burst_wait)
-    _kill(browser, tshark_process)
 
 def _navigate_or_fail(client, url, file_name):
     '''navigates client to url, on failure renames file'''
@@ -81,6 +60,14 @@ def _navigate_or_fail(client, url, file_name):
             print 'failed with IOError'
             print file_name
             print sys.exc_info()
+
+
+def _normalize_url(url='google.com'):
+    '''normalizes the url by adding the "http://' scheme if none exists'''
+    if not urlparse.urlparse(url).scheme:
+        url = "http://" + url
+
+    return (url, urlparse.urlparse(url).netloc)
 
 
 def _open_browser(exe='/home/mkreik/bin/tor-browser_en-US/Browser/firefox -marionette', open_timeout=60):
@@ -116,6 +103,47 @@ def _open_browser(exe='/home/mkreik/bin/tor-browser_en-US/Browser/firefox -mario
     print 'slept for {0:.3f} seconds'.format(time.time() - start)
     return browser
 
+
+def _open_packet_dump(page, bridge):
+    '''@returns a (tshark_subprocess_instance, filename) tuple'''
+    loc = os.path.join(config.SAVETO,
+                       page + '@' + str(time.time()).split('.')[0])
+    if not bridge:
+        return (subprocess.Popen(['tshark', '-w' + loc]), loc)
+    else:
+        return (subprocess.Popen(['tshark', '-w' + loc, 'host ' + bridge]), loc)
+
+
+def _open_with_timeout(browser, page, timeout=600, burst_wait=3, bridge=None):
+    '''navigates browser to url while capturing the packet dump, aborts
+    after timeout. If bridge, that is the IP address of the connected
+    bridge, just capture traffic to there (need to set this by hand)
+
+    '''
+    client = Marionette('localhost', port=2828, socket_timeout=(timeout-30))
+    client.start_session()
+
+    (url, domain) = _normalize_url(page)
+
+    (tshark_process, file_name) = _open_packet_dump(domain, bridge)
+#    thread = threading.Thread(target=client.navigate, args=(url,))
+    thread = threading.Thread(target=_navigate_or_fail,
+                              args=(client, url, file_name))
+    thread.daemon = True
+    thread.start()
+
+    #td: this is code duplication for both _open functions
+    start = time.time()
+    while thread.is_alive():
+        time.sleep(.1)
+        if time.time() - start > timeout:
+            _kill(browser, tshark_process)
+            os.rename(file_name, file_name + '_timeout')
+            raise SystemExit("download aborted after timeout")
+    time.sleep(burst_wait)
+    _kill(browser, tshark_process)
+
+
 def _wait_browser_ready(browser):
     '''waits for browser to become ready'''
     for line in iter(browser.stdout.readline, ''):
@@ -131,27 +159,6 @@ def _wait_browser_ready(browser):
             time.sleep(.1)
     client.close()
 
-def _kill(*processes):
-    '''cleans up after processes'''
-    for process in processes:
-        if process is not None:
-            process.terminate()
-
-def _normalize_url(url='google.com'):
-    '''normalizes the url by adding the "http://' scheme if none exists'''
-    if not urlparse.urlparse(url).scheme:
-        url = "http://" + url
-
-    return (url, urlparse.urlparse(url).netloc)
-
-def _open_packet_dump(page, bridge):
-    '''@returns a (tshark_subprocess_instance, filename) tuple'''
-    loc = os.path.join(config.SAVETO,
-                       page + '@' + str(time.time()).split('.')[0])
-    if not bridge:
-        return (subprocess.Popen(['tshark', '-w' + loc]), loc)
-    else:
-        return (subprocess.Popen(['tshark', '-w' + loc, 'host ' + bridge]), loc)
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
