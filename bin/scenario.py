@@ -16,7 +16,6 @@ import os
 import random
 
 import numpy as np
-import pandas as pd
 
 import config
 import counter
@@ -241,13 +240,13 @@ size unless include_bg'''
         return os.path.isdir(os.path.join(DIR, self.path))
 
 
-    def to_series(self):
+    def to_dict(self):
         '''@return __dict__-like with properties'''
-        return pd.Series({a: getattr(self, a) for a in dir(self) if
-                          not a.startswith('_')
-                          and not a == 'trace_args'
-                          and not a == 'traces'
-                          and not callable(getattr(self, a))})
+        return {a: getattr(self, a) for a in dir(self) if (
+            not a.startswith('_')
+            and not a == 'trace_args'
+            and not a == 'traces'
+            and not callable(getattr(self, a)))}
 
 
 def list_all(name_filter=None, include_bg=False, func_filter=None, path=DIR):
@@ -383,7 +382,7 @@ def _trace_list_append(X, y, y_names, trace_list, method, list_id, name):
 
 
 doctest.testmod(optionflags=doctest.ELLIPSIS)
-# parse older "json" status
+## parse older "json" status
 # json.loads(b.status.replace("'", '"').replace('False', 'false').replace('u"', '"'))
 
 ## scenarios without result
