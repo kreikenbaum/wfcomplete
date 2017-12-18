@@ -261,7 +261,7 @@ class TestScenario(unittest.TestCase):
         self.assertEqual(datetime.date(2016, 11, 4),
                          scenario.Scenario('./0.22/10aI--2016-11-04-50-of-100')
                          .date)
-        self.assertEqual('0.22',
+        self.assertEqual('new defense',
                          scenario.Scenario('./0.22/10aI--2016-11-04-50-of-100')
                          .name)
         self.assertEqual(datetime.date(2016, 7, 5),

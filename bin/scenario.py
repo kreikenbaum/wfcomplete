@@ -18,6 +18,8 @@ import logging
 import os
 import random
 
+import pandas as pd
+
 import config
 import counter
 
@@ -25,10 +27,13 @@ import counter
 DIR = os.path.join(os.path.expanduser('~'), 'da', 'git', 'data')
 if os.uname()[1] == 'duckstein':
     DIR = os.path.join('/mnt', 'large')
-RENAME = { "disabled": "no defense",
-           "llama": "LLaMA",
-           "defense-client": "LLaMA",
-           "0.22": "new defense" }
+RENAME = {
+    "0.22": "new defense",
+    "defense-client": "LLaMA",
+    "disabled": "no defense",
+    "llama": "LLaMA",
+    "wf-cover": "new defense"
+}
 
 
 class Scenario(object):
@@ -38,7 +43,7 @@ class Scenario(object):
         >>> Scenario('disabled/2016-11-13').date
         datetime.date(2016, 11, 13)
         >>> Scenario('disabled/2016-11-13').name # same as str(Scenario...)
-        'disabled'
+        'no defense'
         >>> Scenario('disabled/05-12@10').num_sites
         10
         >>> Scenario('./0.22/10aI--2016-11-04-50-of-100').setting
@@ -78,6 +83,8 @@ class Scenario(object):
                 self.status = f.read()
         except IOError:
             self.status = "null"
+        for (pre, post) in RENAME.iteritems():
+            self.name = self.name.replace(pre, post)
 
 
     def __contains__(self, item):
@@ -104,8 +111,6 @@ class Scenario(object):
 
     def __str__(self):
         out = self.name
-        for (pre, post) in RENAME.iteritems():
-            out = out.replace(pre, post)
         # python 3.6: =if 'setting' in self=
         if hasattr(self, 'setting'):
             out += ' with setting {}'.format(self.setting)
@@ -223,11 +228,6 @@ size unless include_bg'''
         return self.traces
 
 
-    def valid(self):
-        '''@return whether the path is at least a directory'''
-        return os.path.isdir(os.path.join(DIR, self.path))
-
-
     def size_increase(self, trace_dict=None):
         '''@return size overhead of this vs closest disabled scenario'''
         return self._increase(size_increase, trace_dict)
@@ -238,10 +238,18 @@ size unless include_bg'''
         return self._increase(time_increase, trace_dict)
 
 
-    def values(self):
-        import pdb; pdb.set_trace()
-        return {a: getattr(self, a) for a in dir(self) if (
-            not callable(getattr(self, a)) and not a.startswith('__'))}
+    def valid(self):
+        '''@return whether the path is at least a directory'''
+        return os.path.isdir(os.path.join(DIR, self.path))
+
+
+    def to_series(self):
+        '''@return __dict__-like with properties'''
+        return pd.Series({a: getattr(self, a) for a in dir(self) if
+            not a.startswith('_')
+            and not a == 'trace_args'
+            and not a == 'traces'
+            and not callable(getattr(self, a))})
 
 
 def list_all(name_filter=None, include_bg=False, func_filter=None, path=DIR):
@@ -266,6 +274,7 @@ def _filter_all(all_, include_bg):
     @param include_bg if True include background scenarios, else omit'''
     out = [x for x in all_ if (not '/batch' in x
                                and not '/broken' in x
+                               and not '/dump' in x
                                and not '/foreground-data' in x
                                and not '/or' in x
                                and not '/output' in x

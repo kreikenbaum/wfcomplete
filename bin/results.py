@@ -227,9 +227,10 @@ if __name__ == "__main__":
 # min(d, key=lambda x: abs(0.26 - x.score))
 
 ### scatter plot of accuracy vs overhead
-# b = [x for x in list_all() if (x.scenario.name == '0.22' or 'defense-client-nodelay' in x.scenario or 'disabled' in x.scenario) and x.scenario.num_sites == 30]
-# import mplot
+# import results, mplot
+# b = [x for x in results.list_all() if (x.scenario.name == 'new defense' or 'defense-client-nodelay' in x.scenario or 'disabled' in x.scenario) and x.scenario.num_sites == 30]
 # plot = mplot.accuracy_vs_overhead(b)
+## plot through
 # d30 = pd.DataFrame([x.__dict__ for x in results.list_all() if x.scenario.num_sites == 30 and '0.22' in x.scenario.name])
 # a = d30[['size_overhead', 'score']]
 # a.drop_duplicates(inplace=True) # and dropna()
