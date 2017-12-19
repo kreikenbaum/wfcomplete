@@ -56,8 +56,8 @@ def _navigate_or_fail(client, url, file_name):
                     file_name,
                     str(sys.exc_info()[1]).split('\n')[0])
                 .replace(' ', '_').replace('\n', '')) # could remove 2nd replace
-        except IOError:
-            print 'failed with IOError'
+        except OSError:
+            print 'failed with OSError'
             print file_name
             print sys.exc_info()
 

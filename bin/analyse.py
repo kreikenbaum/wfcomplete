@@ -284,7 +284,7 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
     X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
     if previous:
         result = max(results.for_scenario(scenario_obj), key=lambda x: x.score)
-        C = result.c
+        C = result.C
         gamma = result.gamma
         accuracy = result.score
     else:
@@ -302,15 +302,15 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
                                                        cv=config.FOLDS,
                                                        n_jobs=config.JOBS_NUM,
                                                        method="predict_proba")
-        fpr_array, tpr_array, _ = metrics.roc_curve(y, y_predprob)
+        fpr_array, tpr_array, _ = metrics.roc_curve(y, y_predprob[:,1], 0)
         auroc = metrics.auc(fpr_array, tpr_array)
     else: auroc = None
     return (tpr, fpr, auroc, C, gamma, accuracy)
 
 
 def _binmat(confmat):
-    return np.array([[confmat[0][0], sum(confmat[0][1:])],
-                     [sum(confmat[1:][0]), sum(sum(confmat[1:][1:]))]])
+    return np.array([[confmat[0,0], sum(confmat[0,1:])],
+                     [sum(confmat[1:,0]), sum(sum(confmat[1:,1:]))]])
 
 
 # due to https://stackoverflow.com/questions/31324218
