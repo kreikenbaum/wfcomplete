@@ -47,15 +47,15 @@ def _navigate_or_fail(client, url, file_name):
             f.write('url: ' + url + "\n")
             f.write('file: ' + file_name + "\n")
             f.write('dir: ' + os.getcwd() + "\n\n")
-            f.write(str(sys.exc_info()))
+            f.write(str(sys.exc_info()[1]))
             f.write('\n')
         try:
             os.rename(
                 file_name,
                 '{}_{}'.format(
                     file_name,
-                    sys.exc_info()[1])
-                .replace(' ', '_').replace('\n', ''))
+                    str(sys.exc_info()[1]).split('\n')[0])
+                .replace(' ', '_').replace('\n', '')) # could remove 2nd replace
         except IOError:
             print 'failed with IOError'
             print file_name
