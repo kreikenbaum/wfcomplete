@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 '''starts tor-firefox -marionette and tshark, calls url parameter, stops both'''
-
-# some help was
-# http://stackoverflow.com/questions/6344993/problems-parsing-an-url-with-python
 import os
 import os.path
 import socket
@@ -11,17 +8,14 @@ import sys
 import threading
 import time
 import urlparse
+
 from marionette_driver.marionette import Marionette
+from marionette_driver import By
 
 import config
 
 ERRFILENAME="/tmp/one_site_err.txt"
 
-def browse_to(page, bridge=None):
-    '''creates a browser instance, packet dump, browses to page, kills both.
-    If bridge is not none, it is an IP-address. Just capture traffic to that.'''
-    browser = _open_browser()
-    _open_with_timeout(browser, page, bridge=bridge)
 
 # cheap hack
 def _avoid_safe_mode(exedir):
@@ -29,6 +23,18 @@ def _avoid_safe_mode(exedir):
     os.system(r"sed -i '/toolkit\.startup\.recent_crashes/d' " +
               os.path.join(exedir,
                            "TorBrowser/Data/Browser/profile.default/prefs.js"))
+
+
+def browse_to(page, bridge=None):
+    '''creates a browser instance, packet dump, browses to page, kills both.
+    If bridge is not none, it is an IP-address. Just capture traffic to that.'''
+    browser = _open_browser()
+    _open_with_timeout(browser, page, bridge=bridge)
+
+
+def _get_page_text(client):
+    '''@return text of client's HTML page'''
+    return client.find_element(By.TAG_NAME, "body").text
 
 
 def _kill(*processes):
@@ -43,13 +49,11 @@ def _navigate_or_fail(client, url, file_name):
     try:
         client.navigate(url)
     except:
-        # remove this if rename working
         with open(ERRFILENAME, "a") as f:
-            f.write('url: ' + url + "\n")
-            f.write('file: ' + file_name + "\n")
-            f.write('dir: ' + os.getcwd() + "\n\n")
-            f.write(str(sys.exc_info()[1]))
-            f.write('\n')
+            f.write('\n--------------------------\n')
+            f.write('file: ' + file_name + "\n\n")
+            f.write(_get_page_text(client).encode('utf-8'))
+            f.write('\n--------------------------\n')
         try:
             to = '{}_{}'.format(
                 file_name,
