@@ -14,6 +14,7 @@ from sklearn import neighbors, preprocessing, svm, tree
 import config
 import counter
 import fit
+import mymetrics
 import results
 #import mplot
 import scenario
@@ -318,7 +319,7 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
                                                        cv=config.FOLDS,
                                                        n_jobs=config.JOBS_NUM,
                                                        method="predict_proba")
-        fpr_array, tpr_array, _ = metrics.roc_curve(y, y_predprob[:,1], 0)
+        fpr_array, tpr_array, _ = metrics.roc_curve(y, y_predprob[:, 1], 0)
         auroc = mymetrics.bounded_auc(fpr_array, tpr_array, auc_bound)
     else:
         auroc = None
@@ -326,8 +327,8 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
 
 
 def _binmat(confmat):
-    return np.array([[confmat[0,0], sum(confmat[0,1:])],
-                     [sum(confmat[1:,0]), sum(sum(confmat[1:,1:]))]])
+    return np.array([[confmat[0, 0], sum(confmat[0, 1:])],
+                     [sum(confmat[1:, 0]), sum(sum(confmat[1:, 1:]))]])
 
 
 # due to https://stackoverflow.com/questions/31324218
