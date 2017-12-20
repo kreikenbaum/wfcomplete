@@ -44,29 +44,40 @@ def _kill(*processes):
             process.terminate()
 
 
+def _write_text(client, srcfile):
+    '''writes web text to file'''
+    with open(srcfile + ".text", "a") as f:
+        try:
+            f.write(_get_page_text(client).encode('utf-8'))
+        except:
+            f.write(str(sys.exc_info()[1]))
+
+
+def _check_text(client):
+    for problem in ['captcha', 'bad gateway', 'test tor network settings']:
+        assert problem not in _get_page_text(client).lower()
+
+
 def _navigate_or_fail(client, url, file_name):
     '''navigates client to url, on failure renames file'''
     try:
         client.navigate(url)
-    except:
-        # with open(ERRFILENAME, "a") as f:
-        #     f.write('\n--------------------------\n')
-        #     f.write('file: ' + file_name + "\n\n")
-        #     f.write(_get_page_text(client).encode('utf-8'))
-        #     f.write('\n--------------------------\n')
+        _check_text(client)
+        _write_text(client, file_name)
+    except Exception as e:
+        print e
         try:
             to = '{}_{}'.format(
                 file_name,
                 str(sys.exc_info()[1]).split('\n')[0].replace(' ', '_').replace('/', '___'))
             os.rename(file_name, to)
-        except OSError:
-            print 'failed with OSError'
+            _write_text(to, file_name)
+        except OSError as e2:
+            print 'failed with OSError: ' + e2
             print 'from: ' + file_name
             print 'to: ' + to
+            import pdb; pdb.set_trace()
             print sys.exc_info()
-    finally:
-        with open(file_name + ".text", "a") as f:
-            f.write(_get_page_text(client).encode('utf-8'))
 
 
 def _normalize_url(url='google.com'):
