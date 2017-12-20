@@ -49,11 +49,11 @@ def _navigate_or_fail(client, url, file_name):
     try:
         client.navigate(url)
     except:
-        with open(ERRFILENAME, "a") as f:
-            f.write('\n--------------------------\n')
-            f.write('file: ' + file_name + "\n\n")
-            f.write(_get_page_text(client).encode('utf-8'))
-            f.write('\n--------------------------\n')
+        # with open(ERRFILENAME, "a") as f:
+        #     f.write('\n--------------------------\n')
+        #     f.write('file: ' + file_name + "\n\n")
+        #     f.write(_get_page_text(client).encode('utf-8'))
+        #     f.write('\n--------------------------\n')
         try:
             to = '{}_{}'.format(
                 file_name,
@@ -64,6 +64,9 @@ def _navigate_or_fail(client, url, file_name):
             print 'from: ' + file_name
             print 'to: ' + to
             print sys.exc_info()
+    finally:
+        with open(file_name + ".text", "a") as f:
+            f.write(_get_page_text(client).encode('utf-8'))
 
 
 def _normalize_url(url='google.com'):
