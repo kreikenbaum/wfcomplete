@@ -26,6 +26,7 @@ class Result(object):
         self.scenario = scenario_
         self.score = accuracy
         self.git = git
+        self._id = _id
         self.date = time
         if not self.date and hasattr(self.scenario, "date"):
             self.date = self.scenario.date
@@ -33,11 +34,11 @@ class Result(object):
         self.size = size
         self.size_overhead = size_overhead
         self.time_overhead = time_overhead
-        self._id = _id
         self.open_world = open_world
         self.gamma = gamma
         self.C = C
         self.src = src
+
 
     @staticmethod
     def from_mongoentry(entry):
@@ -61,6 +62,16 @@ class Result(object):
                 raise
         try:
             open_world = entry['experiment']['name'] == 'wf_open_world'
+            if open_world: #non-empty dict is True
+                open_world = {
+                    'fpr': entry['result']['fpr'],
+                    'tpr': entry['result']['tpr'],
+                    'auroc': _value_or_none(entry, 'result', 'auroc'),
+                    'auc_bound': _value_or_none(entry, 'config', 'auc_bound'),
+                    'background_size': _value_or_none(
+                        entry, 'config', 'background_size'),
+                    'binarized': _value_or_none(entry, 'config', 'binarize')
+                }
         except KeyError:
             open_world = False
         size_overhead = _value_or_none(entry, 'result', 'size_increase')
@@ -116,7 +127,7 @@ class Result(object):
 def _duplicates(params=["config.scenario", "result.score"], db=_db()):
     '''@return all instances of experiments, projected to only params
     >>> {x['_id']: x['result_score'] for x in _duplicates()}.iteritems().next()
-    (u'...)
+    (u'...
     '''
     project = {key: 1 for key in params}
     groups = {"_id": "$config.scenario", "count": {"$sum": 1}}
@@ -155,6 +166,14 @@ def for_scenario(scenario_obj):
     return [x for x in list_all() if x.scenario == scenario_obj]
 
 
+def for_scenario_cw(scenario_obj):
+    return [x for x in for_scenario(scenario_obj) if not x.open_world]
+
+
+def for_scenario_ow(scenario_obj):
+    return [x for x in for_scenario(scenario_obj) if x.open_world]
+
+
 def import_to_mongo(csvfile, size, measure="cumul"):
     imported = []
     for el in csv.DictReader(csvfile):
@@ -184,6 +203,7 @@ def sized(size):
     return [x for x in list_all() if x.size == size]
 #    return list_all({"$or": [{"config.size": 10},
 #                            {"result.sites": {"$size": 10}}]})
+
 
 def to_table(results): #, fields, names=None):
     '''@return table of results as a string'''

@@ -275,22 +275,38 @@ picks best result'''
     return clf
 
 
-def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
-                         bg_size="auto", previous=False):
-    '''@return metrics for open world experiment'''
-    scenario_obj = scenario_obj.get_open_world()
-    if binarize: scenario_obj = scenario_obj.binarize()
+def _accuracy_C_gamma_etc(scenario_obj, use_previous_cw):
+    '''@return (accuracy, C, gamma, X, y, domains) tuple,
+
+    C, gamma and accuracy are either from previous (closed-world)
+    experiment, or by evaluating
+    '''
+    accuracy = C = gamma = None
     X, y, domains = scenario_obj.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
-    if previous:
-        result = max(results.for_scenario(scenario_obj), key=lambda x: x.score)
-        C = result.C
-        gamma = result.gamma
-        accuracy = result.score
-    else:
+    if use_previous_cw:
+        try:
+            result = max(results.for_scenario_cw(scenario_obj),
+                         key=lambda x: x.score)
+            C = result.C
+            gamma = result.gamma
+            accuracy = result.score
+        except ValueError:
+            pass
+    if not C or not gamma or not accuracy:
         (clf_noprob, accuracy, _) = fit.my_grid(X, y) # auto scales
         C = clf_noprob.estimator.C
         gamma = clf_noprob.estimator.gamma
+    return (accuracy, C, gamma, X, y, domains)
+
+
+def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
+                         bg_size="auto", use_previous_cw=False):
+    '''@return metrics for open world experiment'''
+    scenario_obj = scenario_obj.get_open_world()
+    if binarize: scenario_obj = scenario_obj.binarize()
+    (accuracy, C, gamma, X, y, domains) = _accuracy_C_gamma_etc(
+        scenario_obj, use_previous_cw)
     clf = _clf(C=C, gamma=gamma)
     y_pred = model_selection.cross_val_predict(clf, X, y, cv=config.FOLDS,
                                                n_jobs=config.JOBS_NUM)
@@ -303,8 +319,9 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
                                                        n_jobs=config.JOBS_NUM,
                                                        method="predict_proba")
         fpr_array, tpr_array, _ = metrics.roc_curve(y, y_predprob[:,1], 0)
-        auroc = metrics.auc(fpr_array, tpr_array)
-    else: auroc = None
+        auroc = mymetrics.bounded_auc(fpr_array, tpr_array, auc_bound)
+    else:
+        auroc = None
     return (tpr, fpr, auroc, C, gamma, accuracy)
 
 
@@ -516,7 +533,7 @@ def main(argv, with_svm=True, cumul=True):
 # ====== BY HAND ========
 # import os; import logging; os.chdir(os.path.join(os.path.expanduser('~') , 'da', 'git', 'data')); _=os.nice(20); sys.path.append(os.path.join(os.path.expanduser('~') , 'da', 'git', 'bin')); logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
 # pylint: enable=line-too-long
-doctest.testmod()
+doctest.testmod(optionflags=doctest.ELLIPSIS)
 
 if __name__ == "__main__":
     os.nice(20)

@@ -43,6 +43,7 @@ def _navigate_or_fail(client, url, file_name):
     try:
         client.navigate(url)
     except:
+        # remove this if rename working
         with open(ERRFILENAME, "a") as f:
             f.write('url: ' + url + "\n")
             f.write('file: ' + file_name + "\n")
@@ -50,15 +51,14 @@ def _navigate_or_fail(client, url, file_name):
             f.write(str(sys.exc_info()[1]))
             f.write('\n')
         try:
-            os.rename(
+            to = '{}_{}'.format(
                 file_name,
-                '{}_{}'.format(
-                    file_name,
-                    str(sys.exc_info()[1]).split('\n')[0])
-                .replace(' ', '_').replace('\n', '')) # could remove 2nd replace
+                str(sys.exc_info()[1]).split('\n')[0].replace(' ', '_').replace('/', '___'))
+            os.rename(file_name, to)
         except OSError:
             print 'failed with OSError'
-            print file_name
+            print 'from: ' + file_name
+            print 'to: ' + to
             print sys.exc_info()
 
 

@@ -99,7 +99,9 @@ to save, and =.show()= to display.
         label='{} (AUC = {:0.2f})'.format(title, metrics.auc(fpr, tpr)))
     one_percent = [y for (x,y) in zip(fpr, tpr) if x >= 0.01][0]
     line = plt.plot([0, 1], [one_percent] *2, "red", label='1% fpr')
-    plt.legend([curve, line], loc="lower right") # need to call at the very end
+    # plt.legend([curve, line], loc="lower right") # todo: show legend
+    plot.get_axes()[0].set_ybound(0, 1)
+    plt.tight_layout()
     return plot
 
 

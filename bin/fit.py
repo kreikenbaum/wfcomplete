@@ -18,7 +18,7 @@ def _bounded_auc_eval(X, y, clf, y_bound):
     '''evaluate clf X, y, give bounded auc score, 1 is positive class label'''
     X = scale(X, clf)
     y = _lb(y, transform_to=1)
-    return mymetrics.bounded_auc_score(clf, X, y, y_bound)
+    return mymetrics.compute_bounded_auc_score(clf, X, y, y_bound)
 
 
 def _eval(X, y, clf, folds=config.FOLDS):

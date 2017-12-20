@@ -22,26 +22,32 @@ def binarize(y, keep=-1, transform_to=0):
 
 
 def bounded_auc(y_true, y_predict, y_bound, **kwargs):
-    '''@return bounded auc of (probabilistic) fitted classifier on data.'''
+    '''@return bounded auc of probabilistic prediction, normalized to [0, 1]
+    >>> bounded_auc([1, 1, 1, 0], np.array([[1, 1, 1, 0], [0, 0, 0, 1]]).T, 1)
+    1.0
+    >>> bounded_auc([1, 1, 1, 0], np.array([[1, 1, 1, 0], [0, 0, 0, 1]]).T, .2)
+    1.0
+    >>> bounded_auc([1, 1, 1, 0], np.array([[0, 0, 0, 1], [1, 1, 1, 0]]).T, 1)
+    0.0
+    '''
     newfpr, newtpr = bounded_roc(y_true, y_predict, y_bound, **kwargs)
-    return metrics.auc(newfpr, newtpr)
+    return metrics.auc(newfpr, newtpr) / y_bound
 
 
+# todo: examine constants: why does row 0 correspond to label 1?
 def bounded_roc(y_true, y_predict, y_bound, **kwargs):
-    '''@return (fpr, tpr) within fpr-bounds'''
+    '''@return (fpr_array, tpr_array) with 0 <= fpr <= y_bound'''
     assert 0 <= y_bound <= 1
-    if y_predict.shape[1] == 2:
-        y_predict = y_predict[:, 1]
-    fpr, tpr, _ = metrics.roc_curve(y_true, y_predict, **kwargs)
-    # plot_data.roc(fpr, tpr).savefig('/tmp/roc.pdf')
-    # plt.close()
+    if len(y_predict.shape) == 2 and y_predict.shape[1] == 2:
+        y_predict = y_predict[:, 0]
+    fpr, tpr, _ = metrics.roc_curve(y_true, y_predict, 1, **kwargs)
     newfpr = [x for x in fpr if x < y_bound]
     newfpr.append(y_bound)
     newtpr = np.interp(newfpr, fpr, tpr)
     return (newfpr, newtpr)
 
 
-def bounded_auc_score(clf, X, y, y_bound=0.01):
+def compute_bounded_auc_score(clf, X, y, y_bound=0.01):
     '''@return cross-validated bounded auc of clf on X and y'''
     scorer = metrics.make_scorer(
         bounded_auc, needs_proba=True, y_bound=y_bound)
