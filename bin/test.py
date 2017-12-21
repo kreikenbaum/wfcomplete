@@ -6,8 +6,11 @@ import logging
 import os
 import subprocess
 import tempfile
+import time
 import unittest
+
 import numpy as np
+from unittest.runner import TextTestRunner, TextTestResult
 
 import analyse
 import config
@@ -353,6 +356,7 @@ class TestScenario(unittest.TestCase):
             0, scenario.Scenario('disabled/05-12@10').size_increase())
 
 
+    @unittest.skipIf(QUICK, "slow test skipped")
     def test_size_increase__empty(self):
         trace = counter._test(0)
         s = scenario.Scenario('wtf-pad/bridge--2016-07-05')
@@ -422,6 +426,23 @@ class MockWriter(object):
         self.data += line
 
 
+class TimeLoggingTestResult(TextTestResult):
+    SLOW_TEST_THRESHOLD = 0.3
+
+    def startTest(self, test):
+        self._started_at = time.time()
+        super(TimeLoggingTestResult, self).startTest(test)
+
+    def addSuccess(self, test):
+        elapsed = time.time() - self._started_at
+        if elapsed > self.SLOW_TEST_THRESHOLD:
+            name = self.getDescription(test)
+            self.stream.write(
+                "\n{} ({:.03}s)\n".format(
+                    name, elapsed))
+        super(TimeLoggingTestResult, self).addSuccess(test)
+
+
 def temp_dir():
     try:
         return tempfile.mkdtemp(dir="/run/user/{}".format(os.geteuid()))
@@ -430,4 +451,5 @@ def temp_dir():
 
 
 if __name__ == '__main__':
-    unittest.main()
+    test_runner = TextTestRunner(resultclass=TimeLoggingTestResult)
+    unittest.main(testRunner=test_runner)
