@@ -97,7 +97,7 @@ def _navigate_or_fail(client, url, file_name, tries=0):
         #try:
         to = '{}_{}'.format(
                 file_name,
-                str(sys.exc_info()[1]).split('\n')[0].replace(' ', '_').replace('/', '___').replace("'", ''))
+                str(sys.exc_info()[1]).split('\n')[0].replace(' ', '_').replace('/', '___').replace("'", ''))[:255]
         os.rename(file_name, to)
         _write_text(client, to)
         # except OSError as e2:
