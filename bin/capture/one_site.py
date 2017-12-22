@@ -3,7 +3,6 @@
 import collections
 import logging
 import os
-import os.path
 import socket
 import subprocess
 import sys
@@ -13,12 +12,13 @@ import urlparse
 
 import marionette_driver
 from marionette_driver.marionette import Marionette
-from marionette_driver.errors import NoSuchElementException, UnknownException
+from marionette_driver import errors
 
 import config
 
 ERRFILENAME = "/tmp/one_site_err.txt"
-FIREFOX_PATH = '/home/mkreik/bin/tor-browser_en-US/Browser/firefox'
+FIREFOX_PATH = os.path.join(os.getenv("HOME"), 'bin', 'tor-browser_en-US',
+                            'Browser', 'firefox')
 PROBLEMATIC_TEXT = [
     'Cloudflare Ray ID:',
     'Reference #18',
@@ -80,7 +80,8 @@ def _navigate_or_fail(client, url, file_name):
         client.navigate(url)
         _check_text(_get_page_text(client).lower())
         _write_text(client, file_name)
-    except (UnknownException, CaptureError, NoSuchElementException) as e:
+    except (CaptureError, errors.UnknownException,
+            errors.TimeoutException, errors.NoSuchElementException) as e:
         logging.warn(e)
         #        try:
         to = '{}_{}'.format(
