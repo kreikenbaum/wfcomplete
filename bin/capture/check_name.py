@@ -16,7 +16,8 @@ def mkdiretc(dirname, prefix=''):
         os.mkdir(dirname)
     except OSError: pass
     try:
-        newdir = os.path.join(dirname, prefix + str(datetime.date.today()))
+        newdir = os.path.join(dirname, '{}--{}'.format(prefix,
+                                                       datetime.date.today()))
         os.mkdir(newdir)
         os.symlink(newdir, 'now')
         sys.exit(0)
@@ -45,4 +46,4 @@ if __name__ == "__main__":
                 break # better safe than sorry
         else:
             name = "disabled"
-        mkdiretc(name, prefix + '--')
+        mkdiretc(name, prefix)

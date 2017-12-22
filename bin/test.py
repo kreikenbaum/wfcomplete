@@ -18,6 +18,7 @@ import counter
 import fit
 import scenario
 import results
+from capture import one_site
 
 config.FOLDS = 2
 
@@ -415,6 +416,21 @@ class TestScenario(unittest.TestCase):
             {'a': (10, -1), 'b': (10, -1), 'c': (20, -1)}, self.base_mock2),
                                250./3-100)
 #                               100.*(pow(1./2, 1./3)-1))#harmonic
+
+
+class TestCaptureOnesite(unittest.TestCase):
+    '''tests the one_site module/program'''
+
+    def test_doc(self):
+        (fail_num, _) = doctest.testmod(counter, optionflags=doctest.ELLIPSIS)
+        self.assertEqual(0, fail_num)
+
+    def test__check_text(self):
+        with self.assertRaises(one_site.CaptureError):
+            one_site._check_text("hello")
+        one_site._check_text("hello\n\n\n\n")
+        with self.assertRaises(one_site.CaptureError):
+            one_site._check_text("Reference #18\n\n\n\n")
 
 
 class MockWriter(object):
