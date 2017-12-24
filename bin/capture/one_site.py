@@ -24,6 +24,7 @@ PROBLEMATIC_DELAY = [
     'test tor network settings'
 ]
 PROBLEMATIC_TEXT = [
+    'test tor network settings'
     'Cloudflare Ray ID:',
     'Reference #18',
     "You don't have permission to access",
@@ -88,6 +89,7 @@ def _navigate_or_fail(client, url, file_name, tries=0):
         _write_text(client, file_name)
     except (errors.NoSuchElementException, DelayError):
         if tries < 3:
+            time.sleep(0.1)
             return _navigate_or_fail(client, url, file_name, tries+1)
         else:
             raise CaptureError("failed repeatedly to get page text")

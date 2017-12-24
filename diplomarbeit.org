@@ -1,4 +1,4 @@
-#+TITLE: Selective Cover Traffic
+ #+TITLE: Selective Cover Traffic
 #+TODO: KEYWORDS WRITE CHECK | DANIEL FINAL
 #+TODO: RECHECK | DANIEL FINAL
 #+TODO: | DANIEL_BUT_NEEDS_SUBPARTS
@@ -11,6 +11,7 @@
 #+LATEX_CLASS: scrreprt
 #+LATEX_CLASS_OPTIONS: [a4paper,10pt]
 #+LATEX_HEADER: \usepackage{adjustbox}
+#+LATEX_HEADER: \usepackage{acronym}
 #+LATEX_HEADER: \usepackage{algorithm}
 #+LATEX_HEADER: \usepackage[noend]{algpseudocode}
 #+LATEX_HEADER: \usepackage{float}
@@ -82,6 +83,16 @@
 #+LATEX_HEADER: \def\BState{\State\hskip-\ALG@thistlm}
 #+LATEX_HEADER: \makeatother
 #+OPTIONS: H:6
+* List of Acronyms
+  :PROPERTIES:
+  :UNNUMBERED: t
+  :END:
+#+BEGIN_EXPORT latex
+\begin{acronym}
+\acro{ML}{machine learning}
+\acro{WF}{website fingerprinting}
+\end{acronym}
+#+END_EXPORT
 * Introduction
 #+BEGIN_EXPORT latex
 \pagenumbering{arabic}
@@ -115,15 +126,14 @@
   As has often been the case with anonymity and privacy, several
   parties try to attack Tor's protection. One mass-surveillance type
   of attack that can be carried out passively with low-level
-  technology is /website fingerprinting/: The time and size of users'
-  data packets (called /traces/) are recorded. See Figure
-  \ref{fig:traces}. This recording is compared to previously recorded
-  traces of known sites. While older attacks
-  (\cite{ccsw09-fingerprinting}, \cite{Liberatore:2006}) just compared
-  single packet sizes, possibly by hand, newer attacks
-  (\cite{panchenko}, \cite{panchenko2}, \cite{realistic}) use machine
-  learning to classify traces, achieving high accuracy rates under
-  laboratory conditions.
+  technology is \ac{WF}: The time and size of users' data packets
+  (called /traces/) are recorded. See Figure \ref{fig:traces}. This
+  recording is compared to previously recorded traces of known
+  sites. While older attacks (\cite{ccsw09-fingerprinting},
+  \cite{Liberatore:2006}) just compared single packet sizes, possibly
+  by hand, newer attacks (\cite{panchenko}, \cite{panchenko2},
+  \cite{realistic}) use machine learning to classify traces, achieving
+  high accuracy rates under laboratory conditions.
 #+BEGIN_EXPORT latex
 \begin{figure}[htbp]
 \includegraphics[width=0.24\textwidth]{./pictures/craigslist_org@1445352269.png}
@@ -170,13 +180,13 @@ While some similarity can be seen for each group, the "within-group" differences
   /that traffic occurs/, not just which website is visited, as it
   derives its basic mechanism from \cite{ShWa-Timing06}.
 ** Thesis Contribution
-   This thesis presents and tests a new defense against website
-   fingerprinting. This new defense mimics HTTP\cite{rfc7230}-shaped
-   cover traffic: Each web page retrieval is augmented by
-   stochastically-drawn dummy HTTP traffic\cite{newtrafficmodel}. This
-   could optimize the protection offered for given bandwidth
-   overhead. It is implemented in a browser extension, which makes the
-   defense easier to install, configure, and maintain.
+   This thesis presents and tests a new defense against \ac{WF}. This
+   new defense mimics HTTP\cite{rfc7230}-shaped cover traffic: Each
+   web page retrieval is augmented by stochastically-drawn dummy HTTP
+   traffic\cite{newtrafficmodel}. This could optimize the protection
+   offered for given bandwidth overhead. It is implemented in a
+   browser extension, which makes the defense easier to install,
+   configure, and maintain.
 ** Thesis Structure
    The following chapters try to solve the question whether the new
    defense works more effectively than existing ones.
@@ -260,13 +270,13 @@ While some similarity can be seen for each group, the "within-group" differences
    process is called /traffic analysis/\cite{introta} and yields much
    useful information\cite[ch.10.3]{applied96}.
 
-   /Website fingerprinting/ (WF) needs only message meta-data:
-   who sends how much data when. It assumes that the system itself is
-   computationally secure\cite[ch.1.1]{applied96}: there are not enough
-   resources, time, or data to break it. Analysing traffic patterns
-   can circumvent the system. Anyone who can see the data stream can
-   carry out this attack, without anyone else learning about
-   this. They simply need to capture the data stream using f.ex. the
+   \ac{WF} needs only message meta-data: who sends how much data
+   when. It assumes that the system itself is computationally
+   secure\cite[ch.1.1]{applied96}: there are not enough resources,
+   time, or data to break it. Analysing traffic patterns can
+   circumvent the system. Anyone who can see the data stream can carry
+   out this attack, without anyone else learning about this. They
+   simply need to capture the data stream using f.ex. the
    =tcpdump=\cite{tcpdump8-manual} tool.\\
 
    From inception\cite{tor-design}, Tor provided defenses against
@@ -280,7 +290,7 @@ While some similarity can be seen for each group, the "within-group" differences
    timing\cite{challenges}.\\
 
 
-   This made WF harder, to the point that it was was mentioned, but
+   This made \ac{WF} harder, to the point that it was was mentioned, but
    not hindered, in \cite{tor-design}. It took five years for
    \cite{ccsw09-fingerprinting} to show better than random
    classification results against Tor traffic. This evolved to
@@ -295,7 +305,7 @@ While some similarity can be seen for each group, the "within-group" differences
    :END:
    #+INDEX: machine learning
    #+INDEX: ML
-   Let us review basics of /Machine Learning/ (ML): a
+   Let us review basics of \ac{ML}: a
    computer\cite{turing1936a} algorithm extracts and generalizes
    patterns from learning data.\cite[ch.1.2]{rieckdiss} This is then used to
    classify further patterns (f.ex. for handwriting recognition),
@@ -316,11 +326,11 @@ While some similarity can be seen for each group, the "within-group" differences
     :END:
     #+INDEX: feature extraction
     #+INDEX: machine learning!feature extraction
-    WF tries to analyse web traces. To be able to defend against WF,
-    it should first be understood. To be understood, it should be
-    reproduced.
+    \ac{WF} tries to analyse web traces. To be able to defend against
+    \ac{WF}, it should first be understood. To be understood, it
+    should be reproduced.
 
-    WF input data needs to be wrangled for the classification to work:
+    \ac{WF} input data needs to be wrangled for the classification to work:
     extra information that might change from request to request ---
     such as the hosts IP address, or the absolute time of the
     retrieval --- needs to be removed or unified to a common
@@ -356,7 +366,7 @@ While some similarity can be seen for each group, the "within-group" differences
     normalization. This is also evaluated with support vector
     machines.\\
 
-    There are numerous WF attacks. F.ex. \cite{effective} achieved
+    There are numerous \ac{WF} attacks. F.ex. \cite{effective} achieved
     accuracy improvements using over 3000 features and a
     KNN-classification with weighted metrics while
     \cite{kfingerprint}'s approach uses approximately 150 features
@@ -411,11 +421,11 @@ While some similarity can be seen for each group, the "within-group" differences
     #+INDEX: ROC curve
     #+INDEX: True Positive Rate
     #+INDEX: tpr
-    To find out if WF attacks work, and if defenses prevent this,
+    To find out if \ac{WF} attacks work, and if defenses prevent this,
     their success needs to be measured.
 
     A /confusion matrix/\cite{powers} helps to illustrate the
-    different cases that can occur in WF. Each trace is categorized by
+    different cases that can occur in \ac{WF}. Each trace is categorized by
     whether it /is/ a sensitive website, and whether it is
     /classified/ as such. See Table [[tab:confusion_matrix]].
 
@@ -431,7 +441,7 @@ While some similarity can be seen for each group, the "within-group" differences
     |----------------------+-----------------------+-----------------------|
 
     From these counts, other metrics can be derived. The main metrics
-    used in WF literature are /Accuracy/ (acc), and /True-/ and
+    used in \ac{WF} literature are /Accuracy/ (acc), and /True-/ and
     /False-Positive-Rate/ (tpr and fpr). These are defined as
 
     #+ATTR_LATEX: :align r c l
@@ -631,8 +641,8 @@ While some similarity can be seen for each group, the "within-group" differences
      #+ATTR_LATEX: :width 0.7\textwidth
      [[./pictures/mitchell-fig8.1.png]]
 ** DANIEL Tor Website Fingerprinting Defenses
-   This section describes defenses against WF as described
-   [[#sub2-wf][previously]]. As most Machine Learning, WF uses statistical
+   This section describes defenses against \ac{WF} as described
+   [[#sub2-wf][previously]]. As most Machine Learning, \ac{WF} uses statistical
    properties of the underlying data. It could possibly be defeated by
    shuffling these properties. The total number of incoming packets
    f.ex. is a feature used by almost all modern attacks:
@@ -691,9 +701,9 @@ While some similarity can be seen for each group, the "within-group" differences
    defense to the server-side ALPaCA defense, and emphasize its draft
    status\cite{LLaMA}.
 ** DANIEL Summary
-   WF can deanonymize anonymous traffic. This can pose a huge problem
+   \ac{WF} can deanonymize anonymous traffic. This can pose a huge problem
    f.ex. for whistleblowers. The previous sections gave a short
-   introduction to the basics of Tor, WF attacks, its basis in machine
+   introduction to the basics of Tor, \ac{WF} attacks, its basis in machine
    learning, and finally defenses against it. It also gave a first
    glimpse at this thesis' new defense.
 
@@ -702,9 +712,9 @@ While some similarity can be seen for each group, the "within-group" differences
   :PROPERTIES:
   :CUSTOM_ID: ch3-newdefense
   :END:
-  The last chapter showed that WF could be a serious attack on online
+  The last chapter showed that \ac{WF} could be a serious attack on online
   anonymity and privacy. As specific defenses could be circumvented, a
-  general defense against WF is needed. It should provide adequate
+  general defense against \ac{WF} is needed. It should provide adequate
   protection for an acceptable increase in bandwidth and delay.\\
 
 
@@ -819,12 +829,14 @@ While some similarity can be seen for each group, the "within-group" differences
 
   This chapter compares the new defense to existing defenses.  The
   first section illustrates the setup. The second section [[#sub4-tools][validates
-  the WF attacks used]]. The next section [[#sub4-closed][compares defenses in a
+  the \ac{WF} attacks used]]. The next section [[#sub4-closed][compares defenses in a
   closed-world setting]], where they need to only distinguish a small
   fixed number of pages. The penultimate section evaluates them [[#sub4-open][in an
   open-world scenario]], which has many background-page retrievals added
   to the mix. Its last section [[#sub4-summary][summarizes evaluation results]].
 ** KEYWORDS Setup
+   :PROPERTIES:
+   :END:
    - capture
      - tbb generic
      - firefox marionette
@@ -869,12 +881,12 @@ While some similarity can be seen for each group, the "within-group" differences
      cleans the cache between captures by restarting the Tor Browser
      Bundle.
    
-** CHECK WF Attack Evaluation
+** CHECK \acl{WF} Attack Evaluation
    :PROPERTIES:
    :CUSTOM_ID: sub4-tools
    :END:
    How does the defense compare to others (\cite{wtfpad},
-   \cite{LLaMA}, \cite{a-systematic})? To examine this, WF attacks are
+   \cite{LLaMA}, \cite{a-systematic})? To examine this, \ac{WF} attacks are
    executed against web site traces collected with disabled defenses.
 
    The evaluation uses the attacks CUMUL by \cite{panchenko2} --- both
@@ -1117,7 +1129,7 @@ training on data without defense, and testing on defended data.
    This knowledge helps in understanding and creating defenses. As of
    \cite{a-systematic}, \cite{ccs2014-critical} and \cite{panchenko2},
    [[#base-rate][the Base Rate Fallacy]] creates problems for /some/
-   WF-adversaries. This means that finding people who might have
+   \ac{WF}-adversaries. This means that finding people who might have
    accessed a certain site is easier than making sure that they really
    visited the site.
 * WRITE Addon: Factor to Overhead

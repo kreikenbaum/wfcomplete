@@ -372,6 +372,7 @@ class TestScenario(unittest.TestCase):
             ['disabled', 'disabled/2016-06-30'], False))
 
 
+    @unittest.skipIf(QUICK, "slow test skipped")
     def test__closest_bg(self):
         s = scenario.Scenario('disabled/background--2016-08-17')
         self.assertEqual(s, s._closest('background', include_bg=True))
