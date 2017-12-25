@@ -7,13 +7,14 @@ if [ $# -lt 1 -o $# -gt 3 ]; then
     exit 1
 fi
 
-. config.py
-status.sh > $SAVETO/status
-check_name.py || (echo "status invalid"; exit 1)
-
 NUM_SITES=$1
 NUM_ITERATIONS=${2:-50}
 TAIL=${3:-$NUM_SITES}
+
+. config.py
+status.sh > $SAVETO/status
+check_name.py $TAIL $NUM_ITERATIONS || (echo "status invalid"; exit 1)
+
 for iteration in $(seq $NUM_ITERATIONS); do
     echo -e "======= ITERATION: $iteration =============\n"
     for site in $(head -$NUM_SITES ~/sw/top/top-1m.csv.modified | tail -$TAIL | cut -d "," -f 2); do

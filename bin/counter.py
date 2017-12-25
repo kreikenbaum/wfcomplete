@@ -217,6 +217,7 @@ def all_from_dir(dirname, remove_small=True, or_level=0):
     out = {}
 
     filenames = glob.glob(os.path.join(dirname, "*"))
+    filenames = [x for x in filenames if not x.endswith(".text")]
     for jfile in [x for x in filenames if '.json' in x]:
         json_only = True
         domain = os.path.basename(jfile).replace('.json', '')
@@ -552,7 +553,8 @@ class Counter(object):
             if os.path.isfile(args[0]) and '@' in args[0]:
                 out = {}
                 _append_features(out, args[0])
-            else: # this filename
+            else:
+                # args[0] is this file's name: called without arguments
                 out = all_from_dir('.', **kwargs)
         if len(args) > 2:
             out = {}
