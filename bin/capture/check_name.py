@@ -10,14 +10,19 @@ import config
 
 #CHECKS={ ## later: map name to (lambda?): check these aspects
 
-def mkdiretc(dirname, prefix=''):
+def mkdiretc(type_name, prefix='', suffix=''):
     '''creates directory "name"/date, and a "now"-symlink'''
     try:
-        os.mkdir(dirname)
+        os.mkdir(type_name)
     except OSError: pass
     try:
-        newdir = os.path.join(dirname, '{}--{}'.format(prefix,
-                                                       datetime.date.today()))
+        if prefix:
+            scenario_name = '{}--{}'.format(prefix, datetime.date.today())
+        else:
+            scenario_name = str(datetime.date.today())
+        if suffix:
+            scenario_name += '--' + suffix
+        newdir = os.path.join(type_name, scenario_name)
         os.mkdir(newdir)
         os.symlink(newdir, 'now')
         sys.exit(0)
@@ -25,8 +30,14 @@ def mkdiretc(dirname, prefix=''):
         logging.warn("%s already exists", newdir or "directory")
         sys.exit(0)
 
+
 if __name__ == "__main__":
     os.chdir(config.SAVETO)
+
+    if len(sys.argv) == 3:
+        suffix = sys.argv[1] + '@' + sys.argv[2]
+    else:
+        suffix = ''
 
     with open('status') as f:
         status = json.load(f)
@@ -46,4 +57,4 @@ if __name__ == "__main__":
                 break # better safe than sorry
         else:
             name = "disabled"
-        mkdiretc(name, prefix)
+        mkdiretc(name, prefix, suffix)
