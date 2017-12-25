@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import copy
+from dateutil import parser
 import datetime
 import doctest
 import glob
@@ -31,11 +32,33 @@ RENAME = {
     "llama": "LLaMA",
     "wf-cover": "new defense"
 }
+# were renamed on disk, hack to rename
+PATH_RENAME = {
+    "05-12@10": "05-12-2016--10@40",
+    "10aI--2016-11-04-50-of-100": "10aI--2016-11-04--100@50",
+    "json-10-nocache": "nocache--2016-06-17--10@30",
+    "nobridge--2017-01-19-aI-factor=10": "nobridge-aI-factor=10--2017-01-19",
+    "bridge--2016-09-21-100": "bridge--2016-09-21--100",
+    "bridge--2016-09-26-100": "bridge--2016-09-26--100",
+    "bridge--2016-08-30-100": "bridge--2016-08-30--100",
+    "json-10/a-i-noburst": "a-i-noburst--2016-06-02--10@30",
+    "json-10/a-ii-noburst": "a-ii-noburst--2016-06-03--10@30",
+    "json-100/b-i-noburst": "b-i-noburst--2016-06-04--100@40",
+    "30-burst": "30-burst--2016-07-11",
+    "30": "30--2016-07-10",
+    "20": "20--2016-07-17",
+    "nobridge--2017-01-19-aI-factor=10-with-errors": "nobridge-aI-factor=10-with-errors--2017-01-19"
+}
+PATH_SKIP = [
+    "../sw/w/, WANG14, knndata.zip",
+    '../sw/w/, RND-WWW, disabled/foreground-data-subset',
+    'disabled/foreground-data'
+]
 
 
 class Scenario(object):
     '''meta-information object with optional loading of traces'''
-    def __init__(self, name, trace_args=None, smart=False):
+    def __init__(self, name, trace_args=None, smart=False, skip=False):
         ''' (further example usage in test.py)
         >>> Scenario('disabled/2016-11-13').date
         datetime.date(2016, 11, 13)
@@ -48,7 +71,16 @@ class Scenario(object):
         '''
         self.traces = None
         self.trace_args = trace_args or config.trace_args()
+        # import pdb; pdb.set_trace()
         self.path = os.path.normpath(name)
+        if name in PATH_SKIP or skip:
+            return
+        for (pre, post) in PATH_RENAME.iteritems():
+            if self.path.endswith(pre):
+                self.path = self.path.replace('/' + pre, '/' + post)
+        self.path = _prepend_if_ends(self.path, 'with-errors')
+        self.path = _prepend_if_ends(self.path, 'with-errs')
+        self.path = _prepend_if_ends(self.path, 'with7777')
         if smart and not self.valid():
             self.path = list_all(self.path)[0].path
         try:
@@ -56,25 +88,37 @@ class Scenario(object):
         except ValueError:
             self.name = os.path.normpath(self.path)
             return
-        if '@' in date:
-            (date, numstr) = date.split('@')
-            try:
-                self._num_sites = int(numstr)
-            except ValueError:
-                self._num_sites = int(numstr.split('-')[0])
+        #import pdb; pdb.set_trace()
+        numstr = None
         if '--' in date:
-            (self.setting, date) = date.split('--')
+            if date.rindex('--') != date.index('--'):
+                (self.setting, date, numstr) = date.split('--')
+            else:
+                try:
+                    parser.parse(date.split('--')[1])
+                    self.setting, date = date.split('--')
+                except ValueError:
+                    date, numstr = date.split('--')
+        if '-' in date and '@' in date:
+            (date, numstr) = date.rsplit('-', 1)
+        if numstr:
+            if '@' in numstr:
+                self._num_sites, self.num_instances = [
+                    int(x) for x in numstr.split('@')]
+            else:
+                self._num_sites = int(numstr)
         # the following discards subset info: 10aI--2016-11-04-50-of-100
-        try:
-            tmp = [int(x) for x in date.split('-')[:3]]
-            if len(tmp) == 2:
-                tmp.insert(0, 2016)
-            try:
-                self.date = datetime.date(*tmp)
-            except TypeError:
-                self.setting = date
-        except ValueError:
-            self.setting = date
+        self.date = parser.parse(date).date()
+        # try:
+        #     tmp = [int(x) for x in date.split('-')[:3]]
+        #     if len(tmp) == 2:
+        #         tmp.insert(0, 2016)
+        #     try:
+        #         self.date = datetime.date(*tmp)
+        #     except TypeError:
+        #         self.setting = date
+        # except ValueError:
+        #     self.setting = date
         try:
             with open(os.path.join(DIR, self.path, 'status')) as f:
                 self.status = f.read()
@@ -83,10 +127,8 @@ class Scenario(object):
         for (pre, post) in RENAME.iteritems():
             self.name = self.name.replace(pre, post)
 
-
     def __contains__(self, item):
         return item in self.path
-
 
     def _compareattr(self, other, attr):
         '''@return true if other has attr iff self has attr and values same'''
@@ -99,12 +141,9 @@ class Scenario(object):
                 and self._compareattr(other, "date")
                 and self._compareattr(other, "num_sites"))
 
-
-
     def __len__(self):
         '''@return the total number of instances in this scenario'''
         return sum((len(x) for x in self.get_traces().values()))
-
 
     def __str__(self):
         out = self.name
@@ -113,10 +152,8 @@ class Scenario(object):
             out += ' with setting {}'.format(self.setting)
         return out
 
-
     def __repr__(self):
         return '<scenario.Scenario("{}")>'.format(self.path)
-
 
     # idea: return whole list ordered by date-closeness
     def _closest(self, name_filter, include_bg=False, func_filter=None):
@@ -127,7 +164,6 @@ size unless include_bg'''
         if not include_bg:
             filtered = [x for x in filtered if x.num_sites == self.num_sites]
         return min(filtered, key=lambda x: abs(self.date - x.date))
-
 
     def _increase(self, method, trace_dict=None):
         try:
@@ -140,7 +176,6 @@ size unless include_bg'''
         return method(closest_disabled.get_traces(),
                       trace_dict or self.get_traces())
 
-
     @property
     def num_sites(self):
         '''number of sites in this capture'''
@@ -148,7 +183,6 @@ size unless include_bg'''
             return self._num_sites
         else:
             return len(glob.glob(os.path.join(DIR, self.path, '*json')))
-
 
     def binarize(self, bg_label='background', fg_label='foreground'):
         '''@return scenario with bg_label as-is, others combined to fg_label'''
@@ -162,14 +196,12 @@ size unless include_bg'''
         setattr(out, 'traces', traces)
         return out
 
-
     def date_from_trace(self):
         '''retrieve date from traces'''
         self.trace_args = {'remove_small': False, 'or_level': 0}
         trace = self.get_traces().values()[0][0]
         return datetime.datetime.fromtimestamp(
             float(trace.name.split('@')[1])).date()
-
 
     def get_features_cumul(self):
         '''@return traces converted to CUMUL's X, y, y_domains'''
@@ -186,7 +218,6 @@ size unless include_bg'''
                                    dom_counters, "cumul", class_number, domain)
                 class_number += 1
         return (np.array(X), np.array(out_y), domain_names)
-
 
     def get_open_world(self, num="auto"):
         '''
@@ -207,7 +238,6 @@ size unless include_bg'''
             out.traces['background'] = background.get_traces()['background']
         return out
 
-
     def get_sample(self, num, random_seed=None):
         '''@return sample of traces, each domain has num traces'''
         random.seed(random_seed)
@@ -216,7 +246,6 @@ size unless include_bg'''
             out[domain] = random.sample(trace_list, num)
         return out
 
-
     def get_traces(self):
         '''@return dict {domain1: [trace1, ..., traceN], ..., domainM: [...]}'''
         if not self.traces:
@@ -224,21 +253,17 @@ size unless include_bg'''
                                                **self.trace_args)
         return self.traces
 
-
     def size_increase(self, trace_dict=None):
         '''@return size overhead of this vs closest disabled scenario'''
         return self._increase(size_increase, trace_dict)
-
 
     def time_increase(self, trace_dict=None):
         '''@return time overhead of this vs closest disabled scenario'''
         return self._increase(time_increase, trace_dict)
 
-
     def valid(self):
         '''@return whether the path is at least a directory'''
         return os.path.isdir(os.path.join(DIR, self.path))
-
 
     def to_dict(self):
         '''@return __dict__-like with properties'''
@@ -248,6 +273,20 @@ size unless include_bg'''
             and not a == 'trace_args'
             and not a == 'traces'
             and not callable(getattr(self, a)))}
+
+
+def _prepend_if_ends(whole, part):
+    '''if whole ends with part, prepend it (modulo "-")
+
+    >>> _prepend_if_ends('0.22/nobridge--2017-01-19-aI-factor=10-with-errors', \
+                         'with-errors')
+    '0.22/with-errors-nobridge--2017-01-19-aI-factor=10'
+    '''
+    if whole and whole.endswith('-' + part):
+        splits = whole.rsplit('/', 1)
+        last = part + '-' + splits[1].replace('-' + part, '')
+        whole = splits[0] + '/' + last
+    return whole
 
 
 def list_all(name_filter=None, include_bg=False, func_filter=None, path=DIR):

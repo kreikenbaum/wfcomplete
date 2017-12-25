@@ -272,16 +272,20 @@ class TestScenario(unittest.TestCase):
                          scenario.Scenario('wtf-pad/bridge--2016-07-05').date)
         self.assertEqual('wtf-pad',
                          scenario.Scenario('wtf-pad/bridge--2016-07-05').name)
-        self.assertEqual('retro',
-                         scenario.Scenario('retro/1').name)
-        self.assertEqual('1',
-                         scenario.Scenario('retro/1').setting)
+        self.assertEqual(
+            5, scenario.Scenario(u'simple2/5--2016-09-23-100').setting)
+        # retro traces are gone: were worse than all others
+        # self.assertEqual('retro',
+        #                  scenario.Scenario('retro/1').name)
+        # self.assertEqual('1',
+        #                  scenario.Scenario('retro/1').setting)
         self.assertEqual('0.21',
                          scenario.Scenario('0.21').name)
         self.assertEqual('0.15.3',
                          scenario.Scenario('0.15.3/json-10-nocache').name)
-        self.assertEqual('json-10-nocache',
-                         scenario.Scenario('0.15.3/json-10-nocache').setting)
+        # new name for above
+        self.assertEqual('nocache',
+                         scenario.Scenario('0.15.3/nocache--2016-06-17--10@30').setting)
         self.assertEqual(
             'bridge', scenario.Scenario('disabled/bridge--2016-07-06').setting)
         self.assertEqual(datetime.date(2017, 9, 6),
