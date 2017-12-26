@@ -273,7 +273,7 @@ class TestScenario(unittest.TestCase):
         self.assertEqual('wtf-pad',
                          scenario.Scenario('wtf-pad/bridge--2016-07-05').name)
         self.assertEqual(
-            5, scenario.Scenario(u'simple2/5--2016-09-23-100').setting)
+            '5', scenario.Scenario(u'simple2/5--2016-09-23-100').setting)
         # retro traces are gone: were worse than all others
         # self.assertEqual('retro',
         #                  scenario.Scenario('retro/1').name)

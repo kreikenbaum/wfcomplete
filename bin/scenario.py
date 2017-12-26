@@ -45,9 +45,10 @@ PATH_RENAME = {
     "json-10/a-ii-noburst": "a-ii-noburst--2016-06-03--10@30",
     "json-100/b-i-noburst": "b-i-noburst--2016-06-04--100@40",
     "30-burst": "30-burst--2016-07-11",
-    "30": "30--2016-07-10",
-    "20": "20--2016-07-17",
-    "nobridge--2017-01-19-aI-factor=10-with-errors": "nobridge-aI-factor=10-with-errors--2017-01-19"
+    "/30": "/30--2016-07-10",
+    "/20": "/20--2016-07-17",
+    "nobridge--2017-01-19-aI-factor=10-with-errors": "nobridge-aI-factor=10-with-errors--2017-01-19",
+    "5--2016-09-23-100": "5--2016-09-23--100"
 }
 PATH_SKIP = [
     "../sw/w/, WANG14, knndata.zip",
@@ -71,16 +72,17 @@ class Scenario(object):
         '''
         self.traces = None
         self.trace_args = trace_args or config.trace_args()
-        # import pdb; pdb.set_trace()
         self.path = os.path.normpath(name)
         if name in PATH_SKIP or skip:
             return
-        for (pre, post) in PATH_RENAME.iteritems():
-            if self.path.endswith(pre):
-                self.path = self.path.replace('/' + pre, '/' + post)
+        # import pdb; pdb.set_trace()
         self.path = _prepend_if_ends(self.path, 'with-errors')
         self.path = _prepend_if_ends(self.path, 'with-errs')
         self.path = _prepend_if_ends(self.path, 'with7777')
+        self.path = _prepend_if_ends(self.path, 'failure-in-between')
+        for (pre, post) in PATH_RENAME.iteritems():
+            if self.path.endswith(pre):
+                self.path = self.path.replace(pre, post)
         if smart and not self.valid():
             self.path = list_all(self.path)[0].path
         try:
@@ -108,7 +110,12 @@ class Scenario(object):
             else:
                 self._num_sites = int(numstr)
         # the following discards subset info: 10aI--2016-11-04-50-of-100
-        self.date = parser.parse(date).date()
+        try:
+            self.date = parser.parse(date).date()
+        except ValueError:
+            assert not hasattr(self, 'setting')
+            logging.warn('failed to parse date for %s', name)
+            self.setting = date
         # try:
         #     tmp = [int(x) for x in date.split('-')[:3]]
         #     if len(tmp) == 2:
