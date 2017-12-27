@@ -26,5 +26,7 @@ def trace_args():
 FOLDS = 10
 JOBS_NUM = -3
 # JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
-## testing
+### TESTING
 #JOBS_NUM = 1; FOLDS = 2
+## copy&paste:
+#config.JOBS_NUM = 1; config.FOLDS = 2

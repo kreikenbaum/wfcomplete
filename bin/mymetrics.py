@@ -29,19 +29,21 @@ def bounded_auc(y_true, y_predict, y_bound, **kwargs):
     1.0
     >>> bounded_auc([1, 1, 1, 0], np.array([[0, 0, 0, 1], [1, 1, 1, 0]]).T, 1)
     0.0
+    >>> bounded_auc([0, 1, 1, 1], np.array([[0, 1, 1, 1], [1, 0, 0, 0]]).T, 1)
+    1.0
     '''
     newfpr, newtpr = bounded_roc(y_true, y_predict, y_bound, **kwargs)
     return metrics.auc(newfpr, newtpr) / y_bound
 
 
-# todo: examine constants: why does row 0 correspond to label 1?
+# todo: examine constants: why does row 1 correspond to label 1?
 def bounded_roc(y_true, y_predict, y_bound, **kwargs):
     '''@return (fpr_array, tpr_array) with 0 <= fpr <= y_bound'''
     assert 0 <= y_bound <= 1
     if len(y_predict.shape) == 2 and y_predict.shape[1] == 2:
-        y_predict = y_predict[:, 0]
+        y_predict = y_predict[:, 1]
     fpr, tpr, _ = metrics.roc_curve(y_true, y_predict, 1, **kwargs)
-    newfpr = [x for x in fpr if x < y_bound]
+    newfpr = [y for y in fpr if y < y_bound]
     newfpr.append(y_bound)
     newtpr = np.interp(newfpr, fpr, tpr)
     return (newfpr, newtpr)
@@ -49,9 +51,11 @@ def bounded_roc(y_true, y_predict, y_bound, **kwargs):
 
 def compute_bounded_auc_score(clf, X, y, y_bound=0.01):
     '''@return cross-validated bounded auc of clf on X and y'''
-    scorer = metrics.make_scorer(
-        bounded_auc, needs_proba=True, y_bound=y_bound)
+    scorer = metrics.make_scorer(bounded_auc, needs_proba=True, y_bound=y_bound)
+    # if github sklearn issue #3273 gets pulled
+    #scorer = metrics.make_scorer(metrics.roc_auc_score, greater_is_better=True,
+    #                            needs_threshold=True, max_fpr=y_bound)
     y = list(binarize(y, transform_to=1))
-    return 1/y_bound * model_selection.cross_val_score(
+    return model_selection.cross_val_score(
         clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
         scoring=scorer).mean()

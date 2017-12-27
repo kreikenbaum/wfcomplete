@@ -70,7 +70,6 @@ def _sci_best_at_border(grid_clf):
 
 def _sci_fit(C, gamma, step, X, y, scoring=None, probability=False):
     '''@return appropriate gridsearchcv, fitted with X and y'''
-    logging.info('C: %s, gamma: %s, step: %s', C, gamma, step)
     cs = _search_range(C, step)
     gammas = _search_range(gamma, step)
     clf = model_selection.GridSearchCV(
@@ -82,7 +81,10 @@ def _sci_fit(C, gamma, step, X, y, scoring=None, probability=False):
 
 
 def _search_range(best_param, step=1):
-    '''@return new array of parameters to search in, with logspaced steps'''
+    '''@return new array of parameters to search in, with logspaced steps
+    >>> _search_range(1, 2)
+    [0.0625, 0.25, 1, 4.0, 16.0]
+    '''
     expstep = 2.**step
     return [best_param / (expstep**2),
             best_param / expstep,
@@ -106,6 +108,7 @@ def _stop(y, step, result, previous, C=1, best=1, delta=0.01):
     True
     '''
     return (
+        result == 1 or
         step < 0.001 or
         C < 1e-50 or (
             # some tries
@@ -129,7 +132,7 @@ def helper(counter_dict, outlier_removal=True, cumul=True, folds=config.FOLDS):
         return my_grid(X, y, C=2**17, gamma=2**-19, folds=folds)
 
 
-def my_grid(X, y, C=2**14, gamma=2**-10, step=4, results=None,
+def my_grid(X, y, C=2**4, gamma=2**-4, step=2, results=None,
             auc_bound=None, previous=None, folds=config.FOLDS, delta=0.01):
     '''@param results are previously computed results {(C,gamma): accuracy, ...}
     @param auc_bound if this is set, use the bounded auc score with this y_bound
@@ -140,6 +143,7 @@ def my_grid(X, y, C=2**14, gamma=2**-10, step=4, results=None,
         scaler = None # guesstimate: one grid search per data set (TODO: refact)
     bestclf = None
     bestres = np.array([0])
+    #import pdb; pdb.set_trace()
     for c in _search_range(C, step):
         for g in _search_range(gamma, step):
             clf = multiclass.OneVsRestClassifier(svm.SVC(
@@ -164,8 +168,9 @@ def my_grid(X, y, C=2**14, gamma=2**-10, step=4, results=None,
         return Result(bestclf, np.mean(bestres), results)
     if (bestclf.estimator.C in (_search_range(C, step)[0],
                                 _search_range(C, step)[-1])
-            or bestclf.estimator.gamma in (_search_range(gamma, step)[0],
-                                           _search_range(gamma, step)[-1])):
+        or bestclf.estimator.gamma in (_search_range(gamma, step)[0],
+                                           _search_range(gamma, step)[-1])
+        and collections.Counter(results.values())[bestres] == 1):
         logging.warn('optimal at border. c:%f, g:%f, score: %f',
                      bestclf.estimator.C, bestclf.estimator.gamma, bestres)
     else:
@@ -188,7 +193,7 @@ def roc(clf, X_train, y_train, X_test, y_test):
 
 
 def sci_grid(X, y, C=2**14, gamma=2**-10, step=2, scoring=None,
-             probability=False):
+             probability=False, simple=False):
     '''(scikit-)grid-search on fixed params, searching laterally and in depth
 
     @param X,y,C,gamma,folds as for the classifier
@@ -199,10 +204,25 @@ def sci_grid(X, y, C=2**14, gamma=2**-10, step=2, scoring=None,
     >>> test = sci_grid([[1, 0], [1, 0], [1, 0], [0, 1], [0, 1], [0, 1]], [0, 0, 0, 1, 1, 1], 0.0001, 0.000001); test.best_score_
     1.0
     '''
+    if simple:
+        clf = model_selection.GridSearchCV(
+            estimator=multiclass.OneVsRestClassifier(
+                svm.SVC(class_weight="balanced", probability=True)),
+            param_grid={"estimator__C": np.logspace(-3, 3, base=2, num=7),
+                        "estimator__gamma": np.logspace(-3, 3, base=2, num=7)},
+            n_jobs=config.JOBS_NUM, verbose=0, cv=config.FOLDS,
+            scoring="roc_auc")
+        clf.fit(X, y)
+        return clf
     previous = []
 
     clf = _sci_fit(C, gamma, step, X, y, scoring, probability)
+    #import pdb; pdb.set_trace()
     while not _stop(y, step, clf.best_score_, previous):
+        logging.info('C: %s, gamma: %s, step: %s, score: %f',
+                     clf.best_params_['estimator__C'],
+                     clf.best_params_['estimator__gamma'],
+                     step, clf.best_score_)
         if _sci_best_at_border(clf):
             pass  # keep step, search laterally
         else:

@@ -164,14 +164,11 @@ class TestFit(unittest.TestCase):
     '''tests the fit module'''
 
     def setUp(self):
-        #self.size = 100
-        self.size = 30
-        self.X = [(1, 0)] * self.size; self.X.extend([(0, 1)] * self.size)
-        self.y = [1] * self.size; self.y.extend([-1] * self.size)
+        self.size = 100
+        self.X, self.y = _init_X_y(self.size)
         self.string = 'tpr: {}, fpr: {}'
         fit.FOLDS = 2
-        reload(logging)
-        logging.disable(logging.WARNING)
+        logging.disable(logging.INFO)
 
 
     def tearDown(self):
@@ -180,6 +177,7 @@ class TestFit(unittest.TestCase):
 
     @unittest.skipIf(VERYQUICK, "slow test skipped")
     def test_doc(self):
+        '''runs doctests'''
         (fail_num, _) = doctest.testmod(fit)
         self.assertEqual(0, fail_num)
 
@@ -194,6 +192,7 @@ class TestFit(unittest.TestCase):
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_ow_roc(self):
         '''tests roc for normal open world grid search'''
+        (self.X, self.y) = _init_X_y(100, False)
         (clf, _, _) = fit.my_grid(self.X, self.y, auc_bound=0.3)
         (fpr, tpr, _, _) = fit.roc(clf, self.X, self.y, self.X, self.y)
         self.assertEqual(list(fpr)[:2], [0, 1])
@@ -201,11 +200,13 @@ class TestFit(unittest.TestCase):
 
 
     @unittest.skipIf(QUICK, "slow test skipped")
-    def test_ow_random_minus(self):
+    def test_ow_minus(self):
         '''tests some class bleed-off: some negatives with same
         feature as positives'''
-        X_rand_middle = [(0.5, 0.5)] * (11 * self.size / 10)
-        X_rand_middle.extend(np.random.random_sample((9 * self.size / 10, 2)))
+        self.X, self.y = _init_X_y(self.size)
+        X_rand_middle = [(1, 0)] * (11 * self.size / 10)
+        #X_rand_middle.extend(np.random.random_sample((9 * self.size / 10, 2)))
+        X_rand_middle.extend([(0, 1)] * (9 * self.size / 10))
         (clf, _, _) = fit.my_grid(X_rand_middle, self.y, auc_bound=0.3)
         (fpr, tpr, _, _) = fit.roc(clf, X_rand_middle, self.y,
                                    X_rand_middle, self.y)
@@ -220,6 +221,7 @@ class TestFit(unittest.TestCase):
     def test_ow_random_plus(self):
         '''tests some class bleed-off: some positives with same
         feature as negatives'''
+        X, y = _init_X_y(self.size)
         X_rand_middle = [(0.5, 0.5)] * (9 * self.size / 10)
         X_rand_middle.extend(np.random.random_sample((11 * self.size / 10, 2)))
         (clf, _, _) = fit.my_grid(X_rand_middle, self.y, auc_bound=0.3)
@@ -471,6 +473,17 @@ def temp_dir():
         return tempfile.mkdtemp()
 
 
+def _init_X_y(size, random=True):
+    '''@return (X, y) of given size'''
+    X = [(1, 0)] * size;
+    X.extend([(0, 1)] * size)
+    if random:
+        X = np.array(X).astype('float64')
+        X += np.random.random_sample(X.shape) * 0.8 -0.4
+    y = [1] * size; y.extend([-1] * size)
+    return (X, y)
+
+
 if __name__ == '__main__':
     test_runner = TextTestRunner(resultclass=TimeLoggingTestResult)
-    unittest.main(testRunner=test_runner)
+    unittest.main(testRunner=test_runner, failfast=True, verbosity=2, exit=False)
