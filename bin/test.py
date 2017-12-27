@@ -34,17 +34,14 @@ class TestCounter(unittest.TestCase):
         self.c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]] # len 7
         self.big_val = [counter._test(3, val=10*60*1000)] # very big, but ok
 
-
     def test_doc(self):
         (fail_num, _) = doctest.testmod(counter, optionflags=doctest.ELLIPSIS)
         self.assertEqual(0, fail_num)
-
 
     def test__test(self):
         c = counter._test(35)
         self.assertTrue(c.timing)
         self.assertTrue(c.packets)
-
 
     def test_dict_to_cai(self):
         mock_writer = MockWriter()
@@ -76,7 +73,6 @@ test + + + +
             'unlike\n{}\n\n{}'.format([str(x) for x in restored['a']],
                                       [str(x) for x in self.c_list]))
 
-
     def test_outlier_removal(self):
         # take simple dict which removes stuff
         # by methods 1-3 (one each)
@@ -106,7 +102,6 @@ test + + + +
         self.assertEqual(len(counter.p_or_toolong(self.big_val)), 1)
         self.assertEqual(len(self.big_val), 1, 'has side effect')
 
-
     def test_tf_cumul_background(self):
         X, y, yd = counter.to_features_cumul({'background': self.c_list})
         self.assertTrue(-1 in y, '-1 not in {}'.format(set(y)))
@@ -121,7 +116,6 @@ test + + + +
         self.assertEquals(list(y.flatten()), [0, 0])
         self.assertEquals(yd, ['url', 'url'])
 
-
     def test__from(self):
         current = os.getcwd()
         emptydir = temp_dir()
@@ -129,7 +123,6 @@ test + + + +
         with self.assertRaises(IOError):
             counter.Counter.from_('path/to/counter.py',)
         os.chdir(current)
-
 
 
 class TestExp(unittest.TestCase):
@@ -170,10 +163,8 @@ class TestFit(unittest.TestCase):
         fit.FOLDS = 2
         logging.disable(logging.WARNING) # change to .INFO or disable for debug
 
-
     def tearDown(self):
         logging.disable(logging.NOTSET)
-
 
     @unittest.skipIf(VERYQUICK, "slow test skipped")
     def test_doc(self):
@@ -181,13 +172,11 @@ class TestFit(unittest.TestCase):
         (fail_num, _) = doctest.testmod(fit)
         self.assertEqual(0, fail_num)
 
-
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_ow(self):
         '''tests normal open world grid search'''
         result = fit.my_grid(self.X, self.y, auc_bound=0.3)
         self.assertAlmostEqual(result.best_score_, 1)
-
 
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_ow_roc(self):
@@ -197,7 +186,6 @@ class TestFit(unittest.TestCase):
         (fpr, tpr, _, _) = fit.roc(clf, self.X, self.y, self.X, self.y)
         self.assertEqual(list(fpr)[:2], [0, 1])
         self.assertEqual(list(tpr)[:2], [1, 1])
-
 
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_ow_minus(self):
@@ -215,7 +203,6 @@ class TestFit(unittest.TestCase):
         self.assertEqual(fpr[0], 0, self.string.format(tpr, fpr))
         self.assertEqual(tpr[1], 1, self.string.format(tpr, fpr))
         self.assertEqual(fpr[1], 0.1, self.string.format(tpr, fpr))
-
 
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_ow_random_plus(self):
@@ -247,15 +234,12 @@ class TestScenario(unittest.TestCase):
         self.base_mock2 = {'a': (10, -1), 'b': (10, -1), 'c': (10, -1)}
         logging.disable(logging.WARNING)
 
-
     def tearDown(self):
         logging.disable(logging.NOTSET)
-
 
     def test_doc(self):
         (fail_num, _) = doctest.testmod(scenario)
         self.assertEqual(0, fail_num)
-
 
     def test___init__(self):
         self.assertEqual('no defense',
@@ -294,8 +278,6 @@ class TestScenario(unittest.TestCase):
                          scenario.Scenario("wtf-pad/bridge--2017-09-06").date)
         #'disabled/nobridge--2016-12-26-with7777' # what to do?
 
-
-
     def test___equal__(self):
         self.assertEqual(scenario.Scenario("wtf-pad/bridge--2017-09-06"),
                          scenario.Scenario("wtf-pad/bridge--2017-09-06"))
@@ -303,8 +285,6 @@ class TestScenario(unittest.TestCase):
                             scenario.Scenario("0.20/20-ai--2016-06-25"))
         self.assertNotEqual(scenario.Scenario("0.20/0-ai--2016-06-25"),
                             scenario.Scenario("0.20/0-aii--2016-06-25"))
-
-
 
     def test_binarize_fake(self):
         c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]]
@@ -316,7 +296,6 @@ class TestScenario(unittest.TestCase):
         res = s.binarize().get_traces()
         self.assertEquals(res['background'], c_list)
         self.assertEquals(len(res['foreground']), 2 * len(c_list))
-
 
     def test__binarize_fake_vs_fit(self):
         c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]]
@@ -331,12 +310,11 @@ class TestScenario(unittest.TestCase):
         self.assertTrue(np.array_equal(ya, yc), "ya: {}\nyc: {}".format(ya, yc))
         self.assertTrue(np.array_equal(Xa, Xc))
 
-
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_binarize_real(self):
         s = scenario.Scenario('wtf-pad/bridge--2016-07-05')
-        self.assertTrue(2, len(s.get_open_world().binarize().get_traces().keys()))
-
+        self.assertTrue(2,
+                        len(s.get_open_world().binarize().get_traces().keys()))
 
     def test_date_from_trace(self):
         trace = counter._test(3)
@@ -345,23 +323,19 @@ class TestScenario(unittest.TestCase):
         s.traces = {'msn.com' : [trace]}
         self.assertEqual(datetime.date(2016, 7, 5), s.date_from_trace())
 
-
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_get_open_world(self):
         s = scenario.Scenario('disabled/05-12@10')
         self.assertTrue('background' in s.get_open_world().get_traces())
-
 
     def test_sample(self):
         s = scenario.Scenario('somescenario/2012-07-05')
         s.traces = {'msn.com' : [counter._test(3)] * 30}
         self.assertEqual(len(s.get_sample(10)['msn.com']), 10)
 
-
     def test_size_increase__disabled(self):
         self.assertEqual(
             0, scenario.Scenario('disabled/05-12@10').size_increase())
-
 
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_size_increase__empty(self):
@@ -370,33 +344,31 @@ class TestScenario(unittest.TestCase):
         s.traces = {'msn.com': [trace], 'google.com': [trace]}
         self.assertEqual(-100, s.size_increase())
 
-
     def test__filter_all(self):
         self.assertTrue('disabled/2016-06-30' in scenario._filter_all(
             ['disabled', 'disabled/2016-06-30'], True))
         self.assertTrue('disabled/2016-06-30' in scenario._filter_all(
             ['disabled', 'disabled/2016-06-30'], False))
 
-
     @unittest.skipIf(QUICK, "slow test skipped")
     def test__closest_bg(self):
         s = scenario.Scenario('disabled/background--2016-08-17')
         self.assertEqual(s, s._closest('background', include_bg=True))
 
-
     def test__compute_increase_equal(self):
-        self.assertEqual(scenario._compute_increase(self.base_mock,
-                                                {'a': (10, -1), 'b': (10, -1)}),
-                         0)
+        self.assertEqual(
+            scenario._compute_increase(self.base_mock,
+                                       {'a': (10, -1), 'b': (10, -1)}),
+            0)
 
     def test__compute_increase_same_half(self):
-        self.assertEqual(scenario._compute_increase(self.base_mock,
-                                                {'a': (5, -1), 'b': (5, -1)}),
+        self.assertEqual(scenario._compute_increase(
+            self.base_mock, {'a': (5, -1), 'b': (5, -1)}),
                          -50)
 
     def test__compute_increase_same_double(self):
-        self.assertEqual(scenario._compute_increase(self.base_mock,
-                                                {'a': (20, -1), 'b': (20, -1)}),
+        self.assertEqual(scenario._compute_increase(
+            self.base_mock, {'a': (20, -1), 'b': (20, -1)}),
                          100)
 
     def test__compute_increase_one_double(self):
@@ -486,4 +458,4 @@ def _init_X_y(size, random=True):
 
 if __name__ == '__main__':
     test_runner = TextTestRunner(resultclass=TimeLoggingTestResult)
-    unittest.main(testRunner=test_runner, failfast=True, verbosity=2, exit=False)
+    unittest.main(testRunner=test_runner)
