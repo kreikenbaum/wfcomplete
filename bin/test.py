@@ -168,7 +168,7 @@ class TestFit(unittest.TestCase):
         self.X, self.y = _init_X_y(self.size)
         self.string = 'tpr: {}, fpr: {}'
         fit.FOLDS = 2
-        logging.disable(logging.INFO)
+        logging.disable(logging.WARNING) # change to .INFO or disable for debug
 
 
     def tearDown(self):
