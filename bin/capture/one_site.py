@@ -90,6 +90,7 @@ def _navigate_or_fail(client, url, file_name, tries=0):
     except (errors.NoSuchElementException, DelayError):
         if tries < 3:
             time.sleep(0.1)
+            logging.warn("retry %d on %s", tries+1, file_name)
             return _navigate_or_fail(client, url, file_name, tries+1)
         else:
             raise CaptureError("failed repeatedly to get page text")
