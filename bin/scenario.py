@@ -35,6 +35,7 @@ RENAME = {
 # were renamed on disk, hack to rename
 PATH_RENAME = {
     "05-12@10": "05-12-2016--10@40",
+    'bridge--2016-11-04-100@50': "10aI--2016-11-04--100@50",
     "10aI--2016-11-04-50-of-100": "10aI--2016-11-04--100@50",
     "json-10-nocache": "nocache--2016-06-17--10@30",
     "nobridge--2017-01-19-aI-factor=10": "nobridge-aI-factor=10--2017-01-19",
@@ -144,7 +145,7 @@ class Scenario(object):
                 or (not hasattr(self, attr) and not hasattr(other, attr)))
 
     def __eq__(self, other):
-        return (self.name == other.name
+        return (self._compareattr(other, "name")
                 and self._compareattr(other, "date")
                 and self._compareattr(other, "num_sites"))
 
