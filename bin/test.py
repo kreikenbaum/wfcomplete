@@ -29,10 +29,13 @@ QUICK = os.getenv('QUICK', False) or VERYQUICK
 
 class TestCounter(unittest.TestCase):
     '''tests the counter module'''
-
     def setUp(self):
         self.c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]] # len 7
         self.big_val = [counter._test(3, val=10*60*1000)] # very big, but ok
+        logging.disable(logging.INFO) # change to .INFO or disable for debug
+
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
 
     def test_doc(self):
         (fail_num, _) = doctest.testmod(counter, optionflags=doctest.ELLIPSIS)
@@ -399,16 +402,24 @@ class TestScenario(unittest.TestCase):
 
 class TestCaptureOnesite(unittest.TestCase):
     '''tests the one_site module/program'''
+    def setUp(self):
+        logging.disable(logging.WARNING) # change to .INFO or disable for debug
+
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
 
     def test_doc(self):
         (fail_num, _) = doctest.testmod(counter, optionflags=doctest.ELLIPSIS)
         self.assertEqual(0, fail_num)
 
     def test__check_text(self):
-        with self.assertRaises(one_site.CaptureError):
+        with self.assertRaises(one_site.DelayError):
+            one_site._check_text("test tor network settings")
+        # typeerrors: trying to rename None file
+        with self.assertRaises(TypeError):
             one_site._check_text("hello")
         one_site._check_text("hello\n\n\n\n")
-        with self.assertRaises(one_site.CaptureError):
+        with self.assertRaises(TypeError):
             one_site._check_text("Reference #18\n\n\n\n")
 
 

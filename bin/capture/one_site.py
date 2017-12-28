@@ -40,7 +40,9 @@ PROBLEMATIC_TEXT = [
 LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 LOGLEVEL = logging.INFO
 logging.basicConfig(filename=ERRFILENAME, format=LOGFORMAT, level=LOGLEVEL)
-logging.getLogger().addHandler(logging.StreamHandler())
+sh = logging.StreamHandler()
+sh.setFormatter(logging.Formatter(LOGFORMAT))
+logging.getLogger().addHandler(sh)
 
 # cheap hack
 def _avoid_safe_mode(exedir):
@@ -57,16 +59,20 @@ def browse_to(page, bridge=None):
     _open_with_timeout(browser, page, bridge=bridge)
 
 
-def _check_text(text):
+def _check_text(text, file_name=None, client=None):
     '''raise exception if problem with page text (handled in _navi...)'''
     for delay_text in PROBLEMATIC_DELAY:
         if delay_text in text:
             raise DelayError()
     if collections.Counter(text)['\n'] <= 2:
-        raise CaptureError("less than 3 lines of text")
+        _handle_exception("less than 3 lines of text", file_name, client)
+        return False
     for problem in PROBLEMATIC_TEXT:
         if problem in text:
-            raise CaptureError("text contains {}".format(problem))
+            _handle_exception(
+                "text contains {}".format(problem), file_name, client)
+            return False
+    return True
 
 
 def _get_page_text(client):
@@ -85,28 +91,34 @@ def _navigate_or_fail(client, url, file_name, tries=0):
     '''navigates client to url, on failure renames file'''
     try:
         client.navigate(url)
-        _check_text(_get_page_text(client).lower())
-        _write_text(client, file_name)
+        if _check_text(_get_page_text(client).lower(), file_name, client):
+            _write_text(client, file_name)
     except (errors.NoSuchElementException, DelayError):
         if tries < 3:
             time.sleep(0.1)
-            logging.warn("retry %d on %s", tries+1, file_name)
+            logging.info("retry %d on %s", tries+1, file_name)
             return _navigate_or_fail(client, url, file_name, tries+1)
         else:
-            raise CaptureError("failed repeatedly to get page text")
-    except (errors.UnknownException, errors.TimeoutException,
-            CaptureError) as e:
-        logging.warn('exception: %s', e)
-        #try:
-        to = '{}_{}'.format(
-                file_name,
-                str(sys.exc_info()[1]).split('\n')[0].replace(' ', '_').replace('/', '___').replace("'", ''))[:255]
-        os.rename(file_name, to)
-        _write_text(client, to)
-        # except OSError as e2:
-        #     logging.warn('failed with OSError: %s', e2)
-        #     logging.warn('from: %s', file_name)
-        #     logging.warn('to: %s', to)
+            _handle_exception("failed repeatedly to get page text",
+                              file_name, client)
+    except errors.TimeoutException as e:
+        try:
+            _check_text(_get_page_text(client).lower(), file_name, client)
+            _handle_exception(e.message, file_name, client)
+        except (errors.NoSuchElementException, CaptureError) as e2:
+            _handle_exception(e2.message, file_name, client)
+    except (errors.UnknownException, CaptureError) as e:
+        _handle_exception(e.message, file_name, client)
+
+
+def _handle_exception(exception, file_name, client):
+    '''renames file to mention exception cause'''
+    logging.warn('exception: %s', exception)
+    to = '{}_{}'.format(
+        file_name,
+        str(exception).split('\n')[0].replace(' ', '_').replace('/', '___').replace("'", ''))[:255]
+    os.rename(file_name, to)
+    _write_text(client, to)
 
 
 def _normalize_url(url='google.com'):
@@ -218,10 +230,12 @@ def _write_text(client, srcfile):
 
 class CaptureError(Exception):
     '''raised when capture text is buggy'''
-    def __init__(self, value):
-        self.value = value
+    def __init__(self, message):
+        self.message = message
+    def __repr__(self):
+        return repr(self.message)
     def __str__(self):
-        return repr(self.value)
+        return self.message
 
 class DelayError(Exception):
     '''raised when capture needs to wait a bit (text is missing or greeter)'''
