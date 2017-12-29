@@ -96,7 +96,7 @@ def _navigate_or_fail(client, url, file_name, tries=0):
         client.navigate(url)
         if _check_text(_get_page_text(client).lower(), file_name, client):
             _write_text(client, file_name)
-    except (errors.NoSuchElementException, DelayError):
+    except (errors.NoSuchElementException, DelayError, socket.error):
         if tries < 3:
             time.sleep(0.1)
             logging.info("retry %d on %s", tries+1, file_name)

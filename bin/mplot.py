@@ -144,7 +144,7 @@ def traces_cumul(scenario_obj, domain, legend=None, color="red", axes=None):
     X, y, yd = scenario_obj.get_features_cumul()
     data = [x[0] for x in zip(X[:,4:], yd) if x[1] == domain]
     for datum in data:
-        line = plt.plot(datum, c=color)
+        line = plt.plot(datum, c=color, alpha=0.5, linewidth=1)
     return line
 
 
