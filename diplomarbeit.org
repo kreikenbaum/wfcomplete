@@ -1,4 +1,4 @@
- #+TITLE: Selective Cover Traffic
+#+TITLE: Selective Cover Traffic
 #+TODO: KEYWORDS WRITE CHECK | DANIEL FINAL
 #+TODO: RECHECK | DANIEL FINAL
 #+TODO: | DANIEL_BUT_NEEDS_SUBPARTS
@@ -11,7 +11,6 @@
 #+LATEX_CLASS: scrreprt
 #+LATEX_CLASS_OPTIONS: [a4paper,10pt]
 #+LATEX_HEADER: \usepackage{adjustbox}
-#+LATEX_HEADER: \usepackage{acronym}
 #+LATEX_HEADER: \usepackage{algorithm}
 #+LATEX_HEADER: \usepackage[noend]{algpseudocode}
 #+LATEX_HEADER: \usepackage{float}
@@ -20,6 +19,12 @@
 #+LATEX_HEADER: \usepackage{pgf}
 #+LATEX_HEADER: \usepackage{tikz}
 #+LATEX_HEADER: \usepackage{times}
+# glossaries after hyperref
+#+LATEX_HEADER: \usepackage{glossaries}
+#+LATEX_HEADER: \setacronymstyle{long-short}
+#+LATEX_HEADER: \newacronym{ml}{ML}{machine learning}
+#+LATEX_HEADER: \newacronym{wf}{WF}{website fingerprinting}
+# end glossaries
 #+LATEX_HEADER: \restylefloat{table}
 #+LATEX_HEADER: \setlongtables
 #+LATEX_HEADER: \npdecimalsign{.}
@@ -83,16 +88,6 @@
 #+LATEX_HEADER: \def\BState{\State\hskip-\ALG@thistlm}
 #+LATEX_HEADER: \makeatother
 #+OPTIONS: H:6
-* List of Acronyms
-  :PROPERTIES:
-  :UNNUMBERED: t
-  :END:
-#+BEGIN_EXPORT latex
-\begin{acronym}
-\acro{ML}{machine learning}
-\acro{WF}{website fingerprinting}
-\end{acronym}
-#+END_EXPORT
 * Introduction
 #+BEGIN_EXPORT latex
 \pagenumbering{arabic}
@@ -126,7 +121,7 @@
   As has often been the case with anonymity and privacy, several
   parties try to attack Tor's protection. One mass-surveillance type
   of attack that can be carried out passively with low-level
-  technology is \ac{WF}: The time and size of users' data packets
+  technology is \gls{wf}: The time and size of users' data packets
   (called /traces/) are recorded. See Figure \ref{fig:traces}. This
   recording is compared to previously recorded traces of known
   sites. While older attacks (\cite{ccsw09-fingerprinting},
@@ -180,7 +175,7 @@ While some similarity can be seen for each group, the "within-group" differences
   /that traffic occurs/, not just which website is visited, as it
   derives its basic mechanism from \cite{ShWa-Timing06}.
 ** Thesis Contribution
-   This thesis presents and tests a new defense against \ac{WF}. This
+   This thesis presents and tests a new defense against \gls{wf}. This
    new defense mimics HTTP\cite{rfc7230}-shaped cover traffic: Each
    web page retrieval is augmented by stochastically-drawn dummy HTTP
    traffic\cite{newtrafficmodel}. This could optimize the protection
@@ -194,10 +189,10 @@ While some similarity can be seen for each group, the "within-group" differences
    Chapter [[#ch2-background]] provides basic background for the IT-savvy
    who have not yet encountered Tor, machine learning, or website
    fingerprinting. For the Tor network, we treat its basic structure
-   and why website fingerprinting might be a credible threat. Machine
-   learning basic steps and algorithms are briefly skimmed. Finally,
-   website fingerprinting on Tor is presented. These parts can safely
-   be skipped given previous knowledge.
+   and why \gls{wf} might be a credible threat. \Gls{ml} basic steps
+   and algorithms are briefly skimmed. Finally, \gls{wf} on Tor is
+   presented. These parts can safely be skipped given previous
+   knowledge.
 
    The defense's why and how (motivation and design) is described in
    chapter [[#ch3-newdefense]]. This also describes the bloom sort data
@@ -218,7 +213,7 @@ While some similarity can be seen for each group, the "within-group" differences
   :PROPERTIES:
   :CUSTOM_ID: ch2-background
   :END:
-  Knowing [[#sub2-tor][the Tor network]], [[#sub2-ml][machine-learning basics]] and [[#sub2-wf][previous
+  Knowing [[#sub2-tor][the Tor network]], [[#sub2-ml][\gls{ml} basics]] and [[#sub2-wf][previous
   attacks and defenses]] helps to understand and then counter website
   fingerprinting.
 ** DANIEL The Tor Network
@@ -250,8 +245,7 @@ While some similarity can be seen for each group, the "within-group" differences
 
    Each message is encrypted three times using same-length encryption
    and sent along this path. The first router decrypts the first
-   layer, and so on, like layers of an onion. This explains Tor's name
-   /the onion router/.
+   layer, and so on, like layers of an onion.
 
    As a result of this setup, each hop can only see its direct
    neighbors along the path. Even if one hop of a three-hop setup is
@@ -270,7 +264,7 @@ While some similarity can be seen for each group, the "within-group" differences
    process is called /traffic analysis/\cite{introta} and yields much
    useful information\cite[ch.10.3]{applied96}.
 
-   \ac{WF} needs only message meta-data: who sends how much data
+   \gls{wf} needs only message meta-data: who sends how much data
    when. It assumes that the system itself is computationally
    secure\cite[ch.1.1]{applied96}: there are not enough resources,
    time, or data to break it. Analysing traffic patterns can
@@ -290,7 +284,7 @@ While some similarity can be seen for each group, the "within-group" differences
    timing\cite{challenges}.\\
 
 
-   This made \ac{WF} harder, to the point that it was was mentioned, but
+   This made \gls{wf} harder, to the point that it was was mentioned, but
    not hindered, in \cite{tor-design}. It took five years for
    \cite{ccsw09-fingerprinting} to show better than random
    classification results against Tor traffic. This evolved to
@@ -298,27 +292,27 @@ While some similarity can be seen for each group, the "within-group" differences
 
    What all methods have in common is that they extract numerical
    /features/ from the raw data, which is then classified using
-   machine learning.
+   \gls{ml}.
 ** DANIEL Machine Learning
    :PROPERTIES:
    :CUSTOM_ID: sub2-ml
    :END:
    #+INDEX: machine learning
    #+INDEX: ML
-   Let us review basics of \ac{ML}: a
+   Let us review basics of \gls{ml}: a
    computer\cite{turing1936a} algorithm extracts and generalizes
    patterns from learning data.\cite[ch.1.2]{rieckdiss} This is then used to
    classify further patterns (f.ex. for handwriting recognition),
    or to act on the generalizations (f.ex. for self-driving cars).
 
-   The machine learning process consists of at least two separate
+   The \gls{ml} process consists of at least two separate
    steps: feature extraction and classification. Domain-specific
    [[#ml-features][feature extraction]] transforms the raw input data --- in our case,
    website traces --- into /features/ --- in our case, numbers,
    f.ex. the number of outgoing packets. [[#ml-class][Classification]] then
    generalizes and assigns these characteristics into categories.
 
-   A last section presents [[#ml-measure][measures to evaluate machine learning
+   A last section presents [[#ml-measure][measures to evaluate \gls{ml}
    performance]].
 *** DANIEL Feature Extraction
     :PROPERTIES:
@@ -326,11 +320,11 @@ While some similarity can be seen for each group, the "within-group" differences
     :END:
     #+INDEX: feature extraction
     #+INDEX: machine learning!feature extraction
-    \ac{WF} tries to analyse web traces. To be able to defend against
-    \ac{WF}, it should first be understood. To be understood, it
+    \gls{wf} tries to analyse web traces. To be able to defend against
+    \gls{wf}, it should first be understood. To be understood, it
     should be reproduced.
 
-    \ac{WF} input data needs to be wrangled for the classification to work:
+    \gls{wf} input data needs to be wrangled for the classification to work:
     extra information that might change from request to request ---
     such as the hosts IP address, or the absolute time of the
     retrieval --- needs to be removed or unified to a common
@@ -366,7 +360,7 @@ While some similarity can be seen for each group, the "within-group" differences
     normalization. This is also evaluated with support vector
     machines.\\
 
-    There are numerous \ac{WF} attacks. F.ex. \cite{effective} achieved
+    There are numerous \gls{wf} attacks. F.ex. \cite{effective} achieved
     accuracy improvements using over 3000 features and a
     KNN-classification with weighted metrics while
     \cite{kfingerprint}'s approach uses approximately 150 features
@@ -421,11 +415,11 @@ While some similarity can be seen for each group, the "within-group" differences
     #+INDEX: ROC curve
     #+INDEX: True Positive Rate
     #+INDEX: tpr
-    To find out if \ac{WF} attacks work, and if defenses prevent this,
+    To find out if \gls{wf} attacks work, and if defenses prevent this,
     their success needs to be measured.
 
     A /confusion matrix/\cite{powers} helps to illustrate the
-    different cases that can occur in \ac{WF}. Each trace is categorized by
+    different cases that can occur in \gls{wf}. Each trace is categorized by
     whether it /is/ a sensitive website, and whether it is
     /classified/ as such. See Table [[tab:confusion_matrix]].
 
@@ -441,7 +435,7 @@ While some similarity can be seen for each group, the "within-group" differences
     |----------------------+-----------------------+-----------------------|
 
     From these counts, other metrics can be derived. The main metrics
-    used in \ac{WF} literature are /Accuracy/ (acc), and /True-/ and
+    used in \gls{wf} literature are /Accuracy/ (acc), and /True-/ and
     /False-Positive-Rate/ (tpr and fpr). These are defined as
 
     #+ATTR_LATEX: :align r c l
@@ -640,9 +634,9 @@ While some similarity can be seen for each group, the "within-group" differences
      #+NAME: fig:knn-example
      #+ATTR_LATEX: :width 0.7\textwidth
      [[./pictures/mitchell-fig8.1.png]]
-** DANIEL Tor Website Fingerprinting Defenses
-   This section describes defenses against \ac{WF} as described
-   [[#sub2-wf][previously]]. As most Machine Learning, \ac{WF} uses statistical
+** DANIEL Website Fingerprinting Defenses
+   This section describes defenses against \gls{wf} as described
+   [[#sub2-wf][previously]]. As most \gls{ml}, \gls{wf} uses statistical
    properties of the underlying data. It could possibly be defeated by
    shuffling these properties. The total number of incoming packets
    f.ex. is a feature used by almost all modern attacks:
@@ -701,9 +695,9 @@ While some similarity can be seen for each group, the "within-group" differences
    defense to the server-side ALPaCA defense, and emphasize its draft
    status\cite{LLaMA}.
 ** DANIEL Summary
-   \ac{WF} can deanonymize anonymous traffic. This can pose a huge problem
+   \gls{wf} can deanonymize anonymous traffic. This can pose a huge problem
    f.ex. for whistleblowers. The previous sections gave a short
-   introduction to the basics of Tor, \ac{WF} attacks, its basis in machine
+   introduction to the basics of Tor, \gls{wf} attacks, its basis in machine
    learning, and finally defenses against it. It also gave a first
    glimpse at this thesis' new defense.
 
@@ -712,9 +706,9 @@ While some similarity can be seen for each group, the "within-group" differences
   :PROPERTIES:
   :CUSTOM_ID: ch3-newdefense
   :END:
-  The last chapter showed that \ac{WF} could be a serious attack on online
+  The last chapter showed that \gls{wf} could be a serious attack on online
   anonymity and privacy. As specific defenses could be circumvented, a
-  general defense against \ac{WF} is needed. It should provide adequate
+  general defense against \gls{wf} is needed. It should provide adequate
   protection for an acceptable increase in bandwidth and delay.\\
 
 
@@ -829,7 +823,7 @@ While some similarity can be seen for each group, the "within-group" differences
 
   This chapter compares the new defense to existing defenses.  The
   first section illustrates the setup. The second section [[#sub4-tools][validates
-  the \ac{WF} attacks used]]. The next section [[#sub4-closed][compares defenses in a
+  the \gls{wf} attacks used]]. The next section [[#sub4-closed][compares defenses in a
   closed-world setting]], where they need to only distinguish a small
   fixed number of pages. The penultimate section evaluates them [[#sub4-open][in an
   open-world scenario]], which has many background-page retrievals added
@@ -881,12 +875,12 @@ While some similarity can be seen for each group, the "within-group" differences
      cleans the cache between captures by restarting the Tor Browser
      Bundle.
    
-** CHECK \acl{WF} Attack Evaluation
+** CHECK \glsfirst{wf} Attack Evaluation
    :PROPERTIES:
    :CUSTOM_ID: sub4-tools
    :END:
    How does the defense compare to others (\cite{wtfpad},
-   \cite{LLaMA}, \cite{a-systematic})? To examine this, \ac{WF} attacks are
+   \cite{LLaMA}, \cite{a-systematic})? To examine this, \gls{wf} attacks are
    executed against web site traces collected with disabled defenses.
 
    The evaluation uses the attacks CUMUL by \cite{panchenko2} --- both
@@ -936,7 +930,7 @@ While some similarity can be seen for each group, the "within-group" differences
    |-------------------+------------+------------+------------|
    | llama (redo!)     |         26 |        295 |       2981 |
    |-------------------+------------+------------+------------|
-   | llama-nodelay     |         63 |     279.67 |      58.86 |
+   | llama-nodelay (redo) |         63 |     279.67 |      58.86 |
    | 100aI--2017-12-14 |      45.64 |     284.35 |      65.92 |
    | 20aI--2016-10-07  |         63 |      72.47 |       1.50 |
 
@@ -1129,7 +1123,7 @@ training on data without defense, and testing on defended data.
    This knowledge helps in understanding and creating defenses. As of
    \cite{a-systematic}, \cite{ccs2014-critical} and \cite{panchenko2},
    [[#base-rate][the Base Rate Fallacy]] creates problems for /some/
-   \ac{WF}-adversaries. This means that finding people who might have
+   \gls{wf}-adversaries. This means that finding people who might have
    accessed a certain site is easier than making sure that they really
    visited the site.
 * WRITE Addon: Factor to Overhead
