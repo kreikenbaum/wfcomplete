@@ -64,6 +64,9 @@ def _check_text(text, file_name=None, client=None):
     for delay_text in PROBLEMATIC_DELAY:
         if delay_text in text:
             raise DelayError()
+    if not text:
+        _handle_exception("empty body", file_name, client)
+        return False
     if collections.Counter(text)['\n'] <= 2:
         _handle_exception("less than 3 lines of text", file_name, client)
         return False
