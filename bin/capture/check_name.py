@@ -11,7 +11,7 @@ import config
 #CHECKS={ ## later: map name to (lambda?): check these aspects
 
 def mkdiretc(type_name, prefix='', suffix=''):
-    '''creates directory "name"/date, and a "now"-symlink'''
+    '''creates directory "type_name"/prefix--date--suffix, plus "now"-symlink'''
     try:
         os.mkdir(type_name)
     except OSError: pass
@@ -25,9 +25,11 @@ def mkdiretc(type_name, prefix='', suffix=''):
         newdir = os.path.join(type_name, scenario_name)
         os.mkdir(newdir)
         os.symlink(newdir, 'now')
+        print newdir
         sys.exit(0)
     except OSError:
         logging.warn("%s already exists", newdir or "directory")
+        if newdir: print newdir
         sys.exit(0)
 
 

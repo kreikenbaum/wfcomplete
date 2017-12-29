@@ -13,7 +13,7 @@ TAIL=${3:-$NUM_SITES}
 
 . config.py
 status.sh > $SAVETO/status
-check_name.py $TAIL $NUM_ITERATIONS || (echo "status invalid"; exit 1)
+NAME=$(check_name.py $TAIL $NUM_ITERATIONS) || (echo "status invalid"; exit 1)
 
 for iteration in $(seq $NUM_ITERATIONS); do
     echo -e "======= ITERATION: $iteration =============\n"
@@ -23,3 +23,5 @@ for iteration in $(seq $NUM_ITERATIONS); do
         d2g_one_site.py $site
     done
 done
+
+cd $SAVETO && mv -i *@* $NAME && echo traces are at $NAME
