@@ -120,7 +120,10 @@ def _handle_exception(exception, file_name, client):
     to = '{}_{}'.format(
         file_name,
         str(exception).split('\n')[0].replace(' ', '_').replace('/', '___').replace("'", ''))[:255]
-    os.rename(file_name, to)
+    try:
+        os.rename(file_name, to)
+    except OSError as e:
+        logging.warn("error renaming {} to {}\n{}", file_name, to, e)
     _write_text(client, to)
 
 
