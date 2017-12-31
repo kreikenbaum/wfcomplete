@@ -364,6 +364,7 @@ def _compute_increase(base, compare):
         keys = base.keys()
     for k in keys:
         diff[k] = float(compare[k][0]) / base[k][0]
+        logging.debug("difference for %15s: %f", k, diff[k])
     return 100 * (np.mean(diff.values()) - 1)
 
 

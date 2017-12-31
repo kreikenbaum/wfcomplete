@@ -10,12 +10,13 @@
 * Configuration							    :ARCHIVE:
 #+BIBLIOGRAPHY: master plain option:-d
 #+LATEX_CLASS: scrreprt
-#+LATEX_CLASS_OPTIONS: [a4paper,10pt]
+#+LATEX_CLASS_OPTIONS: [a4paper,12pt]
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{algorithm}
 #+LATEX_HEADER: \usepackage[noend]{algpseudocode}
 #+LATEX_HEADER: \usepackage{float}
 #+LATEX_HEADER: \usepackage{hyperref}
+#+LATEX_HEADER: \usepackage{natbib}
 #+LATEX_HEADER: \usepackage{numprint}
 #+LATEX_HEADER: \usepackage{pgf}
 #+LATEX_HEADER: \usepackage{tikz}
@@ -97,6 +98,69 @@
   #+INDEX: Tor
   #+INDEX: trace
   #+INDEX: website fingerprinting
+  Many parties like to watch what pages users are visiting online:
+  Shops and advertisers want to tailor advertisement to focus groups;
+  people who share your WLAN might just be curious; Governments could
+  aim for dragnet crime prevention, steering public discourse, and
+  sometimes censorship; criminals want to create better scams.
+  Against all these, Tor helps individuals protect their online
+  privacy. They can browse censored information, and publish
+  e.g. leaks without fear of retaliation. Several constitutions
+  implicitly \citep{katz} or explicitly \citep[Art.10]{grundgesetz}
+  acknowledge that communication privacy is fundamental to an open
+  society \citep{popper2012open}. Tor protects many and diverse parts
+  of society, such as journalists, businessmen, and military units
+  deployed abroad.
+
+
+  People need to trust that Tor truly protects their online
+  privacy. The more they doubt this, the less they would use it, or
+  the more they would self-censor their online activities. The Tor
+  project encourages research into its vulnerabilities. They believe
+  that this makes the system stronger in the long run. The main group
+  to discover vulnerabilities has been academia. Many of these
+  vulnerabilities have been fixed very soon. One as-of-yet-unfixed
+  vulnerability is \gls{wf}. It was first briefly mentioned by
+  \cite{SSL}. \cite{panchenko} were the first to successfully attack
+  Tor by \gls{wf} under laboratory conditions in 2011.
+
+
+  Various defenses have been proposed so far (\cite{hintz02},
+  \cite{morphing09}, \cite{httpos2011}, \cite{oakland2012-peekaboo},
+  \cite{effective2014}, \cite{a-systematic2014}, \cite{wtfpad2015}
+  \cite{wang2015walkie},
+  \cite{DBLP:journals/popets/CherubinHJ17}). None have been deployed
+  with the Tor Browser. The reasons are manifold: Defenses delayed web
+  browsing too much, required tuning by hand or changes to the Tor
+  code base, complicated setup, were only presented conceptually,
+  etc. Still, \gls{wf} attacks have continued to improve
+  (\cite{quantifying}, \cite{ssl-traffic-analysis}, \cite{hintz02},
+  \cite{ccsw09-fingerprinting}, \cite{panchenko},
+  \cite{ccs2012-fingerprinting}, \cite{effective2014},
+  \cite{panchenko2}, \cite{197185}).
+** Contributions
+   A new defense should be easy to use, easy to deploy, and hinder
+   users as little as possible. It should use resources responsibly,
+   that is: it should try to get the best possible defense from a
+   given resource level. Such a defense is attempted in this
+   thesis. Ideally, it should also be easy to configure.
+
+
+   The new defense tightly integrates into the Tor Browser; it tries
+   to make each fetch of a webpage look like another random webpage;
+   it also uses the Tor Browser's extension system for easy
+   configurability, and deployability. The new defense sets sensible
+   defaults, allowing users to adjust its resource use to account for
+   a their personal security needs.
+
+
+   The new defense needs to be compared to existing defenses: As a
+   secondary benefit, this thesis reimplements and validates a
+   state-of-the art attack by \cite{panchenko2}; it also provides a
+   way to record web page browsing via Tor.
+** PENDING (thesis done) Structure
+* Foundations
+* ****** OLDOLDOLDOLDOLD ********
   In the wake of both the Snowden revelations in the western world,
   and increased internet censorship in countries such as Iran,
   Saudi-Arabia, and China\cite{china}, more and more
@@ -153,29 +217,30 @@ While some similarity can be seen for each group, the "within-group" differences
   state, nullifying this part of Tor's protection. To protect against
   this, most early attacks (\cite{Wagner96analysisof}, \cite{hintz02},
   \cite{ssl-traffic-analysis}) also proposed defenses. These evolved
-  from /specific defenses/, f.ex. packet-size-altering methods
-  (\cite{httpos}, \cite{morphing09}) to /general defenses/, which
+  from /specific defenses/, e.g. packet-size-altering methods
+  (\cite{httpos2011}, \cite{morphing09}) to /general defenses/, which
   transform groups of web retrievals so that all members look the
   same.
 
   At the start of the thesis, there existed mostly deterministic
-  general defenses with high overhead (f.ex. over 220% bandwidth, and
-  300% time\cite{a-systematic}). During the course of this thesis, the
-  stochastic defenses of \cite{wang2015walkie} and \cite{wtfpad}, with
+  general defenses with high overhead (e.g. over 220% bandwidth, and
+  300% time\cite{a-systematic2014}). During the course of this thesis, the
+  stochastic defenses of \cite{wang2015walkie} and \cite{wtfpad2015}
   much lower overhead, were developed. This validates a stochastic
   approach, yet improvements seem possible in two areas: (1) ease of
   installation, and configurability, and (2) more-closely fitting
   cover traffic generation.
 
   Ad 1: \cite{wang2015walkie} alters the Firefox binary, while the
-  current version of \cite{wtfpad} needed much manual adjustment in
+  current version of \cite{wtfpad2015} needed much manual adjustment in
   our attempts.
 
   Ad 2: \cite{wang2015walkie} uses either a normal, or lognormal
-  distribution, not adjusting to HTTP-specifics, while \cite{wtfpad}
+  distribution, not adjusting to HTTP-specifics, while \cite{wtfpad2015}
   samples packets at the network layer. It aims at generally hiding
   /that traffic occurs/, not just which website is visited, as it
   derives its basic mechanism from \cite{ShWa-Timing06}.
+** TODO grundgesetz
 ** Thesis Contribution
    This thesis presents and tests a new defense against \gls{wf}. This
    new defense mimics HTTP\cite{rfc7230}-shaped cover traffic: Each
@@ -207,7 +272,7 @@ While some similarity can be seen for each group, the "within-group" differences
    on data with cloaking.
 
    These results are discussed and compared to literature results of
-   \cite{wang2015walkie} and \cite{wtfpad} in chapter [[#ch5-discussion]].
+   \cite{wang2015walkie} and \cite{wtfpad2015} in chapter [[#ch5-discussion]].
 
    Chapter [[#ch6-conclusion]] summarizes the results, shows a path to
    implementation, with both included and additional further work.
@@ -272,7 +337,7 @@ While some similarity can be seen for each group, the "within-group" differences
    time, or data to break it. Analysing traffic patterns can
    circumvent the system. Anyone who can see the data stream can carry
    out this attack, without anyone else learning about this. They
-   simply need to capture the data stream using f.ex. the
+   simply need to capture the data stream using e.g. the
    =tcpdump=\cite{tcpdump8-manual} tool.\\
 
    From inception\cite{tor-design}, Tor provided defenses against
@@ -304,14 +369,14 @@ While some similarity can be seen for each group, the "within-group" differences
    Let us review basics of \gls{ml}: a
    computer\cite{turing1936a} algorithm extracts and generalizes
    patterns from learning data.\cite[ch.1.2]{rieckdiss} This is then used to
-   classify further patterns (f.ex. for handwriting recognition),
-   or to act on the generalizations (f.ex. for self-driving cars).
+   classify further patterns (e.g. for handwriting recognition),
+   or to act on the generalizations (say, for self-driving cars).
 
    The \gls{ml} process consists of at least two separate
    steps: feature extraction and classification. Domain-specific
    [[#ml-features][feature extraction]] transforms the raw input data --- in our case,
    website traces --- into /features/ --- in our case, numbers,
-   f.ex. the number of outgoing packets. [[#ml-class][Classification]] then
+   e.g. the number of outgoing packets. [[#ml-class][Classification]] then
    generalizes and assigns these characteristics into categories.
 
    A last section presents [[#ml-measure][measures to evaluate \gls{ml}
@@ -334,7 +399,7 @@ While some similarity can be seen for each group, the "within-group" differences
     the noise, (also called "reducing intra-class variability while
     increasing inter-class variability").
 
-    The source data in website fingerprinting are traces (f.ex. in the
+    The source data in website fingerprinting are traces (e.g. in the
     =pcap=\cite{pcap-manual} format). From this, only the size,
     direction and timing of each packet is extracted. The size of
     files is hidden by the traffic's encryption; the closest
@@ -362,14 +427,14 @@ While some similarity can be seen for each group, the "within-group" differences
     normalization. This is also evaluated with support vector
     machines.\\
 
-    There are numerous \gls{wf} attacks. F.ex. \cite{effective} achieved
+    There are numerous \gls{wf} attacks. \cite{effective2014} achieved
     accuracy improvements using over 3000 features and a
     KNN-classification with weighted metrics while
     \cite{kfingerprint}'s approach uses approximately 150 features
     with Random Forest\cite{DBLP:journals/ml/Breiman01} classification.\\
 
     The boundary of feature extraction to classification is "somewhat
-    arbitrary"\cite[sec.1.3.1]{duda}: in the figure above f.ex., a
+    arbitrary"\cite[sec.1.3.1]{duda}: in the figure above e.g., a
     feature could be computed that distinguishes whether the last
     feature's value is above 100 kByte. This would effectively
     classify the data. In general, the /decision boundary/ between
@@ -506,7 +571,7 @@ While some similarity can be seen for each group, the "within-group" differences
      A support vector machine tries to find a hyperplane between two
      groups of points and maximize its distance to the closest points,
      called /margin/. What happens if the points lie such that a line
-     cannot be found, as f.ex. in Figure [[fig:non-linear-data]]?
+     cannot be found, as e.g. in Figure [[fig:non-linear-data]]?
 
      #+CAPTION[Example simple non-linearly separable data]: Non-linearly separable data; source: \url{https://en.wikipedia.org/wiki/File:Separability_NO.svg}
      #+ATTR_LATEX: :width 0.4\textwidth
@@ -536,7 +601,7 @@ While some similarity can be seen for each group, the "within-group" differences
      problem \cite[sec.1.1.3]{iml}: they propose a boundary between
      two classes of objects.
 
-     In website fingerprinting[fn::as in f.ex.\space{}handwriting
+     In website fingerprinting[fn::as in e.g.\space{}handwriting
      recognition], there are most often more classes than two.
 
      Several strategies exist to distinguish more than two
@@ -552,7 +617,7 @@ While some similarity can be seen for each group, the "within-group" differences
      #+INDEX: radial basis function kernel
      #+INDEX: RBF kernel
      Straight lines do not always distinguish classes correctly, as
-     f.ex. example in Figure [[hastie_kerneltrick]]. This would seem a
+     e.g. example in Figure [[hastie_kerneltrick]]. This would seem a
      drawback to using Support Vector Machines, yet they can compute
      these not only on the original data, but also on a projected
      space. This allows for complex decision boundaries. By using the
@@ -618,7 +683,7 @@ While some similarity can be seen for each group, the "within-group" differences
     (\cite[sec.1.3.2]{iml} \cite[sec.13.3]{esl}
     \cite[sec.8.2]{mitchell}) classifies data points based on the
     known class[es] of their neighbors: for each item to be
-    classified, determine the (f.ex.\space{}k=5) closest neighbors by a
+    classified, determine the (e.g.\space{}k=5) closest neighbors by a
     given metric. If all neighbors' classes agree, or based on a
     majority decision, the item's class is set to theirs. See Figure
     [[fig:knn-example]].
@@ -641,7 +706,7 @@ While some similarity can be seen for each group, the "within-group" differences
    [[#sub2-wf][previously]]. As most \gls{ml}, \gls{wf} uses statistical
    properties of the underlying data. It could possibly be defeated by
    shuffling these properties. The total number of incoming packets
-   f.ex. is a feature used by almost all modern attacks:
+   e.g. is a feature used by almost all modern attacks:
 
    # created using mplot.py:total_packets_in, see name for scenarios+sites
    #+CAPTION: distribution of number of total incoming packets
@@ -649,9 +714,9 @@ While some similarity can be seen for each group, the "within-group" differences
    #+ATTR_LATEX: :float nil
    [[./pictures/total_packets_in_disabled___bridge--2016-07-06_tamaraw_wtf-pad___bridge--2016-07-05__msn.com_buzzfeed.com_youtube.com_xvideos.com__palette_colorblind.pdf]]
 
-   As seen in Figure [[fig:total_packets_in]], \cite{wtfpad}'s publicly
+   As seen in Figure [[fig:total_packets_in]], \cite{wtfpad2015}'s publicly
    available implementation of his own WTF-PAD and
-   Tamaraw\cite{a-systematic} both create additional packets, but
+   Tamaraw\cite{a-systematic2014} both create additional packets, but
    preserve site separation and ordering. Contrast this with this
    thesis' defense in Figure [[fig:total_packets_in_thesis]]
 
@@ -666,7 +731,7 @@ While some similarity can be seen for each group, the "within-group" differences
    effectively munges websites fingerprinting traces, and is also
    tunable.
 
-   While it was possible to get \cite{wtfpad} to run given [[https://bitbucket.org/mjuarezm/obfsproxy_wfpadtools][the
+   While it was possible to get \cite{wtfpad2015} to run given [[https://bitbucket.org/mjuarezm/obfsproxy_wfpadtools][the
    provided software]], \cite{wang2015walkie}'s state-of-the-art defense
    was compared using his reported values. As \cite{wang2015walkie}
    uses simple statistical distributions in addition to a novel
@@ -677,7 +742,7 @@ While some similarity can be seen for each group, the "within-group" differences
    Browser Bundle is based, enables extensions. These already provide
    some of the Tor Browser Bundle's
    functionality\cite{tor-browser-design-impl} and were used in this
-   thesis' to ease installation as compared to \cite{wtfpad} and
+   thesis' to ease installation as compared to \cite{wtfpad2015} and
    arguably also to \cite{wang2015walkie}.\\
 
 
@@ -698,7 +763,7 @@ While some similarity can be seen for each group, the "within-group" differences
    status\cite{LLaMA}.
 ** DANIEL Summary
    \gls{wf} can deanonymize anonymous traffic. This can pose a huge problem
-   f.ex. for whistleblowers. The previous sections gave a short
+   e.g. for whistleblowers. The previous sections gave a short
    introduction to the basics of Tor, \gls{wf} attacks, its basis in machine
    learning, and finally defenses against it. It also gave a first
    glimpse at this thesis' new defense.
@@ -792,7 +857,7 @@ While some similarity can be seen for each group, the "within-group" differences
    to be loaded are known beforehand: Cover traffic could be tailored
    more exactly, increasing obfuscation and/or reducing
    overhead. Knowing the exact retrieval pattern in advance even
-   enables new defenses\cite{effective}.
+   enables new defenses\cite{effective2014}.
 
 
    The problem in caching is that
@@ -881,15 +946,15 @@ While some similarity can be seen for each group, the "within-group" differences
    :PROPERTIES:
    :CUSTOM_ID: sub4-tools
    :END:
-   How does the defense compare to others (\cite{wtfpad},
-   \cite{LLaMA}, \cite{a-systematic})? To examine this, \gls{wf} attacks are
+   How does the defense compare to others (\cite{wtfpad2015},
+   \cite{LLaMA}, \cite{a-systematic2014})? To examine this, \gls{wf} attacks are
    executed against web site traces collected with disabled defenses.
 
    The evaluation uses the attacks CUMUL by \cite{panchenko2} --- both
    as a re-implementation and its original form --- and the first
    approach to show better-than-random accuracy by
    \cite{ccsw09-fingerprinting} --- in a reimplementation. KNN by
-   \cite{effective} was evaluated as well.
+   \cite{effective2014} was evaluated as well.
 
    Appendix [[#appendix-accuracy]] shows evaluation results. In most
    cases, the original CUMUL attack and the reimplementation had very
@@ -933,8 +998,9 @@ While some similarity can be seen for each group, the "within-group" differences
    | llama (redo!)     |         26 |        295 |       2981 |
    | 100aI--2017-12-14 |      45.64 |     284.35 |      65.92 |
    |-------------------+------------+------------+------------|
-   | llama-nodelay     |      68.22 |     163.08 |      -0.04 |
+   | llama-nodelay     |      68.22 |     163.08 |      -4.02 |
    | 20aI--2016-10-07  |         63 |      72.47 |       1.50 |
+   | 100aI--2017-12-27 |      42.43 |     162.20 |      -0.88 |
 
 
 
@@ -1036,7 +1102,7 @@ While some similarity can be seen for each group, the "within-group" differences
     back from the server. This could possibly be due to cloudflare
     recaptcha protection etc, which can sometimes be observed when
     browsing with Tor. A possible solution as future work would be to
-    filter traces with fewer bytes incoming than outgoing, f.ex. Also,
+    filter traces with fewer bytes incoming than outgoing, e.g. Also,
     the capture code could be adjusted to check the page text for the
     recaptcha site.
 **** TODO comparison table for 100 sites
@@ -1086,7 +1152,7 @@ While some similarity can be seen for each group, the "within-group" differences
   :END:
 In the following tables, /size/ is the (geometric) size increase in %
 as related to the closest no-add-on capture, /knn/ is
-\cite{effective}'s classifier, /p-cumul/ is \cite{panchenko2}'s CUMUL
+\cite{effective2014}'s classifier, /p-cumul/ is \cite{panchenko2}'s CUMUL
 implementation, /cumul/ this thesis's reimplementation, and
 /tts-cumul/ is this thesis's CUMUL with data split into training and
 testing set, parameter estimation on the training set and
@@ -1131,7 +1197,7 @@ training on data without defense, and testing on defended data.
 * WRITE Addon: Factor to Overhead
   - addon has factor setting
   - how to estimate overhead from this
-    - useful for f.ex. matching llama overhead
+    - useful for e.g. matching llama overhead
   - from list of tuples of =(defense-factor: overhead)=
   - result: 1.47 * factor + 39.63
   - estimate to get to overhead of 295 is 175: i(175) \approx 296.9
@@ -1139,6 +1205,6 @@ training on data without defense, and testing on defended data.
   # creation see code at: [[file:~/da/da.org_archive::*factor%20to%20overhead%20at%200.22aI][factor to overhead at 0.22aI]]
 * After Appendices: Bibliography and Index
 \bibliography{docs/master}
-\bibliographystyle{plain}
+\bibliographystyle{apalike}
 \input{diplomarbeit.ind}
 * END: /above/ this headline are INDEX, and BIBLIOGRAPHY, etc       :ARCHIVE:
