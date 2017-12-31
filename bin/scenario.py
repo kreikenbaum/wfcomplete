@@ -75,6 +75,7 @@ class Scenario(object):
         self.trace_args = trace_args or config.trace_args()
         self.path = os.path.normpath(name)
         if name in PATH_SKIP or skip:
+            self.name = name
             return
         # import pdb; pdb.set_trace()
         self.path = _prepend_if_ends(self.path, 'with-errors')
