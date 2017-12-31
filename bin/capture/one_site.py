@@ -123,7 +123,7 @@ def _handle_exception(exception, file_name, client):
     try:
         os.rename(file_name, to)
     except OSError as e:
-        logging.warn("error renaming {} to {}\n{}", file_name, to, e)
+        logging.warn("error renaming %s to %s\n%s", file_name, to, e)
     _write_text(client, to)
 
 
@@ -131,7 +131,6 @@ def _normalize_url(url='google.com'):
     '''normalizes the url by adding the "http://' scheme if none exists'''
     if not urlparse.urlparse(url).scheme:
         url = "http://" + url
-
     return (url, urlparse.urlparse(url).netloc)
 
 
