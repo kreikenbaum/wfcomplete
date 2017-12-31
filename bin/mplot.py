@@ -140,12 +140,24 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):
 '''other ways
 - plt.bar
   - needs to set lots of options to look good, even with seaborn'''
-def traces_cumul(scenario_obj, domain, legend=None, color="red", axes=None):
+## usage:
+# a = sorted(scenario.list_all(), key=lambda x: x.date if hasattr(x, "date") else datetime.date(1970, 1, 1))[-2]
+# ax = plt.axes()
+# traces_cumul(a, 'paypal.com', color="red", axes=ax)
+# traces_cumul(a, 'msn.com', color="blue", axes=ax)
+# plt.legend()
+def traces_cumul(scenario_obj, domain, color="red", axes=None):
     X, y, yd = scenario_obj.get_features_cumul()
     data = [x[0] for x in zip(X[:,4:], yd) if x[1] == domain]
+    legend = domain
     for datum in data:
-        line = plt.plot(datum, c=color, alpha=0.5, linewidth=1)
+        line = plt.plot(datum, c=color, alpha=0.5, linewidth=1, axes=axes, label=legend)
+        legend = None
     return line
+
+
+def trace(scenario_obj, domain, index, color="red", axes=None):
+    '''plot single trace (index-st of domain) as boxplot'''
 
 
 
