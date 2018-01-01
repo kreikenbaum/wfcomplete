@@ -49,7 +49,9 @@ PATH_RENAME = {
     "/30": "/30--2016-07-10",
     "/20": "/20--2016-07-17",
     "nobridge--2017-01-19-aI-factor=10-with-errors": "nobridge-aI-factor=10-with-errors--2017-01-19",
-    "5--2016-09-23-100": "5--2016-09-23--100"
+    "5--2016-09-23-100": "5--2016-09-23--100",
+    "bridge-newer-sites--2017-12-26--30@50": "newer-sites-bridge--2017-12-26--30@50",
+    "bridge-older-sites--2017-12-25": "older-sites-bridge--2017-12-25"
 }
 PATH_SKIP = [
     "../sw/w/, WANG14, knndata.zip",
