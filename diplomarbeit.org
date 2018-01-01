@@ -19,6 +19,7 @@
 #+LATEX_HEADER: \usepackage{natbib}
 #+LATEX_HEADER: \usepackage{numprint}
 #+LATEX_HEADER: \usepackage{pgf}
+#+LATEX_HEADER: \usepackage{setspace}
 #+LATEX_HEADER: \usepackage{tikz}
 #+LATEX_HEADER: \usepackage{times}
 # glossaries after hyperref
@@ -28,6 +29,7 @@
 #+LATEX_HEADER: \newacronym{ml}{ML}{machine learning}
 #+LATEX_HEADER: \newacronym{wf}{WF}{website fingerprinting}
 # end glossaries
+#+LATEX_HEADER: \onehalfspacing
 #+LATEX_HEADER: \restylefloat{table}
 #+LATEX_HEADER: \setlongtables
 #+LATEX_HEADER: \npdecimalsign{.}
@@ -122,7 +124,7 @@
   vulnerabilities have been fixed very soon. One as-of-yet-unfixed
   vulnerability is \gls{wf}. It was first briefly mentioned by
   \citet{SSL}. \citet{panchenko} were the first to successfully attack
-  Tor by \gls{wf} under laboratory conditions in 2011.
+  Tor by \gls{wf} under laboratory conditions.
 
 
   Various defenses have been proposed so far (\citet{hintz02},
@@ -164,11 +166,30 @@ Chapter [[#ch2-background]] introduces \gls{wf}, Tor, and defenses against
 introduction to Tor, with an example how Tor achieves privacy. Section
 [[#sub2-wf]] explains how \gls{wf} works in general and on Tor in
 particular. A big part of \gls{wf} is \gls{ml}, which is also
-explained here. How to defend against \gls{wf} is presented in Section
+explained here. How to defend against \gls{wf} is presented in section
 [[#sub2-wf-def]].
 
+This thesis' new \gls{wf} defense is introduced in chapter
+[[#ch3-newdefense]]. It also presents the aspects the defense is based
+upon: section [[#sub3-http]] justifies the chosen HTTP traffic model; a
+stochastic size cache based on
+Bloom-filters\cite{Bloom70space/timetrade-offs} is described in
+section [[#sub3-bloom]]. Finally, section [[#sub3-defense]] explains the
+defense's itself.
 
-Chapter
+
+Chapter [[#ch4-evaluation]] puts the defense to the test, analysing how it
+compares to the most recent \gls{wf} defense by
+\citet{DBLP:journals/popets/CherubinHJ17}. The analysis follows
+\gls{wf} literature best practices: it first evaluates how a subset of
+sites are distinguished one from the other in section [[#sub4-closed]]; it
+then tries to distinguish these sites from a bigger set of background
+sites in section [[#sub4-open]]. All results are summarized in section
+[[#sub4-summary]].
+
+
+Chapter [[#ch6-conclusion]] summarizes the findings and presents courses
+of future work in section [[#future-work]].
 * Foundations
   :PROPERTIES:
   :CUSTOM_ID: ch2-background
@@ -253,7 +274,6 @@ While some similarity can be seen for each group, the "within-group" differences
   samples packets at the network layer. It aims at generally hiding
   /that traffic occurs/, not just which website is visited, as it
   derives its basic mechanism from \cite{ShWa-Timing06}.
-** TODO grundgesetz
 ** Thesis Contribution
    This thesis presents and tests a new defense against \gls{wf}. This
    new defense mimics HTTP\cite{rfc7230}-shaped cover traffic: Each
@@ -283,9 +303,6 @@ While some similarity can be seen for each group, the "within-group" differences
    attacks of \cite{panchenko2}, and \cite{ccsw09-fingerprinting} are
    validated on defenseless data. This is followed by the evaluation
    on data with cloaking.
-
-   These results are discussed and compared to literature results of
-   \cite{wang2015walkie} and \cite{wtfpad2015} in chapter [[#ch5-discussion]].
 
    Chapter [[#ch6-conclusion]] summarizes the results, shows a path to
    implementation, with both included and additional further work.
@@ -801,7 +818,14 @@ While some similarity can be seen for each group, the "within-group" differences
   traffic model\cite{newtrafficmodel} to morph the expected real
   traffic to another size; and it caches certain page characteristics
   in order to control the amount of cover traffic.
-** EVA Modelling traffic
+** Simulating HTTP Traffic
+   :PROPERTIES:
+   :CUSTOM_ID: sub3-http
+   :END:
+** Traffic Enhancement
+   :PROPERTIES:
+   :CUSTOM_ID: sub3-defense
+   :END:
    The created traffic is based on the HTTP
    model\cite{newtrafficmodel}: for each web page retrieval, the
    defense sets target retrieval sizes. From these, the retrieval's
@@ -866,6 +890,9 @@ While some similarity can be seen for each group, the "within-group" differences
  provided by using Firefox's Addon-SDK. Add-ons can be downloaded via
  [[https://addons.mozilla.org][Mozilla's Addon Page]] with automatic updates.
 ** DANIEL Caching via Bloom-Filters
+   :PROPERTIES:
+   :CUSTOM_ID: sub3-bloom
+   :END:
    The above defense might further improve if the sizes of the webpage
    to be loaded are known beforehand: Cover traffic could be tailored
    more exactly, increasing obfuscation and/or reducing
@@ -1128,11 +1155,6 @@ While some similarity can be seen for each group, the "within-group" differences
    :PROPERTIES:
    :CUSTOM_ID: sub4-summary
    :END:
-* Discussion [/10000]
-  :PROPERTIES:
-  :CUSTOM_ID: ch5-discussion
-  :END:
-
 * Conclusions [0/10000]
   :PROPERTIES:
   :CUSTOM_ID: ch6-conclusion
