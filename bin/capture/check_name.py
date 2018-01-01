@@ -24,13 +24,17 @@ def mkdiretc(type_name, prefix='', suffix=''):
             scenario_name += '--' + suffix
         newdir = os.path.join(type_name, scenario_name)
         os.mkdir(newdir)
-        os.symlink(newdir, 'now')
-        print newdir
-        sys.exit(0)
     except OSError:
         logging.warn("%s already exists", newdir or "directory")
         if newdir: print newdir
         sys.exit(0)
+    try:
+        os.symlink(newdir, 'now')
+    except OSError:
+        os.remove('now')
+        os.symlink(newdir, 'now')
+    print newdir
+    sys.exit(0)
 
 
 if __name__ == "__main__":
