@@ -108,8 +108,8 @@ def _navigate_or_fail(client, url, file_name, tries=0):
         try:
             _check_text(_get_page_text(client).lower(), file_name, client)
             _handle_exception(e.message, file_name, client)
-        except (errors.NoSuchElementException, CaptureError) as e2:
-            _handle_exception(e2.message, file_name, client)
+        except (errors.NoSuchElementException, CaptureError, DelayError) as e2:
+            _handle_exception('after timeout ' + e2.message, file_name, client)
     except (errors.UnknownException, CaptureError) as e:
         _handle_exception(e.message, file_name, client)
 

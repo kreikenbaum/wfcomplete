@@ -276,49 +276,32 @@ picks best result'''
     return clf
 
 
-def _accuracy_C_gamma_etc(scenario_obj, use_previous_cw):
+def _accuracy_C_gamma_etc(scenario_obj):
     '''@return (accuracy, C, gamma, X, y, domains) tuple,
 
     C, gamma and accuracy are either from previous (closed-world)
     experiment, or by evaluating
     '''
-    accuracy = C = gamma = None
-    X, y, domains = scenario_obj.get_features_cumul()
-    X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
-    if use_previous_cw:
-        try:
-            result = max(results.for_scenario_cw(scenario_obj),
-                         key=lambda x: x.score)
-            C = result.C
-            gamma = result.gamma
-            accuracy = result.score
-        except ValueError:
-            pass
-    if not C or not gamma or not accuracy:
-        (clf_noprob, accuracy, _) = fit.my_grid(X, y) # auto scales
-        C = clf_noprob.estimator.C
-        gamma = clf_noprob.estimator.gamma
-    return (accuracy, C, gamma, X, y, domains)
 
 
 def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
-                         bg_size="auto", use_previous_cw=False):
+                         bg_size="auto"):
     '''@return metrics for open world experiment'''
     scenario_obj = scenario_obj.get_open_world()
-    if binarize: scenario_obj = scenario_obj.binarize()
-    (accuracy, C, gamma, X, y, domains) = _accuracy_C_gamma_etc(
-        scenario_obj, use_previous_cw)
-    clf = _clf(C=C, gamma=gamma)
-    y_pred = model_selection.cross_val_predict(clf, X, y, cv=config.FOLDS,
-                                               n_jobs=config.JOBS_NUM)
+    if binarize:
+        scenario_obj = scenario_obj.binarize()
+    X, y, domains = scenario_obj.get_features_cumul()
+    X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
+    (clf_noprob, accuracy, _) = fit.my_grid(X, y) # auto scales
+    y_pred = model_selection.cross_val_predict(
+        clf_noprob, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
     confmat = metrics.confusion_matrix(y, y_pred)
     (tpr, fpr) = tpr_fpr(_binmat(confmat))[1]
     if binarize: # can (easily) compute auroc
-        clf = _clf(C=C, gamma=gamma, probability=True)
-        y_predprob = model_selection.cross_val_predict(clf, X, y,
-                                                       cv=config.FOLDS,
-                                                       n_jobs=config.JOBS_NUM,
-                                                       method="predict_proba")
+        clf = _clf(C=clf_noprob.C, gamma=clf_noprob.gamma, probability=True)
+        y_predprob = model_selection.cross_val_predict(
+            clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
+            method="predict_proba")
         fpr_array, tpr_array, _ = metrics.roc_curve(y, y_predprob[:, 1], 0)
         auroc = mymetrics.bounded_auc(fpr_array, tpr_array, auc_bound)
     else:
