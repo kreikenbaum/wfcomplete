@@ -93,25 +93,26 @@
 #+LATEX_HEADER: \def\BState{\State\hskip-\ALG@thistlm}
 #+LATEX_HEADER: \makeatother
 #+OPTIONS: H:6
-* General Overview
+* Exposé
 #+BEGIN_EXPORT latex
 \pagenumbering{arabic}
 #+END_EXPORT
   #+INDEX: Tor
-  #+INDEX: trace
   #+INDEX: website fingerprinting
-  Many parties like to watch what pages users are visiting online:
+  #+INDEX: fingerprint
+  Many parties like to observe users' online browsing:
   Shops and advertisers want to tailor advertisement to focus groups;
   people who share your WLAN might just be curious; Governments could
   aim for dragnet crime prevention, steering public discourse, and
   sometimes censorship; criminals want to create better scams.
-  Against all these, Tor helps individuals protect their online
-  privacy. They can browse censored information, and publish
-  e.g. leaks without fear of retaliation. Several constitutions
-  implicitly \citep{katz} or explicitly \citep[Art.10]{grundgesetz}
-  acknowledge that communication privacy is fundamental to an open
-  society \citep{popper2012open}. Tor protects many and diverse parts
-  of society, such as journalists, businessmen, and military units
+  Against all these, Tor\cite{tor-design} helps individuals protect
+  their online privacy. They can browse censored
+  information\citet{jardine2016tor}, and publish e.g. leaks without
+  fear of retaliation. Several constitutions implicitly \citep{katz}
+  or explicitly \citep[Art.10]{grundgesetz} acknowledge that
+  communication privacy is fundamental to an open society
+  \citep{popper2012open}. Tor protects many and diverse parts of
+  society, such as journalists, businessmen, and military units
   deployed abroad.
 
 
@@ -122,7 +123,10 @@
   that this makes the system stronger in the long run. The main group
   to discover vulnerabilities has been academia. Many of these
   vulnerabilities have been fixed very soon. One as-of-yet-unfixed
-  vulnerability is \gls{wf}. It was first briefly mentioned by
+  vulnerability is \gls{wf}: the sizes and timing of each data packet
+  for a web page retrieval are collected to form a /fingerprint/. This
+  is matched to other observed retrievals to predict their visited
+  page. \Gls{wf}was first briefly mentioned by
   \citet{SSL}. \citet{panchenko} were the first to successfully attack
   Tor by \gls{wf} under laboratory conditions.
 
@@ -140,7 +144,11 @@
   \citet{ccsw09-fingerprinting}, \citet{panchenko},
   \citet{ccs2012-fingerprinting}, \citet{effective2014},
   \citet{panchenko2}, \citet{197185}).
-** Contributions: a New \gls{wf} Defense and \gls{wf} Tools
+** Contributions: a New Website Fingerprinting Defense and Tools
+   The thesis tries to find if a HTTP-specific defense increases
+   protection for the same overhead.
+
+
    A new defense should be easy to use, easy to deploy, and hinder
    users as little as possible. It should use resources responsibly,
    that is: it should try to get the best possible defense from a
@@ -185,7 +193,7 @@ This thesis' new \gls{wf} defense is introduced in chapter
 [[#ch3-newdefense]]. It also presents the aspects the defense is based
 upon: section [[#sub3-http]] justifies the chosen HTTP traffic model;
 whereas the stochastic size cache based on
-Bloom-filters\cite{Bloom70space/timetrade-offs} is described in
+Bloom-filters\citep{Bloom70space/timetrade-offs} is described in
 section [[#sub3-bloom]]. Finally, section [[#sub3-defense]] explains the
 defense's itself.
 
@@ -202,21 +210,21 @@ sites in section [[#sub4-open]]. All results are summarized in section
 
 Chapter [[#ch6-conclusion]] summarizes the findings and presents courses
 of future work in section [[#future-work]].
-* Necessary Knowledge about Tor, \gls{wf} Attacks and Defenses
+* Need-To-Know Tor, Website Fingerprinting and Defenses
   :PROPERTIES:
   :CUSTOM_ID: ch2-background
   :END:
-** Tor for Dummies
-   Let us conceive as the internet as a series of tubes. Each internet
-   message sent from Alice to Bob passes many of their
-   intersections. At each intersection, there are many paths in and
-   out. The message needs to find a way to Bob, so it contains Bob's
-   address on the envelope. In case Bob wants to answer, the envelope
-   also contains Alice's address.
+** Simple Tor
+   Let us conceive of the internet as a series of tubes. Each internet
+   message sent from Alice to Bob passes many of their joinings. At
+   each joint, there are many paths in and out. The message needs to
+   find a way to Bob, so it contains Bob's address on the envelope. In
+   case Bob wants to answer, the envelope also contains Alice's
+   address.
 
    This is why the internet is not anonymous by design. To provide
-   partial anonymity, a group of intersections can join, wrap each
-   data packet in layers (of encryption), and bounce it along the
+   partial anonymity, a group of tube intersections can join, wrap
+   each data packet in layers (of encryption), and bounce it along the
    group randomly, unwrapping a layer at each bounce. After several
    bounces, say to Carol, Dave, and Frank, the data packet is
    completely unwrapped again. Its destination is Bob, but Alice's
@@ -224,7 +232,19 @@ of future work in section [[#future-work]].
    packet back to Frank, who sends it via Dave and Carol back to
    Alice. Because encryption, Alice knows the full path, but Carol
    only knows Alice and Dave, Dave only knows Carol and Frank, and
-   Frank only knows Dave and Bob.
+   Frank only knows Dave and Bob.\\
+
+
+    #+CAPTION[Tor Network]: Tor Network. Source: \href{https://upload.wikimedia.org/wikipedia/commons/a/a1/How_Tor_Works_3.svg}{wikipedia}, modified
+    #+NAME: fig:tor-network
+    #+ATTR_LATEX: :float wrap
+    [[./pictures/How_Tor_Works_3.png]] This closely models the Internet:
+   Each Internet Protocol\cite{rfc791} packet lists the sender and
+   destination, which voids anonymity. To achieve anonymity, the Tor
+   software forms a path to the destination along multiple hops,
+   establishing separate encryption with each hop. The hops are
+   globally-distributed volunteer servers. Each intermediary hop only
+   knows its predecessor and successor. Only Alice knows the full path.
 
 * ****** OLDOLDOLDOLDOLD ********
   In the wake of both the Snowden revelations in the western world,
