@@ -297,8 +297,10 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
         clf_noprob, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
     confmat = metrics.confusion_matrix(y, y_pred)
     (tpr, fpr) = tpr_fpr(_binmat(confmat))[1]
+    C = clf_noprob.estimator.C
+    gamma = clf_noprob.estimator.gamma
     if binarize: # can (easily) compute auroc
-        clf = _clf(C=clf_noprob.C, gamma=clf_noprob.gamma, probability=True)
+        clf = _clf(C=C, gamma=gamma, probability=True)
         y_predprob = model_selection.cross_val_predict(
             clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
             method="predict_proba")
@@ -306,7 +308,7 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
         auroc = mymetrics.bounded_auc(fpr_array, tpr_array, auc_bound)
     else:
         auroc = None
-    return (tpr, fpr, auroc, clf_noprob.C, clf_noprob.gamma, accuracy)
+    return (tpr, fpr, auroc, C, gamma, accuracy)
 
 
 def _binmat(confmat):
