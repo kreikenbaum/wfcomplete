@@ -292,7 +292,7 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
         scenario_obj = scenario_obj.binarize()
     X, y, domains = scenario_obj.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
-    (clf_noprob, accuracy, _) = fit.my_grid(X, y) # auto scales
+    (clf_noprob, accuracy, _) = fit.my_grid(X, y, auc_bound=auc_bound) # scales
     y_pred = model_selection.cross_val_predict(
         clf_noprob, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
     confmat = metrics.confusion_matrix(y, y_pred)
@@ -306,7 +306,7 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
         auroc = mymetrics.bounded_auc(fpr_array, tpr_array, auc_bound)
     else:
         auroc = None
-    return (tpr, fpr, auroc, C, gamma, accuracy)
+    return (tpr, fpr, auroc, clf_noprob.C, clf_noprob.gamma, accuracy)
 
 
 def _binmat(confmat):

@@ -63,7 +63,7 @@ def my_main(scenario):
     db = pymongo.MongoClient().sacred
     if scenario in db.runs.distinct(
             "config.scenario",
-            {"status": "COMPLETED", "experiment.mainfile": "exp_open_world.py"})
+             {"status": "COMPLETED", "experiment.mainfile": "exp_open_world.py"}):
         logging.warn("scenario already in database")
     return run_exp()
 
