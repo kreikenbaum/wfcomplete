@@ -70,7 +70,7 @@ class Result(object):
                     'auc_bound': _value_or_none(entry, 'config', 'auc_bound'),
                     'background_size': _value_or_none(
                         entry, 'config', 'background_size'),
-                    'binarized': _value_or_none(entry, 'config', 'binarize')
+                    'binary': _value_or_none(entry, 'config', 'binarize')
                 }
         except KeyError:
             open_world = False
@@ -90,9 +90,12 @@ class Result(object):
 
 
     def __repr__(self):
-        return '<Result({!r}, score={}, {}, {}, {}, size={}, size_overhead={}, time_overhead={})>'.format(
+        out = '<Result({!r}, score={}, {}, {}, {}, size={}, size_overhead={}, time_overhead={}'.format(
             self.scenario, self.score, self.git, self.date,
             self.type_, self.size, self.size_overhead, self.time_overhead)
+        if self.open_world:
+            out += ', open_world={}'.format(self.open_world)
+        return out + ')>'
 
 
     def get_classifier(self):
@@ -165,10 +168,18 @@ def _value_or_none(entry, *steps):
 def for_scenario(scenario_obj):
     return [x for x in list_all() if x.scenario == scenario_obj]
 
+def for_scenario_smartly(scenario_obj):
+    if scenario_obj.open_world:
+        out = for_scenario_ow(scenario_obj)
+        if scenario_obj.binary:
+            return [x for x in out if x.open_world['binary']]
+        else:
+            return [x for x in out if not x.open_world['binary']]
+    else:
+        return for_scenario_cw(scenario_obj)
 
 def for_scenario_cw(scenario_obj):
     return [x for x in for_scenario(scenario_obj) if not x.open_world]
-
 
 def for_scenario_ow(scenario_obj):
     return [x for x in for_scenario(scenario_obj) if x.open_world]

@@ -187,16 +187,9 @@ size unless include_bg'''
         return method(closest_disabled.get_traces(),
                       trace_dict or self.get_traces())
 
-    @property
-    def num_sites(self):
-        '''number of sites in this capture'''
-        if hasattr(self, "_num_sites"):
-            return self._num_sites
-        else:
-            return len(glob.glob(os.path.join(DIR, self.path, '*json')))
-
     def binarize(self, bg_label='background', fg_label='foreground'):
         '''@return scenario with bg_label as-is, others combined to fg_label'''
+        assert self.open_world
         out = copy.copy(self)
         traces = {}
         traces[bg_label] = self.get_traces()[bg_label]
@@ -206,6 +199,13 @@ size unless include_bg'''
                 traces[fg_label].extend(its_traces)
         setattr(out, 'traces', traces)
         return out
+
+    @property
+    def binary(self):
+        '''@return if this scenario has only foreground and background traces'''
+        return (
+            self.traces
+            and set(self.traces.keys()) == set(['foreground', 'background']))
 
     def date_from_trace(self):
         '''retrieve date from traces'''
@@ -263,6 +263,19 @@ size unless include_bg'''
             self.traces = counter.all_from_dir(os.path.join(DIR, self.path),
                                                **self.trace_args)
         return self.traces
+
+    @property
+    def open_world(self):
+        '''@return if this scenario has open_world traces'''
+        return self.traces and 'background' in self.traces
+
+    @property
+    def num_sites(self):
+        '''number of sites in this capture'''
+        if hasattr(self, "_num_sites"):
+            return self._num_sites
+        else:
+            return len(glob.glob(os.path.join(DIR, self.path, '*json')))
 
     def size_increase(self, trace_dict=None):
         '''@return size overhead of this vs closest disabled scenario'''
@@ -322,14 +335,12 @@ def _filter_all(all_, include_bg):
     @param include_bg if True include background scenarios, else omit'''
     out = [x for x in all_ if (not '/batch' in x
                                and not '/broken' in x
-                               and not '/dump' in x
                                and not '/foreground-data' in x
                                and not '/or' in x
                                and not '/output' in x
                                and not '/ow' in x
-                               and not '/path' in x
                                and not '/p_batch' in x
-                               and not '/results' in x
+                               and not '/skip' in x
                                and not 'subsets/' in x
                                and (include_bg
                                     or (not '/background' in x

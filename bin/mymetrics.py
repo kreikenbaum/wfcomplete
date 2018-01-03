@@ -55,7 +55,6 @@ def compute_bounded_auc_score(clf, X, y, y_bound=0.01):
     # if github sklearn issue #3273 gets pulled
     #scorer = metrics.make_scorer(metrics.roc_auc_score, greater_is_better=True,
     #                            needs_threshold=True, max_fpr=y_bound)
-    y = list(binarize(y, transform_to=1))
     return model_selection.cross_val_score(
         clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
         scoring=scorer).mean()

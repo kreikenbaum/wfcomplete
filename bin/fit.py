@@ -17,7 +17,7 @@ Result = collections.namedtuple('Result', ['clf', 'best_score_', 'results'])
 def _bounded_auc_eval(X, y, clf, y_bound):
     '''evaluate clf X, y, give bounded auc score, 1 is positive class label'''
     X = scale(X, clf)
-    y = _lb(y, transform_to=1)
+    # y = _lb(y, transform_to=1)
     return mymetrics.compute_bounded_auc_score(clf, X, y, y_bound)
 
 
@@ -120,15 +120,15 @@ def _stop(y, step, result, previous, C=1, best=1, delta=0.01):
                  > best * 1.1 * max(collections.Counter(y).values()) / len(y))))
 
 
-def helper(counter_dict, outlier_removal=True, cumul=True, folds=config.FOLDS):
-    '''@return grid-search on counter_dict result (clf, results)'''
+def helper(trace_dict, outlier_removal=True, cumul=True, folds=config.FOLDS):
+    '''@return grid-search on trace_dict result (clf, results)'''
     if outlier_removal:
-        counter_dict = counter.outlier_removal(counter_dict)
+        trace_dict = counter.outlier_removal(trace_dict)
     if cumul:
-        (X, y, _) = counter.to_features_cumul(counter_dict)
+        (X, y, _) = counter.to_features_cumul(trace_dict)
         return my_grid(X, y, folds=folds)
     else:  # panchenko 1
-        (X, y, _) = counter.to_features(counter_dict)
+        (X, y, _) = counter.to_features(trace_dict)
         return my_grid(X, y, C=2**17, gamma=2**-19, folds=folds)
 
 

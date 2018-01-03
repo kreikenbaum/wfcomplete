@@ -99,6 +99,18 @@ def _init_roc():
     plt.title("Receiver Operating Characteristic (ROC) Curve")
     return out
 
+def roc_helper(result, axes=None):
+    if result.open_world:
+        scenario = result.scenario.get_open_world(
+            result.open_world['background_size'])
+    else:
+        scenario = result.scenario
+    X, y, d = scenario.get_features_cumul()
+    y_pred = model_selection.cross_val_predict(
+        result.get_classifier(), X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
+    fpr_array, tpr_array, _ = metrics.roc_curve(y, y_pred)
+    assert False # not implemented
+
 def roc(fpr, tpr, title="ROC curve", plot=None):
     '''@return plot object with roc curve, use =.savefig(filename)=
 to save, and =.show()= to display.
