@@ -169,7 +169,10 @@ def traces_cumul(scenario_obj, domain, color="red", axes=None):
 
 def trace(trace, color="red", axes=None):
     '''plot single trace (index-st of domain) as kinda-boxplot'''
-    plt.stem([x[0] for x in trace.timing], [x[1] for x in trace.timing])
+    if not axes:
+        axes = plt.axes()
+    axes.vlines([x[0] for x in trace.timing], 0, [x[1] for x in trace.timing])
+    # axes.stem([x[0] for x in trace.timing], [x[1] for x in trace.timing])
 
 
 ### usage examples

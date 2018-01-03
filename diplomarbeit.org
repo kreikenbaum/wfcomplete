@@ -210,84 +210,78 @@ sites in section [[#sub4-open]]. All results are summarized in section
 
 Chapter [[#ch6-conclusion]] summarizes the findings and presents courses
 of future work in section [[#future-work]].
-* Need-To-Know Tor, Website Fingerprinting and Defenses
+* Need-To-Know: Tor, Website Fingerprinting and Defenses
   :PROPERTIES:
   :CUSTOM_ID: ch2-background
   :END:
 ** How Tor Works
+   :PROPERTIES:
+   :CUSTOM_ID: sub2-tor
+   :END:
   In the wake of both the Snowden revelations in the western world,
   and increased internet censorship in countries such as Iran,
-  Saudi-Arabia, and China\citep{china}, more and more
-  Internet users search for ways to keep online communication and web
-  browsing both private and free of censorship.
-
-  The /Tor/ project\citep{tor-design} provides this. It protects
-  whistleblowers, journalists, the people in oppressive
-  regimes\citep{jardine2016tor}, even the military, and regular
-  internet users, against e.g.\space{}nation-states or businesses which want
-  to follow user's online steps. It routes encrypted data traffic via
-  intermediaries, obscuring who connects to whom.
-
-  # NO re-flow here!!! broke href-link
-  Basic Tor can be configured as a proxy for any kind of
-  TCP\citep{rfc793} traffic. Still, web browsing with Tor is
-  simple\citep{usability:weis2006}: you just need to
-  \href{https://www.torproject.org/download/download-easy.html.en}{download
-  the Tor Browser Bundle}. It connects automatically to the Tor
-  network and opens a browser window to cloak a user's web traffic.  \\
-  # NO re-flow here!!!
+  Saudi-Arabia, and China\citep{china}, more and more Internet users
+  search for ways to keep online communication and web browsing both
+  private and free of censorship. The /Tor/ project\citep{tor-design}
+  provides this. It protects whistleblowers, journalists, the people
+  in oppressive regimes\citep{jardine2016tor}, even the military, and
+  regular internet users, against e.g.\space{}nation-states or businesses
+  which want to follow user's online steps. It routes encrypted data
+  traffic via intermediaries, obscuring who connects to whom.
 
 
-   Let us conceive of the internet as a series of tubes. Each internet
-   message sent from Alice\citep{rivest1978method} to Bob passes many
-   of their joinings. At each joint, there are many paths in and
-   out. The message needs to find a way to Bob, so it contains Bob's
-   address on the envelope. In case Bob wants to answer, the envelope
-   also contains Alice's address.
 
-   This is why the internet is not anonymous by design. To provide
-   partial anonymity, a group of tube intersections can join, wrap
-   each data packet in layers (of encryption), and bounce it along the
-   group randomly, unwrapping a layer at each bounce. After several
-   bounces, say to Carol, Dave, and Frank, the data packet is
-   completely unwrapped again. Its destination is Bob, but Alice's
-   name is blotted out. Frank sends the packet to Bob. To answer the
-   packet, Bob sends the packet back to Frank, who sends it via Dave
-   and Carol back to Alice. Because encryption, Alice knows the full
-   path, but Carol only knows Alice and Dave, Dave only knows Carol
-   and Frank, and Frank only knows Dave and Bob.\\
+  Let us conceive of the internet as a series of tubes. Each internet
+  message sent from Alice\citep{rivest1978method} to Bob passes many
+  of their joinings. At each joint, there are many paths in and
+  out. The message needs to find a way to Bob, so it contains Bob's
+  address on the envelope. In case Bob wants to answer, the envelope
+  also contains Alice's address.
 
-
-    #+CAPTION[Tor Network]: Tor Network. Source: \href{https://upload.wikimedia.org/wikipedia/commons/a/a1/How_Tor_Works_3.svg}{wikipedia}, modified
-    #+NAME: fig:tor-network
-    #+ATTR_LATEX: :float wrap
-    [[./pictures/How_Tor_Works_3.pdf]]
-
-   This closely models the Internet: Each Internet
-   Protocol\citep{rfc791} packet lists the sender and
-   destination. This makes it easy to identify communication
-   partners. To achieve anonymity, the Tor software forms a path to
-   the destination along multiple hops, establishing separate
-   encryption with each hop. The hops are globally-distributed
-   volunteer servers. Each intermediary hop only knows its predecessor
-   and successor. Only Alice knows the full path.
+  This is why the internet is not anonymous by design. To provide
+  partial anonymity, a group of tube intersections can join, wrap each
+  data packet in layers (of encryption), and bounce it along the group
+  randomly, unwrapping a layer at each bounce. After several bounces,
+  say to Carol, Dave, and Frank, the data packet is completely
+  unwrapped again. Its destination is Bob, but Alice's name is blotted
+  out. Frank sends the packet to Bob. To answer the packet, Bob sends
+  the packet back to Frank, who sends it via Dave and Carol back to
+  Alice. Because encryption, Alice knows the full path, but Carol only
+  knows Alice and Dave, Dave only knows Carol and Frank, and Frank
+  only knows Dave and Bob.\\
 
 
-   The local Tor software selects three globally-distributed hops to
-   initialize a connection. It makes a connection to the first,
-   establishes encryption, asks the first hop to make a connection to
-   the second, sets up encryption to this, and from there to the
-   third. The third hop establishes a connection to its destination.
+  #+CAPTION[Tor Network]: Tor Network. Source: \href{https://upload.wikimedia.org/wikipedia/commons/a/a1/How_Tor_Works_3.svg}{wikipedia}, modified
+  #+NAME: fig:tor-network
+  #+ATTR_LATEX: :float wrap
+  [[./pictures/How_Tor_Works_3.pdf]]
 
-   Each message is encrypted three times using same-length encryption
-   and sent along this path. The first router decrypts the first
-   layer, and so on, like layers of an onion.
+  This closely models the Internet: Each Internet
+  Protocol\citep{rfc791} packet lists the sender and destination. This
+  makes it easy to identify communication partners. To achieve
+  anonymity, the Tor software forms a path to the destination along
+  multiple hops, establishing separate encryption with each hop. The
+  hops are globally-distributed volunteer servers. Each intermediary
+  hop only knows its predecessor and successor. Only Alice knows the
+  full path.
 
-   As a result of this setup, each hop can only see its direct
-   neighbors along the path. Even if one hop of a three-hop setup is
-   compromised, directly linking source and destination becomes pretty
-   hard.
+
+  The local Tor software selects three globally-distributed hops to
+  initialize a connection. It makes a connection to the first,
+  establishes encryption, asks the first hop to make a connection to
+  the second, sets up encryption to this, and from there to the
+  third. The third hop establishes a connection to its destination.
+
+  Each message is encrypted three times using same-length encryption
+  and sent along this path. The first router decrypts the first layer,
+  and so on, like layers of an onion. As a result of this setup, each
+  hop can only see its direct neighbors along the path. Even if one
+  hop of a three-hop setup is compromised, directly linking source and
+  destination becomes pretty hard.
 ** Website Fingerprinting Attack
+   :PROPERTIES:
+   :CUSTOM_ID: sub2-wf
+   :END:
    Some groups dislike other people's privacy. It's too
    resource-intensive to protect against all of them. Tor, as any
    privacy system, has elected to protect against certain
@@ -299,12 +293,12 @@ of future work in section [[#future-work]].
    from a client to the network.
 
 
+   # no re-flow in this paragraph (breaks link)
    Let us assume that Eve is a concerned mother who wants to find out
    whether Alice visits Bob's website. If Alice is just using the
    normal internet, Eve can see where Alice connects. Alice needs to
    use a middle-man. She
-   \href{https://www.torproject.org/download/download-easy.html.en}{downloads
-   the Tor Browser Bundle}. This program routes all traffic via three
+   \href{https://www.torproject.org/download/download-easy.html.en}{downloads   the Tor Browser Bundle}. This program routes all traffic via three
    Tor servers, say Carol, Dave, and Frank. These three are regularly
    replaced with other random nodes. Eve is frustrated: she can not
    see whom Alice connects to. Also, all traffic is encrypted, so she
@@ -414,17 +408,6 @@ of future work in section [[#future-work]].
   Knowing [[#sub2-tor][the Tor network]], [[#sub2-ml][\gls{ml} basics]] and [[#sub2-wf][previous
   attacks and defenses]] helps to understand and then counter website
   fingerprinting.
-** DANIEL The Tor Network
-   :PROPERTIES:
-   :CUSTOM_ID: sub2-tor
-   :END:
-   To protect online anonymity, Tor\cite{tor-design} uses a
-   semi-distributed infrastructure: volunteer-run /onion routers/ pass
-   the messages, while their structure is provided by fixed /directory
-   servers/. A path through the onion routers is negotiated by the
-   /onion proxy/, a SOCKS\cite{rfc1928}-TCP proxy which most often
-   runs on the client computer.
-
 ** DANIEL Tor Website Fingerprinting
    :PROPERTIES:
    :CUSTOM_ID: sub2-wf
