@@ -261,7 +261,7 @@ of future work in section [[#future-work]].
     #+CAPTION[Tor Network]: Tor Network. Source: \href{https://upload.wikimedia.org/wikipedia/commons/a/a1/How_Tor_Works_3.svg}{wikipedia}, modified
     #+NAME: fig:tor-network
     #+ATTR_LATEX: :float wrap
-    [[./pictures/How_Tor_Works_3.png]]
+    [[./pictures/How_Tor_Works_3.pdf]]
 
    This closely models the Internet: Each Internet
    Protocol\citep{rfc791} packet lists the sender and
@@ -288,18 +288,51 @@ of future work in section [[#future-work]].
    compromised, directly linking source and destination becomes pretty
    hard.
 ** Website Fingerprinting Attack
-   Some groups dislike other people's privacy. Tor, as any
-   privacy system, has to evaluate threat levels: several parties try
-   to attack Tor's protection. One mass-surveillance type of attack
-   that can be carried out passively with low-level technology is
-   \gls{wf}: The time and size of users' data packets (called
-   /traces/) are recorded. See Figure \ref{fig:traces}. This recording
-   is compared to previously recorded traces of known sites. While
-   older attacks (\cite{ccsw09-fingerprinting},
-   \cite{Liberatore:2006}) just compared single packet sizes, possibly
-   by hand, newer attacks (\cite{panchenko}, \cite{panchenko2},
-   \cite{realistic}) use machine learning to classify traces,
-   achieving high accuracy rates under laboratory conditions.
+   Some groups dislike other people's privacy. It's too
+   resource-intensive to protect against all of them. Tor, as any
+   privacy system, has elected to protect against certain
+   threats. E.g., Tor does not protect against an adversary that can
+   see all Tor network traffic; this level of observation would make
+   correlation attacks (\citet{flow-correlation04},
+   \citet{ccs2013-usersrouted}) easy. Tor is designed to defend e.g.,
+   against a local passive adversary: someone who can see the traffic
+   from a client to the network.
+
+
+   Let us assume that Eve is a concerned mother who wants to find out
+   whether Alice visits Bob's website. If Alice is just using the
+   normal internet, Eve can see where Alice connects. Alice needs to
+   use a middle-man. She
+   \href{https://www.torproject.org/download/download-easy.html.en}{downloads
+   the Tor Browser Bundle}. This program routes all traffic via three
+   Tor servers, say Carol, Dave, and Frank. These three are regularly
+   replaced with other random nodes. Eve is frustrated: she can not
+   see whom Alice connects to. Also, all traffic is encrypted, so she
+   can only see that packets are sent, not their content.
+
+
+   Eve is not to be thwarted: \Gls{wf} to the rescue! She uses Tor on
+   her own computer to both connect to Bob's website, recording the
+   network traffic of Bob's site, as well as other random web browsing
+   traffic. (She could of course just block Tor, but then Alice might
+   sneak off in the middle of the night to see Bob.) This traffic
+   trains a \gls{ml} classifier. When Alice uses Tor, her traffic is
+   input to this classifier, which can decide in almost real-time
+   whether the site Alice visits is Bob's. If so, Eve can devise
+   targeted ways to keep her daughter occupied with other things.
+
+
+   :evaluate threat levels: several parties try to attack
+   Tor's protection. One mass-surveillance type of attack that can be
+   carried out passively with low-level technology is \gls{wf}: The
+   time and size of users' data packets (called /traces/) are
+   recorded. See Figure \ref{fig:traces}. This recording is compared
+   to previously recorded traces of known sites. While older attacks
+   (\cite{ccsw09-fingerprinting}, \cite{Liberatore:2006}) just
+   compared single packet sizes, possibly by hand, newer attacks
+   (\cite{panchenko}, \cite{panchenko2}, \cite{realistic}) use machine
+   learning to classify traces, achieving high accuracy rates under
+   laboratory conditions.
  #+BEGIN_EXPORT latex
  \begin{figure}[htbp]
  \includegraphics[width=0.24\textwidth]{./pictures/craigslist_org@1445352269.png}

@@ -167,9 +167,9 @@ def traces_cumul(scenario_obj, domain, color="red", axes=None):
     return line
 
 
-def trace(scenario_obj, domain, index, color="red", axes=None):
-    '''plot single trace (index-st of domain) as boxplot'''
-
+def trace(trace, color="red", axes=None):
+    '''plot single trace (index-st of domain) as kinda-boxplot'''
+    plt.stem([x[0] for x in trace.timing], [x[1] for x in trace.timing])
 
 
 ### usage examples
