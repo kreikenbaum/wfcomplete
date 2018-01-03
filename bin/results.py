@@ -88,7 +88,6 @@ class Result(object):
                       C=c, gamma=gamma,
                       src=entry)
 
-
     def __repr__(self):
         out = '<Result({!r}, score={}, {}, {}, {}, size={}, size_overhead={}, time_overhead={}'.format(
             self.scenario, self.score, self.git, self.date,
@@ -97,12 +96,11 @@ class Result(object):
             out += ', open_world={}'.format(self.open_world)
         return out + ')>'
 
-
-    def get_classifier(self):
+    def get_classifier(self, probability=True):
         '''@return classifier that achieved this result'''
         return multiclass.OneVsRestClassifier(
-            svm.SVC(C=self.C, gamma=self.gamma, class_weight="balanced"))
-
+            svm.SVC(C=self.C, gamma=self.gamma, class_weight="balanced",
+                    probability=probability))
 
     def save(self, db=_db()):
         '''saves entry to mongodb if new'''

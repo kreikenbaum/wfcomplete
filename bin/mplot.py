@@ -5,7 +5,8 @@ import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from sklearn import metrics, model_selection
+# should be external, maybe in analyse?
+from sklearn import metrics, model_selection, preprocessing
 sns.set_palette("colorblind") # optional, uglier, but helpful
 
 import config
@@ -88,44 +89,51 @@ def date_accuracy(size=30):
     return plot
 
 
-def _init_roc():
+def _init_roc(titleadd = None):
     '''initializes ROC plot'''
+    title = "ROC curve"
+    if titleadd:
+        title += " " + titleadd
     out = plt.figure()
     plt.plot([0, 1], [0, 1], 'k--')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
-    plt.title("Receiver Operating Characteristic (ROC) Curve")
+    plt.title(title)
     return out
 
 def roc_helper(result, axes=None):
-    if result.open_world:
-        scenario = result.scenario.get_open_world(
-            result.open_world['background_size'])
-    else:
-        scenario = result.scenario
-    X, y, d = scenario.get_features_cumul()
+    scenario_obj = result.scenario.get_open_world(
+        result.open_world['background_size']).binarize()
+    X, y, d = scenario_obj.get_features_cumul()
+    X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
     y_pred = model_selection.cross_val_predict(
-        result.get_classifier(), X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
-    fpr_array, tpr_array, _ = metrics.roc_curve(y, y_pred)
-    assert False # not implemented
+        result.get_classifier(True), X, y,
+        cv=config.FOLDS, n_jobs=config.JOBS_NUM, method="predict_proba")
+    fpr_array, tpr_array, _ = metrics.roc_curve(
+        y, y_pred[:, 1], y[np.where(y != -1)[0][0]])
+    return roc(
+        fpr_array, tpr_array,
+        ', max_tpr: {}, background_size: {}'.format(
+            result.open_world['auc_bound'],
+            result.open_world['background_size'], axes))
 
-def roc(fpr, tpr, title="ROC curve", plot=None):
-    '''@return plot object with roc curve, use =.savefig(filename)=
+def roc(fpr, tpr, titleadd=None, fig=None):
+    '''@return fig object with roc curve, use =.savefig(filename)=
 to save, and =.show()= to display.
-    @params If =plot=, draw another curve into existing plot'''
-    if not plot:
-        plot = _init_roc()
+    @params If =fig=, draw another curve into existing figure'''
+    if not fig:
+        fig = _init_roc(titleadd)
     curve = plt.plot(
-        fpr, tpr,
-        label='{} (AUC = {:0.2f})'.format(title, metrics.auc(fpr, tpr)))
+        fpr, tpr)
+        #label='{} (AUC = {:0.2f})'.format(title, metrics.auc(fpr, tpr)))
     one_percent = [y for (x,y) in zip(fpr, tpr) if x >= 0.01][0]
     line = plt.plot([0, 1], [one_percent] *2, "red", label='1% fpr')
     # plt.legend([curve, line], loc="lower right") # todo: show legend
-    plot.get_axes()[0].set_ybound(0, 1)
+    fig.get_axes()[0].set_ybound(0, 1)
     plt.tight_layout()
-    return plot
+    return fig
 
 
 def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):

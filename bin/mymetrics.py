@@ -42,7 +42,9 @@ def bounded_roc(y_true, y_predict, y_bound, **kwargs):
     assert 0 <= y_bound <= 1
     if len(y_predict.shape) == 2 and y_predict.shape[1] == 2:
         y_predict = y_predict[:, 1]
-    fpr, tpr, _ = metrics.roc_curve(y_true, y_predict, 1, **kwargs)
+    fpr, tpr, _ = metrics.roc_curve(y_true, y_predict,
+                                    y_true[np.where(y_true != -1)[0][0]],
+                                    **kwargs)
     newfpr = [y for y in fpr if y < y_bound]
     newfpr.append(y_bound)
     newtpr = np.interp(newfpr, fpr, tpr)

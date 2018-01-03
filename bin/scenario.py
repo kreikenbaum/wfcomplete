@@ -254,7 +254,11 @@ size unless include_bg'''
         random.seed(random_seed)
         out = {}
         for (domain, trace_list) in self.get_traces().iteritems():
-            out[domain] = random.sample(trace_list, num)
+            try:
+                out[domain] = random.sample(trace_list, num)
+            except ValueError:
+                logging.warn("size larger than total")
+                out[domain] = trace_list
         return out
 
     def get_traces(self):
