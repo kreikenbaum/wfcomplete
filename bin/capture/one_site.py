@@ -63,7 +63,7 @@ def _check_text(text, file_name=None, client=None):
     '''raise exception if problem with page text (handled in _navi...)'''
     for delay_text in PROBLEMATIC_DELAY:
         if delay_text in text:
-            raise DelayError()
+            raise DelayError(delay_text)
     if not text:
         _handle_exception("empty body", file_name, client)
         return False
@@ -244,8 +244,12 @@ class CaptureError(Exception):
 
 class DelayError(Exception):
     '''raised when capture needs to wait a bit (text is missing or greeter)'''
+    def __init__(self, message):
+        self.message = message
+    def __repr__(self):
+        return 'DelayError({!r})'.format(self.message)
     def __str__(self):
-        return "DelayError"
+        return repr(self)
 
 
 if __name__ == "__main__":
