@@ -187,12 +187,25 @@ def traces_cumul(scenario_obj, domain, color="red", axes=None):
     return line
 
 
-def trace(trace, color="red", axes=None):
+def trace(trace, axes=None, color=None):
     '''plot single trace (index-st of domain) as kinda-boxplot'''
     if not axes:
         axes = plt.axes()
-    axes.vlines([x[0] for x in trace.timing], 0, [x[1] for x in trace.timing])
+    # axes.vlines([x[0] for x in trace.timing], 0, [x[1] for x in trace.timing])
     # axes.stem([x[0] for x in trace.timing], [x[1] for x in trace.timing])
+    # axes.step([x[0] for x in trace.timing], [x[1] for x in trace.timing],
+    #           where='post', color=color)
+    times = [x[0] for x in trace.timing]
+    widths = []
+    heights = [x[1] for x in trace.timing]
+    for idx, el in enumerate(times):
+        if idx == len(times)-1: continue
+        widths.append(times[idx+1] - times[idx])
+    widths.append(np.mean(widths))
+    axes.bar(times, heights, widths, fill=False, align="edge", edgecolor=color)
+
+
+#def traces(
 
 
 ### usage examples
