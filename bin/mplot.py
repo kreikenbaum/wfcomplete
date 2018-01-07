@@ -186,7 +186,12 @@ def traces_cumul(scenario_obj, domain, color="red", axes=None):
         legend = None
     return line
 
-
+## plot row of traces (mostly related chosen)
+#a = scenario.list_all("17-12-26")[0]
+#wiki = a.get_traces()["wikipedia.org"]
+#_, g = plt.subplots(7, 1)
+#for i, el in enumerate([wiki[x-1] for x in [5, 26, 45, 35, 32, 24, 44]]):#, 1]]):
+#    mplot.trace(el, g[i])
 def trace(trace, axes=None, color=None):
     '''plot single trace (index-st of domain) as kinda-boxplot'''
     if not axes:
@@ -205,8 +210,14 @@ def trace(trace, axes=None, color=None):
     axes.bar(times, heights, widths, fill=False, align="edge", edgecolor=color)
 
 
-#def traces(
-
+def traces(traces_list):
+    '''plots traces on subplots'''
+    _, g = plt.subplots(len(traces_list), 1, sharex=True)
+    for i, el in enumerate(traces_list):
+        trace(el, g[i])
+    plt.suptitle("WF Example Traces wikipedia.org")
+    g[4].set_ylabel("packet size [Byte]")
+    g[-1].set_xlabel("seconds")
 
 ### usage examples
 

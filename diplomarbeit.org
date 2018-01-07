@@ -335,45 +335,29 @@ of future work in section [[#future-work]].
    targeted ways to keep her daughter occupied with other things.
 
 
+# ## code, last trace does not fit well
+# wiki = scenario.list_all("17-12-26")[0].get_traces()["wikipedia.org"]
+# mplot.traces([wiki[x-1] for x in [5, 26, 45, 35, 32, 24, 44, 1]]) #
+    #+CAPTION[Trace Visualization Example]: Example of traces of wikipedia.org. Box width is the time to the next packet, box height the size of the packet (positive incoming, negative outgoing). The top traces seem similar to the naked eye (modulo time dilation). The bottom trace does not fit this pattern. The whole of Wikipedia's traces were recognized with 93% accuracy.
+    #+NAME: fix:traces
+    [[./pictures/example_traces_wiki.pdf]]
+
    In \gls{wf}, the time and size of users' data packets (called
-   /traces/) are recorded. See Figure \ref{fig:traces}. This recording
-   is compared to previously recorded traces of known sites. While
-   older attacks (\cite{ccsw09-fingerprinting},
-   \cite{Liberatore:2006}) just compared single packet sizes, possibly
-   by hand, newer attacks (\cite{panchenko}, \cite{panchenko2},
-   \cite{realistic}) use machine learning to classify traces,
-   achieving high accuracy rates under laboratory conditions.
+   /traces/) are recorded. A visualization of this data is in Figure
+   \ref{fig:traces}. There are some similarities in the packets. These
+   can be expected, as every retrieval retrieves similar
+   content. \Gls{wf} distinguishes between 30 and many more sites with
+   high accuracy.(\citet{panchenko2}, \cite{effective2014}
+   \cite{197185})
+** Website Fingerprinting Defense
+   \Gls{wf} effectively deanonymizes the traffic that users thought
+   secure: it could for example expose a dissident to his nation
+   state, nullifying this part of Tor's protection.
 
 
-#+BEGIN_SRC python
-  a = scenario.list_all("17-12-26")[0]
-  wiki = a.get_traces()["wikipedia.org"]
-  _, g = plt.subplots(7, 1)
-  for i, el in enumerate([wiki[x-1] for x in [5, 26, 45, 35, 32, 24, 44]]):
-      mplot.trace(el, g[i])
-#+END_SRC
-maybe skip last?
- #+BEGIN_EXPORT latex
- \begin{figure}[htbp]
- \includegraphics[width=0.24\textwidth]{./pictures/craigslist_org@1445352269.png}
- \includegraphics[width=0.24\textwidth]{./pictures/craigslist_org@1445585277.png}
- \includegraphics[width=0.24\textwidth]{./pictures/craigslist_org@1445486337.png}
- \includegraphics[width=0.24\textwidth]{./pictures/craigslist_org@1445527033.png}
- \\
- \includegraphics[width=0.24\textwidth]{./pictures/facebook_com@1445350531.png}
- \includegraphics[width=0.24\textwidth]{./pictures/facebook_com@1445422155.png}
- \includegraphics[width=0.24\textwidth]{./pictures/facebook_com@1445425799.png}
- \includegraphics[width=0.24\textwidth]{./pictures/facebook_com@1445429729.png}
- \caption[Web trace data visualized]{Web trace data visualized. Box height signifies amount of data (positive incoming data, negative outgoing), width the duration until the next packet. The top shows \url{http://craigslist.org}, the bottom \url{http://facebook.com}.
- While some similarity can be seen for each group, the "within-group" differences are quite big between each group's traces as well.}
- \label{fig:traces}
- \end{figure}
- #+END_EXPORT
 
-   Web fingerprinting effectively deanonymizes the traffic that users
-   thought secure, exposing for example a dissident to his nation
-   state, nullifying this part of Tor's protection. To protect against
-   this, most early attacks (\cite{Wagner96analysisof}, \cite{hintz02},
+   To protect against \gls{wf}, most early attacks
+   (\cite{Wagner96analysisof}, \cite{hintz02},
    \cite{ssl-traffic-analysis}) also proposed defenses. These evolved
    from /specific defenses/, e.g. packet-size-altering methods
    (\cite{httpos2011}, \cite{morphing09}) to /general defenses/, which
