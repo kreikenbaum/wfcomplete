@@ -127,7 +127,7 @@ class Result(object):
 
 def _duplicates(params=["config.scenario", "result.score"], db=_db()):
     '''@return all instances of experiments, projected to only params
-    >>> {x['_id']: x['result_score'] for x in _duplicates()}
+    example: {x['_id']: x['result_score'] for x in _duplicates()}
     '''
     project = {key: 1 for key in params}
     groups = {"_id": "$config.scenario", "count": {"$sum": 1}}
