@@ -60,7 +60,7 @@ def browse_to(page, bridge=None):
 
 
 def _check_text(text, file_name=None, client=None):
-    '''raise exception if problem with page text (handled in _navi...)'''
+    '''@return False if problem, and should stop, True if all's well'''
     for delay_text in PROBLEMATIC_DELAY:
         if delay_text in text:
             raise DelayError(delay_text)
@@ -106,8 +106,8 @@ def _navigate_or_fail(client, url, file_name, tries=0):
                               file_name, client)
     except errors.TimeoutException as e:
         try:
-            _check_text(_get_page_text(client).lower(), file_name, client)
-            _handle_exception(e.message, file_name, client)
+            if _check_text(_get_page_text(client).lower(), file_name, client):
+                _handle_exception(e.message, file_name, client)
         except (errors.NoSuchElementException, CaptureError, DelayError) as e2:
             _handle_exception('after timeout ' + e2.message, file_name, client)
     except (errors.UnknownException, CaptureError) as e:
