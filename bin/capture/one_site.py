@@ -67,14 +67,14 @@ def _check_text(text, file_name=None, client=None):
     if not text:
         _handle_exception("empty body", file_name, client)
         return False
+    for problem in PROBLEMATIC_TEXT:
+        if problem in text:
+            _handle_exception("text contains {}".format(problem),
+                              file_name, client)
+            return False
     if collections.Counter(text)['\n'] <= 2:
         _handle_exception("less than 3 lines of text", file_name, client)
         return False
-    for problem in PROBLEMATIC_TEXT:
-        if problem in text:
-            _handle_exception(
-                "text contains {}".format(problem), file_name, client)
-            return False
     return True
 
 
