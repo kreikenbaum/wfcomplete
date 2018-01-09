@@ -248,10 +248,10 @@ def traces(traces_list):
 #             +'_'.join(keys[:sitenum])+"__palette_colorblind.pdf")
 
 ## Confusion Matrix from Scenario
-# m = results.for_scenario(scenario.Scenario("disabled/bridge--2016-08-15"))[1]
+# r = results.for_scenario(scenario.Scenario("disabled/bridge--2016-08-15"))[1]
 # X, y, yd = scenario.Scenario("disabled/bridge--2016-08-15").get_features_cumul()
 # X = preprocessing.MinMaxScaler().fit_transform(X)
-# y_pred = model_selection.cross_val_predict(m.get_classifier(), X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
+# y_pred = model_selection.cross_val_predict(r.get_classifier(), X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
 # confmat, heatmap = mplot.confusion_matrix(y, y_pred, yd, 'Confusion Matrix for disabled/bridge--2016-08-15', rotation=90)
 # plt.savefig('/tmp/confmat-2016-08-15.eps')
 
