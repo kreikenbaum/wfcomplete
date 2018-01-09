@@ -52,18 +52,9 @@ def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
     confmat = metrics.confusion_matrix(y_true, y_pred)
     domainnames = [x[1] for x in sorted(set(zip(y_true, domains)))]
     df = pd.DataFrame(confmat, index=domainnames, columns=domainnames)
-    heatmap = sns.heatmap(df)
     if normalize:
-        confmat = confmat.astype('float') / confmat.sum(axis=1)[:, np.newaxis] * 100
-        confmat = confmat.astype('int')
-    if number_plot:
-        thresh = confmat.max() / 2.
-        for i, j in itertools.product(range(confmat.shape[0]),
-                                      range(confmat.shape[1])):
-            plt.text(confmat.shape[1]-j-1, i+1, confmat[i, j],
-                     horizontalalignment="left",
-                     verticalalignment="top",
-                     color="white" if confmat[i, j] > thresh else "black")
+        df = df / df.sum(axis=1)
+    heatmap = sns.heatmap(df, annot=number_plot)
     loc, labels = plt.xticks()
     heatmap.set_xticklabels(labels, rotation=rotation)
     heatmap.set_yticklabels(labels[::-1], rotation=90-rotation)
