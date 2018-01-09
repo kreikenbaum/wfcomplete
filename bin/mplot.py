@@ -14,13 +14,13 @@ import scenario
 import results
 
 
-def _color(name, all_names):
+def _color(name, all_names, palette="colorblind"):
     '''@return color for scatter plot: colors from colorblind palette
 
     >>> color = lambda x: _color(x, ['a', 'b']); color('a')
     (0.0, 0.4470588235294118, 0.6980392156862745)
     '''
-    palette = sns.color_palette("colorblind", len(all_names))
+    palette = sns.color_palette(palette, len(all_names))
     for (i, check_name) in enumerate(all_names):
         if name == check_name:
             return palette[i]

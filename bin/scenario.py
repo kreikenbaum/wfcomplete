@@ -214,7 +214,7 @@ size unless include_bg'''
         return datetime.datetime.fromtimestamp(
             float(trace.name.split('@')[1])).date()
 
-    def get_features_cumul(self):
+    def get_features_cumul(self, debugdomain=False):
         '''@return traces converted to CUMUL's X, y, y_domains'''
         X = []
         out_y = []
@@ -223,10 +223,12 @@ size unless include_bg'''
         for domain, dom_counters in self.get_traces().iteritems():
             if domain == "background":
                 _trace_list_append(X, out_y, domain_names,
-                                   dom_counters, "cumul", -1, "background")
+                                   dom_counters, "cumul", -1, "background",
+                                   debugdomain=debugdomain)
             else:
                 _trace_list_append(X, out_y, domain_names,
-                                   dom_counters, "cumul", class_number, domain)
+                                   dom_counters, "cumul", class_number, domain,
+                                   debugdomain=debugdomain)
                 class_number += 1
         return (np.array(X), np.array(out_y), domain_names)
 
@@ -438,7 +440,8 @@ def _trace_append(X, y, y_names, x_add, y_add, name_add):
     y_names.append(name_add)
 
 
-def _trace_list_append(X, y, y_names, trace_list, method, list_id, name):
+def _trace_list_append(X, y, y_names, trace_list, method, list_id,
+                       name, debugdomain=False):
     '''appends list of traces to X, y, y_names'''
     for trace in trace_list:
         if not trace.warned:
