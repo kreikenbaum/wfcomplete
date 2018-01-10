@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
+import re
 import seaborn as sns
 # should be external, maybe in analyse?
 from sklearn import metrics, model_selection, preprocessing
@@ -45,7 +46,15 @@ def accuracy_vs_overhead(result_list, title="Size Overhead to Accuracy"):
     return plot
 
 
-# parts due to sklearn's plot_confusion_matrix.py
+def confusion_matrix_helper(scenario_obj, **kwargs):
+    X, y, yd = scenario_obj.get_features_cumul()
+    X = preprocessing.MinMaxScaler().fit_transform(X)
+    r = max(results.for_scenario_smartly(scenario_obj), key=lambda x: x.score)
+    y_pred = model_selection.cross_val_predict(
+        r.get_classifier(), X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
+    return confusion_matrix(
+        y, y_pred, yd, 'Confusion matrix for {}'.format(scenario_obj), **kwargs)
+
 def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
                      rotation=90, normalize=False, number_plot=False):
     '''plots confusion matrix'''
@@ -177,6 +186,36 @@ def traces_cumul(scenario_obj, domain, color="red", axes=None):
         legend = None
     return line
 
+NAMEDATEERR = re.compile('([^@]*)@[0-9]*(.*)')
+def _splitdate(trace_name):
+    '''returns trace's name + possible error cause, splits name'''
+    return ''.join(NAMEDATEERR.search(trace_name).groups())
+
+## usage:
+# s = scenario.list_all("17-12-26")[0]
+# t = s.get_traces()['twitter.com']
+# terr = [x for x in t if 'Error_loading' in x.name]
+# tok = [x for x in t if 'Error_loading' not in x.name]
+# ya = s.get_traces()['yandex.ru']
+# a = [terr, tok, ya]
+# color = lambda x: mplot._color(x, a, "husl")
+# for el in a: mplot.traces_cumul_group(el, color(el))
+# plt.xlabel("Feature Index")
+# plt.ylabel("Feature Value [Byte]")
+# plt.tight_layout()
+# plt.legend()
+def traces_cumul_group(traces, color="red", axes=None):
+    #X = [x.cumul()[4:] for x in traces]
+    X = [x.cumul() for x in traces]
+    label = _splitdate(traces[0].name)
+    for datum in X:
+        plt.plot(datum, c=color, alpha=0.5, linewidth=1, axes=axes, label=label)
+        label = None
+
+
+# def trace_cumul(trace, color, axes=None, label=None):
+#     '''plots single trace's CUMUL features'''
+#     plt.plot(datum, c=color, alpha=0.5, linewidth=1, axes=axes, label=legend)
 ## plot row of traces (mostly related chosen)
 #a = scenario.list_all("17-12-26")[0]
 #wiki = a.get_traces()["wikipedia.org"]

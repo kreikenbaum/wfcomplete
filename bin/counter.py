@@ -524,7 +524,6 @@ def to_libsvm(X, y, fname='libsvm_in'):
 
 
 class Counter(object):
-
     '''single trace file'''
 
     def __init__(self, name=None):
@@ -536,14 +535,28 @@ class Counter(object):
         self.warned = False
 
     def __eq__(self, other):
-        (cls, start) = self.name.split('@')
-        (o_cls, o_start) = other.name.split('@')
+        cls = self.name.split('@')[0]
+        o_cls = other.name.split('@')[0]
         return (cls == o_cls
-                and float(start) == float(o_start)
+                and float(self.starttime) == float(other.starttime)
                 and self.packets == other.packets)
 
     def __str__(self):
         return 'counter (packet, time): {}'.format(self.timing)
+
+    @property
+    def starttime(self):
+        time = self.name.split('@')[1] if self.name else None
+        if time and '_' in time:
+            time = time.split('_')[0]
+        return time
+
+    @property
+    def exception(self):
+        exc = self.name.split('@')[1] if self.name else None
+        if exc and '_' in exc:
+            exc = time.split('_', 1)[1]
+        return exc
 
     @staticmethod
     def from_(*args, **kwargs):

@@ -157,23 +157,18 @@ class Scenario(object):
         return sum((len(x) for x in self.get_traces().values()))
 
     def __str__(self):
-        out = self.name
-        # python 3.6: =if 'setting' in self=
-        if hasattr(self, 'setting'):
-            out += ' with setting {}'.format(self.setting)
-        return out
+        return '{} on {}'.format(self.name, self.date)
 
     def __repr__(self):
         return '<scenario.Scenario("{}")>'.format(self.path)
 
     # idea: return whole list ordered by date-closeness
     def _closest(self, name_filter, include_bg=False, func_filter=None):
-        '''@return closest scenario by date that matches filter, filtered by
-size unless include_bg'''
+        '''@return closest scenario by date that matches filter, filtered to have at least the scenario's number of sites, unless include_bg==True'''
         assert self.valid()
         filtered = list_all(name_filter, include_bg, func_filter=func_filter)
         if not include_bg:
-            filtered = [x for x in filtered if x.num_sites == self.num_sites]
+            filtered = [x for x in filtered if x.num_sites >= self.num_sites]
         return min(filtered, key=lambda x: abs(self.date - x.date))
 
     def _increase(self, method, trace_dict=None):
@@ -214,7 +209,7 @@ size unless include_bg'''
         return datetime.datetime.fromtimestamp(
             float(trace.name.split('@')[1])).date()
 
-    def get_features_cumul(self, debugdomain=False):
+    def get_features_cumul(self):
         '''@return traces converted to CUMUL's X, y, y_domains'''
         X = []
         out_y = []
@@ -223,12 +218,10 @@ size unless include_bg'''
         for domain, dom_counters in self.get_traces().iteritems():
             if domain == "background":
                 _trace_list_append(X, out_y, domain_names,
-                                   dom_counters, "cumul", -1, "background",
-                                   debugdomain=debugdomain)
+                                   dom_counters, "cumul", -1, "background")
             else:
                 _trace_list_append(X, out_y, domain_names,
-                                   dom_counters, "cumul", class_number, domain,
-                                   debugdomain=debugdomain)
+                                   dom_counters, "cumul", class_number, domain)
                 class_number += 1
         return (np.array(X), np.array(out_y), domain_names)
 
@@ -440,8 +433,7 @@ def _trace_append(X, y, y_names, x_add, y_add, name_add):
     y_names.append(name_add)
 
 
-def _trace_list_append(X, y, y_names, trace_list, method, list_id,
-                       name, debugdomain=False):
+def _trace_list_append(X, y, y_names, trace_list, method, list_id, name):
     '''appends list of traces to X, y, y_names'''
     for trace in trace_list:
         if not trace.warned:
@@ -449,7 +441,6 @@ def _trace_list_append(X, y, y_names, trace_list, method, list_id,
                 X, y, y_names, trace.__getattribute__(method)(), list_id, name)
         else:
             logging.warn('%s: one discarded', name)
-
 
 doctest.testmod(optionflags=doctest.ELLIPSIS)
 ## parse older "json" status
