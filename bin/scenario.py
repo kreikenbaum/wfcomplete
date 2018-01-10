@@ -8,13 +8,13 @@
 from __future__ import print_function
 
 import copy
-from dateutil import parser
 import datetime
 import doctest
 import glob
 import logging
 import os
 import random
+from dateutil import parser
 
 import numpy as np
 

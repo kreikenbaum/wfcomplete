@@ -1,10 +1,10 @@
+'''plotting methods using matplotlib'''
 import itertools
-
+import re
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
-import re
 import seaborn as sns
 # should be external, maybe in analyse?
 from sklearn import metrics, model_selection, preprocessing
@@ -13,7 +13,6 @@ sns.set_palette("colorblind") # optional, uglier, but helpful
 import config
 import scenario
 import results
-
 
 def _color(name, all_names, palette="colorblind"):
     '''@return color for scatter plot: colors from colorblind palette
@@ -25,11 +24,11 @@ def _color(name, all_names, palette="colorblind"):
     for (i, check_name) in enumerate(all_names):
         if name == check_name:
             return palette[i]
-    else:
-        assert 'wtf (what a terrible failure)'
+    assert 'wtf (what a terrible failure)'
 
 
 def accuracy_vs_overhead(result_list, title="Size Overhead to Accuracy"):
+    '''plots scatter plot of results's accuracy vs overhead'''
     df = pd.DataFrame([x.__dict__ for x in result_list])
     names = set([x.name for x in df['scenario']])
     color = lambda x: _color(x.name, names)
@@ -47,6 +46,7 @@ def accuracy_vs_overhead(result_list, title="Size Overhead to Accuracy"):
 
 
 def confusion_matrix_helper(scenario_obj, **kwargs):
+    '''creates a confusion matrix plot for scenario_obj'''
     X, y, yd = scenario_obj.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X)
     r = max(results.for_scenario_smartly(scenario_obj), key=lambda x: x.score)
@@ -76,7 +76,7 @@ def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
 
 def date_accuracy(size=30):
     '''@return accuracy over time for disabled data of size =size='''
-    scenarios = [x for x in list_all() if x.scenario.num_sites == size and 'disabled' in x.scenario.name]
+    scenarios = [x for x in scenario.list_all() if x.scenario.num_sites == size and 'disabled' in x.scenario.name]
     df = pd.DataFrame([x.__dict__ for x in scenarios])
     df = df.rename(columns={'score': 'Accuracy [%]'})
     df['Scenario Date [ordinal]'] = df['scenario'].map(
@@ -89,7 +89,7 @@ def date_accuracy(size=30):
     return plot
 
 
-def _init_roc(titleadd = None):
+def _init_roc(titleadd=None):
     '''initializes ROC plot'''
     title = "ROC curve"
     if titleadd:
@@ -106,7 +106,7 @@ def _init_roc(titleadd = None):
 def roc_helper(result, axes=None):
     scenario_obj = result.scenario.get_open_world(
         result.open_world['background_size']).binarize()
-    X, y, d = scenario_obj.get_features_cumul()
+    X, y, _ = scenario_obj.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
     y_pred = model_selection.cross_val_predict(
         result.get_classifier(True), X, y,
@@ -117,7 +117,7 @@ def roc_helper(result, axes=None):
         fpr_array, tpr_array,
         ', max_tpr: {}, background_size: {}'.format(
             result.open_world['auc_bound'],
-            result.open_world['background_size'], axes))
+            result.open_world['background_size']), axes)
 
 def roc(fpr, tpr, titleadd=None, fig=None):
     '''@return fig object with roc curve, use =.savefig(filename)=
@@ -128,7 +128,7 @@ to save, and =.show()= to display.
     curve = plt.plot(
         fpr, tpr)
         #label='{} (AUC = {:0.2f})'.format(title, metrics.auc(fpr, tpr)))
-    one_percent = [y for (x,y) in zip(fpr, tpr) if x >= 0.01][0]
+    one_percent = [y for (x, y) in zip(fpr, tpr) if x >= 0.01][0]
     line = plt.plot([0, 1], [one_percent] *2, "red", label='1% fpr')
     # plt.legend([curve, line], loc="lower right") # todo: show legend
     fig.get_axes()[0].set_ybound(0, 1)
@@ -179,7 +179,7 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):
 # plt.legend()
 def traces_cumul(scenario_obj, domain, color="red", axes=None):
     X, y, yd = scenario_obj.get_features_cumul()
-    data = [x[0] for x in zip(X[:,4:], yd) if x[1] == domain]
+    data = [x[0] for x in zip(X[:, 4:], yd) if x[1] == domain]
     legend = domain
     for datum in data:
         line = plt.plot(datum, c=color, alpha=0.5, linewidth=1, axes=axes, label=legend)
