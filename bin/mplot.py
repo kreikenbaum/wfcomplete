@@ -172,14 +172,20 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):
 - plt.bar
   - needs to set lots of options to look good, even with seaborn'''
 ## usage:
-# a = sorted(scenario.list_all(), key=lambda x: x.date if hasattr(x, "date") else datetime.date(1970, 1, 1))[-2]
-# ax = plt.axes()
-# traces_cumul(a, 'paypal.com', color="red", axes=ax)
-# traces_cumul(a, 'msn.com', color="blue", axes=ax)
-# plt.legend()
+# s = scenario.list_all("2017-12-31")[0]
+# a = ['wikipedia.org', 'onclickads.net']
+# color = lambda x: mplot._color(x, a)
+# ax = mplot.plt.axes()
+# for domain in a: mplot.traces_cumul(s, domain, color(domain), ax)
+# mplot.plt.legend()
+# mplot.plt.xlabel("Feature Index")
+# mplot.plt.ylabel("Feature Value [Byte]")
+# mplot.plt.title("CUMUL example for two sites retrieved on {}".format(s.date))
+# mplot.plt.tight_layout()
 def traces_cumul(scenario_obj, domain, color="red", axes=None):
     X, y, yd = scenario_obj.get_features_cumul()
-    data = [x[0] for x in zip(X[:, 4:], yd) if x[1] == domain]
+    #data = [x[0] for x in zip(X[:, 4:], yd) if x[1] == domain]
+    data = [x[0] for x in zip(X, yd) if x[1] == domain]
     legend = domain
     for datum in data:
         line = plt.plot(datum, c=color, alpha=0.5, linewidth=1, axes=axes, label=legend)
@@ -212,11 +218,7 @@ def traces_cumul_group(traces, color="red", axes=None):
         plt.plot(datum, c=color, alpha=0.5, linewidth=1, axes=axes, label=label)
         label = None
 
-
-# def trace_cumul(trace, color, axes=None, label=None):
-#     '''plots single trace's CUMUL features'''
-#     plt.plot(datum, c=color, alpha=0.5, linewidth=1, axes=axes, label=legend)
-## plot row of traces (mostly related chosen)
+## PLOT ROWS OF TRACES (mostly related chosen)
 #a = scenario.list_all("17-12-26")[0]
 #wiki = a.get_traces()["wikipedia.org"]
 #_, g = plt.subplots(7, 1)
