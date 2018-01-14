@@ -432,64 +432,75 @@ of future work in section [[#future-work]].
     deviations.\citep[sec.10.14.2]{duda}
 
 
-    The source data in \gls{wf} are traces, say in
-    =pcap= \citep{pcap-manual} format. From these, only the size, and
-    timing of each packet is extracted. The packet direction is
-    encoded in the size (\citet{panchenko}, \citet{a-systematic2014}),
-    either positive or negative. These uniquely describe the web
-    retrieval for \gls{wf} \citep[Fact 1]{a-systematic2014}. The size
-    of files is hidden by the traffic's encryption; the closest
-    approximation \citep{wpes13-fingerprinting} is the size of each
-    TLS \citep{rfc5246} record. Alternatives are sizes TCP
+    The source data in \gls{wf} are traces, say in =pcap=
+    \citep{pcap-manual} format. From these, only the size, and timing
+    of each packet is extracted. The packet direction is encoded in
+    the size (\citet{panchenko}, \citet{a-systematic2014}), either
+    positive or negative. These uniquely describe the web retrieval
+    for \gls{wf} \citep[Fact 1]{a-systematic2014}. The size of files
+    is hidden by the traffic's encryption; the closest approximation
+    \citep{wpes13-fingerprinting} is the size of each TLS
+    \citep{rfc5246} record. Alternatives to this are sizes of TCP
     \citep{rfc793} or IP \citep{rfc791} packets. As of
-    \citet{wpes13-fingerprinting}, these work almost as well.
+    \citet{wpes13-fingerprinting}, these work similarly well.
 
 
     The earliest \gls{wf} attacks (\citet{quantifying},
     \citet{ssl-traffic-analysis}, \cite{hintz02}) only used packet
     sizes as features to attack SSL
     \citep{sslv3}. \citep[sec.7]{tor-design} conjectured that \Gls{wf}
-    would be hampered by Tor's fixed (data) cell size
+    against Tor would be hampered by Tor's fixed (data) cell size
     \citep[sec.0.2,3]{tor-spec}. \citet{ccsw09-fingerprinting} showed
     the first better-than-random results of \gls{wf} against Tor,
-    still using only packet sizes as features.
+    using only packet sizes as features.
 
 
     #+CAPTION[CUMUL features example]: CUMUL features example
     #+NAME: CUMUL_traces
     [[./pictures/CUMUL_2017-12-31.pdf]]
     # code: see [[file:bin/mplot.py::traces_cumul%20usage]]
+
     \citet{panchenko} increased closed-world \gls{wf} accuracy on
-    \citet{ccsw09-fingerprinting}'s dataset from 2.96% to 54.61%. They
-    added \gls{wf}-specific features, such as the percentage of
-    incoming packets, the estimated size of the HTML \citep{html5}
-    page, etc. \citet{effective2014} used close to 4000 features. On a
-    smaller dataset, they achieved a true-positive rate or 0.84, with
-    a false-positive rate of 0.006.  \citet{panchenko2} use a
-    cumulative size metric, CUMUL. As seen in Figure [[CUMUL_traces]],
-    these provide a graphical representation of traces, while still
-    allowing for computer-based comparison after normalization. They
-    sum the incoming and outgoing bytes. To extract the same number of
-    features from each trace, they interpolate 100 data points from
-    these. \citet{kfingerprint} provide a state-of-the-art \gls{wf}
-    attack. They also measure how much each feature adds to
+    \citet{ccsw09-fingerprinting}'s dataset from 2.96% to 54.61%
+    (section [[#ml-measure]] defines accuracy etc.). They added
+    \gls{wf}-specific features, such as the percentage of incoming
+    packets, the estimated size of the HTML \citep{html5} page,
+    etc. \citet{effective2014} used close to 4000 features. On a
+    smaller dataset, they achieved a true-positive rate of 84%, with a
+    false-positive rate of 0.6%.  \citet{panchenko2} use a cumulative
+    size metric, CUMUL. As seen in Figure [[CUMUL_traces]], these provide
+    a graphical representation of traces, while still allowing for
+    computer-based comparison after normalization. To create this,
+    they sum the incoming and outgoing bytes. To extract the same
+    number of features from each trace, they interpolate 100 data
+    points from these. \citet{kfingerprint} provide a state-of-the-art
+    \gls{wf} attack. They also measure how much each feature adds to
     classification. \citet{kfingerprint}'s approach uses approximately
-    150 features with Random Forest\citep{DBLP:journals/ml/Breiman01}
+    150 features with a unique Random
+    Forest\citep{DBLP:journals/ml/Breiman01} fingerprint
     classification.
 *** Classification
     :PROPERTIES:
     :CUSTOM_ID: ml-class
     :END:
     #+INDEX: classification
-    #+INDEX: training
-    #+INDEX: classification!training
-    #+INDEX: classification!test
+    #+INDEX: test data
+    #+INDEX: training data
+    #+INDEX: classification!training data
+    #+INDEX: classification!test data
     #+INDEX: machine learning!classification
-    The feature extraction step transformed raw input data to a
-    (numerical) feature vector. In classification, some of these
-    vectors are for training the classifier. Others for testing.
+    \Gls{wf} /classification/ tries to assign a website to a trace's
+    features extracted in the previous step.  The previous step
+    [[#ml-features][feature extraction]] transforms traces (raw input data) to
+    features. In /classification/, these features are used for two
+    purposes: some traces' features are used for training the
+    classifier. Others for testing.
 
-    In classifier /training/, the classifier gets as input several
+
+    As before, a vector of features is denoted $x$, with its class
+    denoted $y$. So $(x, y)$
+
+    In classifier /training/, a classifier gets as input several
     feature vectors and their respective classes and tries to
     generalize a relationship.
 
