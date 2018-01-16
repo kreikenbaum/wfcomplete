@@ -251,7 +251,11 @@ def all_from_json(filename):
     '''returns all the counters in json file named filename '''
     out = []
     for entry in open(filename):
-        out.append(from_json(entry))
+        counter = from_json(entry)
+        if counter.check():
+            out.append(counter)
+        else:
+            logging.warn('%s discarded', counter.name)
     return out
 
 
@@ -718,8 +722,17 @@ class Counter(object):
                          self.name)
             self.warned = True
             return False
-        else:
-            return True
+        for error_msg in ['Reached_error_page:_about:neterror',
+                          'after_timeout_test_tor_network_settings',
+                          'after_timeout_Unable_to_locate_element:_body',
+                          'failed_repeatedly_to_get_page_text',
+                          'empty_body']:
+            if self.name and error_msg in self.name:
+                logging.debug("load error at file: %s\n",
+                              self.name)
+                self.warned = True
+                return False
+        return True
 
 
     def cumul(self, num_features=100):

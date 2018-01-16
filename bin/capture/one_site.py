@@ -21,7 +21,8 @@ FIREFOX_PATH = os.path.join(os.getenv("HOME"), 'bin', 'tor-browser_en-US',
                             'Browser', 'firefox')
 
 PROBLEMATIC_DELAY = [
-    'test tor network settings'
+    'test tor network settings',
+    'loading ...' # seen one time at pornhub.com
 ]
 PROBLEMATIC_TEXT = [
     'test tor network settings'
