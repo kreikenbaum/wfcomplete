@@ -171,7 +171,7 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):
 '''other ways
 - plt.bar
   - needs to set lots of options to look good, even with seaborn'''
-## usage:
+## traces_cumul usage:
 # s = scenario.list_all("2017-12-31")[0]
 # a = ['wikipedia.org', 'onclickads.net']
 # color = lambda x: mplot._color(x, a)
