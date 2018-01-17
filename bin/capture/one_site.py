@@ -36,7 +36,8 @@ PROBLEMATIC_TEXT = [
     'ddos protection by cloudflare',
     'buy this domain',
     'your browser will redirect to your requested content shortly',
-    'captcha' # deprecated: could be contained otherwise
+    'captcha', # deprecated: could be contained otherwise (but worked well)
+    '403 forbidden' # also deprecated: could be contained otherwise
 ]
 LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 LOGLEVEL = logging.INFO
