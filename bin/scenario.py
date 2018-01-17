@@ -154,8 +154,8 @@ class Scenario(object):
 
     def __eq__(self, other):
         return (self._compareattr(other, "name")
-                and self._compareattr(other, "date")
-                and self._compareattr(other, "num_sites"))
+                and self._compareattr(other, "date"))
+#                and self._compareattr(other, "num_sites")) # failed
 
     def __len__(self):
         '''@return the total number of instances in this scenario'''
@@ -468,13 +468,15 @@ doctest.testmod(optionflags=doctest.ELLIPSIS)
 #                                                      n_jobs=config.JOBS_NUM)
 # c = mplot.confusion(y, y_pred, domains, rotation=90)
 
-### number of load failures per site
+### number of LOAD FAILURES PER SITE
+# a = scenario.Scenario("defense-client/bridge--2018-01-07--30@50")
+# a.trace_args['remove_small'] = False # optional, keeps too-small sites
 # ([(name, len(traces)) for (name, traces) in a.get_traces().iteritems()]
 ## proportion of errors
 # 1 - np.mean([len(traces) for traces in a.get_traces().values()]) / 50
 
-### create table in evaluation, compare results
+### create TABLE IN EVALUATION, compare results
 ## size overheads
-# sorted([x for x in c if 'new defense' in x.scenario.name], key=lambda x: abs(x.size_overhead - 163.08) if x.size_overhead else 100000)
+# sorted([x for x in results.list_all() if 'new defense' in x.scenario.name], key=lambda x: abs(x.size_overhead - 163.08) if x.size_overhead else 100000)
 ## score
-# sorted([x for x in c if 'new defense' in x.scenario.name], key=lambda x: abs(x.score - 0.6822))
+# sorted([x for x in results.list_all() if 'new defense' in x.scenario.name], key=lambda x: abs(x.score - 0.6822))
