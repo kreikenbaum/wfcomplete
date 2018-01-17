@@ -64,12 +64,11 @@ def browse_to(page, bridge=None):
 def _check_text(text, file_name=None, client=None):
     '''@return False if problem, and should stop, True if all's well'''
     text = text.lower()
+    if not text:
+        raise DelayError("empty body")
     for delay_text in PROBLEMATIC_DELAY:
         if delay_text in text:
             raise DelayError(delay_text)
-    if not text:
-        _handle_exception("empty body", file_name, client)
-        return False
     for problem in PROBLEMATIC_TEXT:
         if problem in text:
             _handle_exception("text contains {}".format(problem),
