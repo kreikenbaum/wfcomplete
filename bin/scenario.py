@@ -467,3 +467,14 @@ doctest.testmod(optionflags=doctest.ELLIPSIS)
 # y_pred = model_selection.cross_val_predict(clf, X, y, cv=config.FOLDS,
 #                                                      n_jobs=config.JOBS_NUM)
 # c = mplot.confusion(y, y_pred, domains, rotation=90)
+
+### number of load failures per site
+# ([(name, len(traces)) for (name, traces) in a.get_traces().iteritems()]
+## proportion of errors
+# 1 - np.mean([len(traces) for traces in a.get_traces().values()]) / 50
+
+### create table in evaluation, compare results
+## size overheads
+# sorted([x for x in c if 'new defense' in x.scenario.name], key=lambda x: abs(x.size_overhead - 163.08) if x.size_overhead else 100000)
+## score
+# sorted([x for x in c if 'new defense' in x.scenario.name], key=lambda x: abs(x.score - 0.6822))

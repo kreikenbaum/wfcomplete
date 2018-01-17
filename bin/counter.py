@@ -40,7 +40,9 @@ def _append_features(keys, filename):
     if not keys.has_key(domain):
         keys[domain] = []
     counter = Counter.from_pcap(filename)
-    if counter.packets and not counter.warned and counter.check():
+    # filtered on json import, this keeps all load failures for later statistics
+    if counter.packets and not counter.warned: # and counter.check():
+        counter.check()
         keys[domain].append(counter)
     else:
         logging.warn('%s discarded', counter.name)
@@ -252,7 +254,7 @@ def all_from_json(filename):
     out = []
     for entry in open(filename):
         counter = from_json(entry)
-        if counter.check():
+        if counter.check() and not counter.warned:
             out.append(counter)
         else:
             logging.warn('%s discarded', counter.name)
