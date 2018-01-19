@@ -34,34 +34,35 @@ RENAME = {
 }
 # were renamed on disk, hack to rename
 PATH_RENAME = {
+    "0.19/0-ai": "0.19/0-ai--2016-06-23",
+    "0.19/0-bii": "0.19/0-bii--2016-06-22",
+    "0.19/20-bii": "0.19/20-bii--2016-06-23",
+    "0.19/20-bi": "0.19/20-bi--2016-06-22",
+    "5--2016-09-23-100": "5--2016-09-23--100",
     "05-12@10": "05-12-2016--10@40",
-    'bridge--2016-11-04-100@50': "10aI--2016-11-04--100@50",
     "10aI--2016-11-04-50-of-100": "10aI--2016-11-04--100@50",
-    "json-10-nocache": "nocache--2016-06-17--10@30",
-    "nobridge--2017-01-19-aI-factor=10": "nobridge-aI-factor=10--2017-01-19",
-    "bridge--2016-09-21-100": "bridge--2016-09-21--100",
-    "bridge--2016-09-26-100": "bridge--2016-09-26--100",
-    "bridge--2016-08-30-100": "bridge--2016-08-30--100",
-    "json-10/a-i-noburst": "a-i-noburst--2016-06-02--10@30",
-    "json-10/a-ii-noburst": "a-ii-noburst--2016-06-03--10@30",
-    "json-100/b-i-noburst": "b-i-noburst--2016-06-04--100@40",
     "30-burst": "30-burst--2016-07-11",
     "/30": "/30--2016-07-10",
     "/20": "/20--2016-07-17",
-    "nobridge--2017-01-19-aI-factor=10-with-errors": "nobridge-aI-factor=10-with-errors--2017-01-19",
-    "5--2016-09-23-100": "5--2016-09-23--100",
+    "aii-factor=0": "aii-factor=0--2016-06-23",
+    "bridge--2016-11-04-100@50": "10aI--2016-11-04--100@50",
+    "bridge--2016-09-21-100": "bridge--2016-09-21--100",
+    "bridge--2016-09-26-100": "bridge--2016-09-26--100",
+    "bridge--2016-08-30-100": "bridge--2016-08-30--100",
     "bridge-newer-sites--2017-12-26--30@50": "newer-sites-bridge--2017-12-26--30@50",
     "bridge-older-sites--2017-12-25": "older-sites-bridge--2017-12-25",
-    'aii-factor=0': 'aii-factor=0--2016-06-23',
-    '0.19/0-ai': '0.19/0-ai--2016-06-23',
-    '0.19/0-bii': '0.19/0-bii--2016-06-22',
-    '0.19/20-bii': '0.19/20-bii--2016-06-23',
-    '0.19/20-bi': '0.19/20-bi--2016-06-22'
+    "bridge--2016-09-26-100-with-errs": "bridge--2016-09-26--100-with-errs",
+    "json-10/a-i-noburst": "a-i-noburst--2016-06-02--10@30",
+    "json-10/a-ii-noburst": "a-ii-noburst--2016-06-03--10@30",
+    "json-10-nocache": "nocache--2016-06-17--10@30",
+    "json-100/b-i-noburst": "b-i-noburst--2016-06-04--100@40",
+    "nobridge--2017-01-19-aI-factor=10": "nobridge-aI-factor=10--2017-01-19",
+    "nobridge--2017-01-19-aI-factor=10-with-errors": "nobridge-aI-factor=10-with-errors--2017-01-19"
 }
 PATH_SKIP = [
     "../sw/w/, WANG14, knndata.zip",
-    '../sw/w/, RND-WWW, disabled/foreground-data-subset',
-    'disabled/foreground-data'
+    "../sw/w/, RND-WWW, disabled/foreground-data-subset",
+    "disabled/foreground-data"
 ]
 
 
@@ -83,21 +84,23 @@ class Scenario(object):
         self.path = os.path.normpath(name)
         if name in PATH_SKIP or skip:
             self.name = name
+            logging.info("skipped " + name)
             return
         # import pdb; pdb.set_trace()
-        self.path = _prepend_if_ends(self.path, 'with-errors')
-        self.path = _prepend_if_ends(self.path, 'with-errs')
-        self.path = _prepend_if_ends(self.path, 'with7777')
-        self.path = _prepend_if_ends(self.path, 'failure-in-between')
         for (pre, post) in PATH_RENAME.iteritems():
             if self.path.endswith(pre):
                 self.path = self.path.replace(pre, post)
         if smart and not self.valid():
             self.path = list_all(self.path)[0].path
+        path = _prepend_if_ends(self.path, 'with-errors')
+        path = _prepend_if_ends(path, 'with-errs')
+        path = _prepend_if_ends(path, 'with7777')
+        path = _prepend_if_ends(path, 'failure-in-between')
         try:
-            (self.name, date) = self.path.rsplit('/', 1)
+            (self.name, date) = path.rsplit('/', 1)
         except ValueError:
             self.name = os.path.normpath(self.path)
+            logging.warn("failed to split %s", path)
             return
         #import pdb; pdb.set_trace()
         numstr = None
