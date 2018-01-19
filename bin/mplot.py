@@ -76,13 +76,13 @@ def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
 
 def date_accuracy(size=30):
     '''@return accuracy over time for disabled data of size =size='''
-    scenarios = [x for x in scenario.list_all() if x.scenario.num_sites == size and 'disabled' in x.scenario.name]
+    scenarios = [x for x in results.list_all() if x.scenario.num_sites == size and 'no defense' in x.scenario.name]
     df = pd.DataFrame([x.__dict__ for x in scenarios])
-    df = df.rename(columns={'score': 'Accuracy [%]'})
+    df = df.rename(columns={'score': 'Accuracy'}) # todo: * 100 and ..cy [%]
     df['Scenario Date [ordinal]'] = df['scenario'].map(
         lambda x: x.date.toordinal())
-    plot = df.plot.scatter('Scenario Date [ordinal]', 'Accuracy [%]')
-    plot.legend(handles=[mpatches.Patch(color=sns.color_palette("colorblind", 1)[0], label='defenseless')])
+    plot = df.plot.scatter('Scenario Date [ordinal]', 'Accuracy') # todo2:here2
+    plot.legend(handles=[mpatches.Patch(color=sns.color_palette("colorblind", 1)[0], label=scenarios[0].name)])
     plot.set_title("Accuracy Ratio by Date (on {} sites)".format(size))
     plot.set_ybound(0, 1)
     plt.tight_layout()
