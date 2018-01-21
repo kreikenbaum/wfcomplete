@@ -76,7 +76,7 @@ def _check_text(text, file_name=None, client=None):
                               file_name, client)
             return False
     if collections.Counter(text)['\n'] <= 2:
-        _handle_exception("less than 3 lines of text", file_name, client)
+        _handle_exception("less than 3 text lines", file_name, client)
         return False
     return True
 
