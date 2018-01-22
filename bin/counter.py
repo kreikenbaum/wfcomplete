@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 '''aggregates trace data, extracts features'''
+import collections
 import doctest
 import errno
 import glob
@@ -245,23 +246,23 @@ def all_from_dir(dirname, remove_small=True, or_level=0):
         out = outlier_removal(out, or_level)
     if remove_small:
         return _remove_small_classes(out)
-    else:
-        return out
+    return out
 
 
 def all_from_json(filename):
     '''returns all the counters in json file named filename '''
     out = []
-    removed = collections.defaultdict(lambda: 0)
+    removed = 0
     for entry in open(filename):
         counter = from_json(entry)
         if counter.check() and not counter.warned:
             out.append(counter)
         else:
-            removed[counter.name.split('@')[0]] += 1
+            removed += 1
             logging.debug('%s discarded', counter.name)
     if removed:
-        logging.warn('discarded traces count: %s', dict(removed))
+        logging.info('discarded %d trace%s of %s',
+                     removed, 's' if removed != 1 else '', out[0].domain)
     return out
 
 
@@ -294,7 +295,7 @@ def all_from_wang(dirname="batch", closed_world=True):
         pass
     out = {}
     for filename in glob.glob(os.path.join(dirname, '*')):
-        if filename[-1] is 'f':
+        if filename[-1] == 'f':
             continue
         # td: need to deal with open world traces later
         if closed_world and '-' not in filename:
@@ -373,7 +374,7 @@ def _dirname_helper(dirname, clean=True):
 def dir_to_cai(dirname, clean=True):
     '''write all traces in defense in dirname to cai file'''
     counter_dict = _dirname_helper(dirname, clean)
-    if dirname is '.':
+    if dirname == '.':
         dirname = os.getcwd()
     with open(dirname.replace(os.sep, '___') + '.cai', 'w') as f:
         dict_to_cai(counter_dict, f)
@@ -384,7 +385,7 @@ def dir_to_herrmann(dirname, clean=True):
     counter_dict = _dirname_helper(dirname, clean)
     # 2. write to file
     X, y, _ = to_features_herrmann(counter_dict)
-    if dirname is '.':
+    if dirname == '.':
         dirname = os.getcwd()
     to_libsvm(X, y, fname='her_svm')
 
@@ -417,7 +418,7 @@ def for_scenarios(scenarios, remove_small=True, or_level=0):
               [counterN_1, ..., countersN_N]}}
     '''
     out = {}
-    if len(scenarios) == 0:
+    if not scenarios:
         out['.'] = all_from_dir('.',
                                 remove_small=remove_small, or_level=or_level)
     for scenario in scenarios:
@@ -545,9 +546,7 @@ class Counter(object):
         self.warned = False
 
     def __eq__(self, other):
-        cls = self.name.split('@')[0]
-        o_cls = other.name.split('@')[0]
-        return (cls == o_cls
+        return (self.domain == other.domain
                 and float(self.starttime) == float(other.starttime)
                 and self.packets == other.packets)
 
@@ -555,18 +554,34 @@ class Counter(object):
         return 'counter (packet, time): {}'.format(self.timing)
 
     @property
+    def domain(self):
+        '''domain name of counter
+        >>> _test(3).domain
+        u'test'
+        '''
+        return self.name.split('@')[0]
+
+    @property
+    def exception(self):
+        '''exception/error of counter if it occurred, else None
+        >>> a = _test(3); a.name = 'test@1234_error_name'; a.exception
+        'error_name'
+        '''
+        exc = self.name.split('@')[1] if self.name else None
+        if exc and '_' in exc:
+            exc = exc.split('_', 1)[1]
+        return exc
+
+    @property
     def starttime(self):
+        '''starttime of counter if it has it, else None
+        >>> a = _test(3); a.name = 'test@1234_error_name'; a.starttime
+        '1234'
+        '''
         time = self.name.split('@')[1] if self.name else None
         if time and '_' in time:
             time = time.split('_')[0]
         return time
-
-    @property
-    def exception(self):
-        exc = self.name.split('@')[1] if self.name else None
-        if exc and '_' in exc:
-            exc = time.split('_', 1)[1]
-        return exc
 
     @staticmethod
     def from_(*args, **kwargs):
@@ -670,7 +685,7 @@ class Counter(object):
                                         '-r' + filename],
                                   stdout=subprocess.PIPE,
                                   close_fds=True)
-        http=0
+        http = 0
         for line in iter(tshark.stdout.readline, ''):
             if PROTOCOL_DISCARD.search(line):
                 continue
@@ -685,7 +700,7 @@ class Counter(object):
             except ValueError:
                 tmp.warned = True
                 logging.info('file: %s had problems in line \n%s\n',
-                              filename, line)
+                             filename, line)
                 tshark.kill()
                 break
             else:
@@ -948,7 +963,7 @@ class Counter(object):
         'tps + + +'
         '''
         if not name:
-            name = self.name.split('@')[0]
+            name = self.domain
         out = name
         for packet in self.packets:
             while abs(packet) >= 512:
@@ -1096,4 +1111,4 @@ if __name__ == "__main__":
     # if not os.environ.get('PYTHONINSPECT') and not pythonapi.Py_InspectFlag > 0:
     #     for t in itertools.chain.from_iterable(COUNTERS.values()):
     # was [trace for domain in COUNTERS.values() for trace in domain]:
-    #         print 
+    #         print
