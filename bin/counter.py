@@ -252,12 +252,16 @@ def all_from_dir(dirname, remove_small=True, or_level=0):
 def all_from_json(filename):
     '''returns all the counters in json file named filename '''
     out = []
+    removed = collections.defaultdict(lambda: 0)
     for entry in open(filename):
         counter = from_json(entry)
         if counter.check() and not counter.warned:
             out.append(counter)
         else:
-            logging.warn('%s discarded', counter.name)
+            removed[counter.name.split('@')[0]] += 1
+            logging.debug('%s discarded', counter.name)
+    if removed:
+        logging.warn('discarded traces count: %s', dict(removed))
     return out
 
 
