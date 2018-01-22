@@ -690,11 +690,11 @@ using standard distributions like normal or uniform
 \cite[sec.5.2]{DBLP:journals/popets/CherubinHJ17}. \cite[sec.5.A]{wtfpad2015}
 also distributes its \gls{wf} defense data partitions exponentially to
 better fit web traffic. \cite{DBLP:conf/imc/IhmP11} repeatedly mention
-a /long tail/ of traffic. Yet, HTTP \citep{rfc2068}-shaped cover traffic might prove
-more effective, as this would make it harder to separate cover and
-real traffic. In addition, it would work at the layer
-\citep[ch.1.7]{DBLP:books/daglib/0001977} where the problem
-originates, as it mimics the HTTP/HTML\citep{html5}-specific
+a /long tail/ of traffic. This is why HTTP \citep{rfc2068}-shaped
+cover traffic might prove more effective, as this would make it harder
+to separate cover and real traffic. In addition, it would work at the
+layer \citep[ch.1.7]{DBLP:books/daglib/0001977} where the problem
+originates, as it mimics the HTTP/HTML \citep{html5}-specific
 request-response interaction.
 
 
@@ -768,10 +768,11 @@ appropriate HTTP-related distributions \citep{newtrafficmodel}.
  \end{algorithm}
  #+END_EXPORT
 
- /registerHost/, /isRegistered/, /computeProbability/ and /updateHosts/
- access a data structure that saves the recently active hosts with
- their number of embedded objects and the cover requests that still
- need to be sent.
+ /registerHost/, /isRegistered/, /computeProbability/ and
+ /updateHosts/ access a JS object that maps the recently active
+ hostnames to the number of embedded objects and cover requests that
+ still need to be sent. Its elements get removed after a certain time
+ to allow for new traffic.
 
  The /lookupOrGuess.../-functions need data structures to map urls to
  both HTTP sizes and number of embedded objects. These change over
@@ -783,7 +784,10 @@ appropriate HTTP-related distributions \citep{newtrafficmodel}.
  \citep{Bloom70space/timetrade-offs} based binning (see section
  [[#sub3-bloomsort]]) to save values related to urls in a fixed space,
  while not allowing an adversary to exactly determine which urls are
- saved.
+ saved. See section [[#sub3-bloomfilters]] for a short introduction to
+ their underlying Bloom-filters and section [[#sub3-bloomsort]] for their
+ application that saves these in a fixed-size probabilistic data
+ structure.
 
 
  Ease-of-installation and configuring the amount of cover traffic is

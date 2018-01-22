@@ -6,6 +6,7 @@ const Simple = require('sdk/simple-prefs');
 
 const PROTOCOL = 'http://';
 
+// traffic server preferences with update on change
 let HOST = Simple.prefs['Traffic-HOST'];
 Simple.on("Traffic-HOST", function() {
     HOST = Simple.prefs['Traffic-HOST'];
