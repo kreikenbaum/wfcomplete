@@ -29,6 +29,10 @@
 #+LATEX_HEADER: \setacronymstyle{long-short}
 #+LATEX_HEADER: \newacronym{ml}{ML}{machine learning}
 #+LATEX_HEADER: \newacronym{wf}{WF}{website fingerprinting}
+#+LATEX_HEADER: \newacronym{tn}{TN}{true negatives}
+#+LATEX_HEADER: \newacronym{fn}{FN}{false negatives}
+#+LATEX_HEADER: \newacronym{fp}{FP}{false positives}
+#+LATEX_HEADER: \newacronym{tp}{TP}{true positives}
 # end glossaries
 #+LATEX_HEADER: \pagenumbering{roman}
 #+LATEX_HEADER: \onehalfspacing
@@ -535,7 +539,7 @@ of future work in section [[#future-work]].
     :PROPERTIES:
     :CUSTOM_ID: ml-measure
     :END:
-    #+INDEX: Accuracy (acc)
+    #+INDEX: Accuracy
     #+INDEX: Area Under Curve
     #+INDEX: AUC
     #+INDEX: AUC$_{0.01}$
@@ -547,16 +551,16 @@ of future work in section [[#future-work]].
     #+INDEX: ROC curve
     #+INDEX: True Positive Rate
     #+INDEX: tpr
-    To find out if \gls{wf} attacks work, and if defenses prevent this,
-    their success needs to be measured.
+    To find out if \gls{wf} attacks work, and if defenses prevent them
+    from working, their success needs to be measured. The simplest
+    form of measurement is simply counting how many traces were
+    classified correctly, and dividing by the total number of
+    traces. This is called /accuracy/.\citep{powers} For other types
+    of measurement, a /confusion matrix/ \citep{powers} helps to
+    illustrate the different cases that can occur in \gls{wf}. See
+    Table [[tab:confusion_matrix]].
 
-    A /confusion matrix/ \citep{powers} helps to illustrate the
-    different cases that can occur in \gls{wf}. Each trace is
-    categorized by whether it /is/ a sensitive website (here:
-    wikipedia.org), and whether it is /classified/ as such. See Table
-    [[tab:confusion_matrix]].
-
-    #+CAPTION: Confusion matrix. Correctly classified traces are in bold.
+    #+CAPTION[Confusion matrix]: (binary) Confusion matrix. Correctly classified traces are in bold.
     #+NAME: tab:confusion_matrix
     #+ATTR_LATEX: :align |l||l | l|
     |----------------------+-----------------------+-----------------------|
@@ -567,14 +571,39 @@ of future work in section [[#future-work]].
     | predicted as onclickads.net | False Negatives (FN)  | *True Negatives (TN)* |
     |----------------------+-----------------------+-----------------------|
 
-    From these counts, other metrics can be derived. The main metrics
-    used in \gls{wf} literature are /Accuracy/ (acc), and /True-/ and
-    /False-Positive-Rate/ (tpr and fpr). These are defined as
+
+    This matrix counts the number of classifications. For example, if
+    a trace that was recorded from /wikipedia.org/ is classified as
+    /onclickads.net/, this increases the \gls{fn} count by 1. Each
+    trace is categorized by whether it /is/ a sensitive website (here:
+    wikipedia.org), and whether it is /classified/ as such. From these
+    values, metrics can be derived. Apart from /accuracy/, the main
+    metrics used in \gls{wf} literature are /True-/ and
+    /False-Positive-Rate/. These are defined as
 
     #+ATTR_LATEX: :align r c l
     | True Positive Rate  | := | $TP / (TP + FN)$                  |
     | False Positive Rate | := | $FP / (FP + TN)$                  |
     | Accuracy            | := | $(TP + TN) / (TP + FP + FN + TN)$ |
+
+
+
+    There are two scenarios of testing \gls{wf} in experiments,
+    /closed-world/ and /open-world/.
+
+    - why measure
+    - measure what
+    - what is cw
+    - what is ow
+    - what is accuracy
+    - what is fpr
+    - what is tpr
+    - what is a roc-curve
+    - [why is this important?]
+      - base rate fallacy: get lost in big number of ...
+        - prime example: take cancer example, same number, change words for WF
+        - refutations
+
 
     To show the classifier strictness tradeoff, a /Receiver
     Operating Characteristic Curve/ (ROC-Curve) can be used.
