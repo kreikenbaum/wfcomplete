@@ -8,6 +8,7 @@ import pandas as pd
 import seaborn as sns
 # should be external, maybe in analyse?
 from sklearn import metrics, model_selection, preprocessing
+sns.set() #sns.set_style("darkgrid")
 sns.set_palette("colorblind") # optional, uglier, but helpful
 
 import config
@@ -95,17 +96,17 @@ def _init_roc(titleadd=None):
     if titleadd:
         title += " " + titleadd
     out = plt.figure()
-    plt.plot([0, 1], [0, 1], 'k--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
+    plt.plot([0, 1], [0, 1], 'k--', label="random guessing")
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     plt.title(title)
     return out
 
 def roc_helper(result, axes=None):
-    scenario_obj = result.scenario.get_open_world(
-        result.open_world['background_size']).binarize()
+    assert result.open_world and result.open_world['binary'], "non-owbin result"
+    num = result.open_world['background_size']
+    auc_bound = result.open_world['auc_bound']
+    scenario_obj = result.scenario.get_open_world(num).binarize()
     X, y, _ = scenario_obj.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
     y_pred = model_selection.cross_val_predict(
@@ -113,11 +114,9 @@ def roc_helper(result, axes=None):
         cv=config.FOLDS, n_jobs=config.JOBS_NUM, method="predict_proba")
     fpr_array, tpr_array, _ = metrics.roc_curve(
         y, y_pred[:, 1], y[np.where(y != -1)[0][0]])
-    return roc(
-        fpr_array, tpr_array,
-        ', max_tpr: {}, background_size: {}'.format(
-            result.open_world['auc_bound'],
-            result.open_world['background_size']), axes)
+    return roc(fpr_array, tpr_array,
+               '({}), max_fpr: {}, background_size: {}'.format(
+                   scenario_obj, auc_bound, num, axes))
 
 def roc(fpr, tpr, titleadd=None, fig=None):
     '''@return fig object with roc curve, use =.savefig(filename)=
@@ -126,13 +125,14 @@ to save, and =.show()= to display.
     if not fig:
         fig = _init_roc(titleadd)
     curve = plt.plot(
-        fpr, tpr)
-        #label='{} (AUC = {:0.2f})'.format(title, metrics.auc(fpr, tpr)))
+        fpr, tpr,
+        label='{} (AUC = {:0.2f})'.format("ROC-curve", metrics.auc(fpr, tpr)))
     one_percent = [y for (x, y) in zip(fpr, tpr) if x >= 0.01][0]
-    line = plt.plot([0, 1], [one_percent] *2, "red", label='1% fpr')
-    # plt.legend([curve, line], loc="lower right") # todo: show legend
-    fig.get_axes()[0].set_ybound(0, 1)
-    plt.tight_layout()
+    line = plt.plot([0, 1], [one_percent] *2, "red", label='1% false positives')
+    plt.legend()
+    fig.get_axes()[0].set_ybound(-0.01, 1.01)
+    fig.get_axes()[0].set_xbound(-0.01, 1.01)
+    # plt.tight_layout()
     return fig
 
 
