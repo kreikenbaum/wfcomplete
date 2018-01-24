@@ -10,9 +10,9 @@ import config
 #doesn't really belong here, but neither does it to fit
 def binarize(y, keep=-1, transform_to=0):
     '''binarize data in y: transform all values to =transform_to= except =keep=
-    >>> list(_binarize([0, -1, 1]))
+    >>> list(binarize([0, -1, 1]))
     [0, -1, 0]
-    >>> list(_binarize([0, -1, 1], transform_to=3))
+    >>> list(binarize([0, -1, 1], transform_to=3))
     [3, -1, 3]'''
     for y_class in y:
         if y_class == keep:
@@ -23,13 +23,11 @@ def binarize(y, keep=-1, transform_to=0):
 
 def bounded_auc(y_true, y_predict, y_bound, **kwargs):
     '''@return bounded auc of probabilistic prediction, normalized to [0, 1]
-    >>> bounded_auc([1, 1, 1, 0], np.array([[1, 1, 1, 0], [0, 0, 0, 1]]).T, 1)
+    >>> bounded_auc([1, 1, 1, -1], np.array([1, 0.9, 0.8, 0]), 1)
     1.0
-    >>> bounded_auc([1, 1, 1, 0], np.array([[1, 1, 1, 0], [0, 0, 0, 1]]).T, .2)
+    >>> bounded_auc([1, 1, 1, -1], np.array([1, 0.9, 0.8, 0]), 0.5)
     1.0
-    >>> bounded_auc([1, 1, 1, 0], np.array([[0, 0, 0, 1], [1, 1, 1, 0]]).T, 1)
-    0.0
-    >>> bounded_auc([0, 1, 1, 1], np.array([[0, 1, 1, 1], [1, 0, 0, 0]]).T, 1)
+    >>> bounded_auc([-1, 1, 1, 1], np.array([0, 0.8, 0.9, 1]), 1)
     1.0
     '''
     newfpr, newtpr = bounded_roc(y_true, y_predict, y_bound, **kwargs)
@@ -40,11 +38,9 @@ def bounded_auc(y_true, y_predict, y_bound, **kwargs):
 def bounded_roc(y_true, y_predict, y_bound, **kwargs):
     '''@return (fpr_array, tpr_array) with 0 <= fpr <= y_bound'''
     assert 0 <= y_bound <= 1
-    if len(y_predict.shape) == 2 and y_predict.shape[1] == 2:
-        y_predict = y_predict[:, 1]
-    fpr, tpr, _ = metrics.roc_curve(y_true, y_predict,
-                                    y_true[np.where(y_true != -1)[0][0]],
-                                    **kwargs)
+    assert -1 in y_true
+    pos_label = [x for x in y_true if x != -1][0]
+    fpr, tpr, _ = metrics.roc_curve(y_true, y_predict, pos_label, **kwargs)
     newfpr = [y for y in fpr if y < y_bound]
     newfpr.append(y_bound)
     newtpr = np.interp(newfpr, fpr, tpr)
@@ -53,10 +49,10 @@ def bounded_roc(y_true, y_predict, y_bound, **kwargs):
 
 def compute_bounded_auc_score(clf, X, y, y_bound=0.01):
     '''@return cross-validated bounded auc of clf on X and y'''
-    scorer = metrics.make_scorer(bounded_auc, needs_proba=True, y_bound=y_bound)
+    #scorer = metrics.make_scorer(bounded_auc, needs_proba=True, y_bound=y_bound)
     # if github sklearn issue #3273 gets pulled
-    #scorer = metrics.make_scorer(metrics.roc_auc_score, greater_is_better=True,
-    #                            needs_threshold=True, max_fpr=y_bound)
+    scorer = metrics.make_scorer(metrics.roc_auc_score, greater_is_better=True,
+                                 needs_threshold=True, max_fpr=y_bound)
     return model_selection.cross_val_score(
         clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
         scoring=scorer).mean()

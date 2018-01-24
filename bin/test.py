@@ -16,6 +16,7 @@ import analyse
 import config
 import counter
 import fit
+import mymetrics
 import scenario
 import results
 from capture import one_site
@@ -25,6 +26,44 @@ config.FOLDS = 2
 
 VERYQUICK = os.getenv('VERYQUICK', False)
 QUICK = os.getenv('QUICK', False) or VERYQUICK
+
+
+class TestAnalyse(unittest.TestCase):
+    '''tests the analyse module'''
+
+    def setUp(self):
+        self.c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]]
+        self.bg_mock = {'background': self.c_list[:],
+                                 'a': self.c_list[:],
+                                 'b': self.c_list[:]}
+
+    # todo: use doctest.DocFileSuite
+    def test_doc(self):
+        (fail_num, _) = doctest.testmod(analyse)
+        self.assertEqual(0, fail_num)
+
+
+class TestCaptureOnesite(unittest.TestCase):
+    '''tests the one_site module/program'''
+    def setUp(self):
+        logging.disable(logging.WARNING) # change to .INFO or disable for debug
+
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
+
+    def test_doc(self):
+        (fail_num, _) = doctest.testmod(counter, optionflags=doctest.ELLIPSIS)
+        self.assertEqual(0, fail_num)
+
+    def test__check_text(self):
+        with self.assertRaises(one_site.DelayError):
+            one_site._check_text("test tor network settings")
+        # typeerrors: trying to rename None file
+        with self.assertRaises(TypeError):
+            one_site._check_text("hello")
+        one_site._check_text("hello\n\n\n\n")
+        with self.assertRaises(TypeError):
+            one_site._check_text("Reference #18\n\n\n\n")
 
 
 class TestCounter(unittest.TestCase):
@@ -141,21 +180,6 @@ class TestExp(unittest.TestCase):
                 stderr=null, stdout=null, shell=True)
 
 
-class TestAnalyse(unittest.TestCase):
-    '''tests the analyse module'''
-
-    def setUp(self):
-        self.c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]]
-        self.bg_mock = {'background': self.c_list[:],
-                                 'a': self.c_list[:],
-                                 'b': self.c_list[:]}
-
-    # todo: use doctest.DocFileSuite
-    def test_doc(self):
-        (fail_num, _) = doctest.testmod(analyse)
-        self.assertEqual(0, fail_num)
-
-
 class TestFit(unittest.TestCase):
     '''tests the fit module'''
 
@@ -220,6 +244,14 @@ class TestFit(unittest.TestCase):
         # 2. check that fpr/tpr has good structure (rises straight up to 0.9fpr)
         self.assertEqual(tpr[0], 0.9, self.string.format(tpr, fpr))
         self.assertEqual(fpr[0], 0, self.string.format(tpr, fpr))
+
+
+class TestMymetrics(unittest.TestCase):
+    '''tests the counter module'''
+
+    def test_doc(self):
+        (fail_num, _) = doctest.testmod(mymetrics, optionflags=doctest.ELLIPSIS)
+        self.assertEqual(0, fail_num)
 
 
 class TestResult(unittest.TestCase):
@@ -393,29 +425,6 @@ class TestScenario(unittest.TestCase):
             {'a': (10, -1), 'b': (10, -1), 'c': (20, -1)}, self.base_mock2),
                                250./3-100)
 #                               100.*(pow(1./2, 1./3)-1))#harmonic
-
-
-class TestCaptureOnesite(unittest.TestCase):
-    '''tests the one_site module/program'''
-    def setUp(self):
-        logging.disable(logging.WARNING) # change to .INFO or disable for debug
-
-    def tearDown(self):
-        logging.disable(logging.NOTSET)
-
-    def test_doc(self):
-        (fail_num, _) = doctest.testmod(counter, optionflags=doctest.ELLIPSIS)
-        self.assertEqual(0, fail_num)
-
-    def test__check_text(self):
-        with self.assertRaises(one_site.DelayError):
-            one_site._check_text("test tor network settings")
-        # typeerrors: trying to rename None file
-        with self.assertRaises(TypeError):
-            one_site._check_text("hello")
-        one_site._check_text("hello\n\n\n\n")
-        with self.assertRaises(TypeError):
-            one_site._check_text("Reference #18\n\n\n\n")
 
 
 class MockWriter(object):
