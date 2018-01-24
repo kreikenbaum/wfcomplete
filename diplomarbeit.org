@@ -595,7 +595,7 @@ of future work in section [[#future-work]].
     /closed-world/ and /open-world/\citep[sec.3.2]{panchenko}. In a
     closed-world scenario, a fixed number of pages, say 100, are
     compared one to the other, the classifier only has to distinguish
-    between these. Accuracy measures the classifier's success. In an
+    between these. Accuracy measures this classifier's success. In an
     open-world scenario, a certain number, say 4000, of background
     pages are additionally captured. The previously captured (100)
     sites are called /foreground/ pages. The classifier's task is to
@@ -605,27 +605,30 @@ of future work in section [[#future-work]].
     tagesschau.de.
 
 
-    - what is a roc-curve
-    - [why is this important?]
-      - base rate fallacy: get lost in big number of ...
-        - prime example: take cancer example, same number, change words for WF
-        - refutations
-
-
-    To show the classifier strictness tradeoff, a /Receiver
-    Operating Characteristic Curve/ (ROC-Curve) can be used.
-    This diagram contrasts classifier tpr vs fpr, see Figure
-    [[fig:roc-example]]. The /area under/ the /curve/ (AUC) can
-    be measured. The closer this value is to 1, the better. If one
-    is mainly interested in low fpr, the leftmost section of the
-    ROC-curve is of particular interest. The area under the curve
-    bounded up to a fpr value of 0.01 is denoted AUC_{0.01}.
-
-    #+CAPTION[ROC curve example]: Example Receiver Operating Characteristic (ROC) curve \cite[sec.11.18.8]{scikit-user-guide}.
-    #+ATTR_LATEX: :width 0.4\textwidth
+    #+CAPTION[ROC curve example]: Example Receiver Operating Characteristic (ROC) curve. The point at the top left (0, 1) is optimal. The ROC-curve shows possible true- to false-positive ratios. Each point on the curve corresponds to one confusion matrix \citep[sec.4.0]{Fawcett:2006:IRA:1159473.1159475}.
     #+NAME: fig:roc-example
-    [[./pictures/plot_roc.png]]
+    [[./pictures/roc_example_2016-05_1_4000.pdf]]
 
+    Some classifiers not only yield the input's class, but also output
+    a certainty or probability: This indicates how sure the classifier
+    is of the classification. In this dual scenario of having
+    background and foreground pages, it becomes possible to weight how
+    important each classification is. For example, if a nation state
+    were to raid people's houses if they access a certain website, it
+    better be very sure that they did in fact access the website. If
+    Eve wants to check in on Alice whenever her daughter visits Bob's
+    website, she might prefer some other sites to classify as Bob
+
+
+    A /Receiver Operating Characteristic Curve/ (ROC-Curve)
+    \citep{Fawcett:2006:IRA:1159473.1159475} shows the classifier
+    strictness tradeoff. This diagram contrasts classifier true-, and
+    false positive rate, see Figure [[fig:roc-example]]. The /area under/
+    this /curve/ (AUC) can be measured. The closer this value is to 1,
+    the better. If one is mainly interested in few false positives,
+    the leftmost section of the ROC-curve is of particular
+    interest. The area under the curve bounded up to a false positive
+    rate of, say 1%, is called /bounded AUC/ and denoted AUC_{0.01}.
 ** Website Fingerprinting Defenses
    \Gls{wf} effectively deanonymizes the traffic that users thought
    secure: it could for example expose a dissident to his nation
@@ -659,6 +662,69 @@ of future work in section [[#future-work]].
    samples packets at the network layer. It aims at generally hiding
    /that traffic occurs/, not just which website is visited, as it
    derives its basic mechanism from \citet{ShWa-Timing06}.
+*** DANIEL Website Fingerprinting Defenses
+    :PROPERTIES:
+    :CUSTOM_ID: sub2-wf-def
+    :END:
+    This section describes defenses against \gls{wf} as described
+    [[#sub2-wf][previously]]. As most \gls{ml}, \gls{wf} uses statistical
+    properties of the underlying data. It could possibly be defeated by
+    shuffling these properties. The total number of incoming packets
+    e.g. is a feature used by almost all modern attacks:
+
+    # created using mplot.py:total_packets_in, see name for scenarios+sites
+    #+CAPTION: distribution of number of total incoming packets
+    #+NAME: fig:total_packets_in
+    #+ATTR_LATEX: :float nil
+    [[./pictures/total_packets_in_disabled___bridge--2016-07-06_tamaraw_wtf-pad___bridge--2016-07-05__msn.com_buzzfeed.com_youtube.com_xvideos.com__palette_colorblind.pdf]]
+
+    As seen in Figure [[fig:total_packets_in]], \cite{wtfpad2015}'s publicly
+    available implementation of his own WTF-PAD and
+    Tamaraw\cite{a-systematic2014} both create additional packets, but
+    preserve site separation and ordering. Contrast this with this
+    thesis' defense in Figure [[fig:total_packets_in_thesis]]
+
+    # created using mplot.py:total_packets_in, see name for scenarios+sites
+    #+CAPTION[distribution of number of total incoming packets, thesis defense]: Distribution of number of total incoming packets, thesis defense. The 5aI setting has small overhead, 30aI has average overhead.
+    #+NAME: fig:total_packets_in_thesis
+    #+ATTR_LATEX: :float nil
+    [[./pictures/total_packets_in_disabled___bridge--2016-07-21_0.22___5aI--2016-07-19_0.22___30aI--2016-07-25__msn.com_buzzfeed.com_youtube.com_xvideos.com__palette_colorblind.pdf]]
+
+    Each site's variances have been increased with the result of them
+    overlapping. This figure hints that this thesis' defense more
+    effectively munges websites fingerprinting traces, and is also
+    tunable.
+
+    While it was possible to get \cite{wtfpad2015} to run given [[https://bitbucket.org/mjuarezm/obfsproxy_wfpadtools][the
+    provided software]], \cite{wang2015walkie}'s state-of-the-art defense
+    was compared using his reported values. As \cite{wang2015walkie}
+    uses a normal or uniform distribution in addition to a novel
+    single-duplex method, it could arguably be augmented by
+    HTTP-specific cover traffic distributions.
+
+    Another point is ease-of-installation: Firefox, on which the Tor
+    Browser Bundle is based, enables extensions. These already provide
+    some of the Tor Browser Bundle's
+    functionality\cite{tor-browser-design-impl} and were used in this
+    thesis' to ease installation as compared to \cite{wtfpad2015} and
+    arguably also to \cite{wang2015walkie}.\\
+
+
+    In 2017, the novel LLaMA defense was introduced in
+    \cite{DBLP:journals/popets/CherubinHJ17}. The paper acknowledges
+    the need for a client-side application-level defense. In contrast
+    to this thesis's defense, LLaMA uses a uniformly distributed delay
+    until the cover request, whose URL is from the list of previously
+    requested URLs at the same host.
+
+    This mimicks another request to the same page, thus has
+    approximately the correct size distributions, but does not cloak
+    the high-information initial HTTP request. Also, it is highly
+    deterministic for the first elements of cover traffic, until the
+    list of requested elements from this host is big enough to allow
+    for some randomness. The authors provided LLaMA as a secondary
+    defense to the server-side ALPaCA defense, and emphasize its draft
+    status\cite{LLaMA}.
 * A New Defense
 As detailed in section [[#sub2-wf]], \gls{wf} can deanonymize Tor web
 browsing. It is a low-level passive defense that can even be deployed
@@ -1330,69 +1396,6 @@ appropriate HTTP-related distributions \citep{newtrafficmodel}.
      #+NAME: fig:knn-example
      #+ATTR_LATEX: :width 0.7\textwidth
      [[./pictures/mitchell-fig8.1.png]]
-** DANIEL Website Fingerprinting Defenses
-   :PROPERTIES:
-   :CUSTOM_ID: sub2-wf-def
-   :END:
-   This section describes defenses against \gls{wf} as described
-   [[#sub2-wf][previously]]. As most \gls{ml}, \gls{wf} uses statistical
-   properties of the underlying data. It could possibly be defeated by
-   shuffling these properties. The total number of incoming packets
-   e.g. is a feature used by almost all modern attacks:
-
-   # created using mplot.py:total_packets_in, see name for scenarios+sites
-   #+CAPTION: distribution of number of total incoming packets
-   #+NAME: fig:total_packets_in
-   #+ATTR_LATEX: :float nil
-   [[./pictures/total_packets_in_disabled___bridge--2016-07-06_tamaraw_wtf-pad___bridge--2016-07-05__msn.com_buzzfeed.com_youtube.com_xvideos.com__palette_colorblind.pdf]]
-
-   As seen in Figure [[fig:total_packets_in]], \cite{wtfpad2015}'s publicly
-   available implementation of his own WTF-PAD and
-   Tamaraw\cite{a-systematic2014} both create additional packets, but
-   preserve site separation and ordering. Contrast this with this
-   thesis' defense in Figure [[fig:total_packets_in_thesis]]
-
-   # created using mplot.py:total_packets_in, see name for scenarios+sites
-   #+CAPTION[distribution of number of total incoming packets, thesis defense]: Distribution of number of total incoming packets, thesis defense. The 5aI setting has small overhead, 30aI has average overhead.
-   #+NAME: fig:total_packets_in_thesis
-   #+ATTR_LATEX: :float nil
-   [[./pictures/total_packets_in_disabled___bridge--2016-07-21_0.22___5aI--2016-07-19_0.22___30aI--2016-07-25__msn.com_buzzfeed.com_youtube.com_xvideos.com__palette_colorblind.pdf]]
-
-   Each site's variances have been increased with the result of them
-   overlapping. This figure hints that this thesis' defense more
-   effectively munges websites fingerprinting traces, and is also
-   tunable.
-
-   While it was possible to get \cite{wtfpad2015} to run given [[https://bitbucket.org/mjuarezm/obfsproxy_wfpadtools][the
-   provided software]], \cite{wang2015walkie}'s state-of-the-art defense
-   was compared using his reported values. As \cite{wang2015walkie}
-   uses a normal or uniform distribution in addition to a novel
-   single-duplex method, it could arguably be augmented by
-   HTTP-specific cover traffic distributions.
-
-   Another point is ease-of-installation: Firefox, on which the Tor
-   Browser Bundle is based, enables extensions. These already provide
-   some of the Tor Browser Bundle's
-   functionality\cite{tor-browser-design-impl} and were used in this
-   thesis' to ease installation as compared to \cite{wtfpad2015} and
-   arguably also to \cite{wang2015walkie}.\\
-
-
-   In 2017, the novel LLaMA defense was introduced in
-   \cite{DBLP:journals/popets/CherubinHJ17}. The paper acknowledges
-   the need for a client-side application-level defense. In contrast
-   to this thesis's defense, LLaMA uses a uniformly distributed delay
-   until the cover request, whose URL is from the list of previously
-   requested URLs at the same host.
-
-   This mimicks another request to the same page, thus has
-   approximately the correct size distributions, but does not cloak
-   the high-information initial HTTP request. Also, it is highly
-   deterministic for the first elements of cover traffic, until the
-   list of requested elements from this host is big enough to allow
-   for some randomness. The authors provided LLaMA as a secondary
-   defense to the server-side ALPaCA defense, and emphasize its draft
-   status\cite{LLaMA}.
 ** DANIEL Summary
    \gls{wf} can deanonymize anonymous traffic. This can pose a huge problem
    e.g. for whistleblowers. The previous sections gave a short
