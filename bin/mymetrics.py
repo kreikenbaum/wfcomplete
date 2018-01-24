@@ -34,13 +34,17 @@ def bounded_auc(y_true, y_predict, y_bound, **kwargs):
     return metrics.auc(newfpr, newtpr) / y_bound
 
 
-# todo: examine constants: why does row 1 correspond to label 1?
+def pos_label(y_true):
+    '''@return element in y_true != -1'''
+    assert -1 in y_true and len(set(y_true)) == 2
+    return [x for x in y_true if x != -1][0]
+
+
 def bounded_roc(y_true, y_predict, y_bound, **kwargs):
     '''@return (fpr_array, tpr_array) with 0 <= fpr <= y_bound'''
     assert 0 <= y_bound <= 1
     assert -1 in y_true
-    pos_label = [x for x in y_true if x != -1][0]
-    fpr, tpr, _ = metrics.roc_curve(y_true, y_predict, pos_label, **kwargs)
+    fpr, tpr, _ = metrics.roc_curve(y_true, y_predict, pos_label(y_true), **kwargs)
     newfpr = [y for y in fpr if y < y_bound]
     newfpr.append(y_bound)
     newtpr = np.interp(newfpr, fpr, tpr)

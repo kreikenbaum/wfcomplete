@@ -113,22 +113,28 @@ def roc_helper(result, axes=None):
         result.get_classifier(True), X, y,
         cv=config.FOLDS, n_jobs=config.JOBS_NUM, method="predict_proba")
     fpr_array, tpr_array, _ = metrics.roc_curve(
-        y, y_pred[:, 1], y[np.where(y != -1)[0][0]])
+        y, y_pred[:, 1], mymetrics.pos_label(y))
     return roc(fpr_array, tpr_array,
                '({}), max_fpr: {}, background_size: {}'.format(
                    scenario_obj, auc_bound, num, axes))
 
-def roc(fpr, tpr, titleadd=None, fig=None):
+def roc(fpr, tpr, titleadd=None, fig=None, dot=0.01):
     '''@return fig object with roc curve, use =.savefig(filename)=
 to save, and =.show()= to display.
-    @params If =fig=, draw another curve into existing figure'''
+    @params If =fig=, draw another curve into existing figure
+        if dot > 0, draw a dot at this fpr rate (<1)'''
     if not fig:
         fig = _init_roc(titleadd)
     curve = plt.plot(
         fpr, tpr,
         label='{} (AUC = {:0.2f})'.format("ROC-curve", metrics.auc(fpr, tpr)))
-    one_percent = [y for (x, y) in zip(fpr, tpr) if x >= 0.01][0]
-    line = plt.plot([0, 1], [one_percent] *2, "red", label='1% false positives')
+    #one_percent = [y for (x, y) in zip(fpr, tpr) if x >= 0.01][0]
+    #line = plt.plot([0, 1], [one_percent] *2, "red", label='1% false positives')
+    if dot:
+        x1, y1 = [(x,y) for (x, y) in zip(fpr, tpr) if x >= dot][0]
+        plt.plot(x1, y1, "ro",
+                 label='{:2.2f}% false-, {:2.2f}% true positives'.format(
+                     x1*100, y1*100))
     plt.legend()
     fig.get_axes()[0].set_ybound(-0.01, 1.01)
     fig.get_axes()[0].set_xbound(-0.01, 1.01)
