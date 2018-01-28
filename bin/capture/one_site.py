@@ -16,7 +16,8 @@ from marionette_driver import errors
 
 import config
 
-ERRFILENAME = "/tmp/one_site_err.txt"
+# stackoverflow.com/questions/847850
+ERRFILENAME = os.path.join('/tmp', "one_site_err.txt")
 FIREFOX_PATH = os.path.join(os.getenv("HOME"), 'bin', 'tor-browser_en-US',
                             'Browser', 'firefox')
 
@@ -51,8 +52,8 @@ logging.getLogger().addHandler(sh)
 def _avoid_safe_mode(exedir):
     '''avoids safe mode by removing the line which contains count of failures'''
     os.system(r"sed -i '/toolkit\.startup\.recent_crashes/d' " +
-              os.path.join(exedir,
-                           "TorBrowser/Data/Browser/profile.default/prefs.js"))
+              os.path.join(exedir, "TorBrowser", "Data", "Browser",
+                           "profile.default", "prefs.js"))
 
 
 def browse_to(page, bridge=None):
@@ -122,7 +123,7 @@ def _handle_exception(exception, file_name, client):
     logging.warn('exception: %s', exception)
     to = '{}_{}'.format(
         file_name,
-        str(exception).split('\n')[0].replace(' ', '_').replace('/', '___').replace("'", ''))[:255]
+        str(exception).split('\n')[0].replace(' ', '_').replace(os.sep, '___').replace("'", ''))[:255]
     try:
         os.rename(file_name, to)
     except OSError as e:
@@ -143,6 +144,7 @@ def _open_browser(exe=FIREFOX_PATH + ' -marionette', open_timeout=60):
     env_with_debug["MOZ_DISABLE_AUTO_SAFE_MODE"] = 'set'
     exewholepath, exeargs = exe.split(' ', 1)
     (exedir, _) = os.path.split(exewholepath)
+    # sorry, this is linux/osx-specific, try appending to PATH on windows
     env_with_debug["LD_LIBRARY_PATH"] = '/lib:/usr/lib:' + (
         exedir + '/TorBrowser/Tor')
     _avoid_safe_mode(exedir)

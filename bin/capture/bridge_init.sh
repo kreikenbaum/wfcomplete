@@ -1,5 +1,5 @@
 . config.py
-BRIDGE_LOGIN=mkreik@$BRIDGE
+
 ## SETUP
 # tor browser
 # -> tor@bridgesrv:30200

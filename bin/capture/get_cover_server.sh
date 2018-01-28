@@ -1,6 +1,8 @@
-#! /bin/sh
+#! /bin/bash
 ### checks that cover traffic server is running
-if curl -s 134.169.109.25:7777?size=1; then {
+. config.py
+
+if curl --connect-timeout 2 -s $MAIN:7777?size=1; then {
     echo "true";
     exit 0
 } else {
