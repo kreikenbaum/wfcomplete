@@ -1,6 +1,6 @@
 "use strict";
 /**
-* @fileoverview loads pages over HTTP(S)
+* @fileoverview loads pages over HTTP(S), equalizes negative byte counts
 */
 const load = require("./load.js");
 const stats = require("./stats.js");
