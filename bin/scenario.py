@@ -58,7 +58,8 @@ PATH_RENAME = {
     "json-10-nocache": "nocache--2016-06-17--10@30",
     "json-100/b-i-noburst": "b-i-noburst--2016-06-04--100@40",
     "nobridge--2017-01-19-aI-factor=10": "nobridge-aI-factor=10--2017-01-19",
-    "nobridge--2017-01-19-aI-factor=10-with-errors": "nobridge-aI-factor=10-with-errors--2017-01-19"
+    "nobridge--2017-01-19-aI-factor=10-with-errors": "nobridge-aI-factor=10-with-errors--2017-01-19",
+    "tamaraw": "tamaraw/2016-07-11" # adjust this if newer tamaraw captures
 }
 PATH_SKIP = [
     "../sw/w/, WANG14, knndata.zip",
