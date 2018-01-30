@@ -48,12 +48,6 @@ def _class_predictions(cls, cls_predict):
     return out
 
 
-def _clf(**svm_params):
-    '''@return default classifier with additional params'''
-    return multiclass.OneVsRestClassifier(
-        svm.SVC(class_weight="balanced", **svm_params))
-
-
 def _clf_name(clf):
     '''@return name of estimator class'''
     return str(clf.__class__).split('.')[-1].split("'")[0]
@@ -300,12 +294,12 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
     C = clf_noprob.estimator.C
     gamma = clf_noprob.estimator.gamma
     if binarize: # can (easily) compute auroc
-        clf = _clf(C=C, gamma=gamma, probability=True)
+        clf = fit.clf_default(C=C, gamma=gamma, probability=True)
         y_predprob = model_selection.cross_val_predict(
             clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
             method="predict_proba")
-        fpr_array, tpr_array, _ = metrics.roc_curve(y, y_predprob[:, 1], 0)
-        auroc = mymetrics.bounded_auc(fpr_array, tpr_array, auc_bound)
+        fprs, tprs, _ = metrics.roc_curve(y, y_predprob[:, 1], 0)
+        auroc = mymetrics.bounded_auc(fprs, tprs, auc_bound)
     else:
         auroc = None
     return (tpr, fpr, auroc, C, gamma, accuracy)

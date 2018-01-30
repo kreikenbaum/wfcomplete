@@ -210,7 +210,7 @@ class TestFit(unittest.TestCase):
         '''tests roc for normal open world grid search'''
         (self.X, self.y) = _init_X_y(100, False)
         (clf, _, _) = fit.my_grid(self.X, self.y, auc_bound=0.3)
-        (fpr, tpr, _, _) = fit.roc(clf, self.X, self.y, self.X, self.y)
+        (fpr, tpr, _, _) = fit.roc(clf, self.X, self.y)
         self.assertEqual(list(fpr)[:2], [0, 1])
         self.assertEqual(list(tpr)[:2], [1, 1])
 
@@ -223,13 +223,11 @@ class TestFit(unittest.TestCase):
         #X_rand_middle.extend(np.random.random_sample((9 * self.size / 10, 2)))
         X_rand_middle.extend([(0, 1)] * (9 * self.size / 10))
         (clf, _, _) = fit.my_grid(X_rand_middle, self.y, auc_bound=0.3)
-        (fpr, tpr, _, _) = fit.roc(clf, X_rand_middle, self.y,
-                                   X_rand_middle, self.y)
+        (fpr, tpr, _, _) = fit.roc(clf, X_rand_middle, self.y)
         # 2. check that fpr/tpr has certain structure (low up to tpr of 0.1))
         self.assertEqual(tpr[0], 0, self.string.format(tpr, fpr))
         self.assertEqual(fpr[0], 0, self.string.format(tpr, fpr))
-        self.assertEqual(tpr[1], 1, self.string.format(tpr, fpr))
-        self.assertEqual(fpr[1], 0.1, self.string.format(tpr, fpr))
+        self.assertTrue((0.1, 1) in zip(fpr, tpr), self.string.format(tpr, fpr))
 
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_ow_random_plus(self):
@@ -238,13 +236,12 @@ class TestFit(unittest.TestCase):
         X, y = _init_X_y(self.size)
         X_rand_middle = [(0.5, 0.5)] * (9 * self.size / 10)
         X_rand_middle.extend(np.random.random_sample((11 * self.size / 10, 2)))
-        (clf, _, _) = fit.my_grid(X_rand_middle, self.y, auc_bound=0.3)
-        (fpr, tpr, _, _) = fit.roc(
-            clf, X_rand_middle, self.y, X_rand_middle, self.y)
+        (clf, _, _) = fit.my_grid(X_rand_middle, self.y, auc_bound=0.01)
+        (fpr, tpr, _, _) = fit.roc(clf, X_rand_middle, self.y)
         # 2. check that fpr/tpr has good structure (rises straight up to 0.9fpr)
-        self.assertEqual(tpr[0], 0.9, self.string.format(tpr, fpr))
+        self.assertEqual(tpr[0], 0.9,
+                         self.string.format(tpr, fpr) + '\nclf: {}'.format(clf))
         self.assertEqual(fpr[0], 0, self.string.format(tpr, fpr))
-
 
 class TestMymetrics(unittest.TestCase):
     '''tests the counter module'''

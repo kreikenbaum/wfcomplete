@@ -73,8 +73,7 @@ def _sci_fit(C, gamma, step, X, y, scoring=None, probability=False):
     cs = _search_range(C, step)
     gammas = _search_range(gamma, step)
     clf = model_selection.GridSearchCV(
-        estimator=multiclass.OneVsRestClassifier(
-            svm.SVC(class_weight="balanced", probability=probability)),
+        estimator=clf_default(probability=probability),
         param_grid={"estimator__C": cs, "estimator__gamma": gammas},
         n_jobs=config.JOBS_NUM, verbose=0, cv=config.FOLDS, scoring=scoring)
     return clf.fit(X, y)
@@ -120,6 +119,12 @@ def _stop(y, step, result, previous, C=1, best=1, delta=0.01):
                  > best * 1.1 * max(collections.Counter(y).values()) / len(y))))
 
 
+def clf_default(**svm_params):
+    '''@return default classifier with additional params'''
+    return multiclass.OneVsRestClassifier(svm.SVC(
+        class_weight="balanced", **svm_params))
+
+
 def helper(trace_dict, outlier_removal=True, cumul=True, folds=config.FOLDS):
     '''@return grid-search on trace_dict result (clf, results)'''
     if outlier_removal:
@@ -146,9 +151,8 @@ def my_grid(X, y, C=2**4, gamma=2**-4, step=2, results=None,
     #import pdb; pdb.set_trace()
     for c in _search_range(C, step):
         for g in _search_range(gamma, step):
-            clf = multiclass.OneVsRestClassifier(svm.SVC(
-                gamma=g, C=c, class_weight='balanced',
-                probability=(True if auc_bound else False)))
+            clf = clf_default(
+                gamma=g, C=c, probability=(True if auc_bound else False))
             if (c, g) in results:
                 current = results[(c, g)]
             else:
@@ -164,32 +168,50 @@ def my_grid(X, y, C=2**4, gamma=2**-4, step=2, results=None,
     previous.append(np.mean(bestres))
     if _stop(y, step, np.mean(bestres), previous, C, best=(auc_bound if
                                                            auc_bound else 1)):
+        if collections.Counter(results.values())[bestres] > 1:
+            logging.warn('more than 1 optimal result, "middle" clf returned')
+            best_C, best_gamma = _middle(results, np.mean(bestres))
+            bestclf = clf_default(C=best_C, gamma=best_gamma,
+                                  probability=(True if auc_bound else False))
         logging.info('grid result: %s', bestclf)
         return Result(bestclf, np.mean(bestres), results)
-    if (bestclf.estimator.C in (_search_range(C, step)[0],
+    best_C = best_gamma = None
+    if collections.Counter(results.values())[bestres] > 1:
+        logging.warn("more than 1 optimal result")
+        best_C, best_gamma = _middle(results, bestres)
+    elif ((bestclf.estimator.C in (_search_range(C, step)[0],
                                 _search_range(C, step)[-1])
         or bestclf.estimator.gamma in (_search_range(gamma, step)[0],
-                                           _search_range(gamma, step)[-1])
+                                           _search_range(gamma, step)[-1]))
         and collections.Counter(results.values())[bestres] == 1):
         logging.warn('optimal at border. c:%f, g:%f, score: %f',
                      bestclf.estimator.C, bestclf.estimator.gamma, bestres)
     else:
         step /= 2.
-    return my_grid(X, y, bestclf.estimator.C, bestclf.estimator.gamma,
-                   step, results, previous=previous,
-                   auc_bound=auc_bound)
+    return my_grid(X, y, best_C or bestclf.estimator.C, best_gamma or
+                   bestclf.estimator.gamma, step, results,
+                   previous=previous, auc_bound=auc_bound)
+
+def _middle(results, bestres):
+    '''@return "middle" value with best results'''
+    best = [x for (x, val) in results.iteritems() if val == bestres]
+    best_C = np.median([x[0] for x in best])
+    best_gamma = np.median([x[1] for x in best])
+    if not (best_C, best_gamma) in best:
+        logging.warn("hard to find optimum")
+        best_C = np.median([x[0] for x in best])
+        best_gamma = np.median([x[1] for x in best])
+    return best_C, best_gamma
 
 
-def roc(clf, X_train, y_train, X_test, y_test):
-    '''@return (fpr, tpr, thresholds) of =clf= on adjusted data
-
-    It uses the same scaling and binarization as my_grid.
-    '''
-    fitted = clf.fit(scale(X_train, clf), _lb(y_train, transform_to=1))
-    prob = fitted.predict_proba(scale(X_test, clf))
-    fpr, tpr, thresh = metrics.roc_curve(
-        _lb(y_test, transform_to=1), prob[:, 1], 1)
-    return fpr, tpr, thresh, prob
+def roc(clf, X, y): # X_train, y_train, X_test, y_test):
+    '''@return (fpr, tpr, thresholds, probabilities) of =clf= on adjusted data'''
+    y_predprob = model_selection.cross_val_predict(
+            clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
+            method="predict_proba")
+    fprs, tprs, thresh = metrics.roc_curve(
+        y, y_predprob[:, 1], mymetrics.pos_label(y))
+    return fprs, tprs, thresh, y_predprob
 
 
 def sci_grid(X, y, C=2**14, gamma=2**-10, step=2, scoring=None,
@@ -206,8 +228,7 @@ def sci_grid(X, y, C=2**14, gamma=2**-10, step=2, scoring=None,
     '''
     if simple:
         clf = model_selection.GridSearchCV(
-            estimator=multiclass.OneVsRestClassifier(
-                svm.SVC(class_weight="balanced", probability=True)),
+            estimator=clf_default(probability=True),
             param_grid={"estimator__C": np.logspace(-3, 3, base=2, num=7),
                         "estimator__gamma": np.logspace(-3, 3, base=2, num=7)},
             n_jobs=config.JOBS_NUM, verbose=0, cv=config.FOLDS,
