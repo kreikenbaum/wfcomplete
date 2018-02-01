@@ -16,10 +16,9 @@ import sys
 import numpy as np
 
 import config
+import logconfig
 
 DURATION_LIMIT_SECS = 8 * 60
-# HOME_IP = '134.76.96.47' #td: get ips
-HOME_IP = '134.169.109.25'
 PROTOCOL_DISCARD = re.compile('ARP|CDP|ICMP|IGMP|LLMNR|SSDP|SSH|STP|UDP')
 
 
@@ -254,12 +253,12 @@ def all_from_json(filename):
     out = []
     removed = 0
     for entry in open(filename):
-        counter = from_json(entry)
-        if counter.check() and not counter.warned:
-            out.append(counter)
+        trace = from_json(entry)
+        if trace.check() and not trace.warned:
+            out.append(trace)
         else:
             removed += 1
-            logging.debug('%s discarded', counter.name)
+            logging.debug('%s discarded', trace.name)
     if removed:
         logging.info('discarded %d trace%s of %s',
                      removed, 's' if removed != 1 else '', out[0].domain)
@@ -665,9 +664,9 @@ class Counter(object):
                 else:
                     tmp.extract_line(pkt.ip.src, pkt.ip.dst, pkt.ip.len,
                                      (pkt.sniff_time - start).total_seconds())
-        except (KeyError, TSharkCrashException, TypeError):
+        except (KeyError, TSharkCrashException, TypeError) as ex:
+            logging.warn("pyshark crash: %s", e.message)
             tmp.warned = True
-            return tmp
         finally:
             cap.close()
         return tmp
@@ -701,12 +700,13 @@ class Counter(object):
                 tmp.warned = True
                 logging.info('file: %s had problems in line \n%s\n',
                              filename, line)
-                tshark.kill()
+                tshark.communicate()
                 break
             else:
                 tmp.extract_line(src, dst, int(size)+14, time, line)
         if http:
             logging.info('http packets discarded for %s: %d', filename, http)
+        tshark.communicate() # close pipe
         return tmp
 
 
@@ -870,21 +870,20 @@ class Counter(object):
         '''aggregates stream values'''
         try:
             if int(size) == 52:
-                logging.debug('discarded %s from %s', line, self.name)
+                logging.debug('size-52 discarded %s from %s', line, self.name)
                 return
         except ValueError:
             self.warned = True # size no number
         if abs(int(size)) < TOR_DATA_CELL_SIZE:
             return
-        if src == HOME_IP:  # outgoing negative as of panchenko 3.1
+        if src == config.MAIN:  # outgoing negative as of panchenko 3.1
             self.packets.append(- int(size))
             self.timing.append((float(tstamp), - int(size)))
-        elif dst == HOME_IP:  # incoming positive
+        elif dst == config.MAIN:  # incoming positive
             self.packets.append(int(size))
             self.timing.append((float(tstamp), int(size)))
         else:
-            logging.debug('%s from %s was not sent from/to host', line, self.name)
-            self.warned = True
+            logging.debug('host-from-to discarded %s from %s', line, self.name)
 
     def _postprocess(self):
         '''sums up etc collected features'''

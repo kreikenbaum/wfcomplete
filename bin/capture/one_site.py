@@ -15,9 +15,9 @@ from marionette_driver.marionette import Marionette
 from marionette_driver import errors
 
 import config
-
-# stackoverflow.com/questions/847850
+import logconfig
 ERRFILENAME = os.path.join('/tmp', "one_site_err.txt")
+logconfig.add_file_output(ERRFILENAME)
 FIREFOX_PATH = os.path.join(os.getenv("HOME"), 'bin', 'tor-browser_en-US',
                             'Browser', 'firefox')
 
@@ -41,12 +41,6 @@ PROBLEMATIC_TEXT = [
     "captcha", # deprecated: could be contained otherwise (but worked well)
     "403 forbidden" # also deprecated: could be contained otherwise
 ]
-LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
-LOGLEVEL = logging.INFO
-logging.basicConfig(filename=ERRFILENAME, format=LOGFORMAT, level=LOGLEVEL)
-sh = logging.StreamHandler()
-sh.setFormatter(logging.Formatter(LOGFORMAT))
-logging.getLogger().addHandler(sh)
 
 # cheap hack
 def _avoid_safe_mode(exedir):

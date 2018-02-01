@@ -1,14 +1,10 @@
 '''configuration variables'''
-#### LOGGING
-import logging
+import logconfig
 
-LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
+from capture import config as capture_config
 
-#LOGLEVEL = logging.WARN INFO DEBUG
-LOGLEVEL = logging.INFO
-
-reload(logging)
-logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
+## TRACE EXTRACTION
+MAIN = capture_config.MAIN
 
 #### OUTLIER REMOVAL
 # minimum class size 
