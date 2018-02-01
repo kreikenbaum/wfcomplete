@@ -11,6 +11,7 @@ import copy
 import datetime
 import doctest
 import glob
+import itertools
 import logging
 import os
 import random
@@ -215,9 +216,9 @@ class Scenario(object):
     def date_from_trace(self):
         '''retrieve date from traces'''
         self.trace_args = {'remove_small': False, 'or_level': 0}
-        trace = self.get_traces().values()[0][0]
-        return datetime.datetime.fromtimestamp(
-            float(trace.name.split('@')[1])).date()
+        all_traces = itertools.chain.from_iterable(self.get_traces().values())
+        first = min((x.starttime for x in all_traces))
+        return datetime.datetime.fromtimestamp(float(first)).date()
 
     def get_features_cumul(self):
         '''@return traces converted to CUMUL's X, y, y_domains'''
