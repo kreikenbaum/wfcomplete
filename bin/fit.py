@@ -17,7 +17,6 @@ Result = collections.namedtuple('Result', ['clf', 'best_score_', 'results'])
 def _bounded_auc_eval(X, y, clf, y_bound):
     '''evaluate clf X, y, give bounded auc score, 1 is positive class label'''
     X = scale(X, clf)
-    y = _lb(y, transform_to=1)
     return mymetrics.compute_bounded_auc_score(clf, X, y, y_bound)
 
 
@@ -199,8 +198,8 @@ def _middle(results, bestres):
     best_gamma = np.median([x[1] for x in best])
     if not (best_C, best_gamma) in best:
         logging.warn("hard to find optimum")
-        best_C = np.median([x[0] for x in best])
-        best_gamma = np.median([x[1] for x in best])
+        best_C = np.mean([x[0] for x in best])
+        best_gamma = np.mean([x[1] for x in best])
     return best_C, best_gamma
 
 

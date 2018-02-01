@@ -257,13 +257,13 @@ def compare_stats(scenario_names):
     return out
 
 
-def simulated_original(traces, name=None):
+def simulated_original(trace_dict, name=None):
     '''simulates original panchenko: does 10-fold cv on _all_ data, just
 picks best result'''
     if name is not None and name in ALL_MAP:
         clf = ALL_MAP[name]
     else:
-        clf = fit.helper(counter.outlier_removal(traces, 2),
+        clf = fit.helper(counter.outlier_removal(trace_dict, 2),
                          cumul=True, folds=10)
         ALL_MAP[name] = clf
     print('10-fold result: {}'.format(clf.best_score_))
@@ -286,7 +286,7 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
         scenario_obj = scenario_obj.binarize()
     X, y, domains = scenario_obj.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
-    (clf_noprob, accuracy, _) = fit.my_grid(X, y, auc_bound=auc_bound) # scales
+    (clf_noprob, accuracy, _) = fit.my_grid(X, y, auc_bound=auc_bound)
     y_pred = model_selection.cross_val_predict(
         clf_noprob, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
     confmat = metrics.confusion_matrix(y, y_pred)
@@ -320,32 +320,10 @@ def tpr_fpr(confusion_matrix):
     return zip(TP/(TP+FN), FP/(FP+TN))
 
 
-def open_world(scenario_obj, y_bound=0.05):
-    '''open-world (SVM) test on data, optimized on bounded auc.
-
-    :return: (fpr, tpr, optimal_clf, probabilities)'''
-    # _train combines training and testing data and _test is grid-validation
-    if 'background' not in scenario_obj.get_traces():
-        scenario_obj = scenario_obj.get_open_world()
-    X, y, _ = scenario_obj.binarize().get_features_cumul()
-    X_train, X_test, y_train, y_test = model_selection.train_test_split(
-        X, y, train_size=2. / 3, stratify=y)
-    result = fit.my_grid(X_train, y_train, auc_bound=y_bound)#, n_jobs=1)
-#    clf = fit.sci_grid(X_train, y_train, c=2**15, gamma=2**-45,
-#                   grid_args={"scoring": scorer})
-    fpr, tpr, _, prob = fit.roc(result.clf, X_train, y_train, X_test, y_test)
-    print('{}-bounded auc: {} (C: {}, gamma: {})'.format(
-        y_bound,
-        mymetrics.bounded_auc_score(result.clf, X_test, y_test, 0.01),
-        result.clf.estimator.C, result.clf.estimator.gamma))
-    return (fpr, tpr, result, prob)
-#    return (fpr, tpr, result, mplot.roc(fpr, tpr), prob)
-
-
 def closed_world(scenarios, def0, cumul=True, with_svm=True, common=False):
     '''cross test on dirs: 1st has training data, rest have test
 
-    :param: scenarios: dict name : traces
+    :param: scenarios: dict mapping scenario_name to its traces dict
 
         If scenarios has only one set, it is cross-validated etc.  If
         there are more than one, the first is taken as baseline and
@@ -444,38 +422,6 @@ def gen_class_stats_list(scenarios,
             res['id'] = '{} with {}'.format(scenario_path, _clf_name(clf))
             out.append(res)
     return out
-
-
-def outlier_removal_levels(scenario_path, clf=None):
-    '''tests different outlier removal schemes and levels
-
-    @param scenario_path: one "set" of data {site_1: traces, ..., site_n: traces}
-    # outlier removal on both at the same time
-    '''
-    print('combined outlier removal')
-    for lvl in [1, 2, 3]:
-        scenario_with_or = counter.outlier_removal(scenario_path, lvl)
-        (train, test) = _tts(scenario_with_or)
-        (X, y, _) = counter.to_features_cumul(train)
-        if clf is None:
-            clf = fit.my_grid(X, y)
-        (X, y, _) = counter.to_features_cumul(test)
-        print("level: {}".format(lvl))
-        _verbose_test_11(X, y, clf)
-    (train, test) = _tts(scenario_path)
-
-    # separate outlier removal on train and test set
-    print('separate outlier removal for training and test data')
-    for train_lvl in [1, 2, 3]:
-        for test_lvl in [-1, 1, 2, 3]:
-            (X, y, _) = counter.to_features_cumul(
-                counter.outlier_removal(train, train_lvl))
-            if isinstance(clf, NoneType):
-                clf = fit.my_grid(X, y)
-            (X, y, _) = counter.to_features_cumul(
-                counter.outlier_removal(test, test_lvl))
-            print("level train: {}, test: {}".format(train_lvl, test_lvl))
-            _verbose_test_11(X, y, clf)
 
 
 def top_30(mean_per_dir):

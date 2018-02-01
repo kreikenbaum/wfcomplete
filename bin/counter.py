@@ -668,9 +668,9 @@ class Counter(object):
         except (KeyError, TSharkCrashException, TypeError):
             tmp.warned = True
             return tmp
-        cap.close()
+        finally:
+            cap.close()
         return tmp
-
 
     @staticmethod
     def from_pcap_quick(filename):
@@ -727,14 +727,12 @@ class Counter(object):
                 tmp.timing.append([float(secs), -int(negcount)])
         return tmp
 
-
     def _variable_lengths(self):
         '''does the computation of lengths, assumes that variable is filled'''
         out = {}
         for k, feature in self.variable.iteritems():
             out[k] = len(feature)
         return out
-
 
     def check(self):
         '''if wrong, set warned flag and @return =false=, else =true='''
@@ -754,7 +752,6 @@ class Counter(object):
                 self.warned = True
                 return False
         return True
-
 
     def cumul(self, num_features=100):
         '''@return CUMUL feature vector: inCount, outCount, outSize, inSize++'''
