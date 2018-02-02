@@ -15,10 +15,8 @@ if [ ! $(pgrep Xvfb) ]; then
     mkdir -p /tmp/xvfb
     Xvfb :1 -fbdir /tmp/xvfb >> /tmp/xvfb_output 2>&1 &
     export DISPLAY=:1
-    exit 0
 fi
 
 if [ ! -v DISPLAY ]; then
     export DISPLAY=:1
-    exit 0
 fi

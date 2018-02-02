@@ -5,4 +5,4 @@ SAVETO="/mnt/data"
 MIN_CLASS_SIZE=30
 # shell-only
 BRIDGE_LOGIN="mkreik@$BRIDGE"
-SITES="~/sw/top/top-1m-csv.modified"
+SITES="$HOME/sw/top/top-1m.csv.modified"
