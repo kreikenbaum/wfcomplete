@@ -4,11 +4,11 @@
 
 # exit if not sourced
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] || echo 'source this script (via "source script.sh")!'
-[[ "${BASH_SOURCE[0]}" != "${0}" ]] || exit 1
+[[ "${BASH_SOURCE[0]}" != "${0}" ]] || return 1
 
 # check if exists
 command -v Xvfb > /dev/null || echo 'Xvfb does not exist, need to install'
-command -v Xvfb > /dev/null || exit 1
+command -v Xvfb > /dev/null || return 1
 # start xvfb, set display
 if [ ! $(pgrep Xvfb) ]; then
     echo starting xvfb
