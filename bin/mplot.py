@@ -131,7 +131,7 @@ to save, and =.show()= to display.
     #one_percent = [y for (x, y) in zip(fpr, tpr) if x >= 0.01][0]
     #line = plt.plot([0, 1], [one_percent] *2, "red", label='1% false positives')
     if dot:
-        x1, y1 = [(x,y) for (x, y) in zip(fpr, tpr) if x >= dot][0]
+        x1, y1 = [(x,y) for (x, y) in zip(fpr, tpr) if x < dot][-1]
         plt.plot(x1, y1, "ro",
                  label='{:2.2f}% false-, {:2.2f}% true positives'.format(
                      x1*100, y1*100))

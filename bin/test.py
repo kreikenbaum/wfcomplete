@@ -210,8 +210,7 @@ class TestFit(unittest.TestCase):
         '''tests roc for normal open world grid search'''
         clf, _, _ = fit.my_grid(self.X, self.y, auc_bound=0.3)
         fpr, tpr, _, _ = fit.roc(clf, self.X, self.y)
-        self.assertEqual(list(fpr)[:2], [0, 1])
-        self.assertEqual(list(tpr)[:2], [1, 1])
+        self.assertEqual(zip(fpr, tpr)[-2:], [(0.0, 1.0), (1.0, 1.0)])
 
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_ow_minus(self):
