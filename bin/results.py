@@ -280,7 +280,10 @@ if __name__ == "__main__":
 # c['color'] = c['scenario'].map(color)
 
 ### mongodb
+## update element
 # db.runs.update({"_id" : 359}, {$unset: {'result.size_increase': 0}})
+## remove element (id found through result._id, this had wrong scenario name)
+# db.runs.remove({_id: 486})
 
 ### CREATE RESULTS ON DUCKSTEIN
 ## list from [[file:scenario.py::##%20scenarios%20without%20result]]
@@ -295,3 +298,6 @@ if __name__ == "__main__":
 ### list all scenarios without results
 # a = {s: len(results.for_scenario(s)) for s in scenario.list_all()}
 # [name for (name, count) in a.iteritems() if count == 0]
+
+
+### remove from db
