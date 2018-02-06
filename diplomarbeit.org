@@ -635,21 +635,21 @@ of future work in section [[#future-work]].
 
    To protect against \gls{wf}, early attacks also proposed defenses
    (\citet{Wagner96analysisof}, \citet{hintz02},
-   \citet{ssl-traffic-analysis}) . \citep[sec.7]{tor-design} assumed
-   thatTor's fixed data size, and built-in multiplexing would hinder
-   \gls{wf} against Tor. \cite{ccsw09-fingerprinting} confirmed this
-   resilence in comparison with other privacy-enhancing technologies,
-   but still showed better-than-random classification. The first
-   successful classification against Tor also proposed a defense:
-   sending /dummy traffic/
+   \citet{ssl-traffic-analysis}). From inception \citep{tor-design},
+   Tor provided defenses against traffic analysis \citep{introta}. For
+   one, all /data/ cells have the same size, which protects against
+   identifying them by size only. Tor also multiplexes all its data
+   traffic into a single stream, making it hard to distinguish the
+   multiple streams that most websites require, let alone parallel
+   website retrieval. Tor also unavoidably increases traffic latency
+   \citep[sec.2.2]{rfc1925}, so that attacks have a harder time
+   relying on interpacket timing \citep{challenges}. This makes
+   \gls{wf} harder, to the point that it was was mentioned, but not
+   hindered, in \citet[sec.7]{tor-design}.
 
 
 
 
-         - Tor built-in defenses [tor-design, herrmann, panchenko?]
-           aka does tor not defend by itself?
-           - encryption
-           - fixed-size data packets
          - confuse machine learning's features: mix them up
            - aim: confuse attacker
          - cannot send less packets, but can send and receive more,
@@ -667,6 +667,28 @@ of future work in section [[#future-work]].
            - wang-historical
            - llama-historical
            - wtf-pad historical
+
+
+
+   The first successful classification against Tor also proposed a
+   defense. The defense loads another page simultaneously in the
+   background
+   \citep[sec.6]{panchenko}. \citet{ccs2012-fingerprinting},
+   \citet{a-systematic2014}, \citet{kfingerprint},
+   \citet{effective2014}, \citet{panchenko}, and \citet{wtfpad2015}
+   found it to be surprisingly effective for all its simplicity,
+   albeit at a high overhead.
+
+
+
+   It took five years for
+   \citet{ccsw09-fingerprinting} to show better than random
+   classification results against Tor traffic.
+
+   \cite{ccsw09-fingerprinting} confirmed this resilence in comparison
+   with other privacy-enhancing technologies, but still showed
+   better-than-random classification.
+
 
 
  These evolved
@@ -758,6 +780,156 @@ of future work in section [[#future-work]].
     for some randomness. The authors provided LLaMA as a secondary
     defense to the server-side ALPaCA defense, and emphasize its draft
     status\cite{LLaMA}.
+*** (old.org) Defenses
+    :PROPERTIES:
+    :CUSTOM_ID: defenses
+    :END:
+    As soon as it became clear that anonymized (web) traffic could be
+    analysed to guess the destination, defenses were proposed.
+
+    The general idea is to obfuscate characteristics of the
+    data. Defenses progressed from obfuscating specific features
+    that were used for fingerprinting, to trying to obfuscate the
+    whole of traffic, including features not previously thought of.
+
+
+    The next sections describe [[#def-early][early defense proposals]], then address
+    [[#def-specific-vs-general][defenses tailored to specific attacks, versus /general defenses/
+    that hope to defend against all possible attacks]], and the
+    deterministic [[#def-tamaraw][Tamaraw]] defense. The last sections present
+    [[#def-stochastic][stochastic defenses]] that add randomness to achieve meaningful
+    reduction of detection strength with less bandwith and time
+    overhead than deterministic ones, with the [[#def-wtf-pad][WTF-PAD]] defense.
+**** Early Defenses
+     :PROPERTIES:
+     :CUSTOM_ID: def-early
+     :END:
+     #+INDEX: defense
+     As defense against fingerprinting webpages when retrieved via SSL,
+     \cite{ssl-traffic-analysis} mainly proposed using
+     proxies[fn::as well as HTML- and protocol modification]. Addressing
+     weaknesses when using proxies, \cite{hintz02} proposed
+     three defenses: (1.) adding noise to traffic, (2.) reducing
+     transferred data, and (3.) transferring everything in one connection.
+
+     As for the (2.) approach of reducing transferred data: As the
+     sizes and interconnection of HTML and embedded content is what
+     makes a webpage easily identifyable, either using a text-only
+     non-javascript browser such as Lynx[fn::available at
+     \url{http://lynx.invisible-island.net/}], disabling f.ex.\space{}images,
+     or reducing cross-site requests via f.ex.\space{}the
+     RequestPolicy[fn::RequestPolicy
+     \url{https://requestpolicycontinued.github.io/} uses domain-based
+     filters, which is considered undesirable in the Tor Browser
+     Bundle\cite[sec.2.3]{tor-browser-design-impl}] extension all might
+     mitigate the threat of website fingerprinting for those who
+     consider this trade-off acceptable. Yet, this reduces usability
+     and thus conflicts with one of Tor's design
+     goals\cite[sec.3]{tor-design}. It is also mostly deterministic, so
+     that an adversary could simply train on modified data.
+
+     The (3.) approach of transferring everything in one connection
+     --- while valid --- would require modifying the HTTP
+     protocol. This would conflict with Tor's design goal of
+     deployability\cite{tor-design}.
+
+     The (1.) approach of /adding noise to traffic/ is used by
+     f.ex. \cite{panchenko}. Others --- additionally or exclusively
+     --- /alter traffic/ by reducing the data rate, splitting and
+     merging packets, etc, f.ex. \cite{morphing09}, \cite{httpos}.
+**** Specific vs General Defenses
+     :PROPERTIES:
+     :CUSTOM_ID: def-specific-vs-general
+     :END:
+     #+INDEX: defense!specific
+     #+INDEX: defense!general
+     #+INDEX: defense!BuFLO
+     #+INDEX: BuFLO
+     As of \cite{wang2015walkie}, defenses designed against website
+     fingerprinting can be divided into specific and general defenses.
+     Both types can either add noise, modify existing traffic, or
+     combine both.
+
+     The first website fingerprinters considered only packet
+     lengths. This made it seem sensible to defend by altering the
+     lengths of packets by padding, as evaluated f.ex.\space{}by
+     \cite{ssl-traffic-analysis}.
+
+     As more and more features were used to classify the traces,
+     different ways of altering the data were evaluated by several
+     researchers: several ways of padding (\cite{Liberatore:2006},
+     \cite{oakland2012-peekaboo}, \cite{a-systematic},
+     \cite{ccs2012-fingerprinting}, \cite{wang2015walkie}), or altering
+     traffic sizes to fit another web page's (\cite{morphing09},
+     \cite{httpos}).
+
+     Specific defenses alter specific features, mostly single packet
+     size. This created an arms race between attacks and defenses - the
+     attacks finding new feature combinations to use, the defenses
+     obfuscating these. To stop this, the idea of a /general defense/
+     was introduced by \cite{oakland2012-peekaboo} into the context of
+     website fingerprinting. They proposed a traffic-flow
+     security\cite[ch.10.3]{applied96} solution called /BuFLO/:
+     fixed-rate transmission of all data, with dummy traffic for gaps,
+     for the estimated duration of web site retrieval.
+
+     This idea was improved on by Tamaraw \cite{a-systematic}[fn::see
+     next section] while \cite{effective} proposed the (offline)
+     defense of morphing all traffic to supersequences of traffic
+     patterns.
+**** Tamaraw
+     :PROPERTIES:
+     :CUSTOM_ID: def-tamaraw
+     :END:
+     #+INDEX: defense!Tamaraw
+     #+INDEX: Tamaraw
+     /Tamaraw/\cite{a-systematic} is an evolution of
+     BuFLO\cite{oakland2012-peekaboo}[fn::a Tamaraw is a small Buffalo,
+     see \url{https://en.wikipedia.org/wiki/Tamaraw}]. It also proposes
+     fixed-rate sending, and receiving of data, yet with different
+     parameters for each.
+
+     To achieve this fixed rate, data is throttled if it exceeds the
+     fixed rate, and dummies are sent if the data volume is too low.
+
+     Tamaraw has a tunable overhead, with a trade-off of time vs size.
+**** Stochastic Defenses
+     :PROPERTIES:
+     :CUSTOM_ID: def-stochastic
+     :END:
+     Previous general defenses were mostly deterministic. The latest
+     defenses by \cite{wtfpad} and \cite{wang2015walkie} both use a
+     stochastic approach to generate additional traffic, with the
+     latter\cite{wang2015walkie} additionally modifying the browser to
+     send "half-duplex", either exclusively sending or exclusively
+     receiving data at the same time. The former \cite{wtfpad} adapted
+     the ideas from \cite{ShWa-Timing06} to distinguish active and
+     non-active periods, with a certain probability of sending dummy
+     packets in each, omitting the sending when the browser generated
+     packets itself.
+**** WTF-PAD
+     :PROPERTIES:
+     :CUSTOM_ID: def-wtf-pad
+     :END:
+     #+INDEX: defense!WTF-PAD
+     #+INDEX: WTF-PAD
+     /Website Traffic Fingerprinting Protection with Adaptive Defense/
+     (short: WTF-PAD)\cite{wtfpad} is a stochastic defense based on
+     adaptive padding\cite{ShWa-Timing06}, which was invented to hide
+     from global adversary's correlation attack.
+
+     It samples packet distributions and creates
+     distribution-histograms, one for active, called /burst/ mode,
+     another for inactive mode, called /gap/ mode. When a packet is
+     sent, a timer from the adequate histogram is started. If that
+     timer is finished without another packet, a dummy request is sent,
+     another packet restarts the timer with new values from the
+     histograms.
+
+     WTF-PAD is built using Tor's pluggable transport\cite{tor-spec-pt}
+     censorship avoidance layer. This has the advantage of not
+     burdening the most stressed part of the network, the exit nodes.
+*** see also [[*Background][Background {9/9}]]
 * Your Mission, Should you Accept: A New Defense
 As detailed in section [[#sub2-wf]], \gls{wf} can deanonymize Tor web
 browsing. It is a low-level passive defense that can even be deployed
