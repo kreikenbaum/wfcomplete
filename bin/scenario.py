@@ -31,7 +31,7 @@ RENAME = {
     "defense-client": "LLaMA",
     "disabled": "no defense",
     "llama": "LLaMA",
-    "wf-cover": "new defense"
+    config.COVER_NAME: "new defense"
 }
 # were renamed on disk, hack to rename
 PATH_RENAME = {
@@ -422,7 +422,7 @@ def path_from_status(status, date=None):
     if not date:
         date = datetime.date.today()
     add = ''
-    if name == "wf-cover":
+    if name == config.COVER_NAME:
         factor = status['addon']['factor']
         if not factor:
             factor = 50

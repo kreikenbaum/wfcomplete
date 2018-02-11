@@ -3,6 +3,9 @@ import logconfig
 
 from capture import config as capture_config
 
+## SCENARIO NAME WITH DEFENSE
+COVER_NAME=capture_config.COVER_NAME
+
 ## TRACE EXTRACTION
 MAIN = capture_config.MAIN
 

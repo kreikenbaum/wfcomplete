@@ -39,12 +39,12 @@ def mkdiretc(type_name, prefix='', suffix=''):
 def check(status, name):
     '''raise exception if status does not match name, warn if maybe off'''
     enabled_defenses = [addon for (addon, enabled) in status['addon']['enabled'].iteritems() if enabled]
-    assert len(enabled_defenses) <= 1
-    ## (a) == (b) is "a iff b" (stackoverflow.com/
-    if not (name == wf_cover) == status['local-servers']['cover-traffic']:
-        logging.warn("localhost cover server does not match wf_cover addon")
+    ## (a) == (b) in python is "a iff b" (stackoverflow.com/questions/34157836)
+    if (name == config.COVER_NAME) != status['local-servers']['cover-traffic']:
+        logging.warn("localhost cover server %s does not match scenario %s",
+                     status['local-servers']['cover-traffic'], name)
     assert ((name == "wtf-pad") == status['local-servers']['wtf-pad'] == status['bridge-servers']['wtf-pad'])
-    assert (name == disabled) == (len_enabled_defenses == 0)
+    assert (name == "disabled") == (len(enabled_defenses) == 0)
 
 
 if __name__ == "__main__":
