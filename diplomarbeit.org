@@ -234,7 +234,7 @@ sites in section [[#sub4-open]]. All results are summarized in section
 
 Chapter [[#ch6-conclusion]] summarizes the findings and presents courses
 of future work in section [[#future-work]].
-* Need-To-Know: Tor, Website Fingerprinting and Defenses
+* Tor Basics, Attacking and Defending with Website Fingerprinting
   :PROPERTIES:
   :CUSTOM_ID: ch2-background
   :END:
@@ -627,46 +627,62 @@ of future work in section [[#future-work]].
     the leftmost section of the ROC-curve is of particular
     interest. The area under the curve bounded up to a false positive
     rate of, say 1%, is called /bounded AUC/ and denoted AUC_{0.01}.
-** Website Fingerprinting Defenses
-   \Gls{wf} effectively deanonymizes the traffic that users thought
-   secure: it could for example expose a dissident to his nation
-   state, nullifying this part of Tor's protection.
+** Defending against Website Fingerprinting
+   As seen in section [[#sub2-wf]], \gls{wf} attacks have become
+   increasingly better using \gls{ml}. \Gls{wf} thus effectively
+   deanonymizes the traffic that users thought private: it could for
+   example expose a dissident to his nation state, nullifying this
+   part of Tor's protection. The task of defenses is to confuse such a
+   \gls{wf} attacker.
 
-
-   To protect against \gls{wf}, early attacks also proposed defenses
-   (\citet{Wagner96analysisof}, \citet{hintz02},
-   \citet{ssl-traffic-analysis}). From inception \citep{tor-design},
-   Tor provided defenses against traffic analysis \citep{introta}. For
-   one, all /data/ cells have the same size, which protects against
-   identifying them by size only. Tor also multiplexes all its data
-   traffic into a single stream, making it hard to distinguish the
-   multiple streams that most websites require, let alone parallel
-   website retrieval. Tor also unavoidably increases traffic latency
+   From inception \citep{tor-design}, Tor provided some defense
+   against all traffic analysis \citep{introta}. For one, all Tor
+   /data/ cells have the same size, which protects against identifying
+   them by size only. Tor also multiplexes all traffic into a single
+   stream, making it hard to distinguish the multiple streams that
+   most websites require, let alone parallel website retrieval. Tor
+   also unavoidably increases traffic latency
    \citep[sec.2.2]{rfc1925}, so that attacks have a harder time
    relying on interpacket timing \citep{challenges}. This makes
    \gls{wf} harder, to the point that it was was mentioned, but not
    hindered, in \citet[sec.7]{tor-design}.
 
 
+   To protect against \gls{wf}, several early attack authors also
+   mentioned possible defenses: \citet[sec.5]{Wagner96analysisof}
+   proposed padding SSL so that at least HTTP GET urls would be
+   concealed. \citet[sec.3]{ssl-traffic-analysis} proposed three
+   possible defenses: an additional padding layer between HTTP and
+   SSL, modifying the web pages themselves, or using web proxies.
+   \citet[sec.8]{hintz02}
 
 
-         - confuse machine learning's features: mix them up
-           - aim: confuse attacker
-         - cannot send less packets, but can send and receive more,
-           delay, split and merge packet
-           aka how did they do it?
-           - split/merge
-             - wright
-             - httpos
-           - send more
-             - llama
-             - wang-defense
-             - wtf-pad
+   In web retrieval, it is impossible to send less packets. What is
+   possible on the user side is to send and receive more packets, to
+   delay, split and merge them.
+
+
+
            - historical defenses?
+             - hintz \cite{hintz02}
+             - panchenko \cite{panchenko2}
+             - buflo\cite{oakland2012-peekaboo}
+             - tamaraw\cite{a-systematic2014}
+           - split/merge
+             - wright: \citet{morphing09}
+             - httpos \cite{httpos2011}
+           - send more
+             - llama \cite{DBLP:journals/popets/CherubinHJ17}
+             - wang-defense \cite{wang2015walkie}
+             - wtf-pad \cite{wtfpad2015}
          - how did it work?
            - wang-historical
            - llama-historical
            - wtf-pad historical
+         - specific vs general
+           - specifics
+           - generals
+             - camouflage
 
 
 
@@ -691,11 +707,10 @@ of future work in section [[#future-work]].
 
 
 
- These evolved
-   from /specific defenses/, e.g. packet-size-altering methods
-   (\citet{httpos2011}, \citet{morphing09}) to /general defenses/, which
-   transform groups of web retrievals so that all members look the
-   same.
+   These evolved from /specific defenses/, e.g. packet-size-altering
+   methods (\citet{httpos2011}, \citet{morphing09}) to /general
+   defenses/, which transform groups of web retrievals so that all
+   members look the same.
 
 
 
@@ -930,7 +945,7 @@ of future work in section [[#future-work]].
      censorship avoidance layer. This has the advantage of not
      burdening the most stressed part of the network, the exit nodes.
 *** see also [[*Background][Background {9/9}]]
-* Your Mission, Should you Accept: A New Defense
+* A New Defense
 As detailed in section [[#sub2-wf]], \gls{wf} can deanonymize Tor web
 browsing. It is a low-level passive defense that can even be deployed
 by ISPs, and company networks, as well as nation-states. This
@@ -958,6 +973,11 @@ new defense's main algorithm is described in section
 [[#sub3-defense]]. The next sections describe Bloom filters
 ([[#sub3-bloomfilters]]) and introduce their application to approximately
 save element sizes ([[#sub3-bloomsort]]).
+** TODO maybe this, where?
+As shown by \citet{newton2005preserving}, naïve privacy-enabling
+methods can be surpassed using domain-specific properties. They showed
+two methods to be effective: randomizing information position and
+adding ideal aspects.
 ** Web Retrieval Model
    :PROPERTIES:
    :CUSTOM_ID: sub3-http
@@ -999,6 +1019,7 @@ The size of both HTML documents and embedded objects is each modeled
 by truncated lognormal distributions. The number of embedded objects
 is modeled by a truncated gamma function. These are implemented
 following \cite{compgen}.
+*** TODO [[file:docs/lit.org::*%5B%5B~web/Desktop/thesis/Foss%20S.,%20Korshunov%20D.,%20Zachary%20S.%20An%20introduction%20to%20heavy-tailed%20and%20subexponential%20distributions%20(Springer,%202011)(ISBN%201441994726)(O)(134s)_MV_.pdf%5D%5BFoss%20-%20An%20Introduction%20to%20Heavy-Tailed%20and%20Subexponential%20Distributions%5D%5D][Foss - An Introduction to Heavy-Tailed and Subexponential Distributions]]
 ** Defense Design
    :PROPERTIES:
    :CUSTOM_ID: sub3-defense
@@ -1344,7 +1365,7 @@ appropriate HTTP-related distributions \citep{newtrafficmodel}.
   - could easily cache sizes, reuse
   - but this as prrof of concept
 - also use [[file:~/da/da.org::*new%20order][new order]]
-* Abspann: Evaluation
+* Evaluation
 * old exposé
 *** Thesis Contribution
     This thesis presents and tests a new defense against \gls{wf}. This
