@@ -66,6 +66,19 @@ class TestCaptureOnesite(unittest.TestCase):
             one_site._check_text("Reference #18\n\n\n\n")
 
 
+class TestConfig(unittest.TestCase):
+    '''tests the config module'''
+    def test_matches_addon(self):
+        try:
+            with open('../cover/package.json') as f:
+                package = json.load(f)
+                for el in package['preferences']:
+                    if el['name'] == 'Traffic-HOST':
+                        self.assertEqual(config.MAIN, el['value'])
+        except IOError:
+            logging.info("cover addon not found at ../cover")
+
+
 class TestCounter(unittest.TestCase):
     '''tests the counter module'''
     def setUp(self):
@@ -274,21 +287,21 @@ class TestScenario(unittest.TestCase):
         self.assertEqual('no defense on 2016-11-13',
                          str(scenario.Scenario('disabled/2016-11-13')))
         self.assertEqual(datetime.date(2016, 5, 12),
-                         scenario.Scenario('disabled/05-12@10').date)
+                         scenario.Scenario("disabled/2016-05-12--10@40").date)
         self.assertEqual(datetime.date(2016, 7, 6),
                          scenario.Scenario('disabled/bridge--2016-07-06').date)
         self.assertEqual(datetime.date(2016, 11, 4),
-                         scenario.Scenario('./0.22/10aI--2016-11-04-50-of-100')
+                         scenario.Scenario('0.22/10aI--2016-11-04--100@50')
                          .date)
         self.assertEqual('new defense',
-                         scenario.Scenario('./0.22/10aI--2016-11-04-50-of-100')
+                         scenario.Scenario('./0.22/10aI--2016-11-04--100@50')
                          .name)
         self.assertEqual(datetime.date(2016, 7, 5),
                          scenario.Scenario('wtf-pad/bridge--2016-07-05').date)
         self.assertEqual('wtf-pad',
                          scenario.Scenario('wtf-pad/bridge--2016-07-05').name)
         self.assertEqual(
-            '5', scenario.Scenario(u'simple2/5--2016-09-23-100').setting)
+            '5', scenario.Scenario(u'simple2/5--2016-09-23--100').setting)
         self.assertEqual('0.21',
                          scenario.Scenario('0.21').name)
         self.assertEqual('0.15.3',
@@ -359,7 +372,7 @@ class TestScenario(unittest.TestCase):
 
     def test_size_increase__disabled(self):
         self.assertEqual(
-            0, scenario.Scenario('disabled/05-12@10').size_increase())
+            0, scenario.Scenario("disabled/2016-05-12--10@40").size_increase())
 
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_size_increase__empty(self):
