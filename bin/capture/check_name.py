@@ -8,7 +8,6 @@ import sys
 
 import config
 
-#CHECKS={ ## later: map name to (lambda?): check these aspects
 
 def mkdiretc(type_name, prefix='', suffix=''):
     '''creates directory "type_name"/prefix--date--suffix, plus "now"-symlink'''
@@ -37,6 +36,17 @@ def mkdiretc(type_name, prefix='', suffix=''):
     sys.exit(0)
 
 
+def check(status, name):
+    '''raise exception if status does not match name, warn if maybe off'''
+    enabled_defenses = [addon for (addon, enabled) in status['addon']['enabled'].iteritems() if enabled]
+    assert len(enabled_defenses) <= 1
+    ## (a) == (b) is "a iff b" (stackoverflow.com/
+    if not (name == wf_cover) == status['local-servers']['cover-traffic']:
+        logging.warn("localhost cover server does not match wf_cover addon")
+    assert ((name == "wtf-pad") == status['local-servers']['wtf-pad'] == status['bridge-servers']['wtf-pad'])
+    assert (name == disabled) == (len_enabled_defenses == 0)
+
+
 if __name__ == "__main__":
     os.chdir(config.SAVETO)
 
@@ -63,4 +73,5 @@ if __name__ == "__main__":
                 break # better safe than sorry
         else:
             name = "disabled"
+        check(status, name)
         mkdiretc(name, prefix, suffix)
