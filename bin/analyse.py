@@ -281,7 +281,11 @@ def _accuracy_C_gamma_etc(scenario_obj):
 def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=False,
                          bg_size="auto"):
     '''@return metrics for open world experiment'''
-    scenario_obj = scenario_obj.get_open_world()
+    try:
+        scenario_obj = scenario_obj.get_open_world(same=True)
+    except ValueError:
+        logging.error("no fitting background set found for %r", scenario_obj)
+        raise
     if binarize:
         scenario_obj = scenario_obj.binarize()
     X, y, domains = scenario_obj.get_features_cumul()

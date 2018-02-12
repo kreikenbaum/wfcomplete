@@ -2,6 +2,7 @@
 '''unit tests counter, analyse and fix modules'''
 import datetime
 import doctest
+import json
 import logging
 import os
 import subprocess
@@ -70,13 +71,15 @@ class TestConfig(unittest.TestCase):
     '''tests the config module'''
     def test_matches_addon(self):
         try:
-            with open('../cover/package.json') as f:
+            testdir = os.path.dirname(os.path.abspath(__file__))
+            target = os.path.join(testdir, '..', 'cover', 'package.json')
+            with open(target) as f:
                 package = json.load(f)
                 for el in package['preferences']:
                     if el['name'] == 'Traffic-HOST':
                         self.assertEqual(config.MAIN, el['value'])
         except IOError:
-            logging.info("cover addon not found at ../cover")
+            logging.info("cover addon not found at ../cover: %s", target)
 
 
 class TestCounter(unittest.TestCase):
@@ -302,13 +305,13 @@ class TestScenario(unittest.TestCase):
                          scenario.Scenario('wtf-pad/bridge--2016-07-05').name)
         self.assertEqual(
             '5', scenario.Scenario(u'simple2/5--2016-09-23--100').setting)
-        self.assertEqual('0.21',
-                         scenario.Scenario('0.21').name)
-        self.assertEqual('0.15.3',
-                         scenario.Scenario('0.15.3/json-10-nocache').name)
-        # new name for above
-        self.assertEqual('nocache',
-                         scenario.Scenario('0.15.3/nocache--2016-06-17--10@30').setting)
+        self.assertEqual('new defense',
+                         scenario.Scenario('0.21/2016-06-30').name)
+        self.assertEqual(
+            '0.21', scenario.Scenario('0.21/2016-06-30').version)
+        self.assertEqual(
+            'nocache',
+            scenario.Scenario('0.15.3/nocache--2016-06-17--10@30').setting)
         self.assertEqual(
             'bridge', scenario.Scenario('disabled/bridge--2016-07-06').setting)
         self.assertEqual(datetime.date(2017, 9, 6),
@@ -328,7 +331,7 @@ class TestScenario(unittest.TestCase):
         bg_mock = {'background': c_list[:],
                    'a': c_list[:],
                    'b': c_list[:]}
-        s = scenario.Scenario('asdf/12-12@20')
+        s = scenario.Scenario('asdf/12-12-2015--3@7')
         s.traces = bg_mock
         res = s.binarize().get_traces()
         self.assertEquals(res['background'], c_list)
@@ -339,7 +342,7 @@ class TestScenario(unittest.TestCase):
         bg_mock = {'background': c_list[:],
                    'a': c_list[:],
                    'b': c_list[:]}
-        s = scenario.Scenario('asdf/12-12@20')
+        s = scenario.Scenario('asdf/12-12-2015--3@7')
         s.traces = bg_mock
         Xa, ya, _ = s.binarize().get_features_cumul()
         Xc, yc, _ = counter.to_features_cumul(bg_mock)
@@ -352,6 +355,18 @@ class TestScenario(unittest.TestCase):
         s = scenario.Scenario('wtf-pad/bridge--2016-07-05')
         self.assertTrue(2,
                         len(s.get_open_world().binarize().get_traces().keys()))
+
+    def test_config(self):
+        self.assertEqual(
+            '5', scenario.Scenario(u'simple2/5--2016-09-23--100').config)
+        self.assertEqual('no config',
+                         scenario.Scenario('0.21/2016-06-30').config)
+        self.assertEqual(
+            'no config',
+            scenario.Scenario('0.15.3/nocache--2016-06-17--10@30').config)
+        self.assertEqual(
+            '10aI',
+            scenario.Scenario('0.22/10aI--2016-11-04--100@50').config)
 
     def test_date_from_trace(self):
         trace = counter._test(3)

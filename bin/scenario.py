@@ -12,9 +12,11 @@ import datetime
 import doctest
 import glob
 import itertools
+import json
 import logging
 import os
 import random
+import re
 from dateutil import parser
 
 import numpy as np
@@ -22,54 +24,29 @@ import numpy as np
 import config
 import counter
 
+INT_REGEXP = re.compile("-?([+-]?[0-9]+.*)")
+
+NEW_DEFENSE = "new defense"
+OLD_HOST = 'duckstein'
 
 DIR = os.path.join(os.path.expanduser('~'), 'da', 'git', 'data')
-if os.uname()[1] == 'duckstein':
+if os.uname()[1] == OLD_HOST:
     DIR = os.path.join('/mnt', 'large')
 RENAME = {
-    "0.22": "new defense",
     "defense-client": "LLaMA",
-    "disabled": "no defense",
-    "llama": "LLaMA",
-    config.COVER_NAME: "new defense"
+    "disabled": "no defense"
 }
-# were renamed on disk, hack to rename
-PATH_RENAME = {
-    "0.19/0-ai": "0.19/0-ai--2016-06-23",
-    "0.19/0-bii": "0.19/0-bii--2016-06-22",
-    "0.19/20-bii": "0.19/20-bii--2016-06-23",
-    "0.19/20-bi": "0.19/20-bi--2016-06-22",
-    "5--2016-09-23-100": "5--2016-09-23--100",
-    "05-12@10": "2016-05-12--10@40",
-    "05-12-2016--10@40": "2016-05-12--10@40",
-    "06-07-2016--100@40": "2016-06-07--100@40",
-    "10aI--2016-11-04-50-of-100": "10aI--2016-11-04--100@50",
-    "30-burst": "30-burst--2016-07-11",
-    "/30": "/30--2016-07-10",
-    "/20": "/20--2016-07-17",
-    "aii-factor=0": "aii-factor=0--2016-06-23",
-    "bridge--2016-11-04-100@50": "10aI--2016-11-04--100@50",
-    "bridge--2016-09-21-100": "bridge--2016-09-21--100",
-    "bridge--2016-09-26-100": "bridge--2016-09-26--100",
-    "bridge--2016-08-30-100": "bridge--2016-08-30--100",
-    "bridge-newer-sites--2017-12-26--30@50": "newer-sites-bridge--2017-12-26--30@50",
-    "bridge-older-sites--2017-12-25": "older-sites-bridge--2017-12-25",
-    "bridge--2016-09-26-100-with-errs": "bridge--2016-09-26--100-with-errs",
-    "json-10/a-i-noburst": "a-i-noburst--2016-06-02--10@30",
-    "json-10/a-ii-noburst": "a-ii-noburst--2016-06-03--10@30",
-    "json-10-nocache": "nocache--2016-06-17--10@30",
-    "json-100/b-i-noburst": "b-i-noburst--2016-06-04--100@40",
-    "nobridge--2017-01-19-aI-factor=10": "nobridge-aI-factor=10--2017-01-19",
-    "nobridge--2017-01-19-aI-factor=10-with-errors": "nobridge-aI-factor=10-with-errors--2017-01-19",
-    "tamaraw": "tamaraw/2016-07-11" # adjust this if newer tamaraw captures
-}
+for i in ["0.15.3", "0.18.2", "0.19", "0.20", "0.21", "0.22",
+          "simple2", "simple", config.COVER_NAME]:
+    RENAME[i] = NEW_DEFENSE
+
 PATH_SKIP = [
     "../sw/w/, WANG14, knndata.zip",
     "../sw/w/, RND-WWW, disabled/foreground-data-subset",
     "disabled/foreground-data"
 ]
 
-
+# code grew with scenario renames etc to keep db matching
 class Scenario(object):
     '''meta-information object with optional loading of traces'''
     def __init__(self, name, trace_args=None, smart=False, skip=False):
@@ -78,9 +55,9 @@ class Scenario(object):
         datetime.date(2016, 11, 13)
         >>> Scenario('disabled/2016-11-13').name # same as str(Scenario...)
         'no defense'
-        >>> Scenario('disabled/05-12@10').num_sites
+        >>> Scenario("disabled/2016-05-12--10@40").num_sites
         10
-        >>> Scenario('./0.22/10aI--2016-11-04-50-of-100').setting
+        >>> Scenario("0.22/10aI--2016-11-04--100@50").setting
         '10aI'
         '''
         self.traces = None
@@ -90,23 +67,12 @@ class Scenario(object):
             self.name = name
             logging.info("skipped " + name)
             return
-        # import pdb; pdb.set_trace()
-        for (pre, post) in PATH_RENAME.iteritems():
-            if self.path.endswith(pre):
-                self.path = self.path.replace(pre, post)
         if smart and not self.valid():
             self.path = list_all(self.path)[0].path
-        path = _prepend_if_ends(self.path, 'with-errors')
-        path = _prepend_if_ends(path, 'with-errs')
-        path = _prepend_if_ends(path, 'with7777')
-        path = _prepend_if_ends(path, 'failure-in-between')
-        try:
-            (self.name, date) = path.rsplit('/', 1)
-        except ValueError:
-            self.name = os.path.normpath(self.path)
-            logging.warn("failed to split %s", path)
-            return
-        #import pdb; pdb.set_trace()
+        # todo: rename scenarios, also in db, remove this call
+        path = _prepend_if_ends(self.path,
+            'with-errors', 'with-errs', 'with7777', 'failure-in-between')
+        (self.name, date) = path.rsplit('/', 1)
         numstr = None
         if '--' in date:
             if date.rindex('--') != date.index('--'):
@@ -117,52 +83,42 @@ class Scenario(object):
                     self.setting, date = date.split('--')
                 except ValueError:
                     date, numstr = date.split('--')
-        if '-' in date and '@' in date:
-            (date, numstr) = date.rsplit('-', 1)
         if numstr:
             if '@' in numstr:
                 self._num_sites, self.num_instances = [
                     int(x) for x in numstr.split('@')]
             else:
                 self._num_sites = int(numstr)
-        # the following discards subset info: 10aI--2016-11-04-50-of-100
-        try:
-            self.date = parser.parse(date).date()
-        except ValueError:
-            assert not hasattr(self, 'setting')
-            logging.warn('failed to parse date for %s', name)
-            self.setting = date
-        # try:
-        #     tmp = [int(x) for x in date.split('-')[:3]]
-        #     if len(tmp) == 2:
-        #         tmp.insert(0, 2016)
-        #     try:
-        #         self.date = datetime.date(*tmp)
-        #     except TypeError:
-        #         self.setting = date
-        # except ValueError:
-        #     self.setting = date
+        self.date = parser.parse(date).date()
         try:
             with open(os.path.join(DIR, self.path, 'status')) as f:
-                self.status = f.read()
+                try:
+                    self.status = json.load(f)
+                except ValueError:
+                    self.status = f.read()
         except IOError:
             self.status = "null"
         for (pre, post) in RENAME.iteritems():
-            self.name = self.name.replace(pre, post)
+            if pre == self.name:
+                self.version = self.name
+                self.name = self.name.replace(pre, post)
 
     def __contains__(self, item):
         return item in self.path
 
-    def _compareattr(self, other, attr):
+    def _compareattr(self, other, *attrs):
         '''@return true if other has attr iff self has attr and values same'''
-        return (hasattr(self, attr) and hasattr(other, attr)
-                and getattr(self, attr) == getattr(other, attr)
-                or (not hasattr(self, attr) and not hasattr(other, attr)))
+        for attr in attrs:
+            if not (hasattr(self, attr) and hasattr(other, attr)
+                    and getattr(self, attr) == getattr(other, attr)
+                    or (not hasattr(self, attr) and not hasattr(other, attr))):
+                logging.debug("%r != %r on %s", self, other, attr)
+                return False
+        return True
 
     def __eq__(self, other):
-        return (self._compareattr(other, "name")
-                and self._compareattr(other, "date"))
-#                and self._compareattr(other, "num_sites")) # failed
+        return self._compareattr(other, "name", "config", "date", "site")
+#                and self._compareattr(other, "num_sites")) # failed # where?
 
     def __len__(self):
         '''@return the total number of instances in this scenario'''
@@ -175,10 +131,10 @@ class Scenario(object):
         return '<scenario.Scenario("{}")>'.format(self.path)
 
     # idea: return whole list ordered by date-closeness
-    def _closest(self, name_filter, include_bg=False, func_filter=None):
+    def _closest(self, in_name=None, include_bg=False, filter_scenario=None):
         '''@return closest scenario by date that matches filter, filtered to have at least the scenario's number of sites, unless include_bg==True'''
         assert self.valid()
-        filtered = list_all(name_filter, include_bg, func_filter=func_filter)
+        filtered = list_all(in_name, include_bg, filter_scenario=filter_scenario)
         if not include_bg:
             filtered = [x for x in filtered if x.num_sites >= self.num_sites]
         return min(filtered, key=lambda x: abs(self.date - x.date))
@@ -221,6 +177,23 @@ class Scenario(object):
         first = min((x.starttime for x in all_traces))
         return datetime.datetime.fromtimestamp(float(first)).date()
 
+    @property
+    def config(self):
+        '''@return configuration of addon if used'''
+        if self.name != NEW_DEFENSE:
+            return "no config"
+        try:
+            fromsettings = INT_REGEXP.search(self.setting).group(1)
+        except AttributeError:
+            return "no config"
+        try:
+            factor = self.status['addon']['factor']
+            factor = 50 if factor is None else factor
+            assert fromsettings.startswith(factor)
+        except TypeError:
+            pass
+        return fromsettings
+
     def get_features_cumul(self):
         '''@return traces converted to CUMUL's X, y, y_domains'''
         X = []
@@ -237,14 +210,20 @@ class Scenario(object):
                 class_number += 1
         return (np.array(X), np.array(out_y), domain_names)
 
-    def get_open_world(self, num="auto"):
+    def get_open_world(self, num="auto", same=False):
         '''
         @return scenario with traces and (num) added background traces
         @param num: size of background set, if 'auto', use as many as fg set
+        @param same: only use scenarios of same defense (name, config, and site)
         '''
-        if 'background' in self.get_traces():
+        if self.traces and 'background' in self.get_traces():
             logging.warn("scenario's traces already contain background set")
-        background = self._closest('background', include_bg=True)
+            return self
+        filt = None
+        if same:
+            filt = lambda x: self._compareattr(x, "name", "config", "site")
+        background = self._closest("@1", True, filt)
+        logging.info("background is %r", background)
         self.get_traces()
         out = copy.copy(self)
         out.traces = copy.copy(self.traces)
@@ -274,6 +253,20 @@ class Scenario(object):
             self.traces = counter.all_from_dir(os.path.join(DIR, self.path),
                                                **self.trace_args)
         return self.traces
+
+    @property
+    def site(self):
+        '''@return the site where this was captured'''
+        try:
+            host = self.status['host']
+        except TypeError:
+            host = OLD_HOST
+        if 'duckstein' in host:
+            return 'mlsec'
+        elif 'pioneering-mode-193216' in host:
+            return 'gcloud'
+        else:
+            logging.error("unknown host site for %s", host)
 
     @property
     def open_world(self):
@@ -310,34 +303,37 @@ class Scenario(object):
             and not callable(getattr(self, a)))}
 
 
-def _prepend_if_ends(whole, part):
+def _prepend_if_ends(whole, *parts):
     '''if whole ends with part, prepend it (modulo "-")
 
     >>> _prepend_if_ends('0.22/nobridge--2017-01-19-aI-factor=10-with-errors', \
                          'with-errors')
     '0.22/with-errors-nobridge--2017-01-19-aI-factor=10'
     '''
-    if whole and whole.endswith('-' + part):
-        splits = whole.rsplit('/', 1)
-        last = part + '-' + splits[1].replace('-' + part, '')
-        whole = splits[0] + '/' + last
+    for part in parts:
+        if whole and whole.endswith('-' + part):
+            splits = whole.rsplit('/', 1)
+            last = part + '-' + splits[1].replace('-' + part, '')
+            whole = splits[0] + '/' + last
     return whole
 
 
-def list_all(name_filter=None, include_bg=False, func_filter=None, path=DIR):
-    '''lists all scenarios in =path=.'''
+def list_all(in_name=None, include_bg=False, filter_scenario=None, path=DIR):
+    '''@return list of all scenarios in =path=.
+    @param filter_scenario: function that returns True to include scenarios
+    '''
     out = []
     for (dirname, _, _) in os.walk(path):
         if dirname == path:
             continue
-        if name_filter and not name_filter in dirname:
+        if in_name and not in_name in dirname:
             continue
         out.append(dirname)
     out[:] = [x.replace(path+'/', './') for x in out]
     out = [Scenario(x) for x in _filter_all(
         out, include_bg=include_bg)]
-    if func_filter:
-        out = filter(func_filter, out)
+    if filter_scenario:
+        out = filter(filter_scenario, out)
     return out
 
 
@@ -355,7 +351,8 @@ def _filter_all(all_, include_bg):
                                and not 'subsets/' in x
                                and (include_bg
                                     or (not '/background' in x
-                                        and not '/bg' in x)))]
+                                        and not '/bg' in x
+                                        and not x.endswith("@1"))))]
     out[:] = [x for (i, x) in enumerate(out[:-1]) if (
         x not in out[i+1]
         or x+'-with-errors' == out[i+1])] + [out[-1]]
@@ -407,29 +404,6 @@ def _mean_std(trace_dict, property_name):
 def tpi(trace_list):
     '''returns total incoming packets for each trace in list'''
     return [x.get_tpi() for x in trace_list]
-
-
-def path_from_status(status, date=None):
-    '''@return the scenario path from the status.sh output'''
-    enableds = [x for x in status['addon']['enabled']
-                if status['addon']['enabled'][x] is True]
-    if len(enableds) > 1:
-        logging.error("more than 1 addon enabled: %s", enableds)
-    elif len(enableds) == 1:
-        name = enableds[0].replace('@', '')
-    else:
-        name = "disabled"
-    if not date:
-        date = datetime.date.today()
-    add = ''
-    if name == config.COVER_NAME:
-        factor = status['addon']['factor']
-        if not factor:
-            factor = 50
-        add = factor + 'aI--'
-    if not date:
-        date = datetime.date.today()
-    return os.path.join(name, add + str(date))
 
 
 def _trace_append(X, y, y_names, x_add, y_add, name_add):
@@ -487,3 +461,11 @@ doctest.testmod(optionflags=doctest.ELLIPSIS)
 # sorted([x for x in results.list_all() if 'new defense' in x.scenario.name], key=lambda x: abs(x.size_overhead - 163.08) if x.size_overhead else 100000)
 ## score
 # sorted([x for x in results.list_all() if 'new defense' in x.scenario.name], key=lambda x: abs(x.score - 0.6822))
+
+### all scenarios with ow
+# for scenario_obj in scenario.list_all():
+#     try:
+#             ow = scenario_obj._closest("@1", True, lambda x: scenario_obj._compareattr(x, "name", "config", "site"))
+#             with_ow.append(scenario_obj)
+#     except ValueError:
+#             print '%r', scenario_obj

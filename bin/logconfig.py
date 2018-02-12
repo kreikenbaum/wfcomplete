@@ -2,7 +2,7 @@ import logging
 
 LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 
-#LOGLEVEL = logging.WARN INFO DEBUG
+# WARN INFO DEBUG
 LOGLEVEL = logging.INFO
 
 reload(logging)

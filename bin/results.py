@@ -299,5 +299,9 @@ if __name__ == "__main__":
 # a = {s: len(results.for_scenario(s)) for s in scenario.list_all()}
 # [name for (name, count) in a.iteritems() if count == 0]
 
-
-### remove from db
+### rename scenario in db (old in git/data/skip/dump_before_scenario_rename)
+#a = results.list_all()
+#replace = [r for r in a if r.src['config']['scenario'].rstrip('/') != r.scenario.path]
+#for c in replace: c.update({"config.scenario": c.scenario.path})
+#for e in [r for r in a if 'llama' in r.src['config']['scenario'].lower()]:
+#    e.update({"config.scenario": e.src['config']['scenario'].replace("llama", "defense-client")})
