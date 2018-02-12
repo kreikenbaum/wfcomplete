@@ -650,19 +650,72 @@ of future work in section [[#future-work]].
 
    To protect against \gls{wf}, several early attack authors also
    mentioned possible defenses: \citet[sec.5]{Wagner96analysisof}
-   proposed padding SSL so that at least HTTP GET urls would be
+   proposed padding SSL\cite{sslv3} so that HTTP GET
+   \citep[sec.4.3.1]{rfc7231} urls would be
    concealed. \citet[sec.3]{ssl-traffic-analysis} proposed three
    possible defenses: an additional padding layer between HTTP and
    SSL, modifying the web pages themselves, or using web proxies.
-   \citet[sec.8]{hintz02} proposed padding, switching off e.g. images,
-   and transferring a whole page in one connection.
+   \citet[sec.8]{hintz02} suggested padding, switching off
+   e.g. images, and transferring a whole page in one connection.
 
 
-           - historical defenses?
-             - hintz \cite{hintz02}
-             - panchenko \cite{panchenko2}
+   The previous defenses attempted to hinder \gls{wf} in
+   general. Several authors proposed Tor-specific defenses.
+   \citet{panchenko} add noise to traffic. They do so by loading
+   another page simultaneously in the
+   background. \citet{ccs2012-fingerprinting},
+   \citet{a-systematic2014}, \citet{kfingerprint},
+   \citet{effective2014}, \citet{panchenko}, and \citet{wtfpad2015}
+   found it to be surprisingly effective for all its simplicity,
+   albeit at a high overhead. Others defenses --- additionally or
+   exclusively --- alter traffic by reducing the data rate, splitting
+   and merging packets, etc, e.g. \cite{morphing09}, and
+   \cite{httpos}.
+
+
+   # continue here
+
+
+
              - buflo\cite{oakland2012-peekaboo}
              - tamaraw\cite{a-systematic2014}
+
+
+
+
+     As of \cite{wang2015walkie}, defenses designed against website
+     fingerprinting can be divided into specific and general defenses.
+     Both types can either add noise, modify existing traffic, or
+     combine both.
+
+     The first website fingerprinters considered only packet
+     lengths. This made it seem sensible to defend by altering the
+     lengths of packets by padding, as evaluated f.ex.\space{}by
+     \cite{ssl-traffic-analysis}.
+
+     As more and more features were used to classify the traces,
+     different ways of altering the data were evaluated by several
+     researchers: several ways of padding (\cite{Liberatore:2006},
+     \cite{oakland2012-peekaboo}, \cite{a-systematic},
+     \cite{ccs2012-fingerprinting}, \cite{wang2015walkie}), or altering
+     traffic sizes to fit another web page's (\cite{morphing09},
+     \cite{httpos}).
+
+     Specific defenses alter specific features, mostly single packet
+     size. This created an arms race between attacks and defenses - the
+     attacks finding new feature combinations to use, the defenses
+     obfuscating these. To stop this, the idea of a /general defense/
+     was introduced by \cite{oakland2012-peekaboo} into the context of
+     website fingerprinting. They proposed a traffic-flow
+     security\cite[ch.10.3]{applied96} solution called /BuFLO/:
+     fixed-rate transmission of all data, with dummy traffic for gaps,
+     for the estimated duration of web site retrieval.
+
+     This idea was improved on by Tamaraw \cite{a-systematic}[fn::see
+     next section] while \cite{effective} proposed the (offline)
+     defense of morphing all traffic to supersequences of traffic
+     patterns.
+
 
 
    In web retrieval, it is impossible to send less packets. What is
