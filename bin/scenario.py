@@ -295,7 +295,7 @@ class Scenario(object):
 
     def to_dict(self):
         '''@return __dict__-like with properties'''
-        # also without private members (_) etc
+        # also without private members (_) etc, used for pd.DataFrame
         return {a: getattr(self, a) for a in dir(self) if (
             not a.startswith('_')
             and not a == 'trace_args'
