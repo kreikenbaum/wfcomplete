@@ -23,6 +23,7 @@ import numpy as np
 
 import config
 import counter
+import mymetrics
 
 INT_REGEXP = re.compile("-?([+-]?[0-9]+.*)")
 
@@ -194,6 +195,7 @@ class Scenario(object):
             pass
         return fromsettings
 
+    ## todo: codup counter.py?
     def get_features_cumul(self):
         '''@return traces converted to CUMUL's X, y, y_domains'''
         X = []
@@ -202,12 +204,15 @@ class Scenario(object):
         domain_names = []
         for domain, dom_counters in self.get_traces().iteritems():
             if domain == "background":
+                bg = True
                 _trace_list_append(X, out_y, domain_names,
                                    dom_counters, "cumul", -1, "background")
             else:
                 _trace_list_append(X, out_y, domain_names,
                                    dom_counters, "cumul", class_number, domain)
                 class_number += 1
+        if len(set(out_y)) == 2:
+            out_y = list(mymetrics.binarize(out_y, transform_to=1))
         return (np.array(X), np.array(out_y), domain_names)
 
     def get_open_world(self, num="auto", same=False):
@@ -462,10 +467,11 @@ doctest.testmod(optionflags=doctest.ELLIPSIS)
 ## score
 # sorted([x for x in results.list_all() if 'new defense' in x.scenario.name], key=lambda x: abs(x.score - 0.6822))
 
-### all scenarios with ow
+### all scenarios with possible ow
+# with_ow = []
 # for scenario_obj in scenario.list_all():
 #     try:
-#             ow = scenario_obj._closest("@1", True, lambda x: scenario_obj._compareattr(x, "name", "config", "site"))
-#             with_ow.append(scenario_obj)
+#         _ = scenario_obj._closest("@1", True, lambda x: scenario_obj._compareattr(x, "name", "config", "site"))
+#         with_ow.append(scenario_obj)
 #     except ValueError:
-#             print '%r', scenario_obj
+#         pass

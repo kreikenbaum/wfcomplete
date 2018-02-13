@@ -4,9 +4,6 @@ import numpy as np
 
 import config
 
-#    p_ = clf.fit(X1, y1).predict_proba(X2)
-#    return bounded_auc(y2, p_[:, 1], y_bound, pos_label=0)
-## todo: maybe use prettytable
 #doesn't really belong here, but neither does it to fit
 def binarize(y, keep=-1, transform_to=0):
     '''binarize data in y: transform all values to =transform_to= except =keep=
@@ -21,42 +18,23 @@ def binarize(y, keep=-1, transform_to=0):
             yield transform_to
 
 
-def bounded_auc(y_true, y_predict, y_bound, **kwargs):
-    '''@return bounded auc of probabilistic prediction, normalized to [0, 1]
-    >>> bounded_auc([1, 1, 1, -1], np.array([1, 0.9, 0.8, 0]), 1)
-    1.0
-    >>> bounded_auc([1, 1, 1, -1], np.array([1, 0.9, 0.8, 0]), 0.5)
-    1.0
-    >>> bounded_auc([-1, 1, 1, 1], np.array([0, 0.8, 0.9, 1]), 1)
-    1.0
-    '''
-    newfpr, newtpr = bounded_roc(y_true, y_predict, y_bound, **kwargs)
-    return metrics.auc(newfpr, newtpr) / y_bound
-
-
 def pos_label(y_true):
     '''@return element in y_true != -1'''
     assert -1 in y_true and len(set(y_true)) == 2
     return [x for x in y_true if x != -1][0]
 
 
-def bounded_roc(y_true, y_predict, y_bound, **kwargs):
-    '''@return (fpr_array, tpr_array) with 0 <= fpr <= y_bound'''
-    assert 0 <= y_bound <= 1
-    assert -1 in y_true
-    fpr, tpr, _ = metrics.roc_curve(y_true, y_predict, pos_label(y_true), **kwargs)
-    newfpr = [y for y in fpr if y < y_bound]
-    newfpr.append(y_bound)
-    newtpr = np.interp(newfpr, fpr, tpr)
-    return (newfpr, newtpr)
-
-
-def compute_bounded_auc_score(clf, X, y, y_bound=0.01):
-    '''@return cross-validated bounded auc of clf on X and y'''
-    #scorer = metrics.make_scorer(bounded_auc, needs_proba=True, y_bound=y_bound)
+def compute_bounded_auc_score(clf, X, y, y_bound=0.01):#, scorer=None):
+    '''@return cross-validated bounded auc of clf on X and y
+    @param scorer: used for testing this module's other methods
+    @param clf classifier to use
+    @param X, y features and labels
+    @param y_bound maximum fpr rate for which to consider the auc score
+    '''
     # if github sklearn issue #3273 gets pulled
-    scorer = metrics.make_scorer(metrics.roc_auc_score, greater_is_better=True,
-                                 needs_threshold=True, max_fpr=y_bound)
+    scorer = metrics.make_scorer(
+            metrics.roc_auc_score, greater_is_better=True, needs_threshold=True,
+            max_fpr=y_bound)
     return model_selection.cross_val_score(
         clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
         scoring=scorer).mean()

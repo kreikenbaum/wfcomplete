@@ -9,9 +9,10 @@ import subprocess
 import tempfile
 import time
 import unittest
+from unittest.runner import TextTestRunner, TextTestResult
 
 import numpy as np
-from unittest.runner import TextTestRunner, TextTestResult
+from sklearn import metrics
 
 import analyse
 import config
@@ -258,10 +259,31 @@ class TestFit(unittest.TestCase):
 
 class TestMymetrics(unittest.TestCase):
     '''tests the counter module'''
+    def setUp(self):
+        self.size = 100
+        self.X, self.y = _init_X_y(self.size)
+        logging.disable(logging.WARNING) # change to .INFO or disable for debug
+        self.old_jobs = config.JOBS_NUM
+        config.JOBS_NUM = 1
+
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
+        config.JOBS_NUM = self.old_jobs
 
     def test_doc(self):
         (fail_num, _) = doctest.testmod(mymetrics, optionflags=doctest.ELLIPSIS)
         self.assertEqual(0, fail_num)
+
+    # def test_bounded_auc(self):
+    #     clf = fit.clf_default(probability=True)
+    #     for bound in [0.01, 0.1, 0.2, 0.5, 1]:
+    #         s = metrics.make_scorer(
+    #             mymetrics.bounded_auc, needs_proba=True, y_bound=bound)
+    #     dflt = mymetrics.compute_bounded_auc_score(clf, self.X, self.y, bound)
+    #     self.assertEqual(
+    #         dflt,
+    #         mymetrics.compute_bounded_auc_score(clf, self.X, self.y, bound, s),
+    #         "bound: {}".format(bound))
 
 
 class TestResult(unittest.TestCase):
@@ -346,7 +368,7 @@ class TestScenario(unittest.TestCase):
         s.traces = bg_mock
         Xa, ya, _ = s.binarize().get_features_cumul()
         Xc, yc, _ = counter.to_features_cumul(bg_mock)
-        yc = fit._lb(yc)
+        yc = fit._lb(yc, transform_to=1)
         self.assertTrue(np.array_equal(ya, yc), "ya: {}\nyc: {}".format(ya, yc))
         self.assertTrue(np.array_equal(Xa, Xc))
 

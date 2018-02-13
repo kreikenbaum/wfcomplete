@@ -12,7 +12,7 @@ from sacred.observers import MongoObserver
 import analyse
 import config
 import fit
-import scenario as scenario_class # "scenario" name already used
+import scenario as scenario_module # "scenario" name already used
 
 ex = Experiment('wf_open_world')
 ex.observers.append(MongoObserver.create())
@@ -20,22 +20,22 @@ ex.observers.append(MongoObserver.create())
 
 @ex.config
 def my_config():
-    scenario = random.choice(scenario_class.list_all()).path
+    scenario = random.choice(scenario_module.list_all()).path
     or_level = None
     remove_small = None
     auc_bound = 0.1
     background_size = 'auto' #, number, None
-    binarize = False
+    #binarize = False
 
 # code duplication exp.py
 @ex.capture
 def run_exp(scenario, remove_small, or_level, auc_bound,
-            background_size, binarize, _rnd):
+            background_size, _rnd): #, binarize
     config.OR_LEVEL = config.OR_LEVEL if or_level is None else or_level
     config.REMOVE_SMALL = config.REMOVE_SMALL if remove_small is None else remove_small
-    scenario_obj = scenario_class.Scenario(scenario)
+    scenario_obj = scenario_module.Scenario(scenario)
     (tpr, fpr, auroc, C, gamma, accuracy) = analyse.simulated_open_world(
-        scenario_obj, auc_bound, binarize, background_size)
+        scenario_obj, auc_bound, background_size) #, binarize
     return {
         'C': C,
         'gamma': gamma,
