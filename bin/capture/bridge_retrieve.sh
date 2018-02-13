@@ -29,5 +29,6 @@ cd $SAVETO && mv -i status *@* $NAME && echo traces are at $NAME
      counter.py > /tmp/counter_out_$(date +%F:%T) 2>&1 && \
      zip pagetext.zip $(ls | grep -E '\.text') > /dev/null && \
      mkdir -p $SAVETO/skip/last_traces && \
+     rm $SAVETO/skip/last_traces/*;
      mv -b *@* $SAVETO/skip/last_traces
 ) &

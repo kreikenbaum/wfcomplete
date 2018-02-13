@@ -278,7 +278,7 @@ def _accuracy_C_gamma_etc(scenario_obj):
     '''
 
 
-def simulated_open_world(scenario_obj, auc_bound=0.1,# binarize=False,
+def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=True,
                          bg_size="auto"):
     '''@return metrics for open world experiment'''
     try:
@@ -286,8 +286,8 @@ def simulated_open_world(scenario_obj, auc_bound=0.1,# binarize=False,
     except ValueError:
         logging.error("no fitting background set found for %r", scenario_obj)
         raise
-    #if binarize: #next line
-    scenario_obj = scenario_obj.binarize()
+    if binarize:
+        scenario_obj = scenario_obj.binarize()
     X, y, domains = scenario_obj.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
     (clf_noprob, accuracy, _) = fit.my_grid(X, y, auc_bound=auc_bound)
@@ -297,14 +297,14 @@ def simulated_open_world(scenario_obj, auc_bound=0.1,# binarize=False,
     (tpr, fpr) = tpr_fpr(_binmat(confmat))[1]
     C = clf_noprob.estimator.C
     gamma = clf_noprob.estimator.gamma
-    # if binarize: # can (easily) compute auroc # up to else
-    clf = fit.clf_default(C=C, gamma=gamma, probability=True)
-    y_predprob = model_selection.cross_val_predict(
-        clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
-        method="predict_proba")
-    auroc = metrics.roc_auc_score(y, y_predprob[:, 1], max_fpr=auc_bound)
-    #else:
-    #    auroc = None
+    if binarize: # can (easily) compute auroc
+        clf = fit.clf_default(C=C, gamma=gamma, probability=True)
+        y_predprob = model_selection.cross_val_predict(
+            clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
+            method="predict_proba")
+        auroc = metrics.roc_auc_score(y, y_predprob[:, 1], max_fpr=auc_bound)
+    else:
+        auroc = None
     return (tpr, fpr, auroc, C, gamma, accuracy)
 
 

@@ -305,3 +305,6 @@ if __name__ == "__main__":
 #for c in replace: c.update({"config.scenario": c.scenario.path})
 #for e in [r for r in a if 'llama' in r.src['config']['scenario'].lower()]:
 #    e.update({"config.scenario": e.src['config']['scenario'].replace("llama", "defense-client")})
+## by hand in db
+#db.runs.update({_id: 55}, {$set: {"config.scenario": "disabled/06-09-2016--10@30"}})
+#db.runs.updateMany({"config.scenario": "disabled/06-09@10"}, {$set: {"config.scenario": "disabled/06-09-2016--10@30"}})

@@ -25,17 +25,17 @@ def my_config():
     remove_small = None
     auc_bound = 0.1
     background_size = 'auto' #, number, None
-    #binarize = False
+    binarize = True # fixed, unclear how to handle multi-class
 
 # code duplication exp.py
 @ex.capture
 def run_exp(scenario, remove_small, or_level, auc_bound,
-            background_size, _rnd): #, binarize
+            background_size, binarize, _rnd):
     config.OR_LEVEL = config.OR_LEVEL if or_level is None else or_level
     config.REMOVE_SMALL = config.REMOVE_SMALL if remove_small is None else remove_small
     scenario_obj = scenario_module.Scenario(scenario)
     (tpr, fpr, auroc, C, gamma, accuracy) = analyse.simulated_open_world(
-        scenario_obj, auc_bound, background_size) #, binarize
+        scenario_obj, auc_bound, background_size, binarize)
     return {
         'C': C,
         'gamma': gamma,
