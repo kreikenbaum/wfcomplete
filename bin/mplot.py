@@ -12,6 +12,7 @@ sns.set() #sns.set_style("darkgrid")
 sns.set_palette("colorblind") # optional, uglier, but helpful
 
 import config
+import mymetrics
 import scenario
 import results
 
@@ -114,7 +115,7 @@ def roc_helper(result, axes=None):
         cv=config.FOLDS, n_jobs=config.JOBS_NUM, method="predict_proba")
     fpr_array, tpr_array, _ = metrics.roc_curve(
         y, y_pred[:, 1], mymetrics.pos_label(y))
-    return roc(fpr_array, tpr_array,
+    return fpr_array, tpr_array, roc(fpr_array, tpr_array,
                '({}), max_fpr: {}, background_size: {}'.format(
                    scenario_obj, auc_bound, num, axes))
 

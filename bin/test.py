@@ -36,11 +36,12 @@ class TestAnalyse(unittest.TestCase):
     def setUp(self):
         self.c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]]
         self.bg_mock = {'background': self.c_list[:],
-                                 'a': self.c_list[:],
-                                 'b': self.c_list[:]}
+                        'a': self.c_list[:],
+                        'b': self.c_list[:]}
 
     # todo: use doctest.DocFileSuite
     def test_doc(self):
+        '''test all analyse's docstrings'''
         (fail_num, _) = doctest.testmod(analyse)
         self.assertEqual(0, fail_num)
 
@@ -54,10 +55,12 @@ class TestCaptureOnesite(unittest.TestCase):
         logging.disable(logging.NOTSET)
 
     def test_doc(self):
+        '''test all one_site's docstrings'''
         (fail_num, _) = doctest.testmod(counter, optionflags=doctest.ELLIPSIS)
         self.assertEqual(0, fail_num)
 
     def test__check_text(self):
+        '''test website text check function'''
         with self.assertRaises(one_site.DelayError):
             one_site._check_text("test tor network settings")
         # typeerrors: trying to rename None file
@@ -71,14 +74,15 @@ class TestCaptureOnesite(unittest.TestCase):
 class TestConfig(unittest.TestCase):
     '''tests the config module'''
     def test_matches_addon(self):
+        '''test that addon preset matches'''
         try:
             testdir = os.path.dirname(os.path.abspath(__file__))
             target = os.path.join(testdir, '..', 'cover', 'package.json')
             with open(target) as f:
                 package = json.load(f)
-                for el in package['preferences']:
-                    if el['name'] == 'Traffic-HOST':
-                        self.assertEqual(config.MAIN, el['value'])
+                for pref in package['preferences']:
+                    if pref['name'] == 'Traffic-HOST':
+                        self.assertEqual(config.MAIN, pref['value'])
         except IOError:
             logging.info("cover addon not found at ../cover: %s", target)
 
@@ -94,15 +98,18 @@ class TestCounter(unittest.TestCase):
         logging.disable(logging.NOTSET)
 
     def test_doc(self):
+        '''test counter doctests'''
         (fail_num, _) = doctest.testmod(counter, optionflags=doctest.ELLIPSIS)
         self.assertEqual(0, fail_num)
 
     def test__test(self):
-        c = counter._test(35)
-        self.assertTrue(c.timing)
-        self.assertTrue(c.packets)
+        '''tests dummy method'''
+        trace = counter._test(35)
+        self.assertTrue(trace.timing)
+        self.assertTrue(trace.packets)
 
     def test_dict_to_cai(self):
+        '''test to cai conversion'''
         mock_writer = MockWriter()
         counter.dict_to_cai({'a': self.c_list}, mock_writer)
         self.assertEqual(mock_writer.data, '''test +
@@ -123,7 +130,7 @@ test + + + +
 # ''')
 
     def test_dict_to_panchenko(self):
-        # test creation of panchenko dir, then back, check that the same
+        '''test creation of panchenko dir, then back, check that the same'''
         testdir = temp_dir()
         counter.dict_to_panchenko({'a': self.c_list}, testdir)
         restored = counter.all_from_panchenko(testdir + '/output-tcp')
@@ -133,9 +140,8 @@ test + + + +
                                       [str(x) for x in self.c_list]))
 
     def test_outlier_removal(self):
-        # take simple dict which removes stuff
-        # by methods 1-3 (one each)
-        # check that original is still the same
+        '''take simple dict which removes stuff by methods 1-3 (one each),
+        check that original is still the same'''
         c_dict = {'url': self.c_list}
         c_dict['url'].extend(self.big_val)
         self.assertEqual(len(counter.outlier_removal(c_dict, 1)['url']), 7)
@@ -143,6 +149,7 @@ test + + + +
         self.assertEqual(len(counter.outlier_removal(c_dict, 1)['url']), 7)
 
     def test_p_or_tiny(self):
+        '''test tiny outlier removal'''
         with_0 = self.c_list[:]
         with_0.append(counter._test(0))
         fixed = self.c_list[0]
@@ -153,6 +160,7 @@ test + + + +
         self.assertEqual(self.c_list[0], fixed, 'has side effect')
 
     def test_p_or_toolong(self):
+        '''test outlier removal of too-long trace'''
         too_long = [counter._test(3, millisecs=4*60*1000)]
         self.assertEqual(len(counter.p_or_toolong(self.c_list)), 7)
         self.assertEqual(len(self.c_list), 7, 'has side effect')
@@ -506,7 +514,7 @@ def temp_dir():
 
 def _init_X_y(size, random=True):
     '''@return (X, y) of given size'''
-    X = [(1, 0)] * size;
+    X = [(1, 0)] * size
     X.extend([(0, 1)] * size)
     if random:
         X = np.array(X).astype('float64')
