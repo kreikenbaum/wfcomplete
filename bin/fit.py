@@ -197,7 +197,7 @@ def _middle(results, bestres):
     best_C = np.median([x[0] for x in best])
     best_gamma = np.median([x[1] for x in best])
     if not (best_C, best_gamma) in best:
-        logging.warn("hard to find optimum")
+        logging.warn("hard to find optimum: %s", best)
         best_C = np.mean([x[0] for x in best])
         best_gamma = np.mean([x[1] for x in best])
     return best_C, best_gamma
