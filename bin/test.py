@@ -268,14 +268,13 @@ class TestFit(unittest.TestCase):
         '''tests some class bleed-off: some positives with same
         feature as negatives'''
         #self.X, self.y = _init_X_y(self.size)
-        self.X = [(0.5, 0.5)] * (9 * self.size / 10)
+        self.X = [(1.01, 1.01)] * (9 * self.size / 10)
         self.X.extend(np.random.random_sample((11 * self.size / 10, 2)))
         clf, _, _ = fit.my_grid(self.X, self.y, auc_bound=0.01)
         fpr, tpr, _, _ = fit.roc(clf, self.X, self.y)
         # 2. check that fpr/tpr has good structure (rises straight up to 0.9fpr)
-        self.assertEqual(tpr[0], 0.9,
-                         self.string.format(tpr, fpr) + '\nclf: {}'.format(clf))
-        self.assertEqual(fpr[0], 0, self.string.format(tpr, fpr))
+        self.assertAlmostEqual(tpr[1], 0.9)#, '{}\n{}'.format(zip(tpr, fpr), clf))
+        self.assertAlmostEqual(fpr[1], 0)#, zip(tpr, fpr))
 
 class TestMymetrics(unittest.TestCase):
     '''tests the counter module'''
@@ -419,7 +418,7 @@ class TestScenario(unittest.TestCase):
 
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_get_open_world(self):
-        s = scenario.Scenario('disabled/05-12@10')
+        s = scenario.Scenario("disabled/2016-05-12--10@40")
         self.assertTrue('background' in s.get_open_world().get_traces())
 
     def test_sample(self):
@@ -446,7 +445,7 @@ class TestScenario(unittest.TestCase):
 
     @unittest.skipIf(QUICK, "slow test skipped")
     def test__closest_bg(self):
-        s = scenario.Scenario('disabled/background--2016-08-17')
+        s = scenario.Scenario('disabled/background--2016-08-17--4100@1')
         self.assertEqual(s, s._closest('background', include_bg=True))
 
     def test__compute_increase_equal(self):

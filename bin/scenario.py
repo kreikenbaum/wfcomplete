@@ -343,7 +343,6 @@ def _filter_all(all_, include_bg):
                                and not '/ow' in x
                                and not '/p_batch' in x
                                and not '/skip' in x
-                               and not 'subsets/' in x
                                and (include_bg
                                     or (not '/background' in x
                                         and not '/bg' in x
