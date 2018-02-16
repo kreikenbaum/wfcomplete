@@ -12,6 +12,7 @@ sns.set() #sns.set_style("darkgrid")
 sns.set_palette("colorblind") # optional, uglier, but helpful
 
 import config
+import counter
 import mymetrics
 import scenario
 import results
@@ -143,7 +144,8 @@ to save, and =.show()= to display.
     return fig
 
 
-def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):
+def total_packets_in(counter_dict, subkeys=None, ax=None, save=False,
+                     color=None):
     '''plots total incoming packets stat, rugplot with kde
 
     - plot size histogram colored by domain
@@ -153,22 +155,56 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False):
     '''
     plt.xscale("log")
     if not subkeys: subkeys = counter_dict.keys()
-    for (k, v) in counter_dict.iteritems():
-        if k not in subkeys:
-            continue
+    for domain in subkeys:
         #        sns.distplot(stats.tpi(v), hist=False, rug=True, label=k)
-        sns.distplot(scenario.tpi(v), label=k, ax=ax)
+        c = color(domain) if color else None
+        sns.distplot(scenario.tpi(counter_dict[domain]), label=domain,
+                     ax=ax, color=c)
 
     if not ax:
         plt.title("Total number of incoming packets")
         plt.xlabel("number of incoming packets")
-        plt.ylabel("relative histogram with kernel-density-estimation")
+        plt.ylabel("relative count with kernel-density-estimation")
         plt.legend()
     else:
         ax.legend()
     if save:
         plt.savefig("/tmp/total_packets_in_"+'_'.join(subkeys)+".pdf")
 
+
+def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):
+    '''plot tpi plots in subplots
+
+    example input:
+names = ['disabled/bridge--2016-07-06', 'wtf-pad/bridge--2016-07-05', 'tamaraw']
+names = {x.path: x.get_traces() for x in scenario_list}
+    '''
+    if not trace_dicts:
+        trace_dicts = [scenario.Scenario(name).get_traces() for name in names]
+    fig, axes = plt.subplots(len(names), 1, sharex=True, sharey=False)
+    plt.suptitle("Number of incoming packets per trace")
+    mm = counter.MinMaxer()
+    keys = set(trace_dicts[0].keys())
+    if 'sina.com.cn' in keys: keys.remove('sina.com.cn')
+    for other_dict in trace_dicts[1:]:
+        keys = keys.intersection(other_dict.keys())
+        keys = list(keys)[:sitenum]
+    color = lambda x: _color(x, keys)
+    for (name, counter_dict, ax) in zip(names, trace_dicts, axes):
+        total_packets_in(counter_dict, keys, ax, color=color)
+        subset = [counter_dict[x] for x in keys]
+        mm.set_if(min(min([scenario.tpi(v) for v in subset])),
+                  max(max([scenario.tpi(v) for v in subset])))
+        ax.set_title('{}'.format(scenario.Scenario(name)))
+    for ax in axes:
+        ax.set_xlim(mm.min * 0.8, mm.max * 1.2)
+    fig.text(0, 0.5, "relative histograms with kernel-density-estimation",
+             va="center", rotation="vertical")
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+    if save:
+        plt.savefig("/tmp/total_packets_in_"
+                    + '_'.join(names).replace('/', '___')+'__'
+                    +'_'.join(keys)+"__palette_colorblind.pdf")
 
 # td: color
 '''best way (off of head)
@@ -260,31 +296,6 @@ def traces(traces_list):
 
 ### usage examples
 
-## total_packets_in: three plots
-# argv = ['', 'disabled/bridge--2016-07-06', 'wtf-pad/bridge--2016-07-05', 'tamaraw']
-# #scenarios = counter.for_scenarios(argv[1:], or_level=2)
-# scenarios = {x: scenario.Scenario(x, trace_args={'or_level':2}).get_traces() for x in argv[1:]}
-# fig, axes = plt.subplots(len(scenarios), 1, sharex=True)
-# plt.suptitle("Number of incoming packets per trace")
-# mm = counter.MinMaxer()
-# keys = scenarios.values()[0].keys()
-# # some chinese sites were problematic via tor
-# if 'sina.com.cn' in keys: keys.remove('sina.com.cn')
-# sitenum = 4
-# for (i, (name, counter_dict)) in enumerate(scenarios.items()):
-#     mplot.total_packets_in(counter_dict, keys[:sitenum], axes[i])
-#     subset = [counter_dict[x] for x in keys[:sitenum]]
-#     mm.set_if(min(min([scenario.tpi(v) for v in subset])),
-#               max(max([scenario.tpi(v) for v in subset])))
-#     axes[i].set_title('scenario: {}'.format(scenario.Scenario(name)))
-# for (i, _) in enumerate(scenarios):
-#     axes[i].set_xlim(mm.min, mm.max)
-# fig.text(0, 0.5, "relative histograms with kernel-density-estimation",
-#          va="center", rotation="vertical")
-# fig.tight_layout(rect=[0, 0.03, 1, 0.95])
-# plt.savefig("/tmp/total_packets_in_"
-#             + '_'.join(scenarios).replace('/', '___')+'__'
-#             +'_'.join(keys[:sitenum])+"__palette_colorblind.pdf")
 
 ## Confusion Matrix from Scenario
 # r = results.for_scenario(scenario.Scenario("disabled/bridge--2016-08-15"))[1]
