@@ -35,7 +35,7 @@ def run_exp(scenario, remove_small, or_level, auc_bound,
     config.REMOVE_SMALL = config.REMOVE_SMALL if remove_small is None else remove_small
     scenario_obj = scenario_module.Scenario(scenario)
     (tpr, fpr, auroc, C, gamma, accuracy) = analyse.simulated_open_world(
-        scenario_obj, auc_bound, binarize, background_size)
+        scenario_obj, auc_bound, binarize=binarize, bg_size=background_size)
     return {
         'C': C,
         'gamma': gamma,
