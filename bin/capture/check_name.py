@@ -7,6 +7,7 @@ import os
 import sys
 
 import config
+import utils
 
 
 def mkdiretc(type_name, prefix='', suffix=''):
@@ -57,9 +58,9 @@ if __name__ == "__main__":
 
     with open('status') as f:
         status = json.load(f)
-        prefix = ''
+        prefix = "google-" if utils.site(status) == "gcloud" else ""
         if status['config']['bridge'] == " (bridge unknown)":
-            prefix = 'no'
+            prefix += 'no'
         prefix += 'bridge'
         enabled = status['addon']['enabled']
         for (addon, is_enabled) in enabled.iteritems():

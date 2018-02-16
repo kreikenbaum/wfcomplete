@@ -24,22 +24,22 @@ import numpy as np
 import config
 import counter
 import mymetrics
+from capture import utils
 
 INT_REGEXP = re.compile("-?([+-]?[0-9]+.*)")
 
 NEW_DEFENSE = "new defense"
-OLD_HOST = 'duckstein'
 
 DIR = os.path.join(os.path.expanduser('~'), 'da', 'git', 'data')
-if os.uname()[1] == OLD_HOST:
+if os.uname()[1] == config.OLD_HOST:
     DIR = os.path.join('/mnt', 'large')
 RENAME = {
     "defense-client": "LLaMA",
     "disabled": "no defense"
 }
-for i in ["0.15.3", "0.18.2", "0.19", "0.20", "0.21", "0.22",
+for _ in ["0.15.3", "0.18.2", "0.19", "0.20", "0.21", "0.22",
           "simple2", "simple", config.COVER_NAME]:
-    RENAME[i] = NEW_DEFENSE
+    RENAME[_] = NEW_DEFENSE
 
 PATH_SKIP = [
     "../sw/w/, WANG14, knndata.zip",
@@ -71,7 +71,8 @@ class Scenario(object):
         if smart and not self.valid():
             self.path = list_all(self.path)[0].path
         # todo: rename scenarios, also in db, remove this call
-        path = _prepend_if_ends(self.path,
+        path = _prepend_if_ends(
+            self.path,
             'with-errors', 'with-errs', 'with7777', 'failure-in-between')
         (self.name, date) = path.rsplit('/', 1)
         numstr = None
@@ -204,7 +205,6 @@ class Scenario(object):
         domain_names = []
         for domain, dom_counters in self.get_traces().iteritems():
             if domain == "background":
-                bg = True
                 _trace_list_append(X, out_y, domain_names,
                                    dom_counters, "cumul", -1, "background")
             else:
@@ -262,16 +262,7 @@ class Scenario(object):
     @property
     def site(self):
         '''@return the site where this was captured'''
-        try:
-            host = self.status['host']
-        except TypeError:
-            host = OLD_HOST
-        if 'duckstein' in host:
-            return 'mlsec'
-        elif 'pioneering-mode-193216' in host:
-            return 'gcloud'
-        else:
-            logging.error("unknown host site for %s", host)
+        return utils.site(self.status)
 
     @property
     def open_world(self):
@@ -283,8 +274,7 @@ class Scenario(object):
         '''number of sites in this capture'''
         if hasattr(self, "_num_sites"):
             return self._num_sites
-        else:
-            return len(glob.glob(os.path.join(DIR, self.path, '*json')))
+        return len(glob.glob(os.path.join(DIR, self.path, '*json')))
 
     def size_increase(self, trace_dict=None):
         '''@return size overhead of this vs closest disabled scenario'''

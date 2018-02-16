@@ -4,6 +4,7 @@ MAIN="134.169.109.25"
 SAVETO="/mnt/data"
 MIN_CLASS_SIZE=30
 COVER_NAME="wf-cover"
+OLD_HOST="duckstein"
 # shell-only
 BRIDGE_LOGIN="mkreik@$BRIDGE"
 SITES="$HOME/sw/top/top-1m.csv.modified"

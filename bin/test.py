@@ -22,6 +22,7 @@ import mymetrics
 import scenario
 import results
 from capture import one_site
+from capture import utils
 
 config.FOLDS = 2
 
@@ -69,6 +70,17 @@ class TestCaptureOnesite(unittest.TestCase):
         one_site._check_text("hello\n\n\n\n")
         with self.assertRaises(TypeError):
             one_site._check_text("Reference #18\n\n\n\n")
+
+
+class TestCaptureUtils(unittest.TestCase):
+    '''tests the utils module'''
+
+    def test_site(self):
+        '''call site(), get results'''
+        self.assertEqual("mlsec", utils.site({"host": "duckstein"}))
+        self.assertEqual(
+            "gcloud",
+            utils.site({"host": "main-test.c.pioneering-mode-193216.internal"}))
 
 
 class TestConfig(unittest.TestCase):
