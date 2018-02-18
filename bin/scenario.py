@@ -248,7 +248,8 @@ class Scenario(object):
             try:
                 out[domain] = random.sample(trace_list, num)
             except ValueError:
-                logging.warn("size larger than total")
+                logging.warn("sample size for %s (%d) larger than total (%d)",
+                             domain, num, len(trace_list))
                 out[domain] = trace_list
         return out
 
