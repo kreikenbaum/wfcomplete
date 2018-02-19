@@ -104,6 +104,8 @@ class Scenario(object):
             if pre == self.name:
                 self.version = self.name
                 self.name = self.name.replace(pre, post)
+        if self.background:
+            self.trace_args['or_level'] = 0
 
     def __contains__(self, item):
         return item in self.path
@@ -166,18 +168,16 @@ class Scenario(object):
         return out
 
     @property
+    def background(self):
+        '''@return if this scenario is a background scenario'''
+        return self.path.endswith("@1")
+
+    @property
     def binary(self):
         '''@return if this scenario has only foreground and background traces'''
         return (
             self.traces
             and set(self.traces.keys()) == set(['foreground', 'background']))
-
-    def date_from_trace(self):
-        '''retrieve date from traces'''
-        self.trace_args = {'remove_small': False, 'or_level': 0}
-        all_traces = itertools.chain.from_iterable(self.get_traces().values())
-        first = min((x.starttime for x in all_traces))
-        return datetime.datetime.fromtimestamp(float(first)).date()
 
     @property
     def config(self):
@@ -195,6 +195,13 @@ class Scenario(object):
         except TypeError:
             pass
         return fromsettings
+
+    def date_from_trace(self):
+        '''retrieve date from traces'''
+        self.trace_args = {'remove_small': False, 'or_level': 0}
+        all_traces = itertools.chain.from_iterable(self.get_traces().values())
+        first = min((x.starttime for x in all_traces))
+        return datetime.datetime.fromtimestamp(float(first)).date()
 
     ## todo: codup counter.py?
     def get_features_cumul(self):
@@ -248,7 +255,7 @@ class Scenario(object):
             try:
                 out[domain] = random.sample(trace_list, num)
             except ValueError:
-                logging.warn("sample size for %s (%d) larger than total (%d)",
+                logging.warn("sample size for %s (%s) larger than total (%s)",
                              domain, num, len(trace_list))
                 out[domain] = trace_list
         return out
@@ -261,9 +268,11 @@ class Scenario(object):
         return self.traces
 
     @property
-    def site(self):
-        '''@return the site where this was captured'''
-        return utils.site(self.status)
+    def num_sites(self):
+        '''number of sites in this capture'''
+        if hasattr(self, "_num_sites"):
+            return self._num_sites
+        return len(glob.glob(os.path.join(DIR, self.path, '*json')))
 
     @property
     def open_world(self):
@@ -271,11 +280,9 @@ class Scenario(object):
         return self.traces and 'background' in self.traces
 
     @property
-    def num_sites(self):
-        '''number of sites in this capture'''
-        if hasattr(self, "_num_sites"):
-            return self._num_sites
-        return len(glob.glob(os.path.join(DIR, self.path, '*json')))
+    def site(self):
+        '''@return the site where this was captured'''
+        return utils.site(self.status)
 
     def size_increase(self, trace_dict=None):
         '''@return size overhead of this vs closest disabled scenario'''

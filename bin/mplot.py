@@ -171,7 +171,6 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False,
     if save:
         plt.savefig("/tmp/total_packets_in_"+'_'.join(subkeys)+".pdf")
 
-
 def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):
     '''plot tpi plots in subplots
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-'''starts tor-firefox -marionette and tshark, calls url parameter, stops both'''
+'''starts tor-browser -marionette, tests connection, starts tshark,
+loads url, finishes, stops both'''
 import collections
 import logging
 import os

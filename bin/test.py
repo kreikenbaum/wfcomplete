@@ -367,6 +367,11 @@ class TestScenario(unittest.TestCase):
         self.assertNotEqual(scenario.Scenario("0.20/0-ai--2016-06-25"),
                             scenario.Scenario("0.20/0-aii--2016-06-25"))
 
+    def test_background(self):
+        self.assertFalse(scenario.Scenario('disabled/2016-11-13').background)
+        s = scenario.Scenario('disabled/background--2016-08-17--4100@1')
+        self.assertTrue(s.background)
+
     def test_binarize_fake(self):
         c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]]
         bg_mock = {'background': c_list[:],
