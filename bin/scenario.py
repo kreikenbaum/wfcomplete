@@ -467,8 +467,9 @@ doctest.testmod(optionflags=doctest.ELLIPSIS)
 ### all scenarios with possible ow
 # with_ow = []
 # for scenario_obj in scenario.list_all():
-#     try:
-#         _ = scenario_obj._closest("@1", True, lambda x: scenario_obj._compareattr(x, "name", "config", "site"))
-#         with_ow.append(scenario_obj)
-#     except ValueError:
-#         pass
+#     if not results.for_scenario_ow(scenario_obj):
+#         try:
+#             _ = scenario_obj._closest("@1", True, lambda x: scenario_obj._compareattr(x, "name", "config", "site"))
+#             with_ow.append(scenario_obj)
+#         except ValueError:
+#             pass
