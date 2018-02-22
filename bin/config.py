@@ -27,10 +27,9 @@ def trace_args():
 #### CROSS-VALIDATION
 FOLDS = 10
 JOBS_NUM = -3
+VERBOSE = 0
 # JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
-### TESTING
+### TESTING / DEBUGGING
 #JOBS_NUM = 1; FOLDS = 2
 ## copy&paste:
-#config.JOBS_NUM = 1; config.FOLDS = 2
-
-VERBOSE = 0
+#config.JOBS_NUM = 1; config.FOLDS = 2; config.VERBOSE = 1

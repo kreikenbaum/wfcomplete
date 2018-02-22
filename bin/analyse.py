@@ -284,10 +284,7 @@ def simulated_open_world(scenario_obj, auc_bound=None, binarize=True,
     y_pred = model_selection.cross_val_predict(
         clf_noprob, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
     confmat = metrics.confusion_matrix(y, y_pred)
-    if binarize:
-        (tpr, fpr) = tpr_fpr(_binmat(confmat))[1]
-    else:
-        pass
+    (tpr, fpr) = tpr_fpr(_binmat(confmat))[1]
     C = clf_noprob.estimator.C
     gamma = clf_noprob.estimator.gamma
     if binarize: # can (easily) compute auroc

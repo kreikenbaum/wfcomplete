@@ -23,8 +23,9 @@ def _bounded_auc_eval(X, y, clf, y_bound):
 def _eval(X, y, clf, folds=config.FOLDS):
     '''evaluate estimator on X, y, @return result (ndarray)'''
     X = scale(X, clf)
-    return model_selection.cross_val_score(clf, X, y, cv=folds,
-                                           n_jobs=config.JOBS_NUM).mean()
+    return model_selection.cross_val_score(
+        clf, X, y, cv=folds, n_jobs=config.JOBS_NUM,
+        verbose=config.VERBOSE).mean()
 
 
 def _lb(*args, **kwargs):
@@ -74,7 +75,8 @@ def _sci_fit(C, gamma, step, X, y, scoring=None, probability=False):
     clf = model_selection.GridSearchCV(
         estimator=clf_default(probability=probability),
         param_grid={"estimator__C": cs, "estimator__gamma": gammas},
-        n_jobs=config.JOBS_NUM, verbose=0, cv=config.FOLDS, scoring=scoring)
+        n_jobs=config.JOBS_NUM, verbose=config.VERBOSE,
+        cv=config.FOLDS, scoring=scoring)
     return clf.fit(X, y)
 
 
@@ -205,9 +207,11 @@ def _middle(results, bestres):
 
 def roc(clf, X, y): # X_train, y_train, X_test, y_test):
     '''@return (fpr, tpr, thresholds, probabilities) of =clf= on adjusted data'''
-    y_predprob = model_selection.cross_val_predict(
-            clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
-            method="predict_proba")
+    y_predprob = model_selection.cross_val_predict(clf, X, y,
+                                                   cv=config.FOLDS,
+                                                   n_jobs=config.JOBS_NUM,
+                                                   verbose=config.VERBOSE,
+                                                   method="predict_proba")
     fprs, tprs, thresh = metrics.roc_curve(
         y, y_predprob[:, 1], mymetrics.pos_label(y))
     return fprs, tprs, thresh, y_predprob
@@ -230,7 +234,7 @@ def sci_grid(X, y, C=2**14, gamma=2**-10, step=2, scoring=None,
             estimator=clf_default(probability=True),
             param_grid={"estimator__C": np.logspace(-3, 3, base=2, num=7),
                         "estimator__gamma": np.logspace(-3, 3, base=2, num=7)},
-            n_jobs=config.JOBS_NUM, verbose=0, cv=config.FOLDS,
+            n_jobs=config.JOBS_NUM, verbose=config.VERBOSE, cv=config.FOLDS,
             scoring="roc_auc")
         clf.fit(X, y)
         return clf
