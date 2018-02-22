@@ -69,7 +69,7 @@ def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
     heatmap = sns.heatmap(df, annot=number_plot)
     loc, labels = plt.xticks()
     heatmap.set_xticklabels(labels, rotation=rotation)
-    heatmap.set_yticklabels(labels[::-1], rotation=90-rotation)
+    heatmap.set_yticklabels(labels, rotation=90-rotation)
     plt.title(title)
     plt.ylabel('True label')
     plt.xlabel('Predicted label')

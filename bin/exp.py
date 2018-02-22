@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+'''runs closed-world experiment'''
 import logging
 import os
 

@@ -248,7 +248,7 @@ class Scenario(object):
         return out
 
     def get_sample(self, num, random_seed=None):
-        '''@return sample of traces, each domain has num traces'''
+        '''@return sample of traces: each domain has num traces'''
         random.seed(random_seed)
         out = {}
         for (domain, trace_list) in self.get_traces().iteritems():
@@ -467,7 +467,7 @@ doctest.testmod(optionflags=doctest.ELLIPSIS)
 ### all scenarios with possible ow
 # with_ow = []
 # for scenario_obj in scenario.list_all():
-#     if not results.for_scenario_ow(scenario_obj):
+#     if not results.for_scenario_ow(scenario_obj): # this line is optional
 #         try:
 #             _ = scenario_obj._closest("@1", True, lambda x: scenario_obj._compareattr(x, "name", "config", "site"))
 #             with_ow.append(scenario_obj)

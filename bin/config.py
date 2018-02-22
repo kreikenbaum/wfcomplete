@@ -32,3 +32,5 @@ JOBS_NUM = -3
 #JOBS_NUM = 1; FOLDS = 2
 ## copy&paste:
 #config.JOBS_NUM = 1; config.FOLDS = 2
+
+VERBOSE = 0

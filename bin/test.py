@@ -39,12 +39,29 @@ class TestAnalyse(unittest.TestCase):
         self.bg_mock = {'background': self.c_list[:],
                         'a': self.c_list[:],
                         'b': self.c_list[:]}
+        # from sklearn metrics doc string
+        y_true = ["cat", "ant", "cat", "cat", "ant", "bird"]
+        y_pred = ["ant", "ant", "cat", "cat", "ant", "cat"]
+        self.cm = metrics.confusion_matrix(y_true, y_pred,
+                                           labels=["ant", "bird", "cat"])
 
     # todo: use doctest.DocFileSuite
     def test_doc(self):
         '''test all analyse's docstrings'''
         (fail_num, _) = doctest.testmod(analyse)
         self.assertEqual(0, fail_num)
+
+    def test_tprfpr(self):
+        '''test all tpr-fpr extraction'''
+        right_cm = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        self.assertEqual([(1, 0), (1, 0), (1, 0)],
+                         analyse.tpr_fpr(right_cm))
+#        wrong_cm = np.array([[0, 1, 0], [0, 0, 1], [1, 0, 0]])
+#        self.assertEqual([(0, 1), (0, 1), (0, 1)],
+#                         analyse.tpr_fpr(wrong_cm))
+        # ant: 2 tp (ant pred. as ant), 0 fn (ant as sth else), 1 fp  (cat pred. as ant), 3 fn (cat/bird pred. as cat)
+        self.assertEqual([(1.0, 0.25), (0.0, 0.0), (2./3, 1./3)],
+                         analyse.tpr_fpr(self.cm))
 
 
 class TestCaptureOnesite(unittest.TestCase):

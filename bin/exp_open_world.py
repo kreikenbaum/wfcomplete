@@ -1,5 +1,5 @@
 #! /usr/bin/env python
-'''runs open world experiment, the "sacred" experimentation framework'''
+'''runs open world experiment'''
 import logging
 import os
 import random

@@ -115,7 +115,7 @@ def _stop(y, step, result, previous, C=1, best=1, delta=0.01):
             and max([abs(x - result) for x in previous[-3:]]) < delta
             # > random guess
             and (result
-                 > best * 1.1 * max(collections.Counter(y).values()) / len(y))))
+                 > best * 1.01* max(collections.Counter(y).values()) / len(y))))
 
 
 def clf_default(**svm_params):
@@ -124,7 +124,8 @@ def clf_default(**svm_params):
         class_weight="balanced", **svm_params))
 
 
-def helper(trace_dict, outlier_removal=True, cumul=True, folds=config.FOLDS):
+def my_grid_helper(trace_dict, outlier_removal=True, cumul=True,
+                   folds=config.FOLDS):
     '''@return grid-search on trace_dict result (clf, results)'''
     if outlier_removal:
         trace_dict = counter.outlier_removal(trace_dict)
@@ -147,7 +148,6 @@ def my_grid(X, y, C=2**4, gamma=2**-4, step=2, results=None,
         scaler = None # guesstimate: one grid search per data set (TODO: refact)
     bestclf = None
     bestres = np.array([0])
-    #import pdb; pdb.set_trace()
     for c in _search_range(C, step):
         for g in _search_range(gamma, step):
             clf = clf_default(

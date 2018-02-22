@@ -263,14 +263,14 @@ picks best result'''
     if name is not None and name in ALL_MAP:
         clf = ALL_MAP[name]
     else:
-        clf = fit.helper(counter.outlier_removal(trace_dict, 2),
-                         cumul=True, folds=10)
+        clf = fit.my_grid_helper(counter.outlier_removal(trace_dict, 2),
+                                 cumul=True, folds=10)
         ALL_MAP[name] = clf
     print('10-fold result: {}'.format(clf.best_score_))
     return clf
 
 
-def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=True,
+def simulated_open_world(scenario_obj, auc_bound=None, binarize=True,
                          bg_size="auto"):
     '''@return metrics for open world experiment'''
     try:
@@ -278,15 +278,16 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=True,
     except ValueError:
         logging.error("no fitting background set found for %r", scenario_obj)
         raise
-    if binarize:
-        scenario_obj = scenario_obj.binarize()
     X, y, _ = scenario_obj.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
     (clf_noprob, accuracy, _) = fit.my_grid(X, y, auc_bound=auc_bound)
     y_pred = model_selection.cross_val_predict(
         clf_noprob, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
     confmat = metrics.confusion_matrix(y, y_pred)
-    (tpr, fpr) = tpr_fpr(_binmat(confmat))[1]
+    if binarize:
+        (tpr, fpr) = tpr_fpr(_binmat(confmat))[1]
+    else:
+        pass
     C = clf_noprob.estimator.C
     gamma = clf_noprob.estimator.gamma
     if binarize: # can (easily) compute auroc
@@ -301,6 +302,7 @@ def simulated_open_world(scenario_obj, auc_bound=0.1, binarize=True,
 
 
 def _binmat(confmat):
+    '''@return binarized confusion matrix: rows and columns 2-n summed up'''
     return np.array([[confmat[0, 0], sum(confmat[0, 1:])],
                      [sum(confmat[1:, 0]), sum(sum(confmat[1:, 1:]))]])
 
