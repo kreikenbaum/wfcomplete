@@ -23,7 +23,7 @@ def my_config():
     scenario = random.choice(scenario_module.list_all()).path
     or_level = None
     remove_small = None
-    auc_bound = 0.1
+    auc_bound = None
     background_size = 'auto' #, number, None
     binarize = True # fixed, unclear how to handle multi-class
 

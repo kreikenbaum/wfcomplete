@@ -51,10 +51,10 @@ class Result(object):
                                 'py/state', 'gamma'))
         try:
             size = len(entry['result']['sites'])
-        except KeyError:
-            size = entry['config']['size']
+        except (KeyError, TypeError):
+            size = _value_or_none(entry, 'config', 'size')
         try:
-            type_ = entry['result']['type']
+            type_ = _value_or_none(entry, 'result', 'type')
         except KeyError:
             if entry['status'] == 'COMPLETED':
                 type_ = "cumul"
@@ -64,8 +64,8 @@ class Result(object):
             open_world = entry['experiment']['name'] == 'wf_open_world'
             if open_world: #non-empty dict is True
                 open_world = {
-                    'fpr': entry['result']['fpr'],
-                    'tpr': entry['result']['tpr'],
+                    'fpr': _value_or_none(entry, 'result', 'fpr'),
+                    'tpr': _value_or_none(entry, 'result', 'tpr'),
                     'auroc': _value_or_none(entry, 'result', 'auroc'),
                     'auc_bound': _value_or_none(entry, 'config', 'auc_bound'),
                     'background_size': _value_or_none(
@@ -76,10 +76,15 @@ class Result(object):
             open_world = False
         size_overhead = _value_or_none(entry, 'result', 'size_increase')
         time_overhead = _value_or_none(entry, 'result', 'time_increase')
-        return Result(scenario.Scenario(entry['config']['scenario']),
-                      entry['result']['score'],
+        try:
+            scenario_obj = scenario.Scenario(entry['config']['scenario'])
+        except ValueError:
+            scenario_obj = "placeholder for scenario {}".format(
+                entry['config']['scenario'])
+        return Result(scenario_obj,
+                      _value_or_none(entry, 'result', 'score'),
                       git,
-                      entry['stop_time'],
+                      _value_or_none(entry, 'stop_time'),
                       type_,
                       size,
                       open_world,
@@ -158,7 +163,7 @@ def _value_or_none(entry, *steps):
         for step in steps:
             entry = entry[step]
         return entry
-    except (KeyError, IndexError):
+    except (KeyError, IndexError, TypeError):
         return None
 
 
@@ -200,8 +205,9 @@ def import_to_mongo(csvfile, size, measure="cumul"):
 
 def list_all(match=None, restrict=True, db=_db()):
     '''@return all runs (normally with scenario and score) that match match'''
-    matches = [{"config.scenario": {"$exists": 1}},
-               {"result.score": {"$exists": 1}}] if restrict else []
+    matches = [{"config.scenario": {"$exists": 1}}]
+    if restrict:
+        matches.append({"result.score": {"$exists": 1}})
     if match: matches.append(match)
     return [Result.from_mongoentry(x) for x in
             db.runs.find({"$and": matches})]
