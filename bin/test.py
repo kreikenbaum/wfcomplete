@@ -59,7 +59,7 @@ class TestAnalyse(unittest.TestCase):
 #        wrong_cm = np.array([[0, 1, 0], [0, 0, 1], [1, 0, 0]])
 #        self.assertEqual([(0, 1), (0, 1), (0, 1)],
 #                         analyse.tpr_fpr(wrong_cm))
-        # ant: 2 tp (ant pred. as ant), 0 fn (ant as sth else), 1 fp  (cat pred. as ant), 3 fn (cat/bird pred. as cat)
+        # ant: 2 tp (ant pred. as ant), 0 fn (ant as sth else), 1 fp  (cat pred. as ant), 3 fn (cat/bird pred. as cat) \to tp (tp+fn) = 2, rn (fp+tn) = 4
         self.assertEqual([(1.0, 0.25), (0.0, 0.0), (2./3, 1./3)],
                          analyse.tpr_fpr(self.cm))
 

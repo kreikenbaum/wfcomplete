@@ -79,8 +79,11 @@ class Result(object):
         try:
             scenario_obj = scenario.Scenario(entry['config']['scenario'])
         except ValueError:
-            scenario_obj = "placeholder for scenario {}".format(
-                entry['config']['scenario'])
+            if entry['status'] != "COMPLETED":
+                scenario_obj = "placeholder for scenario {}".format(
+                    entry['config']['scenario'])
+            else:
+                raise
         return Result(scenario_obj,
                       _value_or_none(entry, 'result', 'score'),
                       git,
