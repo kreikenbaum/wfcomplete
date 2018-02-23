@@ -811,6 +811,12 @@ following \cite{compgen}.
    :PROPERTIES:
    :CUSTOM_ID: sub3-defense
    :END:
+- why is this better
+  - application layer: where problem is
+  - in-browser: know which url visited
+  - can send specific cover traffic
+  - could even cache sizes dynamically in Bloom Filter
+
 The defense obfuscates web traffic: for each load of a website.
 
 The created traffic is based on the HTTP model \citep{newtrafficmodel}
@@ -820,6 +826,74 @@ retrieval's actual parameters are subtracted to set the amount of
 cover traffic for this web page. If the parameters are not known, they
 are guessed from the same distributions.
 
+
+- how does the defense work?
+  - each load, create cover traffic
+  - first (HTML) load is specific (panchenko): always create traffic
+  - other (resource, embedded HTML, etc) loads: sometimes create traffic
+  - how much traffic: determined per page, dynamically
+    - set at HTML load
+    - "pad" HTML size by additional traffic
+    - and sometimes "pad" embedded by additional traffic
+- solution design: augment/increase traffic
+  - apply to each web page request
+    1. see request
+    2. use http model
+       - for extra html size
+       - and number of requests
+    3. match requests' own size (predicted if unknown) to model
+    4. request additional data over request
+    5. on further requests, chance to request additional
+  - secondary solution: browser extension
+    - easy to install, configure, enable/disable on demand
+- HTTP traffic model
+  - long-tailed distributions
+    - (cut off)
+  - for both number of embedded resources and page/embedded sizes
+- how is the defense ensured
+  - code: some tests for simple modules
+  - lint
+  - by hand
+  - good parts
+  - evaluation
+
+
+#+BEGIN_QUOTE
+As shown by \citet{newton2005preserving}, naïve privacy-enabling
+methods can be surpassed using domain-specific properties. They showed
+two methods to be effective: randomizing information position and
+adding generic aspects.
+#+END_QUOTE
+
+#+BEGIN_QUOTE
+   300% time\citep{a-systematic2014}). In 2015, the stochastic
+   defenses of \citet{wang2015walkie} and \citet{wtfpad2015} much
+   lower overhead, were developed. This validates a stochastic
+   approach, yet improvements seem possible in two areas: (1) ease of
+   installation, and configurability, and (2) more-closely fitting
+   cover traffic generation.
+
+
+   At the start of the thesis, there existed mostly deterministic
+   general defenses with high overhead (e.g. over 220% bandwidth, and
+   300% time\citep{a-systematic2014}). During the course of this thesis, the
+   stochastic defenses of \citet{wang2015walkie} and \citet{wtfpad2015}
+   much lower overhead, were developed. This validates a stochastic
+   approach, yet improvements seem possible in two areas: (1) ease of
+   installation, and configurability, and (2) more-closely fitting
+   cover traffic generation.
+
+   Ad 1: \citet{wang2015walkie} alters the Firefox binary, while the
+   current version of \citet{wtfpad2015} needed much manual adjustment in
+   our attempts.
+
+   Ad 2: \citet{wang2015walkie} uses either a normal, or lognormal
+   distribution, not adjusting to HTTP-specifics, while \citet{wtfpad2015}
+   samples packets at the network layer. It aims at generally hiding
+   /that traffic occurs/, not just which website is visited, as it
+   derives its basic mechanism from \citet{ShWa-Timing06}.
+         - might even help against a global adversary, timing attacks, etc
+#+END_QUOTE
 
 Each request is potentially covered by a simultaneous cover-request,
 as seen in Algorithm \ref{algo1}. The algorithm randomly draws from
@@ -883,75 +957,6 @@ appropriate HTTP-related distributions \citep{newtrafficmodel}.
  provided by using Firefox's Addon-SDK. Add-ons can be downloaded via
  [[https://addons.mozilla.org][Mozilla's Addon Page]]. This also provides automatic addon updates.
 
-- how is the defense ensured
-  - code: some tests for simple modules
-  - lint
-  - by hand
-  - good parts
-  - evaluation
-- why is this better
-  - application layer: where problem is
-  - in-browser: know which url visited
-  - can send specific cover traffic
-  - could even cache sizes dynamically in Bloom Filter
-- how does the defense work?
-  - each load, create cover traffic
-  - first (HTML) load is specific (panchenko): always create traffic
-  - other (resource, embedded HTML, etc) loads: sometimes create traffic
-  - how much traffic: determined per page, dynamically
-    - set at HTML load
-    - "pad" HTML size by additional traffic
-    - and sometimes "pad" embedded by additional traffic
-- solution design: augment/increase traffic
-  - apply to each web page request
-    1. see request
-    2. use http model
-       - for extra html size
-       - and number of requests
-    3. match requests' own size (predicted if unknown) to model
-    4. request additional data over request
-    5. on further requests, chance to request additional
-  - secondary solution: browser extension
-    - easy to install, configure, enable/disable on demand
-- HTTP traffic model
-  - long-tailed distributions
-    - (cut off)
-  - for both number of embedded resources and page/embedded sizes
-
-
-#+BEGIN_QUOTE
-As shown by \citet{newton2005preserving}, naïve privacy-enabling
-methods can be surpassed using domain-specific properties. They showed
-two methods to be effective: randomizing information position and
-adding generic aspects.
-#+END_QUOTE
-   300% time\citep{a-systematic2014}). In 2015, the stochastic
-   defenses of \citet{wang2015walkie} and \citet{wtfpad2015} much
-   lower overhead, were developed. This validates a stochastic
-   approach, yet improvements seem possible in two areas: (1) ease of
-   installation, and configurability, and (2) more-closely fitting
-   cover traffic generation.
-
-
-   At the start of the thesis, there existed mostly deterministic
-   general defenses with high overhead (e.g. over 220% bandwidth, and
-   300% time\citep{a-systematic2014}). During the course of this thesis, the
-   stochastic defenses of \citet{wang2015walkie} and \citet{wtfpad2015}
-   much lower overhead, were developed. This validates a stochastic
-   approach, yet improvements seem possible in two areas: (1) ease of
-   installation, and configurability, and (2) more-closely fitting
-   cover traffic generation.
-
-   Ad 1: \citet{wang2015walkie} alters the Firefox binary, while the
-   current version of \citet{wtfpad2015} needed much manual adjustment in
-   our attempts.
-
-   Ad 2: \citet{wang2015walkie} uses either a normal, or lognormal
-   distribution, not adjusting to HTTP-specifics, while \citet{wtfpad2015}
-   samples packets at the network layer. It aims at generally hiding
-   /that traffic occurs/, not just which website is visited, as it
-   derives its basic mechanism from \citet{ShWa-Timing06}.
-         - might even help against a global adversary, timing attacks, etc
 ** Bloom Filter Basics
    :PROPERTIES:
    :CUSTOM_ID: sub3-bloomfilters
