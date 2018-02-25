@@ -260,11 +260,13 @@ def all_from_json(filename):
             removed += 1
             logging.debug('%s discarded', trace.name)
     if removed:
-        domain = out[0].domain
-        if domain != out[1].domain:
+        domains = set([x.domain for x in out])
+        if len(domains) > 1:
             domain = 'background set'
+        else:
+            domain = domains.pop()
         logging.info('discarded %d trace%s of %s',
-                     removed, 's' if removed != 1 else '', out[0].domain)
+                     removed, 's' if removed != 1 else '', domain)
     return out
 
 
