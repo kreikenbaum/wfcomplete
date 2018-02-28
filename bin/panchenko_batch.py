@@ -1,8 +1,5 @@
 #!/usr/bin/env python
-'''create batch/ -dir in current directory (or first argument) second
-argument is taken as outlier removal level, if it exists (else
-none)
-'''
+'''create batch/ -dir in current directory (or first argument)'''
 import sys
 import counter
 
