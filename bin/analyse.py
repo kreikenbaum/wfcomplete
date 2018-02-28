@@ -327,7 +327,7 @@ def closed_world(scenarios, def0, cumul=True, with_svm=True, common=False):
     :param: common determines whether to reduce the test data to
             common keys.
     '''
-    stats = {k: scenario._bytes_mean_std(v) for (k, v) in scenarios.iteritems()}
+    #stats = {k: scenario._mean_std(v, "total_bytes_in") for (k, v) in scenarios.iteritems()}
     # durations = {k: _average_duration(v) for (k,v) in scenarios.iteritems()}
 
     # no-split, best result of 10-fold tts
@@ -344,7 +344,7 @@ def closed_world(scenarios, def0, cumul=True, with_svm=True, common=False):
             clfs.append(SVC_TTS_MAP[def0])
         else:
             now = time.time()
-            (clf, _, _) = fit.helper(
+            (clf, _, _) = fit.my_grid_helper(
                 counter.outlier_removal(train, 2), cumul)
             logging.debug('parameter search took: %s', time.time() - now)
             if cumul:
@@ -370,7 +370,7 @@ def closed_world(scenarios, def0, cumul=True, with_svm=True, common=False):
             continue
         print('\ntrain: {} VS {} (overhead {}%)'.format(
             def0, scenario_path,
-            _size_increase(stats[def0], stats[scenario_path])))
+            scenario.size_increase(its_traces0, its_traces)))
         if common and its_traces.keys() != its_traces0.keys():
             # td: refactor code duplication with above (search for keys = ...)
             keys = set(its_traces0.keys())
