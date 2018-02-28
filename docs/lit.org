@@ -6312,6 +6312,62 @@ Vorläufiger Zeitplan
        - closed world for comparing
        - open world more realistic
     4. Data Collection
+       0. [@0]
+          - deep learning needs loads of data
+          - prior datasets had smaller sizes
+          - distributed cpture setup
+       1. [@A] Data collection methodology
+          - 15 machines, open-stack based private cloud
+            - each 4 CPUs, 4GB of RAM
+            - each 16 worker threads
+              - each with separate tor process
+              - each started tor browser, loaded web page
+                - 285 seconds to load, otherwise invalid
+                - 10 more seconds open after load
+              - network namespaces and tcpdump to isolate traffic
+          - extract metadata, discard payload
+            - timing, direction, size
+            - follow w&g (31) for Tor cells
+            - in the end, 1 and -1
+          - no fixed entry guard
+            - would have been overloaded
+            - agnostic
+       2. Datasets
+          0. [@0]
+             - no research which pages browsed to
+             - choice of websites not essential as long as consistent
+             - alexa top
+               - widely used
+             - plus two other datasets
+          1. Closed world
+             - up to 3000 traces
+             - 1200 most popular websites
+             - filter list to avoid differing by TLD (google.com and google.de)
+             - four iterations a 300 websites, split into 30 batches
+             - 14 days
+             - after *batch*, restart tor, remove data directories
+             - 3.6 million page visits
+             - filter timeout, browser crash, selenium rash
+               - remove websites with high amount of invalid visits
+               - compare hash of html content and "perceptual" screenshot hash
+                 - exactly same content for pages filtered
+               - filter no content, deny all requets, captcha
+             - balanced dataset: same number of traces for every site
+             - result: 900 sites with 2.500 traces each (CW_{900})
+               - subsets: CW100, 200, 500
+          2. Revisit over time
+             - top 200 sites, periodic
+             - 3 days, 10 days, 4, 6, 8 weeks
+          3. Open world: only for testing
+             - single instance
+             - 400000 Alexa websites
+             - and 2000 additional for CW_{200}
+             - 800000 traces
+       3. Ethical considerations & data access
+          - top websites: minor fraction
+          - Tor: 2 million concurrent clients, 240 are "minor fraction"
+          - data public
+    5. Evaluation
 *** quote
 *** ref [[file:master.bib::rimmerautomated][Rimmer et al.: Automated Website Fingerprinting Deep Learning]]
 ** TODO [#C](skim) [[./it2013..kloft_phd.pdf][Kloft - Kernel-Based Machine Learning with Multiple Sources of Information]]
