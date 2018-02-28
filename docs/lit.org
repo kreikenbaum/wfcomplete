@@ -6172,7 +6172,7 @@ Vorläufiger Zeitplan
            citations
          - how references are cited
          - how tables, figures and equations are cited
-** TODO [#B] [[./hastie.pdf][Hastie - The Elements of Statistical Learning]]               :ML:
+** TODO [#B] [[./hastie.pdf][Hastie - The Elements of Statistical Learning]]  [0/5]        :ML:
 *** TODO [#B] kloft: (Section *12.2*)
 *** TODO [#D] skim Section 13.3 (knn)
 *** TODO [#E] Sections 5.8, 14.5.4, 18.5 and Chapter 12
@@ -6394,6 +6394,34 @@ Vorläufiger Zeitplan
                       \xi_i \ge 0, \sum \xi_i \le constant
                 #+END_EXPORT
            1. Computing the Support Vector Classifier
+              - [[(esl-12.7)]] is a convex optimization problem, solvable
+                with Lagrange multipliers
+                - reexpress as min_{\beta, \beta_0} 1/2 ||\beta||^2 + C \sum_{i=1}^N \xi_i
+                  - C cost parameter, replaces "constant"
+              - Lagrange is
+                #+BEGIN_EXPORT latex
+                L_P =
+                1/2 ||\beta||^2
+                + C \sum_{i=1}^N \xi_i
+                - \sum_{i=1}^N \alpha_i[y_i(x_i^T \beta + \beta_0) - (1 - \xi_i)]
+                - \sum_{i=1}^N \mu_i \xi_i (ref:esl-12.9)
+                #+END_EXPORT
+              - minimize w.r.t \beta, \beta_0, \xi_i (derivative to 0), into [[(esl-12.9)]]
+              - Dual is
+                #+BEGIN_EXPORT latex
+                L_D =
+                \sum_{i=1}^N \alpha_i
+                - 1/2 \sum_{i=1}^N \sum_{i'=1}^N \alpha_i \alpha_{i'} y_i y_{i'} x_i^T x_{i'}
+                #+END_EXPORT
+              - Karush-Kuhn-Tucker constraints 12.14--12.16,
+              - 12.10--12.16 "uniquely characterize solution to L_P and L_D
+              - solution for \beta has form (\delta L_P / \delta \beta) (12.10)
+                #+BEGIN_EXPORT latex
+                \hat \beta = \sum_{i=1}^N \hat \alpha_i y_i x_i
+                #+END_EXPORT
+                - nonzero \hat \alpha_i with 12.6 exactly met: called support vectors
+                  - points in margin (0 < \hat \alpha_i < C)
+                  - or at edge \hat \alpha_i = C, \hat \xi_i = 0
         3. Support Vector Machines and Kernels
            0. [@0]
               - linear classifiers seperate input by hyperplanes
@@ -6752,7 +6780,30 @@ Vorläufiger Zeitplan
     - Gradient Descent
       - stochastic gradient descent: randomly draw i.i.d. sample, descend
         - paralellizable
-*** Lesson 3
+*** [[file:/home/web/keep/thesis/2016_ML1/Lecture03.pdf][Lesson 3]]
+    - last lesson: linear classifiers, f(x) = sgn(w^T x+b)
+      - fast + simple
+      - centroid: f(x) =  arg min_{y \in {-, +}} ||x - c_{y}||
+      - svm: separate data with largest margin
+        - fast, simple + accurate
+      - hard-margin-svm misclassify with outliers, fix with error terms
+    - here: svm as convex optimization, basics of convex optimization
+    - convex set X \subset R^d: all lines form points in set
+      \forall x_1, x_2 \in X, \theta \in [0,1]: (1-\theta)x_1 + \theta x_2 \in X
+    - convex function f: R^d \to R all points between are aboe graph
+      \forall x1, x2 \in X, \theta \in [0, 1]: f((1 - \theta) x_1 + \theta x2) \le (1 - \theta)f(x1) + \theta f(x2)
+      - example: linear, (parabola)
+    - optimization problem: f0, f1, ..., fn, g1, ..., gm: R^d \to R,
+      optimize f0 given equality limits g and borders f
+      - min(x \in R^d) f0(x)
+        - s.t. fi(x) \le 0, gj = 0
+      - f0: objective function
+      - fi inequality constraints
+      - gj equality constraints
+      - feasible set X_{feas} := {x \in R^d: fi(x) \le 0, gj(x) = 0 \forall ij}
+    - convex optimization problem: f0, f1, ..., fn convex, gj linear
+      - write g as Bx = b
+    - linear program min c^T x, s.t. Ax \le a, Bx = b
 ** TODO [#B] [[~web/keep/thesis/10.1.1.115.3644.pdf][Müller - An Introduction to Kernel-Based Learning Algorithms]]
 *** summary
     1. Introduction
