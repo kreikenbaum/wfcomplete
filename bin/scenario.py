@@ -66,7 +66,7 @@ class Scenario(object):
         self.path = os.path.normpath(name)
         if name in PATH_SKIP or skip:
             self.name = name
-            logging.info("skipped " + name)
+            logging.debug("skipped " + name)
             return
         if smart and not self.valid():
             self.path = list_all(self.path)[0].path
