@@ -290,7 +290,7 @@ class TestFit(unittest.TestCase):
         clf, _, _ = fit.my_grid(self.X, self.y, auc_bound=0.01)
         fpr, tpr, _, _ = fit.roc(clf, self.X, self.y)
         # 2. check that fpr/tpr has good structure (rises straight up to 0.9fpr)
-        self.assertAlmostEqual(tpr[1], 0.9)#, '{}\n{}'.format(zip(tpr, fpr), clf))
+        self.assertAlmostEqual(tpr[1], 0.9, '{}\n{}'.format(zip(tpr, fpr), clf))
         self.assertAlmostEqual(fpr[1], 0)#, zip(tpr, fpr))
 
 class TestMymetrics(unittest.TestCase):

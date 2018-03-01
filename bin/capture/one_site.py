@@ -4,6 +4,7 @@ loads url, finishes, stops both'''
 import collections
 import logging
 import os
+import psutil
 import socket
 import subprocess
 import sys
@@ -24,7 +25,7 @@ FIREFOX_PATH = os.path.join(os.getenv("HOME"), 'bin', 'tor-browser_en-US',
 
 PROBLEMATIC_DELAY = [
     "test tor network settings",
-    "loading ..." # seen one time at pornhub.com
+    "loading ..."  # seen one time at pornhub.com
 ]
 PROBLEMATIC_TEXT = [
     "test tor network settings"
@@ -39,13 +40,15 @@ PROBLEMATIC_TEXT = [
     "buy this domain",
     "your browser will redirect to your requested content shortly",
     "verify you're a human to continue",
-    "captcha", # deprecated: could be contained otherwise (but worked well)
-    "403 forbidden" # also deprecated: could be contained otherwise
+    "captcha",  # deprecated: could be contained otherwise (but worked well)
+    "403 forbidden"  # also deprecated: could be contained otherwise
 ]
+
 
 # cheap hack
 def _avoid_safe_mode(exedir):
-    '''avoids safe mode by removing the line which contains count of failures'''
+    '''Avoids safe mode.
+    Removes the line which contains count of failures.'''
     os.system(r"sed -i '/toolkit\.startup\.recent_crashes/d' " +
               os.path.join(exedir, "TorBrowser", "Data", "Browser",
                            "profile.default", "prefs.js"))
@@ -53,7 +56,7 @@ def _avoid_safe_mode(exedir):
 
 def browse_to(page, bridge=None):
     '''creates a browser instance, packet dump, browses to page, kills both.
-    If bridge is not none, it is an IP-address. Just capture traffic to that.'''
+    If bridge is not none, it is an IP-address. Capture traffic to that.'''
     browser = _open_browser()
     _open_with_timeout(browser, page, bridge=bridge)
 
@@ -143,11 +146,7 @@ def _open_browser(exe=FIREFOX_PATH + ' -marionette', open_timeout=60):
     env_with_debug["LD_LIBRARY_PATH"] = '/lib:/usr/lib:' + (
         exedir + '/TorBrowser/Tor')
     _avoid_safe_mode(exedir)
-    #print 'lpath: %s' % env_with_debug["LD_LIBRARY_PATH"]
-# maybe remove lines below
-#    browser =
-#    subprocess.Popen(args=['/home/mkreik/bin/tor-browser_en-US/Browser/firefox','-marionette'],
-#    cwd=exedir, stdout=subprocess.PIPE, env=env_with_debug);
+    # print 'lpath: %s' % env_with_debug["LD_LIBRARY_PATH"]
     browser = subprocess.Popen(
         args=[exewholepath, exeargs], cwd=exedir, stdout=subprocess.PIPE,
         stderr=open(os.path.join(config.SAVETO, ERRFILENAME), "a"),
@@ -175,7 +174,8 @@ def _open_packet_dump(page, bridge):
     if not bridge:
         return (subprocess.Popen(['tshark', '-w' + loc]), loc)
     else:
-        return (subprocess.Popen(['tshark', '-w' + loc, 'host ' + bridge]), loc)
+        return (subprocess.Popen(['tshark', '-w' + loc, 'host ' + bridge]),
+                loc)
 
 
 def _open_with_timeout(browser, page, timeout=600, burst_wait=3, bridge=None):
@@ -185,7 +185,12 @@ def _open_with_timeout(browser, page, timeout=600, burst_wait=3, bridge=None):
 
     '''
     client = Marionette('localhost', port=2828, socket_timeout=(timeout-30))
-    client.start_session()
+    try:
+        client.start_session()
+    except socket.timeout:
+        for process in psutil.process_iter():
+            if process.name() == "firefox":
+                process.kill()
 
     (url, domain) = _normalize_url(page)
 
