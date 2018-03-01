@@ -201,7 +201,7 @@ def _open_with_timeout(browser, page, timeout=600, burst_wait=3, bridge=None):
     thread.daemon = True
     thread.start()
 
-    #td: this is code duplication for both _open functions
+    # todo: this is code duplication for both _open functions
     start = time.time()
     while thread.is_alive():
         time.sleep(.1)
@@ -242,17 +242,22 @@ class CaptureError(Exception):
     '''raised when capture text is buggy'''
     def __init__(self, message):
         self.message = message
+
     def __repr__(self):
         return repr(self.message)
+
     def __str__(self):
         return self.message
+
 
 class DelayError(Exception):
     '''raised when capture needs to wait a bit (text is missing or greeter)'''
     def __init__(self, message):
         self.message = message
+
     def __repr__(self):
         return 'DelayError({!r})'.format(self.message)
+
     def __str__(self):
         return repr(self)
 
