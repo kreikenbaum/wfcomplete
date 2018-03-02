@@ -409,8 +409,8 @@ class TestScenario(unittest.TestCase):
         s.traces = bg_mock
         Xa, ya, _ = s.binarize().get_features_cumul()
         Xc, yc, _ = counter.to_features_cumul(bg_mock)
-        yc = fit._lb(yc, transform_to=1)
-        self.assertTrue(np.array_equal(ya, yc), "ya: {}\nyc: {}".format(ya, yc))
+        yc = list(mymetrics.binarize(yc, transform_to=1))
+        self.assertTrue(np.array_equal(ya, yc), "ya:{}\nyc:{}".format(ya, yc))
         self.assertTrue(np.array_equal(Xa, Xc))
 
     @unittest.skipIf(QUICK, "slow test skipped")
