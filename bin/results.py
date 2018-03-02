@@ -15,6 +15,7 @@ from sklearn import multiclass, svm
 import pymongo
 
 import scenario
+from capture import utils
 
 
 def _db():
@@ -107,9 +108,10 @@ class Result(object):
 
     def get_classifier(self, probability=True):
         '''@return classifier that achieved this result'''
-        return multiclass.OneVsRestClassifier(
-            svm.SVC(C=self.C, gamma=self.gamma, class_weight="balanced",
-                    probability=probability))
+        return utils.clf_default(
+            C=self.C, gamma=self.gamma,
+            class_weight=None if self.open_world else "balanced",
+            probability=probability)
 
     def save(self, db=_db()):
         '''saves entry to mongodb if new'''

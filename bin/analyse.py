@@ -288,7 +288,7 @@ def simulated_open_world(scenario_obj, auc_bound=None, binarize=True,
     C = clf_noprob.estimator.C
     gamma = clf_noprob.estimator.gamma
     if binarize: # can (easily) compute auroc
-        clf = fit.clf_default(C=C, gamma=gamma, probability=True)
+        clf = fit.clf_default(y, C=C, gamma=gamma, probability=True)
         y_predprob = model_selection.cross_val_predict(
             clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
             method="predict_proba")

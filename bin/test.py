@@ -21,8 +21,8 @@ import fit
 import mymetrics
 import scenario
 import results
-from capture import one_site
-from capture import utils
+from capture import one_site, utils
+
 
 config.FOLDS = 2
 
@@ -504,12 +504,33 @@ class TestScenario(unittest.TestCase):
                                100/3.)
 #                               100.*(pow(2, 1./3)-1))#harmonic
 
-
     def test__compute_increase_three_one_reverted(self):
         self.assertAlmostEqual(scenario._compute_increase(
             {'a': (10, -1), 'b': (10, -1), 'c': (20, -1)}, self.base_mock2),
                                250./3-100)
 #                               100.*(pow(1./2, 1./3)-1))#harmonic
+
+
+class TestUtils(unittest.TestCase):
+    def setUp(self):
+        self.base_mock = {'a': (10, -1), 'b': (10, -1)}
+        self.base_mock2 = {'a': (10, -1), 'b': (10, -1), 'c': (10, -1)}
+        logging.disable(logging.WARNING)
+
+    def tearDown(self):
+        logging.disable(logging.NOTSET)
+
+    def test_doc(self):
+        (fail_num, _) = doctest.testmod(scenario)
+        self.assertEqual(0, fail_num)
+
+    def test_clf_default(self):
+        clf = utils.clf_default()
+        self.assertFalse(clf.estimator.class_weight)
+        clf = utils.clf_default([-1, 1])
+        self.assertFalse(clf.estimator.class_weight)
+        clf = utils.clf_default([0, 1])
+        self.assertTrue(clf.estimator.class_weight)
 
 
 class MockWriter(object):

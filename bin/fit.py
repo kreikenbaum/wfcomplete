@@ -3,12 +3,13 @@ from __future__ import print_function
 import collections
 import doctest
 import logging
-from sklearn import model_selection, metrics, multiclass, preprocessing, svm
+from sklearn import model_selection, metrics, preprocessing
 import numpy as np
 
 import config
 import counter
 import mymetrics
+from capture import utils
 
 scaler = None
 
@@ -69,7 +70,7 @@ def _sci_fit(C, gamma, step, X, y, scoring=None, probability=False):
     cs = _search_range(C, step)
     gammas = _search_range(gamma, step)
     clf = model_selection.GridSearchCV(
-        estimator=clf_default(probability=probability),
+        estimator=utils.clf_default(y, probability=probability),
         param_grid={"estimator__C": cs, "estimator__gamma": gammas},
         n_jobs=config.JOBS_NUM, verbose=config.VERBOSE,
         cv=config.FOLDS, scoring=scoring)
@@ -115,12 +116,6 @@ def _stop(y, step, result, previous, C=1, delta=0.01):
             and result > 1.01 / len(set(y))))
 
 
-def clf_default(**svm_params):
-    '''@return default classifier with additional params'''
-    return multiclass.OneVsRestClassifier(svm.SVC(
-        class_weight="balanced", **svm_params))
-
-
 def my_grid_helper(trace_dict, outlier_removal=True, cumul=True,
                    folds=config.FOLDS):
     '''@return grid-search on trace_dict result (clf, results)'''
@@ -142,13 +137,13 @@ def my_grid(X, y, C=2**4, gamma=2**-4, step=2, results=None,
     if not results:
         previous = []
         results = {}
-        scaler = None # guesstimate: one grid search per data set (TODO: refact)
+        scaler = None  # guesstimate: one grid search per data set (TD: refact)
     bestclf = None
     bestres = np.array([0])
     for c in _search_range(C, step):
         for g in _search_range(gamma, step):
-            clf = clf_default(
-                gamma=g, C=c, probability=(True if auc_bound else False))
+            clf = utils.clf_default(
+                y, gamma=g, C=c, probability=(True if auc_bound else False))
             if (c, g) in results:
                 current = results[(c, g)]
             else:
@@ -166,8 +161,9 @@ def my_grid(X, y, C=2**4, gamma=2**-4, step=2, results=None,
         if collections.Counter(results.values())[bestres] > 1:
             logging.warn('more than 1 optimal result, "middle" clf returned')
             best_C, best_gamma = _middle(results, np.mean(bestres))
-            bestclf = clf_default(C=best_C, gamma=best_gamma,
-                                  probability=(True if auc_bound else False))
+            bestclf = utils.clf_default(
+                y, C=best_C, gamma=best_gamma,
+                probability=(True if auc_bound else False))
         logging.info('grid result: %s', bestclf)
         return Result(bestclf, np.mean(bestres), results)
     best_C = best_gamma = None
@@ -225,7 +221,7 @@ def sci_grid(X, y, C=2**14, gamma=2**-10, step=2, scoring=None,
     '''
     if simple:
         clf = model_selection.GridSearchCV(
-            estimator=clf_default(probability=True),
+            estimator=utils.clf_default(y, probability=True),
             param_grid={"estimator__C": np.logspace(-3, 3, base=2, num=7),
                         "estimator__gamma": np.logspace(-3, 3, base=2, num=7)},
             n_jobs=config.JOBS_NUM, verbose=config.VERBOSE, cv=config.FOLDS,
