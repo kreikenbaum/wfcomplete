@@ -80,6 +80,13 @@ def _check_text(text, file_name=None, client=None):
     return True
 
 
+def _clean_up():
+    '''remove lurking processes'''
+    for process in psutil.process_iter():
+        if process.name() in ["tshark", "firefox"]:
+            process.kill()
+
+
 def _get_page_text(client):
     '''@return text of client's HTML page'''
     return client.find_element(marionette_driver.By.TAG_NAME, "body").text
@@ -126,6 +133,7 @@ def _handle_exception(exception, file_name, client):
         os.rename(file_name, to)
     except OSError as e:
         logging.warn("error renaming %s to %s\n%s", file_name, to, e)
+        _clean_up()
     _write_text(client, to)
 
 
@@ -188,9 +196,9 @@ def _open_with_timeout(browser, page, timeout=600, burst_wait=3, bridge=None):
     try:
         client.start_session()
     except socket.timeout:
-        for process in psutil.process_iter():
-            if process.name() == "firefox":
-                process.kill()
+        _kill(browser)
+        _clean_up()
+        raise
 
     (url, domain) = _normalize_url(page)
 
