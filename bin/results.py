@@ -16,8 +16,10 @@ import pymongo
 
 import scenario
 
+
 def _db():
     return pymongo.MongoClient(serverSelectionTimeoutMS=10).sacred
+
 
 class Result(object):
     def __init__(self, scenario_, accuracy, git, time, type_, size,
@@ -39,7 +41,6 @@ class Result(object):
         self.C = C
         self.src = src
 
-
     @staticmethod
     def from_mongoentry(entry):
         git = _value_or_none(entry, 'experiment', 'repositories', 0, 'commit')
@@ -47,8 +48,8 @@ class Result(object):
              _value_or_none(entry, 'result', 'clf', 'py/state', 'estimator',
                             'py/state', 'C'))
         gamma = (_value_or_none(entry, 'result', 'gamma') or
-                 _value_or_none(entry, 'result', 'clf', 'py/state', 'estimator',
-                                'py/state', 'gamma'))
+                 _value_or_none(entry, 'result', 'clf', 'py/state',
+                                'estimator', 'py/state', 'gamma'))
         try:
             size = len(entry['result']['sites'])
         except (KeyError, TypeError):
@@ -62,7 +63,7 @@ class Result(object):
                 raise
         try:
             open_world = entry['experiment']['name'] == 'wf_open_world'
-            if open_world: #non-empty dict is True
+            if open_world:  # non-empty dict is True
                 open_world = {
                     'fpr': _value_or_none(entry, 'result', 'fpr'),
                     'tpr': _value_or_none(entry, 'result', 'tpr'),
@@ -122,12 +123,12 @@ class Result(object):
         else:
             logging.debug("%s@%s already in db", self.scenario, self.date)
 
-
     # add overhead-helper for those experiments that lacked it
     def _add_oh(self):
         self.update(
             {"result.size_increase": self.scenario.size_increase(),
              "result.time_increase": self.scenario.time_increase()})
+
     def update(self, addthis, db=_db()):
         '''updates entry in db to also include addthis'''
         db.runs.find_one_and_update({"_id": self._id}, {"$set": addthis})
@@ -172,7 +173,10 @@ def _value_or_none(entry, *steps):
 
 def for_scenario(scenario_obj):
     return [x for x in list_all() if x.scenario == scenario_obj]
-
+def for_scenario_cw(scenario_obj):
+    return [x for x in for_scenario(scenario_obj) if not x.open_world]
+def for_scenario_ow(scenario_obj):
+    return [x for x in for_scenario(scenario_obj) if x.open_world]
 def for_scenario_smartly(scenario_obj):
     if scenario_obj.open_world:
         out = for_scenario_ow(scenario_obj)
@@ -182,12 +186,6 @@ def for_scenario_smartly(scenario_obj):
             return [x for x in out if not x.open_world['binary']]
     else:
         return for_scenario_cw(scenario_obj)
-
-def for_scenario_cw(scenario_obj):
-    return [x for x in for_scenario(scenario_obj) if not x.open_world]
-
-def for_scenario_ow(scenario_obj):
-    return [x for x in for_scenario(scenario_obj) if x.open_world]
 
 
 def import_to_mongo(csvfile, size, measure="cumul"):
@@ -211,7 +209,8 @@ def list_all(match=None, restrict=True, db=_db()):
     matches = [{"config.scenario": {"$exists": 1}}]
     if restrict:
         matches.append({"result.score": {"$exists": 1}})
-    if match: matches.append(match)
+    if match:
+        matches.append(match)
     return [Result.from_mongoentry(x) for x in
             db.runs.find({"$and": matches})]
 
@@ -222,13 +221,13 @@ def sized(size):
 #                            {"result.sites": {"$size": 10}}]})
 
 
-def to_table(results): #, fields, names=None):
+def to_table(results):  # , fields, names=None):
     '''@return table of results as a string'''
     import prettytable
     tbl = prettytable.PrettyTable()
     tbl.field_names = [
         "scenario", "accuracy [%]", "size increase [%]", "time increase [%]"]
-    #names if names else fields
+    # names if names else fields
     for result in results:
         tbl.add_row([result.scenario.name,
                      result.score,
@@ -243,18 +242,18 @@ if __name__ == "__main__":
     print(_next_id())
 
 
-### import csv to mongodb
+# ### import csv to mongodb
 # import_to_mongo(open('/home/uni/da/git/data/results/10sites.csv'), 10)
 
-### add overheads to each scenario once
+# ### add overheads to each scenario once
 # a = list(_duplicates(["config.scenario", "result.score", "result.size_increase", "result.time_increase", "status"]))
 # todos = [x['_id'] for x in a if len(x['result_size_increase']) == 0]
 # for t in todo: os.system('''~/da/git/bin/exp.py -e with 'scenario = "{}"' '''.format(t.scenario.path))
 # for t in todos: print(t); list_all({"config.scenario": t})[-1]._add_oh()
 # # some non-existing ones were pop()ped from todos
-#db.runs.update({_id: 23}, {$set: {"stabus": "FABLED"}})
+# db.runs.update({_id: 23}, {$set: {"stabus": "FABLED"}})
     
-### result with closest ...
+# ### result with closest ...
 # b = [x for x in list_all() if x.scenario.name == '0.22' and x.size_overhead]
 # min(b, key=lambda x: abs(size - x.size_overhead))
 # c = [x for x in list_all() if x.scenario.name == '0.22' and x.time_overhead]
@@ -263,11 +262,11 @@ if __name__ == "__main__":
 # min(d, key=lambda x: abs(0.63 - x.score))
 # min(d, key=lambda x: abs(0.26 - x.score))
 
-### scatter plot of accuracy vs overhead
+# ### scatter plot of accuracy vs overhead
 # import results, mplot
 # b = [x for x in results.list_all() if (x.scenario.name == 'new defense' or 'defense-client-nodelay' in x.scenario or 'disabled' in x.scenario) and x.scenario.num_sites == 30]
 # plot = mplot.accuracy_vs_overhead(b)
-## plot through
+# ## plot through
 # d30 = pd.DataFrame([x.__dict__ for x in results.list_all() if x.scenario.num_sites == 30 and '0.22' in x.scenario.name])
 # a = d30[['size_overhead', 'score']]
 # a.drop_duplicates(inplace=True) # and dropna()
@@ -278,7 +277,7 @@ if __name__ == "__main__":
 # plt.plot(b, [out.eval(x=x) for x in b], color=sns.color_palette("colorblind")[2])) #color: hack, but worked
 
 
-### flavor comparison: no clear picture, but I seems better than II (bII fails)
+# ### flavor comparison: no clear picture, but I seems better than II (bII fails)
 # def color(pandas_result):
 #     if 'defense-client' in pandas_result: return 'red'
 #     if 'aII' in pandas_result: return 'yellow'
@@ -288,32 +287,32 @@ if __name__ == "__main__":
 #     return 'grey'
 # c['color'] = c['scenario'].map(color)
 
-### mongodb
-## update element
+# ### mongodb
+# ## update element
 # db.runs.update({"_id" : 359}, {$unset: {'result.size_increase': 0}})
-## remove element (id found through result._id, this had wrong scenario name)
+# ## remove element (id found through result._id, this had wrong scenario name)
 # db.runs.remove({_id: 486})
 
-### CREATE RESULTS ON DUCKSTEIN
-## list from [[file:scenario.py::##%20scenarios%20without%20result]]
+# ### CREATE RESULTS ON DUCKSTEIN
+# ## list from [[file:scenario.py::##%20scenarios%20without%20result]]
 # mkreik@duckstein:~$ for i in 'disabled/bridge--2017-10-08' ... 'defense-client-nodelay/bridge--2017-09-25'; do exp.py with scenario=$i; done
 
-### rough plot all of size 30
+# ### rough plot all of size 30
 # import pandas as pd
 # import results
-#d30 = pd.DataFrame([x.__dict__ for x in results.list_all() if x.scenario.num_sites == 30])
+# d30 = pd.DataFrame([x.__dict__ for x in results.list_all() if x.scenario.num_sites == 30])
 # d30.plot.scatter('size_overhead', 'score')
 
-### list all scenarios without results
+# ### list all scenarios without results
 # a = {s: len(results.for_scenario(s)) for s in scenario.list_all()}
 # [name for (name, count) in a.iteritems() if count == 0]
 
-### rename scenario in db (old in git/data/skip/dump_before_scenario_rename)
-#a = results.list_all()
-#replace = [r for r in a if r.src['config']['scenario'].rstrip('/') != r.scenario.path]
-#for c in replace: c.update({"config.scenario": c.scenario.path})
-#for e in [r for r in a if 'llama' in r.src['config']['scenario'].lower()]:
-#    e.update({"config.scenario": e.src['config']['scenario'].replace("llama", "defense-client")})
-## by hand in db
-#db.runs.update({_id: 55}, {$set: {"config.scenario": "disabled/06-09-2016--10@30"}})
-#db.runs.updateMany({"config.scenario": "disabled/06-09@10"}, {$set: {"config.scenario": "disabled/06-09-2016--10@30"}})
+# ### rename scenario in db (old in git/data/skip/dump_before_scenario_rename)
+# a = results.list_all()
+# replace = [r for r in a if r.src['config']['scenario'].rstrip('/') != r.scenario.path]
+# for c in replace: c.update({"config.scenario": c.scenario.path})
+# for e in [r for r in a if 'llama' in r.src['config']['scenario'].lower()]:
+#     e.update({"config.scenario": e.src['config']['scenario'].replace("llama", "defense-client")})
+# ## by hand in db
+# db.runs.update({_id: 55}, {$set: {"config.scenario": "disabled/06-09-2016--10@30"}})
+# db.runs.updateMany({"config.scenario": "disabled/06-09@10"}, {$set: {"config.scenario": "disabled/06-09-2016--10@30"}})

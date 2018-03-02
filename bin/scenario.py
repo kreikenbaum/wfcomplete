@@ -343,18 +343,20 @@ def list_all(in_name=None, include_bg=False, filter_scenario=None, path=DIR):
 def _filter_all(all_, include_bg):
     '''Filter out specific cases for scenario names,
     @param include_bg if True include background scenarios, else omit'''
-    out = [x for x in all_ if (not '/batch' in x
-                               and not '/broken' in x
-                               and not '/foreground-data' in x
-                               and not '/or' in x
-                               and not '/output' in x
-                               and not '/ow' in x
-                               and not '/p_batch' in x
-                               and not '/skip' in x
-                               and (include_bg
-                                    or (not '/background' in x
-                                        and not '/bg' in x
-                                        and not x.endswith("@1"))))]
+    out = [x for x in all_ if (
+        '/batch' not in x
+        and '/broken' not in x
+        and '/features' not in x
+        and '/foreground-data' not in x
+        and '/or' not in x
+        and '/output' not in x
+        and '/ow' not in x
+        and '/p_batch' not in x
+        and '/skip' not in x
+        and (include_bg
+             or ('/background' not in x
+                 and '/bg' not in x
+                 and not x.endswith("@1"))))]
     out[:] = [x for (i, x) in enumerate(out[:-1]) if (
         x not in out[i+1]
         or x+'-with-errors' == out[i+1])] + [out[-1]]
@@ -430,15 +432,16 @@ def _trace_list_append(X, y, y_names, trace_list, method, list_id, name):
         else:
             logging.warn('%s: one discarded', name)
 
+
 doctest.testmod(optionflags=doctest.ELLIPSIS)
-## parse older "json" status
+# ## parse older "json" status
 # json.loads(b.status.replace("'", '"').replace('False', 'false').replace('u"', '"'))
 
-## scenarios without result
-#a = {x: len(results.for_scenario(x)) for x in scenario.list_all()}
-# filter(lambda x: x not in ',[]', str([x[0].path for x in filter(lambda x: x[1] == 0, a.iteritems())])) # unfiltered starts with ...[x[0
+# ## scenarios without result
+# a = {x: len(results.for_scenario(x)) for x in scenario.list_all()}
+#  filter(lambda x: x not in ',[]', str([x[0].path for x in filter(lambda x: x[1] == 0, a.iteritems())])) # unfiltered starts with ...[x[0
 
-## weird scenario
+# ## weird scenario
 # import mplot
 # import results
 # from sklearn import model_selection, preprocessing
@@ -451,20 +454,20 @@ doctest.testmod(optionflags=doctest.ELLIPSIS)
 #                                                      n_jobs=config.JOBS_NUM)
 # c = mplot.confusion(y, y_pred, domains, rotation=90)
 
-### number of LOAD FAILURES PER SITE
+# ### number of LOAD FAILURES PER SITE
 # a = scenario.Scenario("defense-client/bridge--2018-01-07--30@50")
 # a.trace_args['remove_small'] = False # optional, keeps too-small sites
 # ([(name, len(traces)) for (name, traces) in a.get_traces().iteritems()]
-## proportion of errors
+# ## proportion of errors
 # 1 - np.mean([len(traces) for traces in a.get_traces().values()]) / 50
 
-### create TABLE IN EVALUATION, compare results
-## size overheads
+# ### create TABLE IN EVALUATION, compare results
+# ## size overheads
 # sorted([x for x in results.list_all() if 'new defense' in x.scenario.name], key=lambda x: abs(x.size_overhead - 163.08) if x.size_overhead else 100000)
-## score
+# ## score
 # sorted([x for x in results.list_all() if 'new defense' in x.scenario.name], key=lambda x: abs(x.score - 0.6822))
 
-### all scenarios with possible ow
+# ### all scenarios with possible ow
 # with_ow = []
 # for scenario_obj in scenario.list_all():
 #     if not results.for_scenario_ow(scenario_obj): # this line is optional

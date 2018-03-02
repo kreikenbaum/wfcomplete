@@ -14,6 +14,7 @@ scaler = None
 
 Result = collections.namedtuple('Result', ['clf', 'best_score_', 'results'])
 
+
 def _bounded_auc_eval(X, y, clf, y_bound):
     '''evaluate clf X, y, give bounded auc score, 1 is positive class label'''
     X = scale(X, clf)
@@ -26,11 +27,6 @@ def _eval(X, y, clf, folds=config.FOLDS):
     return model_selection.cross_val_score(
         clf, X, y, cv=folds, n_jobs=config.JOBS_NUM,
         verbose=config.VERBOSE).mean()
-
-
-def _lb(*args, **kwargs):
-    '''facade for list(binarize(...))'''
-    return list(mymetrics.binarize(*args, **kwargs))
 
 
 def scale(X, clf):
@@ -93,7 +89,7 @@ def _search_range(best_param, step=1):
             best_param * expstep**2]
 
 
-def _stop(y, step, result, previous, C=1, best=1, delta=0.01):
+def _stop(y, step, result, previous, C=1, delta=0.01):
     '''@return True if grid should stop
 
     >>> _stop([1,1,2,2,3,3], 0.0001, 0.5, 0.4) # stop due to step
@@ -116,8 +112,7 @@ def _stop(y, step, result, previous, C=1, best=1, delta=0.01):
             # result  with similar values
             and max([abs(x - result) for x in previous[-3:]]) < delta
             # > random guess
-            and (result
-                 > best * 1.01* max(collections.Counter(y).values()) / len(y))))
+            and result > 1.01 / len(set(y))))
 
 
 def clf_default(**svm_params):
@@ -167,8 +162,7 @@ def my_grid(X, y, C=2**4, gamma=2**-4, step=2, results=None,
                 bestres = current
             logging.info('c: %8s g: %15s res: %.6f', c, g, current.mean())
     previous.append(np.mean(bestres))
-    if _stop(y, step, np.mean(bestres), previous, C, best=(auc_bound if
-                                                           auc_bound else 1)):
+    if _stop(y, step, np.mean(bestres), previous, C):
         if collections.Counter(results.values())[bestres] > 1:
             logging.warn('more than 1 optimal result, "middle" clf returned')
             best_C, best_gamma = _middle(results, np.mean(bestres))
@@ -241,7 +235,6 @@ def sci_grid(X, y, C=2**14, gamma=2**-10, step=2, scoring=None,
     previous = []
 
     clf = _sci_fit(C, gamma, step, X, y, scoring, probability)
-    #import pdb; pdb.set_trace()
     while not _stop(y, step, clf.best_score_, previous):
         logging.info('C: %s, gamma: %s, step: %s, score: %f',
                      clf.best_params_['estimator__C'],
