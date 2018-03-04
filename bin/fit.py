@@ -113,7 +113,7 @@ def _stop(y, step, result, previous, C=1, delta=0.01):
             # result  with similar values
             and max([abs(x - result) for x in previous[-3:]]) < delta
             # > random guess
-            and result > 1.01 / len(set(y))))
+            and result > 1.05 / len(set(y))))
 
 
 def my_grid_helper(trace_dict, outlier_removal=True, cumul=True,
@@ -171,10 +171,10 @@ def my_grid(X, y, C=2**4, gamma=2**-4, step=2, results=None,
         logging.warn("more than 1 optimal result")
         best_C, best_gamma = _middle(results, bestres)
     elif ((bestclf.estimator.C in (_search_range(C, step)[0],
-                                _search_range(C, step)[-1])
-        or bestclf.estimator.gamma in (_search_range(gamma, step)[0],
-                                           _search_range(gamma, step)[-1]))
-        and collections.Counter(results.values())[bestres] == 1):
+                                   _search_range(C, step)[-1])
+           or bestclf.estimator.gamma in (_search_range(gamma, step)[0],
+                                          _search_range(gamma, step)[-1]))
+          and collections.Counter(results.values())[bestres] == 1):
         logging.warn('optimal at border. c:%f, g:%f, score: %f',
                      bestclf.estimator.C, bestclf.estimator.gamma, bestres)
     else:
@@ -182,6 +182,7 @@ def my_grid(X, y, C=2**4, gamma=2**-4, step=2, results=None,
     return my_grid(X, y, best_C or bestclf.estimator.C, best_gamma or
                    bestclf.estimator.gamma, step, results,
                    previous=previous, auc_bound=auc_bound)
+
 
 def _middle(results, bestres):
     '''@return "middle" value with best results'''
@@ -195,13 +196,11 @@ def _middle(results, bestres):
     return best_C, best_gamma
 
 
-def roc(clf, X, y): # X_train, y_train, X_test, y_test):
+def roc(clf, X, y):  # X_train, y_train, X_test, y_test):
     '''@return (fpr, tpr, thresholds, probabilities) of =clf= on adjusted data'''
-    y_predprob = model_selection.cross_val_predict(clf, X, y,
-                                                   cv=config.FOLDS,
-                                                   n_jobs=config.JOBS_NUM,
-                                                   verbose=config.VERBOSE,
-                                                   method="predict_proba")
+    y_predprob = model_selection.cross_val_predict(
+        clf, X, y, method="predict_proba",
+        cv=config.FOLDS, n_jobs=config.JOBS_NUM, verbose=config.VERBOSE)
     fprs, tprs, thresh = metrics.roc_curve(
         y, y_predprob[:, 1], mymetrics.pos_label(y))
     return fprs, tprs, thresh, y_predprob

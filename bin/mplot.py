@@ -1,5 +1,4 @@
 '''plotting methods using matplotlib'''
-import itertools
 import re
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -8,14 +7,16 @@ import pandas as pd
 import seaborn as sns
 # should be external, maybe in analyse?
 from sklearn import metrics, model_selection, preprocessing
-sns.set() #sns.set_style("darkgrid")
-sns.set_palette("colorblind") # optional, uglier, but helpful
 
 import config
 import counter
 import mymetrics
 import scenario
 import results
+
+sns.set()  # sns.set_style("darkgrid")
+sns.set_palette("colorblind")  # optional, uglier, but helpful
+
 
 def _color(name, all_names, palette="colorblind"):
     '''@return color for scatter plot: colors from colorblind palette
@@ -34,7 +35,9 @@ def accuracy_vs_overhead(result_list, title="Size Overhead to Accuracy"):
     '''plots scatter plot of results's accuracy vs overhead'''
     df = pd.DataFrame([x.__dict__ for x in result_list])
     names = set([x.name for x in df['scenario']])
-    color = lambda x: _color(x.name, names)
+
+    def color(x):
+        return _color(x.name, names)
     df['color'] = df['scenario'].map(color)
     df = df.rename(columns={'size_overhead': 'Size Overhead [%]',
                             'score': 'Accuracy'})
@@ -56,7 +59,9 @@ def confusion_matrix_helper(scenario_obj, **kwargs):
     y_pred = model_selection.cross_val_predict(
         r.get_classifier(), X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
     return confusion_matrix(
-        y, y_pred, yd, 'Confusion matrix for {}'.format(scenario_obj), **kwargs)
+        y, y_pred, yd,
+        'Confusion matrix for {}'.format(scenario_obj), **kwargs)
+
 
 def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
                      rotation=90, normalize=False, number_plot=False):
@@ -81,11 +86,13 @@ def date_accuracy(size=30):
     '''@return accuracy over time for disabled data of size =size='''
     scenarios = [x for x in results.list_all() if x.scenario.num_sites == size and 'no defense' in x.scenario.name]
     df = pd.DataFrame([x.__dict__ for x in scenarios])
-    df = df.rename(columns={'score': 'Accuracy'}) # todo: * 100 and ..cy [%]
+    df = df.rename(columns={'score': 'Accuracy'})  # todo: * 100 and ..cy [%]
     df['Scenario Date [ordinal]'] = df['scenario'].map(
         lambda x: x.date.toordinal())
-    plot = df.plot.scatter('Scenario Date [ordinal]', 'Accuracy') # todo2:here2
-    plot.legend(handles=[mpatches.Patch(color=sns.color_palette("colorblind", 1)[0], label=scenarios[0].name)])
+    plot = df.plot.scatter('Scenario Date [ordinal]', 'Accuracy')  # here, too?
+    plot.legend(handles=[mpatches.Patch(
+        color=sns.color_palette("colorblind", 1)[0],
+        label=scenarios[0].name)])
     plot.set_title("Accuracy Ratio by Date (on {} sites)".format(size))
     plot.set_ybound(0, 1)
     plt.tight_layout()
@@ -104,21 +111,23 @@ def _init_roc(titleadd=None):
     plt.title(title)
     return out
 
+
 def roc_helper(result, axes=None):
-    assert result.open_world and result.open_world['binary'], "non-owbin result"
+    assert result.open_world and result.open_world['binary'], "no-owbin result"
     num = result.open_world['background_size']
     auc_bound = result.open_world['auc_bound']
     scenario_obj = result.scenario.get_open_world(num).binarize()
     X, y, _ = scenario_obj.get_features_cumul()
-    X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
+    X = preprocessing.MinMaxScaler().fit_transform(X)  # scaling is idempotent
     y_pred = model_selection.cross_val_predict(
         result.get_classifier(True), X, y,
         cv=config.FOLDS, n_jobs=config.JOBS_NUM, method="predict_proba")
     fpr_array, tpr_array, _ = metrics.roc_curve(
         y, y_pred[:, 1], mymetrics.pos_label(y))
-    return fpr_array, tpr_array, roc(fpr_array, tpr_array,
-               '({}), max_fpr: {}, background_size: {}'.format(
-                   scenario_obj, auc_bound, num, axes))
+    return fpr_array, tpr_array, roc(
+        fpr_array, tpr_array, '({}), max_fpr: {}, background_size: {}'.format(
+            scenario_obj, auc_bound, num, axes))
+
 
 def roc(fpr, tpr, titleadd=None, fig=None, dot=0.01):
     '''@return fig object with roc curve, use =.savefig(filename)=
@@ -127,13 +136,12 @@ to save, and =.show()= to display.
         if dot > 0, draw a dot at this fpr rate (<1)'''
     if not fig:
         fig = _init_roc(titleadd)
-    curve = plt.plot(
-        fpr, tpr,
-        label='{} (AUC = {:0.2f})'.format("ROC-curve", metrics.auc(fpr, tpr)))
-    #one_percent = [y for (x, y) in zip(fpr, tpr) if x >= 0.01][0]
-    #line = plt.plot([0, 1], [one_percent] *2, "red", label='1% false positives')
+    plt.plot(fpr, tpr, label='{} (AUC = {:0.2f})'.format(
+        "ROC-curve", metrics.auc(fpr, tpr)))
+    # one_percent = [y for (x, y) in zip(fpr, tpr) if x >= 0.01][0]
+    # line = plt.plot([0, 1], [one_percent] *2, "red", label='1% false positives')
     if dot:
-        x1, y1 = [(x,y) for (x, y) in zip(fpr, tpr) if x < dot][-1]
+        x1, y1 = [(x, y) for (x, y) in zip(fpr, tpr) if x < dot][-1]
         plt.plot(x1, y1, "ro",
                  label='{:2.2f}% false-, {:2.2f}% true positives'.format(
                      x1*100, y1*100))
@@ -151,10 +159,11 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False,
     - plot size histogram colored by domain
       - with kde
     Usage:
-       total_packets_in(scenarios.values()[0], scenarios.values()[0].keys()[:4])
+    total_packets_in(scenarios.values()[0], scenarios.values()[0].keys()[:4])
     '''
     plt.xscale("log")
-    if not subkeys: subkeys = counter_dict.keys()
+    if not subkeys:
+        subkeys = counter_dict.keys()
     for domain in subkeys:
         #        sns.distplot(stats.tpi(v), hist=False, rug=True, label=k)
         c = color(domain) if color else None
@@ -170,13 +179,12 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False,
         ax.legend()
     if save:
         plt.savefig("/tmp/total_packets_in_"+'_'.join(subkeys)+".pdf")
-
 def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):
     '''plot tpi plots in subplots
 
     example input:
-names = ['disabled/bridge--2016-07-06', 'wtf-pad/bridge--2016-07-05', 'tamaraw']
-names = {x.path: x.get_traces() for x in scenario_list}
+    names = ['disabled/bridge--2016-07-06', 'wtf-pad/bridge--2016-07-05']
+    names = {x.path: x.get_traces() for x in scenario_list}
     '''
     if not trace_dicts:
         trace_dicts = [scenario.Scenario(name).get_traces() for name in names]
@@ -184,7 +192,8 @@ names = {x.path: x.get_traces() for x in scenario_list}
     plt.suptitle("Number of incoming packets per trace")
     mm = counter.MinMaxer()
     keys = set(trace_dicts[0].keys())
-    if 'sina.com.cn' in keys: keys.remove('sina.com.cn')
+    if 'sina.com.cn' in keys:
+        keys.remove('sina.com.cn')
     for other_dict in trace_dicts[1:]:
         keys = keys.intersection(other_dict.keys())
         keys = list(keys)[:sitenum]
