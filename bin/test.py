@@ -284,21 +284,21 @@ class TestFit(unittest.TestCase):
     def test_ow_random_plus(self):
         '''tests some class bleed-off: some positives with same
         feature as negatives'''
-        #self.X, self.y = _init_X_y(self.size)
         self.X = [(1.01, 1.01)] * (9 * self.size / 10)
         self.X.extend(np.random.random_sample((11 * self.size / 10, 2)))
         clf, _, _ = fit.my_grid(self.X, self.y, auc_bound=0.01)
         fpr, tpr, _, _ = fit.roc(clf, self.X, self.y)
-        # 2. check that fpr/tpr has good structure (rises straight up to 0.9fpr)
+        # 2. check that fpr/tpr has good structure (rises directly to 0.9fpr)
         self.assertAlmostEqual(tpr[1], 0.9, '{}\n{}'.format(zip(tpr, fpr), clf))
-        self.assertAlmostEqual(fpr[1], 0)#, zip(tpr, fpr))
+        self.assertAlmostEqual(fpr[1], 0, zip(tpr, fpr))
+
 
 class TestMymetrics(unittest.TestCase):
     '''tests the counter module'''
     def setUp(self):
         self.size = 100
         self.X, self.y = _init_X_y(self.size)
-        logging.disable(logging.WARNING) # change to .INFO or disable for debug
+        logging.disable(logging.WARNING)  # change to .INFO / disable for debug
         self.old_jobs = config.JOBS_NUM
         config.JOBS_NUM = 1
 

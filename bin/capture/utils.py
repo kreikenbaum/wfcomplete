@@ -10,7 +10,7 @@ def clf_default(y=None, **svm_params):
     '''@return default classifier with additional params
 
     set class_weight="balanced" if y represents foreground data'''
-    if y and -1 not in y:
+    if y is not None and -1 not in y:
         svm_params['class_weight'] = "balanced"
     return multiclass.OneVsRestClassifier(svm.SVC(**svm_params))
 
