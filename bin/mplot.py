@@ -51,21 +51,46 @@ def accuracy_vs_overhead(result_list, title="Size Overhead to Accuracy"):
     return plot
 
 
-def confusion_matrix_helper(scenario_obj, **kwargs):
-    '''creates a confusion matrix plot for scenario_obj'''
+def confusion_matrix_from_result(result, **kwargs):
+    '''creates a confusion matrix plot for result
+
+    @return  (confusion_helper output, scenario object)'''
+    scenario_obj = result.scenario
+    if result.open_world:
+        scenario_obj = scenario_obj.get_open_world(
+            result.open_world['background_size'])
+    if result.open_world['binary']:
+        scenario_obj = scenario_obj.binarize()
+    return (confusion_matrix_helper(
+        result.get_classifier(), scenario_obj, **kwargs),
+            scenario_obj)
+
+def confusion_matrix_from_scenario(scenario_obj, **kwargs):
+    '''creates a confusion matrix plot for scenario_obj
+
+    @return  (confusion_helper output, result object)
+    '''
+    r = max(results.for_scenario_smartly(scenario_obj), key=lambda x: x.score)
+    return (confusion_matrix_helper(
+        r.get_classifier(), scenario_obj, **kwargs),
+            r)
+
+def confusion_matrix_helper(clf, scenario_obj, **kwargs):
+    '''@return (confusion_matrix output, y_pred)'''
     X, y, yd = scenario_obj.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X)
-    r = max(results.for_scenario_smartly(scenario_obj), key=lambda x: x.score)
     y_pred = model_selection.cross_val_predict(
-        r.get_classifier(), X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
-    return confusion_matrix(
+        clf, X, y,
+        cv=config.FOLDS, n_jobs=config.JOBS_NUM, verbose=config.VERBOSE)
+    return (confusion_matrix(
         y, y_pred, yd,
-        'Confusion matrix for {}'.format(scenario_obj), **kwargs)
-
+        'Confusion matrix for {}'.format(scenario_obj), **kwargs), y_pred)
 
 def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
                      rotation=90, normalize=False, number_plot=False):
-    '''plots confusion matrix'''
+    '''plots confusion matrix
+
+    @return (confusion matrix, heatmap plot)'''
     confmat = metrics.confusion_matrix(y_true, y_pred)
     domainnames = [x[1] for x in sorted(set(zip(y_true, domains)))]
     df = pd.DataFrame(confmat, index=domainnames, columns=domainnames)
@@ -112,7 +137,7 @@ def _init_roc(titleadd=None):
     return out
 
 
-def roc_helper(result, axes=None):
+def roc_helper_owbin(result, axes=None):
     assert result.open_world and result.open_world['binary'], "no-owbin result"
     num = result.open_world['background_size']
     auc_bound = result.open_world['auc_bound']
@@ -120,8 +145,8 @@ def roc_helper(result, axes=None):
     X, y, _ = scenario_obj.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X)  # scaling is idempotent
     y_pred = model_selection.cross_val_predict(
-        result.get_classifier(True), X, y,
-        cv=config.FOLDS, n_jobs=config.JOBS_NUM, method="predict_proba")
+        result.get_classifier(True), X, y, method="predict_proba",
+        cv=config.FOLDS, n_jobs=config.JOBS_NUM, verbose=config.VERBOSE)
     fpr_array, tpr_array, _ = metrics.roc_curve(
         y, y_pred[:, 1], mymetrics.pos_label(y))
     return fpr_array, tpr_array, roc(
