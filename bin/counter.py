@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''aggregates trace data, extracts features'''
-import collections
+import datetime
 import doctest
 import errno
 import glob
@@ -18,9 +18,11 @@ import numpy as np
 import config
 import logconfig
 
+AFTER_CAPTURE = datetime.date(2020, 1, 1)
+BEFORE_CAPTURE = datetime.date(2010, 1, 1)
 DURATION_LIMIT_SECS = 8 * 60
 PROTOCOL_DISCARD = re.compile('ARP|CDP|ICMP|IGMP|LLMNR|SSDP|SSH|STP|UDP')
-
+PCAP_NAME = re.compile(r".*@([0-9]*)")
 
 TOR_DATA_CELL_SIZE = 512
 
@@ -32,16 +34,17 @@ SCENARIOS = [{}, {}, {}, {}]
 # module-globals
 json_only = False
 
+
 def _append_features(keys, filename):
     '''appends features in trace file of name "filename" to keys.
 
     keys is a dictionary, indexed by domain, holding arrays of Counter'''
     domain = _extract_url(filename)
-    if not keys.has_key(domain):
+    if domain not in keys:  # .has_key(domain):
         keys[domain] = []
     counter = Counter.from_pcap(filename)
-    # filtered on json import, this keeps all load failures for later statistics
-    if counter.packets and not counter.warned: # and counter.check():
+    #  filtered on json import: keep load failures for later statistics
+    if counter.packets and not counter.warned:
         counter.check()
         keys[domain].append(counter)
     else:
@@ -231,7 +234,7 @@ def all_from_dir(dirname, remove_small=True, or_level=0):
 
     length = len(filenames)
     for i, filename in enumerate(filenames):
-        if TIME_SEPARATOR in os.path.basename(filename):  # file like google.com@1445350513
+        if _name_ok(os.path.basename(filename)):
             logging.info('processing (%d/%d) %s ', i + 1, length, filename)
             json_only = False
             _append_features(out, filename)
@@ -246,6 +249,15 @@ def all_from_dir(dirname, remove_small=True, or_level=0):
     if remove_small:
         return _remove_small_classes(out)
     return out
+
+
+def _name_ok(filename):
+    '''@return whether filename is a pcap name (google.com@1445350513)'''
+    match = PCAP_NAME.findall(filename)
+    if not match:
+        return False
+    itsdate = datetime.datetime.fromtimestamp(float(match[0]))
+    return BEFORE_CAPTURE < itsdate.date() < AFTER_CAPTURE
 
 
 def all_from_json(filename):
