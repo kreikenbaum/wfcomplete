@@ -468,11 +468,13 @@ doctest.testmod(optionflags=doctest.ELLIPSIS)
 # sorted([x for x in results.list_all() if 'new defense' in x.scenario.name], key=lambda x: abs(x.score - 0.6822))
 
 # ### all scenarios with possible ow
-# with_ow = []
+# import scenario, results
+# ow_possible = []
 # for scenario_obj in scenario.list_all():
-#     if not results.for_scenario_ow(scenario_obj): # this line is optional
+#     if not [r for r in results.for_scenario_ow(scenario_obj)
+#             if not r.open_world['binary'] and not r.open_world['auc_bound']]: # this line is optional
 #         try:
 #             _ = scenario_obj._closest("@1", True, lambda x: scenario_obj._compareattr(x, "name", "config", "site"))
-#             with_ow.append(scenario_obj)
+#             ow_possible.append(scenario_obj)
 #         except ValueError:
 #             pass

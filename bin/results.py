@@ -10,8 +10,6 @@ import datetime
 import doctest
 import logging
 
-from sklearn import multiclass, svm
-
 import pymongo
 
 import scenario
@@ -173,12 +171,19 @@ def _value_or_none(entry, *steps):
         return None
 
 
+
 def for_scenario(scenario_obj):
     return [x for x in list_all() if x.scenario == scenario_obj]
+
+
 def for_scenario_cw(scenario_obj):
     return [x for x in for_scenario(scenario_obj) if not x.open_world]
+
+
 def for_scenario_ow(scenario_obj):
     return [x for x in for_scenario(scenario_obj) if x.open_world]
+
+
 def for_scenario_smartly(scenario_obj):
     if scenario_obj.open_world:
         out = for_scenario_ow(scenario_obj)
@@ -188,6 +193,7 @@ def for_scenario_smartly(scenario_obj):
             return [x for x in out if not x.open_world['binary']]
     else:
         return for_scenario_cw(scenario_obj)
+
 
 
 def import_to_mongo(csvfile, size, measure="cumul"):
@@ -254,7 +260,7 @@ if __name__ == "__main__":
 # for t in todos: print(t); list_all({"config.scenario": t})[-1]._add_oh()
 # # some non-existing ones were pop()ped from todos
 # db.runs.update({_id: 23}, {$set: {"stabus": "FABLED"}})
-    
+
 # ### result with closest ...
 # b = [x for x in list_all() if x.scenario.name == '0.22' and x.size_overhead]
 # min(b, key=lambda x: abs(size - x.size_overhead))

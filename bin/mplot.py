@@ -50,33 +50,35 @@ def accuracy_vs_overhead(result_list, title="Size Overhead to Accuracy"):
     plt.tight_layout()
     return plot
 
-
+# import mplot, results, config, pickle
+# r = [r for r in results.list_all() if "2018" in r.scenario and "disabled" in r.scenario and r.open_world][-1]
+# config.JOBS_NUM = 3; config.FOLDS = 3; config.VERBOSE = 3
+# out = mplot.confusion_matrix_from_result(r)
+# pickle.dump(out, file("out.pickle", "w"))
 def confusion_matrix_from_result(result, **kwargs):
     '''creates a confusion matrix plot for result
 
-    @return  (confusion_helper output, scenario object)'''
+    @return  confusion_helper output'''
     scenario_obj = result.scenario
     if result.open_world:
         scenario_obj = scenario_obj.get_open_world(
             result.open_world['background_size'])
     if result.open_world['binary']:
         scenario_obj = scenario_obj.binarize()
-    return (confusion_matrix_helper(
-        result.get_classifier(), scenario_obj, **kwargs),
-            scenario_obj)
+    return confusion_matrix_helper(result.get_classifier(), scenario_obj,
+                                   **kwargs) #, scenario_obj)
 
 def confusion_matrix_from_scenario(scenario_obj, **kwargs):
     '''creates a confusion matrix plot for scenario_obj
 
-    @return  (confusion_helper output, result object)
+    @return confusion_helper output
     '''
     r = max(results.for_scenario_smartly(scenario_obj), key=lambda x: x.score)
-    return (confusion_matrix_helper(
-        r.get_classifier(), scenario_obj, **kwargs),
-            r)
+    return confusion_matrix_helper(r.get_classifier(), scenario_obj, **kwargs)
+#  , r)
 
 def confusion_matrix_helper(clf, scenario_obj, **kwargs):
-    '''@return (confusion_matrix output, y_pred)'''
+    '''@return (confusion_matrix output, y_true, y_pred, y_domains)'''
     X, y, yd = scenario_obj.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X)
     y_pred = model_selection.cross_val_predict(
@@ -84,16 +86,18 @@ def confusion_matrix_helper(clf, scenario_obj, **kwargs):
         cv=config.FOLDS, n_jobs=config.JOBS_NUM, verbose=config.VERBOSE)
     return (confusion_matrix(
         y, y_pred, yd,
-        'Confusion matrix for {}'.format(scenario_obj), **kwargs), y_pred)
+        'Confusion matrix for {}'.format(scenario_obj), **kwargs),
+            y, y_pred, yd)
 
 def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
                      rotation=90, normalize=False, number_plot=False):
     '''plots confusion matrix
 
-    @return (confusion matrix, heatmap plot)'''
+    @return (confusion matrix dataframe, heatmap plot)'''
     confmat = metrics.confusion_matrix(y_true, y_pred)
     domainnames = [x[1] for x in sorted(set(zip(y_true, domains)))]
     df = pd.DataFrame(confmat, index=domainnames, columns=domainnames)
+    # todo: df.columns.name = "True"; df.index.name = "Predicted"
     if normalize:
         df = df / df.sum(axis=1)
     heatmap = sns.heatmap(df, annot=number_plot)
@@ -104,7 +108,7 @@ def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.tight_layout()
-    return (confmat, heatmap)
+    return (df, heatmap)
 
 
 def date_accuracy(size=30):
