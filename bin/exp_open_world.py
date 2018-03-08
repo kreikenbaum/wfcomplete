@@ -11,8 +11,7 @@ from sacred.observers import MongoObserver
 
 import analyse
 import config
-import fit
-import scenario as scenario_module # "scenario" name already used
+import scenario as scenario_module  # "scenario" name already used
 
 ex = Experiment('wf_open_world')
 ex.observers.append(MongoObserver.create())
@@ -26,6 +25,8 @@ def my_config():
     auc_bound = None
     background_size = 'auto' #, number, None
     binarize = True # fixed, unclear how to handle multi-class
+    exclude_sites = []
+
 
 # code duplication exp.py
 @ex.capture
@@ -64,13 +65,14 @@ def my_main(scenario):
     db = pymongo.MongoClient().sacred
     if scenario in db.runs.distinct(
             "config.scenario",
-             {"status": "COMPLETED", "experiment.mainfile": "exp_open_world.py"}):
+            {"status": "COMPLETED",
+             "experiment.mainfile": "exp_open_world.py"}):
         logging.warn("scenario already in database")
     return run_exp()
 
-## inspect database:
+# ## inspect database:
 # use sacred; db.runs.aggregate([{$match: {"$and": [{"config.scenario": {"$exists": 1}}, {"result.score": {"$exists": 1}}]}}, {$project: {"config.scenario": 1, "result.score": 1}},{$group: {_id: "$config.scenario", "score": {$max: "$result.score"}}}])
-## check duplicates
+# ## check duplicates
 # db.runs.aggregate([{"$match": {"$and": [
 #         {"config.scenario": {"$exists": 1}},
 #         {"result.score": {"$exists": 1}}]}},

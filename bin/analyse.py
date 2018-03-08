@@ -271,13 +271,18 @@ picks best result'''
 
 
 def simulated_open_world(scenario_obj, auc_bound=None, binarize=True,
-                         bg_size="auto"):
+                         bg_size="auto", exclude_sites=[]):
     '''@return metrics for open world experiment'''
     try:
         scenario_obj = scenario_obj.get_open_world(num=bg_size, same=True)
     except ValueError:
         logging.error("no fitting background set found for %r", scenario_obj)
         raise
+    for site in exclude_sites:
+        try:
+            del scenario_obj.traces[site]
+        except KeyError:
+            pass
     X, y, _ = scenario_obj.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
     (clf_noprob, accuracy, _) = fit.my_grid(X, y, auc_bound=auc_bound)
