@@ -50,6 +50,8 @@ def accuracy_vs_overhead(result_list, title="Size Overhead to Accuracy"):
     plt.tight_layout()
     return plot
 
+
+
 # import mplot, results, config, pickle
 # r = [r for r in results.list_all() if "2018" in r.scenario and "disabled" in r.scenario and r.open_world][-1]
 # config.JOBS_NUM = 3; config.FOLDS = 3; config.VERBOSE = 3
@@ -68,6 +70,7 @@ def confusion_matrix_from_result(result, **kwargs):
     return confusion_matrix_helper(result.get_classifier(), scenario_obj,
                                    **kwargs) #, scenario_obj)
 
+
 def confusion_matrix_from_scenario(scenario_obj, **kwargs):
     '''creates a confusion matrix plot for scenario_obj
 
@@ -76,6 +79,7 @@ def confusion_matrix_from_scenario(scenario_obj, **kwargs):
     r = max(results.for_scenario_smartly(scenario_obj), key=lambda x: x.score)
     return confusion_matrix_helper(r.get_classifier(), scenario_obj, **kwargs)
 #  , r)
+
 
 def confusion_matrix_helper(clf, scenario_obj, **kwargs):
     '''@return (confusion_matrix output, y_true, y_pred, y_domains)'''
@@ -89,6 +93,7 @@ def confusion_matrix_helper(clf, scenario_obj, **kwargs):
         'Confusion matrix for {}'.format(scenario_obj), **kwargs),
             y, y_pred, yd)
 
+
 def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
                      rotation=90, normalize=False, number_plot=False):
     '''plots confusion matrix
@@ -97,7 +102,8 @@ def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
     confmat = metrics.confusion_matrix(y_true, y_pred)
     domainnames = [x[1] for x in sorted(set(zip(y_true, domains)))]
     df = pd.DataFrame(confmat, index=domainnames, columns=domainnames)
-    # todo: df.columns.name = "True"; df.index.name = "Predicted"
+    df.columns.name = "Predicted"
+    df.index.name = "Actual"
     if normalize:
         df = df / df.sum(axis=1)
     heatmap = sns.heatmap(df, annot=number_plot)
@@ -109,6 +115,7 @@ def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
     plt.xlabel('Predicted label')
     plt.tight_layout()
     return (df, heatmap)
+
 
 
 def date_accuracy(size=30):
