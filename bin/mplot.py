@@ -29,7 +29,7 @@ def _color(name, all_names, palette="colorblind"):
     for (i, check_name) in enumerate(all_names):
         if name == check_name:
             return palette[i]
-    assert 'wtf (what a terrible failure)'
+    assert False, 'unknown name "{}"'.format(name)
 
 
 def accuracy_vs_overhead(result_list, title="Size Overhead to Accuracy"):
@@ -273,15 +273,20 @@ def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):
 # mplot.plt.ylabel("Feature Value [Byte]")
 # mplot.plt.title("CUMUL example for two sites retrieved on {}".format(s.date))
 # mplot.plt.tight_layout()
-def traces_cumul(scenario_obj, domain, color="red", axes=None):
+def traces_cumul(scenario_obj, domain, color=sns.color_palette()[0], axes=None):
     X, y, yd = scenario_obj.get_features_cumul()
     # data = [x[0] for x in zip(X[:, 4:], yd) if x[1] == domain]
     data = [x[0] for x in zip(X, yd) if x[1] == domain]
     legend = domain
+    if not axes:
+        _, axes = plt.subplots()
     for datum in data:
-        line = plt.plot(datum, c=color, alpha=0.5, linewidth=1, axes=axes,
-                        label=legend)
+        # line = plt.plot(datum, c=color, alpha=0.5, linewidth=1, axes=axes,
+        #                 label=legend)
+        line = axes.plot(datum, c=color, alpha=0.5, linewidth=1, label=legend)
         legend = None
+    axes.set_title("Traces for {} captured with {}".format(domain,
+                                                           scenario_obj))
     return line
 
 
@@ -303,7 +308,7 @@ def _splitdate(trace_name):
 # plt.tight_layout()
 # plt.legend()
 def traces_cumul_group(traces, color="red", axes=None):
-    #X = [x.cumul()[4:] for x in traces]
+    # X = [x.cumul()[4:] for x in traces]
     X = [x.cumul() for x in traces]
     label = _splitdate(traces[0].name)
     for datum in X:
