@@ -4,7 +4,8 @@ import numpy as np
 
 import config
 
-#doesn't really belong here, but neither does it to fit
+
+# doesn't really belong here, but neither does it to fit
 def binarize(y, keep=-1, transform_to=0):
     '''binarize data in y: transform all values to =transform_to= except =keep=
     >>> list(binarize([0, -1, 1]))
@@ -18,13 +19,7 @@ def binarize(y, keep=-1, transform_to=0):
             yield transform_to
 
 
-def pos_label(y_true):
-    '''@return element in y_true != -1'''
-    assert -1 in y_true and len(set(y_true)) == 2
-    return [x for x in y_true if x != -1][0]
-
-
-def compute_bounded_auc_score(clf, X, y, y_bound=0.01):#, scorer=None):
+def compute_bounded_auc_score(clf, X, y, y_bound=0.01):  # , scorer=None):
     '''@return cross-validated bounded auc of clf on X and y
     @param scorer: used for testing this module's other methods
     @param clf classifier to use
@@ -33,8 +28,23 @@ def compute_bounded_auc_score(clf, X, y, y_bound=0.01):#, scorer=None):
     '''
     # if github sklearn issue #3273 gets pulled
     scorer = metrics.make_scorer(
-            metrics.roc_auc_score, greater_is_better=True, needs_threshold=True,
-            max_fpr=y_bound)
+        metrics.roc_auc_score, greater_is_better=True, needs_threshold=True,
+        max_fpr=y_bound)
     return model_selection.cross_val_score(
         clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
         scoring=scorer).mean()
+
+
+def pos_label(y_true):
+    '''@return element in y_true != -1'''
+    assert -1 in y_true and len(set(y_true)) == 2
+    return [x for x in y_true if x != -1][0]
+
+
+def tpr_fpr_tpa(confusion_matrix):
+    '''@return array of (tpr/recall, fpr, tpa/precision) tuples'''
+    TP = np.diag(confusion_matrix) * 1.0
+    FP = confusion_matrix.sum(axis=0) - TP
+    FN = confusion_matrix.sum(axis=1) - TP
+    TN = confusion_matrix.sum() - (FP + FN + TP)
+    return zip(TP/(TP+FN), FP/(FP+TN), TP/(TP+FP))

@@ -39,11 +39,6 @@ class TestAnalyse(unittest.TestCase):
         self.bg_mock = {'background': self.c_list[:],
                         'a': self.c_list[:],
                         'b': self.c_list[:]}
-        # from sklearn metrics doc string
-        y_true = ["cat", "ant", "cat", "cat", "ant", "bird"]
-        y_pred = ["ant", "ant", "cat", "cat", "ant", "cat"]
-        self.cm = metrics.confusion_matrix(y_true, y_pred,
-                                           labels=["ant", "bird", "cat"])
 
     # todo: use doctest.DocFileSuite
     def test_doc(self):
@@ -51,17 +46,6 @@ class TestAnalyse(unittest.TestCase):
         (fail_num, _) = doctest.testmod(analyse)
         self.assertEqual(0, fail_num)
 
-    def test_tprfpr(self):
-        '''test all tpr-fpr extraction'''
-        right_cm = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-        self.assertEqual([(1, 0), (1, 0), (1, 0)],
-                         analyse.tpr_fpr(right_cm))
-#        wrong_cm = np.array([[0, 1, 0], [0, 0, 1], [1, 0, 0]])
-#        self.assertEqual([(0, 1), (0, 1), (0, 1)],
-#                         analyse.tpr_fpr(wrong_cm))
-        # ant: 2 tp (ant pred. as ant), 0 fn (ant as sth else), 1 fp  (cat pred. as ant), 3 fn (cat/bird pred. as cat) \to tp (tp+fn) = 2, rn (fp+tn) = 4
-        self.assertEqual([(1.0, 0.25), (0.0, 0.0), (2./3, 1./3)],
-                         analyse.tpr_fpr(self.cm))
 
 
 class TestCaptureOnesite(unittest.TestCase):
@@ -301,6 +285,11 @@ class TestMymetrics(unittest.TestCase):
         logging.disable(logging.WARNING)  # change to .INFO / disable for debug
         self.old_jobs = config.JOBS_NUM
         config.JOBS_NUM = 1
+        # from sklearn metrics doc string
+        y_true = ["cat", "ant", "cat", "cat", "ant", "bird"]
+        y_pred = ["ant", "ant", "cat", "cat", "ant", "cat"]
+        self.cm = metrics.confusion_matrix(y_true, y_pred,
+                                           labels=["ant", "bird", "cat"])
 
     def tearDown(self):
         logging.disable(logging.NOTSET)
@@ -310,16 +299,35 @@ class TestMymetrics(unittest.TestCase):
         (fail_num, _) = doctest.testmod(mymetrics, optionflags=doctest.ELLIPSIS)
         self.assertEqual(0, fail_num)
 
+    def test_tprfpr(self):
+        '''test all tpr-fpr extraction'''
+        right_cm = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        self.assertEqual([(1, 0, 1), (1, 0, 1), (1, 0, 1)],
+                         mymetrics.tpr_fpr_tpa(right_cm))
+#        wrong_cm = np.array([[0, 1, 0], [0, 0, 1], [1, 0, 0]])
+#        self.assertEqual([(0, 1), (0, 1), (0, 1)],
+#                         analyse.tpr_fpr_tpa(wrong_cm))
+        # ant: 2 tp (ant pred. as ant), 0 fn (ant as sth else),
+        # 1 fp  (cat pred. as ant), 3 tn (cat/bird pred. as cat)
+        # \to rp (tp+fn) = 2, rn (fp+tn) = 4, pp (tp+fp) = 3, rp (tp+fn) = 2
+        # cat: 2 tp, 1 fn, 1 fp, 2 tn \to 3 rp, 3 rn, 3 pp, ...
+        # test tpa
+        self.assertEqual((1.0, 0.25, 2./3), mymetrics.tpr_fpr_tpa(self.cm)[0])
+        # test tpr, fpr
+        self.assertEqual(
+            [(1.0, 0.25), (0.0, 0.0), (2./3, 1./3)],
+            [(t, f) for (t, f, _) in mymetrics.tpr_fpr_tpa(self.cm)])
+
     # def test_bounded_auc(self):
     #     clf = fit.clf_default(probability=True)
-    #     for bound in [0.01, 0.1, 0.2, 0.5, 1]:
+    #     for bnd in [0.01, 0.1, 0.2, 0.5, 1]:
     #         s = metrics.make_scorer(
-    #             mymetrics.bounded_auc, needs_proba=True, y_bound=bound)
-    #     dflt = mymetrics.compute_bounded_auc_score(clf, self.X, self.y, bound)
+    #             mymetrics.bounded_auc, needs_proba=True, y_bound=bnd)
+    #     dfl = mymetrics.compute_bounded_auc_score(clf, self.X, self.y, bnd)
     #     self.assertEqual(
-    #         dflt,
-    #         mymetrics.compute_bounded_auc_score(clf, self.X, self.y, bound, s),
-    #         "bound: {}".format(bound))
+    #         dfl,
+    #         mymetrics.compute_bounded_auc_score(clf, self.X, self.y, bnd, s),
+    #         "bound: {}".format(bnd))
 
 
 class TestResult(unittest.TestCase):

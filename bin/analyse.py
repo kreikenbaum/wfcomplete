@@ -3,23 +3,19 @@
 from __future__ import print_function
 import doctest
 import logging
+import os
 import sys
 import time
-from types import NoneType
 
 import numpy as np
-from sklearn import ensemble, metrics, model_selection, multiclass
+from sklearn import ensemble, metrics, model_selection
 from sklearn import neighbors, preprocessing, svm, tree
 
 import config
 import counter
 import fit
 import mymetrics
-import results
-#import mplot
 import scenario
-
-#TIME_SEPARATOR = '@'
 
 # classifiers
 GOOD = [ensemble.ExtraTreesClassifier(n_estimators=250),
@@ -32,6 +28,7 @@ ALL.extend([ensemble.AdaBoostClassifier(),
 SVC_TTS_MAP = {}
 ALL_MAP = {}
 
+
 # td: check if correct to use like this (or rather like _size_increase)
 # td: think if remove (not used)
 def _average_duration(trace_dict):
@@ -42,7 +39,7 @@ def _average_duration(trace_dict):
 
 def _class_predictions(cls, cls_predict):
     ''':returns: list: for each class in cls: what was it predicted to be'''
-    out = [[] for _ in range(cls[-1] + 1)] # different empty arrays
+    out = [[] for _ in range(cls[-1] + 1)]  # different empty arrays
     for (idx, elem) in enumerate(cls):
         out[elem].append(cls_predict[idx])
     return out
@@ -64,12 +61,12 @@ def _clf_params(clf):
     else:
         return _clf_name(clf)
 
-## td: if ever used, have a look at scale (needs to reset SCALER)
+
+# # td: if ever used, have a look at scale (needs to reset SCALER)
 # def _compare(X, y, X2, y2, clfs=GOOD):
 #     for clf in clfs:
 #         fit._eval(X, y, clf)
 #         fit._eval(X2, y2, clf)
-
 def _dict_elementwise(func, dict_1, dict_2):
     ''':return: {k: func(dict_1, dict_2)} for all keys k in dict_1'''
     return {k: func(dict_1[k], dict_2[k]) for k in dict_1}
@@ -197,15 +194,15 @@ validate, test)
     >> _tvts([[1], [1], [1], [2], [2], [2]], [1, 1, 1, 2, 2, 2])
     ([[1], [2]], [[1], [2]], [[1], [2]], [1, 2], [1, 2], [1, 2]) # modulo order
     '''
-    X1, Xtmp, y1, ytmp = model_selection.train_test_split( #pylint: disable=invalid-name
+    X_1, X_tmp, y_1, y_tmp = model_selection.train_test_split(
         X, y, train_size=1. / 3, stratify=y)
-    X2, X3, y2, y3 = model_selection.train_test_split( #pylint: disable=invalid-name
-        Xtmp, ytmp, train_size=.5, stratify=ytmp)
-    return (X1, X2, X3, y1, y2, y3)
+    X_2, X_3, y_2, y_3 = model_selection.train_test_split(
+        X_tmp, y_tmp, train_size=.5, stratify=y_tmp)
+    return (X_1, X_2, X_3, y_1, y_2, y_3)
 
 
 def _verbose_test_11(X, y, clf):
-    '''cross-test (1) estimator on (1) X, y, print results and estimator name'''
+    '''cross-test (1) estimator on (1) X, y, print results and estimator'''
     now = time.time()
     print(_clf_params(clf), end='')
     res = fit._eval(X, y, clf)
@@ -290,10 +287,10 @@ def simulated_open_world(scenario_obj, auc_bound=None, binarize=True,
     y_pred = model_selection.cross_val_predict(
         clf_noprob, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
     confmat = metrics.confusion_matrix(y, y_pred)
-    (tpr, fpr) = tpr_fpr(_binmat(confmat))[1]
+    (tpr, fpr, tpa) = mymetrics.tpr_fpr_tpa(_binmat(confmat))[1]
     C = clf_noprob.estimator.C
     gamma = clf_noprob.estimator.gamma
-    if binarize: # can (easily) compute auroc
+    if binarize:  # can (easily) compute auroc
         clf = fit.clf_default(y, C=C, gamma=gamma, probability=True)
         y_predprob = model_selection.cross_val_predict(
             clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
@@ -311,15 +308,6 @@ def _binmat(confmat):
 
 
 # due to https://stackoverflow.com/questions/31324218
-def tpr_fpr(confusion_matrix):
-    '''@return array of (tpr, fpr) pairs'''
-    TP = np.diag(confusion_matrix) *1.0
-    FP = confusion_matrix.sum(axis=0) - TP
-    FN = confusion_matrix.sum(axis=1) - TP
-    TN = confusion_matrix.sum() - (FP + FN + TP)
-    return zip(TP/(TP+FN), FP/(FP+TN))
-
-
 def closed_world(scenarios, def0, cumul=True, with_svm=True, common=False):
     '''cross test on dirs: 1st has training data, rest have test
 
@@ -449,7 +437,7 @@ def main(argv, with_svm=True, cumul=True):
     if 'background' in scenarios[0].get_traces():
         if len(scenarios) > 1:
             logging.warn('only first scenario chosen for open world analysis')
-        return open_world(scenarios[0])
+        return simulated_open_world(scenarios[0])
     else:
         closed_world({x.path: x.get_traces() for x in scenarios},
                      scenarios[0].path, with_svm=with_svm, cumul=cumul)

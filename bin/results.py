@@ -24,20 +24,20 @@ class Result(object):
     def __init__(self, scenario_, accuracy, git, time, type_, size,
                  open_world=False, size_overhead=None,
                  time_overhead=None, _id=None, gamma=None, C=None, src=None):
+        self._id = _id
+        self.C = C
+        self.date = time
+        self.gamma = gamma
+        self.git = git
+        self.open_world = open_world
         self.scenario = scenario_
         self.score = accuracy
-        self.git = git
-        self._id = _id
-        self.date = time
-        if not self.date and hasattr(self.scenario, "date"):
-            self.date = self.scenario.date
-        self.type_ = type_
         self.size = size
         self.size_overhead = size_overhead
         self.time_overhead = time_overhead
-        self.open_world = open_world
-        self.gamma = gamma
-        self.C = C
+        self.type_ = type_
+        if not self.date and hasattr(self.scenario, "date"):
+            self.date = self.scenario.date
         self.src = src
 
     @staticmethod
@@ -70,7 +70,9 @@ class Result(object):
                     'auc_bound': _value_or_none(entry, 'config', 'auc_bound'),
                     'background_size': _value_or_none(
                         entry, 'config', 'background_size'),
-                    'binary': _value_or_none(entry, 'config', 'binarize')
+                    'binary': _value_or_none(entry, 'config', 'binarize'),
+                    'exclude_sites': _value_or_none(
+                        entry, 'config', 'exclude_sites')
                 }
         except KeyError:
             open_world = False
@@ -123,12 +125,18 @@ class Result(object):
         else:
             logging.debug("%s@%s already in db", self.scenario, self.date)
 
-    # add overhead-helper for those experiments that lacked it
-    def _add_oh(self):
-        self.update(
-            {"result.size_increase": self.scenario.size_increase(),
-             "result.time_increase": self.scenario.time_increase()})
+    def get_real_scenario(self):
+        if self.open_world and not self.scenario.open_world:
+            self.scenario = self.scenario.get_open_world()
+            if self.open_world['binary']:
+                self.scenario = self.scenario.binarize()
+        return self.scenario
 
+    # def _add_oh(self):
+    #     '''add overhead-helper for those experiments that lacked it'''
+    #     self.update(
+    #         {"result.size_increase": self.scenario.size_increase(),
+    #          "result.time_increase": self.scenario.time_increase()})
     def update(self, addthis, db=_db()):
         '''updates entry in db to also include addthis'''
         db.runs.find_one_and_update({"_id": self._id}, {"$set": addthis})
@@ -191,8 +199,7 @@ def for_scenario_smartly(scenario_obj):
             return [x for x in out if x.open_world['binary']]
         else:
             return [x for x in out if not x.open_world['binary']]
-    else:
-        return for_scenario_cw(scenario_obj)
+    return for_scenario_cw(scenario_obj)
 
 
 
@@ -224,6 +231,7 @@ def list_all(match=None, restrict=True, db=_db()):
 
 
 def sized(size):
+    '''@return results with size size'''
     return [x for x in list_all() if x.size == size]
 #    return list_all({"$or": [{"config.size": 10},
 #                            {"result.sites": {"$size": 10}}]})

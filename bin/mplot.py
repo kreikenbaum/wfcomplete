@@ -124,7 +124,9 @@ def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
 
 def date_accuracy(size=30):
     '''@return accuracy over time for disabled data of size =size='''
-    scenarios = [x for x in results.list_all() if x.scenario.num_sites == size and 'no defense' in x.scenario.name]
+    scenarios = [x for x in results.list_all()
+                 if x.scenario.num_sites == size
+                 and 'no defense' in x.scenario.name]
     df = pd.DataFrame([x.__dict__ for x in scenarios])
     df = df.rename(columns={'score': 'Accuracy'})  # todo: * 100 and ..cy [%]
     df['Scenario Date [ordinal]'] = df['scenario'].map(
@@ -192,6 +194,7 @@ to save, and =.show()= to display.
     return fig
 
 
+
 def total_packets_in(counter_dict, subkeys=None, ax=None, save=False,
                      color=None):
     '''plots total incoming packets stat, rugplot with kde
@@ -219,6 +222,8 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False,
         ax.legend()
     if save:
         plt.savefig("/tmp/total_packets_in_"+'_'.join(subkeys)+".pdf")
+
+
 def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):
     '''plot tpi plots in subplots
 
@@ -237,7 +242,9 @@ def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):
     for other_dict in trace_dicts[1:]:
         keys = keys.intersection(other_dict.keys())
         keys = list(keys)[:sitenum]
-    color = lambda x: _color(x, keys)
+
+    def color(x):
+        return _color(x, keys)
     for (name, counter_dict, ax) in zip(names, trace_dicts, axes):
         total_packets_in(counter_dict, keys, ax, color=color)
         subset = [counter_dict[x] for x in keys]
@@ -252,7 +259,7 @@ def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):
     if save:
         plt.savefig("/tmp/total_packets_in_"
                     + '_'.join(names).replace('/', '___')+'__'
-                    +'_'.join(keys)+"__palette_colorblind.pdf")
+                    + '_'.join(keys) + "__palette_colorblind.pdf")
 
 # td: color
 '''best way (off of head)
@@ -294,6 +301,26 @@ def _splitdate(trace_name):
     '''@return trace's name + possible error cause, splits name'''
     return ''.join(NAMEDATEERR_SPLIT.search(trace_name).groups())
 
+
+
+def recall_curve(confmat, bg_size, step=0.1, axes=None):
+    '''plots recall curve as in CUMUL paper Fig.8'''
+    if not axes:
+        _, axes = plt.subplots()
+    plotx = np.arange(0, 1.01, step=step)
+    ploty_recall = []
+    tpr_fpr_tpa = mymetrics.tpr_fpr_tpa(confmat)
+    for xpos in plotx:
+        ploty_recall.append(len([x for x in tpr_fpr_tpa if x[2] > xpos]))
+    _curve("recall", plotx, ploty_recall, bg_size, "b = {}".format(bg_size),
+           axes)
+
+
+def _curve(name, x, y, bg_size, label, axes):
+    axes.plot(x, y, marker="o", label="b = {}".format(bg_size))
+    axes.xlabel(name)
+    axes.ylabel("Fraction of Foreground Pages [%]")
+
 # # usage:
 # s = scenario.list_all("17-12-26")[0]
 # t = s.get_traces()['twitter.com']
@@ -312,7 +339,7 @@ def traces_cumul_group(traces, color="red", axes=None):
     X = [x.cumul() for x in traces]
     label = _splitdate(traces[0].name)
     for datum in X:
-        plt.plot(datum, c=color, alpha=0.5, linewidth=1, axes=axes, label=label)
+        plt.plot(datum, c=color, alpha=.5, linewidth=1, axes=axes, label=label)
         label = None
 
 ## PLOT ROWS OF TRACES (mostly related chosen)
