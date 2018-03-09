@@ -446,7 +446,7 @@ of future work in section [[#future-work]].
 
 
     #+CAPTION[CUMUL features example]: CUMUL features example
-    #+NAME: CUMUL_traces
+    #+NAME: fig:CUMUL_traces
     [[./pictures/CUMUL_2017-12-31.pdf]]
     # code: see [[file:bin/mplot.py::traces_cumul%20usage]]
 
@@ -458,7 +458,7 @@ of future work in section [[#future-work]].
     etc. \citet{effective2014} used close to 4000 features. On a
     smaller dataset, they achieved a true-positive rate of 84%, with a
     false-positive rate of 0.6%. \citet{panchenko2} use a cumulative
-    size metric, CUMUL. As seen in Figure [[CUMUL_traces]], these provide
+    size metric, CUMUL. As seen in Figure [[fig:CUMUL_traces]] these provide
     a graphical representation of traces, while still allowing for
     computer-based comparison after normalization. To create this,
     they sum the incoming and outgoing bytes. To extract the same
@@ -554,11 +554,15 @@ of future work in section [[#future-work]].
     #+INDEX: AUC
     #+INDEX: AUC$_{0.01}$
     #+INDEX: AUC!bounded
+    #+INDEX: closed world
     #+INDEX: confusion matrix
     #+INDEX: False Positive Rate (FPR)
+    #+INDEX: open world
     #+INDEX: Receiver Operating Characteristic (ROC) curve
     #+INDEX: ROC curve
     #+INDEX: True Positive Rate (TPR)
+    #+INDEX: world!closed
+    #+INDEX: world!open
     To find out if \gls{wf} attacks work, and if defenses prevent them
     from working, their success can be measured. The simplest
     form of measurement is simply counting how many traces were
@@ -1380,10 +1384,8 @@ appropriate HTTP-related distributions \citep{newtrafficmodel}.
      fewer samples per fitting.\cite[sec.4.12.3]{scikit-user-guide}.
 **** Kernel Trick
      #+INDEX: kernel
-     #+INDEX: kernel!radial basis function
-     #+INDEX: kernel!RBF
-     #+INDEX: radial basis function kernel
-     #+INDEX: RBF kernel
+     #+INDEX: kernel!radial basis function (RBF)
+     #+INDEX: radial basis function (RBF) kernel
      Straight lines do not always distinguish classes correctly, as
      e.g. example in Figure [[hastie_kerneltrick]]. This would seem a
      drawback to using Support Vector Machines, yet they can compute
@@ -2041,6 +2043,60 @@ differs from how it should be used, see next section.
  \part{Appendix}
 * appendices (begin above this headline; this is for searching)     :ARCHIVE:
   above, as in this section cuts it out (due to ARCHIVE tag)
+* WRITE Open World Accuracy
+  While closed-world results are easier to compare and analyse,
+  \gls{wf} is modeled more accurately by an [[#ml-measure][open-world model]]. This
+  model adds additional background pages to the mix: An attacker's
+  scenario is to find out if a web trace is to a sensitive site, say
+  wikileaks, as opposed to normal web browsing. The background pages
+  model the "normal" web browsing.
+
+
+  Scikit-learn \citep{scikit-learn} has the advantage of /balanced
+  class weights/: classes can have different sizes, yet are considered
+  of the same importance when training classifiers. This useful
+  setting was enabled in the beginning of open world classification as
+  a carryover from closed-world analysis. In the open world setting,
+  it reduced accuracy to 55%.
+
+
+
+  As soon as this setting was disabled, accuracy rose to e.g. 83.55%,
+  with true positive rate of 81.39% and false-positive rate of
+  12.32%. This still does not match \cite{panchenko2}'s. To improve
+  further, the confusion matrix was analysed in Figure
+  [[fig:open-world-confmat]]:
+
+  #+CAPTION[Open world confusion matrix]: Open world confusion matrix. Background to background classification (5928) was removed to normalize colors.
+  #+NAME: fig:open-world-confmat
+  [[./pictures/confmat_open_2018-02-02.pdf]]
+
+  One site that was exclusively classified as background is =t.co=
+  (between microsoftonline.com and amazonaws.com). This might be due
+  to its highly varied traces, as can be seen in Figure
+  [[fig:t.co-cumul-traces]]:
+
+  #+CAPTION[CUMUL traces for t.co]: CUMUL-Traces for the website t.co. These show high (intra-class) variability, which could explain the misclassification. Compare Figure [[fig:CUMUL_traces]] for lower-variability CUMUL traces.
+  #+NAME: fig:t.co-cumul-traces
+  [[./pictures/t.co_disabled__bridge--2018-02-02--100@50.pdf]]
+
+
+  For =t.co=, 48 of 48 (valid) traces were classified as background
+  sites. The next-highest rates of false-negative misclassification is
+  rakuten.co.jp. See Figure [[fig:rakuten.co.jp-cumul-traces]]
+
+  #+CAPTION[CUMUL traces for rakuten.co.jp]: CUMUL-Traces for the website rakuten.co.jp.
+  #+NAME: fig:rakuten.co.jp-cumul-traces
+  [[./pictures/cumul_rakuten.co.jp_2018-02-02.pdf]]
+
+  These have 37 of 49 sites incorrectly classified as background.
+
+  - investigate sites
+    - other traces: list misclassification up to ...
+  - then trigger redo on duckstein
+  - (mention?) [first 50%, but due to balanced class weights (each
+    class treated as equally probable]
+** TODO add the same labels that adorn figure [[fig:CUMUL_traces]] to t.co figure
 * CHECK Cached: Size of HTML-Documents
   :PROPERTIES:
   :CUSTOM_ID: find sizes of HTML-documents

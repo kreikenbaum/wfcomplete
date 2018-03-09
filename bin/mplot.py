@@ -16,6 +16,7 @@ import results
 
 sns.set()  # sns.set_style("darkgrid")
 sns.set_palette("colorblind")  # optional, uglier, but helpful
+NAMEDATEERR_SPLIT = re.compile('([^@]*)@[0-9]*(.*)')
 
 
 def _color(name, all_names, palette="colorblind"):
@@ -95,7 +96,8 @@ def confusion_matrix_helper(clf, scenario_obj, **kwargs):
 
 
 def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
-                     rotation=90, normalize=False, number_plot=False):
+                     rotation=90, normalize=False, number_plot=False,
+                     zero0=False):
     '''plots confusion matrix
 
     @return (confusion matrix dataframe, heatmap plot)'''
@@ -104,6 +106,8 @@ def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
     df = pd.DataFrame(confmat, index=domainnames, columns=domainnames)
     df.columns.name = "Predicted"
     df.index.name = "Actual"
+    if zero0:
+        df.values[0][0] = 0
     if normalize:
         df = df / df.sum(axis=1)
     heatmap = sns.heatmap(df, annot=number_plot)
@@ -271,20 +275,21 @@ def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):
 # mplot.plt.tight_layout()
 def traces_cumul(scenario_obj, domain, color="red", axes=None):
     X, y, yd = scenario_obj.get_features_cumul()
-    #data = [x[0] for x in zip(X[:, 4:], yd) if x[1] == domain]
+    # data = [x[0] for x in zip(X[:, 4:], yd) if x[1] == domain]
     data = [x[0] for x in zip(X, yd) if x[1] == domain]
     legend = domain
     for datum in data:
-        line = plt.plot(datum, c=color, alpha=0.5, linewidth=1, axes=axes, label=legend)
+        line = plt.plot(datum, c=color, alpha=0.5, linewidth=1, axes=axes,
+                        label=legend)
         legend = None
     return line
 
-NAMEDATEERR = re.compile('([^@]*)@[0-9]*(.*)')
-def _splitdate(trace_name):
-    '''returns trace's name + possible error cause, splits name'''
-    return ''.join(NAMEDATEERR.search(trace_name).groups())
 
-## usage:
+def _splitdate(trace_name):
+    '''@return trace's name + possible error cause, splits name'''
+    return ''.join(NAMEDATEERR_SPLIT.search(trace_name).groups())
+
+# # usage:
 # s = scenario.list_all("17-12-26")[0]
 # t = s.get_traces()['twitter.com']
 # terr = [x for x in t if 'Error_loading' in x.name]

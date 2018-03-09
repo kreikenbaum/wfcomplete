@@ -281,10 +281,11 @@ def simulated_open_world(scenario_obj, auc_bound=None, binarize=True,
     for site in exclude_sites:
         try:
             del scenario_obj.traces[site]
+            logging.info("removed %s", site)
         except KeyError:
             pass
     X, y, _ = scenario_obj.get_features_cumul()
-    X = preprocessing.MinMaxScaler().fit_transform(X) # scaling is idempotent
+    X = preprocessing.MinMaxScaler().fit_transform(X)  # scaling is idempotent
     (clf_noprob, accuracy, _) = fit.my_grid(X, y, auc_bound=auc_bound)
     y_pred = model_selection.cross_val_predict(
         clf_noprob, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM)
