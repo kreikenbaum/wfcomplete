@@ -264,13 +264,14 @@ class Scenario(object):
         return out
 
     def get_traces(self):
-        '''@return dict {domain1: [trace1, ..., traceN], ..., domainM: [...]}'''
+        '''@return dict {domain1: [trace1, .., traceN], ..., domainM: [...]}'''
         if not self.traces:
             self.traces = counter.all_from_dir(os.path.join(DIR, self.path),
                                                **self.trace_args)
             if self._open_world_config:
-                self.traces = self.get_open_world(self._open_world_config['bg_size'],
-                                                  True).traces
+                self.traces = self.get_open_world(
+                    self._open_world_config['bg_size'],
+                    True).traces
                 if self._open_world_config['binary']:
                     self.traces = self.binarize().traces
         return self.traces

@@ -99,9 +99,10 @@ class Result(object):
                       src=entry)
 
     def __repr__(self):
-        out = '<Result({!r}, score={}, {}, {}, {}, size={}, size_overhead={}, time_overhead={}'.format(
-            self.scenario, self.score, self.git, self.date,
-            self.type_, self.size, self.size_overhead, self.time_overhead)
+        out = ("<Result({!r}, score={}, {}, {}, {}, size={}, "
+               "size_overhead={}, time_overhead={}".format(
+                   self.scenario, self.score, self.git, self.date, self.type_,
+                   self.size, self.size_overhead, self.time_overhead))
         if self.open_world:
             out += ', open_world={}'.format(self.open_world)
         return out + ')>'
