@@ -311,12 +311,17 @@ class TestMymetrics(unittest.TestCase):
         # 1 fp  (cat pred. as ant), 3 tn (cat/bird pred. as cat)
         # \to rp (tp+fn) = 2, rn (fp+tn) = 4, pp (tp+fp) = 3, rp (tp+fn) = 2
         # cat: 2 tp, 1 fn, 1 fp, 2 tn \to 3 rp, 3 rn, 3 pp, ...
-        # test tpa
-        self.assertEqual((1.0, 0.25, 2./3), mymetrics.tpr_fpr_tpa(self.cm)[0])
-        # test tpr, fpr
-        self.assertEqual(
-            [(1.0, 0.25), (0.0, 0.0), (2./3, 1./3)],
-            [(t, f) for (t, f, _) in mymetrics.tpr_fpr_tpa(self.cm)])
+        with np.warnings.catch_warnings():
+            np.warnings.filterwarnings('ignore', r'invalid value ')
+            self.assertEqual(
+                [(1.0, 0.25), (0.0, 0.0), (2./3, 1./3)],
+                [(t, f) for (t, f, _) in mymetrics.tpr_fpr_tpa(self.cm)])
+
+    def test_tpa(self):
+        with np.warnings.catch_warnings():
+            np.warnings.filterwarnings('ignore', r'invalid value ')
+            self.assertEqual((1.0, 0.25, 2./3),
+                             mymetrics.tpr_fpr_tpa(self.cm)[0])
 
     # def test_bounded_auc(self):
     #     clf = fit.clf_default(probability=True)
