@@ -229,7 +229,7 @@ class Scenario(object):
         '''
         @return scenario with traces and (num) added background traces
         @param num: size of background set, if 'auto', use as many as fg set
-        @param same: only use scenarios of same defense (name, config, and site)
+        @param same: only use scenarios of same defense (name, config, site)
         '''
         if self.traces and 'background' in self.get_traces():
             logging.warn("scenario's traces already contain background set")
@@ -269,8 +269,10 @@ class Scenario(object):
             self.traces = counter.all_from_dir(os.path.join(DIR, self.path),
                                                **self.trace_args)
             if self._open_world_config:
+                for site in self._open_world_config['exclude_sites']:
+                    del self.traces[site]
                 self.traces = self.get_open_world(
-                    self._open_world_config['bg_size'],
+                    self._open_world_config['background_size'],
                     True).traces
                 if self._open_world_config['binary']:
                     self.traces = self.binarize().traces

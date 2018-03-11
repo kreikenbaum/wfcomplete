@@ -387,7 +387,7 @@ class TestScenario(unittest.TestCase):
             'bridge', scenario.Scenario('disabled/bridge--2016-07-06').setting)
         self.assertEqual(datetime.date(2017, 9, 6),
                          scenario.Scenario("wtf-pad/bridge--2017-09-06").date)
-        #'disabled/nobridge--2016-12-26-with7777' # what to do?
+        # 'disabled/nobridge--2016-12-26-with7777' # what to do?
 
     def test___equal__(self):
         self.assertEqual(scenario.Scenario("wtf-pad/bridge--2017-09-06"),
@@ -401,6 +401,20 @@ class TestScenario(unittest.TestCase):
         self.assertFalse(scenario.Scenario('disabled/2016-11-13').background)
         s = scenario.Scenario('disabled/background--2016-08-17--4100@1')
         self.assertTrue(s.background)
+
+    @unittest.skipIf(QUICK, "slow test skipped")
+    def test_open_world_config(self):
+        s = scenario.Scenario("disabled/2016-05-12--10@40")
+        s._open_world_config = {'binary': False, 'exclude_sites': [],
+                                'background_size': None}
+        self.assertTrue("background" in s.get_traces().keys())
+
+    @unittest.skipIf(QUICK, "slow test skipped")
+    def test_open_world_config_binary(self):
+        s = scenario.Scenario("disabled/2016-05-12--10@40")
+        s._open_world_config = {'binary': True, 'exclude_sites': [],
+                                'background_size': None}
+        self.assertEquals(2, len(s.get_traces().keys()))
 
     def test_binarize_fake(self):
         c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]]

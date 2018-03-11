@@ -74,12 +74,16 @@ class Result(object):
                     'exclude_sites': _value_or_none(
                         entry, 'config', 'exclude_sites')
                 }
+                # if more than one not-None value is required, alter _value_...
+                if not open_world['exclude_sites']:
+                    open_world['exclude_sites'] = []
         except KeyError:
             open_world = False
         size_overhead = _value_or_none(entry, 'result', 'size_increase')
         time_overhead = _value_or_none(entry, 'result', 'time_increase')
         try:
-            scenario_obj = scenario.Scenario(entry['config']['scenario'])
+            scenario_obj = scenario.Scenario(
+                entry['config']['scenario'], open_world=open_world)
         except ValueError:
             if entry['status'] != "COMPLETED":
                 scenario_obj = "placeholder for scenario {}".format(
@@ -184,26 +188,26 @@ def _value_or_none(entry, *steps):
 
 
 
-def for_closed_world_scenario(scenario_obj):
-    return [x for x in for_scenario(scenario_obj) if not x.open_world]
-
-
-def for_open_world_scenario(scenario_obj):
-    return [x for x in for_scenario(scenario_obj) if x.open_world]
-
-
 def for_scenario(scenario_obj):
     return [x for x in list_all() if x.scenario == scenario_obj]
 
 
+def for_scenario_closed(scenario_obj):
+    return [x for x in for_scenario(scenario_obj) if not x.open_world]
+
+
+def for_scenario_open(scenario_obj):
+    return [x for x in for_scenario(scenario_obj) if x.open_world]
+
+
 def for_scenario_smartly(scenario_obj):
     if scenario_obj.open_world:
-        out = for_open_world_scenario(scenario_obj)
+        out = for_scenario_open(scenario_obj)
         if scenario_obj.binary:
             return [x for x in out if x.open_world['binary']]
         else:
             return [x for x in out if not x.open_world['binary']]
-    return for_closed_world_scenario(scenario_obj)
+    return for_scenario_closed(scenario_obj)
 
 
 
