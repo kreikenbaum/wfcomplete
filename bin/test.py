@@ -238,20 +238,20 @@ class TestFit(unittest.TestCase):
         self.assertEqual(0, fail_num)
 
     @unittest.skipIf(QUICK, "slow test skipped")
-    def test_ow(self):
+    def test_open_world(self):
         '''tests normal open world grid search'''
         result = fit.my_grid(self.X, self.y, auc_bound=0.3)
         self.assertAlmostEqual(result.best_score_, 1)
 
     @unittest.skipIf(QUICK, "slow test skipped")
-    def test_ow_roc(self):
+    def test_open_world_roc(self):
         '''tests roc for normal open world grid search'''
         clf, _, _ = fit.my_grid(self.X, self.y, auc_bound=0.3)
         fpr, tpr, _, _ = fit.roc(clf, self.X, self.y)
         self.assertEqual(zip(fpr, tpr)[-2:], [(0.0, 1.0), (1.0, 1.0)])
 
     @unittest.skipIf(QUICK, "slow test skipped")
-    def test_ow_minus(self):
+    def test_open_world_minus(self):
         '''tests some class bleed-off: some negatives with same
         feature as positives'''
         X_rand_middle = [(1, 0)] * (11 * self.size / 10)
@@ -265,7 +265,7 @@ class TestFit(unittest.TestCase):
         self.assertTrue((0.1, 1) in zip(fpr, tpr), self.string.format(tpr, fpr))
 
     @unittest.skipIf(QUICK, "slow test skipped")
-    def test_ow_random_plus(self):
+    def test_open_world_random_plus(self):
         '''tests some class bleed-off: some positives with same
         feature as negatives'''
         self.X = [(1.01, 1.01)] * (9 * self.size / 10)

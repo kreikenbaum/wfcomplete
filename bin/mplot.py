@@ -154,7 +154,7 @@ def _init_roc(titleadd=None):
     return out
 
 
-def roc_helper_owbin(result, axes=None):
+def roc_helper_open_world_binary(result, axes=None):
     assert result.open_world and result.open_world['binary'], "no-owbin result"
     num = result.open_world['background_size']
     auc_bound = result.open_world['auc_bound']

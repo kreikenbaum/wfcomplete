@@ -479,7 +479,7 @@ doctest.testmod(optionflags=doctest.ELLIPSIS)
 # import scenario, results
 # ow_possible = []
 # for scenario_obj in scenario.list_all():
-#     if not [r for r in results.for_scenario_ow(scenario_obj)
+#     if not [r for r in results.for_open_world_scenario(scenario_obj)
 #             if not r.open_world['binary'] and not r.open_world['auc_bound']]: # this line is optional
 #         try:
 #             _ = scenario_obj._closest("@1", True, lambda x: scenario_obj._compareattr(x, "name", "config", "site"))

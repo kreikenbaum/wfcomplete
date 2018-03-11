@@ -183,26 +183,26 @@ def _value_or_none(entry, *steps):
 
 
 
+def for_closed_world_scenario(scenario_obj):
+    return [x for x in for_scenario(scenario_obj) if not x.open_world]
+
+
+def for_open_world_scenario(scenario_obj):
+    return [x for x in for_scenario(scenario_obj) if x.open_world]
+
+
 def for_scenario(scenario_obj):
     return [x for x in list_all() if x.scenario == scenario_obj]
 
 
-def for_scenario_cw(scenario_obj):
-    return [x for x in for_scenario(scenario_obj) if not x.open_world]
-
-
-def for_scenario_ow(scenario_obj):
-    return [x for x in for_scenario(scenario_obj) if x.open_world]
-
-
 def for_scenario_smartly(scenario_obj):
     if scenario_obj.open_world:
-        out = for_scenario_ow(scenario_obj)
+        out = for_open_world_scenario(scenario_obj)
         if scenario_obj.binary:
             return [x for x in out if x.open_world['binary']]
         else:
             return [x for x in out if not x.open_world['binary']]
-    return for_scenario_cw(scenario_obj)
+    return for_closed_world_scenario(scenario_obj)
 
 
 
