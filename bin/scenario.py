@@ -47,10 +47,12 @@ PATH_SKIP = [
     "disabled/foreground-data"
 ]
 
+
 # code grew with scenario renames etc to keep db matching
 class Scenario(object):
-    '''meta-information object with optional loading of traces'''
-    def __init__(self, name, trace_args=None, smart=False, skip=False):
+    '''meta-information about a scenario with optional loading of its traces'''
+    def __init__(self, name, trace_args=None, smart=False, skip=False,
+                 open_world=False):
         ''' (further example usage in test.py)
         >>> Scenario('disabled/2016-11-13').date
         datetime.date(2016, 11, 13)
@@ -63,6 +65,7 @@ class Scenario(object):
         '''
         self.traces = None
         self.trace_args = trace_args or config.trace_args()
+        self._open_world_config = open_world
         self.path = os.path.normpath(name)
         if name in PATH_SKIP or skip:
             self.name = name
@@ -265,6 +268,11 @@ class Scenario(object):
         if not self.traces:
             self.traces = counter.all_from_dir(os.path.join(DIR, self.path),
                                                **self.trace_args)
+            if self._open_world_config:
+                self.traces = self.get_open_world(self._open_world_config['bg_size'],
+                                                  True).traces
+                if self._open_world_config['binary']:
+                    self.traces = self.binarize().traces
         return self.traces
 
     @property

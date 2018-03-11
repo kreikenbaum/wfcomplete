@@ -106,6 +106,9 @@ class Result(object):
             out += ', open_world={}'.format(self.open_world)
         return out + ')>'
 
+    def __str__(self):
+        return "Result at {} for {}".format(self.date.ctime(), self.scenario)
+
     def get_classifier(self, probability=True):
         '''@return classifier that achieved this result'''
         return utils.clf_default(
