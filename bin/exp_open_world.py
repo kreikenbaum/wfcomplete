@@ -17,6 +17,7 @@ ex = Experiment('wf_open_world')
 ex.observers.append(MongoObserver.create())
 
 
+# pylint: disable=unused-variable
 @ex.config
 def my_config():
     scenario = random.choice(scenario_module.list_all()).path
@@ -26,6 +27,7 @@ def my_config():
     background_size = 'auto' #, number, None
     binarize = True # fixed, unclear how to handle multi-class
     exclude_sites = []
+# pylint: enable=unused-variable
 
 
 # code duplication exp.py
@@ -33,9 +35,10 @@ def my_config():
 def run_exp(scenario, remove_small, or_level, auc_bound,
             background_size, binarize, _rnd):
     config.OR_LEVEL = config.OR_LEVEL if or_level is None else or_level
-    config.REMOVE_SMALL = config.REMOVE_SMALL if remove_small is None else remove_small
+    config.REMOVE_SMALL = (config.REMOVE_SMALL if remove_small is None
+                           else remove_small)
     scenario_obj = scenario_module.Scenario(scenario)
-    (tpr, fpr, auroc, C, gamma, accuracy) = analyse.simulated_open_world(
+    (tpr, fpr, auroc, C, gamma, accuracy, yprd) = analyse.simulated_open_world(
         scenario_obj, auc_bound, binarize=binarize, bg_size=background_size)
     return {
         'C': C,
@@ -48,14 +51,15 @@ def run_exp(scenario, remove_small, or_level, auc_bound,
         'time_increase': scenario_obj.time_increase(),
         'fpr': fpr,
         'tpr': tpr,
-        'auroc': auroc
+        'auroc': auroc,
+        'y_prediction': list(yprd)
     }
 
 
 def _format_results(results):
     out = []
-    for ((c, gamma), score) in results.iteritems():
-        out.append([c, gamma, score])
+    for ((C, gamma), score) in results.iteritems():
+        out.append([C, gamma, score])
     return out
 
 
@@ -68,7 +72,7 @@ def my_main(scenario):
             {"status": "COMPLETED",
              "experiment.mainfile": "exp_open_world.py"}):
         logging.warn("scenario already in database")
-    return run_exp()
+    return run_exp()  # pylint: disable=no-value-for-parameter
 
 # ## inspect database:
 # use sacred; db.runs.aggregate([{$match: {"$and": [{"config.scenario": {"$exists": 1}}, {"result.score": {"$exists": 1}}]}}, {$project: {"config.scenario": 1, "result.score": 1}},{$group: {_id: "$config.scenario", "score": {$max: "$result.score"}}}])

@@ -11,9 +11,11 @@ import doctest
 import logging
 
 import pymongo
+from sklearn import metrics, model_selection
 
 import scenario
 from capture import utils
+import config
 
 
 def _db():
@@ -133,12 +135,27 @@ class Result(object):
         else:
             logging.debug("%s@%s already in db", self.scenario, self.date)
 
-    def get_real_scenario(self):
-        if self.open_world and not self.scenario.open_world:
-            self.scenario = self.scenario.get_open_world()
-            if self.open_world['binary']:
-                self.scenario = self.scenario.binarize()
-        return self.scenario
+    @property
+    def duration(self):
+        '''@return experiment duration'''
+        return self.src['stop_time'] - self.src['start_time']
+
+    @property
+    def y_prediction(self):
+        '''@return predicted values (either pre-existing or computed)'''
+        try:
+            return self.src['result']['y_prediction']
+        except KeyError:
+            logging.info("%s had no saved prediction", self)
+            X, y, _ = self.scenario.get_features_cumul()
+            return model_selection.cross_val_predict(
+                self.get_classifier(), X, y, cv=config.FOLDS,
+                n_jobs=config.JOBS_NUM, verbose=config.VERBOSE)
+
+    def get_confusion_matrix(self):
+        '''@return cm either pre-existing or computed'''
+        X, y, _ = self.scenario.get_features_cumul()
+        return metrics.confusion_matrix(y, self.y_prediction)
 
     # def _add_oh(self):
     #     '''add overhead-helper for those experiments that lacked it'''
@@ -189,24 +206,24 @@ def _value_or_none(entry, *steps):
 
 
 def for_scenario(scenario_obj):
-    return [x for x in list_all() if x.scenario == scenario_obj]
+    return (x for x in list_all() if x.scenario == scenario_obj)
 
 
 def for_scenario_closed(scenario_obj):
-    return [x for x in for_scenario(scenario_obj) if not x.open_world]
+    return (x for x in for_scenario(scenario_obj) if not x.open_world)
 
 
 def for_scenario_open(scenario_obj):
-    return [x for x in for_scenario(scenario_obj) if x.open_world]
+    return (x for x in for_scenario(scenario_obj) if x.open_world)
 
 
 def for_scenario_smartly(scenario_obj):
     if scenario_obj.open_world:
         out = for_scenario_open(scenario_obj)
         if scenario_obj.binary:
-            return [x for x in out if x.open_world['binary']]
+            return (x for x in out if x.open_world['binary'])
         else:
-            return [x for x in out if not x.open_world['binary']]
+            return (x for x in out if not x.open_world['binary'])
     return for_scenario_closed(scenario_obj)
 
 
@@ -234,8 +251,8 @@ def list_all(match=None, restrict=True, db=_db()):
         matches.append({"result.score": {"$exists": 1}})
     if match:
         matches.append(match)
-    return [Result.from_mongoentry(x) for x in
-            db.runs.find({"$and": matches})]
+    return (Result.from_mongoentry(x) for x in
+            db.runs.find({"$and": matches}))
 
 
 def sized(size):

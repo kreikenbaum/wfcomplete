@@ -47,11 +47,10 @@ class TestAnalyse(unittest.TestCase):
         self.assertEqual(0, fail_num)
 
 
-
 class TestCaptureOnesite(unittest.TestCase):
     '''tests the one_site module/program'''
     def setUp(self):
-        logging.disable(logging.WARNING) # change to .INFO or disable for debug
+        logging.disable(logging.WARNING)
 
     def tearDown(self):
         logging.disable(logging.NOTSET)
@@ -81,7 +80,8 @@ class TestCaptureUtils(unittest.TestCase):
         self.assertEqual("mlsec", utils.site({"host": "duckstein"}))
         self.assertEqual(
             "gcloud",
-            utils.site({"host": "main-test.c.pioneering-mode-193216.internal"}))
+            utils.site({"host": "main-test.c.pioneering-mode-193216.internal"})
+        )
 
 
 class TestConfig(unittest.TestCase):
@@ -103,9 +103,9 @@ class TestConfig(unittest.TestCase):
 class TestCounter(unittest.TestCase):
     '''tests the counter module'''
     def setUp(self):
-        self.c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]] # len 7
-        self.big_val = [counter._test(3, val=10*60*1000)] # very big, but ok
-        logging.disable(logging.INFO) # change to .INFO or disable for debug
+        self.c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]]  # len7
+        self.big_val = [counter._test(3, val=10*60*1000)]  # very big, but ok
+        logging.disable(logging.INFO)
 
     def tearDown(self):
         logging.disable(logging.NOTSET)
@@ -209,7 +209,6 @@ class TestExp(unittest.TestCase):
     '''tests the experimentation module'''
     @unittest.skipIf(VERYQUICK, "slow test skipped")
     def test_runs(self):
-#        subprocess.call("echo $PATH > /tmp/out",
         with open(os.devnull, "w") as null:
             subprocess.check_call(
                 os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -226,7 +225,7 @@ class TestFit(unittest.TestCase):
         self.X, self.y = _init_X_y(self.size)
         self.string = 'tpr: {}, fpr: {}'
         fit.FOLDS = 2
-        logging.disable(logging.WARNING) # change to .INFO or disable for debug
+        logging.disable(logging.WARNING)
 
     def tearDown(self):
         logging.disable(logging.NOTSET)
@@ -254,15 +253,16 @@ class TestFit(unittest.TestCase):
     def test_open_world_minus(self):
         '''tests some class bleed-off: some negatives with same
         feature as positives'''
-        X_rand_middle = [(1, 0)] * (11 * self.size / 10)
-        #X_rand_middle.extend(np.random.random_sample((9 * self.size / 10, 2)))
-        X_rand_middle.extend([(0, 1)] * (9 * self.size / 10))
-        (clf, _, _) = fit.my_grid(X_rand_middle, self.y, auc_bound=0.3)
-        (fpr, tpr, _, _) = fit.roc(clf, X_rand_middle, self.y)
+        X_middle = [(1, 0)] * (11 * self.size / 10)
+        # X_middle.extend(np.random.random_sample((9 * self.size / 10, 2)))
+        X_middle.extend([(0, 1)] * (9 * self.size / 10))
+        (clf, _, _) = fit.my_grid(X_middle, self.y, auc_bound=0.3)
+        (fpr, tpr, _, _) = fit.roc(clf, X_middle, self.y)
         # 2. check that fpr/tpr has certain structure (low up to tpr of 0.1))
         self.assertEqual(tpr[0], 0, self.string.format(tpr, fpr))
         self.assertEqual(fpr[0], 0, self.string.format(tpr, fpr))
-        self.assertTrue((0.1, 1) in zip(fpr, tpr), self.string.format(tpr, fpr))
+        self.assertTrue((0.1, 1) in zip(fpr, tpr),
+                        self.string.format(tpr, fpr))
 
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_open_world_random_plus(self):
@@ -273,7 +273,8 @@ class TestFit(unittest.TestCase):
         clf, _, _ = fit.my_grid(self.X, self.y, auc_bound=0.01)
         fpr, tpr, _, _ = fit.roc(clf, self.X, self.y)
         # 2. check that fpr/tpr has good structure (rises directly to 0.9fpr)
-        self.assertAlmostEqual(tpr[1], 0.9, '{}\n{}'.format(zip(tpr, fpr), clf))
+        self.assertAlmostEqual(tpr[1], 0.9,
+                               '{}\n{}'.format(zip(tpr, fpr), clf))
         self.assertAlmostEqual(fpr[1], 0, zip(tpr, fpr))
 
 
@@ -296,7 +297,8 @@ class TestMymetrics(unittest.TestCase):
         config.JOBS_NUM = self.old_jobs
 
     def test_doc(self):
-        (fail_num, _) = doctest.testmod(mymetrics, optionflags=doctest.ELLIPSIS)
+        (fail_num, _) = doctest.testmod(mymetrics,
+                                        optionflags=doctest.ELLIPSIS)
         self.assertEqual(0, fail_num)
 
     def test_tprfpr(self):
@@ -462,7 +464,7 @@ class TestScenario(unittest.TestCase):
         trace = counter._test(3)
         trace.name = u'./msn.com@1467754328'
         s = scenario.Scenario('wtf-pad/bridge--2016-07-05')
-        s.traces = {'msn.com' : [trace]}
+        s.traces = {'msn.com': [trace]}
         self.assertEqual(datetime.date(2016, 7, 5), s.date_from_trace())
 
     @unittest.skipIf(QUICK, "slow test skipped")
@@ -472,9 +474,10 @@ class TestScenario(unittest.TestCase):
 
     def test_sample(self):
         s = scenario.Scenario('somescenario/2012-07-05')
-        s.traces = {'msn.com' : [counter._test(3)] * 30}
+        s.traces = {'msn.com': [counter._test(3)] * 30}
         self.assertEqual(len(s.get_sample(10)['msn.com']), 10)
 
+    @unittest.skipIf(QUICK, "slow test skipped")
     def test_size_increase__disabled(self):
         self.assertEqual(
             0, scenario.Scenario("disabled/2016-05-12--10@40").size_increase())
@@ -599,8 +602,9 @@ def _init_X_y(size, random=True):
     X.extend([(0, 1)] * size)
     if random:
         X = np.array(X).astype('float64')
-        X += np.random.random_sample(X.shape) * 0.8 -0.4
-    y = [1] * size; y.extend([-1] * size)
+        X += np.random.random_sample(X.shape) * 0.8 - 0.4
+    y = [1] * size
+    y.extend([-1] * size)
     return (X, y)
 
 

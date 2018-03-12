@@ -273,7 +273,7 @@ class Scenario(object):
                     del self.traces[site]
                 self.traces = self.get_open_world(
                     self._open_world_config['background_size'],
-                    True).traces
+                    same=True).traces
                 if self._open_world_config['binary']:
                     self.traces = self.binarize().traces
         return self.traces
