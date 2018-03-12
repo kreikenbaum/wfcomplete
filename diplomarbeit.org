@@ -777,9 +777,9 @@ World Wide Web \citep{rfc1945} traffic cannot be adequately modeled
 using standard distributions like normal or uniform
 \citep{crovella97}. This explains the many outliers reported by
 \cite[sec.5.2]{DBLP:journals/popets/CherubinHJ17}. \cite[sec.5.A]{wtfpad2015}
-also distributes its \gls{wf} defense data partitions exponentially to
+also distribute its \gls{wf} defense data partitions exponentially to
 better fit web traffic. \cite{DBLP:conf/imc/IhmP11} repeatedly mention
-a /long tail/ of traffic. This is why HTTP \citep{7230}-shaped
+a /long tail/ of traffic. This is why HTTP \citep{rfc7230}-shaped
 cover traffic might prove more effective, as this would make it harder
 to separate cover and real traffic. In addition, it would work at the
 layer \citep[ch.1.7]{DBLP:books/daglib/0001977} where the problem
@@ -794,7 +794,7 @@ loads another page simultaneously in the background. \citet{ccs2012-fingerprinti
 \citet{panchenko}, and \citet{wtfpad2015} found it to be surprisingly
 effective for all its simplicity, albeit at a high overhead.
 
-#+CAPTION[Distribution of sizes for the HTTP traffic model]: Distribution of sizes for the HTTP traffic model. While the number of embedded elements seems very low, it is a long-tailed distribution with mean \mu\approx5.07 \citep{newtrafficmodel}.
+#+CAPTION[Distribution of sizes for the HTTP traffic model]: Distribution of sizes for the HTTP traffic model. While the number of embedded elements seems very low, it has mean \mu\approx5.07 \citep{newtrafficmodel}.
 #+NAME: distribution
 [[./pictures/fig_html_embedded.pdf]]
 
@@ -810,55 +810,31 @@ The size of both HTML documents and embedded objects is each modeled
 by truncated lognormal distributions. The number of embedded objects
 is modeled by a truncated gamma function. These are implemented
 following \cite{compgen}.
-*** TODO [#C] [[file:docs/lit.org::*%5B%5B~web/Desktop/thesis/Foss%20S.,%20Korshunov%20D.,%20Zachary%20S.%20An%20introduction%20to%20heavy-tailed%20and%20subexponential%20distributions%20(Springer,%202011)(ISBN%201441994726)(O)(134s)_MV_.pdf%5D%5BFoss%20-%20An%20Introduction%20to%20Heavy-Tailed%20and%20Subexponential%20Distributions%5D%5D][Foss - An Introduction to Heavy-Tailed and Subexponential Distributions]]
 ** Defense Design
    :PROPERTIES:
    :CUSTOM_ID: sub3-defense
    :END:
-The defense obfuscates web traffic: for each load of a website.
-
-The created traffic is based on the HTTP model \citep{newtrafficmodel}
-described in the previous section [[#sub3-http]]. For each web page
-retrieval, the defense sets target retrieval sizes. From these, the
-retrieval's actual parameters are subtracted to set the amount of
-cover traffic for this web page. If the parameters are not known, they
-are guessed from the same distributions.
-
+The defense obfuscates web traffic: For each load of a website,
+additional cover traffic is be created. The retrieval of the (first)
+HTML page provides significant information as of
+\citep[sec.4.1]{panchenko}. To counter this information gain, this
+first retrieval is always covered by additional traffic. After the
+first retrieval, the browser downloads the HTML page resources:
+images, style sheets, JavaScript \citep{ecma} files, etc. Each of
+these retrievals might be covered by additional dummy retrievals.
 
 - how does the defense work?
-  - each load, create cover traffic
-  - first (HTML) load is specific (panchenko): always create traffic
-  - other (resource, embedded HTML, etc) loads: sometimes create traffic
   - how much traffic: determined per page, dynamically
     - set at HTML load
     - "pad" HTML size by additional traffic
     - and sometimes "pad" embedded by additional traffic
-- why is this better
-  - application layer: where problem is
-  - in-browser: know which url visited
-  - can send specific cover traffic
-  - could even cache sizes dynamically in Bloom Filter
-- solution design: augment/increase traffic
-  - apply to each web page request
-    1. see request
-    2. use http model
-       - for extra html size
-       - and number of requests
-    3. match requests' own size (predicted if unknown) to model
-    4. request additional data over request
-    5. on further requests, chance to request additional
-  - secondary solution: browser extension
-    - easy to install, configure, enable/disable on demand
-- HTTP traffic model
-  - long-tailed distributions
-    - (cut off)
-  - for both number of embedded resources and page/embedded sizes
-- how is the defense ensured
-  - code: some tests for simple modules
-  - lint
-  - by hand
-  - good parts
-  - evaluation
+
+The created traffic is based on the HTTP model \citep{newtrafficmodel}
+described in the previous section [[#sub3-http]]. For each web page
+retrieval, the defense sets target retrieval parameters. From these,
+the web page's actual parameters are subtracted to set the amount of
+cover traffic for this web page. If the parameters are not known, they
+are guessed from the same distributions used to set the target values.
 
 
 #+BEGIN_QUOTE
@@ -960,6 +936,33 @@ appropriate HTTP-related distributions \citep{newtrafficmodel}.
  provided by using Firefox's Addon-SDK. Add-ons can be downloaded via
  [[https://addons.mozilla.org][Mozilla's Addon Page]]. This also provides automatic addon updates.
 
+
+- why is this better
+  - application layer: where problem is
+  - in-browser: know which url visited
+  - can send specific cover traffic
+  - could even cache sizes dynamically in Bloom Filter
+- solution design: augment/increase traffic
+  - apply to each web page request
+    1. see request
+    2. use http model
+       - for extra html size
+       - and number of requests
+    3. match requests' own size (predicted if unknown) to model
+    4. request additional data over request
+    5. on further requests, chance to request additional
+  - secondary solution: browser extension
+    - easy to install, configure, enable/disable on demand
+- HTTP traffic model
+  - long-tailed distributions
+    - (cut off)
+  - for both number of embedded resources and page/embedded sizes
+- how is the defense ensured
+  - code: some tests for simple modules
+  - lint
+  - by hand
+  - good parts
+  - evaluation
 ** Bloom Filter Basics
    :PROPERTIES:
    :CUSTOM_ID: sub3-bloomfilters
