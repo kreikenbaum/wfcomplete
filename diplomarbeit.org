@@ -769,110 +769,34 @@ new defense's main algorithm is described in section
 [[#sub3-defense]]. The next sections introduce Bloom filters
 ([[#sub3-bloomfilters]]) and describe their application to approximately
 save element sizes ([[#sub3-bloomsort]]).
-** Web Retrieval Model
-   :PROPERTIES:
-   :CUSTOM_ID: sub3-http
-   :END:
-World Wide Web \citep{rfc1945} traffic cannot be adequately modeled
-using standard distributions like normal or uniform
-\citep{crovella97}. This explains the many outliers reported by
-\cite[sec.5.2]{DBLP:journals/popets/CherubinHJ17}. \cite[sec.5.A]{wtfpad2015}
-also distribute its \gls{wf} defense data partitions exponentially to
-better fit web traffic. \cite{DBLP:conf/imc/IhmP11} repeatedly mention
-a /long tail/ of traffic. This is why HTTP \citep{rfc7230}-shaped
-cover traffic might prove more effective, as this would make it harder
-to separate cover and real traffic. In addition, it would work at the
-layer \citep[ch.1.7]{DBLP:books/daglib/0001977} where the problem
-originates, as it mimics the HTTP/HTML \citep{html5}-specific
-request-response interaction.
-
-
-There are several approaches on how to generate HTTP-shaped
-traffic. The naïve way, using HTTP dummy traffic \citep{panchenko},
-loads another page simultaneously in the background. \citet{ccs2012-fingerprinting},
-\citet{a-systematic2014}, \citet{kfingerprint}, \citet{effective2014},
-\citet{panchenko}, and \citet{wtfpad2015} found it to be surprisingly
-effective for all its simplicity, albeit at a high overhead.
-
-#+CAPTION[Distribution of sizes for the HTTP traffic model]: Distribution of sizes for the HTTP traffic model. While the number of embedded elements seems very low, it has mean \mu\approx5.07 \citep{newtrafficmodel}.
-#+NAME: distribution
-[[./pictures/fig_html_embedded.pdf]]
-
-
-\citet{newtrafficmodel} model web traffic. They evaluated various
-distributions, such as lognormal, weibull, exponential, gamma, and the
-generalized pareto distributions. This thesis applies their
-distributions for the size of the HTML page, the size of embedded
-elements, and the number of embedded elements. See illustration in
-Figure [[distribution]].
-
-The size of both HTML documents and embedded objects is each modeled
-by truncated lognormal distributions. The number of embedded objects
-is modeled by a truncated gamma function. These are implemented
-following \cite{compgen}.
 ** Defense Design
    :PROPERTIES:
    :CUSTOM_ID: sub3-defense
    :END:
+- why defense
+- how does the defense work
+- what is the underlying distribution
+- what is the main algorithm
+- what are the special data structures
+
+
 The defense obfuscates web traffic: For each load of a website,
-additional cover traffic is be created. The retrieval of the (first)
-HTML page provides significant information as of
+additional cover traffic is created. The retrieval of the (first) HTML
+page provides significant information as of
 \citep[sec.4.1]{panchenko}. To counter this information gain, this
 first retrieval is always covered by additional traffic. After the
 first retrieval, the browser downloads the HTML page resources:
 images, style sheets, JavaScript \citep{ecma} files, etc. Each of
 these retrievals might be covered by additional dummy retrievals.
 
-- how does the defense work?
-  - how much traffic: determined per page, dynamically
-    - set at HTML load
-    - "pad" HTML size by additional traffic
-    - and sometimes "pad" embedded by additional traffic
 
 The created traffic is based on the HTTP model \citep{newtrafficmodel}
-described in the previous section [[#sub3-http]]. For each web page
-retrieval, the defense sets target retrieval parameters. From these,
-the web page's actual parameters are subtracted to set the amount of
-cover traffic for this web page. If the parameters are not known, they
-are guessed from the same distributions used to set the target values.
+described in section [[#sub3-http]]. For each web page retrieval, the
+defense sets target retrieval parameters. From these, the web page's
+actual parameters are subtracted to set the amount of cover traffic
+for this web page. If the parameters are not known, they are guessed
+from the same distributions used to set the target values.
 
-
-#+BEGIN_QUOTE
-As shown by \citet{newton2005preserving}, naïve privacy-enabling
-methods can be surpassed using domain-specific properties. They showed
-two methods to be effective: randomizing information position and
-adding generic aspects.
-#+END_QUOTE
-
-#+BEGIN_QUOTE
-   300% time\citep{a-systematic2014}). In 2015, the stochastic
-   defenses of \citet{wang2015walkie} and \citet{wtfpad2015} much
-   lower overhead, were developed. This validates a stochastic
-   approach, yet improvements seem possible in two areas: (1) ease of
-   installation, and configurability, and (2) more-closely fitting
-   cover traffic generation.
-
-
-   At the start of the thesis, there existed mostly deterministic
-   general defenses with high overhead (e.g. over 220% bandwidth, and
-   300% time\citep{a-systematic2014}). During the course of this thesis, the
-   stochastic defenses of \citet{wang2015walkie} and \citet{wtfpad2015}
-   much lower overhead, were developed. This validates a stochastic
-   approach, yet improvements seem possible in two areas: (1) ease of
-   installation, and configurability, and (2) more-closely fitting
-   cover traffic generation.
-
-   Ad 1: \citet{wang2015walkie} alters the Firefox binary, while the
-   current version of \citet{wtfpad2015} needed much manual adjustment in
-   our attempts.
-
-   Ad 2: \citet{wang2015walkie} uses either a normal, or lognormal
-   distribution, not adjusting to HTTP-specifics, while \citet{wtfpad2015}
-   samples packets at the network layer. It aims at generally hiding
-   /that traffic occurs/, not just which website is visited, as it
-   derives its basic mechanism from \citet{ShWa-Timing06}.
-         - might even help against a global adversary, timing attacks, etc
-#+END_QUOTE
 
 Each request is potentially covered by a simultaneous cover-request,
 as seen in Algorithm \ref{algo1}. The algorithm randomly draws from
@@ -911,10 +835,10 @@ appropriate HTTP-related distributions \citep{newtrafficmodel}.
  #+END_EXPORT
 
  /registerHost/, /isRegistered/, /computeProbability/ and
- /updateHosts/ access a JS object that maps the recently active
- hostnames to the number of embedded objects and cover requests that
- still need to be sent. Its elements get removed after a certain time
- to allow for new traffic.
+ /updateHosts/ access a mapping of the recently active hostnames to
+ the number of embedded objects and cover requests that still need to
+ be sent. Its elements get removed after a certain time to allow for
+ new traffic.
 
  The /lookupOrGuess.../-functions need data structures to map urls to
  both HTTP sizes and number of embedded objects. These change over
@@ -963,6 +887,89 @@ appropriate HTTP-related distributions \citep{newtrafficmodel}.
   - by hand
   - good parts
   - evaluation
+- quotes
+  - images
+    #+BEGIN_QUOTE
+    As shown by \citet{newton2005preserving}, naïve privacy-enabling
+    methods can be surpassed using domain-specific properties. They
+    showed two methods to be effective: randomizing information
+    position and adding generic aspects.
+    #+END_QUOTE
+  - history/stochastic
+    #+BEGIN_QUOTE
+    300% time\citep{a-systematic2014}). In 2015, the stochastic
+    defenses of \citet{wang2015walkie} and \citet{wtfpad2015} much
+    lower overhead, were developed. This validates a stochastic
+    approach, yet improvements seem possible in two areas: (1) ease of
+    installation, and configurability, and (2) more-closely fitting
+    cover traffic generation.
+
+
+    At the start of the thesis, there existed mostly deterministic
+    general defenses with high overhead (e.g. over 220% bandwidth, and
+    300% time\citep{a-systematic2014}). During the course of this
+    thesis, the stochastic defenses of \citet{wang2015walkie} and
+    \citet{wtfpad2015} much lower overhead, were developed. This
+    validates a stochastic approach, yet improvements seem possible in
+    two areas: (1) ease of installation, and configurability, and (2)
+    more-closely fitting cover traffic generation.
+
+    Ad 1: \citet{wang2015walkie} alters the Firefox binary, while the
+    current version of \citet{wtfpad2015} needed much manual
+    adjustment in our attempts.
+
+    Ad 2: \citet{wang2015walkie} uses either a normal, or lognormal
+    distribution, not adjusting to HTTP-specifics, while
+    \citet{wtfpad2015} samples packets at the network layer. It aims
+    at generally hiding /that traffic occurs/, not just which website
+    is visited, as it derives its basic mechanism from
+    \citet{ShWa-Timing06}.
+         - might even help against a global adversary, timing attacks, etc
+    #+END_QUOTE
+
+
+** Web Retrieval Model
+   :PROPERTIES:
+   :CUSTOM_ID: sub3-http
+   :END:
+World Wide Web \citep{rfc1945} traffic cannot be adequately modeled
+using standard distributions like normal or uniform
+\citep{crovella97}. This explains the many outliers reported by
+\cite[sec.5.2]{DBLP:journals/popets/CherubinHJ17}. \cite[sec.5.A]{wtfpad2015}
+also distribute its \gls{wf} defense data partitions exponentially to
+better fit web traffic. \cite{DBLP:conf/imc/IhmP11} repeatedly mention
+a /long tail/ of traffic. This is why HTTP \citep{rfc7230}-shaped
+cover traffic might prove more effective, as this would make it harder
+to separate cover and real traffic. In addition, it would work at the
+layer \citep[ch.1.7]{DBLP:books/daglib/0001977} where the problem
+originates, as it mimics the HTTP/HTML \citep{html5}-specific
+request-response interaction.
+
+
+There are several approaches on how to generate HTTP-shaped
+traffic. The naïve way, using HTTP dummy traffic \citep{panchenko},
+loads another page simultaneously in the background. \citet{ccs2012-fingerprinting},
+\citet{a-systematic2014}, \citet{kfingerprint}, \citet{effective2014},
+\citet{panchenko}, and \citet{wtfpad2015} found it to be surprisingly
+effective for all its simplicity, albeit at a high overhead.
+
+#+CAPTION[Distribution of sizes for the HTTP traffic model]: Distribution of sizes for the HTTP traffic model. While the number of embedded elements seems very low, it has mean \mu\approx5.07 \citep{newtrafficmodel} and variance \approx 229.91 (computed as of \cite[5.1.11]{compgen} and using \cite[stats.gamma]{numpy}).
+#+NAME: distribution
+[[./pictures/fig_html_embedded.pdf]]
+# see misc_gen_quantiles_numemb.py
+
+
+\citet{newtrafficmodel} model web traffic. They evaluated various
+distributions, such as lognormal, weibull, exponential, gamma, and the
+generalized pareto distributions. This thesis applies their
+distributions for the size of the HTML page, the size of embedded
+elements, and the number of embedded elements. See illustration in
+Figure [[distribution]].
+
+The size of both HTML documents and embedded objects is each modeled
+by truncated lognormal distributions. The number of embedded objects
+is modeled by a truncated gamma function. These are implemented
+following \cite{compgen}.
 ** Bloom Filter Basics
    :PROPERTIES:
    :CUSTOM_ID: sub3-bloomfilters
@@ -1947,7 +1954,7 @@ differs from how it should be used, see next section.
      The (1.) approach of /adding noise to traffic/ is used by
      f.ex. \cite{panchenko}. Others --- additionally or exclusively
      --- /alter traffic/ by reducing the data rate, splitting and
-     merging packets, etc, f.ex. \cite{morphing09}, \cite{httpos}.
+     merging packets, etc, f.ex. \cite{morphing09}, \cite{httpos2011}.
 **** Specific vs General Defenses
      :PROPERTIES:
      :CUSTOM_ID: def-specific-vs-general
@@ -1969,10 +1976,10 @@ differs from how it should be used, see next section.
      As more and more features were used to classify the traces,
      different ways of altering the data were evaluated by several
      researchers: several ways of padding (\cite{Liberatore:2006},
-     \cite{oakland2012-peekaboo}, \cite{a-systematic},
+     \cite{oakland2012-peekaboo}, \cite{a-systematic2014},
      \cite{ccs2012-fingerprinting}, \cite{wang2015walkie}), or altering
      traffic sizes to fit another web page's (\cite{morphing09},
-     \cite{httpos}).
+     \cite{httpos2011}).
 
      Specific defenses alter specific features, mostly single packet
      size. This created an arms race between attacks and defenses - the
@@ -1984,8 +1991,8 @@ differs from how it should be used, see next section.
      fixed-rate transmission of all data, with dummy traffic for gaps,
      for the estimated duration of web site retrieval.
 
-     This idea was improved on by Tamaraw \cite{a-systematic}[fn::see
-     next section] while \cite{effective} proposed the (offline)
+     This idea was improved on by Tamaraw \cite{a-systematic2014}[fn::see
+     next section] while \cite{effective2014} proposed the (offline)
      defense of morphing all traffic to supersequences of traffic
      patterns.
 **** Tamaraw
@@ -1994,7 +2001,7 @@ differs from how it should be used, see next section.
      :END:
      #+INDEX: defense!Tamaraw
      #+INDEX: Tamaraw
-     /Tamaraw/\cite{a-systematic} is an evolution of
+     /Tamaraw/\cite{a-systematic2014} is an evolution of
      BuFLO\cite{oakland2012-peekaboo}[fn::a Tamaraw is a small Buffalo,
      see \url{https://en.wikipedia.org/wiki/Tamaraw}]. It also proposes
      fixed-rate sending, and receiving of data, yet with different
@@ -2009,11 +2016,11 @@ differs from how it should be used, see next section.
      :CUSTOM_ID: def-stochastic
      :END:
      Previous general defenses were mostly deterministic. The latest
-     defenses by \cite{wtfpad} and \cite{wang2015walkie} both use a
+     defenses by \cite{wtfpad2015} and \cite{wang2015walkie} both use a
      stochastic approach to generate additional traffic, with the
      latter\cite{wang2015walkie} additionally modifying the browser to
      send "half-duplex", either exclusively sending or exclusively
-     receiving data at the same time. The former \cite{wtfpad} adapted
+     receiving data at the same time. The former \cite{wtfpad2015} adapted
      the ideas from \cite{ShWa-Timing06} to distinguish active and
      non-active periods, with a certain probability of sending dummy
      packets in each, omitting the sending when the browser generated
@@ -2025,7 +2032,7 @@ differs from how it should be used, see next section.
      #+INDEX: defense!WTF-PAD
      #+INDEX: WTF-PAD
      /Website Traffic Fingerprinting Protection with Adaptive Defense/
-     (short: WTF-PAD)\cite{wtfpad} is a stochastic defense based on
+     (short: WTF-PAD)\cite{wtfpad2015} is a stochastic defense based on
      adaptive padding\cite{ShWa-Timing06}, which was invented to hide
      from global adversary's correlation attack.
 
