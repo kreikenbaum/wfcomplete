@@ -34,4 +34,4 @@ VERBOSE = 0
 # JOBS_NUM = 1; FOLDS = 2
 # ## copy&paste:
 # config.JOBS_NUM = 1; config.FOLDS = 2; config.VERBOSE = 1
-# config.JOBS_NUM = 3; config.FOLDS = 3; config.VERBOSE = 3
+# import config; config.JOBS_NUM = 3; config.FOLDS = 3; config.VERBOSE = 3

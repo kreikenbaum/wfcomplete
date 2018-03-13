@@ -1,9 +1,10 @@
 '''plotting methods using matplotlib'''
-import re
+import logging
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
+import re
 import seaborn as sns
 # should be external, maybe in analyse?
 from sklearn import metrics, model_selection, preprocessing
@@ -62,14 +63,8 @@ def confusion_matrix_from_result(result, **kwargs):
     '''creates a confusion matrix plot for result
 
     @return  confusion_helper output'''
-    scenario_obj = result.scenario
-    if result.open_world:
-        scenario_obj = scenario_obj.get_open_world(
-            result.open_world['background_size'])
-    if result.open_world['binary']:
-        scenario_obj = scenario_obj.binarize()
-    return confusion_matrix_helper(result.get_classifier(), scenario_obj,
-                                   **kwargs) #, scenario_obj)
+    return confusion_matrix_helper(result.get_classifier(), result.scenario,
+                                   **kwargs)  # , scenario_obj)
 
 
 def confusion_matrix_from_scenario(scenario_obj, **kwargs):
@@ -302,6 +297,32 @@ def _splitdate(trace_name):
     return ''.join(NAMEDATEERR_SPLIT.search(trace_name).groups())
 
 
+# import scenario, mplot
+# s = scenario.Scenario("disabled/bridge--2018-02-02--100@50")
+# import config; config.JOBS_NUM = 3; config.FOLDS = 3; config.VERBOSE = 3
+# mplot.recall_curve_for_scenario(s)
+def recall_curve_for_scenario(scenario_obj, existing=True, axes=None,
+                              filt=None):
+    if not axes:
+        _, axes = plt.subplots()
+    for result in (r for r in results.for_scenario_open(scenario_obj)
+                   if not r.open_world['binary']):
+        logging.debug(result)
+        if (existing and not result._ypred
+            or filt and not filt(result)):
+            logging.debug("skipped %s", result)
+            continue
+        recall_curve(result.get_confusion_matrix(),
+                     len(result.scenario.traces['background']),
+                     axes=axes)
+
+
+def recall_curve_for_results(results, axes=None):
+    for result in results:
+        recall_curve(result.get_confusion_matrix(),
+                     len(result.scenario.traces['background']),
+                     axes=axes)
+
 
 def recall_curve(confmat, bg_size, step=0.1, axes=None):
     '''plots recall curve as in CUMUL paper Fig.8'''
@@ -318,8 +339,8 @@ def recall_curve(confmat, bg_size, step=0.1, axes=None):
 
 def _curve(name, x, y, bg_size, label, axes):
     axes.plot(x, y, marker="o", label="b = {}".format(bg_size))
-    axes.xlabel(name)
-    axes.ylabel("Fraction of Foreground Pages [%]")
+    axes.set_xlabel(name)
+    axes.set_ylabel("Fraction of Foreground Pages [%]")
 
 # # usage:
 # s = scenario.list_all("17-12-26")[0]

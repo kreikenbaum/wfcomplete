@@ -25,7 +25,8 @@ def _db():
 class Result(object):
     def __init__(self, scenario_, accuracy, git, time, type_, size,
                  open_world=False, size_overhead=None,
-                 time_overhead=None, _id=None, gamma=None, C=None, src=None):
+                 time_overhead=None, _id=None, gamma=None, C=None, src=None,
+                 ypred=None):
         self._id = _id
         self.C = C
         self.date = time
@@ -41,6 +42,7 @@ class Result(object):
         if not self.date and hasattr(self.scenario, "date"):
             self.date = self.scenario.date
         self.src = src
+        self._ypred = ypred
 
     @staticmethod
     def from_mongoentry(entry):
@@ -102,7 +104,9 @@ class Result(object):
                       size_overhead=size_overhead, time_overhead=time_overhead,
                       _id=entry['_id'],
                       C=c, gamma=gamma,
-                      src=entry)
+                      src=entry,
+                      ypred=_value_or_none(
+                          entry, 'result', 'y_prediction'))
 
     def __repr__(self):
         out = ("<Result({!r}, score={}, {}, {}, {}, size={}, "
@@ -143,14 +147,13 @@ class Result(object):
     @property
     def y_prediction(self):
         '''@return predicted values (either pre-existing or computed)'''
-        try:
-            return self.src['result']['y_prediction']
-        except KeyError:
+        if not self._ypred:
             logging.info("%s had no saved prediction", self)
             X, y, _ = self.scenario.get_features_cumul()
-            return model_selection.cross_val_predict(
+            self._ypred = model_selection.cross_val_predict(
                 self.get_classifier(), X, y, cv=config.FOLDS,
                 n_jobs=config.JOBS_NUM, verbose=config.VERBOSE)
+        return self._ypred
 
     def get_confusion_matrix(self):
         '''@return cm either pre-existing or computed'''
