@@ -292,10 +292,10 @@ def simulated_open_world(scenario_obj, auc_bound=None, binarize=True,
     gamma = clf_noprob.estimator.gamma
     if binarize:  # can (easily) compute auroc
         clf = fit.clf_default(y, C=C, gamma=gamma, probability=True)
-        y_predprob = model_selection.cross_val_predict(
+        y_pred = model_selection.cross_val_predict(
             clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
             method="predict_proba")
-        auroc = metrics.roc_auc_score(y, y_predprob[:, 1], max_fpr=auc_bound)
+        auroc = metrics.roc_auc_score(y, y_pred[:, 1], max_fpr=auc_bound)
     else:
         auroc = None
     return (tpr, fpr, auroc, C, gamma, accuracy, y_pred)

@@ -297,6 +297,7 @@ def _splitdate(trace_name):
     return ''.join(NAMEDATEERR_SPLIT.search(trace_name).groups())
 
 
+
 # import scenario, mplot
 # s = scenario.Scenario("disabled/bridge--2018-02-02--100@50")
 # import config; config.JOBS_NUM = 3; config.FOLDS = 3; config.VERBOSE = 3
@@ -312,29 +313,33 @@ def recall_curve_for_scenario(scenario_obj, existing=True, axes=None,
             or filt and not filt(result)):
             logging.debug("skipped %s", result)
             continue
-        recall_curve(result.get_confusion_matrix(),
-                     len(result.scenario.traces['background']),
-                     axes=axes)
+        ccdf_curve(result.get_confusion_matrix(),
+                   len(result.scenario.traces['background']),
+                   axes=axes)
 
 
-def recall_curve_for_results(results, axes=None):
+def ccdf_curve_for_results(results, type_="recall", axes=None, **kwargs):
     for result in results:
-        recall_curve(result.get_confusion_matrix(),
-                     len(result.scenario.traces['background']),
-                     axes=axes)
+        ccdf_curve(result.get_confusion_matrix(),
+                   len(result.scenario.traces['background']),
+                   type_=type_, axes=axes, **kwargs)
 
 
-def recall_curve(confmat, bg_size, step=0.1, axes=None):
+METRIC = {"recall": 0, "fpr": 1, "precision": 2}
+
+
+def ccdf_curve(confmat, bg_size, step=0.1, type_="recall", axes=None,
+               **kwargs):
     '''plots recall curve as in CUMUL paper Fig.8'''
     if not axes:
         _, axes = plt.subplots()
     plotx = np.arange(0, 1.01, step=step)
-    ploty_recall = []
+    ploty = []
     tpr_fpr_tpa = mymetrics.tpr_fpr_tpa(confmat)
     for xpos in plotx:
-        ploty_recall.append(len([x for x in tpr_fpr_tpa if x[2] > xpos]))
-    _curve("recall", plotx, ploty_recall, bg_size, "b = {}".format(bg_size),
-           axes)
+        ploty.append(len([x for x in tpr_fpr_tpa if x[METRIC[type_]] > xpos])
+                     * 100. / len(confmat))
+    _curve(type_, plotx, ploty, bg_size, "b = {}".format(bg_size), axes)
 
 
 def _curve(name, x, y, bg_size, label, axes):

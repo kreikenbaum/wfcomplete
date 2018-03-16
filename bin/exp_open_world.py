@@ -25,7 +25,7 @@ def my_config():
     remove_small = None
     auc_bound = None
     background_size = 'auto' #, number, None
-    binarize = True # fixed, unclear how to handle multi-class
+    binarize = True
     exclude_sites = []
 # pylint: enable=unused-variable
 

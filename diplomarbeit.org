@@ -86,7 +86,7 @@
 #+LATEX_HEADER:     in:                 & Northeim && \\
 #+LATEX_HEADER:     &&&\\
 #+LATEX_HEADER:     Gutachter:          & Prof. Dr. Konrad Rieck (Universität Braunschweig) && \\
-#+LATEX_HEADER: 		        & Prof. Dr. Marius Kloft && \\%
+#+LATEX_HEADER: 		        & Prof. Dr. Marius Kloft (Universität  Kaiserslautern)&& \\%
 #+LATEX_HEADER: 				 %
 #+LATEX_HEADER:     &&&\\
 #+LATEX_HEADER:     eingereicht am:     & \dots\dots \\ %
@@ -740,6 +740,82 @@ of future work in section [[#future-work]].
    secondary defense to the server-side ALPaCA defense, and emphasize
    its prototype status \citep{LLaMA}.
 * A New Defense
+\Gls{wf} has deanonymized Tor under laboratory conditions
+\citep{panchenko}, and has continued to improve (\citet{panchenko2},
+\citet{197185}, \citet{rimmerautomated}). Several approaches have been
+taken to prevent \gls{wf} (\cite{panchenko},
+\cite{DBLP:journals/popets/CherubinHJ17}). Yet none has made it into
+mainline Tor \citep{tor-design}. This thesis presents a deployable
+defense. It uses domain-specific properties of HTTP traffic. This is
+akin to \cite{newton2005preserving} who showed good results in
+obfuscating faces using eigenfaces.
+
+
+The question is whether this defense obfuscates effectively: Whether
+http-specific cover traffic can yield better results than previous
+stochastic defenses, that used non-long-tailed distributions. A bound
+on this effectiveness are previous defenses. It is measured using the
+state-of-the-art CUMUL \gls{wf} attack by \citet{panchenko2}.
+
+
+This chapter first presents the main thesis's defense design. It then
+goes into some detail about the traffic model, and the optional
+Bloom-filter based stochastic data structure that is used for size
+caches.
+** main design
+The thesis's defense is implemented using Firefox's Addon-SDK. This
+provides for easy deployment, and configuration. Let us again think of
+Alice. When Alice opens the website =bob.com= in her browser, the
+browser first loads =bob.com= main HTML page. This page often contains
+other elements like CSS stylesheets, images, JavaScript files, etc. It
+might also contain elements that request other elements agian, like
+nested HTML or CSS resources. For each of these elements, the browser
+sends a request to obtain it.
+
+
+The addon listens for all of these requests. It considers the first
+loading from a domain to be the HTML page. This page has special
+significance in \gls{wf}, as of \cite[sec.4.1]{panchenko}. Thus, the
+addon always obfuscates this request with an additional cover traffic
+request. The size of the cover request is adjusted to the page's
+actual values, if known. The addon requests data to match an imagined
+web page retrieval, that is drawn from statistical models.
+
+
+Each further element request is considered a resource request. The
+imagined web page retrieval is checked, how many resource requests it
+contains as opposed to the actual retrieval, if known. The difference
+of requests is randomly spread out among the actual browser requests.
+
+
+Algorithm 1 describes this procedure. Section 2 describes the web page
+retrieval model, Section 3 gives the uses of Bloom-filters in this
+scenario.
+** model
+Many studies agree that web traffic does not follow normal
+distributions, but instead exhibit long-tailed behavior, where high
+values are not as unlikely as in, say, exponential or normal
+distributions. This is why wtf-pad used exponential bound sizes (which
+corresponds to log-normal distributions), and ... repeatedly mentioned
+a long tail of traffic. The web model of \citet{newtrafficmodel}
+models this behavior using mostly (truncated) log-normal
+distributions, as seen in Figures 2 and 3. This model is used in this
+thesis to set the cover traffic target sizes. It also sets the page's
+actual sizes, if they are not known.
+** Blooms
+A Bloom-filter is a stochastic data structure to test membership in a
+set. In this, they are similar to hash-coding. They offer a
+configurable false-positive error-rate: they might erroneously state
+that an element is contained in a set, if it is not. In this thesis,
+Bloom-filters are used to approximately cache sizes of elements: the
+range of possible values is inspected, and split by quantiles. These
+values are then binned, and the middle quantile of each bin is chosen
+to represent the bin. Each bin corresponds to a Bloom-filter that
+saves whether the element's URL is modeled by the bin.
+* bit older methods chapter
+
+
+
 As described in section [[#sub2-wf]], \gls{wf} can deanonymize Tor web
 browsing. It is a low-level passive defense that can even be deployed
 by ISPs, and company networks, as well as nation-states. This
@@ -774,10 +850,24 @@ save element sizes ([[#sub3-bloomsort]]).
    :CUSTOM_ID: sub3-defense
    :END:
 - why defense
+  - what is the problem
+  - why should this be solved
+  - why me?
+- what is the problemstellung/zielsetzung
 - how does the defense work
-- what is the underlying distribution
+  - which web model
+  - how to detect retrieval
+  - how to cloak traffic
+- what are the underlying distributions
+  - html
+  - embedded
+  - num embedded
 - what is the main algorithm
+  - what does it do
+  - is there anything special
 - what are the special data structures
+  - bloom filter
+  - timeout-dict
 
 
 The defense obfuscates web traffic: For each load of a website,
@@ -953,7 +1043,7 @@ loads another page simultaneously in the background. \citet{ccs2012-fingerprinti
 \citet{panchenko}, and \citet{wtfpad2015} found it to be surprisingly
 effective for all its simplicity, albeit at a high overhead.
 
-#+CAPTION[Distribution of sizes for the HTTP traffic model]: Distribution of sizes for the HTTP traffic model. While the number of embedded elements seems very low, it has mean \mu\approx5.07 \citep{newtrafficmodel} and variance \approx 229.91 (computed as of \cite[5.1.11]{compgen} and using \cite[stats.gamma]{numpy}).
+#+CAPTION[Distribution of sizes for the HTTP traffic model]: Distribution of sizes for the HTTP traffic model. While the number of embedded elements seems very low, it has mean \mu \approx 5.07 \citep{newtrafficmodel} and standard deviation \sigma \approx 15.16 (computed as of \cite[5.1.11]{compgen} and using \cite[stats.gamma]{scipy}).
 #+NAME: distribution
 [[./pictures/fig_html_embedded.pdf]]
 # see misc_gen_quantiles_numemb.py

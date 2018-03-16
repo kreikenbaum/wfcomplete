@@ -11,8 +11,7 @@ theta=40.3257
 # must have mean of kappa*theta, which works, which is 5.7
 
 num_embedded = stats.gamma(kappa, scale=theta)
-for i in range(2*PARTS):
-    q = float(i) / (2*PARTS)
-    print 'at {}: value {}'.format(q, num_embedded.ppf(q))
-
-
+if __name__ == "__main__":
+    for i in range(2*PARTS):
+        q = float(i) / (2*PARTS)
+        print 'at {}: value {}'.format(q, num_embedded.ppf(q))
