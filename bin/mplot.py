@@ -302,8 +302,8 @@ def _splitdate(trace_name):
 # s = scenario.Scenario("disabled/bridge--2018-02-02--100@50")
 # import config; config.JOBS_NUM = 3; config.FOLDS = 3; config.VERBOSE = 3
 # mplot.recall_curve_for_scenario(s)
-def recall_curve_for_scenario(scenario_obj, existing=True, axes=None,
-                              filt=None):
+def ccdf_curve_for_scenario(scenario_obj, existing=True, axes=None,
+                            filt=None, type_="recall"):
     if not axes:
         _, axes = plt.subplots()
     for result in (r for r in results.for_scenario_open(scenario_obj)
@@ -316,6 +316,8 @@ def recall_curve_for_scenario(scenario_obj, existing=True, axes=None,
         ccdf_curve(result.get_confusion_matrix(),
                    len(result.scenario.traces['background']),
                    axes=axes)
+    plt.legend()
+    plt.title("CCDF-{} curve for {}".format(type_, scenario_obj))
 
 
 def ccdf_curve_for_results(results, type_="recall", axes=None, **kwargs):

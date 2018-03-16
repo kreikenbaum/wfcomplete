@@ -110,6 +110,9 @@ class Scenario(object):
         if self.background:
             self.trace_args['or_level'] = 0
 
+    def __lt__(self, other):
+        return self.date < other.date
+
     def __contains__(self, item):
         return item in self.path
 

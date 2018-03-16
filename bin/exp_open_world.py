@@ -4,7 +4,7 @@ import logging
 import os
 import random
 
-
+import numpy as np
 import pymongo
 from sacred import Experiment
 from sacred.observers import MongoObserver
@@ -38,13 +38,16 @@ def run_exp(scenario, remove_small, or_level, auc_bound,
     config.REMOVE_SMALL = (config.REMOVE_SMALL if remove_small is None
                            else remove_small)
     scenario_obj = scenario_module.Scenario(scenario)
-    (tpr, fpr, auroc, C, gamma, accuracy, yprd) = analyse.simulated_open_world(
+    (tpr, fpr, auroc, C, gamma, acc, y, yprd) = analyse.simulated_open_world(
         scenario_obj, auc_bound, binarize=binarize, bg_size=background_size)
+    save_yprd = tempfile.mktemp()
+    with open(save_yprd) as f:
+        np.savez_com
     return {
         'C': C,
         'gamma': gamma,
         'sites': scenario_obj.get_traces().keys(),
-        'score': accuracy,
+        'score': acc,
         'type': "accuracy",
         'outlier_removal': scenario_obj.trace_args,
         'size_increase': scenario_obj.size_increase(),
@@ -52,6 +55,7 @@ def run_exp(scenario, remove_small, or_level, auc_bound,
         'fpr': fpr,
         'tpr': tpr,
         'auroc': auroc,
+        'y_true': y,
         'y_prediction': list(yprd)
     }
 

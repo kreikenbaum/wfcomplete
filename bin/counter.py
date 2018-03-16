@@ -276,7 +276,10 @@ def all_from_json(filename):
         if len(domains) > 1:
             domain = 'background set'
         else:
-            domain = domains.pop()
+#            try:
+#                domain = domains.pop()
+#            except KeyError:  # all discarded
+                domain = os.path.basename(filename).rsplit('.', 1)[0]
         logging.info('discarded %d trace%s of %s',
                      removed, 's' if removed != 1 else '', domain)
     return out

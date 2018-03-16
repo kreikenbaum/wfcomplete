@@ -298,7 +298,7 @@ def simulated_open_world(scenario_obj, auc_bound=None, binarize=True,
         auroc = metrics.roc_auc_score(y, y_pred[:, 1], max_fpr=auc_bound)
     else:
         auroc = None
-    return (tpr, fpr, auroc, C, gamma, accuracy, y_pred)
+    return (tpr, fpr, auroc, C, gamma, accuracy, y, y_pred)
 
 
 def _binmat(confmat):

@@ -26,7 +26,7 @@ class Result(object):
     def __init__(self, scenario_, accuracy, git, time, type_, size,
                  open_world=False, size_overhead=None,
                  time_overhead=None, _id=None, gamma=None, C=None, src=None,
-                 ypred=None):
+                 ytrue=None, ypred=None):
         self._id = _id
         self.C = C
         self.date = time
@@ -43,6 +43,7 @@ class Result(object):
             self.date = self.scenario.date
         self.src = src
         self._ypred = ypred
+        self._ytrue = None
 
     @staticmethod
     def from_mongoentry(entry):
@@ -105,6 +106,7 @@ class Result(object):
                       _id=entry['_id'],
                       C=c, gamma=gamma,
                       src=entry,
+                      ytrue=_value_or_none(entry, 'result', 'y_true'),
                       ypred=_value_or_none(
                           entry, 'result', 'y_prediction'))
 
@@ -145,6 +147,14 @@ class Result(object):
         return self.src['stop_time'] - self.src['start_time']
 
     @property
+    def y_true(self):
+        '''@return true values of scenario, with optional open world added'''
+        if self._ytrue is None:
+            logging.info("%s had no saved class array 'y'", self)
+            _, self._ytrue, _ = self.scenario.get_features_cumul()
+        return self._ytrue
+
+    @property
     def y_prediction(self):
         '''@return predicted values (either pre-existing or computed)'''
         if not self._ypred:
@@ -157,8 +167,7 @@ class Result(object):
 
     def get_confusion_matrix(self):
         '''@return cm either pre-existing or computed'''
-        X, y, _ = self.scenario.get_features_cumul()
-        return metrics.confusion_matrix(y, self.y_prediction)
+        return metrics.confusion_matrix(self.y_true, self.y_prediction)
 
     # def _add_oh(self):
     #     '''add overhead-helper for those experiments that lacked it'''
