@@ -211,8 +211,18 @@ class TestExp(unittest.TestCase):
     def test_runs(self):
         with open(os.devnull, "w") as null:
             subprocess.check_call(
-                os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                             "./exp.py")
+                os.path.join(utils.path_to(__file__), "./exp.py")
+                + " print_config > /dev/null",
+                stderr=null, stdout=null, shell=True)
+
+
+class TestExpOpen(unittest.TestCase):
+    '''tests the open-world experimentation module'''
+    @unittest.skipIf(VERYQUICK, "slow test skipped")
+    def test_runs(self):
+        with open(os.devnull, "w") as null:
+            subprocess.check_call(
+                os.path.join(utils.path_to(__file__), "./exp_open_world.py")
                 + " print_config > /dev/null",
                 stderr=null, stdout=null, shell=True)
 

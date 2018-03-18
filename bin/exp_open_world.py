@@ -27,22 +27,23 @@ def my_config():
     background_size = 'auto' #, number, None
     binarize = True
     exclude_sites = []
+    current_sites = False
 # pylint: enable=unused-variable
 
 
 # code duplication exp.py
 @ex.capture
 def run_exp(scenario, remove_small, or_level, auc_bound,
-            background_size, binarize, _rnd):
+            background_size, binarize, exclude_sites, current_sites,
+            _rnd):
     config.OR_LEVEL = config.OR_LEVEL if or_level is None else or_level
     config.REMOVE_SMALL = (config.REMOVE_SMALL if remove_small is None
                            else remove_small)
-    scenario_obj = scenario_module.Scenario(scenario)
+    scenario_obj = scenario_module.Scenario(scenario,
+                                            exclude_sites=exclude_sites)
     (tpr, fpr, auroc, C, gamma, acc, y, yprd) = analyse.simulated_open_world(
-        scenario_obj, auc_bound, binarize=binarize, bg_size=background_size)
-    save_yprd = tempfile.mktemp()
-    with open(save_yprd) as f:
-        np.savez_com
+        scenario_obj, auc_bound, binarize=binarize, bg_size=background_size,
+        exclude_sites=exclude_sites, current_sites=current_sites)
     return {
         'C': C,
         'gamma': gamma,

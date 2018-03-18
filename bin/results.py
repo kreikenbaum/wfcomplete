@@ -76,19 +76,17 @@ class Result(object):
                     'background_size': _value_or_none(
                         entry, 'config', 'background_size'),
                     'binary': _value_or_none(entry, 'config', 'binarize'),
-                    'exclude_sites': _value_or_none(
-                        entry, 'config', 'exclude_sites')
                 }
-                # if more than one not-None value is required, alter _value_...
-                if not open_world['exclude_sites']:
-                    open_world['exclude_sites'] = []
         except KeyError:
             open_world = False
         size_overhead = _value_or_none(entry, 'result', 'size_increase')
         time_overhead = _value_or_none(entry, 'result', 'time_increase')
         try:
             scenario_obj = scenario.Scenario(
-                entry['config']['scenario'], open_world=open_world)
+                entry['config']['scenario'],
+                open_world=open_world,
+                exclude_sites=_value_or_list(
+                    entry, 'config', 'exclude_sites'))
         except ValueError:
             if entry['status'] != "COMPLETED":
                 scenario_obj = "placeholder for scenario {}".format(
@@ -204,6 +202,13 @@ def _next_id(db=_db()):
             .sort("_id", pymongo.DESCENDING)
             .limit(1)
             .next())["_id"] + 1
+
+
+def _value_or_list(entry, *steps):
+    out = _value_or_none(entry, *steps)
+    if out is None:
+        return []
+    return out
 
 
 def _value_or_none(entry, *steps):

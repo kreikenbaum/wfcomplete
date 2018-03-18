@@ -1,7 +1,8 @@
 '''common code'''
-from sklearn import multiclass, svm
-
 import logging
+import os
+
+from sklearn import multiclass, svm
 
 import config
 
@@ -27,3 +28,8 @@ def site(status):
         return 'gcloud'
     else:
         logging.error("unknown host site for %s", host)
+
+
+def path_to(filename):
+    '''@return path to filename'''
+    return os.path.dirname(os.path.abspath(filename))

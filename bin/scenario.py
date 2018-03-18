@@ -24,6 +24,7 @@ import numpy as np
 import config
 import counter
 import mymetrics
+import sites
 from capture import utils
 
 INT_REGEXP = re.compile("-?([+-]?[0-9]+.*)")
@@ -52,7 +53,7 @@ PATH_SKIP = [
 class Scenario(object):
     '''meta-information about a scenario with optional loading of its traces'''
     def __init__(self, name, trace_args=None, smart=False, skip=False,
-                 open_world=False):
+                 open_world=False, exclude_sites=[]):
         ''' (further example usage in test.py)
         >>> Scenario('disabled/2016-11-13').date
         datetime.date(2016, 11, 13)
@@ -228,7 +229,7 @@ class Scenario(object):
             out_y = list(mymetrics.binarize(out_y, transform_to=1))
         return (np.array(X), np.array(out_y), domain_names)
 
-    def get_open_world(self, num="auto", same=False):
+    def get_open_world(self, num="auto", same=False, current=False):
         '''
         @return scenario with traces and (num) added background traces
         @param num: size of background set, if 'auto', use as many as fg set
@@ -239,10 +240,12 @@ class Scenario(object):
             return self
         filt = None
         if same:
-            filt = lambda x: self._compareattr(x, "name", "config", "site")
+            def filt(x):
+                return self._compareattr(x, "name", "config", "site")
         background = self._closest("@1", True, filt)
         logging.info("background is %r", background)
-        self.get_traces()
+        # todo: integrate following line into out.traces line?
+        self.get_traces(current=current)
         out = copy.copy(self)
         out.traces = copy.copy(self.traces)
         if num:
@@ -266,8 +269,10 @@ class Scenario(object):
                 out[domain] = trace_list
         return out
 
-    def get_traces(self):
-        '''@return dict {domain1: [trace1, .., traceN], ..., domainM: [...]}'''
+    def get_traces(self, current=False):
+        '''@return dict {domain1: [trace1, .., traceN], ..., domainM: [...]}
+
+        if current==True, only use the sites currently in the top-100'''
         if not self.traces:
             self.traces = counter.all_from_dir(os.path.join(DIR, self.path),
                                                **self.trace_args)
@@ -279,6 +284,8 @@ class Scenario(object):
                     same=True).traces
                 if self._open_world_config['binary']:
                     self.traces = self.binarize().traces
+        if current:
+            self.traces = sites.clean(self.traces)
         return self.traces
 
     @property

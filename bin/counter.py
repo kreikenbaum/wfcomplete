@@ -578,7 +578,7 @@ class Counter(object):
         >>> _test(3).domain
         u'test'
         '''
-        return self.name.split('@')[0]
+        return os.path.basename(self.name.split('@')[0])
 
     @property
     def exception(self):

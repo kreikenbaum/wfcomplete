@@ -267,8 +267,8 @@ picks best result'''
     return clf
 
 
-def simulated_open_world(scenario_obj, auc_bound=None, binarize=True,
-                         bg_size="auto", exclude_sites=[]):
+def simulated_open_world(scenario_obj, auc_bound, binarize, bg_size,
+                         exclude_sites, current_sites):
     '''@return metrics for open world experiment'''
     try:
         scenario_obj = scenario_obj.get_open_world(num=bg_size, same=True)
