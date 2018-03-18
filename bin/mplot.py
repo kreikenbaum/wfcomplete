@@ -256,15 +256,8 @@ def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):
                     + '_'.join(names).replace('/', '___')+'__'
                     + '_'.join(keys) + "__palette_colorblind.pdf")
 
-# td: color
-'''best way (off of head)
-- load as pandas dataframe data
-- data.T.plot(kind='bar')'''
 
-'''other ways
-- plt.bar
-  - needs to set lots of options to look good, even with seaborn'''
-## traces_cumul usage:
+# # traces_cumul usage (two sites):
 # s = scenario.list_all("2017-12-31")[0]
 # a = ['wikipedia.org', 'onclickads.net']
 # color = lambda x: mplot._color(x, a)
@@ -275,10 +268,11 @@ def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):
 # mplot.plt.ylabel("Feature Value [Byte]")
 # mplot.plt.title("CUMUL example for two sites retrieved on {}".format(s.date))
 # mplot.plt.tight_layout()
-def traces_cumul(scenario_obj, domain, color=sns.color_palette()[0], axes=None):
+def traces_cumul(scenario_obj, domain, color=sns.color_palette()[0],
+                 save=False, axes=None):
+    '''plots the cumul traces of =domain= in scenario_obj'''
     X, y, yd = scenario_obj.get_features_cumul()
-    # data = [x[0] for x in zip(X[:, 4:], yd) if x[1] == domain]
-    data = [x[0] for x in zip(X, yd) if x[1] == domain]
+    data = [x[0] for x in zip(X, yd) if x[1] == domain]  # zip(X[:, 4:]
     legend = domain
     if not axes:
         _, axes = plt.subplots()
@@ -289,6 +283,9 @@ def traces_cumul(scenario_obj, domain, color=sns.color_palette()[0], axes=None):
         legend = None
     axes.set_title("Traces for {} captured with {}".format(domain,
                                                            scenario_obj))
+    if save:
+        plt.savefig("/tmp/traces_cumul_{}_{}.pdf".format(scenario_obj, domain)
+                    .replace(" ", "_"))
     return line
 
 

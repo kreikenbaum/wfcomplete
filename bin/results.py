@@ -274,18 +274,22 @@ def sized(size):
 #                            {"result.sites": {"$size": 10}}]})
 
 
-def to_table(results):  # , fields, names=None):
+def to_table(results, fields_plus_names=None):
     '''@return table of results as a string'''
+    if fields_plus_names:
+        (fields, names) = fields_plus_names
+    else:
+        def fields(r):
+            return [r.scenario.name, r.date.date(),
+                    r.score, r.size_overhead, r.time_overhead]
+        names = ["scenario", "date",
+                 "accuracy [%]", "size increase [%]", "time increase [%]"]
     import prettytable
     tbl = prettytable.PrettyTable()
-    tbl.field_names = [
-        "scenario", "accuracy [%]", "size increase [%]", "time increase [%]"]
+    tbl.field_names = names
     # names if names else fields
     for result in results:
-        tbl.add_row([result.scenario.name,
-                     result.score,
-                     result.size_overhead,
-                     result.time_overhead])
+        tbl.add_row(fields(result))
     return tbl
 
 
