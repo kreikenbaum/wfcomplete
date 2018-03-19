@@ -16,6 +16,7 @@ import counter
 import fit
 import mymetrics
 import scenario
+from capture import utils
 
 # classifiers
 GOOD = [ensemble.ExtraTreesClassifier(n_estimators=250),
@@ -271,7 +272,8 @@ def simulated_open_world(scenario_obj, auc_bound, binarize, bg_size,
                          exclude_sites, current_sites):
     '''@return metrics for open world experiment'''
     try:
-        scenario_obj = scenario_obj.get_open_world(num=bg_size, same=True)
+        scenario_obj = scenario_obj.get_open_world(num=bg_size, same=True,
+                                                   current_sites=current_sites)
     except ValueError:
         logging.error("no fitting background set found for %r", scenario_obj)
         raise
@@ -291,7 +293,7 @@ def simulated_open_world(scenario_obj, auc_bound, binarize, bg_size,
     C = clf_noprob.estimator.C
     gamma = clf_noprob.estimator.gamma
     if binarize:  # can (easily) compute auroc
-        clf = fit.clf_default(y, C=C, gamma=gamma, probability=True)
+        clf = utils.clf_default(y, C=C, gamma=gamma, probability=True)
         y_pred = model_selection.cross_val_predict(
             clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
             method="predict_proba")

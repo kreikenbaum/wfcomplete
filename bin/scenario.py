@@ -229,7 +229,7 @@ class Scenario(object):
             out_y = list(mymetrics.binarize(out_y, transform_to=1))
         return (np.array(X), np.array(out_y), domain_names)
 
-    def get_open_world(self, num="auto", same=False, current=False):
+    def get_open_world(self, num="auto", same=False, current_sites=False):
         '''
         @return scenario with traces and (num) added background traces
         @param num: size of background set, if 'auto', use as many as fg set
@@ -245,7 +245,7 @@ class Scenario(object):
         background = self._closest("@1", True, filt)
         logging.info("background is %r", background)
         # todo: integrate following line into out.traces line?
-        self.get_traces(current=current)
+        self.get_traces(current_sites=current_sites)
         out = copy.copy(self)
         out.traces = copy.copy(self.traces)
         if num:
@@ -269,7 +269,7 @@ class Scenario(object):
                 out[domain] = trace_list
         return out
 
-    def get_traces(self, current=False):
+    def get_traces(self, current_sites=False):
         '''@return dict {domain1: [trace1, .., traceN], ..., domainM: [...]}
 
         if current==True, only use the sites currently in the top-100'''
@@ -284,7 +284,7 @@ class Scenario(object):
                     same=True).traces
                 if self._open_world_config['binary']:
                     self.traces = self.binarize().traces
-        if current:
+        if current_sites:
             self.traces = sites.clean(self.traces)
         return self.traces
 
