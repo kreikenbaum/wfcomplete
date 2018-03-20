@@ -45,6 +45,30 @@ class Result(object):
         self._ypred = ypred
         self._ytrue = None
 
+    @property
+    def duration(self):
+        '''@return experiment duration'''
+        return self.src['stop_time'] - self.src['start_time']
+
+    @property
+    def y_prediction(self):
+        '''@return predicted values (either pre-existing or computed)'''
+        if not self._ypred:
+            logging.info("%s had no saved prediction", self)
+            X, y, _ = self.scenario.get_features_cumul()
+            self._ypred = model_selection.cross_val_predict(
+                self.get_classifier(), X, y, cv=config.FOLDS,
+                n_jobs=config.JOBS_NUM, verbose=config.VERBOSE)
+        return self._ypred
+
+    @property
+    def y_true(self):
+        '''@return true values of scenario, with optional open world added'''
+        if self._ytrue is None:
+            logging.info("%s had no saved class array 'y'", self)
+            _, self._ytrue, _ = self.scenario.get_features_cumul()
+        return self._ytrue
+
     @staticmethod
     def from_mongoentry(entry):
         git = _value_or_none(entry, 'experiment', 'repositories', 0, 'commit')
@@ -127,6 +151,10 @@ class Result(object):
             class_weight=None if self.open_world else "balanced",
             probability=probability)
 
+    def get_confusion_matrix(self):
+        '''@return cm either pre-existing or computed'''
+        return metrics.confusion_matrix(self.y_true, self.y_prediction)
+
     def save(self, db=_db()):
         '''saves entry to mongodb if new'''
         obj = {
@@ -139,33 +167,19 @@ class Result(object):
         else:
             logging.debug("%s@%s already in db", self.scenario, self.date)
 
-    @property
-    def duration(self):
-        '''@return experiment duration'''
-        return self.src['stop_time'] - self.src['start_time']
-
-    @property
-    def y_true(self):
-        '''@return true values of scenario, with optional open world added'''
-        if self._ytrue is None:
-            logging.info("%s had no saved class array 'y'", self)
-            _, self._ytrue, _ = self.scenario.get_features_cumul()
-        return self._ytrue
-
-    @property
-    def y_prediction(self):
-        '''@return predicted values (either pre-existing or computed)'''
-        if not self._ypred:
-            logging.info("%s had no saved prediction", self)
-            X, y, _ = self.scenario.get_features_cumul()
-            self._ypred = model_selection.cross_val_predict(
-                self.get_classifier(), X, y, cv=config.FOLDS,
-                n_jobs=config.JOBS_NUM, verbose=config.VERBOSE)
-        return self._ypred
-
-    def get_confusion_matrix(self):
-        '''@return cm either pre-existing or computed'''
-        return metrics.confusion_matrix(self.y_true, self.y_prediction)
+    def to_dict(self):
+        '''@return dict version of this, for use in e.g. pandas'''
+        out = {}
+        # add _type if other types than "accuracy"
+        for key in ['C', 'size_overhead', 'time_overhead', 'score',
+                    'date', '_id', 'gamma', 'size']:
+            out[key] = self.__dict__[key]
+        if self.open_world:
+            for key in self.open_world:
+                out[key] = self.open_world[key]
+        for key in ['name', 'date']:  # maybe add other aspects (num_sites etc)
+            out["scenario." + key] = self.scenario.__dict__[key]
+        return out
 
     # def _add_oh(self):
     #     '''add overhead-helper for those experiments that lacked it'''
