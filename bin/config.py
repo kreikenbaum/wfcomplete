@@ -1,7 +1,10 @@
 '''configuration variables'''
+import os
+
 import logconfig
 
 from capture import config as capture_config
+from capture import utils
 
 # ### SCENARIO
 # ## SCENARIO NAME WITH DEFENSE
@@ -11,6 +14,14 @@ OLD_HOST = capture_config.OLD_HOST
 
 # ## TRACE EXTRACTION
 MAIN = capture_config.MAIN
+
+# ## SITES
+SITES = capture_config.SITES.replace("$HOME", os.path.expanduser("~"))
+try:
+    open(SITES)
+except IOError:
+    SITES = os.path.join(utils.path_to(__file__), '..',
+                         capture_config.SITES.replace("$HOME/", ""))
 
 # ### OUTLIER REMOVAL
 # minimum class size
