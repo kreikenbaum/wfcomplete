@@ -27,7 +27,7 @@ def site(status):
     elif 'pioneering-mode-193216' in host:
         return 'gcloud'
     else:
-        logging.error("unknown host site for %s", host)
+        raise Exception("unknown host site for %s".format(host))
 
 
 def path_to(filename):

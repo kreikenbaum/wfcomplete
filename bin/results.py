@@ -167,6 +167,7 @@ class Result(object):
         else:
             logging.debug("%s@%s already in db", self.scenario, self.date)
 
+    # df = pd.DataFrame(r.to_dict() for r in results.list_all())
     def to_dict(self):
         '''@return dict version of this, for use in e.g. pandas'''
         out = {}

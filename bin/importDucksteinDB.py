@@ -13,6 +13,7 @@ import pymongo
 DEFAULT_LOGIN = "mkreik@duckstein"
 
 
+# ## duplicate code with importLocalDb
 def load(ssh_login):
     try:
         pymongo.MongoClient(serverSelectionTimeoutMS=10).server_info()
