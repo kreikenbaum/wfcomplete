@@ -2200,6 +2200,12 @@ differs from how it should be used, see next section.
   # mplot.traces_cumul(r.scenario, "rakuten.co.jp", axes=a[1])
   # mplot.traces_cumul(r.scenario, "t.co", axes=a[0])
 
+
+  This can be explained by the content: t.co shows only 3 lines of
+  text, and thus any variation in the download of its little content
+  leads to higher variability. rakuten.co.jp has shopping results,
+  which are bound to show high variation.
+
   #+CAPTION[CUMUL traces for well-classified open world sites]: CUMUL-Traces for well-classified website dailymotion.com.
   #+NAME: fig:cumul-well-open
   [[./pictures/cumul__dailymotion.com__2018-02-02.pdf]]
@@ -2227,20 +2233,36 @@ differs from how it should be used, see next section.
 
   Table [[tab:high-error-open-world]] shows the misclassification rates of
   the sites that were misclassified the most often (\ge 30 false
-  negatives or \ge 20 false positives).
+  negatives or \ge 20 false positives). Let us examine the top-5
+  false-positive sites in detail. As Figure [[fig:high-fpr-four]] shows,
+  four of these show high intra-class variability:
 
-  Looking at the top-5 false-positive sites in detail:
-
+  #+CAPTION[CUMUL traces high-false-positives sites]: CUMUL-Traces for the websites with high false-positive rates. The sites are (left-to-right) ameblo.jp, youporn.com, aliexpress.com, and godaddy.com. These also show high (intra-class) variability, which could explain the high misclassification rates.
+  #+NAME: fig:high-fpr-four
+  [[./pictures/traces_cumul_no_defense_on_2018-02-02_ameblo.jp_youporn.com_aliexpress.com_godaddy.com.pdf]]
+  # s = scenario.Scenario("disabled/bridge--2018-02-02--100@50")
+  # a = ["ameblo.jp", "youporn.com", "aliexpress.com", "godaddy.com"]
+  # for (i, el) in enumerate(a): mplot.traces_cumul(s, el, axes=axess2[i]); axess2[i].set_title(" ")
+  # b = axess2[0]
+  # axess2[0].set_ylabel(" ")
+  # axess2[1].set_xlabel("Feature Index")
+  # plt.tight_layout()
+  # plt.savefig("/tmp/traces_cumul_{}_{}.pdf".format(s, "_".join(a)).replace(" ", "_"))
   - ameblo.jp (and youporn.com) show a range of dynamic content
   - aliexpress.com sells different items at different times. The
     images at least are bound to have different byte sizes
   - godaddy.com had versions in various languages, serving different
     content, which explains the varied traces
-  - google.com also serves international content. Yet, its traces show
-    low variance. While google.com sister sites, say google.fi, were
-    removed from the foreground set, the background set contained
-    hundreds of google sites as well.
 
+  #+CAPTION[CUMUL traces high-false-positive google.com]: CUMUL-Traces for the last website with high false-positive rates: google.com. It shows low variability. Its high misclassification rate is explained by other google sites being in the background set (e.g. google.fi).
+  #+NAME: fig:high-fpr-google
+  [[./pictures/traces_cumul_no_defense_on_2018-02-02_google.com.pdf]] The
+  fifth site, google.com also serves international content. Yet, its
+  traces show low variability, as seen in Figure
+  [[fig:high-fpr-google]]. While google.com sister sites, say google.fi,
+  were removed from the foreground set, the background set contained
+  hundreds of google sites as well. This of course made classification
+  infeasible.
 * CHECK Cached: Size of HTML-Documents
   :PROPERTIES:
   :CUSTOM_ID: find sizes of HTML-documents

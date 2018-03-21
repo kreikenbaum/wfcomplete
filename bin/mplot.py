@@ -262,7 +262,7 @@ def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):
 # a = ['wikipedia.org', 'onclickads.net']
 # color = lambda x: mplot._color(x, a)
 # ax = mplot.plt.axes()
-# for domain in a: mplot.traces_cumul(s, domain, color(domain), ax)
+# for domain in a: mplot.traces_cumul(s, domain, color(domain), axes=ax)
 # mplot.plt.legend()
 # mplot.plt.xlabel("Feature Index")
 # mplot.plt.ylabel("Feature Value [Byte]")

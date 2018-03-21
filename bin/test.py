@@ -355,6 +355,23 @@ class TestResult(unittest.TestCase):
         (fail_num, _) = doctest.testmod(results, optionflags=doctest.ELLIPSIS)
         self.assertEqual(0, fail_num)
 
+    def test_open_world_config(self):
+        '''
+        1. create result with open world
+        2. check that its scenario has _open_world_config
+        '''
+        result = [r for r in results.list_all() if r._id == 549][0]
+        self.assertTrue(result.scenario._open_world_config)
+
+    @unittest.skipIf(QUICK, "slow test skipped")
+    def test_real_open_world_config(self):
+        '''
+        1. create result with open world
+        2. check that traces have background pages
+        '''
+        result = [r for r in results.list_all() if r._id == 549][0]
+        self.assertTrue("background" in result.scenario.get_traces())
+
 
 class TestScenario(unittest.TestCase):
     def setUp(self):

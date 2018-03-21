@@ -53,7 +53,7 @@ PATH_SKIP = [
 class Scenario(object):
     '''meta-information about a scenario with optional loading of its traces'''
     def __init__(self, name, trace_args=None, smart=False, skip=False,
-                 open_world=False, exclude_sites=[]):
+                 open_world=False):
         ''' (further example usage in test.py)
         >>> Scenario('disabled/2016-11-13').date
         datetime.date(2016, 11, 13)
