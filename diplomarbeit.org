@@ -766,15 +766,75 @@ goes into some detail about the traffic model, and the optional
 Bloom-filter based stochastic data structure that is used for size
 caches.
 ** main design
+Once again, let's consider Alice. When she opens the website
+=http://bob.com= in her browser, it first loads =bob.com='s main =index.html=
+\citep{html5} page. This page frequently contains other resources like
+CSS stylesheets, images, JavaScript \citep{ecma}, etc. It might also
+contain elements that request other elements again, like nested HTML
+or CSS. For each of these assets, the browser sends a request to
+obtain it.
+
+
+The defense observes these requests. Algorithm \ref{algo1} describes
+its main idea: The add-on considers the first loading from a domain to
+be the HTML page. This page has special significance in \gls{wf}
+\citep[sec.4.1]{panchenko}. To prevent this, the defense always
+obfuscates this first request with an additional cover traffic
+request. The size of the cover request is adjusted to the page's
+actual values, if known. The addon requests data to match an imagined
+web page retrieval. Each further element request is considered a
+resource request. The imagined web page retrieval is checked, how many
+resource requests it contains as opposed to the actual retrieval, if
+known. The difference of requests is randomly spread out among the
+actual browser requests.
+
+
+ #+BEGIN_EXPORT latex
+ \begin{algorithm}
+ \caption{Generate Cover Traffic}\label{covertraffic}
+ \label{algo1}
+ \begin{algorithmic}[1]
+ \Procedure{OnHttpRequest}{$\textit{url}$}
+ \If {$! \textit{isRegistered}(\textit{hostnameOf}(\textit{url}))$}
+   \State $\textit{targetHttpSize} \leftarrow \textit{randomHttpSize}()$
+   \State $\textit{targetNumEmbedded} \leftarrow \textit{randomNumEmbedded}()$
+   \State $\textit{urlHttpSize} \leftarrow \textit{lookupOrGuessHttpSize}(\textit{url})$
+   \State $\textit{urlNumEmbedded} \leftarrow \textit{lookupOrGuessNumEmbedded}(\textit{url})$
+   \State $\textit{coverHttpSize} \leftarrow \textit{targetHttpSize} - \textit{urlHttpSize}$
+   \State $\textit{coverNumEmbedded} \leftarrow \textit{targetNumEmbedded} - \textit{urlNumEmbedded}$
+   \State $\textit{requestCoverSized}(\textit{coverHttpSize})$
+   \State $\textit{registerHost}(\textit{hostnameOf}(\textit{url}), \textit{coverNumEmbedded}, \textit{urlNumEmbedded})$
+ \Else
+   \State $\textit{requestProbability} \leftarrow \textit{computeProbability}(\textit{hostnameOf}(\textit{url}))$
+   \While {$\textit{requestProbability} > 1$}
+     \State $\textit{requestCoverSized}(\textit{randomEmbeddedSize}())$
+     \State $\textit{updateHosts}(\textit{hostnameOf}(\textit{url}))$
+     \State $\textit{requestProbability} \leftarrow \textit{requestProbability} -1$
+   \EndWhile
+   \If {$\textit{withProbability}(\textit{requestProbability})$}
+     \State $\textit{requestCoverSized}(\textit{randomEmbeddedSize}())$
+     \State $\textit{updateHosts}(\textit{hostnameOf}(\textit{url}))$
+   \EndIf
+ \EndIf
+ \EndProcedure
+ \end{algorithmic}
+ \end{algorithm}
+ #+END_EXPORT
+
+
+This algorithm draws its target values from stochastic distributions
+to model the WWW \cite{newtrafficmodel}.
+
+
+- what is the main algorithm
+  - what does it do
+  - is there anything special
 - how does the defense work
   - which web model
   - how to detect retrieval
   - how to cloak traffic
-- what is the main algorithm
-  - what does it do
-  - is there anything special
 - what are the underlying distributions
-  - html
+  - HTML
   - embedded
   - num embedded
 - what are the special data structures
@@ -782,33 +842,11 @@ caches.
   - timeout-dict
 
 
-Let us again think of Alice. When she opens the website
-=http://bob.com= in her Tor Browser, the webbrowser first loads
-=bob.com='s main HTML \citep{html5} page. This page often contains
-other elements like CSS stylesheets, images, JavaScript \citep{ecma},
-etc. It might also contain elements that request other elements agian,
-like nested HTML or CSS resources. For each of these elements, the
-browser sends a request to obtain it.
-
-
-The addon listens for all of these requests. It considers the first
-loading from a domain to be the HTML page. This page has special
-significance in \gls{wf} \citep[sec.4.1]{panchenko}. To prevent this,
-the defense always obfuscates this first request with an additional
-cover traffic request. The size of the cover request is adjusted to
-the page's actual values, if known. The addon requests data to match
-an imagined web page retrieval, that is drawn from statistical models.
-
-
-Each further element request is considered a resource request. The
-imagined web page retrieval is checked, how many resource requests it
-contains as opposed to the actual retrieval, if known. The difference
-of requests is randomly spread out among the actual browser requests.
 
 
 Algorithm 1 describes this procedure. Section 2 describes the web page
 retrieval model, Section 3 gives the uses of Bloom-filters in this
-scenario.
+scenario. Statistical models (see next section) provide these target values.
 
 *** maybe
 The thesis's defense is implemented using Firefox's Addon-SDK. This
@@ -890,37 +928,6 @@ Each request is potentially covered by a simultaneous cover-request,
 as seen in Algorithm \ref{algo1}. The algorithm randomly draws from
 appropriate HTTP-related distributions \citep{newtrafficmodel}.
 
- #+BEGIN_EXPORT latex
- \begin{algorithm}
- \caption{Generate Cover Traffic}\label{covertraffic}
- \label{algo1}
- \begin{algorithmic}[1]
- \Procedure{OnHttpRequest}{$\textit{url}$}
- \If {$! \textit{isRegistered}(\textit{hostnameOf}(\textit{url}))$}
-   \State $\textit{targetHttpSize} \leftarrow \textit{randomHttpSize}()$
-   \State $\textit{targetNumEmbedded} \leftarrow \textit{randomNumEmbedded}()$
-   \State $\textit{urlHttpSize} \leftarrow \textit{lookupOrGuessHttpSize}(\textit{url})$
-   \State $\textit{urlNumEmbedded} \leftarrow \textit{lookupOrGuessNumEmbedded}(\textit{url})$
-   \State $\textit{coverHttpSize} \leftarrow \textit{targetHttpSize} - \textit{urlHttpSize}$
-   \State $\textit{coverNumEmbedded} \leftarrow \textit{targetNumEmbedded} - \textit{urlNumEmbedded}$
-   \State $\textit{requestCoverSized}(\textit{coverHttpSize})$
-   \State $\textit{registerHost}(\textit{hostnameOf}(\textit{url}), \textit{coverNumEmbedded}, \textit{urlNumEmbedded})$
- \Else
-   \State $\textit{requestProbability} \leftarrow \textit{computeProbability}(\textit{hostnameOf}(\textit{url}))$
-   \While {$\textit{requestProbability} > 1$}
-     \State $\textit{requestCoverSized}(\textit{randomEmbeddedSize}())$
-     \State $\textit{updateHosts}(\textit{hostnameOf}(\textit{url}))$
-     \State $\textit{requestProbability} \leftarrow \textit{requestProbability} -1$
-   \EndWhile
-   \If {$\textit{withProbability}(\textit{requestProbability})$}
-     \State $\textit{requestCoverSized}(\textit{randomEmbeddedSize}())$
-     \State $\textit{updateHosts}(\textit{hostnameOf}(\textit{url}))$
-   \EndIf
- \EndIf
- \EndProcedure
- \end{algorithmic}
- \end{algorithm}
- #+END_EXPORT
 
  /registerHost/, /isRegistered/, /computeProbability/ and
  /updateHosts/ access a mapping of the recently active hostnames to
