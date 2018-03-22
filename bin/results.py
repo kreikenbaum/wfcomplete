@@ -118,20 +118,20 @@ class Result(object):
                     entry['config']['scenario'])
             else:
                 raise
-        return Result(scenario_obj,
-                      _value_or_none(entry, 'result', 'score'),
-                      git,
-                      _value_or_none(entry, 'stop_time'),
-                      type_,
-                      size,
-                      open_world,
-                      size_overhead=size_overhead, time_overhead=time_overhead,
-                      _id=entry['_id'],
-                      C=c, gamma=gamma,
-                      src=entry,
-                      ytrue=_value_or_none(entry, 'result', 'y_true'),
-                      ypred=_value_or_none(
-                          entry, 'result', 'y_prediction'))
+        return Result(
+            scenario_obj,
+            _value_or_none(entry, 'result', 'score'),
+            git,
+            _value_or_none(entry, 'stop_time'),
+            type_,
+            size,
+            open_world,
+            size_overhead=size_overhead, time_overhead=time_overhead,
+            _id=entry['_id'],
+            C=c, gamma=gamma,
+            src=entry,
+            ytrue=_value_or_none(entry, 'result', 'y_true', 'values'),
+            ypred=_value_or_none(entry, 'result', 'y_prediction'))
 
     def __repr__(self):
         out = ("<Result({!r}, score={}, {}, {}, {}, size={}, "
@@ -153,7 +153,7 @@ class Result(object):
             probability=probability)
 
     def get_confusion_matrix(self):
-        '''@return cm either pre-existing or computed'''
+        '''@return confusion matrix, from pre-existing or computed values'''
         return metrics.confusion_matrix(self.y_true, self.y_prediction)
 
     def save(self, db=_db()):

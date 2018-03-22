@@ -381,6 +381,11 @@ class TestResults(unittest.TestCase):
             PARAM_NUM,
             len([x for x in result.__dict__.values() if x is not None]))
 
+    def test_get_confusion_matrix(self):
+        cm = results.Result(
+            *range(7), ytrue=[0, 1], ypred=[0, 0]).get_confusion_matrix()
+        self.assertTrue(np.all(cm == np.array([[1, 0], [1, 0]])))
+
 
 class TestScenario(unittest.TestCase):
     def setUp(self):
