@@ -43,7 +43,7 @@ class Result(object):
             self.date = self.scenario.date
         self.src = src
         self._ypred = ypred
-        self._ytrue = None
+        self._ytrue = ytrue
 
     @property
     def duration(self):

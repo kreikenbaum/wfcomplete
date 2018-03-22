@@ -347,8 +347,8 @@ class TestMymetrics(unittest.TestCase):
     #         "bound: {}".format(bnd))
 
 
-class TestResult(unittest.TestCase):
-    '''tests the counter module'''
+class TestResults(unittest.TestCase):
+    '''tests the results module'''
 
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_doc(self):
@@ -371,6 +371,15 @@ class TestResult(unittest.TestCase):
         '''
         result = [r for r in results.list_all() if r._id == 549][0]
         self.assertTrue("background" in result.scenario.get_traces())
+
+    def test___init__sets_all(self):
+        PARAM_NUM = 15  # how to get dynamically?
+        with self.assertRaises(TypeError):
+            results.Result(*range(PARAM_NUM + 1))
+        result = results.Result(*range(PARAM_NUM))
+        self.assertEqual(
+            PARAM_NUM,
+            len([x for x in result.__dict__.values() if x is not None]))
 
 
 class TestScenario(unittest.TestCase):
