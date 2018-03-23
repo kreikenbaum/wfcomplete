@@ -1,14 +1,9 @@
 #! /usr/bin/env python
-'''import pre-dumped data from HU'''
-# (need to check that file)
-# 0.1 on hosts: mongoexport -d sacred -c runs > data/$(hostname)-dump
-# 0.2 scp star.informatik.hu-berlin.de:data/*dump to e.g. /tmp
-# 1 import local files
-# 0.3 mv data/dump to data/old$(date +%F_%T)
-#  - mkdir data/old...
-#  - mv data/*dump data/old...
-# 0.4 clear databases: mongo sacred --eval "printjson(db.dropDatabase())"
-#  - if failure on gruenau5 (running exp): code to check if experiment running
+'''import pre-dumped data from HU
+
+call exportMongo.sh on hosts first, then e.g.
+wget -r -np www2.informatik.hu-berlin.de/~kreikenb/data/$(date +%F)
+'''
 import fileinput
 import json
 import logging
@@ -20,6 +15,7 @@ import results
 
 
 def add_to_db(json_line):
+    '''add entry in json form to database, add fitting _id'''
     if 'COMPLETED' in json_line:
         try:
             entry = json.loads(line)
@@ -33,7 +29,7 @@ def add_to_db(json_line):
             stdin=subprocess.PIPE)
         imp.communicate(input=json.dumps(entry))
     else:
-        logging.info("skipped line starting with %s", line[:80])
+        logging.debug("skipped line starting with %s", line[:40])
 
 
 if __name__ == "__main__":

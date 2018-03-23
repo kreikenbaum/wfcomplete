@@ -161,7 +161,7 @@ class Scenario(object):
         return method(closest_disabled.get_traces(),
                       trace_dict or self.get_traces())
 
-    def binarize(self, bg_label='background', fg_label='foreground'):
+    def binarized(self, bg_label='background', fg_label='foreground'):
         '''@return scenario with bg_label as-is, others combined to fg_label'''
         assert self.open_world
         out = copy.copy(self)

@@ -268,7 +268,7 @@ picks best result'''
     return clf
 
 
-def simulated_open_world(scenario_obj, auc_bound, binarize, bg_size,
+def simulated_open_world(scenario_obj, auc_bound, binary, bg_size,
                          exclude_sites, current_sites):
     '''@return metrics for open world experiment'''
     try:
@@ -283,6 +283,8 @@ def simulated_open_world(scenario_obj, auc_bound, binarize, bg_size,
             logging.info("removed %s", site)
         except KeyError:
             pass
+    if binary:
+        scenario_obj = scenario_obj.binarized()
     X, y, _ = scenario_obj.get_features_cumul()
     X = preprocessing.MinMaxScaler().fit_transform(X)  # scaling is idempotent
     (clf_noprob, accuracy, _) = fit.my_grid(X, y, auc_bound=auc_bound)

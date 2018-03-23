@@ -459,35 +459,35 @@ class TestScenario(unittest.TestCase):
                                 'background_size': None}
         self.assertEquals(2, len(s.get_traces().keys()))
 
-    def test_binarize_fake(self):
+    def test_binarized_fake(self):
         c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]]
         bg_mock = {'background': c_list[:],
                    'a': c_list[:],
                    'b': c_list[:]}
         s = scenario.Scenario('asdf/12-12-2015--3@7')
         s.traces = bg_mock
-        res = s.binarize().get_traces()
+        res = s.binarized().get_traces()
         self.assertEquals(res['background'], c_list)
         self.assertEquals(len(res['foreground']), 2 * len(c_list))
 
-    def test__binarize_fake_vs_fit(self):
+    def test__binarized_fake_vs_fit(self):
         c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]]
         bg_mock = {'background': c_list[:],
                    'a': c_list[:],
                    'b': c_list[:]}
         s = scenario.Scenario('asdf/12-12-2015--3@7')
         s.traces = bg_mock
-        Xa, ya, _ = s.binarize().get_features_cumul()
+        Xa, ya, _ = s.binarized().get_features_cumul()
         Xc, yc, _ = counter.to_features_cumul(bg_mock)
         yc = list(mymetrics.binarize(yc, transform_to=1))
         self.assertTrue(np.array_equal(ya, yc), "ya:{}\nyc:{}".format(ya, yc))
         self.assertTrue(np.array_equal(Xa, Xc))
 
     @unittest.skipIf(QUICK, "slow test skipped")
-    def test_binarize_real(self):
+    def test_binarized_real(self):
         s = scenario.Scenario('wtf-pad/bridge--2016-07-05')
         self.assertTrue(2,
-                        len(s.get_open_world().binarize().get_traces().keys()))
+                        len(s.get_open_world().binarized().get_traces().keys()))
 
     def test_config(self):
         self.assertEqual(

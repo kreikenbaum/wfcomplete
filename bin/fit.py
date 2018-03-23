@@ -27,7 +27,7 @@ def _eval(X, y, clf, folds=config.FOLDS):
     X = scale(X, clf)
     return model_selection.cross_val_score(
         clf, X, y, cv=folds, n_jobs=config.JOBS_NUM,
-        verbose=config.VERBOSE).mean()
+        verbose=config.VERBOSE, pre_dispatch=config.JOBS_NUM*2).mean()
 
 
 def scale(X, clf):
