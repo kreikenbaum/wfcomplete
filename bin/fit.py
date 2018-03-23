@@ -27,7 +27,7 @@ def _eval(X, y, clf, folds=config.FOLDS):
     X = scale(X, clf)
     return model_selection.cross_val_score(
         clf, X, y, cv=folds, n_jobs=config.JOBS_NUM,
-        verbose=config.VERBOSE, pre_dispatch=config.JOBS_NUM*2).mean()
+        verbose=config.VERBOSE).mean()
 
 
 def scale(X, clf):
@@ -132,8 +132,9 @@ def my_grid_helper(trace_dict, outlier_removal=True, cumul=True,
 def my_grid(X, y, C=2**4, gamma=2**-4, step=2, results=None,
             auc_bound=None, previous=None, folds=config.FOLDS, delta=0.01):
     '''@param results are previously computed results {(C,gamma): accuracy, ...}
-    @param auc_bound if this is set, use the bounded auc score with this y_bound
+    @param auc_bound if set, use the bounded auc score with this y_bound
     @return Result(clf, best_score_, results) (namedtuple see above)'''
+    global scaler
     if not results:
         previous = []
         results = {}
@@ -197,7 +198,7 @@ def _middle(results, bestres):
 
 
 def roc(clf, X, y):  # X_train, y_train, X_test, y_test):
-    '''@return (fpr, tpr, thresholds, probabilities) of =clf= on adjusted data'''
+    '''@return (fpr, tpr, thresholds, probabilities) of =clf= on data'''
     y_predprob = model_selection.cross_val_predict(
         clf, X, y, method="predict_proba",
         cv=config.FOLDS, n_jobs=config.JOBS_NUM, verbose=config.VERBOSE)

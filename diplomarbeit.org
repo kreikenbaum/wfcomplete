@@ -650,7 +650,10 @@ of future work in section [[#future-work]].
    a \gls{wf} attacker. As most \gls{ml}, \gls{wf} uses statistical
    properties of the underlying data. It could possibly be defeated by
    shuffling these properties. The total number of incoming packets
-   e.g. is a feature used by almost all modern attacks:
+   e.g. is a feature used by almost all modern attacks.  As seen in
+   Figure [[fig:total_packets_in]],
+   \citet{DBLP:journals/popets/CherubinHJ17} create additional
+   packets, but preserve site separation and ordering.
 
    # created using mplot.total_packets_in_helper(['disabled/bridge--2018-01-12--30@50', 'defense-client/bridge--2018-01-07--30@50'])
    #+CAPTION: Distribution of number of total incoming packets, once without defense, once using LLaMA \citep{DBLP:journals/popets/CherubinHJ17}.
@@ -658,10 +661,6 @@ of future work in section [[#future-work]].
    #+ATTR_LATEX: :float nil
 [[./pictures/total_packets_in_disabled___bridge--2018-01-12--30@50_defense-client___bridge--2018-01-07--30@50__bing.com_wordpress.com_gmw.cn_wikipedia.org__palette_colorblind.pdf]]
 
-   As seen in Figure [[fig:total_packets_in]], \citet{wtfpad2015}'s
-   implementation of WTF-PAD and Tamaraw \citep{a-systematic2014} both
-   create additional packets, but preserve site separation and
-   ordering.
 
    Traffic analysis \citep{introta} assumes that encryption is
    unbreakable, and tries to find information from metadata:
@@ -761,32 +760,43 @@ CUMUL \gls{wf} attack by \citet{panchenko2} measures effectiveness of
 obfuscation.
 
 
-This chapter first presents the main thesis's defense design. It then
-goes into some detail about the traffic model, and the optional
-Bloom-filter based stochastic data structure that is used for size
-caches.
-** main design
-Once again, let's consider Alice. When she opens the website
-=http://bob.com= in her browser, it first loads =bob.com='s main =index.html=
-\citep{html5} page. This page frequently contains other resources like
-CSS stylesheets, images, JavaScript \citep{ecma}, etc. It might also
-contain elements that request other elements again, like nested HTML
-or CSS. For each of these assets, the browser sends a request to
-obtain it.
+This chapter first presents the main thesis's defense design in
+section [[#sub3-defense]]. It then goes into some detail about the traffic
+model, and the optional Bloom-filter based stochastic data structure
+that is used for size caches.
+** Main Defense Design
+:PROPERTIES:
+:CUSTOM_ID: sub3-defense
+:END:
+Once again, let's consider Alice. When she opens =http://bob.com= in
+her browser, it first loads =bob.com='s main HTML \citep{html5}
+page. This page frequently contains other resources like CSS
+stylesheets, images, JavaScript \citep{ecma} files, etc. It might also
+contain elements that request other elements again, like nested HTML,
+CSS =@import=, or JavaScript AJAX. For each of these assets, the
+browser sends a request to obtain it.
 
 
-The defense observes these requests. Algorithm \ref{algo1} describes
-its main idea: The add-on considers the first loading from a domain to
-be the HTML page. This page has special significance in \gls{wf}
-\citep[sec.4.1]{panchenko}. To prevent this, the defense always
-obfuscates this first request with an additional cover traffic
-request. The size of the cover request is adjusted to the page's
+The defense obfuscates web traffic: For each load of a website,
+additional cover traffic is created. To do this, the defense observes
+all website requests. Algorithm \ref{algo1} describes the main idea:
+The retrieval of the (first) HTML page provides significant
+information as of \citep[sec.4.1]{panchenko}.  To counter this
+information gain, this first retrieval is always covered by additional
+traffic. After the first retrieval, the browser downloads the HTML
+page resources: images, style sheets, JavaScript \citep{ecma} files,
+etc. Each of these retrievals might be covered by additional dummy
+retrievals.
+
+
+
+Each further element request is considered a resource request. The
+imagined web page retrieval is checked, how many resource requests it
+contains as opposed to the actual retrieval, if known. The difference
+of requests is randomly spread out among the actual browser
+requests. The size of the cover request is adjusted to the page's
 actual values, if known. The addon requests data to match an imagined
-web page retrieval. Each further element request is considered a
-resource request. The imagined web page retrieval is checked, how many
-resource requests it contains as opposed to the actual retrieval, if
-known. The difference of requests is randomly spread out among the
-actual browser requests.
+web page retrieval.
 
 
  #+BEGIN_EXPORT latex
@@ -822,46 +832,29 @@ actual browser requests.
  #+END_EXPORT
 
 
-This algorithm draws its target values from stochastic distributions
-to model the WWW \cite{newtrafficmodel}.
+The created traffic is based on the HTTP model \citep{newtrafficmodel}
+described in section [[#sub3-http]]. For each web page retrieval, the
+defense sets target retrieval parameters. From these, the web page's
+actual parameters are subtracted to set the amount of cover traffic
+for this web page. If the parameters are not known, they are guessed
+from the same distributions used to set the target values.
+** model
+Many studies agree that web traffic is not adequately modeled with
+vanilla distributions like normal, or exponential. It instead exhibits
+/long-tailed/ behavior, where high values are not as unlikely as in,
+say, exponential or normal distributions. This is why
+\citep{wtfpad2015} use exponentially bound sizes (which corresponds to
+log-normal distributions), and ... repeatedly mention a long tail of
+traffic. The web model of \citet{newtrafficmodel} models this behavior
+using mostly (truncated) log-normal distributions, as seen in Figures
+2 and 3. This model is used in this thesis to set the cover traffic
+target sizes. It also sets the page's actual sizes, if they are not
+known.
 
-
-- what is the main algorithm
-  - what does it do
-  - is there anything special
-- how does the defense work
-  - which web model
-  - how to detect retrieval
-  - how to cloak traffic
 - what are the underlying distributions
   - HTML
   - embedded
   - num embedded
-- what are the special data structures
-  - bloom filter
-  - timeout-dict
-
-
-
-
-Algorithm 1 describes this procedure. Section 2 describes the web page
-retrieval model, Section 3 gives the uses of Bloom-filters in this
-scenario. Statistical models (see next section) provide these target values.
-
-*** maybe
-The thesis's defense is implemented using Firefox's Addon-SDK. This
-provides for easy deployment, and configuration.
-** model
-Many studies agree that web traffic does not follow normal
-distributions, but instead exhibit long-tailed behavior, where high
-values are not as unlikely as in, say, exponential or normal
-distributions. This is why wtf-pad used exponential bound sizes (which
-corresponds to log-normal distributions), and ... repeatedly mentioned
-a long tail of traffic. The web model of \citet{newtrafficmodel}
-models this behavior using mostly (truncated) log-normal
-distributions, as seen in Figures 2 and 3. This model is used in this
-thesis to set the cover traffic target sizes. It also sets the page's
-actual sizes, if they are not known.
 ** Blooms
 A Bloom-filter is a stochastic data structure to test membership in a
 set. In this, they are similar to hash-coding. They offer a
@@ -872,6 +865,11 @@ range of possible values is inspected, and split by quantiles. These
 values are then binned, and the middle quantile of each bin is chosen
 to represent the bin. Each bin corresponds to a Bloom-filter that
 saves whether the element's URL is modeled by the bin.
+
+- what are the special data structures
+  - bloom filter
+  - timeout-dict
+
 * bit older methods chapter
 As described in section [[#sub2-wf]], \gls{wf} can deanonymize Tor web
 browsing. It is a low-level passive defense that can even be deployed
@@ -903,9 +901,6 @@ new defense's main algorithm is described in section
 ([[#sub3-bloomfilters]]) and describe their application to approximately
 save element sizes ([[#sub3-bloomsort]]).
 ** Defense Design
-   :PROPERTIES:
-   :CUSTOM_ID: sub3-defense
-   :END:
 The defense obfuscates web traffic: For each load of a website,
 additional cover traffic is created. The retrieval of the (first) HTML
 page provides significant information as of
@@ -2381,6 +2376,9 @@ training on data without defense, and testing on defended data.
 
  \appendix
  \part{Appendix}
+*** maybe (from a new defense:1)
+The thesis's defense is implemented using Firefox's Addon-SDK. This
+provides for easy deployment, and configuration.
 * After Appendices: Bibliography and Index
 \bibliography{docs/master}
 \bibliographystyle{apalike}

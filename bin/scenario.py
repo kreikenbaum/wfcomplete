@@ -143,9 +143,12 @@ class Scenario(object):
 
     # idea: return whole list ordered by date-closeness
     def _closest(self, in_name=None, include_bg=False, filter_scenario=None):
-        '''@return closest scenario by date that matches filter, filtered to have at least the scenario's number of sites, unless include_bg==True'''
+        '''@return closest scenario by date that matches filter, filtered to
+        have at least the scenario's number of sites, unless
+        include_bg==True'''
         assert self.valid()
-        filtered = list_all(in_name, include_bg, filter_scenario=filter_scenario)
+        filtered = list_all(
+            in_name, include_bg, filter_scenario=filter_scenario)
         if not include_bg:
             filtered = [x for x in filtered if x.num_sites >= self.num_sites]
         return min(filtered, key=lambda x: abs(self.date - x.date))
@@ -181,7 +184,7 @@ class Scenario(object):
 
     @property
     def binary(self):
-        '''@return if this scenario has only foreground and background traces'''
+        '''@return this scenario has just foreground and background traces'''
         return (
             self.traces
             and set(self.traces.keys()) == set(['foreground', 'background']))
@@ -210,7 +213,7 @@ class Scenario(object):
         first = min((x.starttime for x in all_traces))
         return datetime.datetime.fromtimestamp(float(first)).date()
 
-    ## todo: codup counter.py?
+    # # todo: codup counter.py?
     def get_features_cumul(self):
         '''@return traces converted to CUMUL's X, y, y_domains'''
         X = []
@@ -283,7 +286,7 @@ class Scenario(object):
                     self._open_world_config['background_size'],
                     same=True).traces
                 if self._open_world_config['binary']:
-                    self.traces = self.binarize().traces
+                    self.traces = self.binarized().traces
         if current_sites:
             self.traces = sites.clean(self.traces)
         return self.traces
@@ -330,8 +333,8 @@ class Scenario(object):
 def _prepend_if_ends(whole, *parts):
     '''if whole ends with part, prepend it (modulo "-")
 
-    >>> _prepend_if_ends('0.22/nobridge--2017-01-19-aI-factor=10-with-errors', \
-                         'with-errors')
+    >>> _prepend_if_ends(\
+    '0.22/nobridge--2017-01-19-aI-factor=10-with-errors', 'with-errors')
     '0.22/with-errors-nobridge--2017-01-19-aI-factor=10'
     '''
     for part in parts:
@@ -350,7 +353,7 @@ def list_all(in_name=None, include_bg=False, filter_scenario=None, path=DIR):
     for (dirname, _, _) in os.walk(path):
         if dirname == path:
             continue
-        if in_name and not in_name in dirname:
+        if in_name and in_name not in dirname:
             continue
         out.append(dirname)
     out[:] = [x.replace(path+'/', './') for x in out]

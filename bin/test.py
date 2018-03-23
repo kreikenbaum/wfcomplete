@@ -486,8 +486,8 @@ class TestScenario(unittest.TestCase):
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_binarized_real(self):
         s = scenario.Scenario('wtf-pad/bridge--2016-07-05')
-        self.assertTrue(2,
-                        len(s.get_open_world().binarized().get_traces().keys()))
+        self.assertTrue(
+            2, len(s.get_open_world().binarized().get_traces().keys()))
 
     def test_config(self):
         self.assertEqual(

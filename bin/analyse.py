@@ -294,7 +294,7 @@ def simulated_open_world(scenario_obj, auc_bound, binary, bg_size,
     (tpr, fpr, tpa) = mymetrics.tpr_fpr_tpa(_binmat(confmat))[1]
     C = clf_noprob.estimator.C
     gamma = clf_noprob.estimator.gamma
-    if binarize:  # can (easily) compute auroc
+    if binary:  # can (easily) compute auroc
         clf = utils.clf_default(y, C=C, gamma=gamma, probability=True)
         y_pred = model_selection.cross_val_predict(
             clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
@@ -325,7 +325,7 @@ def closed_world(scenarios, def0, cumul=True, with_svm=True, common=False):
     :param: common determines whether to reduce the test data to
             common keys.
     '''
-    #stats = {k: scenario._mean_std(v, "total_bytes_in") for (k, v) in scenarios.iteritems()}
+    # stats = {k: scenario._mean_std(v, "total_bytes_in") for (k, v) in scenarios.iteritems()}
     # durations = {k: _average_duration(v) for (k,v) in scenarios.iteritems()}
 
     # no-split, best result of 10-fold tts
