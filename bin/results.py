@@ -102,7 +102,7 @@ class Result(object):
                     'binary': _value_or_none(entry, 'config', 'binarize'),
                     'exclude_sites': _value_or_list(
                         entry, 'config', 'exclude_sites'),
-                    'current_sites': _value_or_list(
+                    'current_sites': _value_or_none(
                         entry, 'config', 'current_sites')
                 }
         except KeyError:
