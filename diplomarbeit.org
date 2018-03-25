@@ -849,10 +849,12 @@ defense sets target retrieval parameters. From these, the web page's
 actual parameters are subtracted to set the amount of cover traffic
 for this web page. If the parameters are not known, they are guessed
 from the same distributions used to set the target values.
-** model
+** Web Model
    :PROPERTIES:
    :CUSTOM_ID: sub3-http
    :END:
+This thesis' defense uses the distribution of HTTP traffic.
+
 
 Many studies agree that web traffic is not adequately modeled with
 vanilla distributions like normal, or exponential. It instead exhibits
@@ -870,6 +872,110 @@ known.
   - HTML
   - embedded
   - num embedded
+
+- why is this better
+  - application layer: where problem is
+  - in-browser: know which url visited
+  - can send specific cover traffic
+  - could even cache sizes dynamically in Bloom Filter
+- solution design: augment/increase traffic
+  - apply to each web page request
+    1. see request
+    2. use http model
+       - for extra html size
+       - and number of requests
+    3. match requests' own size (predicted if unknown) to model
+    4. request additional data over request
+    5. on further requests, chance to request additional
+  - secondary solution: browser extension
+    - easy to install, configure, enable/disable on demand
+- HTTP traffic model
+  - long-tailed distributions
+    - (cut off)
+  - for both number of embedded resources and page/embedded sizes
+- how is the defense ensured
+  - code: some tests for simple modules
+  - lint
+  - by hand
+  - good parts
+  - evaluation
+- quotes
+  - images
+    #+BEGIN_QUOTE
+    As shown by \citet{newton2005preserving}, naïve privacy-enabling
+    methods can be surpassed using domain-specific properties. They
+    showed two methods to be effective: randomizing information
+    position and adding generic aspects.
+    #+END_QUOTE
+  - history/stochastic
+    #+BEGIN_QUOTE
+    300% time\citep{a-systematic2014}). In 2015, the stochastic
+    defenses of \citet{wang2015walkie} and \citet{wtfpad2015} much
+    lower overhead, were developed. This validates a stochastic
+    approach, yet improvements seem possible in two areas: (1) ease of
+    installation, and configurability, and (2) more-closely fitting
+    cover traffic generation.
+
+
+    At the start of the thesis, there existed mostly deterministic
+    general defenses with high overhead (e.g. over 220% bandwidth, and
+    300% time\citep{a-systematic2014}). During the course of this
+    thesis, the stochastic defenses of \citet{wang2015walkie} and
+    \citet{wtfpad2015} much lower overhead, were developed. This
+    validates a stochastic approach, yet improvements seem possible in
+    two areas: (1) ease of installation, and configurability, and (2)
+    more-closely fitting cover traffic generation.
+
+    Ad 1: \citet{wang2015walkie} alters the Firefox binary, while the
+    current version of \citet{wtfpad2015} needed much manual
+    adjustment in our attempts.
+
+    Ad 2: \citet{wang2015walkie} uses either a normal, or lognormal
+    distribution, not adjusting to HTTP-specifics, while
+    \citet{wtfpad2015} samples packets at the network layer. It aims
+    at generally hiding /that traffic occurs/, not just which website
+    is visited, as it derives its basic mechanism from
+    \citet{ShWa-Timing06}.
+         - might even help against a global adversary, timing attacks, etc
+    #+END_QUOTE
+World Wide Web \citep{rfc1945} traffic cannot be adequately modeled
+using standard distributions like normal or uniform
+\citep{crovella97}. This explains the many outliers reported by
+\cite[sec.5.2]{DBLP:journals/popets/CherubinHJ17}. \cite[sec.5.A]{wtfpad2015}
+also distribute its \gls{wf} defense data partitions exponentially to
+better fit web traffic. \cite{DBLP:conf/imc/IhmP11} repeatedly mention
+a /long tail/ of traffic. This is why HTTP \citep{rfc7230}-shaped
+cover traffic might prove more effective, as this would make it harder
+to separate cover and real traffic. In addition, it would work at the
+layer \citep[ch.1.7]{DBLP:books/daglib/0001977} where the problem
+originates, as it mimics the HTTP/HTML \citep{html5}-specific
+request-response interaction.
+
+
+There are several approaches on how to generate HTTP-shaped
+traffic. The naïve way, using HTTP dummy traffic \citep{panchenko},
+loads another page simultaneously in the background. \citet{ccs2012-fingerprinting},
+\citet{a-systematic2014}, \citet{kfingerprint}, \citet{effective2014},
+\citet{panchenko}, and \citet{wtfpad2015} found it to be surprisingly
+effective for all its simplicity, albeit at a high overhead.
+
+#+CAPTION[Distribution of sizes for the HTTP traffic model]: Distribution of sizes for the HTTP traffic model. While the number of embedded elements seems very low, it has mean \mu \approx 5.07 \citep{newtrafficmodel} and standard deviation \sigma \approx 15.16 (computed as of \cite[5.1.11]{compgen} and using \cite[stats.gamma]{scipy}).
+#+NAME: distribution
+[[./pictures/fig_html_embedded.pdf]]
+# see misc_gen_quantiles_numemb.py
+
+
+\citet{newtrafficmodel} model web traffic. They evaluated various
+distributions, such as lognormal, weibull, exponential, gamma, and the
+generalized pareto distributions. This thesis applies their
+distributions for the size of the HTML page, the size of embedded
+elements, and the number of embedded elements. See illustration in
+Figure [[distribution]].
+
+The size of both HTML documents and embedded objects is each modeled
+by truncated lognormal distributions. The number of embedded objects
+is modeled by a truncated gamma function. These are implemented
+following \cite{compgen}.
 ** Blooms
 A Bloom-filter is a stochastic data structure to test membership in a
 set. In this, they are similar to hash-coding. They offer a
@@ -942,139 +1048,6 @@ new defense's main algorithm is described in section
 [[#sub3-defense]]. The next sections introduce Bloom filters
 ([[#sub3-bloomfilters]]) and describe their application to approximately
 save element sizes ([[#sub3-bloomsort]]).
-** Defense Design
- /registerHost/, /isRegistered/, /computeProbability/ and
- /updateHosts/ access a mapping of the recently active hostnames to
- the number of embedded objects and cover requests that still need to
- be sent. Its elements get removed after a certain time to allow for
- new traffic.
-
- The /lookupOrGuess.../-functions need data structures to map urls to
- both HTTP sizes and number of embedded objects. These change over
- time, just compare the topmost plots each of Figures
- [[fig:total_packets_in]] and [[fig:total_packets_in_thesis]]. As can be seen
- in the next chapter, the amazingly good defense that was achieved
- with up-to-date cached sizes (see next chapter) decreased over time
- to that of guessing sizes. These data structures use Bloom-filter
- \citep{Bloom70space/timetrade-offs} based binning (see section
- [[#sub3-bloomsort]]) to save values related to urls in a fixed space,
- while not allowing an adversary to exactly determine which urls are
- saved. See section [[#sub3-bloomfilters]] for a short introduction to
- their underlying Bloom-filters and section [[#sub3-bloomsort]] for their
- application that saves these in a fixed-size probabilistic data
- structure.
-
-
- Ease-of-installation and configuring the amount of cover traffic is
- provided by using Firefox's Addon-SDK. Add-ons can be downloaded via
- [[https://addons.mozilla.org][Mozilla's Addon Page]]. This also provides automatic addon updates.
-
-
-- why is this better
-  - application layer: where problem is
-  - in-browser: know which url visited
-  - can send specific cover traffic
-  - could even cache sizes dynamically in Bloom Filter
-- solution design: augment/increase traffic
-  - apply to each web page request
-    1. see request
-    2. use http model
-       - for extra html size
-       - and number of requests
-    3. match requests' own size (predicted if unknown) to model
-    4. request additional data over request
-    5. on further requests, chance to request additional
-  - secondary solution: browser extension
-    - easy to install, configure, enable/disable on demand
-- HTTP traffic model
-  - long-tailed distributions
-    - (cut off)
-  - for both number of embedded resources and page/embedded sizes
-- how is the defense ensured
-  - code: some tests for simple modules
-  - lint
-  - by hand
-  - good parts
-  - evaluation
-- quotes
-  - images
-    #+BEGIN_QUOTE
-    As shown by \citet{newton2005preserving}, naïve privacy-enabling
-    methods can be surpassed using domain-specific properties. They
-    showed two methods to be effective: randomizing information
-    position and adding generic aspects.
-    #+END_QUOTE
-  - history/stochastic
-    #+BEGIN_QUOTE
-    300% time\citep{a-systematic2014}). In 2015, the stochastic
-    defenses of \citet{wang2015walkie} and \citet{wtfpad2015} much
-    lower overhead, were developed. This validates a stochastic
-    approach, yet improvements seem possible in two areas: (1) ease of
-    installation, and configurability, and (2) more-closely fitting
-    cover traffic generation.
-
-
-    At the start of the thesis, there existed mostly deterministic
-    general defenses with high overhead (e.g. over 220% bandwidth, and
-    300% time\citep{a-systematic2014}). During the course of this
-    thesis, the stochastic defenses of \citet{wang2015walkie} and
-    \citet{wtfpad2015} much lower overhead, were developed. This
-    validates a stochastic approach, yet improvements seem possible in
-    two areas: (1) ease of installation, and configurability, and (2)
-    more-closely fitting cover traffic generation.
-
-    Ad 1: \citet{wang2015walkie} alters the Firefox binary, while the
-    current version of \citet{wtfpad2015} needed much manual
-    adjustment in our attempts.
-
-    Ad 2: \citet{wang2015walkie} uses either a normal, or lognormal
-    distribution, not adjusting to HTTP-specifics, while
-    \citet{wtfpad2015} samples packets at the network layer. It aims
-    at generally hiding /that traffic occurs/, not just which website
-    is visited, as it derives its basic mechanism from
-    \citet{ShWa-Timing06}.
-         - might even help against a global adversary, timing attacks, etc
-    #+END_QUOTE
-
-** Web Retrieval Model
-World Wide Web \citep{rfc1945} traffic cannot be adequately modeled
-using standard distributions like normal or uniform
-\citep{crovella97}. This explains the many outliers reported by
-\cite[sec.5.2]{DBLP:journals/popets/CherubinHJ17}. \cite[sec.5.A]{wtfpad2015}
-also distribute its \gls{wf} defense data partitions exponentially to
-better fit web traffic. \cite{DBLP:conf/imc/IhmP11} repeatedly mention
-a /long tail/ of traffic. This is why HTTP \citep{rfc7230}-shaped
-cover traffic might prove more effective, as this would make it harder
-to separate cover and real traffic. In addition, it would work at the
-layer \citep[ch.1.7]{DBLP:books/daglib/0001977} where the problem
-originates, as it mimics the HTTP/HTML \citep{html5}-specific
-request-response interaction.
-
-
-There are several approaches on how to generate HTTP-shaped
-traffic. The naïve way, using HTTP dummy traffic \citep{panchenko},
-loads another page simultaneously in the background. \citet{ccs2012-fingerprinting},
-\citet{a-systematic2014}, \citet{kfingerprint}, \citet{effective2014},
-\citet{panchenko}, and \citet{wtfpad2015} found it to be surprisingly
-effective for all its simplicity, albeit at a high overhead.
-
-#+CAPTION[Distribution of sizes for the HTTP traffic model]: Distribution of sizes for the HTTP traffic model. While the number of embedded elements seems very low, it has mean \mu \approx 5.07 \citep{newtrafficmodel} and standard deviation \sigma \approx 15.16 (computed as of \cite[5.1.11]{compgen} and using \cite[stats.gamma]{scipy}).
-#+NAME: distribution
-[[./pictures/fig_html_embedded.pdf]]
-# see misc_gen_quantiles_numemb.py
-
-
-\citet{newtrafficmodel} model web traffic. They evaluated various
-distributions, such as lognormal, weibull, exponential, gamma, and the
-generalized pareto distributions. This thesis applies their
-distributions for the size of the HTML page, the size of embedded
-elements, and the number of embedded elements. See illustration in
-Figure [[distribution]].
-
-The size of both HTML documents and embedded objects is each modeled
-by truncated lognormal distributions. The number of embedded objects
-is modeled by a truncated gamma function. These are implemented
-following \cite{compgen}.
 ** Bloom Filter Basics
    :PROPERTIES:
    :CUSTOM_ID: sub3-bloomfilters
@@ -2417,6 +2390,138 @@ from the same distributions used to set the target values.
 Each request is potentially covered by a simultaneous cover-request,
 as seen in Algorithm \ref{algo1}. The algorithm randomly draws from
 appropriate HTTP-related distributions \citep{newtrafficmodel}.
+
+ /registerHost/, /isRegistered/, /computeProbability/ and
+ /updateHosts/ access a mapping of the recently active hostnames to
+ the number of embedded objects and cover requests that still need to
+ be sent. Its elements get removed after a certain time to allow for
+ new traffic.
+
+ The /lookupOrGuess.../-functions need data structures to map urls to
+ both HTTP sizes and number of embedded objects. These change over
+ time, just compare the topmost plots each of Figures
+ [[fig:total_packets_in]] and [[fig:total_packets_in_thesis]]. As can be seen
+ in the next chapter, the amazingly good defense that was achieved
+ with up-to-date cached sizes (see next chapter) decreased over time
+ to that of guessing sizes. These data structures use Bloom-filter
+ \citep{Bloom70space/timetrade-offs} based binning (see section
+ [[#sub3-bloomsort]]) to save values related to urls in a fixed space,
+ while not allowing an adversary to exactly determine which urls are
+ saved. See section [[#sub3-bloomfilters]] for a short introduction to
+ their underlying Bloom-filters and section [[#sub3-bloomsort]] for their
+ application that saves these in a fixed-size probabilistic data
+ structure.
+
+
+ Ease-of-installation and configuring the amount of cover traffic is
+ provided by using Firefox's Addon-SDK. Add-ons can be downloaded via
+ [[https://addons.mozilla.org][Mozilla's Addon Page]]. This also provides automatic addon updates.
+
+
+- why is this better
+  - application layer: where problem is
+  - in-browser: know which url visited
+  - can send specific cover traffic
+  - could even cache sizes dynamically in Bloom Filter
+- solution design: augment/increase traffic
+  - apply to each web page request
+    1. see request
+    2. use http model
+       - for extra html size
+       - and number of requests
+    3. match requests' own size (predicted if unknown) to model
+    4. request additional data over request
+    5. on further requests, chance to request additional
+  - secondary solution: browser extension
+    - easy to install, configure, enable/disable on demand
+- HTTP traffic model
+  - long-tailed distributions
+    - (cut off)
+  - for both number of embedded resources and page/embedded sizes
+- how is the defense ensured
+  - code: some tests for simple modules
+  - lint
+  - by hand
+  - good parts
+  - evaluation
+- quotes
+  - images
+    #+BEGIN_QUOTE
+    As shown by \citet{newton2005preserving}, naïve privacy-enabling
+    methods can be surpassed using domain-specific properties. They
+    showed two methods to be effective: randomizing information
+    position and adding generic aspects.
+    #+END_QUOTE
+  - history/stochastic
+    #+BEGIN_QUOTE
+    300% time\citep{a-systematic2014}). In 2015, the stochastic
+    defenses of \citet{wang2015walkie} and \citet{wtfpad2015} much
+    lower overhead, were developed. This validates a stochastic
+    approach, yet improvements seem possible in two areas: (1) ease of
+    installation, and configurability, and (2) more-closely fitting
+    cover traffic generation.
+
+
+    At the start of the thesis, there existed mostly deterministic
+    general defenses with high overhead (e.g. over 220% bandwidth, and
+    300% time\citep{a-systematic2014}). During the course of this
+    thesis, the stochastic defenses of \citet{wang2015walkie} and
+    \citet{wtfpad2015} much lower overhead, were developed. This
+    validates a stochastic approach, yet improvements seem possible in
+    two areas: (1) ease of installation, and configurability, and (2)
+    more-closely fitting cover traffic generation.
+
+    Ad 1: \citet{wang2015walkie} alters the Firefox binary, while the
+    current version of \citet{wtfpad2015} needed much manual
+    adjustment in our attempts.
+
+    Ad 2: \citet{wang2015walkie} uses either a normal, or lognormal
+    distribution, not adjusting to HTTP-specifics, while
+    \citet{wtfpad2015} samples packets at the network layer. It aims
+    at generally hiding /that traffic occurs/, not just which website
+    is visited, as it derives its basic mechanism from
+    \citet{ShWa-Timing06}.
+         - might even help against a global adversary, timing attacks, etc
+    #+END_QUOTE
+** Web Retrieval Model
+World Wide Web \citep{rfc1945} traffic cannot be adequately modeled
+using standard distributions like normal or uniform
+\citep{crovella97}. This explains the many outliers reported by
+\cite[sec.5.2]{DBLP:journals/popets/CherubinHJ17}. \cite[sec.5.A]{wtfpad2015}
+also distribute its \gls{wf} defense data partitions exponentially to
+better fit web traffic. \cite{DBLP:conf/imc/IhmP11} repeatedly mention
+a /long tail/ of traffic. This is why HTTP \citep{rfc7230}-shaped
+cover traffic might prove more effective, as this would make it harder
+to separate cover and real traffic. In addition, it would work at the
+layer \citep[ch.1.7]{DBLP:books/daglib/0001977} where the problem
+originates, as it mimics the HTTP/HTML \citep{html5}-specific
+request-response interaction.
+
+
+There are several approaches on how to generate HTTP-shaped
+traffic. The naïve way, using HTTP dummy traffic \citep{panchenko},
+loads another page simultaneously in the background. \citet{ccs2012-fingerprinting},
+\citet{a-systematic2014}, \citet{kfingerprint}, \citet{effective2014},
+\citet{panchenko}, and \citet{wtfpad2015} found it to be surprisingly
+effective for all its simplicity, albeit at a high overhead.
+
+#+CAPTION[Distribution of sizes for the HTTP traffic model]: Distribution of sizes for the HTTP traffic model. While the number of embedded elements seems very low, it has mean \mu \approx 5.07 \citep{newtrafficmodel} and standard deviation \sigma \approx 15.16 (computed as of \cite[5.1.11]{compgen} and using \cite[stats.gamma]{scipy}).
+#+NAME: distribution
+[[./pictures/fig_html_embedded.pdf]]
+# see misc_gen_quantiles_numemb.py
+
+
+\citet{newtrafficmodel} model web traffic. They evaluated various
+distributions, such as lognormal, weibull, exponential, gamma, and the
+generalized pareto distributions. This thesis applies their
+distributions for the size of the HTML page, the size of embedded
+elements, and the number of embedded elements. See illustration in
+Figure [[distribution]].
+
+The size of both HTML documents and embedded objects is each modeled
+by truncated lognormal distributions. The number of embedded objects
+is modeled by a truncated gamma function. These are implemented
+following \cite{compgen}.
 * After Appendices: Bibliography and Index
 \bibliography{docs/master}
 \bibliographystyle{apalike}
