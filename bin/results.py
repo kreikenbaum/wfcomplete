@@ -51,6 +51,14 @@ class Result(object):
         return self.src['stop_time'] - self.src['start_time']
 
     @property
+    def host(self):
+        '''@return name of host doing experiment'''
+        try:
+            return self.src['host']['hostname']
+        except KeyError:
+            return "unknown"
+
+    @property
     def y_prediction(self):
         '''@return predicted values (either pre-existing or computed)'''
         if not self._ypred:
