@@ -303,16 +303,19 @@ def ccdf_curve_for_scenario(scenario_obj, existing=True, axes=None,
                             filt=None, type_="recall"):
     if not axes:
         _, axes = plt.subplots()
+    sizes = set()
     for result in (r for r in results.for_scenario_open(scenario_obj)
                    if not r.open_world['binary']):
         logging.debug(result)
-        if (existing and not result._ypred
-            or filt and not filt(result)):
+        size = len(result.scenario.get_traces()['background'])
+        if size in sizes:
+            continue
+        sizes.add(size)
+        if (existing and not result._ypred or
+                filt and not filt(result)):
             logging.debug("skipped %s", result)
             continue
-        ccdf_curve(result.get_confusion_matrix(),
-                   len(result.scenario.traces['background']),
-                   axes=axes)
+        ccdf_curve(result.get_confusion_matrix(), size, axes=axes)
     plt.legend()
     plt.title("CCDF-{} curve for {}".format(type_, scenario_obj))
 

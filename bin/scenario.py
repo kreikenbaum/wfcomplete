@@ -133,7 +133,11 @@ class Scenario(object):
 
     def __len__(self):
         '''@return the total number of instances in this scenario'''
-        return sum((len(x) for x in self.get_traces().values()))
+        try:
+            return sum((len(x) for x in self.traces.values()))
+        except AttributeError:
+            logging.info("guessed size")
+            return self.num_instances * self.num_sites
 
     def __str__(self):
         return '{} on {}'.format(self.name, self.date)

@@ -643,7 +643,7 @@ of future work in section [[#future-work]].
 ** Defending against Website Fingerprinting
    This section describes defenses against \gls{wf} as described
    [[#sub2-wf][previously]] in section [[#sub2-wf]]: \gls{wf} attacks have become
-   increasingly better using \gls{ml}.  \Gls{wf} thus effectively
+   increasingly better using \gls{ml}. \Gls{wf} thus effectively
    deanonymizes the traffic that users thought private: it could for
    example expose a dissident to his nation state, nullifying this
    part of Tor's protection.  The task of defenses is to confuse such
@@ -734,12 +734,13 @@ of future work in section [[#future-work]].
    generally hiding /that traffic occurs/, not just which website is
    visited; it derives its basic mechanism from
    \citet{ShWa-Timing06}. \citet{wang2015walkie} changes the traffic
-   patterns to half-duplex. In 2017, LLaMA was introduced by
+   patterns to half-duplex: It either only sends or only receives. In
+   2017, LLaMA was introduced by
    \citet{DBLP:journals/popets/CherubinHJ17}. They acknowledge the
    need for a client-side application-level defense. LLaMA delays
-   traffic by a uniformly distributed. The authors provided LLaMA as a
-   secondary defense to the server-side ALPaCA defense, and emphasize
-   its prototype status \citep{LLaMA}.
+   traffic by a uniformly distributed distribution. The authors
+   provided LLaMA as a secondary defense to the server-side ALPaCA
+   defense, and emphasize its prototype status \citep{LLaMA}.
 * A New Defense
 \Gls{wf} has deanonymized Tor under laboratory conditions
 \citep{panchenko}, and has continued to improve (\citet{panchenko2},
@@ -764,6 +765,15 @@ This chapter first presents the main thesis's defense design in
 section [[#sub3-defense]]. Section [[#sub3-http]] goes into some detail about
 the traffic model. and the optional Bloom-filter based stochastic data
 structure that is used for size caches.
+
+The advantages of this approach are: Firstly, the application layer is
+used in \gls{wf}. The defense works at the same layer. Secondly, the
+defense works inside the browser, observing requests as they occur. It
+can thus send specific cover traffic fitted to each single
+request. Thirdly, the defense could possibly cache element sizes, in
+order to more closely tailor cover requests. Finally, the defense is
+provided as a Firefox Add-on. This eases installation and
+configurability.
 ** Main Algorithm
 :PROPERTIES:
 :CUSTOM_ID: sub3-defense
@@ -773,7 +783,7 @@ her browser, it first loads =bob.com='s main HTML \citep{html5}
 page. This page frequently contains other resources like CSS
 stylesheets, images, JavaScript \citep{ecma} files, etc. It might also
 contain elements that request other elements again, like nested HTML,
-CSS =@import=, or JavaScript AJAX. For each of these assets, the
+CSS =@import=, or JavaScript AJAX requests. For each of these, the
 browser sends a request to obtain it.
 
 
@@ -813,34 +823,33 @@ all website requests. Algorithm \ref{algo1} describes the main idea:
  \end{algorithm}
  #+END_EXPORT
 The retrieval of the (first) HTML page provides significant
-information as of \citep[sec.4.1]{panchenko}.  To counter this
-information gain, this first retrieval is always covered by additional
-traffic. After the first retrieval, the browser downloads the page
-resources: images, style sheets, JavaScript \citep{ecma} files,
-etc. Each of these retrievals might be covered by additional dummy
-retrievals: The imagined web page retrieval is checked, how many
-resource requests it contains as opposed to the actual retrieval, if
-known. The difference of requests is randomly spread out among the
-actual browser requests. The size of the cover request is adjusted to
-the page's actual values, if known. The addon requests data to match
-an imagined web page retrieval.
+information for \gls{wf} \citep[sec.4.1]{panchenko}. To counter this
+information gain, this first load is always covered by additional
+traffic. Afterwards, the browser downloads the page resources: images,
+style sheets, JavaScript \citep{ecma} files, etc. Each of these
+transfers might be covered by additional dummy traffic: The actual
+number of resources is subtracted from the target number. This
+difference is randomly spread out among the actual browser
+requests. The size of each cover response is adjusted to the page's
+actual values, if known. The addon thus augments data requests to
+match an imagined web page retrieval. After a timeout, the hostname
+and its data is removed from the data structure used by /registerHost/, /isRegistered/, /computeProbability/ and /updateHosts/.
 
 
 
-Alice's defense sees the request to =bob.com= and checks if it has
-seen this site before. Since it is a new request, it has not. It thus
-determines this to be a main HTML request, and sets the actual,
-target, and cover values. It then sends a request for HTML cover
-traffic concurrently to the first HTML request. Since all traffic is
-encrypted and secured over Tor, only the sizes of the requests and
-responses are seen. By design, on the wire this cover request is
-simultaneous to the main HTML request. Bob's main website is simple:
-it contains just a stylesheet, links to further posts, and a
-background image. The browser downloads the stylesheet, and the
+Alice's defense sees the first load from =bob.com=, and checks if it
+has seen this site before. Since it is a new request, it has not. It
+thus considers this to be a main HTML request, and determines the
+actual, target, and cover values. Using these, it then sends a request
+for HTML cover traffic concurrently to the first HTML request. Since
+all traffic is encrypted and secured over Tor, only the sizes of the
+requests and responses are seen. By design, on the wire this cover
+request is simultaneous to the main HTML request. Bob's main website
+is simple: it contains just a stylesheet, links to further posts, and
+a background image. The browser downloads the stylesheet, and the
 image. The defense randomly chooses to accompany the image with two
 additional cover requests. It then decrements its embedded resource
 cover target by two.
-
 
 
 The created traffic is based on the HTTP model \citep{newtrafficmodel}
@@ -853,129 +862,49 @@ from the same distributions used to set the target values.
    :PROPERTIES:
    :CUSTOM_ID: sub3-http
    :END:
-This thesis' defense uses the distribution of HTTP traffic.
+This thesis' defense uses the distribution of HTTP traffic: the sizes
+of HTML pages, the size of embedded resources, and the number of
+embedded resources per HTML page. There are several approaches on how
+to generate HTTP-shaped traffic. The naïve way, using HTTP dummy
+traffic \citep{panchenko}, loads another page simultaneously in the
+background. \citet{ccs2012-fingerprinting}, \citet{a-systematic2014},
+\citet{kfingerprint}, \citet{effective2014}, \citet{panchenko}, and
+\citet{wtfpad2015} found it to be surprisingly effective for all its
+simplicity, albeit at a high overhead.
 
 
-Many studies agree that web traffic is not adequately modeled with
-vanilla distributions like normal, or exponential. It instead exhibits
-/long-tailed/ behavior, where high values are not as unlikely as in,
-say, exponential or normal distributions. This is why
-\citep{wtfpad2015} use exponentially bound sizes (which corresponds to
-log-normal distributions), and ... repeatedly mention a long tail of
-traffic. The web model of \citet{newtrafficmodel} models this behavior
-using mostly (truncated) log-normal distributions, as seen in Figures
-2 and 3. This model is used in this thesis to set the cover traffic
-target sizes. It also sets the page's actual sizes, if they are not
-known.
 
-- what are the underlying distributions
-  - HTML
-  - embedded
-  - num embedded
+#+CAPTION[Distribution of sizes for the HTTP traffic model]: Distribution of sizes for the HTTP traffic model. While the number of embedded elements seems very low, it has mean \mu \approx 5.07 \citep{newtrafficmodel} and standard deviation \sigma \approx 15.16 (computed as of \cite[5.1.11]{compgen} and using \cite[stats.gamma]{scipy}).
+#+NAME: fig:distributions
+[[./pictures/fig_html_embedded.pdf]]
+# see misc_gen_quantiles_numemb.py
 
-- why is this better
-  - application layer: where problem is
-  - in-browser: know which url visited
-  - can send specific cover traffic
-  - could even cache sizes dynamically in Bloom Filter
-- solution design: augment/increase traffic
-  - apply to each web page request
-    1. see request
-    2. use http model
-       - for extra html size
-       - and number of requests
-    3. match requests' own size (predicted if unknown) to model
-    4. request additional data over request
-    5. on further requests, chance to request additional
-  - secondary solution: browser extension
-    - easy to install, configure, enable/disable on demand
-- HTTP traffic model
-  - long-tailed distributions
-    - (cut off)
-  - for both number of embedded resources and page/embedded sizes
-- how is the defense ensured
-  - code: some tests for simple modules
-  - lint
-  - by hand
-  - good parts
-  - evaluation
-- quotes
-  - images
-    #+BEGIN_QUOTE
-    As shown by \citet{newton2005preserving}, naïve privacy-enabling
-    methods can be surpassed using domain-specific properties. They
-    showed two methods to be effective: randomizing information
-    position and adding generic aspects.
-    #+END_QUOTE
-  - history/stochastic
-    #+BEGIN_QUOTE
-    300% time\citep{a-systematic2014}). In 2015, the stochastic
-    defenses of \citet{wang2015walkie} and \citet{wtfpad2015} much
-    lower overhead, were developed. This validates a stochastic
-    approach, yet improvements seem possible in two areas: (1) ease of
-    installation, and configurability, and (2) more-closely fitting
-    cover traffic generation.
-
-
-    At the start of the thesis, there existed mostly deterministic
-    general defenses with high overhead (e.g. over 220% bandwidth, and
-    300% time\citep{a-systematic2014}). During the course of this
-    thesis, the stochastic defenses of \citet{wang2015walkie} and
-    \citet{wtfpad2015} much lower overhead, were developed. This
-    validates a stochastic approach, yet improvements seem possible in
-    two areas: (1) ease of installation, and configurability, and (2)
-    more-closely fitting cover traffic generation.
-
-    Ad 1: \citet{wang2015walkie} alters the Firefox binary, while the
-    current version of \citet{wtfpad2015} needed much manual
-    adjustment in our attempts.
-
-    Ad 2: \citet{wang2015walkie} uses either a normal, or lognormal
-    distribution, not adjusting to HTTP-specifics, while
-    \citet{wtfpad2015} samples packets at the network layer. It aims
-    at generally hiding /that traffic occurs/, not just which website
-    is visited, as it derives its basic mechanism from
-    \citet{ShWa-Timing06}.
-         - might even help against a global adversary, timing attacks, etc
-    #+END_QUOTE
-World Wide Web \citep{rfc1945} traffic cannot be adequately modeled
-using standard distributions like normal or uniform
-\citep{crovella97}. This explains the many outliers reported by
+This is why HTTP \citep{rfc7230}-shaped cover traffic might prove more
+effective, as this would make it harder to separate cover and real
+traffic. In addition, it would work at the layer
+\citep[ch.1.7]{DBLP:books/daglib/0001977} where the problem
+originates, as it mimics the HTTP/HTML \citep{html5}-specific
+request-response interaction. Yet, World Wide Web \citep{rfc1945} traffic
+cannot be adequately modeled using standard distributions like normal
+or uniform \citep{crovella97}. This explains the many outliers
+reported by
 \cite[sec.5.2]{DBLP:journals/popets/CherubinHJ17}. \cite[sec.5.A]{wtfpad2015}
 also distribute its \gls{wf} defense data partitions exponentially to
 better fit web traffic. \cite{DBLP:conf/imc/IhmP11} repeatedly mention
-a /long tail/ of traffic. This is why HTTP \citep{rfc7230}-shaped
-cover traffic might prove more effective, as this would make it harder
-to separate cover and real traffic. In addition, it would work at the
-layer \citep[ch.1.7]{DBLP:books/daglib/0001977} where the problem
-originates, as it mimics the HTTP/HTML \citep{html5}-specific
-request-response interaction.
-
-
-There are several approaches on how to generate HTTP-shaped
-traffic. The naïve way, using HTTP dummy traffic \citep{panchenko},
-loads another page simultaneously in the background. \citet{ccs2012-fingerprinting},
-\citet{a-systematic2014}, \citet{kfingerprint}, \citet{effective2014},
-\citet{panchenko}, and \citet{wtfpad2015} found it to be surprisingly
-effective for all its simplicity, albeit at a high overhead.
-
-#+CAPTION[Distribution of sizes for the HTTP traffic model]: Distribution of sizes for the HTTP traffic model. While the number of embedded elements seems very low, it has mean \mu \approx 5.07 \citep{newtrafficmodel} and standard deviation \sigma \approx 15.16 (computed as of \cite[5.1.11]{compgen} and using \cite[stats.gamma]{scipy}).
-#+NAME: distribution
-[[./pictures/fig_html_embedded.pdf]]
-# see misc_gen_quantiles_numemb.py
+a /long tail/ of traffic. HTTP traffic exhibits /long-tailed/
+\citep{foss2011introduction} behavior, where high sampling values are
+not as unlikely as in, say, exponential or normal distributions.
 
 
 \citet{newtrafficmodel} model web traffic. They evaluated various
 distributions, such as lognormal, weibull, exponential, gamma, and the
-generalized pareto distributions. This thesis applies their
-distributions for the size of the HTML page, the size of embedded
-elements, and the number of embedded elements. See illustration in
-Figure [[distribution]].
+generalized pareto distributions. Log-normal distributions
+(truncated), as seen in Figure [[fig:distributions]] fit the sizes of both
+HTML and embedded resources best in their analysis. A truncated gamma
+function models the number of embedded objects.
 
-The size of both HTML documents and embedded objects is each modeled
-by truncated lognormal distributions. The number of embedded objects
-is modeled by a truncated gamma function. These are implemented
-following \cite{compgen}.
+This model is used in this thesis to set the cover traffic target
+sizes. It also sets the page's actual sizes, if they are not known.
 ** Blooms
 A Bloom-filter is a stochastic data structure to test membership in a
 set. In this, they are similar to hash-coding. They offer a
@@ -992,13 +921,6 @@ saves whether the element's URL is modeled by the bin.
   - timeout-dict
 
 #+BEGIN_QUOTE
-
- /registerHost/, /isRegistered/, /computeProbability/ and
- /updateHosts/ access a mapping of the recently active hostnames to
- the number of embedded objects and cover requests that still need to
- be sent. Its elements get removed after a certain time to allow for
- new traffic.
-
  The /lookupOrGuess.../-functions need data structures to map urls to
  both HTTP sizes and number of embedded objects. These change over
  time, just compare the topmost plots each of Figures
@@ -1013,10 +935,245 @@ saves whether the element's URL is modeled by the bin.
  their underlying Bloom-filters and section [[#sub3-bloomsort]] for their
  application that saves these in a fixed-size probabilistic data
  structure.
-
-
-
 #+END_QUOTE
+
+          - set membership with false positives
+          - reduced space
+          - fp help here: if adynamically saves, and adversary
+            captures, cannot say for sure
+
+   Bloom filters \citep{Bloom70space/timetrade-offs} are a stochastic
+   fixed-width data structure to test membership in a set. In exchange
+   for a small false-positive error rate, they require significantly
+   less space than deterministic data structures: if an element is in
+   the set, the filters accurately report this; if the element is not
+   in the set, the Bloom-filter might report that it is contained. The
+   error rate depends on the number of included elements in relation
+   to the Bloom-filter's size. Bloom-filters were developed for spell
+   checking. They have numerous uses in network applications, e.g. in
+   distributed caches, and network
+   analysis.\citep{Broder02networkapplications} Bloom-filters improve
+   on simple hash-coding by offering a tunable false positive error
+   rate.
+
+- why Bloom filter
+  - fixed size
+  - if save visited pages, problematic if computer is captured later
+  - bloom filter only saves approximately
+
+*** Choice: Cache (approximate) sizes using Bloom Filters
+    :PROPERTIES:
+    :CUSTOM_ID: cache_size
+    :END:
+    #+INDEX: a
+    #+INDEX: flavour!a
+    #+INDEX: b
+    #+INDEX: flavour!b
+    A webpage is modeled by its HTML size and its number of embedded
+    objects. In a closed world[fn::if the client can only browse to
+    a limited number of URLs], it is possible to cache all
+    sizes[fn::See appendices [[#find sizes of HTML-documents]] and
+    [[#number_embedded]] for how the sizes were determined]
+    beforehand. If a size is unknown, random variates from the
+    [[#HTTP traffic model][HTTP traffic model] are used.[fn:: The
+    size of each embedded dummy object is always drawn from the HTTP
+    traffic model.]
+
+    Using known sizes is called the /cache/ flavour and denoted by
+    =a= in tables etc. In the /nocache/ flavour, denoted by =b=,
+    sizes are always guessed.
+
+    To cache sizes, an approximate-size data structure based on
+    Bloom filters is used.
+*** Application: Bloom Sort
+    Sizes can be saved approximately based on Bloom filters: they
+    are sorted into bins based on the target distribution. For each
+    bin, a Bloom filter is created. An element is added to this
+    filter if its size is inside the bin.
+
+    To approximate the size of an element, all filters are
+    checked. If one filter reports containment, its size is
+    chosen. If zero report containment, the size is not known; if
+    two or more report containment, it is saved wrongly. In the
+    latter cases, the default distribution is used.[fn::See [[#bloom-sort]]
+    for implementation details.]
+
+    This data structure has the additional advantage that, even if
+    visited page sizes were saved, an adversary could not safely
+    detemine that pages were visited due to the Bloom Filter's
+    false positive errors.
+
+*** DANIEL Caching via Bloom-Filters
+    :PROPERTIES:
+    :CUSTOM_ID: sub3-bloom
+    :END:
+    The above defense might further improve if the sizes of the webpage
+    to be loaded are known beforehand: Cover traffic could be tailored
+    more exactly, increasing obfuscation and/or reducing
+    overhead. Knowing the exact retrieval pattern in advance even
+    enables new defenses\cite{effective2014}.
+
+
+    The problem in caching is that
+    a. page properties change over time, making this cache increasingly
+       less accurate,
+    b. caching visited page sizes might yield an exact log of the
+       visited web pages to an attacker who gains control over the
+       defended computer, and
+    c. this cache could take a lot of space, depending on the subset of
+       pages's sizes cached.
+
+
+    A data structure that stochastically saves approximate sizes might
+    solve problems /2/ and (partially) /3/: Bloom
+    Filters\cite{Bloom70space/timetrade-offs} have a small error rate
+    in exchange for a fixed size. Their otherwise disadvantageous error
+    probability is an advantage in this situation, as it further
+    confounds possible attackers.
+
+
+    Dynamically updating the filter might solve problem /1/ and further
+    help with problem /3/ (future work).
+*** KEYWORDS Bloom-Cache
+**** WRITE Error estimation of Bloom Sort
+     - error both ways, and difference bin-size to real size
+    - sources of error
+      - filter tells that is has element when it has not
+    - how does error appear
+      - collision: one of several, the other might be true
+      - replacement: simulates being another url
+    - rates of error
+      - "add" the error rates of the filters? (times population density?)
+    - error estimation?
+      - +: fixed size
+      - -: error both ways, and difference bin-size to real size
+**** WRITE Bloom usage and implementation
+     - Bloom sort
+       - error rate computation
+     - size taken from example...
+       - maybe change when altered
+**** WRITE Bloom-sort
+     :PROPERTIES:
+     :CUSTOM_ID: bloom-sort
+     :END:
+      By ordering data into bins, it becomes possible to use Bloom filters
+      for the estimation of sizes, using one Bloom filter for each bin.
+
+      To achieve this, sensible separation criteria (called /splits/) for
+      the bins need to be found. Afterwards, each bin needs to be assigned
+      a value (called /size/) for all contained elements. See appendix
+      [[#bloom-params]] on determining the sizes and splits.
+
+      This data-structure, called /Bloom-sort/ is initialized with an
+      array of splits, and an array of sizes. The sizes-array needs to
+      have one more element than the splits-array, as the bins are bounded
+      on the left by 0, and on the right by infinity.
+
+      #+BEGIN_SRC js
+        /**
+         ,* @param {sizes Array} array of values for each bin, must be sorted
+         ,* @param {splits Array} array of bin borders, must be sorted
+        ,*/
+        function BloomSort(sizes, splits) {
+            this.sizes = sizes;
+            this.splits = splits;
+            this.filters = [];
+            for ( let i = 0; i < sizes.length; i++ ) {
+                this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH);
+            }
+        }
+      #+END_SRC
+
+      Thus, you get
+      \[-\infty \le \text{size}_0 \le \text{split}_0 \le \text{size}_1 \le \text{split}_1 \le ... \le \text{split}_{n-1} \le \text{size}_n < \infty\]
+      Given the splits, it becomes possible to add the elements to their
+      bins:
+
+      #+BEGIN_SRC js
+        BloomSort.prototype.add = function(id, size) {
+            this.filters[_.sortedIndex(this.splits, size)].add(id);
+        };
+      #+END_SRC
+
+      where =_.sortedIndex()= gives the index at which =size= would be
+      inserted into the sorted =this.splits= array.
+
+      The retrieval of element sizes looks into each Bloom filter,
+      checking whether it might contain the element =id=. If one Bloom
+      filter reports containment, its corresponding element- =size= is
+      returned. If several or no Bloom filters report containment, an
+      exception is thrown. The exception is used to allow all possible
+      return values, not blocking one of them, say =-1=, for the error
+      condition.
+      #+BEGIN_SRC js
+        /** determines size of element, raises exception if unclear */
+        BloomSort.prototype.query = function(id) {
+            let pos = -1;
+            for ( let i = 0; i < this.filters.length; i++ ) {
+                if ( this.filters[i].test(id) ) {
+                    if ( pos === -1 ) {
+                        pos = i;
+                    } else {
+                        throw {
+                            name: 'BloomError',
+                            message: 'Contains multiple entries'
+                        };
+                    }
+                }
+            }
+            if ( pos === -1 ) {
+                throw {
+                    name: 'BloomError',
+                    message: 'Contains no entries'
+                };
+            }
+            return this.sizes[pos];
+        };
+      #+END_SRC
+
+      It is initialized with
+      #+BEGIN_SRC js
+      let htmlSizes = new BloomSort.BloomSort([400, 1000, 20000], [700, 10000]);
+      #+END_SRC
+
+      then adding elements via =htmlSizes.add("http://google.com/", 613)=
+      and querying via =htmlSizes.query("http://google.com/")=, which
+      would yield =400=. See usage in =size-cache=.
+
+      - link to main bloom-sort, create custom-id there
+***** WAIT github link
+**** CHECK Determining Bloom-Sort Parameters
+     :PROPERTIES:
+     :CUSTOM_ID: bloom-params
+     :END:
+     It is impractical to store the sizes of many URLs, as this would
+     greatly increase the size of the addon. A possibility to save space
+     is to use Bloom Filters to aggregate groups of URLs with similar
+     values, as described in [[#bloom-sort][Bloom-sort]].
+
+     Each group needs borders (given via the /splits/ method parameter)
+     and a size to represents its contained elements.
+
+     Determining the optimal number of groups, splits and sizes is a
+     topic of [[#future-work][further work]]. Here, initially the quantiles of the
+     HTTP-model (see [[#HTTP traffic model][HTTP traffic model] ) were used. When the data were
+     to be inserted, it turned out that especially the numbers of
+     embedded elements did not match the theoretically proposed groups:
+
+     For three groups, the splits would be given by the 33 1/3 and 66
+     2/3 quantiles, as 0.0107 and 1.481. This would create two
+     single-valued groups, which only would contain the elements 0
+     and 1. The next group would contain all other elements: The
+     (representative) sizes of the groups were given as 7.915E-05,
+     0.188, and 8.260 (quantiles 16 1/6, 50, and 83 5/6).
+
+     The actual data to be inserted (see [[#number_embedded][Cached: Number of Embedded
+     Objects]]) had the /splits/ (quantiles) at 10 2/3 and 36 2/3 and the
+     /sizes/ (middle quantile) at 6, 20, and 59 2/3.
+
+     In addition to using the observed sizes for the Bloom filter, the
+     number of groups was increased to 5.
+***** WAIT [#C] graphics: histogram with bins (colored bars, black bin limits)
 
 * bit older methods chapter
 As described in section [[#sub2-wf]], \gls{wf} can deanonymize Tor web
@@ -1299,10 +1456,6 @@ save element sizes ([[#sub3-bloomsort]]).
   - quantile middle as value, upper lower as limits
   - example numbers: old real-world code
   - [error probability?]
-- why a server
-  - could easily cache sizes, reuse
-  - but this as prrof of concept
-- also use [[file:~/da/da.org::*new%20order][new order]]
 * Evaluation
 ** Setup
 ** Closed World
@@ -1316,6 +1469,14 @@ save element sizes ([[#sub3-bloomsort]]).
   # mplot.ccdf_curve_for_scenario( scenario.Scenario("wf-cover/bridge-20aI--2018-02-13--100@50"), filt=lambda x: len(x.scenario.get_traces()['background']) >= 1000)
 
   Defense: much lower values.
+
+  [[./pictures/ccdf-recall-defense-client-nodelay-on-2018-02-25.pdf]]
+  # mplot.ccdf_curve_for_scenario(...)
+
+
+  Llama: also low value, but much higher overhead (200%, vs 67%)
+
+
 * old exposé
 *** Thesis Contribution
     This thesis presents and tests a new defense against \gls{wf}. This
@@ -1899,6 +2060,11 @@ total web page size by \citet{web-is-doom}. Secondly, as mentioned in
 per each HTML page, including frames, and possibly including
 redirects. How the number of embedded elements is used in this thesis
 differs from how it should be used, see next section.
+
+- why a server
+  - could easily cache sizes, reuse
+  - but this as proof of concept
+
 **** How to Distinguish HTML and Embedded Objects
      :PROPERTIES:
      :CUSTOM_ID: distinguish_HTML_embedded
