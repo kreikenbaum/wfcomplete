@@ -905,90 +905,72 @@ distributions, such as lognormal, weibull, exponential, gamma, and the
 generalized pareto distributions. Log-normal distributions
 (truncated), as seen in Figure [[fig:distributions]] fit the sizes of both
 HTML and embedded resources best in their analysis. A truncated gamma
-function models the number of embedded objects.
-
-This model is used in this thesis to set the cover traffic target
-sizes. It also sets the page's actual sizes, if they are not known.
+function models the number of embedded objects. This model provides
+the cover traffic target sizes. It also sets the page's actual sizes,
+if they are not known.
 ** Caching Sizes using Bloom-Filters
-*** why blooms
-    aka  why Bloom filter
-
-    A webpage is modeled by its HTML size and its number of embedded
-    objects. In a closed world[fn::if the client can only browse to
-    a limited number of URLs], it is possible to cache all
-    sizes[fn::See appendices [[#find sizes of HTML-documents]] and
-    [[#number_embedded]] for how the sizes were determined]
-    beforehand.
-
-  - fixed size
-  - size cut-off
-
-The above defense might further improve if the sizes of the webpage to
-be loaded are known beforehand: Cover traffic could be tailored more
-exactly, increasing obfuscation and/or reducing overhead. Knowing the
-exact retrieval pattern in advance even enables new
-defenses \citep{effective2014}.
-
-
+*** why blooms (aka  why Bloom filter)
+As mentioned in the previous section, the model provides the page
+retrieval's actual numbers, if these are not known. The defense might
+further improve if the sizes of the webpage to be loaded are known
+beforehand: Cover traffic could be tailored more exactly, increasing
+obfuscation and/or reducing overhead. Knowing the exact retrieval
+pattern in advance even enables new defenses \citep{effective2014}.
 The problem in caching is that
-    a. page properties change over time, making this cache increasingly
-       less accurate,
-    b. caching visited page sizes might yield an exact log of the
-       visited web pages to an attacker who gains control over the
-       defended computer, and
-    c. this cache could take a lot of space, depending on the subset of
-       pages's sizes cached.
+
+1. page properties change over time, making a fixed cache increasingly
+   less accurate,
+2. caching visited page sizes might yield an exact log of the visited
+   web pages to an attacker who gains control over the defended
+   computer. \citep[sec.2.1]{tor-browser-design-impl} forbids writing
+   sensitive data to disc, except on opt-in, and
+3. this cache cannot store all page sizes. Even in a closed world,
+   using a default mapping of string to size preclude usage , it could
+   take a lot of space, depending on the subset of pages's sizes
+   cached.
+
+Storing the sizes of all pages as a mapping from their names to their
+sizes is impractical due to size constraints. A data structure that
+stochastically saves approximate sizes might solve problems /2/ and
+(partially) /3/: Bloom Filters \citep{Bloom70space/timetrade-offs}
+have a small error rate in exchange for a fixed size. Their otherwise
+disadvantageous error probability is an advantage in this situation,
+as it further confounds possible attackers. The current implementation
+was initialized once to fixed page sizes for the top
+pages. Dynamically updating the filter might solve problem /1/ and
+further help with problem /3/ (future work).
+
+Bloom filters \citep{Bloom70space/timetrade-offs} are a stochastic
+fixed-width data structure to test membership in a set. In exchange
+for a small false-positive error rate, they require significantly less
+space than deterministic data structures: if an element is in the set,
+the filters accurately report this; if the element is not in the set,
+the Bloom-filter might report that it is contained. The error rate
+depends on the number of included elements in relation to the
+Bloom-filter's size. Bloom-filters were developed for spell
+checking. They have numerous uses in network applications, e.g. in
+distributed caches, and network
+analysis.\citep{Broder02networkapplications} Bloom-filters improve on
+simple hash-coding by offering a tunable false positive error rate.
 
 
-A data structure that stochastically saves approximate sizes might
-solve problems /2/ and (partially) /3/: Bloom Filters
-\citep{Bloom70space/timetrade-offs} have a small error rate in
-exchange for a fixed size. Their otherwise disadvantageous error
-probability is an advantage in this situation, as it further confounds
-possible attackers.
-
-
-Dynamically updating the filter might solve problem /1/ and further
-help with problem /3/ (future work).
+  - size cut-off
 
 ---
 
-If you wish to store the sizes of all pages as a mapping from their
-names to their sizes, you soon hit a size constraint. Additionally,
-Tor Browsing is sensitive, so that
-\citep[sec.2.1]{tor-browser-design-impl} demand that the Tor Browser
-MUST NOT \citep{rfc2119} store browsing-derived data to disk, except
-if users opt in. To kill two birds with one stone, a stochastic data
-structure can save approximate sizes: A Bloom-filter
-\citep{Bloom70space/timetrade-offs} is a stochastic data structure to
-test membership in a set, similar to hash-coding. This is used to
-approximately save element sizes. The current implementation was
-initialized once to fixed page sizes for the top pages.
+This is used to approximately save element sizes.
 
   - if save visited pages, problematic if computer is captured later
     - bloom filter only saves approximately
 
 
-   Bloom filters \citep{Bloom70space/timetrade-offs} are a stochastic
-   fixed-width data structure to test membership in a set. In exchange
-   for a small false-positive error rate, they require significantly
-   less space than deterministic data structures: if an element is in
-   the set, the filters accurately report this; if the element is not
-   in the set, the Bloom-filter might report that it is contained. The
-   error rate depends on the number of included elements in relation
-   to the Bloom-filter's size. Bloom-filters were developed for spell
-   checking. They have numerous uses in network applications, e.g. in
-   distributed caches, and network
-   analysis.\citep{Broder02networkapplications} Bloom-filters improve
-   on simple hash-coding by offering a tunable false positive error
-   rate.
 
 
 
-If a size is unknown, random variates from the
-    [[#HTTP traffic model][HTTP traffic model] are used.[fn:: The
-    size of each embedded dummy object is always drawn from the HTTP
-    traffic model.]
+If a size is unknown, random variates from the [[#HTTP traffic
+    model][HTTP traffic model] are used.[fn:: The size of each
+    embedded dummy object is always drawn from the HTTP traffic
+    model.]
 
     Using known sizes is called the /cache/ flavour and denoted by
     =a= in tables etc. In the /nocache/ flavour, denoted by =b=,
