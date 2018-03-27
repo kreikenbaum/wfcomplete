@@ -906,15 +906,69 @@ function models the number of embedded objects.
 This model is used in this thesis to set the cover traffic target
 sizes. It also sets the page's actual sizes, if they are not known.
 ** Blooms
-A Bloom-filter is a stochastic data structure to test membership in a
-set. In this, they are similar to hash-coding. They offer a
-configurable false-positive error-rate: they might erroneously state
-that an element is contained in a set, if it is not. In this thesis,
-Bloom-filters are used to approximately cache sizes of elements: the
-range of possible values is inspected, and split by quantiles. These
-values are then binned, and the middle quantile of each bin is chosen
-to represent the bin. Each bin corresponds to a Bloom-filter that
-saves whether the element's URL is modeled by the bin.
+- why blooms
+  - size cut-off
+- what are bloom-filters
+- how do bloom-filters work
+- what is the error-rate to size trade-off
+- how are bloom-filters used
+- what is the algorithm
+- what are its advantages
+
+
+If you wish to store the sizes of all pages as a mapping from their
+names to their sizes, you soon hit a size constraint. Additionally,
+Tor Browsing is sensitive, so that
+\citep[sec.2.1]{tor-browser-design-impl} demand that the Tor Browser
+MUST NOT \citep{rfc2119} store browsing-derived data to disk, except
+if users opt in. To kill two birds with one stone, a stochastic data
+structure can save approximate sizes: A Bloom-filter
+\citep{Bloom70space/timetrade-offs} is a stochastic data structure to
+test membership in a set, similar to hash-coding. This is used to
+approximately save element sizes. The current implementation was
+initialized once to fixed page sizes for the top pages.
+
+OR
+
+The above defense might further improve if the sizes of the webpage to
+be loaded are known beforehand: Cover traffic could be tailored more
+exactly, increasing obfuscation and/or reducing overhead. Knowing the
+exact retrieval pattern in advance even enables new
+defenses \citep{effective2014}.
+
+
+The problem in caching is that
+    a. page properties change over time, making this cache increasingly
+       less accurate,
+    b. caching visited page sizes might yield an exact log of the
+       visited web pages to an attacker who gains control over the
+       defended computer, and
+    c. this cache could take a lot of space, depending on the subset of
+       pages's sizes cached.
+
+
+A data structure that stochastically saves approximate sizes might
+solve problems /2/ and (partially) /3/: Bloom Filters
+\citep{Bloom70space/timetrade-offs} have a small error rate in
+exchange for a fixed size. Their otherwise disadvantageous error
+probability is an advantage in this situation, as it further confounds
+possible attackers.
+
+
+Dynamically updating the filter might solve problem /1/ and further
+help with problem /3/ (future work).
+
+
+
+
+They offer a configurable false-positive error-rate: they might
+erroneously state that an element is contained in a set, if it is
+not. In this thesis, Bloom-filters are used to approximately cache
+sizes of elements: the range of possible values is inspected, and
+split by quantiles. These values are then binned, and the middle
+quantile of each bin is chosen to represent the bin. Each bin
+corresponds to a Bloom-filter that saves whether the element's URL is
+modeled by the bin.
 
 - what are the special data structures
   - bloom filter
@@ -961,14 +1015,7 @@ saves whether the element's URL is modeled by the bin.
   - if save visited pages, problematic if computer is captured later
   - bloom filter only saves approximately
 
-*** Choice: Cache (approximate) sizes using Bloom Filters
-    :PROPERTIES:
-    :CUSTOM_ID: cache_size
-    :END:
-    #+INDEX: a
-    #+INDEX: flavour!a
-    #+INDEX: b
-    #+INDEX: flavour!b
+
     A webpage is modeled by its HTML size and its number of embedded
     objects. In a closed world[fn::if the client can only browse to
     a limited number of URLs], it is possible to cache all
@@ -985,7 +1032,8 @@ saves whether the element's URL is modeled by the bin.
 
     To cache sizes, an approximate-size data structure based on
     Bloom filters is used.
-*** Application: Bloom Sort
+
+
     Sizes can be saved approximately based on Bloom filters: they
     are sorted into bins based on the target distribution. For each
     bin, a Bloom filter is created. An element is added to this
@@ -1003,39 +1051,7 @@ saves whether the element's URL is modeled by the bin.
     detemine that pages were visited due to the Bloom Filter's
     false positive errors.
 
-*** DANIEL Caching via Bloom-Filters
-    :PROPERTIES:
-    :CUSTOM_ID: sub3-bloom
-    :END:
-    The above defense might further improve if the sizes of the webpage
-    to be loaded are known beforehand: Cover traffic could be tailored
-    more exactly, increasing obfuscation and/or reducing
-    overhead. Knowing the exact retrieval pattern in advance even
-    enables new defenses\cite{effective2014}.
-
-
-    The problem in caching is that
-    a. page properties change over time, making this cache increasingly
-       less accurate,
-    b. caching visited page sizes might yield an exact log of the
-       visited web pages to an attacker who gains control over the
-       defended computer, and
-    c. this cache could take a lot of space, depending on the subset of
-       pages's sizes cached.
-
-
-    A data structure that stochastically saves approximate sizes might
-    solve problems /2/ and (partially) /3/: Bloom
-    Filters\cite{Bloom70space/timetrade-offs} have a small error rate
-    in exchange for a fixed size. Their otherwise disadvantageous error
-    probability is an advantage in this situation, as it further
-    confounds possible attackers.
-
-
-    Dynamically updating the filter might solve problem /1/ and further
-    help with problem /3/ (future work).
-*** KEYWORDS Bloom-Cache
-**** WRITE Error estimation of Bloom Sort
+- Error estimation of Bloom Sort
      - error both ways, and difference bin-size to real size
     - sources of error
       - filter tells that is has element when it has not
@@ -1047,409 +1063,11 @@ saves whether the element's URL is modeled by the bin.
     - error estimation?
       - +: fixed size
       - -: error both ways, and difference bin-size to real size
-**** WRITE Bloom usage and implementation
+- Bloom usage and implementation
      - Bloom sort
        - error rate computation
      - size taken from example...
        - maybe change when altered
-**** WRITE Bloom-sort
-     :PROPERTIES:
-     :CUSTOM_ID: bloom-sort
-     :END:
-      By ordering data into bins, it becomes possible to use Bloom filters
-      for the estimation of sizes, using one Bloom filter for each bin.
-
-      To achieve this, sensible separation criteria (called /splits/) for
-      the bins need to be found. Afterwards, each bin needs to be assigned
-      a value (called /size/) for all contained elements. See appendix
-      [[#bloom-params]] on determining the sizes and splits.
-
-      This data-structure, called /Bloom-sort/ is initialized with an
-      array of splits, and an array of sizes. The sizes-array needs to
-      have one more element than the splits-array, as the bins are bounded
-      on the left by 0, and on the right by infinity.
-
-      #+BEGIN_SRC js
-        /**
-         ,* @param {sizes Array} array of values for each bin, must be sorted
-         ,* @param {splits Array} array of bin borders, must be sorted
-        ,*/
-        function BloomSort(sizes, splits) {
-            this.sizes = sizes;
-            this.splits = splits;
-            this.filters = [];
-            for ( let i = 0; i < sizes.length; i++ ) {
-                this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH);
-            }
-        }
-      #+END_SRC
-
-      Thus, you get
-      \[-\infty \le \text{size}_0 \le \text{split}_0 \le \text{size}_1 \le \text{split}_1 \le ... \le \text{split}_{n-1} \le \text{size}_n < \infty\]
-      Given the splits, it becomes possible to add the elements to their
-      bins:
-
-      #+BEGIN_SRC js
-        BloomSort.prototype.add = function(id, size) {
-            this.filters[_.sortedIndex(this.splits, size)].add(id);
-        };
-      #+END_SRC
-
-      where =_.sortedIndex()= gives the index at which =size= would be
-      inserted into the sorted =this.splits= array.
-
-      The retrieval of element sizes looks into each Bloom filter,
-      checking whether it might contain the element =id=. If one Bloom
-      filter reports containment, its corresponding element- =size= is
-      returned. If several or no Bloom filters report containment, an
-      exception is thrown. The exception is used to allow all possible
-      return values, not blocking one of them, say =-1=, for the error
-      condition.
-      #+BEGIN_SRC js
-        /** determines size of element, raises exception if unclear */
-        BloomSort.prototype.query = function(id) {
-            let pos = -1;
-            for ( let i = 0; i < this.filters.length; i++ ) {
-                if ( this.filters[i].test(id) ) {
-                    if ( pos === -1 ) {
-                        pos = i;
-                    } else {
-                        throw {
-                            name: 'BloomError',
-                            message: 'Contains multiple entries'
-                        };
-                    }
-                }
-            }
-            if ( pos === -1 ) {
-                throw {
-                    name: 'BloomError',
-                    message: 'Contains no entries'
-                };
-            }
-            return this.sizes[pos];
-        };
-      #+END_SRC
-
-      It is initialized with
-      #+BEGIN_SRC js
-      let htmlSizes = new BloomSort.BloomSort([400, 1000, 20000], [700, 10000]);
-      #+END_SRC
-
-      then adding elements via =htmlSizes.add("http://google.com/", 613)=
-      and querying via =htmlSizes.query("http://google.com/")=, which
-      would yield =400=. See usage in =size-cache=.
-
-      - link to main bloom-sort, create custom-id there
-***** WAIT github link
-**** CHECK Determining Bloom-Sort Parameters
-     :PROPERTIES:
-     :CUSTOM_ID: bloom-params
-     :END:
-     It is impractical to store the sizes of many URLs, as this would
-     greatly increase the size of the addon. A possibility to save space
-     is to use Bloom Filters to aggregate groups of URLs with similar
-     values, as described in [[#bloom-sort][Bloom-sort]].
-
-     Each group needs borders (given via the /splits/ method parameter)
-     and a size to represents its contained elements.
-
-     Determining the optimal number of groups, splits and sizes is a
-     topic of [[#future-work][further work]]. Here, initially the quantiles of the
-     HTTP-model (see [[#HTTP traffic model][HTTP traffic model] ) were used. When the data were
-     to be inserted, it turned out that especially the numbers of
-     embedded elements did not match the theoretically proposed groups:
-
-     For three groups, the splits would be given by the 33 1/3 and 66
-     2/3 quantiles, as 0.0107 and 1.481. This would create two
-     single-valued groups, which only would contain the elements 0
-     and 1. The next group would contain all other elements: The
-     (representative) sizes of the groups were given as 7.915E-05,
-     0.188, and 8.260 (quantiles 16 1/6, 50, and 83 5/6).
-
-     The actual data to be inserted (see [[#number_embedded][Cached: Number of Embedded
-     Objects]]) had the /splits/ (quantiles) at 10 2/3 and 36 2/3 and the
-     /sizes/ (middle quantile) at 6, 20, and 59 2/3.
-
-     In addition to using the observed sizes for the Bloom filter, the
-     number of groups was increased to 5.
-***** WAIT [#C] graphics: histogram with bins (colored bars, black bin limits)
-
-* bit older methods chapter
-As described in section [[#sub2-wf]], \gls{wf} can deanonymize Tor web
-browsing. It is a low-level passive defense that can even be deployed
-by ISPs, and company networks, as well as nation-states. This
-especially puts citizens of oppressive regimes and whistleblowers at
-risk. Yet, no defense has been included in the Tor Browser so far, and
-installing defenses has been complicated for the end-user. This
-thesis' task is to find a way to effectively obfuscate Tor traffic
-from this attack. For this, it presents a new defense that uses
-properties of HTTP \citep{rfc7230} traffic to effectively defend Tor
-web browsing against \gls{wf}.
-
-
-This thesis' defense tries to defend against \gls{wf}. It does so
-where the problem arises: at the (HTTP) application layer
-\cite[sec.1.7.1]{DBLP:books/daglib/0001977}. This approach is
-validated by the latest \gls{wf} defense by
-\citet{DBLP:journals/popets/CherubinHJ17}. They and this thesis both
-create additional traffic. In contrast to their approach, the new
-defense's data is generated by HTTP-specific, long-tailed,
-distributions. In this, it matches \citet{panchenko}'s camouflage
-traffic, but it only sends single requests, and it sends until the
-original retrieval is finished. (Additionally, page characteristics
-are cached to more accurately send cover traffic.)
-
-Section ([[#sub3-http]]) describes the model for web page retrieval. The
-new defense's main algorithm is described in section
-[[#sub3-defense]]. The next sections introduce Bloom filters
-([[#sub3-bloomfilters]]) and describe their application to approximately
-save element sizes ([[#sub3-bloomsort]]).
-** Bloom Filter Basics
-   :PROPERTIES:
-   :CUSTOM_ID: sub3-bloomfilters
-   :END:
-          - set membership with false positives
-          - reduced space
-          - fp help here: if adynamically saves, and adversary
-            captures, cannot say for sure
-
-   Bloom filters \citep{Bloom70space/timetrade-offs} are a stochastic
-   fixed-width data structure to test membership in a set. In exchange
-   for a small false-positive error rate, they require significantly
-   less space than deterministic data structures: if an element is in
-   the set, the filters accurately report this; if the element is not
-   in the set, the Bloom-filter might report that it is contained. The
-   error rate depends on the number of included elements in relation
-   to the Bloom-filter's size. Bloom-filters were developed for spell
-   checking. They have numerous uses in network applications, e.g. in
-   distributed caches, and network
-   analysis.\citep{Broder02networkapplications} Bloom-filters improve
-   on simple hash-coding by offering a tunable false positive error
-   rate.
-
-- why Bloom filter
-  - fixed size
-  - if save visited pages, problematic if computer is captured later
-  - bloom filter only saves approximately
-** Bloom Sort
-   :PROPERTIES:
-   :CUSTOM_ID: sub3-bloomsort
-   :END:
-*** Choice: Cache (approximate) sizes using Bloom Filters
-    :PROPERTIES:
-    :CUSTOM_ID: cache_size
-    :END:
-    #+INDEX: a
-    #+INDEX: flavour!a
-    #+INDEX: b
-    #+INDEX: flavour!b
-    A webpage is modeled by its HTML size and its number of embedded
-    objects. In a closed world[fn::if the client can only browse to
-    a limited number of URLs], it is possible to cache all
-    sizes[fn::See appendices [[#find sizes of HTML-documents]] and
-    [[#number_embedded]] for how the sizes were determined]
-    beforehand. If a size is unknown, random variates from the
-    [[#HTTP traffic model][HTTP traffic model] are used.[fn:: The
-    size of each embedded dummy object is always drawn from the HTTP
-    traffic model.]
-
-    Using known sizes is called the /cache/ flavour and denoted by
-    =a= in tables etc. In the /nocache/ flavour, denoted by =b=,
-    sizes are always guessed.
-
-    To cache sizes, an approximate-size data structure based on
-    Bloom filters is used.
-*** Application: Bloom Sort
-    Sizes can be saved approximately based on Bloom filters: they
-    are sorted into bins based on the target distribution. For each
-    bin, a Bloom filter is created. An element is added to this
-    filter if its size is inside the bin.
-
-    To approximate the size of an element, all filters are
-    checked. If one filter reports containment, its size is
-    chosen. If zero report containment, the size is not known; if
-    two or more report containment, it is saved wrongly. In the
-    latter cases, the default distribution is used.[fn::See [[#bloom-sort]]
-    for implementation details.]
-
-    This data structure has the additional advantage that, even if
-    visited page sizes were saved, an adversary could not safely
-    detemine that pages were visited due to the Bloom Filter's
-    false positive errors.
-
-*** DANIEL Caching via Bloom-Filters
-    :PROPERTIES:
-    :CUSTOM_ID: sub3-bloom
-    :END:
-    The above defense might further improve if the sizes of the webpage
-    to be loaded are known beforehand: Cover traffic could be tailored
-    more exactly, increasing obfuscation and/or reducing
-    overhead. Knowing the exact retrieval pattern in advance even
-    enables new defenses\cite{effective2014}.
-
-
-    The problem in caching is that
-    a. page properties change over time, making this cache increasingly
-       less accurate,
-    b. caching visited page sizes might yield an exact log of the
-       visited web pages to an attacker who gains control over the
-       defended computer, and
-    c. this cache could take a lot of space, depending on the subset of
-       pages's sizes cached.
-
-
-    A data structure that stochastically saves approximate sizes might
-    solve problems /2/ and (partially) /3/: Bloom
-    Filters\cite{Bloom70space/timetrade-offs} have a small error rate
-    in exchange for a fixed size. Their otherwise disadvantageous error
-    probability is an advantage in this situation, as it further
-    confounds possible attackers.
-
-
-    Dynamically updating the filter might solve problem /1/ and further
-    help with problem /3/ (future work).
-*** KEYWORDS Bloom-Cache
-**** WRITE Error estimation of Bloom Sort
-     - error both ways, and difference bin-size to real size
-    - sources of error
-      - filter tells that is has element when it has not
-    - how does error appear
-      - collision: one of several, the other might be true
-      - replacement: simulates being another url
-    - rates of error
-      - "add" the error rates of the filters? (times population density?)
-    - error estimation?
-      - +: fixed size
-      - -: error both ways, and difference bin-size to real size
-**** WRITE Bloom usage and implementation
-     - Bloom sort
-       - error rate computation
-     - size taken from example...
-       - maybe change when altered
-**** WRITE Bloom-sort
-     :PROPERTIES:
-     :CUSTOM_ID: bloom-sort
-     :END:
-      By ordering data into bins, it becomes possible to use Bloom filters
-      for the estimation of sizes, using one Bloom filter for each bin.
-
-      To achieve this, sensible separation criteria (called /splits/) for
-      the bins need to be found. Afterwards, each bin needs to be assigned
-      a value (called /size/) for all contained elements. See appendix
-      [[#bloom-params]] on determining the sizes and splits.
-
-      This data-structure, called /Bloom-sort/ is initialized with an
-      array of splits, and an array of sizes. The sizes-array needs to
-      have one more element than the splits-array, as the bins are bounded
-      on the left by 0, and on the right by infinity.
-
-      #+BEGIN_SRC js
-        /**
-         ,* @param {sizes Array} array of values for each bin, must be sorted
-         ,* @param {splits Array} array of bin borders, must be sorted
-        ,*/
-        function BloomSort(sizes, splits) {
-            this.sizes = sizes;
-            this.splits = splits;
-            this.filters = [];
-            for ( let i = 0; i < sizes.length; i++ ) {
-                this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH);
-            }
-        }
-      #+END_SRC
-
-      Thus, you get
-      \[-\infty \le \text{size}_0 \le \text{split}_0 \le \text{size}_1 \le \text{split}_1 \le ... \le \text{split}_{n-1} \le \text{size}_n < \infty\]
-      Given the splits, it becomes possible to add the elements to their
-      bins:
-
-      #+BEGIN_SRC js
-        BloomSort.prototype.add = function(id, size) {
-            this.filters[_.sortedIndex(this.splits, size)].add(id);
-        };
-      #+END_SRC
-
-      where =_.sortedIndex()= gives the index at which =size= would be
-      inserted into the sorted =this.splits= array.
-
-      The retrieval of element sizes looks into each Bloom filter,
-      checking whether it might contain the element =id=. If one Bloom
-      filter reports containment, its corresponding element- =size= is
-      returned. If several or no Bloom filters report containment, an
-      exception is thrown. The exception is used to allow all possible
-      return values, not blocking one of them, say =-1=, for the error
-      condition.
-      #+BEGIN_SRC js
-        /** determines size of element, raises exception if unclear */
-        BloomSort.prototype.query = function(id) {
-            let pos = -1;
-            for ( let i = 0; i < this.filters.length; i++ ) {
-                if ( this.filters[i].test(id) ) {
-                    if ( pos === -1 ) {
-                        pos = i;
-                    } else {
-                        throw {
-                            name: 'BloomError',
-                            message: 'Contains multiple entries'
-                        };
-                    }
-                }
-            }
-            if ( pos === -1 ) {
-                throw {
-                    name: 'BloomError',
-                    message: 'Contains no entries'
-                };
-            }
-            return this.sizes[pos];
-        };
-      #+END_SRC
-
-      It is initialized with
-      #+BEGIN_SRC js
-      let htmlSizes = new BloomSort.BloomSort([400, 1000, 20000], [700, 10000]);
-      #+END_SRC
-
-      then adding elements via =htmlSizes.add("http://google.com/", 613)=
-      and querying via =htmlSizes.query("http://google.com/")=, which
-      would yield =400=. See usage in =size-cache=.
-
-      - link to main bloom-sort, create custom-id there
-***** WAIT github link
-**** CHECK Determining Bloom-Sort Parameters
-     :PROPERTIES:
-     :CUSTOM_ID: bloom-params
-     :END:
-     It is impractical to store the sizes of many URLs, as this would
-     greatly increase the size of the addon. A possibility to save space
-     is to use Bloom Filters to aggregate groups of URLs with similar
-     values, as described in [[#bloom-sort][Bloom-sort]].
-
-     Each group needs borders (given via the /splits/ method parameter)
-     and a size to represents its contained elements.
-
-     Determining the optimal number of groups, splits and sizes is a
-     topic of [[#future-work][further work]]. Here, initially the quantiles of the
-     HTTP-model (see [[#HTTP traffic model][HTTP traffic model] ) were used. When the data were
-     to be inserted, it turned out that especially the numbers of
-     embedded elements did not match the theoretically proposed groups:
-
-     For three groups, the splits would be given by the 33 1/3 and 66
-     2/3 quantiles, as 0.0107 and 1.481. This would create two
-     single-valued groups, which only would contain the elements 0
-     and 1. The next group would contain all other elements: The
-     (representative) sizes of the groups were given as 7.915E-05,
-     0.188, and 8.260 (quantiles 16 1/6, 50, and 83 5/6).
-
-     The actual data to be inserted (see [[#number_embedded][Cached: Number of Embedded
-     Objects]]) had the /splits/ (quantiles) at 10 2/3 and 36 2/3 and the
-     /sizes/ (middle quantile) at 6, 20, and 59 2/3.
-
-     In addition to using the observed sizes for the Bloom filter, the
-     number of groups was increased to 5.
-***** WAIT [#C] graphics: histogram with bins (colored bars, black bin limits)
-** rest
 - how cache sizes
   - bloom filters split by seen quantiles
   - f.ex. 5 bins
@@ -1475,7 +1093,6 @@ save element sizes ([[#sub3-bloomsort]]).
 
 
   Llama: also low value, but much higher overhead (200%, vs 67%)
-
 
 * old exposé
 *** Thesis Contribution
@@ -1740,56 +1357,6 @@ save element sizes ([[#sub3-bloomsort]]).
    glimpse at this thesis' new defense.
 
    The next section presents the novel defense in depth.
-* DANIEL_BUT_NEEDS_SUBPARTS Novel Defense [2/2]
-  :PROPERTIES:
-  :CUSTOM_ID: ch3-newdefense
-  :END:
-  The last chapter showed that \gls{wf} could be a serious attack on online
-  anonymity and privacy. As specific defenses could be circumvented, a
-  general defense against \gls{wf} is needed. It should provide adequate
-  protection for an acceptable increase in bandwidth and delay.\\
-
-
-  This thesis' defense aims to tailor cover traffic to mimic web
-  traffic, while coincidentally improving installation and
-  configurability.
-
-
-  Closely tailoring traffic has two main parts: It uses the http
-  traffic model\cite{newtrafficmodel} to morph the expected real
-  traffic to another size; and it caches certain page characteristics
-  in order to control the amount of cover traffic.
-** DANIEL Caching via Bloom-Filters
-   :PROPERTIES:
-   :CUSTOM_ID: sub3-bloom
-   :END:
-   The above defense might further improve if the sizes of the webpage
-   to be loaded are known beforehand: Cover traffic could be tailored
-   more exactly, increasing obfuscation and/or reducing
-   overhead. Knowing the exact retrieval pattern in advance even
-   enables new defenses\cite{effective2014}.
-
-
-   The problem in caching is that
-   a. page properties change over time, making this cache increasingly
-      less accurate,
-   b. caching visited page sizes might yield an exact log of the
-      visited web pages to an attacker who gains control over the
-      defended computer, and
-   c. this cache could take a lot of space, depending on the subset of
-      pages's sizes cached.
-
-
-   A data structure that stochastically saves approximate sizes might
-   solve problems /2/ and (partially) /3/: Bloom
-   Filters\cite{Bloom70space/timetrade-offs} have a small error rate
-   in exchange for a fixed size. Their otherwise disadvantageous error
-   probability is an advantage in this situation, as it further
-   confounds possible attackers.
-
-
-   Dynamically updating the filter might solve problem /1/ and further
-   help with problem /3/ (future work).
 * WRITE Evaluation [1/10]
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
@@ -2090,6 +1657,8 @@ differs from how it should be used, see next section.
 
      Providing an accurate estimate of embedded objects /per web page/
      would be [[#future-work][future work]].
+\appendix
+\part{Appendix}
 * appendices (begin above this headline; this is for searching)     :ARCHIVE:
   above, as in this section cuts it out (due to ARCHIVE tag)
 * CHECK Open World Accuracy
@@ -2529,8 +2098,6 @@ training on data without defense, and testing on defended data.
     burdening the most stressed part of the network, the exit nodes.
 ** see also [[*Background][Background {9/9}]]
 
-\appendix
-\part{Appendix}
 ** maybe (from a new defense:1)
 The thesis's defense is implemented using Firefox's Addon-SDK. This
 provides for easy deployment, and configuration.
@@ -2688,6 +2255,460 @@ The size of both HTML documents and embedded objects is each modeled
 by truncated lognormal distributions. The number of embedded objects
 is modeled by a truncated gamma function. These are implemented
 following \cite{compgen}.
+** Bloom Filter Basics
+   :PROPERTIES:
+   :CUSTOM_ID: sub3-bloomfilters
+   :END:
+          - set membership with false positives
+          - reduced space
+          - fp help here: if adynamically saves, and adversary
+            captures, cannot say for sure
+
+   Bloom filters \citep{Bloom70space/timetrade-offs} are a stochastic
+   fixed-width data structure to test membership in a set. In exchange
+   for a small false-positive error rate, they require significantly
+   less space than deterministic data structures: if an element is in
+   the set, the filters accurately report this; if the element is not
+   in the set, the Bloom-filter might report that it is contained. The
+   error rate depends on the number of included elements in relation
+   to the Bloom-filter's size. Bloom-filters were developed for spell
+   checking. They have numerous uses in network applications, e.g. in
+   distributed caches, and network
+   analysis.\citep{Broder02networkapplications} Bloom-filters improve
+   on simple hash-coding by offering a tunable false positive error
+   rate.
+
+- why Bloom filter
+  - fixed size
+  - if save visited pages, problematic if computer is captured later
+  - bloom filter only saves approximately
+** WRITE Bloom-sort
+   :PROPERTIES:
+   :CUSTOM_ID: bloom-sort
+   :END:
+    By ordering data into bins, it becomes possible to use Bloom filters
+    for the estimation of sizes, using one Bloom filter for each bin.
+
+    To achieve this, sensible separation criteria (called /splits/) for
+    the bins need to be found. Afterwards, each bin needs to be assigned
+    a value (called /size/) for all contained elements. See appendix
+    [[#bloom-params]] on determining the sizes and splits.
+
+    This data-structure, called /Bloom-sort/ is initialized with an
+    array of splits, and an array of sizes. The sizes-array needs to
+    have one more element than the splits-array, as the bins are bounded
+    on the left by 0, and on the right by infinity.
+
+    #+BEGIN_SRC js
+      /**
+       ,* @param {sizes Array} array of values for each bin, must be sorted
+       ,* @param {splits Array} array of bin borders, must be sorted
+      ,*/
+      function BloomSort(sizes, splits) {
+          this.sizes = sizes;
+          this.splits = splits;
+          this.filters = [];
+          for ( let i = 0; i < sizes.length; i++ ) {
+              this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH);
+          }
+      }
+    #+END_SRC
+
+    Thus, you get
+    \[-\infty \le \text{size}_0 \le \text{split}_0 \le \text{size}_1 \le \text{split}_1 \le ... \le \text{split}_{n-1} \le \text{size}_n < \infty\]
+    Given the splits, it becomes possible to add the elements to their
+    bins:
+
+    #+BEGIN_SRC js
+      BloomSort.prototype.add = function(id, size) {
+          this.filters[_.sortedIndex(this.splits, size)].add(id);
+      };
+    #+END_SRC
+
+    where =_.sortedIndex()= gives the index at which =size= would be
+    inserted into the sorted =this.splits= array.
+
+    The retrieval of element sizes looks into each Bloom filter,
+    checking whether it might contain the element =id=. If one Bloom
+    filter reports containment, its corresponding element- =size= is
+    returned. If several or no Bloom filters report containment, an
+    exception is thrown. The exception is used to allow all possible
+    return values, not blocking one of them, say =-1=, for the error
+    condition.
+    #+BEGIN_SRC js
+      /** determines size of element, raises exception if unclear */
+      BloomSort.prototype.query = function(id) {
+          let pos = -1;
+          for ( let i = 0; i < this.filters.length; i++ ) {
+              if ( this.filters[i].test(id) ) {
+                  if ( pos === -1 ) {
+                      pos = i;
+                  } else {
+                      throw {
+                          name: 'BloomError',
+                          message: 'Contains multiple entries'
+                      };
+                  }
+              }
+          }
+          if ( pos === -1 ) {
+              throw {
+                  name: 'BloomError',
+                  message: 'Contains no entries'
+              };
+          }
+          return this.sizes[pos];
+      };
+    #+END_SRC
+
+    It is initialized with
+    #+BEGIN_SRC js
+    let htmlSizes = new BloomSort.BloomSort([400, 1000, 20000], [700, 10000]);
+    #+END_SRC
+
+    then adding elements via =htmlSizes.add("http://google.com/", 613)=
+    and querying via =htmlSizes.query("http://google.com/")=, which
+    would yield =400=. See usage in =size-cache=.
+
+    - link to main bloom-sort, create custom-id there
+*** WAIT github link
+** CHECK Determining Bloom-Sort Parameters
+   :PROPERTIES:
+   :CUSTOM_ID: bloom-params
+   :END:
+   It is impractical to store the sizes of many URLs, as this would
+   greatly increase the size of the addon. A possibility to save space
+   is to use Bloom Filters to aggregate groups of URLs with similar
+   values, as described in [[#bloom-sort][Bloom-sort]].
+
+   Each group needs borders (given via the /splits/ method parameter)
+   and a size to represents its contained elements.
+
+   Determining the optimal number of groups, splits and sizes is a
+   topic of [[#future-work][further work]]. Here, initially the quantiles of the
+   HTTP-model (see [[#HTTP traffic model][HTTP traffic model] ) were used. When the data were
+   to be inserted, it turned out that especially the numbers of
+   embedded elements did not match the theoretically proposed groups:
+
+   For three groups, the splits would be given by the 33 1/3 and 66
+   2/3 quantiles, as 0.0107 and 1.481. This would create two
+   single-valued groups, which only would contain the elements 0
+   and 1. The next group would contain all other elements: The
+   (representative) sizes of the groups were given as 7.915E-05,
+   0.188, and 8.260 (quantiles 16 1/6, 50, and 83 5/6).
+
+   The actual data to be inserted (see [[#number_embedded][Cached: Number of Embedded
+   Objects]]) had the /splits/ (quantiles) at 10 2/3 and 36 2/3 and the
+   /sizes/ (middle quantile) at 6, 20, and 59 2/3.
+
+   In addition to using the observed sizes for the Bloom filter, the
+   number of groups was increased to 5.
+*** WAIT [#C] graphics: histogram with bins (colored bars, black bin limits)
+
+** bit older methods chapter
+ As described in section [[#sub2-wf]], \gls{wf} can deanonymize Tor web
+ browsing. It is a low-level passive defense that can even be deployed
+ by ISPs, and company networks, as well as nation-states. This
+ especially puts citizens of oppressive regimes and whistleblowers at
+ risk. Yet, no defense has been included in the Tor Browser so far, and
+ installing defenses has been complicated for the end-user. This
+ thesis' task is to find a way to effectively obfuscate Tor traffic
+ from this attack. For this, it presents a new defense that uses
+ properties of HTTP \citep{rfc7230} traffic to effectively defend Tor
+ web browsing against \gls{wf}.
+
+
+ This thesis' defense tries to defend against \gls{wf}. It does so
+ where the problem arises: at the (HTTP) application layer
+ \cite[sec.1.7.1]{DBLP:books/daglib/0001977}. This approach is
+ validated by the latest \gls{wf} defense by
+ \citet{DBLP:journals/popets/CherubinHJ17}. They and this thesis both
+ create additional traffic. In contrast to their approach, the new
+ defense's data is generated by HTTP-specific, long-tailed,
+ distributions. In this, it matches \citet{panchenko}'s camouflage
+ traffic, but it only sends single requests, and it sends until the
+ original retrieval is finished. (Additionally, page characteristics
+ are cached to more accurately send cover traffic.)
+
+ Section ([[#sub3-http]]) describes the model for web page retrieval. The
+ new defense's main algorithm is described in section
+ [[#sub3-defense]]. The next sections introduce Bloom filters
+ ([[#sub3-bloomfilters]]) and describe their application to approximately
+ save element sizes ([[#sub3-bloomsort]]).
+*** Bloom Sort
+    :PROPERTIES:
+    :CUSTOM_ID: sub3-bloomsort
+    :END:
+**** Choice: Cache (approximate) sizes using Bloom Filters
+     :PROPERTIES:
+     :CUSTOM_ID: cache_size
+     :END:
+     #+INDEX: a
+     #+INDEX: flavour!a
+     #+INDEX: b
+     #+INDEX: flavour!b
+     A webpage is modeled by its HTML size and its number of embedded
+     objects. In a closed world[fn::if the client can only browse to
+     a limited number of URLs], it is possible to cache all
+     sizes[fn::See appendices [[#find sizes of HTML-documents]] and
+     [[#number_embedded]] for how the sizes were determined]
+     beforehand. If a size is unknown, random variates from the
+     [[#HTTP traffic model][HTTP traffic model] are used.[fn:: The
+     size of each embedded dummy object is always drawn from the HTTP
+     traffic model.]
+
+     Using known sizes is called the /cache/ flavour and denoted by
+     =a= in tables etc. In the /nocache/ flavour, denoted by =b=,
+     sizes are always guessed.
+
+     To cache sizes, an approximate-size data structure based on
+     Bloom filters is used.
+**** Application: Bloom Sort
+     Sizes can be saved approximately based on Bloom filters: they
+     are sorted into bins based on the target distribution. For each
+     bin, a Bloom filter is created. An element is added to this
+     filter if its size is inside the bin.
+
+     To approximate the size of an element, all filters are
+     checked. If one filter reports containment, its size is
+     chosen. If zero report containment, the size is not known; if
+     two or more report containment, it is saved wrongly. In the
+     latter cases, the default distribution is used.[fn::See [[#bloom-sort]]
+     for implementation details.]
+
+     This data structure has the additional advantage that, even if
+     visited page sizes were saved, an adversary could not safely
+     detemine that pages were visited due to the Bloom Filter's
+     false positive errors.
+
+**** DANIEL Caching via Bloom-Filters
+     :PROPERTIES:
+     :CUSTOM_ID: sub3-bloom
+     :END:
+     The above defense might further improve if the sizes of the webpage
+     to be loaded are known beforehand: Cover traffic could be tailored
+     more exactly, increasing obfuscation and/or reducing
+     overhead. Knowing the exact retrieval pattern in advance even
+     enables new defenses\cite{effective2014}.
+
+
+     The problem in caching is that
+     a. page properties change over time, making this cache increasingly
+        less accurate,
+     b. caching visited page sizes might yield an exact log of the
+        visited web pages to an attacker who gains control over the
+        defended computer, and
+     c. this cache could take a lot of space, depending on the subset of
+        pages's sizes cached.
+
+
+     A data structure that stochastically saves approximate sizes might
+     solve problems /2/ and (partially) /3/: Bloom
+     Filters\cite{Bloom70space/timetrade-offs} have a small error rate
+     in exchange for a fixed size. Their otherwise disadvantageous error
+     probability is an advantage in this situation, as it further
+     confounds possible attackers.
+
+
+     Dynamically updating the filter might solve problem /1/ and further
+     help with problem /3/ (future work).
+**** KEYWORDS Bloom-Cache
+***** WRITE Error estimation of Bloom Sort
+      - error both ways, and difference bin-size to real size
+     - sources of error
+       - filter tells that is has element when it has not
+     - how does error appear
+       - collision: one of several, the other might be true
+       - replacement: simulates being another url
+     - rates of error
+       - "add" the error rates of the filters? (times population density?)
+     - error estimation?
+       - +: fixed size
+       - -: error both ways, and difference bin-size to real size
+***** WRITE Bloom usage and implementation
+      - Bloom sort
+        - error rate computation
+      - size taken from example...
+        - maybe change when altered
+***** WRITE Bloom-sort
+      :PROPERTIES:
+      :CUSTOM_ID: bloom-sort
+      :END:
+       By ordering data into bins, it becomes possible to use Bloom filters
+       for the estimation of sizes, using one Bloom filter for each bin.
+
+       To achieve this, sensible separation criteria (called /splits/) for
+       the bins need to be found. Afterwards, each bin needs to be assigned
+       a value (called /size/) for all contained elements. See appendix
+       [[#bloom-params]] on determining the sizes and splits.
+
+       This data-structure, called /Bloom-sort/ is initialized with an
+       array of splits, and an array of sizes. The sizes-array needs to
+       have one more element than the splits-array, as the bins are bounded
+       on the left by 0, and on the right by infinity.
+
+       #+BEGIN_SRC js
+         /**
+          ,* @param {sizes Array} array of values for each bin, must be sorted
+          ,* @param {splits Array} array of bin borders, must be sorted
+         ,*/
+         function BloomSort(sizes, splits) {
+             this.sizes = sizes;
+             this.splits = splits;
+             this.filters = [];
+             for ( let i = 0; i < sizes.length; i++ ) {
+                 this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH);
+             }
+         }
+       #+END_SRC
+
+       Thus, you get
+       \[-\infty \le \text{size}_0 \le \text{split}_0 \le \text{size}_1 \le \text{split}_1 \le ... \le \text{split}_{n-1} \le \text{size}_n < \infty\]
+       Given the splits, it becomes possible to add the elements to their
+       bins:
+
+       #+BEGIN_SRC js
+         BloomSort.prototype.add = function(id, size) {
+             this.filters[_.sortedIndex(this.splits, size)].add(id);
+         };
+       #+END_SRC
+
+       where =_.sortedIndex()= gives the index at which =size= would be
+       inserted into the sorted =this.splits= array.
+
+       The retrieval of element sizes looks into each Bloom filter,
+       checking whether it might contain the element =id=. If one Bloom
+       filter reports containment, its corresponding element- =size= is
+       returned. If several or no Bloom filters report containment, an
+       exception is thrown. The exception is used to allow all possible
+       return values, not blocking one of them, say =-1=, for the error
+       condition.
+       #+BEGIN_SRC js
+         /** determines size of element, raises exception if unclear */
+         BloomSort.prototype.query = function(id) {
+             let pos = -1;
+             for ( let i = 0; i < this.filters.length; i++ ) {
+                 if ( this.filters[i].test(id) ) {
+                     if ( pos === -1 ) {
+                         pos = i;
+                     } else {
+                         throw {
+                             name: 'BloomError',
+                             message: 'Contains multiple entries'
+                         };
+                     }
+                 }
+             }
+             if ( pos === -1 ) {
+                 throw {
+                     name: 'BloomError',
+                     message: 'Contains no entries'
+                 };
+             }
+             return this.sizes[pos];
+         };
+       #+END_SRC
+
+       It is initialized with
+       #+BEGIN_SRC js
+       let htmlSizes = new BloomSort.BloomSort([400, 1000, 20000], [700, 10000]);
+       #+END_SRC
+
+       then adding elements via =htmlSizes.add("http://google.com/", 613)=
+       and querying via =htmlSizes.query("http://google.com/")=, which
+       would yield =400=. See usage in =size-cache=.
+
+       - link to main bloom-sort, create custom-id there
+****** WAIT github link
+***** CHECK Determining Bloom-Sort Parameters
+      :PROPERTIES:
+      :CUSTOM_ID: bloom-params
+      :END:
+      It is impractical to store the sizes of many URLs, as this would
+      greatly increase the size of the addon. A possibility to save space
+      is to use Bloom Filters to aggregate groups of URLs with similar
+      values, as described in [[#bloom-sort][Bloom-sort]].
+
+      Each group needs borders (given via the /splits/ method parameter)
+      and a size to represents its contained elements.
+
+      Determining the optimal number of groups, splits and sizes is a
+      topic of [[#future-work][further work]]. Here, initially the quantiles of the
+      HTTP-model (see [[#HTTP traffic model][HTTP traffic model] ) were used. When the data were
+      to be inserted, it turned out that especially the numbers of
+      embedded elements did not match the theoretically proposed groups:
+
+      For three groups, the splits would be given by the 33 1/3 and 66
+      2/3 quantiles, as 0.0107 and 1.481. This would create two
+      single-valued groups, which only would contain the elements 0
+      and 1. The next group would contain all other elements: The
+      (representative) sizes of the groups were given as 7.915E-05,
+      0.188, and 8.260 (quantiles 16 1/6, 50, and 83 5/6).
+
+      The actual data to be inserted (see [[#number_embedded][Cached: Number of Embedded
+      Objects]]) had the /splits/ (quantiles) at 10 2/3 and 36 2/3 and the
+      /sizes/ (middle quantile) at 6, 20, and 59 2/3.
+
+      In addition to using the observed sizes for the Bloom filter, the
+      number of groups was increased to 5.
+****** WAIT [#C] graphics: histogram with bins (colored bars, black bin limits)
+*** rest
+ - how cache sizes
+   - bloom filters split by seen quantiles
+   - f.ex. 5 bins
+   - quantile middle as value, upper lower as limits
+   - example numbers: old real-world code
+   - [error probability?]
+** DANIEL_BUT_NEEDS_SUBPARTS Novel Defense [2/2]
+   :PROPERTIES:
+   :CUSTOM_ID: ch3-newdefense
+   :END:
+   The last chapter showed that \gls{wf} could be a serious attack on online
+   anonymity and privacy. As specific defenses could be circumvented, a
+   general defense against \gls{wf} is needed. It should provide adequate
+   protection for an acceptable increase in bandwidth and delay.\\
+
+
+   This thesis' defense aims to tailor cover traffic to mimic web
+   traffic, while coincidentally improving installation and
+   configurability.
+
+
+   Closely tailoring traffic has two main parts: It uses the http
+   traffic model\cite{newtrafficmodel} to morph the expected real
+   traffic to another size; and it caches certain page characteristics
+   in order to control the amount of cover traffic.
+*** DANIEL Caching via Bloom-Filters
+    :PROPERTIES:
+    :CUSTOM_ID: sub3-bloom
+    :END:
+    The above defense might further improve if the sizes of the webpage
+    to be loaded are known beforehand: Cover traffic could be tailored
+    more exactly, increasing obfuscation and/or reducing
+    overhead. Knowing the exact retrieval pattern in advance even
+    enables new defenses\cite{effective2014}.
+
+
+    The problem in caching is that
+    a. page properties change over time, making this cache increasingly
+       less accurate,
+    b. caching visited page sizes might yield an exact log of the
+       visited web pages to an attacker who gains control over the
+       defended computer, and
+    c. this cache could take a lot of space, depending on the subset of
+       pages's sizes cached.
+
+
+    A data structure that stochastically saves approximate sizes might
+    solve problems /2/ and (partially) /3/: Bloom
+    Filters\cite{Bloom70space/timetrade-offs} have a small error rate
+    in exchange for a fixed size. Their otherwise disadvantageous error
+    probability is an advantage in this situation, as it further
+    confounds possible attackers.
+
+
+    Dynamically updating the filter might solve problem /1/ and further
+    help with problem /3/ (future work).
 * After Appendices: Bibliography and Index
 \bibliography{docs/master}
 \bibliographystyle{apalike}
