@@ -118,12 +118,13 @@ class Result(object):
         size_overhead = _value_or_none(entry, 'result', 'size_increase')
         time_overhead = _value_or_none(entry, 'result', 'time_increase')
         try:
-            config.OR_LEVEL = _value_or_(
-                entry, config.OR_LEVEL, 'config', 'or_level')
-            config.REMOVE_SMALL = _value_or_(
-                entry, config.REMOVE_SMALL, 'config', 'or_level')
+            orl = _value_or_none(entry, 'config', 'or_level')
+            config.OR_LEVEL = config.OR_LEVEL if orl is None else orl
+            rems = _value_or_none(entry, 'config', 'remove_small')
+            config.REMOVE_SMALL = config.REMOVE_SMALL if rems is None else rems
             scenario_obj = scenario.Scenario(
                 entry['config']['scenario'], open_world=open_world)
+            reload(config)
         except ValueError:
             if entry['status'] != "COMPLETED":
                 scenario_obj = "placeholder for scenario {}".format(
