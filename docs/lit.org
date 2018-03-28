@@ -6448,18 +6448,21 @@ Vorläufiger Zeitplan
        - hash fits in core with some allowable errors
          - error: says lookup is needed when it is not
     3. A Conventional Hash-Coding Method
-       - h fields of b+1 bits
+       - n messages, each b bits long
+       - h > n fields of b+1 bits
          - hash has b bits
          - 1 bit to check whether cell is empty
        - hash message, create /hash address/ \le b depending on message
          - if its cell is empty, store hash
          - else, generate next hash address somehow, until empty cell found
-       - test message: hash, go through cells til hash matches (in) or
+       - test message: hash, go through cells until hash matches (in) or
          empty (out)
     4. Two Hash-Coding Methods with Allowable Errors
        - version 1: as error-free, but more smaller cells
          - message transformed to code, codes may overlap
          - as before, first bit == 1 signifies cell is in use
+         - error probability 1 \ge P \ge 2^{-b}
+         - determine cell size c < b to fit P
        - version 2 (current bloom method): bit field, set bits of hash to 1
          - half the bits 1: problematic to add new ones
     5. Computational Factors
@@ -6467,6 +6470,22 @@ Vorläufiger Zeitplan
        - Space: number of bits
        - Time: how many single bits to access (simplification)
     6. Analysis of the Conventional Hash-Coding Method
+       - N bits gesamt, N = h * (b+1)
+       - n Nachrichten gespeichert
+       - Anteil leerer Zellen \phi = h-n / h = (N-(n\cdot b+1)) / N
+       - Auflösen nach N(\phi): N = (n \cdot (b+1) / (1 - \phi)
+       - time to find message: T(\phi) = (3/\phi) -2
+       - given that, N(T(\phi)) = n \cdot (b + 1) \cdot (T+2) / (T-1)
+    7. Analysis of Method 1
+       - \phi' = (N' - n \cdot c) / N'
+       - N'(\phi') = n \cdot c / (1 - \phi')
+       - T'(\phi') = (3 / \phi') - 2
+       - N'(T') = n \cdot c \cdot (T' + 2) / (T' - 1)
+       - expected error rate: P' = (1/2)^{c-1} / \phi'
+       - c(T', P') = -log2 P' + 1 + log2 (T' + 2)/3
+       - N' = n ( -log2 P' + 1 + log2 (T'+2 /3)
+    8. Analysis of Method 2
+       - \phi'': proportion of bits set
 *** quotes
     4. [@4] Two Hash-Coding Methods with Allowable Errors
        - The increased a priori likelihood of each bit accessed being

@@ -24,7 +24,7 @@ def my_config():
     or_level = None
     remove_small = None
 
-    
+
 @ex.capture
 def run_exp(scenario, remove_small, or_level, _rnd):
     config.OR_LEVEL = config.OR_LEVEL if or_level is None else or_level

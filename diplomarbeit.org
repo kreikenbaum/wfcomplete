@@ -909,7 +909,6 @@ function models the number of embedded objects. This model provides
 the cover traffic target sizes. It also sets the page's actual sizes,
 if they are not known.
 ** Caching Sizes using Bloom-Filters
-*** why blooms (aka  why Bloom filter)
 As mentioned in the previous section, the model provides the page
 retrieval's actual numbers, if these are not known. The defense might
 further improve if the sizes of the webpage to be loaded are known
@@ -941,54 +940,6 @@ pages. Dynamically updating the filter might solve problem /1/ and
 further help with problem /3/ (future work).
 
 
-
-  - if save visited pages, problematic if computer is captured later
-    - bloom filter only saves approximately
-  - size cut-off
-
----
-
-This is used to approximately save element sizes.
-
-
-
-
-
-
-If a size is unknown, random variates from the [[#HTTP traffic
-    model][HTTP traffic model] are used.[fn:: The size of each
-    embedded dummy object is always drawn from the HTTP traffic
-    model.]
-
-    Using known sizes is called the /cache/ flavour and denoted by
-    =a= in tables etc. In the /nocache/ flavour, denoted by =b=,
-    sizes are always guessed.
-
-    To cache sizes, an approximate-size data structure based on
-    Bloom filters is used.
-
-
-#+BEGIN_QUOTE
- The /lookupOrGuess.../-functions need data structures to map urls to
- both HTTP sizes and number of embedded objects. These change over
- time, just compare the topmost plots each of Figures
- [[fig:total_packets_in]] and [[fig:total_packets_in_thesis]]. As can be seen
- in the next chapter, the amazingly good defense that was achieved
- with up-to-date cached sizes (see next chapter) decreased over time
- to that of guessing sizes. These data structures use Bloom-filter
- \citep{Bloom70space/timetrade-offs} based binning (see section
- [[#sub3-bloomsort]]) to save values related to urls in a fixed space,
- while not allowing an adversary to exactly determine which urls are
- saved. See section [[#sub3-bloomfilters]] for a short introduction to
- their underlying Bloom-filters and section [[#sub3-bloomsort]] for their
- application that saves these in a fixed-size probabilistic data
- structure.
-#+END_QUOTE
-
-
-    Sizes can be saved approximately based on Bloom filters
-
-*** what are bloom-filters
 Bloom filters \citep{Bloom70space/timetrade-offs} are a stochastic
 fixed-width data structure to test membership in a set. In exchange
 for a small false-positive error rate, they require significantly less
@@ -1000,17 +951,21 @@ Bloom-filter's size. Bloom-filters were developed for spell
 checking. They have numerous uses in network applications, e.g. in
 distributed caches, and network
 analysis.\citep{Broder02networkapplications} Bloom-filters improve on
-simple hash-coding by offering a tunable false positive error rate.
-
-
-         - set membership with false positives
-          - reduced space
-
+basic hash-coding by offering a tunable false positive error rate.
 *** how do bloom-filters work
+- extend hash-coding
+  - field of b bits
+  - 1 bit whether cell is empty
+- not one hash, but many
+
 
 They offer a configurable false-positive error-rate: they might
 erroneously state that an element is contained in a set, if it is
 not.
+
+
+- hash functions
+- set bits
 *** what is the error-rate to size trade-off
     aka error rate computation
     aka [error probability?]
@@ -2702,6 +2657,54 @@ following \cite{compgen}.
 
     Dynamically updating the filter might solve problem /1/ and further
     help with problem /3/ (future work).
+** why blooms (aka  why Bloom filter)
+
+
+
+  - bloom filter only saves approximately
+  - size cut-off
+
+---
+
+This is used to approximately save element sizes.
+
+
+
+
+
+
+If a size is unknown, random variates from the [[#HTTP traffic
+    model][HTTP traffic model] are used.[fn:: The size of each
+    embedded dummy object is always drawn from the HTTP traffic
+    model.]
+
+    Using known sizes is called the /cache/ flavour and denoted by
+    =a= in tables etc. In the /nocache/ flavour, denoted by =b=,
+    sizes are always guessed.
+
+    To cache sizes, an approximate-size data structure based on
+    Bloom filters is used.
+
+
+#+BEGIN_QUOTE
+ The /lookupOrGuess.../-functions need data structures to map urls to
+ both HTTP sizes and number of embedded objects. These change over
+ time, just compare the topmost plots each of Figures
+ [[fig:total_packets_in]] and [[fig:total_packets_in_thesis]]. As can be seen
+ in the next chapter, the amazingly good defense that was achieved
+ with up-to-date cached sizes (see next chapter) decreased over time
+ to that of guessing sizes. These data structures use Bloom-filter
+ \citep{Bloom70space/timetrade-offs} based binning (see section
+ [[#sub3-bloomsort]]) to save values related to urls in a fixed space,
+ while not allowing an adversary to exactly determine which urls are
+ saved. See section [[#sub3-bloomfilters]] for a short introduction to
+ their underlying Bloom-filters and section [[#sub3-bloomsort]] for their
+ application that saves these in a fixed-size probabilistic data
+ structure.
+#+END_QUOTE
+
+
+    Sizes can be saved approximately based on Bloom filters
 * After Appendices: Bibliography and Index
 \bibliography{docs/master}
 \bibliographystyle{apalike}
