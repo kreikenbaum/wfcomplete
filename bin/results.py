@@ -187,8 +187,11 @@ class Result(object):
         if self.open_world:
             for key in self.open_world:
                 out[key] = self.open_world[key]
-        for key in ['name', 'date']:  # maybe add other aspects (num_sites etc)
-            out["scenario." + key] = self.scenario.__dict__[key]
+        try:
+            for key in ['name', 'date']:  # maybe other aspects (num_sites etc)
+                out["scenario." + key] = self.scenario.__dict__[key]
+        except KeyError:
+            pass  # ok to not include (e.g. WANG14 external result)
         return out
 
     # def _add_oh(self):
