@@ -236,20 +236,17 @@ def _next_id(db=_db()):
 
 
 def _value_or_(entry, ifnot, *steps):
-    out = _value_or_none(entry, *steps)
-    if out is None:
-        return ifnot
-    return out
-
-
-def _value_or_none(entry, *steps):
-    '''descends steps into entry, returns value or None if it does not exist'''
     try:
         for step in steps:
             entry = entry[step]
         return entry
     except (KeyError, IndexError, TypeError):
-        return None
+        return ifnot
+
+
+def _value_or_none(entry, *steps):
+    '''descends steps into entry, returns value or None if it does not exist'''
+    return _value_or_(entry, None, *steps)
 
 
 def for_id(_id):
