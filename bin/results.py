@@ -108,8 +108,8 @@ class Result(object):
                     'background_size': _value_or_none(
                         entry, 'config', 'background_size'),
                     'binary': _value_or_none(entry, 'config', 'binarize'),
-                    'exclude_sites': _value_or_list(
-                        entry, 'config', 'exclude_sites'),
+                    'exclude_sites': _value_or_(
+                        entry, [], 'config', 'exclude_sites'),
                     'current_sites': _value_or_none(
                         entry, 'config', 'current_sites')
                 }
@@ -118,6 +118,10 @@ class Result(object):
         size_overhead = _value_or_none(entry, 'result', 'size_increase')
         time_overhead = _value_or_none(entry, 'result', 'time_increase')
         try:
+            config.OR_LEVEL = _value_or_(
+                entry, config.OR_LEVEL, 'config', 'or_level')
+            config.REMOVE_SMALL = _value_or_(
+                entry, config.REMOVE_SMALL, 'config', 'or_level')
             scenario_obj = scenario.Scenario(
                 entry['config']['scenario'], open_world=open_world)
         except ValueError:
@@ -231,10 +235,10 @@ def _next_id(db=_db()):
             .next())["_id"] + 1
 
 
-def _value_or_list(entry, *steps):
+def _value_or_(entry, ifnot, *steps):
     out = _value_or_none(entry, *steps)
     if out is None:
-        return []
+        return ifnot
     return out
 
 
@@ -246,6 +250,11 @@ def _value_or_none(entry, *steps):
         return entry
     except (KeyError, IndexError, TypeError):
         return None
+
+
+def for_id(_id):
+    '''@return result with id _id'''
+    return (x for x in list_all() if x._id == _id).next()
 
 
 

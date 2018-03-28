@@ -63,8 +63,11 @@ def confusion_matrix_from_result(result, **kwargs):
     '''creates a confusion matrix plot for result
 
     @return  confusion_helper output'''
-    return confusion_matrix_helper(result.get_classifier(), result.scenario,
-                                   **kwargs)  # , scenario_obj)
+    yp = result.y_prediction
+    _, y, d = result.scenario.get_features_cumul()
+    return (confusion_matrix(
+        y, yp, d, 'Confusion matrix for {}'.format(result), **kwargs),
+            y, yp, d)
 
 
 def confusion_matrix_from_scenario(scenario_obj, **kwargs):

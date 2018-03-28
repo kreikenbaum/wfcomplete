@@ -1,5 +1,6 @@
 '''configuration variables'''
 import os
+import sys
 
 import logconfig
 
@@ -34,6 +35,11 @@ REMOVE_SMALL = True
 def trace_args():
     '''@return combined values as used in code'''
     return {"remove_small": REMOVE_SMALL, "or_level": OR_LEVEL}
+# reset if set somewhere (code in exp... breaks boundaries, todo: refactor)
+def reset():
+    '''resets this values by reloading module'''
+    del sys.modules[__name__]
+    import __name__
 
 
 # #### CROSS-VALIDATION
