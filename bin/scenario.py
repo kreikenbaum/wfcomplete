@@ -189,9 +189,8 @@ class Scenario(object):
     @property
     def binary(self):
         '''@return this scenario has just foreground and background traces'''
-        return (
-            self.traces
-            and set(self.traces.keys()) == set(['foreground', 'background']))
+        assert self.traces
+        return set(self.traces.keys()) == set(['foreground', 'background'])
 
     @property
     def config(self):
@@ -236,7 +235,7 @@ class Scenario(object):
             out_y = list(mymetrics.binarize(out_y, transform_to=1))
         return (np.array(X), np.array(out_y), domain_names)
 
-    def get_open_world(self, num="auto", same=False, current_sites=False):
+    def get_open_world(self, num="auto", same=False, current_sites=True):
         '''
         @return scenario with traces and (num) added background traces
         @param num: size of background set, if 'auto', use as many as fg set
@@ -249,25 +248,25 @@ class Scenario(object):
         if same:
             def filt(x):
                 return self._compareattr(x, "name", "config", "site")
-        background = self._closest("@1", True, filt)
+        background = self._closest("@1", include_bg=True, filter_scenario=filt)
         logging.info("background is %r", background)
-        # todo: integrate following line into out.traces line?
-        self.get_traces(current_sites=current_sites)
         out = copy.copy(self)
-        out.traces = copy.copy(self.traces)
+        out.traces = copy.copy(self.get_traces(current_sites))
         if num:
             if num == 'auto':
                 num = sum([len(x) for x in self.traces.values()])
-            out.traces['background'] = background.get_sample(num)['background']
+            out.traces['background'] = background.get_sample(
+                num, current_sites=current_sites)['background']
         else:
-            out.traces['background'] = background.get_traces()['background']
+            out.traces['background'] = background.get_traces(
+                current_sites)['background']
         return out
 
-    def get_sample(self, num, random_seed=None):
+    def get_sample(self, num, random_seed=None, current_sites=True):
         '''@return sample of traces: each domain has num traces'''
         random.seed(random_seed)
         out = {}
-        for (domain, trace_list) in self.get_traces().iteritems():
+        for (domain, trace_list) in self.get_traces(current_sites).iteritems():
             try:
                 out[domain] = random.sample(trace_list, num)
             except ValueError:
@@ -276,23 +275,24 @@ class Scenario(object):
                 out[domain] = trace_list
         return out
 
-    def get_traces(self, current_sites=False):
-        '''@return dict {domain1: [trace1, .., traceN], ..., domainM: [...]}
-
-        if current==True, only use the sites currently in the top-100'''
+    def get_traces(self, current_sites=True):
+        '''@return dict {domain1: [trace1, .., traceN], ..., domainM: [...]}'''
         if not self.traces:
             self.traces = counter.all_from_dir(os.path.join(DIR, self.path),
                                                **self.trace_args)
+            if current_sites:
+                self.traces = sites.clean(self.traces)
             if self._open_world_config:
                 for site in self._open_world_config['exclude_sites']:
                     del self.traces[site]
+                if ('current_sites' in self._open_world_config
+                        and self._open_world_config['current_sites']):
+                    self.traces = sites.clean(self.traces)  # duplicate work
                 self.traces = self.get_open_world(
                     self._open_world_config['background_size'],
-                    same=True).traces
+                    same=True, current_sites=current_sites).traces
                 if self._open_world_config['binary']:
                     self.traces = self.binarized().traces
-        if current_sites:
-            self.traces = sites.clean(self.traces)
         return self.traces
 
     @property

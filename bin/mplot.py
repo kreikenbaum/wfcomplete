@@ -63,11 +63,16 @@ def confusion_matrix_from_result(result, **kwargs):
     '''creates a confusion matrix plot for result
 
     @return  confusion_helper output'''
-    yp = result.y_prediction
-    _, y, d = result.scenario.get_features_cumul()
-    return (confusion_matrix(
-        y, yp, d, 'Confusion matrix for {}'.format(result), **kwargs),
-            y, yp, d)
+    try:
+        yp = result.y_prediction
+        _, y, d = result.scenario.get_features_cumul()
+        return (confusion_matrix(
+            y, yp, d, 'Confusion matrix for {}'.format(result), **kwargs),
+                y, yp, d)
+    except ValueError:
+        logging.info("discarded existing prediction: did not match domains")
+        return confusion_matrix_helper(result.get_classifier(),
+                                       result.scenario)
 
 
 def confusion_matrix_from_scenario(scenario_obj, **kwargs):

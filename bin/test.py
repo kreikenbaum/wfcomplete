@@ -369,8 +369,10 @@ class TestResults(unittest.TestCase):
         1. create result with open world
         2. check that traces have background pages
         '''
-        result = [r for r in results.list_all() if r._id == 549][0]
-        self.assertTrue("background" in result.scenario.get_traces())
+        smallresult = sorted((r for r in results.list_all() if r.open_world),
+                             key=lambda x: x.size)[0]
+        self.assertTrue("background" in smallresult.scenario.get_traces(
+            current_sites=False))
 
     def test___init__sets_all(self):
         PARAM_NUM = 15  # how to get dynamically?

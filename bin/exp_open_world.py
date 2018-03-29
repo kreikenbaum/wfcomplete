@@ -4,7 +4,6 @@ import logging
 import os
 import random
 
-import numpy as np
 import pymongo
 from sacred import Experiment
 from sacred.observers import MongoObserver
@@ -24,10 +23,10 @@ def my_config():
     or_level = None
     remove_small = None
     auc_bound = None
-    background_size = 'auto' #, number, None
+    background_size = 'auto'  # 'auto', number, None
     binarize = True
     exclude_sites = []
-    current_sites = False
+    current_sites = True  # fix e.g. google duplicates in bg set
 # pylint: enable=unused-variable
 
 
@@ -40,7 +39,7 @@ def run_exp(scenario, remove_small, or_level, auc_bound,
     config.REMOVE_SMALL = (config.REMOVE_SMALL if remove_small is None
                            else remove_small)
     scenario_obj = scenario_module.Scenario(scenario)
-    (tpr, fpr, auroc, C, gamma, acc, y, yprd) = analyse.simulated_open_world(
+    (tpr, fpr, auroc, C, gamma, acc, y, yp, yd) = analyse.simulated_open_world(
         scenario_obj, auc_bound, binary=binarize, bg_size=background_size,
         exclude_sites=exclude_sites, current_sites=current_sites)
     return {
@@ -56,7 +55,7 @@ def run_exp(scenario, remove_small, or_level, auc_bound,
         'tpr': tpr,
         'auroc': auroc,
         'y_true': y,
-        'y_prediction': list(yprd)
+        'y_prediction': list(yp)
     }
 
 
