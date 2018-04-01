@@ -107,8 +107,8 @@ def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
     confmat = metrics.confusion_matrix(y_true, y_pred)
     domainnames = [x[1] for x in sorted(set(zip(y_true, domains)))]
     df = pd.DataFrame(confmat, index=domainnames, columns=domainnames)
-    df.columns.name = "Predicted"
-    df.index.name = "Actual"
+    df.columns.name = "Prediction"
+    df.index.name = "Treatment"
     if zero0:
         df.values[0][0] = 0
     if normalize:

@@ -55,7 +55,8 @@ def run_exp(scenario, remove_small, or_level, auc_bound,
         'tpr': tpr,
         'auroc': auroc,
         'y_true': y,
-        'y_prediction': list(yp)
+        'y_prediction': yp.tolist(),
+        'y_domains': yd
     }
 
 

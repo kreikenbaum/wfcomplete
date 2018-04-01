@@ -4,18 +4,19 @@
 import seaborn as sns
 
 from bokeh.io import output_file, show
-from bokeh.models import BasicTicker, ColorBar, LinearColorMapper, ColumnDataSource
+from bokeh.models import BasicTicker, ColorBar, LinearColorMapper, ColumnDataSource, HoverTool
 from bokeh.plotting import figure
 from bokeh.transform import transform
 
-
+# ((df, _), y, yp, yd) = mplot.confusion_helper(clf, scenario_obj, zero0=True)
+# bplot.confusion_matrix(df)
 def confusion_matrix(df):
     '''shows df-confusion matrix in bokeh'''
-    df.columns.name = 'Treatment'
-    df.index.name = 'Prediction'
+#    df.columns.name = 'Treatment'
+#    df.index.name = 'Prediction'
     df = df.stack().rename("value").reset_index()
 
-    output_file("bokeh.html")
+    output_file('/tmp/bokeh.html', mode="inline")
 
     # You can use your own palette here
     colors = sns.color_palette("magma", 20).as_hex()
@@ -55,4 +56,5 @@ def confusion_matrix(df):
         location=(0, 0),
         ticker=BasicTicker(desired_num_ticks=len(colors)))
     p.add_layout(color_bar, 'right')
+    save(p, resources=resources.INLINE)
     show(p)

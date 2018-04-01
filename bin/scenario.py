@@ -284,7 +284,10 @@ class Scenario(object):
                 self.traces = sites.clean(self.traces)
             if self._open_world_config:
                 for site in self._open_world_config['exclude_sites']:
-                    del self.traces[site]
+                    try:
+                        del self.traces[site]
+                    except KeyError:
+                        pass
                 if ('current_sites' in self._open_world_config
                         and self._open_world_config['current_sites']):
                     self.traces = sites.clean(self.traces)  # duplicate work
