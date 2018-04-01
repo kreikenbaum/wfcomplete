@@ -952,76 +952,26 @@ checking. They have numerous uses in network applications, e.g. in
 distributed caches, and network
 analysis.\citep{Broder02networkapplications} Bloom-filters improve on
 basic hash-coding by offering a tunable false positive error rate.
-*** how do bloom-filters work
-- extend hash-coding
-  - field of b bits
-  - 1 bit whether cell is empty
-- not one hash, but many
 
 
-They offer a configurable false-positive error-rate: they might
-erroneously state that an element is contained in a set, if it is
-not.
+To approximately cache sizes of elements, this thesis uses a data
+structure based on Bloom-filters. The histogram of observed values is
+inspected, and split by quantiles into bins. For each bin, a Bloom
+filter is created. Each site/url is then binned: An element is added
+to this filter if its size is inside the bin. To approximate the size
+of an element, all filters are checked. If one filter reports
+containment, its size is chosen. If zero report containment, the size
+is not known; if two or more report containment, it is saved
+wrongly. In both of these latter cases, the default distribution is
+used. If the data structure is queried, the middle quantile of each
+bin is chosen to represent the bin. Each bin thus corresponds to a
+Bloom-filter that saves whether the element's URL is modeled by the
+bin. This data structure has the additional advantage that, even if
+visited page sizes were saved, an adversary could not safely determine
+that pages were visited due to the Bloom Filter's false positive
+errors.
 
-
-- hash functions
-- set bits
-*** what is the error-rate to size trade-off
-    aka error rate computation
-    aka [error probability?]
-- Error estimation of Bloom Sort
-     - error both ways, and difference bin-size to real size
-    - sources of error
-      - filter tells that is has element when it has not
-    - how does error appear
-      - collision: one of several, the other might be true
-      - replacement: simulates being another url
-    - rates of error
-      - "add" the error rates of the filters? (times population density?)
-    - error estimation?
-      - +: fixed size
-      - -: error both ways, and difference bin-size to real size
-*** how are bloom-filters used
-    aka Bloom usage [and implementation]
-
-In this thesis, Bloom-filters are used to approximately cache
-sizes of elements: the range of possible values is inspected, and
-split by quantiles. These values are then binned, and the middle
-quantile of each bin is chosen to represent the bin. Each bin
-corresponds to a Bloom-filter that saves whether the element's URL is
-modeled by the bin.
-
-
-*** what is the algorithm
-    aka Bloom [usage and] implementation
-
-they
-    are sorted into bins based on the target distribution. For each
-    bin, a Bloom filter is created. An element is added to this
-    filter if its size is inside the bin.
-
-    To approximate the size of an element, all filters are
-    checked. If one filter reports containment, its size is
-    chosen. If zero report containment, the size is not known; if
-    two or more report containment, it is saved wrongly. In the
-    latter cases, the default distribution is used.[fn::See [[#bloom-sort]]
-    for implementation details.]
-**** how cache sizes
-     aka size taken from example...
-       - maybe change when altered
-   - bloom filters split by seen quantiles
-   - f.ex. 5 bins
-   - quantile middle as value, upper lower as limits
-   - example numbers: old real-world code
-*** what are its advantages
-
-          - fp help here: if adynamically saves, and adversary
-            captures, cannot say for sure
-
-    This data structure has the additional advantage that, even if
-    visited page sizes were saved, an adversary could not safely
-    detemine that pages were visited due to the Bloom Filter's
-    false positive errors.
+(See Appendix [[#bloom-sort]] for implementation details.)
 * Evaluation
 ** Setup
 ** Closed World
@@ -2705,6 +2655,42 @@ If a size is unknown, random variates from the [[#HTTP traffic
 
 
     Sizes can be saved approximately based on Bloom filters
+** how do bloom-filters work
+- extend hash-coding
+  - field of b bits
+  - 1 bit whether cell is empty
+- not one hash, but many
+
+
+They offer a configurable false-positive error-rate: they might
+erroneously state that an element is contained in a set, if it is
+not.
+
+
+- hash functions
+- set bits
+** what is the error-rate to size trade-off
+    aka error rate computation
+    aka [error probability?]
+- Error estimation of Bloom Sort
+     - error both ways, and difference bin-size to real size
+    - sources of error
+      - filter tells that is has element when it has not
+    - how does error appear
+      - collision: one of several, the other might be true
+      - replacement: simulates being another url
+    - rates of error
+      - "add" the error rates of the filters? (times population density?)
+    - error estimation?
+      - +: fixed size
+      - -: error both ways, and difference bin-size to real size
+** how cache sizes
+   aka size taken from example...
+     - maybe change when altered
+ - bloom filters split by seen quantiles
+ - f.ex. 5 bins
+ - quantile middle as value, upper lower as limits
+ - example numbers: old real-world code
 * After Appendices: Bibliography and Index
 \bibliography{docs/master}
 \bibliographystyle{apalike}
