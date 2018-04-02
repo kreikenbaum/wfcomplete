@@ -8,10 +8,12 @@ Get data: curl host:port/size?300 for 300 random (-header) bytes.
 '''
 import logging
 import random
+import signal
 import string
 
-LOGFORMAT='%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
+LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 logging.basicConfig(format=LOGFORMAT, level=logging.INFO)
+signal.signal(signal.SIGWINCH, signal.SIG_IGN)  # ignore window change
 
 
 def application(environ, start_response):
@@ -26,13 +28,15 @@ def application(environ, start_response):
 
     return [output]
 
+
 # this depends on if "Proxy-Connection: keep-alive" is included, better safe...
 def _reduceSize(size):
     '''reduces size by header length'''
-    my_len = size -135 -len(str(size))
+    my_len = size - 135 - len(str(size))
     my_len += len(str(size)) - len(str(my_len))
     logging.debug('size: %d', my_len)
     return my_len
+
 
 def _getSize(query):
     '''extracts value of size parameter'''
@@ -41,6 +45,7 @@ def _getSize(query):
         if var == 'size':
             return max(1, int(val))
     raise IndexError('no size parameter')
+
 
 def _randomString(size):
     '''generate random string of size "size"'''
