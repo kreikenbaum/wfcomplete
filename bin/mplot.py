@@ -378,11 +378,11 @@ def traces_cumul_group(traces, color="red", axes=None):
         plt.plot(datum, c=color, alpha=.5, linewidth=1, axes=axes, label=label)
         label = None
 
-## PLOT ROWS OF TRACES (mostly related chosen)
-#a = scenario.list_all("17-12-26")[0]
-#wiki = a.get_traces()["wikipedia.org"]
-#_, g = plt.subplots(7, 1)
-#for i, el in enumerate([wiki[x-1] for x in [5, 26, 45, 35, 32, 24, 44]]):#, 1]]):
+# # PLOT ROWS OF TRACES (mostly related chosen)
+# a = scenario.list_all("17-12-26")[0]
+# wiki = a.get_traces()["wikipedia.org"]
+# _, g = plt.subplots(7, 1)
+# for i, el in enumerate([wiki[x-1] for x in [5, 26, 45, 35, 32, 24, 44]]):#, 1]]):
 #    mplot.trace(el, g[i])
 def trace(trace, axes=None, color=None):
     '''plot single trace (index-st of domain) as kinda-boxplot'''
@@ -396,7 +396,8 @@ def trace(trace, axes=None, color=None):
     widths = []
     heights = [x[1] for x in trace.timing]
     for idx, el in enumerate(times):
-        if idx == len(times)-1: continue
+        if idx == len(times)-1:
+            continue
         widths.append(times[idx+1] - times[idx])
     widths.append(np.mean(widths))
     axes.bar(times, heights, widths, fill=False, align="edge", edgecolor=color)
@@ -411,10 +412,8 @@ def traces(traces_list):
     g[4].set_ylabel("packet size [Byte]")
     g[-1].set_xlabel("seconds")
 
-### usage examples
-
-
-## Confusion Matrix from Scenario
+# ## USAGE EXAMPLES
+# # Confusion Matrix from Scenario
 # r = results.for_scenario(scenario.Scenario("disabled/bridge--2016-08-15"))[1]
 # X, y, yd = scenario.Scenario("disabled/bridge--2016-08-15").get_features_cumul()
 # X = preprocessing.MinMaxScaler().fit_transform(X)

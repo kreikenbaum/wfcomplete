@@ -972,12 +972,76 @@ errors.
 
 (See Appendix [[#bloom-sort]] for implementation details.)
 * Evaluation
+- what are closed-world results
+- what are open-world results
+- why do open-world results differ from panchenko
+- what the fuck
+- what is the conclusion
+- (why) is this defense better than llama
 ** Setup
+- how is stuff evaluated
+- how is the physical setup
+- how to reproduce
+- how was data collected
+- how was data analysed
+
+
+
           - circuit resetting, no caches, time gaps (TODO: effective)
+
+   - capture
+     - tbb generic
+     - firefox marionette
+     - script at github
+   - feature extraction and classification in python
+
+    :PROPERTIES:
+    :CUSTOM_ID: capture
+    :END:
+    #+INDEX: Bridge
+    #+INDEX: Tor!Bridge
+    #+CAPTION: Setup to capture web page traffic: Tor Browser on /Client/ machine, connects to Tor server on /Bridge/ machine, connects to Tor network, connects to web servers
+    #+ATTR_LATEX: :float nil :width 0.5\textwidth
+    [[./pictures/Setup.eps]]
+
+    For the first captures, a single virtual machine hosted both the
+    WTF-PAD server and client. To simulate the distributed WTF-PAD
+    defense's network more closely, a second server was used.
+
+    Thus, a Tor bridge was introduced into the traffic
+    flow[fn::Bridges relay Tor traffic. They act as a gateway into the
+    network. Their main use is censorship avoidance\cite{tor2014}]. It
+    is required for WTF-PAD anyways, but other Tor traffic also uses
+    the bridge instance via Tor's =Bridge=
+    directive\cite[sec.client~options]{tor-manual}, to ease
+    comparability.
+
+    One host runs the Tor Browser Bundle[fn::at the current version]
+    and the cover traffic server (if needed), the other runs a Tor
+    server instance in bridge mode. For WTF-PAD, an additional server
+    transport program is run at the bridge, and a client transport at
+    the client[fn::WTF-PAD is run via the stand-alone programs. Tor's
+    built-in =ServerTransportPlugin= and =ClientTransportPlugin=
+    configuration naïvely failed].
+
+    This setup utilises the same bridge for WTF-PAD and the browser
+    extension.
+
+    Single traces are captured via the Python script
+     ~one_site.py~[fn::
+     https://github.com/kreikenbaum/website-fingerprinting-thesis/blob/master/capture/one_site.py]. It
+     cleans the cache between captures by restarting the Tor Browser
+     Bundle.
 ** Closed World
-          - validate attack
-          - accuracy
-          - conclusion
+- what is closed world again
+- what are the main results
+- does the attack work
+- does the defense work
+- how does the other defense compare to this
+
+  - validate attack
+  - accuracy
+  - conclusion
 ** Open World
   [[./pictures/ccdf-recall-no-defense-on-2018-02-02.pdf]]
   # mplot.ccdf_curve_for_scenario( scenario.Scenario("disabled/bridge--2018-02-02--100@50"), filt=lambda x: len(x.scenario.get_traces()['background']) >= 1000)
@@ -1278,53 +1342,6 @@ errors.
   fixed number of pages. The penultimate section evaluates them [[#sub4-open][in an
   open-world scenario]], which has many background-page retrievals added
   to the mix. Its last section [[#sub4-summary][summarizes evaluation results]].
-** KEYWORDS Setup
-   :PROPERTIES:
-   :END:
-   - capture
-     - tbb generic
-     - firefox marionette
-     - script at github
-   - feature extraction and classification in python
-
-    :PROPERTIES:
-    :CUSTOM_ID: capture
-    :END:
-    #+INDEX: Bridge
-    #+INDEX: Tor!Bridge
-    #+CAPTION: Setup to capture web page traffic: Tor Browser on /Client/ machine, connects to Tor server on /Bridge/ machine, connects to Tor network, connects to web servers
-    #+ATTR_LATEX: :float nil :width 0.5\textwidth
-    [[./pictures/Setup.eps]] 
-
-    For the first captures, a single virtual machine hosted both the
-    WTF-PAD server and client. To simulate the distributed WTF-PAD
-    defense's network more closely, a second server was used.
-
-    Thus, a Tor bridge was introduced into the traffic
-    flow[fn::Bridges relay Tor traffic. They act as a gateway into the
-    network. Their main use is censorship avoidance\cite{tor2014}]. It
-    is required for WTF-PAD anyways, but other Tor traffic also uses
-    the bridge instance via Tor's =Bridge=
-    directive\cite[sec.client~options]{tor-manual}, to ease
-    comparability.
-
-    One host runs the Tor Browser Bundle[fn::at the current version]
-    and the cover traffic server (if needed), the other runs a Tor
-    server instance in bridge mode. For WTF-PAD, an additional server
-    transport program is run at the bridge, and a client transport at
-    the client[fn::WTF-PAD is run via the stand-alone programs. Tor's
-    built-in =ServerTransportPlugin= and =ClientTransportPlugin=
-    configuration naïvely failed].
-
-    This setup utilises the same bridge for WTF-PAD and the browser
-    extension.
-
-    Single traces are captured via the Python script
-     ~one_site.py~[fn::
-     https://github.com/kreikenbaum/website-fingerprinting-thesis/blob/master/capture/one_site.py]. It
-     cleans the cache between captures by restarting the Tor Browser
-     Bundle.
-   
 ** CHECK Website Fingerprinting Attack Evaluation
    :PROPERTIES:
    :CUSTOM_ID: sub4-tools
@@ -2699,6 +2716,52 @@ not.
  - f.ex. 5 bins
  - quantile middle as value, upper lower as limits
  - example numbers: old real-world code
+** Setup
+   :PROPERTIES:
+   :END:
+   - capture
+     - tbb generic
+     - firefox marionette
+     - script at github
+   - feature extraction and classification in python
+
+    :PROPERTIES:
+    :CUSTOM_ID: capture
+    :END:
+    #+INDEX: Bridge
+    #+INDEX: Tor!Bridge
+    #+CAPTION: Setup to capture web page traffic: Tor Browser on /Client/ machine, connects to Tor server on /Bridge/ machine, connects to Tor network, connects to web servers
+    #+ATTR_LATEX: :float nil :width 0.5\textwidth
+    [[./pictures/Setup.eps]]
+
+    For the first captures, a single virtual machine hosted both the
+    WTF-PAD server and client. To simulate the distributed WTF-PAD
+    defense's network more closely, a second server was used.
+
+    Thus, a Tor bridge was introduced into the traffic
+    flow[fn::Bridges relay Tor traffic. They act as a gateway into the
+    network. Their main use is censorship avoidance\cite{tor2014}]. It
+    is required for WTF-PAD anyways, but other Tor traffic also uses
+    the bridge instance via Tor's =Bridge=
+    directive\cite[sec.client~options]{tor-manual}, to ease
+    comparability.
+
+    One host runs the Tor Browser Bundle[fn::at the current version]
+    and the cover traffic server (if needed), the other runs a Tor
+    server instance in bridge mode. For WTF-PAD, an additional server
+    transport program is run at the bridge, and a client transport at
+    the client[fn::WTF-PAD is run via the stand-alone programs. Tor's
+    built-in =ServerTransportPlugin= and =ClientTransportPlugin=
+    configuration naïvely failed].
+
+    This setup utilises the same bridge for WTF-PAD and the browser
+    extension.
+
+    Single traces are captured via the Python script
+     ~one_site.py~[fn::
+     https://github.com/kreikenbaum/website-fingerprinting-thesis/blob/master/capture/one_site.py]. It
+     cleans the cache between captures by restarting the Tor Browser
+     Bundle.
 * After Appendices: Bibliography and Index
 \bibliography{docs/master}
 \bibliographystyle{apalike}

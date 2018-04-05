@@ -280,8 +280,6 @@ class Scenario(object):
         if not self.traces:
             self.traces = counter.all_from_dir(os.path.join(DIR, self.path),
                                                **self.trace_args)
-            if current_sites:
-                self.traces = sites.clean(self.traces)
             if self._open_world_config:
                 for site in self._open_world_config['exclude_sites']:
                     try:
@@ -296,6 +294,8 @@ class Scenario(object):
                     same=True, current_sites=current_sites).traces
                 if self._open_world_config['binary']:
                     self.traces = self.binarized().traces
+            elif current_sites:
+                self.traces = sites.clean(self.traces)
         return self.traces
 
     @property
@@ -502,8 +502,8 @@ doctest.testmod(optionflags=doctest.ELLIPSIS)
 # import scenario, results
 # ow_possible = []
 # for scenario_obj in scenario.list_all():
-#     if not [r for r in results.for_open_world_scenario(scenario_obj)
-#             if not r.open_world['binary'] and not r.open_world['auc_bound']]: # this line is optional
+#     if not [r for r in results.for_scenario_open(scenario_obj)]:
+#     #        if not r.open_world['binary'] and not r.open_world['auc_bound']]: # this line is optional
 #         try:
 #             _ = scenario_obj._closest("@1", True, lambda x: scenario_obj._compareattr(x, "name", "config", "site"))
 #             ow_possible.append(scenario_obj)

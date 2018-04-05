@@ -284,7 +284,7 @@ class TestFit(unittest.TestCase):
         fpr, tpr, _, _ = fit.roc(clf, self.X, self.y)
         # 2. check that fpr/tpr has good structure (rises directly to 0.9fpr)
         self.assertAlmostEqual(tpr[1], 0.9,
-                               '{}\n{}'.format(zip(tpr, fpr), clf))
+                               msg='{}\n{}'.format(zip(tpr, fpr), clf))
         self.assertAlmostEqual(fpr[1], 0, zip(tpr, fpr))
 
 

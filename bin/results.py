@@ -400,7 +400,7 @@ if __name__ == "__main__":
 # d30.plot.scatter('size_overhead', 'score')
 
 # ### list all scenarios without results
-# a = {s: len(results.for_scenario(s)) for s in scenario.list_all()}
+# a = {s: len(list(results.for_scenario(s))) for s in scenario.list_all()}
 # [name for (name, count) in a.iteritems() if count == 0]
 
 # ### rename scenario in db (old in git/data/skip/dump_before_scenario_rename)
