@@ -72,7 +72,7 @@ def confusion_matrix_from_result(result, **kwargs):
     except ValueError:
         logging.info("discarded existing prediction: did not match domains")
         return confusion_matrix_helper(result.get_classifier(),
-                                       result.scenario)
+                                       result.scenario, **kwargs)
 
 
 def confusion_matrix_from_scenario(scenario_obj, **kwargs):
