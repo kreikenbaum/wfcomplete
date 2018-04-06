@@ -6,6 +6,7 @@ then compute mean and variance/std
 '''
 from __future__ import print_function
 import csv
+import collections
 import datetime
 import doctest
 import logging
@@ -26,7 +27,7 @@ class Result(object):
     def __init__(self, scenario_, accuracy, git, time, type_, size,
                  open_world=False, size_overhead=None,
                  time_overhead=None, _id=None, gamma=None, C=None, src=None,
-                 ytrue=None, ypred=None):
+                 ytrue=None, ypred=None, ydomains=None):
         self._id = _id
         self.C = C
         self.date = time
@@ -42,13 +43,26 @@ class Result(object):
         if not self.date and hasattr(self.scenario, "date"):
             self.date = self.scenario.date
         self.src = src
-        self._ypred = ypred
         self._ytrue = ytrue
+        self._ypred = ypred
+        self._ydomains = ydomains
+
+    @property
+    def background_size(self, compute=False):
+        '''@return background size, real if available, else config parameter'''
+        assert self.open_world
+        if self._ytrue or compute:
+            return collections.Counter(self.y_true)[-1]
+        else:
+            return self.open_world['background_size']
 
     @property
     def duration(self):
-        '''@return experiment duration'''
-        return self.src['stop_time'] - self.src['start_time']
+        '''@return experiment duration, or -1'''
+        try:
+            return self.src['stop_time'] - self.src['start_time']
+        except KeyError:
+            return -1
 
     @property
     def host(self):
@@ -57,6 +71,14 @@ class Result(object):
             return self.src['host']['hostname']
         except KeyError:
             return "unknown"
+
+    @property
+    def y_domains(self):
+        '''@return domains of traces, with optional open world added'''
+        if self._ydomains is None:
+            logging.info("%s had no saved domain array 'yd'", self)
+            _, _, self._ydomains = self.scenario.get_features_cumul()
+        return self._ydomains
 
     @property
     def y_prediction(self):
@@ -71,7 +93,7 @@ class Result(object):
 
     @property
     def y_true(self):
-        '''@return true values of scenario, with optional open world added'''
+        '''@return true classes of traces, with optional open world added'''
         if self._ytrue is None:
             logging.info("%s had no saved class array 'y'", self)
             _, self._ytrue, _ = self.scenario.get_features_cumul()
@@ -144,7 +166,8 @@ class Result(object):
             C=c, gamma=gamma,
             src=entry,
             ytrue=_value_or_none(entry, 'result', 'y_true', 'values'),
-            ypred=_value_or_none(entry, 'result', 'y_prediction'))
+            ypred=_value_or_none(entry, 'result', 'y_prediction'),
+            ydomains=_value_or_none(entry, 'result', 'y_domains', 'values'))
 
     def __repr__(self):
         out = ("<Result({!r}, score={}, {}, {}, {}, size={}, "
@@ -192,6 +215,8 @@ class Result(object):
         if self.open_world:
             for key in self.open_world:
                 out[key] = self.open_world[key]
+        for prop in ['background_size', 'duration']:  # bg:overwrite open_world
+            out[prop] = getattr(self, prop)
         try:
             for key in ['name', 'date']:  # maybe other aspects (num_sites etc)
                 out["scenario." + key] = self.scenario.__dict__[key]

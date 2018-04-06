@@ -375,7 +375,7 @@ class TestResults(unittest.TestCase):
             current_sites=False))
 
     def test___init__sets_all(self):
-        PARAM_NUM = 15  # how to get dynamically?
+        PARAM_NUM = 16  # how to get dynamically?
         with self.assertRaises(TypeError):
             results.Result(*range(PARAM_NUM + 1))
         result = results.Result(*range(PARAM_NUM))
@@ -460,6 +460,21 @@ class TestScenario(unittest.TestCase):
         s._open_world_config = {'binary': True, 'exclude_sites': [],
                                 'background_size': None}
         self.assertEquals(2, len(s.get_traces().keys()))
+
+    @unittest.skipIf(QUICK, "slow test skipped")
+    def test_open_world_config_current_sites_true(self):
+        s = scenario.Scenario("disabled/2016-05-12--10@40")
+        s._open_world_config = {'binary': False, 'exclude_sites': [],
+                                'background_size': None, 'current_sites': True}
+        self.assertFalse("baidu.com" in s.get_traces().keys())
+
+    @unittest.skipIf(QUICK, "slow test skipped")
+    def test_open_world_config_current_sites_false(self):
+        s = scenario.Scenario("disabled/2016-05-12--10@40")
+        s._open_world_config = {'binary': False, 'exclude_sites': [],
+                                'background_size': None,
+                                'current_sites': False}
+        self.assertTrue("baidu.com" in s.get_traces().keys())
 
     def test_binarized_fake(self):
         c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]]
