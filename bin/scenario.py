@@ -217,13 +217,13 @@ class Scenario(object):
         return datetime.datetime.fromtimestamp(float(first)).date()
 
     # # todo: codup counter.py?
-    def get_features_cumul(self):
+    def get_features_cumul(self, current_sites=True):
         '''@return traces converted to CUMUL's X, y, y_domains'''
         X = []
         out_y = []
         class_number = 0
         domain_names = []
-        for domain, dom_counters in self.get_traces().iteritems():
+        for domain, dom_counters in self.get_traces(current_sites).iteritems():
             if domain == "background":
                 _trace_list_append(X, out_y, domain_names,
                                    dom_counters, "cumul", -1, "background")

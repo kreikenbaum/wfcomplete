@@ -59,13 +59,13 @@ def accuracy_vs_overhead(result_list, title="Size Overhead to Accuracy"):
 # config.JOBS_NUM = 3; config.FOLDS = 3; config.VERBOSE = 3
 # out = mplot.confusion_matrix_from_result(r)
 # pickle.dump(out, file("out.pickle", "w"))
-def confusion_matrix_from_result(result, **kwargs):
+def confusion_matrix_from_result(result, current_sites=True, **kwargs):
     '''creates a confusion matrix plot for result
 
     @return  confusion_helper output'''
     try:
         yp = result.y_prediction
-        _, y, d = result.scenario.get_features_cumul()
+        _, y, d = result.scenario.get_features_cumul(current_sites)
         return (confusion_matrix(
             y, yp, d, 'Confusion matrix for {}'.format(result), **kwargs),
                 y, yp, d)
@@ -85,9 +85,9 @@ def confusion_matrix_from_scenario(scenario_obj, **kwargs):
 #  , r)
 
 
-def confusion_matrix_helper(clf, scenario_obj, **kwargs):
+def confusion_matrix_helper(clf, scenario_obj, current_sites=True, **kwargs):
     '''@return (confusion_matrix output, y_true, y_pred, y_domains)'''
-    X, y, yd = scenario_obj.get_features_cumul()
+    X, y, yd = scenario_obj.get_features_cumul(current_sites)
     X = preprocessing.MinMaxScaler().fit_transform(X)
     y_pred = model_selection.cross_val_predict(
         clf, X, y,
@@ -157,12 +157,12 @@ def _init_roc(titleadd=None):
     return out
 
 
-def roc_helper_open_world_binary(result, axes=None):
+def roc_helper_open_world_binary(result, current_sites=True, axes=None):
     assert result.open_world and result.open_world['binary'], "no-owbin result"
     num = result.open_world['background_size']
     auc_bound = result.open_world['auc_bound']
     scenario_obj = result.scenario.get_open_world(num).binarize()
-    X, y, _ = scenario_obj.get_features_cumul()
+    X, y, _ = scenario_obj.get_features_cumul(current_sites)
     X = preprocessing.MinMaxScaler().fit_transform(X)  # scaling is idempotent
     y_pred = model_selection.cross_val_predict(
         result.get_classifier(True), X, y, method="predict_proba",
@@ -277,9 +277,9 @@ def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):
 # mplot.plt.title("CUMUL example for two sites retrieved on {}".format(s.date))
 # mplot.plt.tight_layout()
 def traces_cumul(scenario_obj, domain, color=sns.color_palette()[0],
-                 save=False, axes=None):
+                 save=False, axes=None, current_sites=True):
     '''plots the cumul traces of =domain= in scenario_obj'''
-    X, y, yd = scenario_obj.get_features_cumul()
+    X, y, yd = scenario_obj.get_features_cumul(current_sites)
     data = [x[0] for x in zip(X, yd) if x[1] == domain]  # zip(X[:, 4:]
     legend = domain
     if not axes:

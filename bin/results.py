@@ -77,7 +77,8 @@ class Result(object):
         '''@return domains of traces, with optional open world added'''
         if self._ydomains is None:
             logging.info("%s had no saved domain array 'yd'", self)
-            _, _, self._ydomains = self.scenario.get_features_cumul()
+            _, _, self._ydomains = self.scenario.get_features_cumul(
+                self.open_world['current_sites'])
         return self._ydomains
 
     @property
@@ -85,7 +86,8 @@ class Result(object):
         '''@return predicted values (either pre-existing or computed)'''
         if not self._ypred:
             logging.info("%s had no saved prediction", self)
-            X, y, _ = self.scenario.get_features_cumul()
+            X, y, _ = self.scenario.get_features_cumul(
+                self.open_world['current_sites'])
             self._ypred = model_selection.cross_val_predict(
                 self.get_classifier(), X, y, cv=config.FOLDS,
                 n_jobs=config.JOBS_NUM, verbose=config.VERBOSE)
@@ -96,7 +98,8 @@ class Result(object):
         '''@return true classes of traces, with optional open world added'''
         if self._ytrue is None:
             logging.info("%s had no saved class array 'y'", self)
-            _, self._ytrue, _ = self.scenario.get_features_cumul()
+            _, self._ytrue, _ = self.scenario.get_features_cumul(
+                self.open_world['current_sites'])
         return self._ytrue
 
     @staticmethod
