@@ -274,13 +274,14 @@ def simulated_open_world(scenario_obj, auc_bound, binary, bg_size,
     '''@return metrics for open world experiment'''
     for site in exclude_sites:
         try:
-            del scenario_obj.traces[site]
+            del scenario_obj.get_traces(current_sites)[site]
             logging.info("removed %s", site)
         except KeyError:
             logging.debug("failed to remove %s", site)
             pass
     if current_sites:
-        scenario_obj.traces = sites.clean(scenario_obj.traces)
+        scenario_obj.traces = sites.clean(scenario_obj.get_traces(
+            current_sites))
     try:
         scenario_obj = scenario_obj.get_open_world(num=bg_size, same=True,
                                                    current_sites=current_sites)
@@ -289,7 +290,7 @@ def simulated_open_world(scenario_obj, auc_bound, binary, bg_size,
         raise
     if binary:
         scenario_obj = scenario_obj.binarized()
-    X, y, d = scenario_obj.get_features_cumul()
+    X, y, d = scenario_obj.get_features_cumul(current_sites)
     X = preprocessing.MinMaxScaler().fit_transform(X)  # scaling is idempotent
     (clf_noprob, accuracy, _) = fit.my_grid(X, y, auc_bound=auc_bound)
     y_pred = model_selection.cross_val_predict(
