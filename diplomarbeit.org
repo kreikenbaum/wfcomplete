@@ -755,7 +755,7 @@ who showed good results in obfuscating faces using eigenfaces.
 
 The question is whether this defense obfuscates effectively: Whether
 HTTP-specific cover traffic can yield better results than previous
-stochastic defenses. Most other defenses used non--subexponential
+stochastic defenses. Most of these used non--subexponential
 \citep{foss2011introduction} distributions. A bound on this
 effectiveness are previous defenses. The state-of-the-art CUMUL
 \gls{wf} attack by \citet{panchenko2} measures effectiveness of
@@ -809,12 +809,12 @@ all website requests. Algorithm \ref{algo1} describes the main idea:
    \State $\textit{registerHost}(\textit{hostnameOf}(\textit{url}), \textit{coverNumEmbedded}, \textit{urlNumEmbedded})$
  \Else \Comment{known hostname: a resource request}
    \State $\textit{requestProbability} \leftarrow \textit{computeProbability}(\textit{hostnameOf}(\textit{url}))$
-   \While {$\textit{requestProbability} > 1$}
+   \While {$\textit{requestProbability} > 1$} \Comment{send multiple cover requests}
      \State $\textit{requestCoverSized}(\textit{randomEmbeddedSize}())$
      \State $\textit{updateHosts}(\textit{hostnameOf}(\textit{url}))$
      \State $\textit{requestProbability} \leftarrow \textit{requestProbability} -1$
    \EndWhile
-   \If {$\textit{withProbability}(\textit{requestProbability})$}
+   \If {$\textit{withProbability}(\textit{requestProbability})$} \Comment{maybe send cover request}
      \State $\textit{requestCoverSized}(\textit{randomEmbeddedSize}())$
      \State $\textit{updateHosts}(\textit{hostnameOf}(\textit{url}))$
    \EndIf
@@ -824,17 +824,19 @@ all website requests. Algorithm \ref{algo1} describes the main idea:
  \end{algorithm}
  #+END_EXPORT
 The retrieval of the (first) HTML page provides significant
-information for \gls{wf} \citep[sec.4.1]{panchenko}. To counter this
-information gain, this first load is always covered by additional
-traffic. Afterwards, the browser downloads the page resources: images,
-style sheets, JavaScript \citep{ecma} files, etc. Each of these
-transfers might be covered by additional dummy traffic: The actual
-number of resources is subtracted from the target number. This
-difference is randomly spread out among the actual browser
-requests. The size of each cover response is adjusted to the page's
-actual values, if known. The addon thus augments data requests to
+information to a \gls{wf} attacker \citep[sec.4.1]{panchenko}. To
+counter this information gain, this first load is always covered by
+additional traffic. Afterwards, the browser downloads the page
+resources: images, style sheets, JavaScript \citep{ecma} files,
+etc. Each of these transfers might be covered by additional dummy
+traffic: The actual number of resources is subtracted from the target
+number. This difference is randomly spread out among the actual
+browser requests. The size of each cover response is adjusted to the
+page's actual values, if known. The addon augments data requests to
 match an imagined web page retrieval. After a timeout, the hostname
-and its data is removed from the data structure used by /registerHost/, /isRegistered/, /computeProbability/ and /updateHosts/.
+and its data is removed from the data structure used by
+/registerHost/, /isRegistered/, /computeProbability/ and
+/updateHosts/.
 
 
 
@@ -884,26 +886,22 @@ effective, as this would make it harder to separate cover and real
 traffic. In addition, it would work at the layer
 \citep[ch.1.7]{DBLP:books/daglib/0001977} where the problem
 originates, as it mimics the HTTP/HTML \citep{html5}-specific
-request-response interaction. Yet, World Wide Web \citep{rfc1945} traffic
-cannot be adequately modeled using standard distributions like normal
-or uniform \citep{crovella97}. This explains the many outliers
+request-response interaction. Yet, World Wide Web \citep{rfc1945}
+traffic cannot be adequately modeled using standard distributions like
+normal or uniform \citep{crovella97}. This explains the many outliers
 reported by
 \cite[sec.5.2]{DBLP:journals/popets/CherubinHJ17}. \cite[sec.5.A]{wtfpad2015}
 also distribute its \gls{wf} defense data partitions exponentially to
 better fit web traffic. \cite{DBLP:conf/imc/IhmP11} repeatedly mention
-a /long tail/ of traffic. HTTP traffic exhibits /long-tailed/
-\citep{foss2011introduction} behavior, where high sampling values are
-not as unlikely as in, say, exponential or normal distributions.
-
-
-\citet{newtrafficmodel} model web traffic. They evaluated various
-distributions, such as lognormal, weibull, exponential, gamma, and the
-generalized pareto distributions. Log-normal distributions
-(truncated), as seen in Figure [[fig:distributions]] fit the sizes of both
-HTML and embedded resources best in their analysis. A truncated gamma
-function models the number of embedded objects. This model provides
-the cover traffic target sizes. It also sets the page's actual sizes,
-if they are not known.
+a /long tail/ of traffic. Several aspects of web traffic show
+subexponential distribution \citep{foss2011introduction} behavior,
+where high sampling values are not as unlikely as in, say, exponential
+or normal distributions\citet{newtrafficmodel}. They found that
+log-normal distributions (truncated), as seen in Figure
+[[fig:distributions]] fit the sizes of both HTML and embedded resources
+best in their analysis. A truncated gamma function models the number
+of embedded objects. This model provides the cover traffic target
+sizes. It also sets the page's actual sizes, if they are not known.
 ** Caching Sizes using Bloom-Filters
    :PROPERTIES:
    :CUSTOM_ID: sub3-bloom
@@ -934,9 +932,9 @@ stochastically saves approximate sizes might solve problems /2/ and
 have a small error rate in exchange for a fixed size. Their otherwise
 disadvantageous error probability is an advantage in this situation,
 as it further confounds possible attackers. The current implementation
-was initialized once to fixed page sizes for the top
-pages. Dynamically updating the filter might solve problem /1/ and
-further help with problem /3/ (future work).
+was initialized with fixed page sizes for the top pages. Dynamically
+updating the filter might solve problem /1/ and further help with
+problem /3/ (future work).
 
 
 Bloom filters \citep{Bloom70space/timetrade-offs} are a stochastic
@@ -949,7 +947,7 @@ depends on the number of included elements in relation to the
 Bloom-filter's size. Bloom-filters were developed for spell
 checking. They have numerous uses in network applications, e.g. in
 distributed caches, and network
-analysis.\citep{Broder02networkapplications} Bloom-filters improve on
+analysis \citep{Broder02networkapplications}. Bloom-filters improve on
 basic hash-coding by offering a tunable false positive error rate.
 
 
