@@ -12,11 +12,11 @@ from bokeh.transform import transform
 
 # ((df, _), y, yp, yd) = mplot.confusion_matrix_from_result(r, zero0=True)
 # bplot.confusion_matrix(df)
-def confusion_matrix(df):
+def confusion_matrix(df, file_name='/tmp/bokeh.html'):
     '''shows df-confusion matrix in bokeh'''
     df = df.stack().rename("value").reset_index()
 
-    output_file('/tmp/bokeh.html', mode="inline")
+    output_file(file_name, mode="inline")
 
     colors = sns.color_palette("magma", 20).as_hex()
     mapper = LinearColorMapper(
@@ -52,5 +52,6 @@ def confusion_matrix(df):
         location=(0, 0),
         ticker=BasicTicker(desired_num_ticks=len(colors)))
     p.add_layout(color_bar, 'right')
+    p.xaxis.major_label_orientation = "vertical"
     show(p)
     return p
