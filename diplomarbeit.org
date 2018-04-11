@@ -970,61 +970,59 @@ errors.
 
 (See Appendix [[#bloom-sort]] for implementation details.)
 * Evaluation
-Evaluation consists of two parts: traffic data needs to be captured,
-and then analysed. \citet{effective2014} and \cite{panchenko2} provide
-their capture data, but it it does not contain the new defense's
-traces, so new traffic data needed to be collected. The collection
-process is described in section [[#ch4-setup]]. Section ... describes
-how the data is analysed. The results of the analysis are described in
+In Evaluation, traffic data needs to first be captured and then
+analysed. \citet{effective2014} and \cite{panchenko2} provide their
+capture data, but it it does not contain the new defense's traces, so
+new traffic data needed to be collected. The collection process is
+described inf section [[#ch4-setup]]. Section [[#ch4-attack]] describes how
+the data is analysed. The results of the analysis are described in
 section ... for the closed-world analysis. Section ... describes the
 open-world analysis, with concluding remarks in section ...
 ** Capturing Web Traffic
 :PROPERTIES:
 :CUSTOM_ID: ch4-setup
 :END:
-The aim is to test if the defense prevents \gls{wf}, and if so, it
-works more efficiently than other defenses. For this, data need to
-first be captured. \citet{DBLP:journals/popets/CherubinHJ17} provide
-aspects on how to do this.
+The aim of this chapter is to test if the defense prevents \gls{wf},
+and if so, it works more efficiently than other defenses. For this,
+data first needs to be captured.
 
-- how is stuff evaluated
-  - how is data captured
-    aka how was data collected
-    - how is the physical setup
-    - what is the code
-    - what is used
-    - circuit resetting, no caches, time gaps (TODO: effective)
-- how is data analysed
-    aka how can the analysis be reproduced
-    aka how was data analysed
-    - what is the original attack
-    - how is it assured
+#+INDEX: Bridge
+#+INDEX: Tor!Bridge
+#+CAPTION: Setup to capture web page traffic: Tor Browser on /Client/ machine, connects to Tor server on /Bridge/ machine, connects to Tor network, connects to web servers
+#+ATTR_LATEX: :float nil :width 0.5\textwidth
+#+NAME: fig:setup
+[[./pictures/setup-unified.pdf]]
+
+To do this, real Tor captures should be closely reproduced. [[https://www.torproject.org/download/download-easy.html.en][The
+current Tor Browser Bundle]] downloads the web sites traces: it is based
+on the Firefox Browser, which provides the Marionette framework for
+instrumentation. To evaluate the WTF-PAD \citep{wtfpad2015}
+defense[fn::provided at
+[[https://bitbucket.org/mjuarezm/obfsproxy_wfpadtools]]], all traffic is
+routed over a Tor Bridge \citep[sec.client~options]{tor-manual}, see
+Figure [[fig:setup]]. This also eases defense comparability. The sites to
+be downloaded come from Alexa's top million sites list[fn:: available
+at [[http://s3.amazonaws.com/alexa-static/top-1m.csv.zip]]] with duplicate
+sites and sites with high load error rate removed. This increases the
+classification ratio, and thus makes it harder to defend. Making
+\gls{wf} easier is admissible in the evaluation of a \gls{wf} defense.
 
 
-   - capture
-     - tbb generic
-     - firefox marionette
-     - script at github
-   - feature extraction and classification in python
+Web traces are captured in batches in a round-robin fashion: each site
+is captured once until all sites are done. The process then starts
+again until all pages are captured the approximate number of
+times. Prior to each capture, one or no defense is enabled. In the
+case of the new defense, it is configured, if necessary. The Tor
+Browser Bundle clears its cache and saved data on each restart. This
+takes care resetting the circuit and deletes all cached data. It also
+reproduces the time gaps described in \citet{effective2014}.
 
-    #+INDEX: Bridge
-    #+INDEX: Tor!Bridge
-    #+CAPTION: Setup to capture web page traffic: Tor Browser on /Client/ machine, connects to Tor server on /Bridge/ machine, connects to Tor network, connects to web servers
-    #+ATTR_LATEX: :float nil :width 0.5\textwidth
-    [[./pictures/setup-unified.pdf]]
 
-    For the first captures, a single virtual machine hosted both the
-    WTF-PAD server and client. To simulate the distributed WTF-PAD
-    defense's network more closely, a second server was used.
 
-    Thus, a Tor bridge was introduced into the traffic
-    flow[fn::Bridges relay Tor traffic. They act as a gateway into the
-    network. Their main use is censorship avoidance\cite{tor2014}]. It
-    is required for WTF-PAD anyways, but other Tor traffic also uses
-    the bridge instance via Tor's =Bridge=
-    directive\cite[sec.client~options]{tor-manual}, to ease
-    comparability.
-
+The data is analysed via a re-implemented version of CUMUL
+\citep{panchenko2}, which was used as state-of-the-art by the latest
+attack by \citet{rimmerautomated}.
+*** maybe                                                           :ARCHIVE:
     One host runs the Tor Browser Bundle[fn::at the current version]
     and the cover traffic server (if needed), the other runs a Tor
     server instance in bridge mode. For WTF-PAD, an additional server
@@ -1036,12 +1034,34 @@ aspects on how to do this.
     This setup utilises the same bridge for WTF-PAD and the browser
     extension.
 
+- settings
+  - no defense
+  - new defense
+    - factor 20
+    - factor 100
+  - llama
+  - (wfpad)
+  - (tamaraw)
+
     Single traces are captured via the Python script
      ~one_site.py~[fn::
      https://github.com/kreikenbaum/website-fingerprinting-thesis/blob/master/capture/one_site.py]. It
      cleans the cache between captures by restarting the Tor Browser
      Bundle.
-** Closed World
+
+\citet{DBLP:journals/popets/CherubinHJ17} provide aspects on
+how to do this.
+** Reproducing attack accuracy
+   :PROPERTIES:
+   :CUSTOM_ID: ch4-attack
+   :END:
+- how is data analysed
+    aka how can the analysis be reproduced
+    aka how was data analysed
+    - what is the original attack
+    - how is it assured
+   - feature extraction and classification in python
+** Analysing Closed World Scenarios
 - what is closed world again
 - what are the main results
 - does the attack work
@@ -1052,7 +1072,7 @@ aspects on how to do this.
   - accuracy
   - conclusion
 - what are closed-world results
-** Open World
+** Analysing Open World Scenario
   [[./pictures/ccdf-recall-no-defense-on-2018-02-02.pdf]]
   # mplot.ccdf_curve_for_scenario( scenario.Scenario("disabled/bridge--2018-02-02--100@50"), filt=lambda x: len(x.scenario.get_traces()['background']) >= 1000)
 
@@ -1158,182 +1178,6 @@ aspects on how to do this.
    What all methods have in common is that they extract numerical
    /features/ from the raw data, which is then classified using
    \gls{ml}.
-** PENDING Machine Learning Algorithms
-*** Support Vector Machines
-    #+INDEX: classifier!Support Vector Machine
-    #+INDEX: classifier!SVM
-    #+INDEX: Support Vector Machine
-    #+INDEX: SVM
-    #+INDEX: linear classifier
-    #+INDEX: binary classification
-    #+INDEX: classification!binary
-    /Support Vector Machines/ (SVMs) are a linear classifier:
-    they find a linear boundary between points, see Figure
-    [[fig:linear_boundary]] for a simple example.
-
-    #+CAPTION[Example binary linear classification]: Example binary linear classification from \cite[Figure 1.5]{iml}.
-    #+ATTR_LATEX: :width 0.4\textwidth
-    #+NAME: fig:linear_boundary
-    [[./pictures/iml_fig1.5.png]]
-
-    [fn::This and the following parts are mostly based on
-    \cite[ch.6f]{iml}] Given a set $X = \{x_1, ..., x_n\}$ with a dot
-    product $\langle\cdot, \cdot\rangle: X \times X \to \mathbb R$ and tuples $(x_1, y_1), ...,
-    (x_m, y_m)$, with $x_i \in X, y_i \in \{-1, 1\}$ as a /binary
-    classification/ task.
-
-    The SVM's job is to find a hyperplane[fn::as \cite[ch.4.1]{esl}
-    mention, this is actually an affine set, as it need not pass
-    through the origin. This thesis keeps the tradition (as long as
-    those things formed by quarks are still called atoms ...).]
-    #+BEGIN_EXPORT latex
-      \[\{x \in X \mid \langle w, x \rangle +b = 0\}\]
-    #+END_EXPORT
-    such that $\langle w, x_i \rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle
-    +b < 0$ whenever $y_i = -1$. With added normalization, this can
-    be compressed to the form \[y_i \cdot (\langle w, xi \rangle +b) \ge 1.\]
-**** Soft Margin Classifiers
-     :PROPERTIES:
-     :CUSTOM_ID: soft-margin-svm
-     :END:
-     #+INDEX: margin
-     #+INDEX: SVM!margin
-     #+INDEX: soft-margin
-     #+INDEX: SVM!soft-margin
-     #+INDEX: classifier!soft-margin
-     #+INDEX: C
-     #+INDEX: SVM!C
-     A support vector machine tries to find a hyperplane between two
-     groups of points and maximize its distance to the closest points,
-     called /margin/. What happens if the points lie such that a line
-     cannot be found, as e.g. in Figure [[fig:non-linear-data]]?
-
-     #+CAPTION[Example simple non-linearly separable data]: Non-linearly separable data; source: \url{https://en.wikipedia.org/wiki/File:Separability_NO.svg}
-     #+ATTR_LATEX: :width 0.4\textwidth
-     #+NAME: fig:non-linear-data
-     [[./pictures/Separability_NO.eps]]
-
-     To solve this, a /soft-margin classifier/ introduces slack
-     variables $\xi \ge 0$, which it tries to reduce while maximizing the
-     margin.
-
-     This alters the equations to $y_i( \langle w, xi \rangle +b) \ge 1 - \xi_i$ for the
-     optimization problem
-
-     \[\min_{w, b, \xi} \frac{1}{2} ||w||^2 + \frac{C}{m} \sum_{i=1..m} \xi_i\]
-
-     The /error term/ $C$ weighs minimizing training errors against
-     maximizing the margin\cite[sec.7.2.1]{iml}.
-**** Multi-Class Strategies
-     :PROPERTIES:
-     :CUSTOM_ID: multi-class
-     :END:
-     #+INDEX: binary classification
-     #+INDEX: multi-class classification
-     #+INDEX: classification!binary
-     #+INDEX: classification!multi-class
-     The SVMs as described above solve the binary classification
-     problem \cite[sec.1.1.3]{iml}: they propose a boundary between
-     two classes of objects.
-
-     In website fingerprinting[fn::as in e.g.\space{}handwriting
-     recognition], there are most often more classes than two.
-
-     Several strategies exist to distinguish more than two
-     classes. The main are to train one classifier for each class ---
-     called /One-Vs-Rest/ (OVR) --- and one for each class-class
-     combination --- called /One-Vs-One/ (OVO). One-Vs-Rest trains
-     fewer classifiers, while One-Vs-One trains more, but evaluates
-     fewer samples per fitting.\cite[sec.4.12.3]{scikit-user-guide}.
-**** Kernel Trick
-     #+INDEX: kernel
-     #+INDEX: kernel!radial basis function (RBF)
-     #+INDEX: radial basis function (RBF) kernel
-     Straight lines do not always distinguish classes correctly, as
-     e.g. example in Figure [[hastie_kerneltrick]]. This would seem a
-     drawback to using Support Vector Machines, yet they can compute
-     these not only on the original data, but also on a projected
-     space. This allows for complex decision boundaries. By using the
-     kernel trick\cite[sec.2.2.2]{kernels}[fn::A kernel is a function
-     with specific properties. The dot product is such a kernel. The
-     kernel trick enables a algorithm with a kernel to use any other
-     kernel], a SVM can not only use the dot product $\langle.,.\rangle$, but
-     another kernel $k(., .)$ instead.
-
-     #+CAPTION: Kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left side shows linear boundaries on $X$ and $Y$ --- the right side linear boundaries computed with added $X^2$, $Y^2$ and $XY$.
-     #+NAME: hastie_kerneltrick
-     [[./pictures/hastie.png]]
-
-     The kernel used by default by \cite{Hsu10apractical} for SVMs is
-     the (gaussian) /radial basis function/ (RBF)
-     kernel\cite[sec.2.3]{kernels} \[k(x, y) = \exp \left ( - { \|x -
-     y\|^2 \over 2 \gamma^2 } \right )\] This is also used by
-     \cite{panchenko2}. While the algorithms still finds a straight
-     line in a projected space, the resulting decision boundaries in
-     the original feature space are more varied.
-**** Parameter Estimation
-     #+INDEX: cross-validation
-     #+INDEX: grid search
-     #+INDEX: $\gamma$ (gamma)
-     #+INDEX: gamma
-     Each [[#soft-margin-svm][soft margin classifier has an error term $C$]] which states
-     how much to penalize outliers. The gaussian radial basis
-     function kernel used by \cite{panchenko2} also has a $\gamma$ (gamma)
-     term which varies the width of the area, see Figure
-     [[fig:C-gamma-effect]].
-
-     #+CAPTION[Example svm-rbf classification with different parameters for $C$ and \gamma]: Example svm-rbf classification with different parameters for $C$ and \gamma. Source \cite[Figure 42.328]{scikit-user-guide}, recreated for higher resolution.
-     #+ATTR_LATEX: :width 0.4\textwidth
-     #+NAME: fig:C-gamma-effect
-     [[./pictures/skl-fig-42.328.png]]
-#     [[./pictures/skl-fig-42.328.eps]]
-
-     These parameters have to be provided externally for the Support
-     Vector Machine to achieve high
-     accuracy. \cite[sec.3.2]{Hsu10apractical} recommend grid-search
-     with cross-validation to find optimal parameters.
-
-     In /grid-search/, several parameters of $C$ and $\gamma$ are
-     evaluated, and the best one, depending on the metric, is chosen.
-
-     In /cross-validation/, the data set is split into $k$ disjoint
-     subsets, called /folds/, of equal size. Of those, $k-1$ are used
-     combinedly for training the classifier, while the last is used
-     for prediction evaluation. This is done $k$ times, and averaged
-     for the result.
-
-     It might be possible to evaluate these meta-parameters together
-     with the main classification problem \cite[secs.2.8.3, 6.7]{esl},
-     but analogously to \cite[sec.2.8.3]{esl}, this would probably
-     become "combinatorially hard".
-
-*** K-Nearest-Neighbor-Classifier
-    #+INDEX: classifier!kNN
-    #+INDEX: classifier!k-nearest-neighbors
-    #+INDEX: kNN
-    #+INDEX: k-nearest-neighbors
-    The /k-nearest-neighbors/ (kNN) classifier
-    (\cite[sec.1.3.2]{iml} \cite[sec.13.3]{esl}
-    \cite[sec.8.2]{mitchell}) classifies data points based on the
-    known class[es] of their neighbors: for each item to be
-    classified, determine the (e.g.\space{}k=5) closest neighbors by a
-    given metric. If all neighbors' classes agree, or based on a
-    majority decision, the item's class is set to theirs. See Figure
-    [[fig:knn-example]].
-
-    It is successful "in a large number of classification and
-    regression problems"\cite[sec.4.6]{scikit-user-guide}, despite its
-    simplicity.
-
-    This classifier works best if all classes have the same number of
-    (training) instances. Otherwise, it is of course probable that the
-    classes with the higher number of instances will be chosen as
-    targets of classification more often.
-
-     #+CAPTION[k-nearest-neighbors illustrated]: The left picture shows the five closest neighbors around the test instance $x_q$, which is then classified as =-=. The right shows the k==1-decision boundary around several training instances (the area where a test instance would be classified as the point). Source \cite[Figure 8.1]{mitchell}
-     #+NAME: fig:knn-example
-     #+ATTR_LATEX: :width 0.7\textwidth
-     [[./pictures/mitchell-fig8.1.png]]
 ** DANIEL Summary
    \gls{wf} can deanonymize anonymous traffic. This can pose a huge problem
    e.g. for whistleblowers. The previous sections gave a short
@@ -1383,16 +1227,6 @@ aspects on how to do this.
    #+INDEX: closed-world evaluation
    In a /closed-world/ evaluation, a fixed set of site's traces are
    captured. The aim is to distinguish between these sites alone.\\
-
-
-   This thesis evaluates its addon on the top 30 and 100 sites from
-   Alexa's top million sites list[fn::
-   \url{http://s3.amazonaws.com/alexa-static/top-1m.csv.zip}] with
-   duplicate sites and sites with many load errors
-   removed[fn::Original from 2016-06-30 available at
-   https://github.com/kreikenbaum/website-fingerprinting-thesis/blob/master/data/top-1m.csv.zip,
-   modified version at
-   https://github.com/kreikenbaum/website-fingerprinting-thesis/blob/master/data/top-1m.csv.modified].
 
 
    Table [[tab:closed_world]] compares
@@ -2806,6 +2640,182 @@ not.
      https://github.com/kreikenbaum/website-fingerprinting-thesis/blob/master/capture/one_site.py]. It
      cleans the cache between captures by restarting the Tor Browser
      Bundle.
+** PENDING Machine Learning Algorithms
+*** Support Vector Machines
+    #+INDEX: classifier!Support Vector Machine
+    #+INDEX: classifier!SVM
+    #+INDEX: Support Vector Machine
+    #+INDEX: SVM
+    #+INDEX: linear classifier
+    #+INDEX: binary classification
+    #+INDEX: classification!binary
+    /Support Vector Machines/ (SVMs) are a linear classifier:
+    they find a linear boundary between points, see Figure
+    [[fig:linear_boundary]] for a simple example.
+
+    #+CAPTION[Example binary linear classification]: Example binary linear classification from \cite[Figure 1.5]{iml}.
+    #+ATTR_LATEX: :width 0.4\textwidth
+    #+NAME: fig:linear_boundary
+    [[./pictures/iml_fig1.5.png]]
+
+    [fn::This and the following parts are mostly based on
+    \cite[ch.6f]{iml}] Given a set $X = \{x_1, ..., x_n\}$ with a dot
+    product $\langle\cdot, \cdot\rangle: X \times X \to \mathbb R$ and tuples $(x_1, y_1), ...,
+    (x_m, y_m)$, with $x_i \in X, y_i \in \{-1, 1\}$ as a /binary
+    classification/ task.
+
+    The SVM's job is to find a hyperplane[fn::as \cite[ch.4.1]{esl}
+    mention, this is actually an affine set, as it need not pass
+    through the origin. This thesis keeps the tradition (as long as
+    those things formed by quarks are still called atoms ...).]
+    #+BEGIN_EXPORT latex
+      \[\{x \in X \mid \langle w, x \rangle +b = 0\}\]
+    #+END_EXPORT
+    such that $\langle w, x_i \rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle
+    +b < 0$ whenever $y_i = -1$. With added normalization, this can
+    be compressed to the form \[y_i \cdot (\langle w, xi \rangle +b) \ge 1.\]
+**** Soft Margin Classifiers
+     :PROPERTIES:
+     :CUSTOM_ID: soft-margin-svm
+     :END:
+     #+INDEX: margin
+     #+INDEX: SVM!margin
+     #+INDEX: soft-margin
+     #+INDEX: SVM!soft-margin
+     #+INDEX: classifier!soft-margin
+     #+INDEX: C
+     #+INDEX: SVM!C
+     A support vector machine tries to find a hyperplane between two
+     groups of points and maximize its distance to the closest points,
+     called /margin/. What happens if the points lie such that a line
+     cannot be found, as e.g. in Figure [[fig:non-linear-data]]?
+
+     #+CAPTION[Example simple non-linearly separable data]: Non-linearly separable data; source: \url{https://en.wikipedia.org/wiki/File:Separability_NO.svg}
+     #+ATTR_LATEX: :width 0.4\textwidth
+     #+NAME: fig:non-linear-data
+     [[./pictures/Separability_NO.eps]]
+
+     To solve this, a /soft-margin classifier/ introduces slack
+     variables $\xi \ge 0$, which it tries to reduce while maximizing the
+     margin.
+
+     This alters the equations to $y_i( \langle w, xi \rangle +b) \ge 1 - \xi_i$ for the
+     optimization problem
+
+     \[\min_{w, b, \xi} \frac{1}{2} ||w||^2 + \frac{C}{m} \sum_{i=1..m} \xi_i\]
+
+     The /error term/ $C$ weighs minimizing training errors against
+     maximizing the margin\cite[sec.7.2.1]{iml}.
+**** Multi-Class Strategies
+     :PROPERTIES:
+     :CUSTOM_ID: multi-class
+     :END:
+     #+INDEX: binary classification
+     #+INDEX: multi-class classification
+     #+INDEX: classification!binary
+     #+INDEX: classification!multi-class
+     The SVMs as described above solve the binary classification
+     problem \cite[sec.1.1.3]{iml}: they propose a boundary between
+     two classes of objects.
+
+     In website fingerprinting[fn::as in e.g.\space{}handwriting
+     recognition], there are most often more classes than two.
+
+     Several strategies exist to distinguish more than two
+     classes. The main are to train one classifier for each class ---
+     called /One-Vs-Rest/ (OVR) --- and one for each class-class
+     combination --- called /One-Vs-One/ (OVO). One-Vs-Rest trains
+     fewer classifiers, while One-Vs-One trains more, but evaluates
+     fewer samples per fitting.\cite[sec.4.12.3]{scikit-user-guide}.
+**** Kernel Trick
+     #+INDEX: kernel
+     #+INDEX: kernel!radial basis function (RBF)
+     #+INDEX: radial basis function (RBF) kernel
+     Straight lines do not always distinguish classes correctly, as
+     e.g. example in Figure [[hastie_kerneltrick]]. This would seem a
+     drawback to using Support Vector Machines, yet they can compute
+     these not only on the original data, but also on a projected
+     space. This allows for complex decision boundaries. By using the
+     kernel trick\cite[sec.2.2.2]{kernels}[fn::A kernel is a function
+     with specific properties. The dot product is such a kernel. The
+     kernel trick enables a algorithm with a kernel to use any other
+     kernel], a SVM can not only use the dot product $\langle.,.\rangle$, but
+     another kernel $k(., .)$ instead.
+
+     #+CAPTION: Kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left side shows linear boundaries on $X$ and $Y$ --- the right side linear boundaries computed with added $X^2$, $Y^2$ and $XY$.
+     #+NAME: hastie_kerneltrick
+     [[./pictures/hastie.png]]
+
+     The kernel used by default by \cite{Hsu10apractical} for SVMs is
+     the (gaussian) /radial basis function/ (RBF)
+     kernel\cite[sec.2.3]{kernels} \[k(x, y) = \exp \left ( - { \|x -
+     y\|^2 \over 2 \gamma^2 } \right )\] This is also used by
+     \cite{panchenko2}. While the algorithms still finds a straight
+     line in a projected space, the resulting decision boundaries in
+     the original feature space are more varied.
+**** Parameter Estimation
+     #+INDEX: cross-validation
+     #+INDEX: grid search
+     #+INDEX: $\gamma$ (gamma)
+     #+INDEX: gamma
+     Each [[#soft-margin-svm][soft margin classifier has an error term $C$]] which states
+     how much to penalize outliers. The gaussian radial basis
+     function kernel used by \cite{panchenko2} also has a $\gamma$ (gamma)
+     term which varies the width of the area, see Figure
+     [[fig:C-gamma-effect]].
+
+     #+CAPTION[Example svm-rbf classification with different parameters for $C$ and \gamma]: Example svm-rbf classification with different parameters for $C$ and \gamma. Source \cite[Figure 42.328]{scikit-user-guide}, recreated for higher resolution.
+     #+ATTR_LATEX: :width 0.4\textwidth
+     #+NAME: fig:C-gamma-effect
+     [[./pictures/skl-fig-42.328.png]]
+#     [[./pictures/skl-fig-42.328.eps]]
+
+     These parameters have to be provided externally for the Support
+     Vector Machine to achieve high
+     accuracy. \cite[sec.3.2]{Hsu10apractical} recommend grid-search
+     with cross-validation to find optimal parameters.
+
+     In /grid-search/, several parameters of $C$ and $\gamma$ are
+     evaluated, and the best one, depending on the metric, is chosen.
+
+     In /cross-validation/, the data set is split into $k$ disjoint
+     subsets, called /folds/, of equal size. Of those, $k-1$ are used
+     combinedly for training the classifier, while the last is used
+     for prediction evaluation. This is done $k$ times, and averaged
+     for the result.
+
+     It might be possible to evaluate these meta-parameters together
+     with the main classification problem \cite[secs.2.8.3, 6.7]{esl},
+     but analogously to \cite[sec.2.8.3]{esl}, this would probably
+     become "combinatorially hard".
+
+*** K-Nearest-Neighbor-Classifier
+    #+INDEX: classifier!kNN
+    #+INDEX: classifier!k-nearest-neighbors
+    #+INDEX: kNN
+    #+INDEX: k-nearest-neighbors
+    The /k-nearest-neighbors/ (kNN) classifier
+    (\cite[sec.1.3.2]{iml} \cite[sec.13.3]{esl}
+    \cite[sec.8.2]{mitchell}) classifies data points based on the
+    known class[es] of their neighbors: for each item to be
+    classified, determine the (e.g.\space{}k=5) closest neighbors by a
+    given metric. If all neighbors' classes agree, or based on a
+    majority decision, the item's class is set to theirs. See Figure
+    [[fig:knn-example]].
+
+    It is successful "in a large number of classification and
+    regression problems"\cite[sec.4.6]{scikit-user-guide}, despite its
+    simplicity.
+
+    This classifier works best if all classes have the same number of
+    (training) instances. Otherwise, it is of course probable that the
+    classes with the higher number of instances will be chosen as
+    targets of classification more often.
+
+     #+CAPTION[k-nearest-neighbors illustrated]: The left picture shows the five closest neighbors around the test instance $x_q$, which is then classified as =-=. The right shows the k==1-decision boundary around several training instances (the area where a test instance would be classified as the point). Source \cite[Figure 8.1]{mitchell}
+     #+NAME: fig:knn-example
+     #+ATTR_LATEX: :width 0.7\textwidth
+     [[./pictures/mitchell-fig8.1.png]]
 * After Appendices: Bibliography and Index
 \bibliography{docs/master}
 \bibliographystyle{apalike}
