@@ -170,7 +170,7 @@ class Result(object):
             src=entry,
             ytrue=_value_or_none(entry, 'result', 'y_true', 'values'),
             ypred=_value_or_none(entry, 'result', 'y_prediction'),
-            ydomains=_value_or_none(entry, 'result', 'y_domains', 'values'))
+            ydomains=_value_or_none(entry, 'result', 'y_domains'))
 
     def __repr__(self):
         out = ("<Result({!r}, score={}, {}, {}, {}, size={}, "
@@ -182,7 +182,7 @@ class Result(object):
         return out + ')>'
 
     def __str__(self):
-        return "Result at {} for {}".format(self.date.ctime(), self.scenario)
+        return "Result {} for {}".format(self._id, self.scenario)
 
     def get_classifier(self, probability=True):
         '''@return classifier that achieved this result'''

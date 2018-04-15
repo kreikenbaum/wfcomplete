@@ -10,7 +10,7 @@ from bokeh.plotting import figure
 from bokeh.transform import transform
 
 
-# ((df, _), y, yp, yd) = mplot.confusion_matrix_from_result(r, zero0=True)
+# ((df0, _), y, yp, yd) = mplot.confusion_matrix_from_result(r, zero0=True)
 # bplot.confusion_matrix(df)
 def confusion_matrix(df, file_name='/tmp/bokeh.html'):
     '''shows df-confusion matrix in bokeh'''

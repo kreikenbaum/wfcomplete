@@ -215,7 +215,7 @@ presented in section [[#sub2-wf-def]].
 
 
 This thesis' new \gls{wf} defense is introduced in chapter
-[[#ch3-newdefense]]. It also presents the aspects the defense is based
+[[#sub3-defense]]. It also presents the aspects the defense is based
 upon: section [[#sub3-http]] justifies the chosen HTTP traffic model;
 whereas the stochastic size cache based on Bloom-filters
 \citep{Bloom70space/timetrade-offs} is described in section
@@ -235,6 +235,39 @@ sites in section [[#sub4-open]]. All results are summarized in section
 
 Chapter [[#ch6-conclusion]] summarizes the findings and presents courses
 of future work in section [[#future-work]].
+** old exposé                                                       :ARCHIVE:
+**** Thesis Contribution
+     This thesis presents and tests a new defense against \gls{wf}. This
+     new defense mimics HTTP\cite{rfc7230}-shaped cover traffic: Each
+     web page retrieval is augmented by stochastically-drawn dummy HTTP
+     traffic\cite{newtrafficmodel}. This could optimize the protection
+     offered for given bandwidth overhead. It is implemented in a
+     browser extension, which makes the defense easier to install,
+     configure, and maintain.
+**** Thesis Structure
+     The following chapters try to solve the question whether the new
+     defense works more effectively than existing ones.
+
+     Chapter [[#ch2-background]] provides basic background for the IT-savvy
+     who have not yet encountered Tor, machine learning, or website
+     fingerprinting. For the Tor network, we treat its basic structure
+     and why \gls{wf} might be a credible threat. \Gls{ml} basic steps
+     and algorithms are briefly skimmed. Finally, \gls{wf} on Tor is
+     presented. These parts can safely be skipped given previous
+     knowledge.
+
+     The defense's why and how (motivation and design) is described in
+     chapter [[#sub3-defense]]. This also describes the bloom sort data
+     structure for stochastically saving object sizes.
+
+     Chapter [[#ch4-evaluation]] evaluates the defense. It first describes
+     the data-gathering process. Next, the website fingerprinting
+     attacks of \cite{panchenko2}, and \cite{ccsw09-fingerprinting} are
+     validated on defenseless data. This is followed by the evaluation
+     on data with cloaking.
+
+     Chapter [[#ch6-conclusion]] summarizes the results, shows a path to
+     implementation, with both included and additional further work.
 * Tor Basics, Attacking and Defending with Website Fingerprinting
   :PROPERTIES:
   :CUSTOM_ID: ch2-background
@@ -543,9 +576,9 @@ of future work in section [[#future-work]].
 
 
     What happens in classification steps depends on the
-    classifier. Most classifiers, such as [[*Support Vector Machines][support vector machines]],
-    form an internal model from which further input data is
-    classified. Others, notably [[*K-Nearest-Neighbor-Classifier][k-Nearest-Neighbors]], classify directly
+    classifier. Most classifiers, such as support vector machines form
+    an internal model from which further input data is
+    classified. Others, notably k-Nearest-Neighbors, classify directly
     without an intermediary model.
 *** Measuring Performance
     :PROPERTIES:
@@ -641,6 +674,9 @@ of future work in section [[#future-work]].
     interest. The area under the curve bounded up to a false positive
     rate of, say 1%, is called /bounded AUC/ and denoted AUC_{0.01}.
 ** Defending against Website Fingerprinting
+   :PROPERTIES:
+   :CUSTOM_ID: sub2-wf-def
+   :END:
    This section describes defenses against \gls{wf} as described
    [[#sub2-wf][previously]] in section [[#sub2-wf]]: \gls{wf} attacks have become
    increasingly better using \gls{ml}. \Gls{wf} thus effectively
@@ -741,7 +777,64 @@ of future work in section [[#future-work]].
    traffic by a uniformly distributed distribution. The authors
    provided LLaMA as a secondary defense to the server-side ALPaCA
    defense, and emphasize its prototype status \citep{LLaMA}.
+** DANIEL Background [9/9]                                          :ARCHIVE:
+   Knowing [[#sub2-tor][the Tor network]], [[#sub2-ml][\gls{ml} basics]] and [[#sub2-wf][previous
+   attacks and defenses]] helps to understand and then counter website
+   fingerprinting.
+*** DANIEL Tor Website Fingerprinting
+    :PROPERTIES:
+    :CUSTOM_ID: sub2-wf
+    :END:
+    #+INDEX: traffic analysis
+    #+INDEX: website fingerprinting
+    #+INDEX: WF
+    What does an adversary do if he cannot decrypt and the message
+    traffic of a cryptographic system he is interested in? One
+    alternative is to inspect the traffic itself for patterns. This
+    process is called /traffic analysis/\cite{introta} and yields much
+    useful information\cite[ch.10.3]{applied96}.
+
+    \gls{wf} needs only message meta-data: who sends how much data
+    when. It assumes that the system itself is computationally
+    secure\cite[ch.1.1]{applied96}: there are not enough resources,
+    time, or data to break it. Analysing traffic patterns can
+    circumvent the system. Anyone who can see the data stream can carry
+    out this attack, without anyone else learning about this. They
+    simply need to capture the data stream using e.g. the
+    =tcpdump=\cite{tcpdump8-manual} tool.\\
+
+    From inception\cite{tor-design}, Tor provided defenses against
+    traffic analysis. For one, all /data/ cells have the same size,
+    which protects against identifying them by size only. Tor also
+    multiplexes all its data traffic into a single stream, making it
+    hard to distinguish the multiple streams that most websites
+    require, let alone parallel retrieval. Tor also
+    unavoidably\cite{rfc1925} increases traffic latency, so that
+    attacks have a harder time relying on interpacket
+    timing\cite{challenges}.\\
+
+
+    This made \gls{wf} harder, to the point that it was was mentioned, but
+    not hindered, in \cite{tor-design}. It took five years for
+    \cite{ccsw09-fingerprinting} to show better than random
+    classification results against Tor traffic. This evolved to
+    state-of-the-art methods like \cite{panchenko2}.
+
+    What all methods have in common is that they extract numerical
+    /features/ from the raw data, which is then classified using
+    \gls{ml}.
+*** DANIEL Summary
+    \gls{wf} can deanonymize anonymous traffic. This can pose a huge problem
+    e.g. for whistleblowers. The previous sections gave a short
+    introduction to the basics of Tor, \gls{wf} attacks, its basis in machine
+    learning, and finally defenses against it. It also gave a first
+    glimpse at this thesis' new defense.
+
+    The next section presents the novel defense in depth.
 * A New Defense
+  :PROPERTIES:
+  :CUSTOM_ID: ch3-newdefense
+  :END:
 \Gls{wf} has deanonymized Tor under laboratory conditions
 \citep{panchenko}, and has continued to improve (\citet{panchenko2},
 \citet{197185}, \citet{rimmerautomated}). Several approaches have been
@@ -970,6 +1063,9 @@ errors.
 
 (See Appendix [[#bloom-sort]] for implementation details.)
 * Evaluation
+  :PROPERTIES:
+  :CUSTOM_ID: ch4-evaluation
+  :END:
 In Evaluation, traffic data needs to first be captured and then
 analysed. \citet{effective2014} and \cite{panchenko2} provide their
 capture data, but it it does not contain the new defense's traces, so
@@ -1014,14 +1110,14 @@ again until all pages are captured the approximate number of
 times. Prior to each capture, one or no defense is enabled. In the
 case of the new defense, it is configured, if necessary. The Tor
 Browser Bundle clears its cache and saved data on each restart. This
-takes care resetting the circuit and deletes all cached data. It also
+takes care of resetting the circuit and deletes all cached data. It also
 reproduces the time gaps described in \citet{effective2014}.
 
 
 
 The data is analysed via a re-implemented version of CUMUL
-\citep{panchenko2}, which was used as state-of-the-art by the latest
-attack by \citet{rimmerautomated}.
+\citep{panchenko2}, which was used as state-of-the-art in the latest
+attacks by \citet{197185} and \citet{rimmerautomated}.
 *** maybe                                                           :ARCHIVE:
     One host runs the Tor Browser Bundle[fn::at the current version]
     and the cover traffic server (if needed), the other runs a Tor
@@ -1058,9 +1154,13 @@ how to do this.
 - how is data analysed
     aka how can the analysis be reproduced
     aka how was data analysed
-    - what is the original attack
-    - how is it assured
-   - feature extraction and classification in python
+  - what is the original attack
+  - how is it assured
+- feature extraction and classification in python
+- why can you be sure that this works comparably
+- [what about other attacks]
+  - why CUMUL
+  - why not rimmer
 ** Analysing Closed World Scenarios
 - what is closed world again
 - what are the main results
@@ -1096,283 +1196,204 @@ how to do this.
 - what are open-world results
 - why do open-world results differ from panchenko
 - what the fuck
+*** removed sites
+#+INDEX: cumul traces:linkedin
+#+INDEX: cumul traces:removed:linkedin
+#+INDEX: cumul traces:removed:cutoff
+#+CAPTION: Removed traces at cutoff point of 10 FP sites (linkedin.com). These show high variability as compared to Figure [[fig:cumul-well-open]].
+#+ATTR_LATEX: :float nil :width 0.5\textwidth
+#+NAME: fig:traces_cumul_linkedin
+[[./pictures/traces_cumul_linkedin.com_2018-02-02.pdf]]
 ** Summary
 - what is the conclusion
 - (why) is this defense better than llama
-* old exposé
-*** Thesis Contribution
-    This thesis presents and tests a new defense against \gls{wf}. This
-    new defense mimics HTTP\cite{rfc7230}-shaped cover traffic: Each
-    web page retrieval is augmented by stochastically-drawn dummy HTTP
-    traffic\cite{newtrafficmodel}. This could optimize the protection
-    offered for given bandwidth overhead. It is implemented in a
-    browser extension, which makes the defense easier to install,
-    configure, and maintain.
-*** Thesis Structure
-    The following chapters try to solve the question whether the new
-    defense works more effectively than existing ones.
-
-    Chapter [[#ch2-background]] provides basic background for the IT-savvy
-    who have not yet encountered Tor, machine learning, or website
-    fingerprinting. For the Tor network, we treat its basic structure
-    and why \gls{wf} might be a credible threat. \Gls{ml} basic steps
-    and algorithms are briefly skimmed. Finally, \gls{wf} on Tor is
-    presented. These parts can safely be skipped given previous
-    knowledge.
-
-    The defense's why and how (motivation and design) is described in
-    chapter [[#ch3-newdefense]]. This also describes the bloom sort data
-    structure for stochastically saving object sizes.
-
-    Chapter [[#ch4-evaluation]] evaluates the defense. It first describes
-    the data-gathering process. Next, the website fingerprinting
-    attacks of \cite{panchenko2}, and \cite{ccsw09-fingerprinting} are
-    validated on defenseless data. This is followed by the evaluation
-    on data with cloaking.
-
-    Chapter [[#ch6-conclusion]] summarizes the results, shows a path to
-    implementation, with both included and additional further work.
-* DANIEL Background [9/9]
-  Knowing [[#sub2-tor][the Tor network]], [[#sub2-ml][\gls{ml} basics]] and [[#sub2-wf][previous
-  attacks and defenses]] helps to understand and then counter website
-  fingerprinting.
-** DANIEL Tor Website Fingerprinting
+** old Evaluation [1/10]
    :PROPERTIES:
-   :CUSTOM_ID: sub2-wf
+   :CUSTOM_ID: ch4-evaluation
    :END:
-   #+INDEX: traffic analysis
-   #+INDEX: website fingerprinting
-   #+INDEX: WF
-   What does an adversary do if he cannot decrypt and the message
-   traffic of a cryptographic system he is interested in? One
-   alternative is to inspect the traffic itself for patterns. This
-   process is called /traffic analysis/\cite{introta} and yields much
-   useful information\cite[ch.10.3]{applied96}.
+   [[file:~/da/da.org::*Evaluation][gtd]]
+   - overhead section
+   - wording
 
-   \gls{wf} needs only message meta-data: who sends how much data
-   when. It assumes that the system itself is computationally
-   secure\cite[ch.1.1]{applied96}: there are not enough resources,
-   time, or data to break it. Analysing traffic patterns can
-   circumvent the system. Anyone who can see the data stream can carry
-   out this attack, without anyone else learning about this. They
-   simply need to capture the data stream using e.g. the
-   =tcpdump=\cite{tcpdump8-manual} tool.\\
-
-   From inception\cite{tor-design}, Tor provided defenses against
-   traffic analysis. For one, all /data/ cells have the same size,
-   which protects against identifying them by size only. Tor also
-   multiplexes all its data traffic into a single stream, making it
-   hard to distinguish the multiple streams that most websites
-   require, let alone parallel retrieval. Tor also
-   unavoidably\cite{rfc1925} increases traffic latency, so that
-   attacks have a harder time relying on interpacket
-   timing\cite{challenges}.\\
-
-
-   This made \gls{wf} harder, to the point that it was was mentioned, but
-   not hindered, in \cite{tor-design}. It took five years for
-   \cite{ccsw09-fingerprinting} to show better than random
-   classification results against Tor traffic. This evolved to
-   state-of-the-art methods like \cite{panchenko2}.
-
-   What all methods have in common is that they extract numerical
-   /features/ from the raw data, which is then classified using
-   \gls{ml}.
-** DANIEL Summary
-   \gls{wf} can deanonymize anonymous traffic. This can pose a huge problem
-   e.g. for whistleblowers. The previous sections gave a short
-   introduction to the basics of Tor, \gls{wf} attacks, its basis in machine
-   learning, and finally defenses against it. It also gave a first
-   glimpse at this thesis' new defense.
-
-   The next section presents the novel defense in depth.
-* WRITE Evaluation [1/10]
-  :PROPERTIES:
-  :CUSTOM_ID: ch4-evaluation
-  :END:
-  [[file:~/da/da.org::*Evaluation][gtd]]
-  - overhead section
-  - wording
-
-  This chapter compares the new defense to existing defenses.  The
-  first section illustrates the setup. The second section [[#sub4-tools][validates
-  the \gls{wf} attacks used]]. The next section [[#sub4-closed][compares defenses in a
-  closed-world setting]], where they need to only distinguish a small
-  fixed number of pages. The penultimate section evaluates them [[#sub4-open][in an
-  open-world scenario]], which has many background-page retrievals added
-  to the mix. Its last section [[#sub4-summary][summarizes evaluation results]].
-** CHECK Website Fingerprinting Attack Evaluation
-   :PROPERTIES:
-   :CUSTOM_ID: sub4-tools
-   :END:
-   How does the defense compare to others (\cite{wtfpad2015},
-   \cite{LLaMA}, \cite{a-systematic2014})? To examine this, \gls{wf} attacks are
-   executed against web site traces collected with disabled defenses.
-
-   The evaluation uses the attacks CUMUL by \cite{panchenko2} --- both
-   as a re-implementation and its original form --- and the first
-   approach to show better-than-random accuracy by
-   \cite{ccsw09-fingerprinting} --- in a reimplementation. KNN by
-   \cite{effective2014} was evaluated as well.
-
-   Appendix [[#appendix-accuracy]] shows evaluation results. In most
-   cases, the original CUMUL attack and the reimplementation had closely
-   similar results. This validates that the CUMUL-reimplementation was
-   used as the main method of evaluating the extension.
-** PENDING (daniel) Closed World
-   :PROPERTIES:
-   :CUSTOM_ID: sub4-closed
-   :END:
-   #+INDEX: evaluation!closed-world
-   #+INDEX: closed-world evaluation
-   In a /closed-world/ evaluation, a fixed set of site's traces are
-   captured. The aim is to distinguish between these sites alone.\\
-
-
-   Table [[tab:closed_world]] compares
-   LLaMAs\citep{DBLP:journals/popets/CherubinHJ17} performance with
-   this thesis' addon's on 30 sites. As LLaMAs original time overhead
-   seems prohibitive, the source code was edited (a constant was
-   changed) to disable the delay. This version is called
-   /LLaMA-nodelay/.
-
-   #+CAPTION[Comparison of LLaMA to this thesis's defense on 30 sites]: Comparison of LLaMA to this thesis's defense on 30 sites. The top lines shows LLaMA stats, the next two lines try to match first the accuracy, then the size overhead with the new defense.
-   #+NAME: tab:closed_world
-   #+ATTR_LATEX: :align |l||n{2}{2}|n{3}{2}|n{4}{2}|
-   | <17>              |       <10> |       <10> |       <10> |
-   | scenario          | \open accuracy [%] \close | \open size overhead [%] \close | \open time overhead [%] \close |
-   |-------------------+------------+------------+------------|
-   | no defense (2017-12-26) |      96.46 |          0 |          0 |
-   |-------------------+------------+------------+------------|
-   | LLaMA             |      55.46 |      94.25 |    1085.25 |
-   | 30aI--2016-07-25  |      55.75 |      81.13 |      27.80 |
-   | 50aI--2016-07-26  |      52.03 |      96.25 |      15.53 |
-   |-------------------+------------+------------+------------|
-   | LLaMA-nodelay     |      68.22 |     163.08 |      -4.02 |
-   | 5aI--2016-10-09   |      68.59 |      57.92 |       3.22 |
-   | 100aI--2017-12-27 |      42.43 |     162.20 | -0.8895383 |
-   # llama is from 2018-01-07
-
-
-   This shows that _original LLaMA delays web surfing by an order of
-   magnitude_. This result is after removing plain load errors, of
-   which there were 43.67%. After removal, 16 of 30 sites had less
-   than 30 instances. If these sites were removed, accuracy against
-   LLaMA rose to 71.26%, with overheads remaining roughly the same.
-
-
-   Compared to the modified version of LLaMA, this thesis' defense
-   offers both configurability and a lower size overhead. Both LLaMA
-   and the new defense have negligible time overhead. Even compared to
-   non-delayed LLaMA, the new defense offers similar accuracy/size
-   overhead relationship for a much lower time overhead.
-
-   The thesis' configurability is shown in Figure [[fig:oh2acc]].
-   #+CAPTION: Size Overhead to Accuracy Trade-Off for Thesis' Defense, LLaMA-nodelay, and no defense on 30 sites.
-   #+NAME: fig:oh2acc
-   [[./pictures/oh2acc--llama-0.22-disabled.eps]]
-   # code: see [[file:bin/results.py::%20scatter%20plot%20of%20accuracy%20vs%20overhead]]
-*** PENDING (llama-delay) [#C] accuracy/overhead plot    :duckstein:internet:
+   This chapter compares the new defense to existing defenses.  The
+   first section illustrates the setup. The second section [[#sub4-tools][validates
+   the \gls{wf} attacks used]]. The next section [[#sub4-closed][compares defenses in a
+   closed-world setting]], where they need to only distinguish a small
+   fixed number of pages. The penultimate section evaluates them [[#sub4-open][in an
+   open-world scenario]], which has many background-page retrievals added
+   to the mix. Its last section [[#sub4-summary][summarizes evaluation results]].
+*** CHECK Website Fingerprinting Attack Evaluation
     :PROPERTIES:
-    :Effort:   0:30
+    :CUSTOM_ID: sub4-tools
     :END:
-    :LOGBOOK:
-    CLOCK: [2017-12-07 Do 12:56]--[2017-12-07 Do 13:20] =>  0:24
-    CLOCK: [2017-12-07 Do 11:09]--[2017-12-07 Do 11:40] =>  0:31
+    How does the defense compare to others (\cite{wtfpad2015},
+    \cite{LLaMA}, \cite{a-systematic2014})? To examine this, \gls{wf} attacks are
+    executed against web site traces collected with disabled defenses.
+
+    The evaluation uses the attacks CUMUL by \cite{panchenko2} --- both
+    as a re-implementation and its original form --- and the first
+    approach to show better-than-random accuracy by
+    \cite{ccsw09-fingerprinting} --- in a reimplementation. KNN by
+    \cite{effective2014} was evaluated as well.
+
+    Appendix [[#appendix-accuracy]] shows evaluation results. In most
+    cases, the original CUMUL attack and the reimplementation had closely
+    similar results. This validates that the CUMUL-reimplementation was
+    used as the main method of evaluating the extension.
+*** PENDING (daniel) Closed World
+    :PROPERTIES:
+    :CUSTOM_ID: sub4-closed
     :END:
-    - include llama-delay @ 30
-    - ?additional 0.22 data points in between groups (200--300% overheads)
-    - data points with tiny overhead (?=negative factor?)
-*** PENDING (daniel) [#B] accuracy/time plots: time to date
-*** PENDING (daniel) Low Accuracy on my Captures
-    #+CAPTION: Accuracy Decay on 30 sites.
-    #+NAME: fig:date-vs-acc--30sites
-    #+ATTR_LATEX: :float wrap
-    [[./pictures/date-vs-acc--30sites.eps]]
-    # code: [[file:bin/mplot.py::def%20date_accuracy]]()
-
-    #+CAPTION: Accuracy Decay on 100 sites.
-    #+NAME: fig:date-vs-acc--100sites
-    #+ATTR_LATEX: :float wrap
-    [[./pictures/date-vs-acc--100sites.eps]]
-    # code: [[file:bin/mplot.py::def%20date_accuracy]](100)
-    The previous data show that the thesis's defense provides better
-    protection for the same overhead and/or lower overhead for the
-    same protection on 30 sites. Yet, the current state-of-the-art
-    compares results on at least 100 sites.\\
+    #+INDEX: evaluation!closed-world
+    #+INDEX: closed-world evaluation
+    In a /closed-world/ evaluation, a fixed set of site's traces are
+    captured. The aim is to distinguish between these sites alone.\\
 
 
-    Comparison of 100 sites shows a problem: Accuracy for all captures
-    is markedly lower than that reported in the literature, both on 30
-    and 100 sites. This is true regardless of if data was captured
-    with defense or without. On 100 sites, the comparison to
-    literature results shows this handicap more clearly. As both
-    Panchenko's original implementation and the reimplementation yield
-    the same results, the cause is probably due to capture methodology.\\
+    Table [[tab:closed_world]] compares
+    LLaMAs\citep{DBLP:journals/popets/CherubinHJ17} performance with
+    this thesis' addon's on 30 sites. As LLaMAs original time overhead
+    seems prohibitive, the source code was edited (a constant was
+    changed) to disable the delay. This version is called
+    /LLaMA-nodelay/.
+
+    #+CAPTION[Comparison of LLaMA to this thesis's defense on 30 sites]: Comparison of LLaMA to this thesis's defense on 30 sites. The top lines shows LLaMA stats, the next two lines try to match first the accuracy, then the size overhead with the new defense.
+    #+NAME: tab:closed_world
+    #+ATTR_LATEX: :align |l||n{2}{2}|n{3}{2}|n{4}{2}|
+    | <17>              |       <10> |       <10> |       <10> |
+    | scenario          | \open accuracy [%] \close | \open size overhead [%] \close | \open time overhead [%] \close |
+    |-------------------+------------+------------+------------|
+    | no defense (2017-12-26) |      96.46 |          0 |          0 |
+    |-------------------+------------+------------+------------|
+    | LLaMA             |      55.46 |      94.25 |    1085.25 |
+    | 30aI--2016-07-25  |      55.75 |      81.13 |      27.80 |
+    | 50aI--2016-07-26  |      52.03 |      96.25 |      15.53 |
+    |-------------------+------------+------------+------------|
+    | LLaMA-nodelay     |      68.22 |     163.08 |      -4.02 |
+    | 5aI--2016-10-09   |      68.59 |      57.92 |       3.22 |
+    | 100aI--2017-12-27 |      42.43 |     162.20 | -0.8895383 |
+    # llama is from 2018-01-07
 
 
-    Surprisingly, the capture's accuracies decayed over time: On
-    /recent data/, neither the wf-attack-reimplementation, Panchenkos
-    original, nor a student group at University of Brunswick was able
-    to provide good accuracy. The accuracy on 30 sites decayed /from
-    97.93%/ on 2016-08-15 /to 58.41%/ on 2017-10-16, as displayed in
-    Figure [[fig:date-vs-acc--30sites]]. On 100 sites, the accuracy
-    likewise fell /from 90.57%/ on 2016-06-17 /to 43.46%/ on
-    2017-10-22, as displayed in Figure [[fig:date-vs-acc--100sites]].\\
+    This shows that _original LLaMA delays web surfing by an order of
+    magnitude_. This result is after removing plain load errors, of
+    which there were 43.67%. After removal, 16 of 30 sites had less
+    than 30 instances. If these sites were removed, accuracy against
+    LLaMA rose to 71.26%, with overheads remaining roughly the same.
+
+
+    Compared to the modified version of LLaMA, this thesis' defense
+    offers both configurability and a lower size overhead. Both LLaMA
+    and the new defense have negligible time overhead. Even compared to
+    non-delayed LLaMA, the new defense offers similar accuracy/size
+    overhead relationship for a much lower time overhead.
+
+    The thesis' configurability is shown in Figure [[fig:oh2acc]].
+    #+CAPTION: Size Overhead to Accuracy Trade-Off for Thesis' Defense, LLaMA-nodelay, and no defense on 30 sites.
+    #+NAME: fig:oh2acc
+    [[./pictures/oh2acc--llama-0.22-disabled.eps]]
+    # code: see [[file:bin/results.py::%20scatter%20plot%20of%20accuracy%20vs%20overhead]]
+**** PENDING (llama-delay) [#C] accuracy/overhead plot   :duckstein:internet:
+     :PROPERTIES:
+     :Effort:   0:30
+     :END:
+     :LOGBOOK:
+     CLOCK: [2017-12-07 Do 12:56]--[2017-12-07 Do 13:20] =>  0:24
+     CLOCK: [2017-12-07 Do 11:09]--[2017-12-07 Do 11:40] =>  0:31
+     :END:
+     - include llama-delay @ 30
+     - ?additional 0.22 data points in between groups (200--300% overheads)
+     - data points with tiny overhead (?=negative factor?)
+**** PENDING (daniel) [#B] accuracy/time plots: time to date
+**** PENDING (daniel) Low Accuracy on my Captures
+     #+CAPTION: Accuracy Decay on 30 sites.
+     #+NAME: fig:date-vs-acc--30sites
+     #+ATTR_LATEX: :float wrap
+     [[./pictures/date-vs-acc--30sites.eps]]
+     # code: [[file:bin/mplot.py::def%20date_accuracy]]()
+
+     #+CAPTION: Accuracy Decay on 100 sites.
+     #+NAME: fig:date-vs-acc--100sites
+     #+ATTR_LATEX: :float wrap
+     [[./pictures/date-vs-acc--100sites.eps]]
+     # code: [[file:bin/mplot.py::def%20date_accuracy]](100)
+     The previous data show that the thesis's defense provides better
+     protection for the same overhead and/or lower overhead for the
+     same protection on 30 sites. Yet, the current state-of-the-art
+     compares results on at least 100 sites.\\
+
+
+     Comparison of 100 sites shows a problem: Accuracy for all captures
+     is markedly lower than that reported in the literature, both on 30
+     and 100 sites. This is true regardless of if data was captured
+     with defense or without. On 100 sites, the comparison to
+     literature results shows this handicap more clearly. As both
+     Panchenko's original implementation and the reimplementation yield
+     the same results, the cause is probably due to capture methodology.\\
+
+
+     Surprisingly, the capture's accuracies decayed over time: On
+     /recent data/, neither the wf-attack-reimplementation, Panchenkos
+     original, nor a student group at University of Brunswick was able
+     to provide good accuracy. The accuracy on 30 sites decayed /from
+     97.93%/ on 2016-08-15 /to 58.41%/ on 2017-10-16, as displayed in
+     Figure [[fig:date-vs-acc--30sites]]. On 100 sites, the accuracy
+     likewise fell /from 90.57%/ on 2016-06-17 /to 43.46%/ on
+     2017-10-22, as displayed in Figure [[fig:date-vs-acc--100sites]].\\
 
 
 
-    #+CAPTION: Confusion matrix for 30 sites at 2016-08-15, overall accuracy at 98%.
-    #+NAME: fig:confmat-2016-08-15
-    #+ATTR_LATEX: :float wrap
-    [[./pictures/confmat-2016-08-15.eps]]
-    # code: [[file:bin/mplot.py::def%20confusion]]
+     #+CAPTION: Confusion matrix for 30 sites at 2016-08-15, overall accuracy at 98%.
+     #+NAME: fig:confmat-2016-08-15
+     #+ATTR_LATEX: :float wrap
+     [[./pictures/confmat-2016-08-15.eps]]
+     # code: [[file:bin/mplot.py::def%20confusion]]
 
-    #+CAPTION: Confusion matrix for 30 sites at 2017-10-16, overall accuracy at 58%.
-    #+NAME: fig:confmat-2017-10-16
-    #+ATTR_LATEX: :float wrap
-    [[./pictures/confmat-2017-10-16.pdf]]
-    # code: [[file:bin/mplot.py::def%20confusion]]
-    Let's see if a single site or group of sites cause this low
-    accuracy: A high-accuracy confusion matrix from 2016-08-15 is
-    shown in Figure [[fig:confmat-2016-08-15]]. This is contrast with a
-    low-accuracy confusion matrix from 2017-10-16 in Figure
-    [[fig:confmat-2017-10-16]]. While there is much more class-bleed-off,
-    there is no clear culprit: errors are mostly distributed.\\
-
-
-    #+CAPTION: CUMUL-traces for site msn.com compared for both dates.
-    #+NAME: fig:cumul-good-bad.pdf
-    #+ATTR_LATEX: :float wrap
-    [[./pictures/cumul-good-bad.pdf]]
-    # code:
-    # e = scenario.list_all("08-15")[0]; f = e.get_traces()
-    # E = scenario.list_all("17-10-16")[0]; F = E.get_traces()
-    # palette = sns.color_palette("colorblind", 4)
-    # g = gplot.counters(f['msn.com'], label=str(e.date), color=str(palette.as_hex()[0]))
-    # g = gplot.counters(F['msn.com'], g, label=str(E.date), color=str(palette.as_hex()[2]))
-    A site that existed on both captures is /msn.com/. It was chosen
-    to illustrate the problem. The CUMUL-features are shown in Figure
-    [[fig:cumul-good-bad.pdf]].\\
+     #+CAPTION: Confusion matrix for 30 sites at 2017-10-16, overall accuracy at 58%.
+     #+NAME: fig:confmat-2017-10-16
+     #+ATTR_LATEX: :float wrap
+     [[./pictures/confmat-2017-10-16.pdf]]
+     # code: [[file:bin/mplot.py::def%20confusion]]
+     Let's see if a single site or group of sites cause this low
+     accuracy: A high-accuracy confusion matrix from 2016-08-15 is
+     shown in Figure [[fig:confmat-2016-08-15]]. This is contrast with a
+     low-accuracy confusion matrix from 2017-10-16 in Figure
+     [[fig:confmat-2017-10-16]]. While there is much more class-bleed-off,
+     there is no clear culprit: errors are mostly distributed.\\
 
 
-    For several low-accuracy retrievals, very little data is received
-    back from the server. This could possibly be due to cloudflare
-    recaptcha protection etc, which can sometimes be observed when
-    browsing with Tor. A possible solution as future work would be to
-    filter traces with fewer bytes incoming than outgoing, e.g. Also,
-    the capture code could be adjusted to check the page text for the
-    recaptcha site.
-**** TODO comparison table for 100 sites
-**** TODO Accuracy/Overhead for 100 Sites
-** KEYWORDS Open World
-   :PROPERTIES:
-   :CUSTOM_ID: sub4-open
-   :END:
-** KEYWORDS Summary
-   :PROPERTIES:
-   :CUSTOM_ID: sub4-summary
-   :END:
+     #+CAPTION: CUMUL-traces for site msn.com compared for both dates.
+     #+NAME: fig:cumul-good-bad.pdf
+     #+ATTR_LATEX: :float wrap
+     [[./pictures/cumul-good-bad.pdf]]
+     # code:
+     # e = scenario.list_all("08-15")[0]; f = e.get_traces()
+     # E = scenario.list_all("17-10-16")[0]; F = E.get_traces()
+     # palette = sns.color_palette("colorblind", 4)
+     # g = gplot.counters(f['msn.com'], label=str(e.date), color=str(palette.as_hex()[0]))
+     # g = gplot.counters(F['msn.com'], g, label=str(E.date), color=str(palette.as_hex()[2]))
+     A site that existed on both captures is /msn.com/. It was chosen
+     to illustrate the problem. The CUMUL-features are shown in Figure
+     [[fig:cumul-good-bad.pdf]].\\
+
+
+     For several low-accuracy retrievals, very little data is received
+     back from the server. This could possibly be due to cloudflare
+     recaptcha protection etc, which can sometimes be observed when
+     browsing with Tor. A possible solution as future work would be to
+     filter traces with fewer bytes incoming than outgoing, e.g. Also,
+     the capture code could be adjusted to check the page text for the
+     recaptcha site.
+***** TODO comparison table for 100 sites
+***** TODO Accuracy/Overhead for 100 Sites
+*** KEYWORDS Open World
+    :PROPERTIES:
+    :CUSTOM_ID: sub4-open
+    :END:
+*** KEYWORDS Summary
+    :PROPERTIES:
+    :CUSTOM_ID: sub4-summary
+    :END:
 * Conclusions [0/10000]
   :PROPERTIES:
   :CUSTOM_ID: ch6-conclusion
@@ -1684,7 +1705,130 @@ training on data without defense, and testing on defended data.
   - estimate to get to overhead of 295 is 175: i(175) \approx 296.9
   [[./pictures/factor_to_overhead.eps]]
   # creation see code at: [[file:~/da/da.org_archive::*factor%20to%20overhead%20at%200.22aI][factor to overhead at 0.22aI]]
-* removed
+* WRITE Bloom-sort
+  :PROPERTIES:
+  :CUSTOM_ID: bloom-sort
+  :END:
+   By ordering data into bins, it becomes possible to use Bloom filters
+   for the estimation of sizes, using one Bloom filter for each bin.
+
+   To achieve this, sensible separation criteria (called /splits/) for
+   the bins need to be found. Afterwards, each bin needs to be assigned
+   a value (called /size/) for all contained elements. See appendix
+   [[#bloom-params]] on determining the sizes and splits.
+
+   This data-structure, called /Bloom-sort/ is initialized with an
+   array of splits, and an array of sizes. The sizes-array needs to
+   have one more element than the splits-array, as the bins are bounded
+   on the left by 0, and on the right by infinity.
+
+   #+BEGIN_SRC js
+     /**
+      ,* @param {sizes Array} array of values for each bin, must be sorted
+      ,* @param {splits Array} array of bin borders, must be sorted
+     ,*/
+     function BloomSort(sizes, splits) {
+         this.sizes = sizes;
+         this.splits = splits;
+         this.filters = [];
+         for ( let i = 0; i < sizes.length; i++ ) {
+             this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH);
+         }
+     }
+   #+END_SRC
+
+   Thus, you get
+   \[-\infty \le \text{size}_0 \le \text{split}_0 \le \text{size}_1 \le \text{split}_1 \le ... \le \text{split}_{n-1} \le \text{size}_n < \infty\]
+   Given the splits, it becomes possible to add the elements to their
+   bins:
+
+   #+BEGIN_SRC js
+     BloomSort.prototype.add = function(id, size) {
+         this.filters[_.sortedIndex(this.splits, size)].add(id);
+     };
+   #+END_SRC
+
+   where =_.sortedIndex()= gives the index at which =size= would be
+   inserted into the sorted =this.splits= array.
+
+   The retrieval of element sizes looks into each Bloom filter,
+   checking whether it might contain the element =id=. If one Bloom
+   filter reports containment, its corresponding element- =size= is
+   returned. If several or no Bloom filters report containment, an
+   exception is thrown. The exception is used to allow all possible
+   return values, not blocking one of them, say =-1=, for the error
+   condition.
+   #+BEGIN_SRC js
+     /** determines size of element, raises exception if unclear */
+     BloomSort.prototype.query = function(id) {
+         let pos = -1;
+         for ( let i = 0; i < this.filters.length; i++ ) {
+             if ( this.filters[i].test(id) ) {
+                 if ( pos === -1 ) {
+                     pos = i;
+                 } else {
+                     throw {
+                         name: 'BloomError',
+                         message: 'Contains multiple entries'
+                     };
+                 }
+             }
+         }
+         if ( pos === -1 ) {
+             throw {
+                 name: 'BloomError',
+                 message: 'Contains no entries'
+             };
+         }
+         return this.sizes[pos];
+     };
+   #+END_SRC
+
+   It is initialized with
+   #+BEGIN_SRC js
+   let htmlSizes = new BloomSort.BloomSort([400, 1000, 20000], [700, 10000]);
+   #+END_SRC
+
+   then adding elements via =htmlSizes.add("http://google.com/", 613)=
+   and querying via =htmlSizes.query("http://google.com/")=, which
+   would yield =400=. See usage in =size-cache=.
+
+   - link to main bloom-sort, create custom-id there
+** WAIT github link
+* CHECK Determining Bloom-Sort Parameters
+  :PROPERTIES:
+  :CUSTOM_ID: bloom-params
+  :END:
+  It is impractical to store the sizes of many URLs, as this would
+  greatly increase the size of the addon. A possibility to save space
+  is to use Bloom Filters to aggregate groups of URLs with similar
+  values, as described in [[#bloom-sort][Bloom-sort]].
+
+  Each group needs borders (given via the /splits/ method parameter)
+  and a size to represents its contained elements.
+
+  Determining the optimal number of groups, splits and sizes is a
+  topic of [[#future-work][further work]]. Here, initially the quantiles of the
+  HTTP-model (see [[#HTTP traffic model][HTTP traffic model] ) were used. When the data were
+  to be inserted, it turned out that especially the numbers of
+  embedded elements did not match the theoretically proposed groups:
+
+  For three groups, the splits would be given by the 33 1/3 and 66
+  2/3 quantiles, as 0.0107 and 1.481. This would create two
+  single-valued groups, which only would contain the elements 0
+  and 1. The next group would contain all other elements: The
+  (representative) sizes of the groups were given as 7.915E-05,
+  0.188, and 8.260 (quantiles 16 1/6, 50, and 83 5/6).
+
+  The actual data to be inserted (see [[#number_embedded][Cached: Number of Embedded
+  Objects]]) had the /splits/ (quantiles) at 10 2/3 and 36 2/3 and the
+  /sizes/ (middle quantile) at 6, 20, and 59 2/3.
+
+  In addition to using the observed sizes for the Bloom filter, the
+  number of groups was increased to 5.
+** WAIT [#C] graphics: histogram with bins (colored bars, black bin limits)
+
+* removed                                                           :ARCHIVE:
 ** DANIEL Website Fingerprinting Defenses
    :PROPERTIES:
    :CUSTOM_ID: sub2-wf-def
@@ -2083,129 +2227,6 @@ following \cite{compgen}.
   - fixed size
   - if save visited pages, problematic if computer is captured later
   - bloom filter only saves approximately
-** WRITE Bloom-sort
-   :PROPERTIES:
-   :CUSTOM_ID: bloom-sort
-   :END:
-    By ordering data into bins, it becomes possible to use Bloom filters
-    for the estimation of sizes, using one Bloom filter for each bin.
-
-    To achieve this, sensible separation criteria (called /splits/) for
-    the bins need to be found. Afterwards, each bin needs to be assigned
-    a value (called /size/) for all contained elements. See appendix
-    [[#bloom-params]] on determining the sizes and splits.
-
-    This data-structure, called /Bloom-sort/ is initialized with an
-    array of splits, and an array of sizes. The sizes-array needs to
-    have one more element than the splits-array, as the bins are bounded
-    on the left by 0, and on the right by infinity.
-
-    #+BEGIN_SRC js
-      /**
-       ,* @param {sizes Array} array of values for each bin, must be sorted
-       ,* @param {splits Array} array of bin borders, must be sorted
-      ,*/
-      function BloomSort(sizes, splits) {
-          this.sizes = sizes;
-          this.splits = splits;
-          this.filters = [];
-          for ( let i = 0; i < sizes.length; i++ ) {
-              this.filters[i] = new Bloom.BloomFilter(NUM_BITS, NUM_HASH);
-          }
-      }
-    #+END_SRC
-
-    Thus, you get
-    \[-\infty \le \text{size}_0 \le \text{split}_0 \le \text{size}_1 \le \text{split}_1 \le ... \le \text{split}_{n-1} \le \text{size}_n < \infty\]
-    Given the splits, it becomes possible to add the elements to their
-    bins:
-
-    #+BEGIN_SRC js
-      BloomSort.prototype.add = function(id, size) {
-          this.filters[_.sortedIndex(this.splits, size)].add(id);
-      };
-    #+END_SRC
-
-    where =_.sortedIndex()= gives the index at which =size= would be
-    inserted into the sorted =this.splits= array.
-
-    The retrieval of element sizes looks into each Bloom filter,
-    checking whether it might contain the element =id=. If one Bloom
-    filter reports containment, its corresponding element- =size= is
-    returned. If several or no Bloom filters report containment, an
-    exception is thrown. The exception is used to allow all possible
-    return values, not blocking one of them, say =-1=, for the error
-    condition.
-    #+BEGIN_SRC js
-      /** determines size of element, raises exception if unclear */
-      BloomSort.prototype.query = function(id) {
-          let pos = -1;
-          for ( let i = 0; i < this.filters.length; i++ ) {
-              if ( this.filters[i].test(id) ) {
-                  if ( pos === -1 ) {
-                      pos = i;
-                  } else {
-                      throw {
-                          name: 'BloomError',
-                          message: 'Contains multiple entries'
-                      };
-                  }
-              }
-          }
-          if ( pos === -1 ) {
-              throw {
-                  name: 'BloomError',
-                  message: 'Contains no entries'
-              };
-          }
-          return this.sizes[pos];
-      };
-    #+END_SRC
-
-    It is initialized with
-    #+BEGIN_SRC js
-    let htmlSizes = new BloomSort.BloomSort([400, 1000, 20000], [700, 10000]);
-    #+END_SRC
-
-    then adding elements via =htmlSizes.add("http://google.com/", 613)=
-    and querying via =htmlSizes.query("http://google.com/")=, which
-    would yield =400=. See usage in =size-cache=.
-
-    - link to main bloom-sort, create custom-id there
-*** WAIT github link
-** CHECK Determining Bloom-Sort Parameters
-   :PROPERTIES:
-   :CUSTOM_ID: bloom-params
-   :END:
-   It is impractical to store the sizes of many URLs, as this would
-   greatly increase the size of the addon. A possibility to save space
-   is to use Bloom Filters to aggregate groups of URLs with similar
-   values, as described in [[#bloom-sort][Bloom-sort]].
-
-   Each group needs borders (given via the /splits/ method parameter)
-   and a size to represents its contained elements.
-
-   Determining the optimal number of groups, splits and sizes is a
-   topic of [[#future-work][further work]]. Here, initially the quantiles of the
-   HTTP-model (see [[#HTTP traffic model][HTTP traffic model] ) were used. When the data were
-   to be inserted, it turned out that especially the numbers of
-   embedded elements did not match the theoretically proposed groups:
-
-   For three groups, the splits would be given by the 33 1/3 and 66
-   2/3 quantiles, as 0.0107 and 1.481. This would create two
-   single-valued groups, which only would contain the elements 0
-   and 1. The next group would contain all other elements: The
-   (representative) sizes of the groups were given as 7.915E-05,
-   0.188, and 8.260 (quantiles 16 1/6, 50, and 83 5/6).
-
-   The actual data to be inserted (see [[#number_embedded][Cached: Number of Embedded
-   Objects]]) had the /splits/ (quantiles) at 10 2/3 and 36 2/3 and the
-   /sizes/ (middle quantile) at 6, 20, and 59 2/3.
-
-   In addition to using the observed sizes for the Bloom filter, the
-   number of groups was increased to 5.
-*** WAIT [#C] graphics: histogram with bins (colored bars, black bin limits)
-
 ** bit older methods chapter
  As described in section [[#sub2-wf]], \gls{wf} can deanonymize Tor web
  browsing. It is a low-level passive defense that can even be deployed

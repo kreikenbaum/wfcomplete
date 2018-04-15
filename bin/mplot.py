@@ -64,11 +64,10 @@ def confusion_matrix_from_result(result, current_sites=True, **kwargs):
 
     @return  confusion_helper output'''
     try:
-        yp = result.y_prediction
-        _, y, d = result.scenario.get_features_cumul(current_sites)
+        yt, yp, yd = result.y_true, result.y_prediction, result.y_domains
         return (confusion_matrix(
-            y, yp, d, 'Confusion matrix for {}'.format(result), **kwargs),
-                y, yp, d)
+            yt, yp, yd, 'Confusion matrix for {}'.format(result), **kwargs),
+                yt, yp, yd)
     except ValueError:
         logging.info("discarded existing prediction: did not match domains")
         return confusion_matrix_helper(result.get_classifier(),
