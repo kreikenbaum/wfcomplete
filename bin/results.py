@@ -23,6 +23,23 @@ def _db():
     return pymongo.MongoClient(serverSelectionTimeoutMS=10).sacred
 
 
+class LastIter(object):
+    def __init__(self, iter_):
+        self.iter = iter(iter_)
+
+    def __iter__(self):
+        return self.iter
+
+    def next(self):
+        return self.iter.next()
+
+    def last(self):
+        tmp = None
+        for _ in self:
+            tmp = _
+        return tmp
+
+
 class Result(object):
     def __init__(self, scenario_, accuracy, git, time, type_, size,
                  open_world=False, size_overhead=None,
@@ -62,7 +79,7 @@ class Result(object):
         try:
             return self.src['stop_time'] - self.src['start_time']
         except KeyError:
-            return -1
+            return None
 
     @property
     def host(self):
@@ -219,7 +236,10 @@ class Result(object):
             for key in self.open_world:
                 out[key] = self.open_world[key]
         for prop in ['background_size', 'duration']:  # bg:overwrite open_world
-            out[prop] = getattr(self, prop)
+            try:
+                out[prop] = getattr(self, prop)
+            except AssertionError:  # fail for closed-world
+                pass
         try:
             for key in ['name', 'date']:  # maybe other aspects (num_sites etc)
                 out["scenario." + key] = self.scenario.__dict__[key]
@@ -330,8 +350,8 @@ def list_all(match=None, restrict=True, db=_db()):
         matches.append({"result.score": {"$exists": 1}})
     if match:
         matches.append(match)
-    return (Result.from_mongoentry(x) for x in
-            db.runs.find({"$and": matches}))
+    return LastIter(
+        Result.from_mongoentry(x) for x in db.runs.find({"$and": matches}))
 
 
 def sized(size):
