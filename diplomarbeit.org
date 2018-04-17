@@ -1158,6 +1158,11 @@ attacks by \citet{197185} and \citet{rimmerautomated}.
 \citet{DBLP:journals/popets/CherubinHJ17} provide aspects on
 how to do this.
 ** Analyse 1: Closed World Scenarios
+   :PROPERTIES:
+   :CUSTOM_ID: ch4-attack
+   :END:
+#+INDEX: evaluation!closed-world
+#+INDEX: closed-world evaluation
 As section [[#sub2-ml-measure]] mentions, there are two settings in
 analysing \gls{wf}: open-world and closed-world. Closed-world analysis
 distuinguishes only between the main sites, say its aim is to
@@ -1165,11 +1170,6 @@ distinguish [[http://uol.com.br]]'s and [[http://etsy.com]]'s traces. This
 section will presents the results of closed-world analysis. It first
 compares the accuracy of \citet{panchenko2}'s original to the
 re-implemetation on defenseless traces.
-
-
-
-Does the reimplemented attack work? It seems so. See Table
-[[tab:closed-world-accuracy]].
 
 #+CAPTION[Closed-World Results]: Results of closed-world setup. The traces captures at University of Brunswick show similar Accuracy to \cite{panchenko2}. The traces captured using Google Cloud virtual machines show higher accuracy. A similar phenomenon was reported by \citet[sec.4.7]{ccs2014-critical}.
 #+NAME: tab:closed-world-accuracy
@@ -1182,7 +1182,14 @@ Does the reimplemented attack work? It seems so. See Table
 | Google Cloud      |                  50 |    95.12 |
 
 
-- does attack work
+Table [[tab:closed-world-accuracy]] presents the main comparison of CUMUL
+\citep{panchenko2} to its reimplementation. Appendix
+[[#appendix-accuracy]] shows more evaluation results. In most cases, the
+original CUMUL attack and the reimplementation had similar
+results. This validates that the CUMUL-reimplementation was used as
+the main method of evaluating the extension.
+
+
 - does defense work
 
 
@@ -1196,14 +1203,8 @@ Does the reimplemented attack work? It seems so. See Table
     \cite{ccsw09-fingerprinting} --- in a reimplementation. KNN by
     \cite{effective2014} was evaluated as well.
 
-    Appendix [[#appendix-accuracy]] shows evaluation results. In most
-    cases, the original CUMUL attack and the reimplementation had closely
-    similar results. This validates that the CUMUL-reimplementation was
-    used as the main method of evaluating the extension.
+- walkie-talkie theoretical
 *** Reproducing attack accuracy
-    :PROPERTIES:
-    :CUSTOM_ID: ch4-attack
-    :END:
  - how is data analysed
      aka how can the analysis be reproduced
      aka how was data analysed
@@ -1218,10 +1219,6 @@ Does the reimplemented attack work? It seems so. See Table
     :PROPERTIES:
     :CUSTOM_ID: sub4-closed
     :END:
-    #+INDEX: evaluation!closed-world
-    #+INDEX: closed-world evaluation
-    In a /closed-world/ evaluation, a fixed set of site's traces are
-    captured. The aim is to distinguish between these sites alone.\\
 
 
     Table [[tab:closed_world]] compares
@@ -1587,6 +1584,7 @@ differs from how it should be used, see next section.
 
 - why a server
   - could easily cache sizes, reuse
+    - or use list of servers
   - but this as proof of concept
 
 - classification code at https://gitlab.com/kreikenbaum/classify.git
@@ -2867,6 +2865,174 @@ not.
      #+NAME: fig:knn-example
      #+ATTR_LATEX: :width 0.7\textwidth
      [[./pictures/mitchell-fig8.1.png]]
+** PENDING (daniel) Closed World
+   :PROPERTIES:
+   :CUSTOM_ID: sub4-closed
+   :END:
+   #+INDEX: evaluation!closed-world
+   #+INDEX: closed-world evaluation
+   In a /closed-world/ evaluation, a fixed set of site's traces are
+   captured. The aim is to distinguish between these sites alone.\\
+
+
+   Table [[tab:closed_world]] compares
+   LLaMAs\citep{DBLP:journals/popets/CherubinHJ17} performance with
+   this thesis' addon's on 30 sites. As LLaMAs original time overhead
+   seems prohibitive, the source code was edited (a constant was
+   changed) to disable the delay. This version is called
+   /LLaMA-nodelay/.
+
+   #+CAPTION[Comparison of LLaMA to this thesis's defense on 30 sites]: Comparison of LLaMA to this thesis's defense on 30 sites. The top lines shows LLaMA stats, the next two lines try to match first the accuracy, then the size overhead with the new defense.
+   #+NAME: tab:closed_world
+   #+ATTR_LATEX: :align |l||n{2}{2}|n{3}{2}|n{4}{2}|
+   | <17>              |       <10> |       <10> |       <10> |
+   | scenario          | \open accuracy [%] \close | \open size overhead [%] \close | \open time overhead [%] \close |
+   |-------------------+------------+------------+------------|
+   | no defense (2017-12-26) |      96.46 |          0 |          0 |
+   |-------------------+------------+------------+------------|
+   | LLaMA             |      55.46 |      94.25 |    1085.25 |
+   | 30aI--2016-07-25  |      55.75 |      81.13 |      27.80 |
+   | 50aI--2016-07-26  |      52.03 |      96.25 |      15.53 |
+   |-------------------+------------+------------+------------|
+   | LLaMA-nodelay     |      68.22 |     163.08 |      -4.02 |
+   | 5aI--2016-10-09   |      68.59 |      57.92 |       3.22 |
+   | 100aI--2017-12-27 |      42.43 |     162.20 | -0.8895383 |
+   # llama is from 2018-01-07
+
+
+   This shows that _original LLaMA delays web surfing by an order of
+   magnitude_. This result is after removing plain load errors, of
+   which there were 43.67%. After removal, 16 of 30 sites had less
+   than 30 instances. If these sites were removed, accuracy against
+   LLaMA rose to 71.26%, with overheads remaining roughly the same.
+
+
+   Compared to the modified version of LLaMA, this thesis' defense
+   offers both configurability and a lower size overhead. Both LLaMA
+   and the new defense have negligible time overhead. Even compared to
+   non-delayed LLaMA, the new defense offers similar accuracy/size
+   overhead relationship for a much lower time overhead.
+
+   The thesis' configurability is shown in Figure [[fig:oh2acc]].
+   #+CAPTION: Size Overhead to Accuracy Trade-Off for Thesis' Defense, LLaMA-nodelay, and no defense on 30 sites.
+   #+NAME: fig:oh2acc
+   [[./pictures/oh2acc--llama-0.22-disabled.eps]]
+   # code: see [[file:bin/results.py::%20scatter%20plot%20of%20accuracy%20vs%20overhead]]
+*** PENDING (llama-delay) [#C] accuracy/overhead plot    :duckstein:internet:
+    :PROPERTIES:
+    :Effort:   0:30
+    :END:
+    :LOGBOOK:
+    CLOCK: [2017-12-07 Do 12:56]--[2017-12-07 Do 13:20] =>  0:24
+    CLOCK: [2017-12-07 Do 11:09]--[2017-12-07 Do 11:40] =>  0:31
+    :END:
+    - include llama-delay @ 30
+    - ?additional 0.22 data points in between groups (200--300% overheads)
+    - data points with tiny overhead (?=negative factor?)
+*** PENDING (daniel) [#B] accuracy/time plots: time to date
+*** PENDING (daniel) Low Accuracy on my Captures
+    #+CAPTION: Accuracy Decay on 30 sites.
+    #+NAME: fig:date-vs-acc--30sites
+    #+ATTR_LATEX: :float wrap
+    [[./pictures/date-vs-acc--30sites.eps]]
+    # code: [[file:bin/mplot.py::def%20date_accuracy]]()
+
+    #+CAPTION: Accuracy Decay on 100 sites.
+    #+NAME: fig:date-vs-acc--100sites
+    #+ATTR_LATEX: :float wrap
+    [[./pictures/date-vs-acc--100sites.eps]]
+    # code: [[file:bin/mplot.py::def%20date_accuracy]](100)
+    The previous data show that the thesis's defense provides better
+    protection for the same overhead and/or lower overhead for the
+    same protection on 30 sites. Yet, the current state-of-the-art
+    compares results on at least 100 sites.\\
+
+
+    Comparison of 100 sites shows a problem: Accuracy for all captures
+    is markedly lower than that reported in the literature, both on 30
+    and 100 sites. This is true regardless of if data was captured
+    with defense or without. On 100 sites, the comparison to
+    literature results shows this handicap more clearly. As both
+    Panchenko's original implementation and the reimplementation yield
+    the same results, the cause is probably due to capture methodology.\\
+
+
+    Surprisingly, the capture's accuracies decayed over time: On
+    /recent data/, neither the wf-attack-reimplementation, Panchenkos
+    original, nor a student group at University of Brunswick was able
+    to provide good accuracy. The accuracy on 30 sites decayed /from
+    97.93%/ on 2016-08-15 /to 58.41%/ on 2017-10-16, as displayed in
+    Figure [[fig:date-vs-acc--30sites]]. On 100 sites, the accuracy
+    likewise fell /from 90.57%/ on 2016-06-17 /to 43.46%/ on
+    2017-10-22, as displayed in Figure [[fig:date-vs-acc--100sites]].\\
+
+
+
+    #+CAPTION: Confusion matrix for 30 sites at 2016-08-15, overall accuracy at 98%.
+    #+NAME: fig:confmat-2016-08-15
+    #+ATTR_LATEX: :float wrap
+    [[./pictures/confmat-2016-08-15.eps]]
+    # code: [[file:bin/mplot.py::def%20confusion]]
+
+    #+CAPTION: Confusion matrix for 30 sites at 2017-10-16, overall accuracy at 58%.
+    #+NAME: fig:confmat-2017-10-16
+    #+ATTR_LATEX: :float wrap
+    [[./pictures/confmat-2017-10-16.pdf]]
+    # code: [[file:bin/mplot.py::def%20confusion]]
+    Let's see if a single site or group of sites cause this low
+    accuracy: A high-accuracy confusion matrix from 2016-08-15 is
+    shown in Figure [[fig:confmat-2016-08-15]]. This is contrast with a
+    low-accuracy confusion matrix from 2017-10-16 in Figure
+    [[fig:confmat-2017-10-16]]. While there is much more class-bleed-off,
+    there is no clear culprit: errors are mostly distributed.\\
+
+
+    #+CAPTION: CUMUL-traces for site msn.com compared for both dates.
+    #+NAME: fig:cumul-good-bad.pdf
+    #+ATTR_LATEX: :float wrap
+    [[./pictures/cumul-good-bad.pdf]]
+    # code:
+    # e = scenario.list_all("08-15")[0]; f = e.get_traces()
+    # E = scenario.list_all("17-10-16")[0]; F = E.get_traces()
+    # palette = sns.color_palette("colorblind", 4)
+    # g = gplot.counters(f['msn.com'], label=str(e.date), color=str(palette.as_hex()[0]))
+    # g = gplot.counters(F['msn.com'], g, label=str(E.date), color=str(palette.as_hex()[2]))
+    A site that existed on both captures is /msn.com/. It was chosen
+    to illustrate the problem. The CUMUL-features are shown in Figure
+    [[fig:cumul-good-bad.pdf]].\\
+
+
+    For several low-accuracy retrievals, very little data is received
+    back from the server. This could possibly be due to cloudflare
+    recaptcha protection etc, which can sometimes be observed when
+    browsing with Tor. A possible solution as future work would be to
+    filter traces with fewer bytes incoming than outgoing, e.g. Also,
+    the capture code could be adjusted to check the page text for the
+    recaptcha site.
+**** TODO comparison table for 100 sites
+**** TODO Accuracy/Overhead for 100 Sites
+
+
+
+- how does the defense compare to llama etc
+
+
+- does the attack work
+  - yes, seems so (same results)
+- does the defense work
+  - lowers accuracy
+- how does the other defense compare to this
+  - validate attack
+  - accuracy
+  - conclusion
+  - llama lowers accuracy as well
+  - [wtf-pad]
+  - comparison accuracy vs overhead
+    - add point for llama-nodelay
+- what are closed-world results
+  aka what are the main results
+  - result similar to CUMUL
+  - see table in appendix
 * After Appendices: Bibliography and Index
 \bibliography{docs/master}
 \bibliographystyle{apalike}

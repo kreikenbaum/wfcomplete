@@ -3,7 +3,7 @@
 [[./master.bib]]
 # * sort first by [alpha(a), then] prio (p), then by todo state reversed (O)
 * [[~/chive/locallit.org]]
-* TODO [#B] lit [62/394]                                                :lit:
+* TODO [#B] lit [63/395]                                                :lit:
 ** DONE [[Arp - diplomarbeit_kommentare_von_daniel.pdf]]
    - siehe [[file:~/da/da.org::*daniels%20review][daniels review]]
 ** DONE [[./wtfpad-setup.pdf][Arp - Setup der Obfuscation-Tools]]
@@ -4523,6 +4523,168 @@ Vorläufiger Zeitplan
       these approaches, and look forward to hearing more results of
       future attack and defense work along these and other avenues.
 *** ref: [[file:master.bib::experimental][Perry 2011: Experimental Defense Website Traffic Fingerprinting]]
+** DONE [[~web/Desktop/thesis/1708.06376.pdf][Rimmer - Automated Website Fingerprinting through Deep Learning]]
+*** summary
+    0. [@0] Abstract
+       - success depends on which features are used
+       - here: automatic feature detection
+       - same success rates as state-of-the-art:
+         - closed-world: 96% on 100 sites, 94% on 900 sites
+         - open world: 2% better
+       - resilient to dynamic changes
+    1. Introduction
+       - hard to engineer features
+       - NN can do it on your own
+       - three deep-learning--approaches
+    2. Background
+       - traditional wf attacks
+       - top-3
+       - dl-based: wang (34) + Abe and Goto (1)
+         - [1] K. Abe and S. Goto, “Fingerprinting attack on tor
+           anonymity using deep learning,” Proceedings of the
+           Asia-Pacific Advanced Network, vol. 42, pp. 15–20, 2016.
+         - [34] Z. Wang, “The applications of deep learning on traffic
+           identification,” BlackHat USA, 2015.
+    3. Threat Model
+       - passive local network-level adversary
+         - ISPs, AS admins, local network admins
+       - cannot break encryption
+       - closed world for comparing
+       - open world more realistic
+    4. Data Collection
+       0. [@0]
+          - deep learning needs loads of data
+          - prior datasets had smaller sizes
+          - distributed cpture setup
+       1. [@A] Data collection methodology
+          - 15 machines, open-stack based private cloud
+            - each 4 CPUs, 4GB of RAM
+            - each 16 worker threads
+              - each with separate tor process
+              - each started tor browser, loaded web page
+                - 285 seconds to load, otherwise invalid
+                - 10 more seconds open after load
+              - network namespaces and tcpdump to isolate traffic
+          - extract metadata, discard payload
+            - timing, direction, size
+            - follow w&g (31) for Tor cells
+            - in the end, 1 and -1
+          - no fixed entry guard
+            - would have been overloaded
+            - agnostic
+       2. Datasets
+          0. [@0]
+             - no research which pages browsed to
+             - choice of websites not essential as long as consistent
+             - alexa top
+               - widely used
+             - plus two other datasets
+          1. Closed world
+             - up to 3000 traces
+             - 1200 most popular websites
+             - filter list to avoid differing by TLD (google.com and google.de)
+             - four iterations a 300 websites, split into 30 batches
+             - 14 days
+             - after *batch*, restart tor, remove data directories
+             - 3.6 million page visits
+             - filter timeout, browser crash, selenium rash
+               - remove websites with high amount of invalid visits
+               - compare hash of html content and "perceptual" screenshot hash
+                 - exactly same content for pages filtered
+               - filter no content, deny all requets, captcha
+             - balanced dataset: same number of traces for every site
+             - result: 900 sites with 2.500 traces each (CW_{900})
+               - subsets: CW100, 200, 500
+          2. Revisit over time
+             - top 200 sites, periodic
+             - 3 days, 10 days, 4, 6, 8 weeks
+          3. Open world: only for testing
+             - single instance
+             - 400000 Alexa websites
+             - and 2000 additional for CW_{200}
+             - 800000 traces
+       3. Ethical considerations & data access
+          - top websites: minor fraction
+          - Tor: 2 million concurrent clients, 240 are "minor fraction"
+          - data public
+    5. Evaluation
+       A. Reevaluation of state-of-the-art
+          - vs knn, CUMUL, k-fingerprint
+          - evaluate feature drift and train/test-time gap effect
+          - reproduce wf attacks
+          - "10-fold CV"
+          - CUMUL outperforms knn and k-FP
+          - CUMUL on 900 sites, 300 instances: 92.73%
+          - CUMUL does not scale that well: aborted experiments for 900
+            sites and > 300 number of traces, > 6000 min (4 days)
+          - k-FP might be better in open world, but did not scale that well
+       B. Deep Learning for Website Fingerprinting
+          1) Problem definition
+             - wf as classification problem
+               - multinomial: several labels possible
+             - based on initial representation: series of 1, -1, variable-length
+               - based on Tor cells
+               - avoids rescaling
+             - type of NN: feedforward, convolutional, recurrent
+               - Stacked DEnoising Autoencoder (SDAE) deep feedforward
+                 - autoencoder: feature learning
+                 - stacking these: hierarchy of features
+                 - pretrain
+               - Convolutional Neural Network (CNN): series of
+                 convolution-layers
+                 - minimal preprocessing
+               - Long-Short Term Memory network (LSTM) recurrent
+                 - long-term dependencies, time series
+                 - cut off at 150 cells
+             - Keras with Theano
+             - code at https://distrinet.cs.kuleuven.be/software/tor-wf-dl/
+             - GPUs: 2 x (8GB, 2560 cores), 1x (12GB, 3840 cores)
+          2) Hyperparameter tuning and model selection
+             - model, parameters, generalization
+             - highly parallelizable
+             - hyperopt library (tree of parzen estimators)
+             - more data: "compromise on hyperparameter tuning" (less
+               overfitting)
+          3) Closed world evaluation
+             - 10-fold cv
+             - accuracy and loss (see appendix)
+             - lstm: needs more traces, promising (just start of trace)
+             - sdae better for bigger world size
+             - cnn for smaller
+          4) Concept drift evaluation
+             - use revisit over time dataset
+             - all decrease, LSTM little, CNN much, CUMUL also
+             - all profit from more traces
+             - down to ~66% after 2 months
+          5) Open world evaluation
+             - differs from prior work
+               - train only on websites trying to detect
+               - test on 50-50 monitored/unknown websites (number of traces)
+               - use cross-entropy loss for ROC
+               - CW200, 2000 instances, vs 400000 one-time bg retrievals
+               - binary
+             - SDAE, CNN bit better than CUMUL, less LSTM
+    6. Discussion
+       - limitations
+         - as before, only homepages
+           - but compare to existing models
+         - all open world sites same prior probability
+       - replace feature engineering
+       - how to defense (w&g), llama, adversarial examples
+       - evaluate walkie-talkie
+    7. Conclusion
+       - (takes more traces)
+       - major advantages
+         - one better than cumul in cw
+         - all more robust over time
+         - sdae and cnn slightly better in open world
+         - more scalable: parallelization, automated model selection
+*** quote
+    5. [@5] Evaluation
+       - Reevaluation of state-of-the-art
+         - the time reported being the one of the slowest C and γ
+           parameter combination test.
+*** ref [[file:master.bib::rimmerautomated][Rimmer et al.: Automated Website Fingerprinting Deep Learning]]
 ** DONE [[./ShWa-Timing06.pdf][Shmatikov - Timing analysis in low-latency mix networks: attacks and defenses]]
 *** summary
     0. [@0] Abstract
@@ -5544,8 +5706,8 @@ Vorläufiger Zeitplan
     - If the attacker categorized a monitored page as a different
       monitored page, we count it as a false positive
     - (ends 6.2)
-    - designing a defense that specifically defeats the
-      state-of-the-art attack is a flawed approach.
+    - we believe that designing a defense that specifically defeats
+      the state-of-the-art attack is a flawed approach.
     - (ends 7.1)
 *** questions
     - Further, we assume this encrypted channel pads all packets to a
@@ -6107,6 +6269,7 @@ Vorläufiger Zeitplan
 ** TODO (ch2+3) [#A] [[file:/home/web/Desktop/thesis/thesishelp/aristolo-100-thesis-masterplan.pdf][Gerlach - thesis-masterplan]]
    - phasen 1--8
    - jetzt: 3: Kapitel 2 und 3 schreiben, link:
+** TODO [#A] [[~web/Desktop/thesis/2017_sp_nnrobustattacks.pdf][Carlini - Towards Evaluating the Robustness of Neural Networks]]
 ** TODO [#B] [[./einserkandidat.de/blog/thesis-maschine/index.html][Baulig - Thesis-Maschine 3.0]]
 ** TODO [#B] [[file:/home/web/Desktop/thesis/thesishelp/aristolo-ebook-01-Machs-68-techniken-gegen-aufschieberei-text-1.pdf][Gerlach - Machs-68-techniken-gegen-aufschieberei]]
 *** summary
@@ -6316,93 +6479,6 @@ Vorläufiger Zeitplan
         - Make a bigger picture where you organize the related
           approaches
           - Categorize the work in logically coupled groups
-** TODO [#B] [[~web/Desktop/thesis/1708.06376.pdf][Rimmer - Automated Website Fingerprinting through Deep Learning]]
-*** summary
-    0. [@0] Abstract
-       - success depends on which features are used
-       - here: automatic feature detection
-       - same success rates as state-of-the-art:
-         - closed-world: 96% on 100 sites, 94% on 900 sites
-         - open world: 2% better
-       - resilient to dynamic changes
-    1. Introduction
-       - hard to engineer features
-       - NN can do it on your own
-       - three deep-learning--approaches
-    2. Background
-       - traditional wf attacks
-       - top-3
-       - dl-based: wang (34) + Abe and Goto (1)
-         - [1] K. Abe and S. Goto, “Fingerprinting attack on tor
-           anonymity using deep learning,” Proceedings of the
-           Asia-Pacific Advanced Network, vol. 42, pp. 15–20, 2016.
-         - [34] Z. Wang, “The applications of deep learning on traffic
-           identification,” BlackHat USA, 2015.
-    3. Threat Model
-       - passive local network-level adversary
-         - ISPs, AS admins, local network admins
-       - cannot break encryption
-       - closed world for comparing
-       - open world more realistic
-    4. Data Collection
-       0. [@0]
-          - deep learning needs loads of data
-          - prior datasets had smaller sizes
-          - distributed cpture setup
-       1. [@A] Data collection methodology
-          - 15 machines, open-stack based private cloud
-            - each 4 CPUs, 4GB of RAM
-            - each 16 worker threads
-              - each with separate tor process
-              - each started tor browser, loaded web page
-                - 285 seconds to load, otherwise invalid
-                - 10 more seconds open after load
-              - network namespaces and tcpdump to isolate traffic
-          - extract metadata, discard payload
-            - timing, direction, size
-            - follow w&g (31) for Tor cells
-            - in the end, 1 and -1
-          - no fixed entry guard
-            - would have been overloaded
-            - agnostic
-       2. Datasets
-          0. [@0]
-             - no research which pages browsed to
-             - choice of websites not essential as long as consistent
-             - alexa top
-               - widely used
-             - plus two other datasets
-          1. Closed world
-             - up to 3000 traces
-             - 1200 most popular websites
-             - filter list to avoid differing by TLD (google.com and google.de)
-             - four iterations a 300 websites, split into 30 batches
-             - 14 days
-             - after *batch*, restart tor, remove data directories
-             - 3.6 million page visits
-             - filter timeout, browser crash, selenium rash
-               - remove websites with high amount of invalid visits
-               - compare hash of html content and "perceptual" screenshot hash
-                 - exactly same content for pages filtered
-               - filter no content, deny all requets, captcha
-             - balanced dataset: same number of traces for every site
-             - result: 900 sites with 2.500 traces each (CW_{900})
-               - subsets: CW100, 200, 500
-          2. Revisit over time
-             - top 200 sites, periodic
-             - 3 days, 10 days, 4, 6, 8 weeks
-          3. Open world: only for testing
-             - single instance
-             - 400000 Alexa websites
-             - and 2000 additional for CW_{200}
-             - 800000 traces
-       3. Ethical considerations & data access
-          - top websites: minor fraction
-          - Tor: 2 million concurrent clients, 240 are "minor fraction"
-          - data public
-    5. Evaluation
-*** quote
-*** ref [[file:master.bib::rimmerautomated][Rimmer et al.: Automated Website Fingerprinting Deep Learning]]
 ** TODO [#C](skim) [[./it2013..kloft_phd.pdf][Kloft - Kernel-Based Machine Learning with Multiple Sources of Information]]
 *** summary
     0. [@0] Summary
