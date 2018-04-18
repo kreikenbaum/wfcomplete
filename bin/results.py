@@ -241,7 +241,7 @@ class Result(object):
             except AssertionError:  # fail for closed-world
                 pass
         try:
-            for key in ['name', 'date']:  # maybe other aspects (num_sites etc)
+            for key in ['name', 'date', 'path']:  # (+num_sites etc)
                 out["scenario." + key] = self.scenario.__dict__[key]
         except KeyError:
             pass  # ok to not include (e.g. WANG14 external result)
@@ -407,11 +407,12 @@ if __name__ == "__main__":
 # min(d, key=lambda x: abs(0.26 - x.score))
 
 # ### scatter plot of accuracy vs overhead
+# SIZE = 30
 # import results, mplot
-# b = [x for x in results.list_all() if (x.scenario.name == 'new defense' or 'defense-client-nodelay' in x.scenario or 'disabled' in x.scenario) and x.scenario.num_sites == 30]
+# b = [x for x in results.list_all() if (x.scenario.name == 'new defense' or 'defense-client-nodelay' in x.scenario or 'disabled' in x.scenario) and x.scenario.num_sites == SIZE]
 # plot = mplot.accuracy_vs_overhead(b)
 # ## plot through
-# d30 = pd.DataFrame([x.__dict__ for x in results.list_all() if x.scenario.num_sites == 30 and '0.22' in x.scenario.name])
+# d30 = pd.DataFrame([x.to_dict() for x in results.list_all() if x.scenario.num_sites == SIZE and '0.22' in x.scenario.name])
 # a = d30[['size_overhead', 'score']]
 # a.drop_duplicates(inplace=True) # and dropna()
 # mod = lmfit.models.ExponentialModel()

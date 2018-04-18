@@ -68,7 +68,7 @@ class Scenario(object):
         self.trace_args = trace_args or config.trace_args()
         self._open_world_config = open_world
         self.path = os.path.normpath(name)
-        if name in PATH_SKIP or skip:
+        if name in PATH_SKIP or skip or ".unison" in name:
             self.name = name
             logging.debug("skipped " + name)
             return
