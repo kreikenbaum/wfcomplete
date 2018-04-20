@@ -35,6 +35,7 @@ if os.uname()[1] == config.OLD_HOST:
     DIR = os.path.join('/mnt', 'large')
 RENAME = {
     "defense-client": "LLaMA",
+    "defense-client-nodelay": "LLaMA-nodelay",
     "disabled": "no defense"
 }
 for _ in ["0.15.3", "0.18.2", "0.19", "0.20", "0.21", "0.22",

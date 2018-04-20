@@ -168,7 +168,7 @@ class Result(object):
                 entry['config']['scenario'], open_world=open_world)
             reload(config)
         except ValueError:
-            if entry['status'] != "COMPLETED":
+            if entry['status'] not in ["COMPLETED", "EXTERNAL"]:
                 scenario_obj = "placeholder for scenario {}".format(
                     entry['config']['scenario'])
             else:
