@@ -15,6 +15,7 @@
 #+LATEX_HEADER: \usepackage{algorithm}
 #+LATEX_HEADER: \usepackage[noend]{algpseudocode}
 #+LATEX_HEADER: \usepackage{amsmath}
+#+LATEX_HEADER: \usepackage{booktabs} % for \toprule
 #+LATEX_HEADER: \usepackage{float}
 #+LATEX_HEADER: \usepackage{hyperref}
 #+LATEX_HEADER: \usepackage[tracking=true]{microtype}
@@ -1070,10 +1071,11 @@ In Evaluation, traffic data needs to first be captured and then
 analysed. \citet{effective2014} and \cite{panchenko2} provide their
 capture data, but it it does not contain the new defense's traces, so
 new traffic data needed to be collected. The collection process is
-described inf section [[#sub4-setup]]. Section [[#sub4-attack]] describes how
-the data is analysed. The results of the analysis are described in
-section ... for the closed-world analysis. Section ... describes the
-open-world analysis, with concluding remarks in section ...
+described in section [[#sub4-setup]]. Section [[#sub4-closed]] first studies
+the robustness of the attack, then compares the new defense with the
+latest defense by \citet{DBLP:journals/popets/CherubinHJ17}, both in a
+closed-world scenario. Section ... describes the open-world analysis,
+with concluding remarks in section ...
 ** old intro                                                        :ARCHIVE:
 This chapter compares the new defense to existing defenses. The first
 section illustrates the setup. The second section [[#sub4-tools][validates the
@@ -1155,20 +1157,20 @@ attacks by \citet{197185} and \citet{rimmerautomated}.
 
 \citet{DBLP:journals/popets/CherubinHJ17} provide aspects on
 how to do this.
-** Analyse 1: Closed World Scenarios
+** KEYWORDS Analyse 1: Closed World Scenarios
    :PROPERTIES:
-   :CUSTOM_ID: sub4-attack
+   :CUSTOM_ID: sub4-closed
    :END:
 #+INDEX: evaluation!closed-world
 #+INDEX: closed-world evaluation
 As section [[#sub2-ml-measure]] mentions, there are two settings in
 analysing \gls{wf}: open-world and closed-world. Closed-world analysis
-distuinguishes only between the main sites, say Eve's aim is to
-see if Alice visits bob.com or her uncle charlie.com [[http://etsy.com]]'s traces, assuming
-both are being monitored by Eve. This section will presents the
-results of closed-world analysis. It first compares the accuracy of
-\citet{panchenko2}'s original to the re-implemetation on defenseless
-traces.
+distuinguishes only between the main sites, say Eve's aim is to see if
+Alice visits bob.com or her uncle charlie.com [[http://etsy.com]]'s
+traces, assuming both are being monitored by Eve. This section will
+presents the results of closed-world analysis. It first compares the
+accuracy of \citet{panchenko2}'s original to the re-implemetation on
+defenseless traces.
 
 #+CAPTION[Closed-World Results]: Results of closed-world setup. The traces captures at University of Brunswick show similar Accuracy to \cite{panchenko2}. The traces captured using Google Cloud virtual machines show higher accuracy. A similar phenomenon was reported by \citet[sec.4.7]{ccs2014-critical}.
 #+NAME: tab:closed-world-accuracy
@@ -1181,51 +1183,57 @@ traces.
 | Google Cloud      |                  50 |    95.12 |
 
 
-Table [[tab:closed-world-accuracy]] presents the main comparison of CUMUL
-\citep{panchenko2} to its reimplementation. In most cases, the
-original CUMUL attack and the reimplementation had similar
-results. This validates that the CUMUL-reimplementation was used as
-the main method of evaluating the extension.
+Recent studies (\citet{197185}
+\citet{DBLP:journals/popets/CherubinHJ17} \citet{rimmerautomated})
+consider CUMUL by \citet{panchenko2} the state-of-the-art \gls{wf}
+attack. Table [[tab:closed-world-accuracy]] ensures attack accuracy by
+comparing CUMUL \citep{panchenko2} to its reimplementation on
+defenseless web site traces. In most cases, the original CUMUL attack
+and the reimplementation had similar results. This validates that the
+CUMUL-reimplementation[fn::available at
+https://gitlab.com/kreikenbaum/classify.git] was used as the main
+method of evaluating the extension. The kNN-attack by
+\citet{effective2014} showed worse results, as validated by the above
+literature.
 
 
-- graph defense accuracy vs overhead
-- mention problems in capturing
 
+- does defense work (better than others)
+  aka what are closed-world results
+  aka what are the main results
+  - does defense work
+    aka does the defense work
+    aka validate attack
+   - accuracy
+    - lowers accuracy
+   - graph defense accuracy vs overhead
 
-- does defense work
+    The thesis' configurability is shown in Figure [[fig:oh2acc]].
+    #+CAPTION: Size Overhead to Accuracy Trade-Off for Thesis' Defense, LLaMA-nodelay, and no defense on 30 sites.
+    #+NAME: fig:oh2acc
+    [[./pictures/oh2acc--llama-0.22-disabled.eps]]
+    # code: see [[file:bin/results.py::%20scatter%20plot%20of%20accuracy%20vs%20overhead]]
+     - include llama-delay @ 30
+     - ?additional 0.22 data points in between groups (200--300% overheads)
+     - data points with tiny overhead (?=negative factor?)
 
+   - conclusion
+  - better than others
+    aka how does the other defense compare to this
+
+   - llama lowers accuracy as well
+   - [wtf-pad]
+   - comparison accuracy vs overhead (100 sites)
+    - add point for llama-nodelay
 
     How does the defense compare to others (\cite{wtfpad2015},
-    \cite{LLaMA}, \cite{a-systematic2014})? To examine this, \gls{wf} attacks are
-    executed against web site traces collected with disabled defenses.
+    \cite{LLaMA}, \cite{a-systematic2014})?
 
-    The evaluation uses the attacks CUMUL by \cite{panchenko2} --- both
-    as a re-implementation and its original form --- and the first
-    approach to show better-than-random accuracy by
-    \cite{ccsw09-fingerprinting} --- in a reimplementation. KNN by
-    \cite{effective2014} was evaluated as well.
+    - walkie-talkie theoretical
+    - wtf-pad
+    - llama
+      - how does the defense compare to llama etc
 
-  - walkie-talkie theoretical
-  - how is data analysed
-      aka how can the analysis be reproduced
-      aka how was data analysed
-    - what is the original attack
-    - how is it assured
-  - feature extraction and classification in python
-  - why can you be sure that this works comparably
-  - [what about other attacks]
-    - why CUMUL
-      - comparable as of all studies
-        - k-FP
-        - rimmer
-    - why not rimmer
-      - lots (!) of data needed
-      - high-power GPU needed
-  https://gitlab.com/kreikenbaum/classify.git
-*** PENDING (daniel) Closed World
-    :PROPERTIES:
-    :CUSTOM_ID: sub4-closed
-    :END:
 
 
     Table [[tab:closed_world]] compares
@@ -1255,9 +1263,10 @@ the main method of evaluating the extension.
 
     This shows that _original LLaMA delays web surfing by an order of
     magnitude_. This result is after removing plain load errors, of
-    which there were 43.67%. After removal, 16 of 30 sites had less
-    than 30 instances. If these sites were removed, accuracy against
-    LLaMA rose to 71.26%, with overheads remaining roughly the same.
+    which there were 43.67%. After this removal, 16 of 30 sites had
+    less than 30 instances. If these sites were removed, accuracy
+    against LLaMA rose to 71.26%, with overheads remaining roughly the
+    same.
 
 
     Compared to the modified version of LLaMA, this thesis' defense
@@ -1266,42 +1275,21 @@ the main method of evaluating the extension.
     non-delayed LLaMA, the new defense offers similar accuracy/size
     overhead relationship for a much lower time overhead.
 
-    The thesis' configurability is shown in Figure [[fig:oh2acc]].
-    #+CAPTION: Size Overhead to Accuracy Trade-Off for Thesis' Defense, LLaMA-nodelay, and no defense on 30 sites.
-    #+NAME: fig:oh2acc
-    [[./pictures/oh2acc--llama-0.22-disabled.eps]]
-    # code: see [[file:bin/results.py::%20scatter%20plot%20of%20accuracy%20vs%20overhead]]
-
-     - include llama-delay @ 30
-     - ?additional 0.22 data points in between groups (200--300% overheads)
-     - data points with tiny overhead (?=negative factor?)
-
-***** TODO Accuracy/Overhead for 100 Sites
-
-
-
-- how does the defense compare to llama etc
-
-
-- does the attack work
-  - yes, seems so (same results)
-- does the defense work
-  - lowers accuracy
-- how does the other defense compare to this
-  - validate attack
-  - accuracy
-  - conclusion
-  - llama lowers accuracy as well
-  - [wtf-pad]
-  - comparison accuracy vs overhead
-    - add point for llama-nodelay
-- what are closed-world results
-  aka what are the main results
-  - result similar to CUMUL
-  - see table in appendix
-
 
 Appendix [[#appendix-accuracy]] shows more evaluation results.
+*** more                                                            :ARCHIVE:
+    - how is data analysed
+        aka how can the analysis be reproduced
+        aka how was data analysed
+      - what is the original attack
+      - feature extraction and classification in python
+    - how is it assured
+    - mention problems in capturing
+    - [what about other attacks]
+      - why not rimmer
+        - lots (!) of data needed
+        - high-power GPU needed
+    - p-cumul - my cumul mean/median/t-value/...
 ** Analysing Open World Scenario
    :PROPERTIES:
    :CUSTOM_ID: sub4-open
@@ -1457,21 +1445,32 @@ Appendix [[#appendix-accuracy]] shows more evaluation results.
      - tpr correlated to fpr
      - len of exclude_sites decreases (-0.4) fpr, (and -0.2 tpr)
      - code
-     - table
-                        C       _id  auc_bound     auroc  background_size    binary       fpr     gamma  scenario.date     score       tpr    lenexc
-  C              1.000000  0.118955        NaN -0.889391     -0.051873    -0.149428 -0.223558 -0.181484     -0.378735   0.028769 -0.289110 -0.201612
-  _id            0.118955  1.000000        NaN  0.999492      0.320409     0.057859 -0.210395  0.064541      0.336638  -0.354099 -0.360886  0.464923
-  auc_bound           NaN       NaN        NaN       NaN           NaN          NaN       NaN       NaN           NaN        NaN       NaN       NaN
-  auroc         -0.889391  0.999492        NaN  1.000000      0.839753          NaN  0.989973 -0.994292      0.999917  -0.999222 -0.997396  0.660672
-  background... -0.051873  0.320409        NaN  0.839753      1.000000     0.431240 -0.838036  0.349276      0.053204   0.133098 -0.635416  0.593175
-  binary        -0.149428  0.057859        NaN       NaN      0.431240     1.000000 -0.196755 -0.228546     -0.205184  -0.032467 -0.392767  0.484946
-  fpr           -0.223558 -0.210395        NaN  0.989973     -0.838036    -0.196755  1.000000 -0.389393      0.266762  -0.338756  0.519529 -0.411778
-  gamma         -0.181484  0.064541        NaN -0.994292      0.349276    -0.228546 -0.389393  1.000000      0.083364   0.411823  0.195362  0.350942
-  scenario.date -0.378735  0.336638        NaN  0.999917      0.053204    -0.205184  0.266762  0.083364      1.000000  -0.352831 -0.148659  0.096254
-  score          0.028769 -0.354099        NaN -0.999222      0.133098    -0.032467 -0.338756  0.411823     -0.352831   1.000000  0.325567  0.212428
-  tpr           -0.289110 -0.360886        NaN -0.997396     -0.635416    -0.392767  0.519529  0.195362     -0.148659   0.325567  1.000000 -0.176195
-  lenexc        -0.201612  0.464923        NaN  0.660672      0.593175     0.484946 -0.411778  0.350942      0.096254   0.212428 -0.176195  1.000000
-      - next listitem
+     - cross-correlation table
+# df = pd.DataFrame(r.to_dict() for r in results.list_all() if r.open_world and "disabled")
+# df = df[df["background_size"] != 'none'][df["background_size"] != "auto"][df["background_size"].notnull()]
+# df['background_size'] = df['background_size'].to_numeric()
+# del df['auc_bound']
+# df.corr().to_latex()
+#+BEGIN_EXPORT latex
+\begin{tabular}{lrrrrrrrrrrr}
+\toprule
+{} &      C &    \_id &  auroc &  bg\_size &    fpr &  gamma &  score &   size &  size\_overhead &  time\_overhead &    tpr \\
+\midrule
+C             &  1.000 &  0.050 &  0.469 &        -0.111 & -0.117 & -0.077 &  0.118 & -0.485 &        -0.033 &        -0.058 &  0.024 \\
+\_id           &  0.050 &  1.000 &  0.741 &         0.285 & -0.133 &  0.035 & -0.156 &  0.152 &         0.151 &         0.126 & -0.235 \\
+auroc         &  0.469 &  0.741 &  1.000 &        -0.058 & -0.005 & -0.012 & -0.451 &  0.384 &        -0.071 &        -0.098 & -0.122 \\
+background... & -0.111 &  0.285 & -0.058 &         1.000 & -0.735 &  0.246 & -0.010 &  0.083 &        -0.058 &        -0.144 & -0.697 \\
+fpr           & -0.117 & -0.133 & -0.005 &        -0.735 &  1.000 & -0.371 & -0.198 &  0.275 &         0.189 &         0.303 &  0.577 \\
+gamma         & -0.077 &  0.035 & -0.012 &         0.246 & -0.371 &  1.000 &  0.444 &  0.003 &        -0.304 &        -0.367 &  0.223 \\
+score         &  0.118 & -0.156 & -0.451 &        -0.010 & -0.198 &  0.444 &  1.000 & -0.352 &        -0.577 &        -0.763 &  0.391 \\
+size          & -0.485 &  0.152 &  0.384 &         0.083 &  0.275 &  0.003 & -0.352 &  1.000 &         0.166 &         0.210 & -0.133 \\
+size\_overhead & -0.033 &  0.151 & -0.071 &        -0.058 &  0.189 & -0.304 & -0.577 &  0.166 &         1.000 &         0.858 & -0.274 \\
+time\_overhead & -0.058 &  0.126 & -0.098 &        -0.144 &  0.303 & -0.367 & -0.763 &  0.210 &         0.858 &         1.000 & -0.225 \\
+tpr           &  0.024 & -0.235 & -0.122 &        -0.697 &  0.577 &  0.223 &  0.391 & -0.133 &        -0.274 &        -0.225 &  1.000 \\
+\bottomrule
+\end{tabular}
+
+#+END_EXPORT
 ** Summary
    :PROPERTIES:
    :CUSTOM_ID: sub4-summary
@@ -2956,6 +2955,10 @@ not.
   aka what are the main results
   - result similar to CUMUL
   - see table in appendix
+** Analyse 1: Closed World Scenarios
+- does the attack work
+  - yes, seems so (same results)
+- result similar to CUMUL
 * After Appendices: Bibliography and Index
 \bibliography{docs/master}
 \bibliographystyle{apalike}
