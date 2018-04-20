@@ -17,7 +17,6 @@ import logging
 import os
 import random
 import re
-from dateutil import parser
 
 import numpy as np
 
@@ -85,7 +84,8 @@ class Scenario(object):
                 (self.setting, date, numstr) = date.split('--')
             else:
                 try:
-                    parser.parse(date.split('--')[1])
+                    datetime.datetime.strptime(date.split('--')[1],
+                                               "%Y-%m-%d").date()
                     self.setting, date = date.split('--')
                 except ValueError:
                     date, numstr = date.split('--')
@@ -95,7 +95,7 @@ class Scenario(object):
                     int(x) for x in numstr.split('@')]
             else:
                 self._num_sites = int(numstr)
-        self.date = parser.parse(date).date()
+        self.date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
         try:
             with open(os.path.join(DIR, self.path, 'status')) as f:
                 try:

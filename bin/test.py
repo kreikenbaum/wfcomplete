@@ -481,7 +481,7 @@ class TestScenario(unittest.TestCase):
         bg_mock = {'background': c_list[:],
                    'a': c_list[:],
                    'b': c_list[:]}
-        s = scenario.Scenario('asdf/12-12-2015--3@7')
+        s = scenario.Scenario('asdf/2015-12-12--3@7')
         s.traces = bg_mock
         res = s.binarized().get_traces()
         self.assertEquals(res['background'], c_list)
@@ -492,7 +492,7 @@ class TestScenario(unittest.TestCase):
         bg_mock = {'background': c_list[:],
                    'a': c_list[:],
                    'b': c_list[:]}
-        s = scenario.Scenario('asdf/12-12-2015--3@7')
+        s = scenario.Scenario('asdf/2015-12-12--3@7')
         s.traces = bg_mock
         Xa, ya, _ = s.binarized().get_features_cumul(current_sites=False)
         Xc, yc, _ = counter.to_features_cumul(bg_mock)

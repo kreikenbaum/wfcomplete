@@ -1,5 +1,4 @@
 '''common code'''
-import logging
 import os
 
 from sklearn import multiclass, svm
