@@ -1,19 +1,17 @@
 '''Simple wsgi module which creates a random string of size 'size'.
 
 Requires the python package "mod_wsgi". Usage:
-$ mod_wsgi-express start-server path/to/wsgi.py [--port 8000]
+$ mod_wsgi-express start-server --isatty path/to/wsgi.py [--port 8000]
 $ sudo mod_wsgi-express start-server --user nobody path/to/wsgi.py --port 80
 
 Get data: curl host:port/size?300 for 300 random (-header) bytes.
 '''
 import logging
 import random
-import signal
 import string
 
 LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 logging.basicConfig(format=LOGFORMAT, level=logging.INFO)
-signal.signal(signal.SIGWINCH, signal.SIG_IGN)  # ignore window change
 
 
 def application(environ, start_response):
