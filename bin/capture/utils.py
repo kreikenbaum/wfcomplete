@@ -19,7 +19,7 @@ def site(status):
     '''@return site-tag to distinguish cloud'''
     try:
         host = status['host']
-    except TypeError:
+    except (KeyError, TypeError):
         host = config.OLD_HOST
     if 'duckstein' in host:
         return 'mlsec'
