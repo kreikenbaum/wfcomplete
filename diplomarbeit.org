@@ -1157,7 +1157,7 @@ attacks by \citet{197185} and \citet{rimmerautomated}.
 
 \citet{DBLP:journals/popets/CherubinHJ17} provide aspects on
 how to do this.
-** Analyze 1: Closed World Scenarios
+** Analyzing Closed World Scenarios
    :PROPERTIES:
    :CUSTOM_ID: sub4-closed
    :END:
@@ -1296,7 +1296,7 @@ Appendix [[#appendix-accuracy]] shows more evaluation results.
     - How does the defense compare to others (\cite{wtfpad2015},
       \cite{LLaMA}, \cite{a-systematic2014})?
     - walkie-talkie theoretical
-** KEYWORDS Analyzing Open World Scenario
+** KEYWORDS Analyzing Open World Scenarios
    :PROPERTIES:
    :CUSTOM_ID: sub4-open
    :END:
@@ -1829,6 +1829,83 @@ The results decresed over time, until the capture process was fixed.
   number of groups was increased to 5.
 ** WAIT [#C] graphics: histogram with bins (colored bars, black bin limits)
 
+* Accuracy Decay from 2016 to 2017
+  #+CAPTION: Accuracy Decay on 30 sites.
+  #+NAME: fig:date-vs-acc--30sites
+  #+ATTR_LATEX: :float wrap
+  [[./pictures/date-vs-acc--30sites.eps]]
+  # code: [[file:bin/mplot.py::def%20date_accuracy]]()
+
+  #+CAPTION: Accuracy Decay on 100 sites.
+  #+NAME: fig:date-vs-acc--100sites
+  #+ATTR_LATEX: :float wrap
+  [[./pictures/date-vs-acc--100sites.eps]]
+  # code: [[file:bin/mplot.py::def%20date_accuracy]](100)
+  Accuracy for captures until 2017 was markedly lower than that
+  reported in the literature, both on 30 and 100 sites. This is true
+  regardless of if data was captured with defense or without. On 100
+  sites, the comparison to literature results shows this handicap more
+  clearly. As both Panchenko's original implementation and the
+  reimplementation yield the same results, the cause seemed due to
+  capture methodology.\\
+
+
+  Surprisingly, the capture's accuracies decayed over time: On
+  /recent data/, neither the wf-attack-reimplementation, Panchenkos
+  original, nor a student group at University of Brunswick was able
+  to provide good accuracy. The accuracy on 30 sites decayed /from
+  97.93%/ on 2016-08-15 /to 58.41%/ on 2017-10-16, as displayed in
+  Figure [[fig:date-vs-acc--30sites]]. On 100 sites, the accuracy
+  likewise fell /from 90.57%/ on 2016-06-17 /to 43.46%/ on
+  2017-10-22, as displayed in Figure [[fig:date-vs-acc--100sites]].\\
+
+
+  #+CAPTION: Confusion matrix for 30 sites at 2016-08-15, overall accuracy at 98%.
+  #+NAME: fig:confmat-2016-08-15
+  #+ATTR_LATEX: :float wrap
+  [[./pictures/confmat-2016-08-15.eps]]
+  # code: [[file:bin/mplot.py::def%20confusion]]
+
+  #+CAPTION: Confusion matrix for 30 sites at 2017-10-16, overall accuracy at 58%.
+  #+NAME: fig:confmat-2017-10-16
+  #+ATTR_LATEX: :float wrap
+  [[./pictures/confmat-2017-10-16.pdf]]
+  # code: [[file:bin/mplot.py::def%20confusion]]
+  A high-accuracy confusion matrix from 2016-08-15 is shown in Figure
+  [[fig:confmat-2016-08-15]]. This is contrast with a low-accuracy
+  confusion matrix from 2017-10-16 in Figure
+  [[fig:confmat-2017-10-16]]. While there is much more class-bleed-off,
+  there is no clear culprit: errors are mostly distributed.\\
+
+
+  #+CAPTION: CUMUL-traces for =msn.com= compared for both dates.
+  #+NAME: fig:cumul-good-bad.pdf
+  #+ATTR_LATEX: :float wrap
+  [[./pictures/cumul-good-bad.pdf]]
+  # code:
+  # e = scenario.list_all("08-15")[0]; f = e.get_traces()
+  # E = scenario.list_all("17-10-16")[0]; F = E.get_traces()
+  # palette = sns.color_palette("colorblind", 4)
+  # g = gplot.counters(f['msn.com'], label=str(e.date), color=str(palette.as_hex()[0]))
+  # g = gplot.counters(F['msn.com'], g, label=str(E.date), color=str(palette.as_hex()[2]))
+  A site that existed on both captures is /msn.com/. It was chosen
+  to illustrate the problem. The CUMUL-features are shown in Figure
+  [[fig:cumul-good-bad.pdf]].\\
+
+
+  For several low-accuracy retrievals, very little data is received
+  back from the server. This could possibly be due to cloudflare
+  recaptcha protection etc, which can sometimes be observed when
+  browsing with Tor. A possible solution as future work would be to
+  filter traces with fewer bytes incoming than outgoing, e.g. Also,
+  the capture code could be adjusted to check the page text for the
+  recaptcha site.
+
+
+  To re-increase accuracy, the text of the loaded page was checked. If
+  this text indicated a load error, or a captcha, the capture was
+  marked accordingly, and discarded in the analysis. Websites with a
+  high number of capture errors were removed from the list of sites.
 * removed                                                           :ARCHIVE:
 ** DANIEL Website Fingerprinting Defenses
    :PROPERTIES:
@@ -2903,87 +2980,8 @@ not.
     - ?additional 0.22 data points in between groups (200--300% overheads)
     - data points with tiny overhead (?=negative factor?)
 *** PENDING (daniel) [#B] accuracy/time plots: time to date
-*** PENDING (daniel) Low Accuracy on my Captures
-    #+CAPTION: Accuracy Decay on 30 sites.
-    #+NAME: fig:date-vs-acc--30sites
-    #+ATTR_LATEX: :float wrap
-    [[./pictures/date-vs-acc--30sites.eps]]
-    # code: [[file:bin/mplot.py::def%20date_accuracy]]()
-
-    #+CAPTION: Accuracy Decay on 100 sites.
-    #+NAME: fig:date-vs-acc--100sites
-    #+ATTR_LATEX: :float wrap
-    [[./pictures/date-vs-acc--100sites.eps]]
-    # code: [[file:bin/mplot.py::def%20date_accuracy]](100)
-    The previous data show that the thesis's defense provides better
-    protection for the same overhead and/or lower overhead for the
-    same protection on 30 sites. Yet, the current state-of-the-art
-    compares results on at least 100 sites.\\
-
-
-    Comparison of 100 sites shows a problem: Accuracy for all captures
-    is markedly lower than that reported in the literature, both on 30
-    and 100 sites. This is true regardless of if data was captured
-    with defense or without. On 100 sites, the comparison to
-    literature results shows this handicap more clearly. As both
-    Panchenko's original implementation and the reimplementation yield
-    the same results, the cause is probably due to capture methodology.\\
-
-
-    Surprisingly, the capture's accuracies decayed over time: On
-    /recent data/, neither the wf-attack-reimplementation, Panchenkos
-    original, nor a student group at University of Brunswick was able
-    to provide good accuracy. The accuracy on 30 sites decayed /from
-    97.93%/ on 2016-08-15 /to 58.41%/ on 2017-10-16, as displayed in
-    Figure [[fig:date-vs-acc--30sites]]. On 100 sites, the accuracy
-    likewise fell /from 90.57%/ on 2016-06-17 /to 43.46%/ on
-    2017-10-22, as displayed in Figure [[fig:date-vs-acc--100sites]].\\
-
-
-
-    #+CAPTION: Confusion matrix for 30 sites at 2016-08-15, overall accuracy at 98%.
-    #+NAME: fig:confmat-2016-08-15
-    #+ATTR_LATEX: :float wrap
-    [[./pictures/confmat-2016-08-15.eps]]
-    # code: [[file:bin/mplot.py::def%20confusion]]
-
-    #+CAPTION: Confusion matrix for 30 sites at 2017-10-16, overall accuracy at 58%.
-    #+NAME: fig:confmat-2017-10-16
-    #+ATTR_LATEX: :float wrap
-    [[./pictures/confmat-2017-10-16.pdf]]
-    # code: [[file:bin/mplot.py::def%20confusion]]
-    Let's see if a single site or group of sites cause this low
-    accuracy: A high-accuracy confusion matrix from 2016-08-15 is
-    shown in Figure [[fig:confmat-2016-08-15]]. This is contrast with a
-    low-accuracy confusion matrix from 2017-10-16 in Figure
-    [[fig:confmat-2017-10-16]]. While there is much more class-bleed-off,
-    there is no clear culprit: errors are mostly distributed.\\
-
-
-    #+CAPTION: CUMUL-traces for site msn.com compared for both dates.
-    #+NAME: fig:cumul-good-bad.pdf
-    #+ATTR_LATEX: :float wrap
-    [[./pictures/cumul-good-bad.pdf]]
-    # code:
-    # e = scenario.list_all("08-15")[0]; f = e.get_traces()
-    # E = scenario.list_all("17-10-16")[0]; F = E.get_traces()
-    # palette = sns.color_palette("colorblind", 4)
-    # g = gplot.counters(f['msn.com'], label=str(e.date), color=str(palette.as_hex()[0]))
-    # g = gplot.counters(F['msn.com'], g, label=str(E.date), color=str(palette.as_hex()[2]))
-    A site that existed on both captures is /msn.com/. It was chosen
-    to illustrate the problem. The CUMUL-features are shown in Figure
-    [[fig:cumul-good-bad.pdf]].\\
-
-
-    For several low-accuracy retrievals, very little data is received
-    back from the server. This could possibly be due to cloudflare
-    recaptcha protection etc, which can sometimes be observed when
-    browsing with Tor. A possible solution as future work would be to
-    filter traces with fewer bytes incoming than outgoing, e.g. Also,
-    the capture code could be adjusted to check the page text for the
-    recaptcha site.
-**** TODO comparison table for 100 sites
-**** TODO Accuracy/Overhead for 100 Sites
+*** TODO comparison table for 100 sites
+*** TODO Accuracy/Overhead for 100 Sites
 
 
 
