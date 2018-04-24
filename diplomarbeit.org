@@ -1157,30 +1157,32 @@ attacks by \citet{197185} and \citet{rimmerautomated}.
 
 \citet{DBLP:journals/popets/CherubinHJ17} provide aspects on
 how to do this.
-** KEYWORDS Analyse 1: Closed World Scenarios
+** Analyse 1: Closed World Scenarios
    :PROPERTIES:
    :CUSTOM_ID: sub4-closed
    :END:
 #+INDEX: evaluation!closed-world
 #+INDEX: closed-world evaluation
+#+INDEX: mlsec
+#+INDEX: gcloud
 As section [[#sub2-ml-measure]] mentions, there are two settings in
 analysing \gls{wf}: open-world and closed-world. Closed-world analysis
 distuinguishes only between the main sites, say Eve's aim is to see if
-Alice visits bob.com or her uncle charlie.com [[http://etsy.com]]'s
-traces, assuming both are being monitored by Eve. This section will
-presents the results of closed-world analysis. It first compares the
-accuracy of \citet{panchenko2}'s original to the re-implemetation on
-defenseless traces.
+Alice visits =bob.com='s or her uncle =charlie.com='s traces, assuming
+both are being monitored by Eve. This section presents the results of
+closed-world analysis. It first compares the accuracy of
+\citet{panchenko2}'s original to the re-implemetation on defenseless
+traces.
 
-#+CAPTION[Closed-World Results]: Results of closed-world setup. The traces captures at University of Brunswick show similar Accuracy to \cite{panchenko2}. The traces captured using Google Cloud virtual machines show higher accuracy. A similar phenomenon was reported by \citet[sec.4.7]{ccs2014-critical}.
+#+CAPTION[Closed-World Results]: Results of classifying 100 sites in a closed-world setup. The traces captures at University of Brunswick show similar accuracy to \cite{panchenko2}. The traces captured using Google Cloud virtual machines show higher accuracy. A similar phenomenon was reported by \citet[sec.4.7]{ccs2014-critical}.
 #+NAME: tab:closed-world-accuracy
 #+ATTR_LATEX: :align |c||c | c|
-| Data source       | number of instances | Accuracy |
-|-------------------+---------------------+----------|
-| \cite{panchenko2} |                  90 |    91.38 |
-| \cite{panchenko2} |                  40 |    92.03 |
-| Univ. Brunswick   |                  50 |    91.61 |
-| Google Cloud      |                  50 |    95.12 |
+| Data source               | Number of instances | Accuracy [%] |
+|---------------------------+---------------------+--------------|
+| \cite{panchenko2}         |                  90 |        91.38 |
+| \cite{panchenko2}         |                  40 |        92.03 |
+| Univ. Brunswick (/mlsec/) |                  50 |        91.61 |
+| Google Cloud (/gcloud/)   |                  50 |        95.12 |
 
 
 Recent studies (\citet{197185}
@@ -1196,18 +1198,45 @@ method of evaluating the extension. The kNN-attack by
 \citet{effective2014} showed worse results, as validated by the above
 literature.
 
+#+CAPTION[Comparison of LLaMA to this thesis's defense on 30 sites]: Comparison of LLaMA to this thesis's defense on 30 sites. The top lines shows LLaMA stats, the next two lines try to match first the accuracy, then the size overhead with the new defense. Capturing LLaMA on 100 sites proved infeasible due to the long duration.
+#+NAME: tab:closed_world
+#+ATTR_LATEX: :align |l||n{2}{2}|n{3}{2}|n{4}{2}|
+| <17>              |       <10> |       <10> |       <10> |
+| Scenario          | \open Accuracy [%] \close | \open Size overhead [%] \close | \open Time overhead [%] \close |
+|-------------------+------------+------------+------------|
+| no defense (2017-12-26) |      96.46 |          0 |          0 |
+|-------------------+------------+------------+------------|
+| LLaMA             |      55.46 |      94.25 |    1085.25 |
+| 30aI--2016-07-25  |      55.75 |      81.13 |      27.80 |
+| 50aI--2016-07-26  |      52.03 |      96.25 |      15.53 |
+|-------------------+------------+------------+------------|
+| LLaMA-nodelay     |      68.22 |     163.08 |      -4.02 |
+| 5aI--2016-10-09   |      68.59 |      57.92 |       3.22 |
+| 100aI--2017-12-27 |      42.43 |     162.20 |      -0.89 |
+# llama is from 2018-01-07
 
-The next step is to evaluate this thesis's defense, and to compare
-them to a recent defense. The main metric in a closed-world setup is
-accuracy. Table ... compares this defense
 
+Table [[tab:closed_world]] compares LLaMAs
+\citep{DBLP:journals/popets/CherubinHJ17} performance with this
+thesis' addon's on 30 sites. In our experiments, original LLaMA
+consistently delayed web surfing by an order of magnitude. This
+yielded 43.67% load errors due mostly to timeouts (after ~10
+minutes). After removing load errors, 16 of 30 sites had less than 30
+usable instances. If these sites were removed, accuracy against LLaMA
+rose from 55.46% to 71.26%. Overhead after site removal remained similar. As
+LLaMAs original time overhead seems prohibitive, the source code was
+edited (a constant was changed) to disable the delay. This version is
+called /LLaMA-nodelay/.  Compared to the modified version of LLaMA,
+this thesis' defense offers both configurability and a lower size
+overhead. Both LLaMA-nodelay and the new defense have negligible time
+overhead. Even compared to non-delayed LLaMA, the new defense offers
+similar accuracy/size overhead relationship for a much lower time
+overhead.
 
-
-
-#+CAPTION[Accuracy to Overheads on 100 sites]: Comparison of LLaMA to this thesis's defense on 100 sites. The table was sorted by size increase.
+#+CAPTION[Accuracy to Overheads on 100 sites]: Comparison of LLaMA to this thesis's defense on 100 sites. The table was sorted by size increase. This also illustrates the new defense's configurability.
 #+NAME: tab:ohs-vs-acc-100
 |---------------+--------+------------+---------+---------+---------|
-| scenario      | site   |       date | \open acc. [%] \close | \open size o.h. [%]\close | \open time o.h. [%]\close |
+| Scenario      | Site   |       Date | \open Accuracy \close | \open Size o.h. [%]\close | \open Time o.h. [%]\close |
 |               |        |            |     <7> |     <7> |     <7> |
 |---------------+--------+------------+---------+---------+---------|
 | no defense    | mlsec  | 2018-01-17 |    0.93 |    0.00 |    0.00 |
@@ -1227,85 +1256,23 @@ accuracy. Table ... compares this defense
 
 # totable = [r for r in results.list_all() if not r.open_world and hasattr(r.scenario, "date") and r.scenario.date > datetime.date(2018, 1, 1) and r.scenario.num_sites == 100]
 # totable.sort(key=lambda x: x.size_overhead)
-# print results.to_table(totable, fields_plus_names=(lambda r: [r.scenario.name, r.scenario.site, r.scenario.date, r.score, r.size_overhead, r.time_overhead], ["scenario","site", "date", "accuracy [%]", "size increase [%]", "time increase [%]"]))
+# print results.to_table(totable, fields_plus_names=(lambda r: [r.scenario.name, r.scenario.site, r.scenario.date, r.score, r.size_overhead, r.time_overhead], ["Scenario","Site", "Date", "Accuracy", "Size o.h. [%]", "Time o.h. [%]"]))
 
 
+Table [[tab:ohs-vs-acc-100]] shows the new defense's effects, and compares
+it to \citet{DBLP:journals/popets/CherubinHJ17}'s LLaMA, on 100
+sites. As Table [[tab:closed_world]] before, this shows that the new
+defense reduces accuracy more, for the same overhead, or requires less
+overhead, for a similar accuracy reduction. The main difference
+between LLaMA and the new defense lies in the HTTP-specific
+distributions to generate cover traffic. This difference is again
+illustrated in Figure [[fig:oh2acc100]].
 
 
-
-- does defense work (better than others)
-  aka what are closed-world results
-  aka what are the main results
-  - does defense work
-    aka does the defense work
-    aka validate attack
-   - accuracy
-    - lowers accuracy
-   - graph defense accuracy vs overhead
-
-    The thesis' configurability is shown in Figure [[fig:oh2acc]].
-    #+CAPTION: Size Overhead to Accuracy Trade-Off for Thesis' Defense, LLaMA-nodelay, and no defense on 30 sites.
-    #+NAME: fig:oh2acc
-    [[./pictures/oh2acc--llama-0.22-disabled.eps]]
-    # code: see [[file:bin/results.py::%20scatter%20plot%20of%20accuracy%20vs%20overhead]]
-     - include llama-delay @ 30
-     - ?additional 0.22 data points in between groups (200--300% overheads)
-     - data points with tiny overhead (?=negative factor?)
-
-   - conclusion
-  - better than others
-    aka how does the other defense compare to this
-   - llama lowers accuracy as well
-    This shows that _original LLaMA delays web surfing by an order of
-    magnitude_. This result is after removing plain load errors, of
-    which there were 43.67%. After this removal, 16 of 30 sites had
-    less than 30 instances. If these sites were removed, accuracy
-    against LLaMA rose to 71.26%, with overheads remaining roughly the
-    same.
-
-    Compared to the modified version of LLaMA, this thesis' defense
-    offers both configurability and a lower size overhead. Both LLaMA
-    and the new defense have negligible time overhead. Even compared to
-    non-delayed LLaMA, the new defense offers similar accuracy/size
-    overhead relationship for a much lower time overhead.
-   - [wtf-pad]
-   - comparison accuracy vs overhead (100 sites)
-    How does the defense compare to others (\cite{wtfpad2015},
-    \cite{LLaMA}, \cite{a-systematic2014})?
-
-   - walkie-talkie theoretical
-   - llama
-     - how does the defense compare to llama etc
-
-    Table [[tab:closed_world]] compares
-    LLaMAs\citep{DBLP:journals/popets/CherubinHJ17} performance with
-    this thesis' addon's on 30 sites. As LLaMAs original time overhead
-    seems prohibitive, the source code was edited (a constant was
-    changed) to disable the delay. This version is called
-    /LLaMA-nodelay/.
-
-    #+CAPTION[Comparison of LLaMA to this thesis's defense on 30 sites]: Comparison of LLaMA to this thesis's defense on 30 sites. The top lines shows LLaMA stats, the next two lines try to match first the accuracy, then the size overhead with the new defense.
-    #+NAME: tab:closed_world
-    #+ATTR_LATEX: :align |l||n{2}{2}|n{3}{2}|n{4}{2}|
-    | <17>              |       <10> |       <10> |       <10> |
-    | scenario          | \open accuracy [%] \close | \open size overhead [%] \close | \open time overhead [%] \close |
-    |-------------------+------------+------------+------------|
-    | no defense (2017-12-26) |      96.46 |          0 |          0 |
-    |-------------------+------------+------------+------------|
-    | LLaMA             |      55.46 |      94.25 |    1085.25 |
-    | 30aI--2016-07-25  |      55.75 |      81.13 |      27.80 |
-    | 50aI--2016-07-26  |      52.03 |      96.25 |      15.53 |
-    |-------------------+------------+------------+------------|
-    | LLaMA-nodelay     |      68.22 |     163.08 |      -4.02 |
-    | 5aI--2016-10-09   |      68.59 |      57.92 |       3.22 |
-    | 100aI--2017-12-27 |      42.43 |     162.20 | -0.8895383 |
-    # llama is from 2018-01-07
-
-    #+CAPTION: Size Overhead to Accuracy Trade-Off for Thesis' Defense, LLaMA-nodelay, and no defense on 100 sites.
-    #+NAME: fig:oh2acc100
-    [[./pictures/oh2acc_2018_nogoogle.pdf]]
-    # mplot.accuracy_vs_overhead([max(results.for_scenario_closed(s), key=lambda r: r.score) for s in [s for s in scenario.list_all() if hasattr(s, "date") and s.date  > datetime.date(2018, 1, 1) and "google" not in s and s.num_sites == 100]])
-
+#+CAPTION: Size Overhead to Accuracy Trade-Off for Thesis' Defense, LLaMA-nodelay, and no defense on 100 sites.
+#+NAME: fig:oh2acc100
+[[./pictures/oh2acc_2018_nogoogle.pdf]]
+# mplot.accuracy_vs_overhead([max(results.for_scenario_closed(s), key=lambda r: r.score) for s in [s for s in scenario.list_all() if hasattr(s, "date") and s.date  > datetime.date(2018, 1, 1) and "google" not in s and s.num_sites == 100]])
 
 
 
@@ -1323,16 +1290,13 @@ Appendix [[#appendix-accuracy]] shows more evaluation results.
         - lots (!) of data needed
         - high-power GPU needed
     - p-cumul - my cumul mean/median/t-value/...
-    - table for 30 sites 2018:
-totable = [r for r in results.list_all() if not r.open_world and hasattr(r.scenario, "date") and r.scenario.date > datetime.date(2018, 1, 1) and r.scenario.num_sites == 30]
-totable.sort(key=lambda x: x.size_overhead)
-print results.to_table(totable, fields_plus_names=(lambda r: [r.scenario.name, r.scenario.site, r.scenario.date, "{:.2f}".format(r.score), "{:.2f}".format(r.size_overhead), "{:.2f}".format(r.time_overhead)], ["scenario","site", "date", "\open acc. [%] \close", "\open size o.h. [%]\close ", "\open time o.h. [%]\close"]))
-| scenario   | site  |       date | \open acc. [%] \close | \open size o.h. [%]\close | \open time o.h. [%]\close |
-|------------+-------+------------+--------------+------------------+------------------|
-| no defense | mlsec | 2018-01-12 |         0.99 |             0.00 |             0.00 |
-| LLaMA      | mlsec | 2018-01-07 |         0.71 |            77.59 |          1126.55 |
-| LLaMA      | mlsec | 2018-01-07 |         0.55 |            94.25 |          1085.25 |
-** Analysing Open World Scenario
+    - ?additional 0.22 data points in between groups (200--300% overheads)
+    - data points with tiny overhead (?=negative factor?)
+    - [wtf-pad]
+    - How does the defense compare to others (\cite{wtfpad2015},
+      \cite{LLaMA}, \cite{a-systematic2014})?
+    - walkie-talkie theoretical
+** KEYWORDS Analysing Open World Scenario
    :PROPERTIES:
    :CUSTOM_ID: sub4-open
    :END:
@@ -1581,7 +1545,7 @@ differs from how it should be used, see next section.
 \part{Appendix}
 * appendices (begin above this headline; this is for searching)     :ARCHIVE:
   above, as in this section cuts it out (due to ARCHIVE tag)
-* CHECK Cached: Size of HTML-Documents
+* TODO [#D] Cached: Size of HTML-Documents
   :PROPERTIES:
   :CUSTOM_ID: find sizes of HTML-documents
   :END:
@@ -1616,7 +1580,7 @@ differs from how it should be used, see next section.
   traffic, but the opposite might be too little traffic, thus easier
   website fingerprinting, which should be avoided.
 ** WAIT github link for =html_top_100= script, and htmlsizetojson.py
-* WRITE Cached: Number of Embedded Objects
+* TODO [#D] Cached: Number of Embedded Objects
   :PROPERTIES:
   :CUSTOM_ID: number_embedded
   :END:
@@ -1666,7 +1630,52 @@ training on data without defense, and testing on defended data.
 #+NAME: tab:100-sites
 #+ATTR_LATEX: :align |r||n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|
 #+INCLUDE: "data/skip/results/alternatives.org::#100-sites-pub" :only-contents t
-** TODO [#D] create dynamically from database
+** complete result tables
+*** 100 Sites, Sorted by Size Overhead
+The results decresed over time, until the capture process was fixed.
+
+|---------------+--------+------------+---------+---------+---------|
+| Scenario      | Site   |       Date | Accuracy | Size o.h. [%] | Time o.h. [%] |
+|               |        |            |     <7> |     <7> |     <7> |
+|---------------+--------+------------+---------+---------+---------|
+| no defense    | mlsec  | 2016-06-17 |    0.90 |    0.00 |    0.00 |
+| no defense    | mlsec  | 2017-10-22 |    0.43 |    0.00 |    0.00 |
+| no defense    | mlsec  | 2017-10-22 |    0.44 |    0.00 |    0.00 |
+| no defense    | mlsec  | 2016-06-17 |    0.91 |    0.00 |    0.00 |
+| no defense    | mlsec  | 2017-10-08 |    0.47 |    0.00 |    0.00 |
+| no defense    | mlsec  | 2017-11-05 |    0.48 |    0.00 |    0.00 |
+| no defense    | mlsec  | 2017-11-15 |    0.50 |    0.00 |    0.00 |
+| no defense    | mlsec  | 2016-06-17 |    0.91 |    0.00 |    0.00 |
+| no defense    | mlsec  | 2016-11-04 |    0.71 |    0.00 |    0.00 |
+| no defense    | mlsec  | 2018-01-17 |    0.93 |    0.00 |    0.00 |
+| no defense    | gcloud | 2018-01-30 |    0.95 |    0.00 |    0.00 |
+| no defense    | mlsec  | 2018-02-02 |    0.92 |    0.00 |    0.00 |
+| no defense    | gcloud | 2018-02-11 |    0.95 |    0.00 |    0.00 |
+| no defense    | mlsec  | 2018-03-15 |    0.93 |    0.00 |    0.00 |
+| new defense   | mlsec  | 2016-09-23 |    0.87 |    7.03 |    2.83 |
+| new defense   | mlsec  | 2016-06-04 |    0.78 |   14.94 |   26.32 |
+| new defense   | gcloud | 2018-02-02 |    0.79 |   22.89 |   17.49 |
+| new defense   | gcloud | 2018-02-02 |    0.66 |   37.82 |   14.69 |
+| new defense   | mlsec  | 2018-02-13 |    0.43 |   61.81 |   22.23 |
+| new defense   | mlsec  | 2018-03-28 |    0.26 |  142.22 |   28.16 |
+| new defense   | mlsec  | 2018-01-29 |    0.25 |  147.32 |   22.72 |
+| LLaMA-nodelay | mlsec  | 2018-02-25 |    0.36 |  205.18 |   29.04 |
+| LLaMA-nodelay | gcloud | 2018-02-11 |    0.45 |  213.02 |   14.79 |
+| LLaMA-nodelay | mlsec  | 2017-11-28 |    0.61 |  254.32 |  318.52 |
+| LLaMA-nodelay | mlsec  | 2017-10-18 |    0.41 |  294.80 |   75.02 |
+| LLaMA-nodelay | mlsec  | 2017-10-18 |    0.43 |  294.80 |   75.02 |
+| new defense   | mlsec  | 2017-11-21 |    0.37 |  397.37 |   69.82 |
+| new defense   | mlsec  | 2017-11-24 |    0.30 |  654.68 |   80.88 |
+| LLaMA-nodelay | mlsec  | 2017-11-07 |    0.43 |  708.98 |   72.39 |
+|---------------+--------+------------+---------+---------+---------|
+*** 30 Sites Figure
+    The thesis' configurability is shown in Figure [[fig:oh2acc]].
+    #+CAPTION: Size Overhead to Accuracy Trade-Off for Thesis' Defense, LLaMA-nodelay, and no defense on 30 sites.
+    #+NAME: fig:oh2acc
+    [[./pictures/oh2acc--llama-0.22-disabled.eps]]
+    # code: see [[file:bin/results.py::%20scatter%20plot%20of%20accuracy%20vs%20overhead]]
+     - include llama-delay @ 30
+** TODO [#D] create remainder dynamically from database
 * KEYWORDS [#C] The Base Rate Fallacy
   :PROPERTIES:
   :CUSTOM_ID: base-rate
@@ -2621,7 +2630,7 @@ not.
     :END:
     #+INDEX: Bridge
     #+INDEX: Tor!Bridge
-    #+CAPTION: Setup to capture web page traffic: Tor Browser on /Client/ machine, connects to Tor server on /Bridge/ machine, connects to Tor network, connects to web servers
+    #+CAPTION[Capture setup]: Setup to capture web page traffic: Tor Browser on /Client/ machine, connects to Tor server on /Bridge/ machine, connects to Tor network, connects to web servers.
     #+ATTR_LATEX: :float nil :width 0.5\textwidth
     [[./pictures/Setup.eps]]
 
