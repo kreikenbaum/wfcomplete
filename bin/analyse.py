@@ -288,8 +288,8 @@ def simulated_open_world(scenario_obj, auc_bound, binary, bg_size,
     except ValueError:
         logging.error("no fitting background set found for %r", scenario_obj)
         raise
-    if binary:
-        scenario_obj = scenario_obj.binarized()
+    # if binary:
+    #    scenario_obj = scenario_obj.binarized()
     X, y, d = scenario_obj.get_features_cumul(current_sites)
     X = preprocessing.MinMaxScaler().fit_transform(X)  # scaling is idempotent
     (clf_noprob, accuracy, _) = fit.my_grid(X, y, auc_bound=auc_bound)
@@ -304,7 +304,10 @@ def simulated_open_world(scenario_obj, auc_bound, binary, bg_size,
         y_pred = model_selection.cross_val_predict(
             clf, X, y, cv=config.FOLDS, n_jobs=config.JOBS_NUM,
             method="predict_proba")
-        auroc = metrics.roc_auc_score(y, y_pred[:, 1], max_fpr=auc_bound)
+        auroc = metrics.roc_auc_score(
+            mymetrics.binarize(y, transform_to=1),
+            mymetrics.binarize_probability(y_pred)[:, 1],
+            max_fpr=auc_bound)
     else:
         auroc = None
     return (tpr, fpr, auroc, C, gamma, accuracy, y, y_pred, d)

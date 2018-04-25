@@ -1,4 +1,5 @@
-. config.py
+### stops wfpad utils: server, tor, client, disables delay
+. $(dirname $0)/config.py
 kill $(ps aux | grep obfsproxy | grep -v grep | tr -s ' ' | cut -d ' ' -f 2)
 ssh $BRIDGE_LOGIN -x 'killall tor'
 ssh $BRIDGE_LOGIN -x 'killall python'

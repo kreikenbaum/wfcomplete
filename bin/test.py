@@ -496,7 +496,7 @@ class TestScenario(unittest.TestCase):
         s.traces = bg_mock
         Xa, ya, _ = s.binarized().get_features_cumul(current_sites=False)
         Xc, yc, _ = counter.to_features_cumul(bg_mock)
-        yc = list(mymetrics.binarize(yc, transform_to=1))
+        yc = list(mymetrics.binarized(yc, transform_to=1))
         self.assertTrue(np.array_equal(ya, yc), "ya:{}\nyc:{}".format(ya, yc))
         self.assertTrue(np.array_equal(Xa, Xc))
 

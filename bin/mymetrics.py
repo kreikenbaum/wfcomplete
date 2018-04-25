@@ -7,16 +7,32 @@ import config
 
 # doesn't really belong here, but neither does it to fit
 def binarize(y, keep=-1, transform_to=0):
-    '''binarize data in y: transform all values to =transform_to= except =keep=
-    >>> list(binarize([0, -1, 1]))
+    '''@return list(binarized)'''
+    return list(binarized(y, keep, transform_to))
+
+
+def binarized(y, keep=-1, transform_to=0):
+    '''binarized data in y: transform all values to =transform_to= except =keep=
+    >>> list(binarized([0, -1, 1]))
     [0, -1, 0]
-    >>> list(binarize([0, -1, 1], transform_to=3))
+    >>> list(binarized([0, -1, 1], transform_to=3))
     [3, -1, 3]'''
     for y_class in y:
         if y_class == keep:
             yield keep
         else:
             yield transform_to
+
+
+def binarize_probability(preds):
+    '''binarizes a probability array:
+    >>> binarize_probability(np.array([[0.5, 0.2, 0.3], [0.3, 0.2, 0.5]]))
+    array([[0.5, 0.5],
+           [0.3, 0.7]])'''
+    out = np.empty((preds.shape[0], 2))
+    out[:, 0] = preds[:, 0]
+    out[:, 1] = preds[:, 1:].sum(axis=1)
+    return out
 
 
 def compute_bounded_auc_score(clf, X, y, y_bound=0.01):  # , scorer=None):

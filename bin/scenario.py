@@ -70,6 +70,7 @@ class Scenario(object):
         self.path = os.path.normpath(name)
         if name in PATH_SKIP or skip or ".unison" in name:
             self.name = name
+            self.date = datetime.datetime(1000, 1, 1)
             logging.debug("skipped " + name)
             return
         if smart and not self.valid():
@@ -233,7 +234,7 @@ class Scenario(object):
                                    dom_counters, "cumul", class_number, domain)
                 class_number += 1
         if len(set(out_y)) == 2:
-            out_y = list(mymetrics.binarize(out_y, transform_to=1))
+            out_y = list(mymetrics.binarized(out_y, transform_to=1))
         return (np.array(X), np.array(out_y), domain_names)
 
     def get_open_world(self, num="auto", same=False, current_sites=True):

@@ -159,17 +159,15 @@ def roc_helper_open_world_binary(result, current_sites=True, axes=None):
     assert result.open_world and result.open_world['binary'], "no-owbin result"
     num = result.open_world['background_size']
     auc_bound = result.open_world['auc_bound']
-    scenario_obj = result.scenario.get_open_world(num).binarize()
-    X, y, _ = scenario_obj.get_features_cumul(current_sites)
-    X = preprocessing.MinMaxScaler().fit_transform(X)  # scaling is idempotent
-    y_pred = model_selection.cross_val_predict(
-        result.get_classifier(True), X, y, method="predict_proba",
-        cv=config.FOLDS, n_jobs=config.JOBS_NUM, verbose=config.VERBOSE)
+    yt = mymetrics.binarize(result.y_true, transform_to=1)
+    yp = mymetrics.binarize_probability(result.y_prediction)
     fpr_array, tpr_array, _ = metrics.roc_curve(
-        y, y_pred[:, 1], mymetrics.pos_label(y))
+        yt, yp[:, 1], mymetrics.pos_label(yt))
     return fpr_array, tpr_array, roc(
-        fpr_array, tpr_array, '({}), max_fpr: {}, background_size: {}'.format(
-            scenario_obj, auc_bound, num, axes))
+        fpr_array, tpr_array,
+        '({}), max_fpr: {}, background_size: {}'.format(
+            result.scenario, auc_bound, num),
+        axes)
 
 
 def roc(fpr, tpr, titleadd=None, fig=None, dot=0.01):

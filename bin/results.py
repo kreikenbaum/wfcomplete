@@ -11,6 +11,7 @@ import datetime
 import doctest
 import logging
 
+import numpy as np
 import pymongo
 from sklearn import metrics, model_selection
 
@@ -108,7 +109,7 @@ class Result(object):
             self._ypred = model_selection.cross_val_predict(
                 self.get_classifier(), X, y, cv=config.FOLDS,
                 n_jobs=config.JOBS_NUM, verbose=config.VERBOSE)
-        return self._ypred
+        return np.array(self._ypred)
 
     @property
     def y_true(self):
