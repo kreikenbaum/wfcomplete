@@ -1167,12 +1167,12 @@ how to do this.
 #+INDEX: gcloud
 As section [[#sub2-ml-measure]] details, there are two settings in
 analyzing \gls{wf}: open-world and closed-world. Closed-world analysis
-distinguishes only between the main sites, say Eve's aim is to see if
-Alice visits =bob.com='s or her uncle =charlie.com='s traces, assuming
-both are being monitored by Eve. This section presents the results of
-closed-world analysis. It first compares the accuracy of
-\citet{panchenko2}'s original to the re-implementation on defenseless
-traces.
+distinguishes only between main sites, say Eve knows that Alice is
+either visiting =bob.com= or her uncle =charlie.com=, and the aim is
+to distinguish these two sites, assuming both are being monitored by
+Eve. This section presents the results of closed-world analysis. It
+first compares the accuracy of \citet{panchenko2}'s original to the
+re-implementation on defenseless traces.
 
 #+CAPTION[Closed-World Results]: Results of classifying 100 sites in a closed-world setup. The traces captures at University of Brunswick show similar accuracy to \cite{panchenko2}. The traces captured using Google Cloud virtual machines show higher accuracy. A similar phenomenon was reported by \citet[sec.4.7]{ccs2014-critical}.
 #+NAME: tab:closed-world-accuracy
@@ -1266,7 +1266,7 @@ defense reduces accuracy more, for the same overhead, or requires less
 overhead, for a similar accuracy reduction. The main difference
 between LLaMA and the new defense lies in the HTTP-specific
 distributions to generate cover traffic. This difference is again
-illustrated in Figure [[fig:oh2acc100]].
+illustrated in Figures [[fig:oh2acc100]] and [[fig:oh2acc]].
 
 
 #+CAPTION: Size Overhead to Accuracy Trade-Off for Thesis' Defense, LLaMA-nodelay, and no defense on 100 sites.
@@ -1274,7 +1274,11 @@ illustrated in Figure [[fig:oh2acc100]].
 [[./pictures/oh2acc_2018_nogoogle.pdf]]
 # mplot.accuracy_vs_overhead([max(results.for_scenario_closed(s), key=lambda r: r.score) for s in [s for s in scenario.list_all() if hasattr(s, "date") and s.date  > datetime.date(2018, 1, 1) and "google" not in s and s.num_sites == 100]])
 
-
+#+CAPTION: Size Overhead to Accuracy Trade-Off for Thesis' Defense, LLaMA-nodelay, and no defense on 30 sites.
+#+NAME: fig:oh2acc
+[[./pictures/oh2acc--llama-0.22-disabled.eps]]
+# code: see [[file:bin/results.py::%20scatter%20plot%20of%20accuracy%20vs%20overhead]]
+# - include llama-delay @ 30
 
 Appendix [[#appendix-accuracy]] shows more evaluation results.
 *** more                                                            :ARCHIVE:
@@ -1301,8 +1305,14 @@ Appendix [[#appendix-accuracy]] shows more evaluation results.
    :PROPERTIES:
    :CUSTOM_ID: sub4-open
    :END:
-   - what is open world again
-     - why is this important
+   The closed world setting is considered unrealistic \cite{torben}
+   due to its limitation to known sites. As described in section
+   [[#sub2-ml-measure]], the open world setting compares a certain number
+   of monitored sites against a bigger number of background
+   pages. Say, Eve knows that her daughter Alice might visit any
+   number of pages, but is only interested in whether she visits
+   =bob.com=.
+
    - so what are the results
      - table
      - instances
@@ -1681,11 +1691,6 @@ The results decresed over time, until the capture process was fixed.
 |---------------+--------+------------+---------+---------+---------|
 *** 30 Sites Figure
     The thesis' configurability is shown in Figure [[fig:oh2acc]].
-    #+CAPTION: Size Overhead to Accuracy Trade-Off for Thesis' Defense, LLaMA-nodelay, and no defense on 30 sites.
-    #+NAME: fig:oh2acc
-    [[./pictures/oh2acc--llama-0.22-disabled.eps]]
-    # code: see [[file:bin/results.py::%20scatter%20plot%20of%20accuracy%20vs%20overhead]]
-     - include llama-delay @ 30
 ** TODO [#D] create remainder dynamically from database
 * KEYWORDS [#C] The Base Rate Fallacy
   :PROPERTIES:
