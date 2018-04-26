@@ -94,7 +94,7 @@ class Result(object):
     def y_domains(self):
         '''@return domains of traces, with optional open world added'''
         if self._ydomains is None:
-            logging.info("%s had no saved domain array 'yd'", self)
+            logging.warn("%s had no saved domain array 'yd'", self)
             _, _, self._ydomains = self.scenario.get_features_cumul(
                 self.open_world['current_sites'])
         return self._ydomains
@@ -103,7 +103,7 @@ class Result(object):
     def y_prediction(self):
         '''@return predicted values (either pre-existing or computed)'''
         if not self._ypred:
-            logging.info("%s had no saved prediction", self)
+            logging.warn("%s had no saved prediction", self)
             X, y, _ = self.scenario.get_features_cumul(
                 self.open_world['current_sites'])
             self._ypred = model_selection.cross_val_predict(
@@ -115,7 +115,7 @@ class Result(object):
     def y_true(self):
         '''@return true classes of traces, with optional open world added'''
         if self._ytrue is None:
-            logging.info("%s had no saved class array 'y'", self)
+            logging.warn("%s had no saved class array 'y'", self)
             _, self._ytrue, _ = self.scenario.get_features_cumul(
                 self.open_world['current_sites'])
         return self._ytrue
@@ -174,6 +174,8 @@ class Result(object):
                     entry['config']['scenario'])
             else:
                 raise
+        yt = (_value_or_none(entry, 'result', 'y_true', 'values')
+              or _value_or_none(entry, 'result', 'y_true'))
         return Result(
             scenario_obj,
             _value_or_none(entry, 'result', 'score'),
@@ -186,7 +188,7 @@ class Result(object):
             _id=entry['_id'],
             C=c, gamma=gamma,
             src=entry,
-            ytrue=_value_or_none(entry, 'result', 'y_true', 'values'),
+            ytrue=yt,
             ypred=_value_or_none(entry, 'result', 'y_prediction'),
             ydomains=_value_or_none(entry, 'result', 'y_domains'))
 

@@ -40,8 +40,9 @@ def run_exp(scenario, remove_small, or_level, auc_bound,
                            else remove_small)
     scenario_obj = scenario_module.Scenario(scenario)
     (tpr, fpr, auroc, C, gamma, acc, y, yp, yd) = analyse.simulated_open_world(
-        scenario_obj, auc_bound, binary=binarize, bg_size=background_size,
-        exclude_sites=exclude_sites, current_sites=current_sites)
+        scenario_obj, auc_bound=auc_bound, binary=binarize,
+        bg_size=background_size, exclude_sites=exclude_sites,
+        current_sites=current_sites)
     return {
         'C': C,
         'gamma': gamma,
@@ -54,7 +55,7 @@ def run_exp(scenario, remove_small, or_level, auc_bound,
         'fpr': fpr,
         'tpr': tpr,
         'auroc': auroc,
-        'y_true': y,
+        'y_true': y.tolist(),
         'y_prediction': yp.tolist(),
         'y_domains': yd
     }

@@ -160,9 +160,9 @@ def roc_helper_open_world_binary(result, current_sites=True, axes=None):
     num = result.open_world['background_size']
     auc_bound = result.open_world['auc_bound']
     yt = mymetrics.binarize(result.y_true, transform_to=1)
-    yp = mymetrics.binarize_probability(result.y_prediction)
     fpr_array, tpr_array, _ = metrics.roc_curve(
-        yt, yp[:, 1], mymetrics.pos_label(yt))
+        yt, mymetrics.binarize_probability(result.y_prediction)[:, 1],
+        mymetrics.pos_label(yt))
     return fpr_array, tpr_array, roc(
         fpr_array, tpr_array,
         '({}), max_fpr: {}, background_size: {}'.format(

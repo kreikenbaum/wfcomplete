@@ -189,12 +189,6 @@ class Scenario(object):
         return self.path.endswith("@1")
 
     @property
-    def binary(self):
-        '''@return this scenario has just foreground and background traces'''
-        assert self.traces
-        return set(self.traces.keys()) == set(['foreground', 'background'])
-
-    @property
     def config(self):
         '''@return configuration of addon if used'''
         if self.name != NEW_DEFENSE:
@@ -294,8 +288,6 @@ class Scenario(object):
                 self.traces = self.get_open_world(
                     self._open_world_config['background_size'],
                     same=True, current_sites=current_sites).traces
-                if self._open_world_config['binary']:
-                    self.traces = self.binarized().traces
             elif current_sites:
                 self.traces = sites.clean(self.traces)
         return self.traces
