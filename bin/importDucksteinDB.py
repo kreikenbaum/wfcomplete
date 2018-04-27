@@ -25,7 +25,7 @@ def load(ssh_login):
         ["ssh", DEFAULT_LOGIN, "mongoexport -d sacred -c runs"])
 
     for line in runs.split('\n'):
-        if 'COMPLETED' in line:
+        #        if 'COMPLETED' in line:
             entry = json.loads(line)
             entry['_id'] = results._next_id()
             imp = subprocess.Popen(
