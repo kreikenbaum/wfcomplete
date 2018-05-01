@@ -56,13 +56,6 @@ def _avoid_safe_mode(exedir):
                            "profile.default", "prefs.js"))
 
 
-def browse_to(page, bridge=None):
-    '''creates a browser instance, packet dump, browses to page, kills both.
-    If bridge is not none, it is an IP-address. Capture traffic to that.'''
-    browser = _open_browser()
-    _open_with_timeout(browser, page, bridge=bridge)
-
-
 def _check_text(text, file_name=None, client=None):
     '''@return False if problem, and should stop, True if all's well'''
     text = text.lower()
@@ -172,7 +165,7 @@ def _open_browser(exe=FIREFOX_PATH + ' -marionette', open_timeout=60):
         time.sleep(.1)
         if time.time() - start > open_timeout:
             _kill(browser)
-            raise SystemExit("browser connection not working")
+            raise Exception("browser connection not working")
     print 'slept for {0:.3f} seconds'.format(time.time() - start)
     return browser
 
@@ -246,6 +239,13 @@ def _write_text(client, srcfile):
             f.write(_get_page_text(client).encode('utf-8'))
         except:
             f.write('error retrieving text: {}'.format(sys.exc_info()[1]))
+
+
+def browse_to(page, bridge=None):
+    '''creates a browser instance, packet dump, browses to page, kills both.
+    If bridge is not none, it is an IP-address. Capture traffic to that.'''
+    browser = _open_browser()
+    _open_with_timeout(browser, page, bridge=bridge)
 
 
 class CaptureError(Exception):

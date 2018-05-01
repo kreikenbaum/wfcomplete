@@ -79,8 +79,7 @@ def confusion_matrix_from_scenario(scenario_obj, **kwargs):
     @return confusion_helper output
     '''
     r = max(results.for_scenario_smartly(scenario_obj), key=lambda x: x.score)
-    return confusion_matrix_helper(r.get_classifier(), scenario_obj, **kwargs)
-#  , r)
+    return confusion_matrix_from_result(r, **kwargs)
 
 
 def confusion_matrix_helper(clf, scenario_obj, current_sites=True, **kwargs):
