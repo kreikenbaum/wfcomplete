@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 '''aggregates trace data, extracts features'''
+import collections
 import datetime
 import doctest
 import errno
@@ -301,7 +302,7 @@ from_panchenko_data()'''
         yield (os.path.basename(filename), out)
 
 
-def all_from_wang(dirname="batch", closed_world=True):
+def all_from_wang(dirname="batch"):
     '''creates dict of Counters from wang's =batch/=-directory'''
     class_names = []
     try:
@@ -312,18 +313,16 @@ def all_from_wang(dirname="batch", closed_world=True):
                 class_names.append(name.strip())
     except IOError:
         pass
-    out = {}
+    out = collections.defaultdict(lambda: [])
     for filename in glob.glob(os.path.join(dirname, '*')):
-        if filename[-1] == 'f':
+        if filename[-1] == 'f':  # preprocessed files for knn attack
             continue
-        # td: need to deal with open world traces later
-        if closed_world and '-' not in filename:
-            continue
-        (cls, inst) = os.path.basename(filename).split('-')
-        if class_names:
+        if '-' in filename:
+            (cls, inst) = os.path.basename(filename).split('-')
+        else:
+            (cls, inst) = "background", os.path.basename(filename)
+        if class_names and cls != "background":
             cls = class_names[int(cls)]
-        if cls not in out:
-            out[cls] = []
         with open(filename) as f:
             out[cls].append(Counter.from_wang(filename, cls, inst))
     return out
@@ -735,12 +734,15 @@ class Counter(object):
         '''creates Counter from wang file (in batch dir, named "url-inst")'''
         tmp = Counter(filename)
         if not its_time and not its_url:
-            (its_url, its_time) = filename.split('-')
+            if '-' in filename:
+                its_url, its_time = filename.split('-')
+            else:
+                its_url, its_time = "background", filename
         tmp.name = '{}@{}'.format(its_url, its_time)
 
         with open(filename) as f:
             for line in f:
-                (secs, negcount) = line.split('\t')
+                secs, negcount = line.split('\t')
                 if abs(int(negcount)) <= 1:  # cell level
                     negcount = int(negcount) * TOR_DATA_CELL_SIZE
                 tmp.packets.append(-int(negcount))

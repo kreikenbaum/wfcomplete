@@ -26,6 +26,9 @@ def load(ssh_login):
 
     for line in runs.split('\n'):
         #        if 'COMPLETED' in line:
+        if not line:
+            continue
+        else:
             entry = json.loads(line)
             entry['_id'] = results._next_id()
             imp = subprocess.Popen(
