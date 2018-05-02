@@ -92,6 +92,7 @@ def _kill(*processes):
     for process in processes:
         if process is not None:
             process.terminate()
+    _clean_up()
 
 
 def _navigate_or_fail(client, url, file_name, tries=0):
@@ -185,14 +186,12 @@ def _open_with_timeout(browser, page, timeout=600, burst_wait=3, bridge=None):
     '''navigates browser to url while capturing the packet dump, aborts
     after timeout. If bridge, that is the IP address of the connected
     bridge, just capture traffic to there (need to set this by hand)
-
     '''
     client = Marionette('localhost', port=2828, socket_timeout=(timeout-30))
     try:
         client.start_session()
     except socket.timeout:
         _kill(browser)
-        _clean_up()
         raise
 
     (url, domain) = _normalize_url(page)
