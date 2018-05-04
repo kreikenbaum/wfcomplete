@@ -277,10 +277,10 @@ def all_from_json(filename):
         if len(domains) > 1:
             domain = 'background set'
         else:
-#            try:
-#                domain = domains.pop()
-#            except KeyError:  # all discarded
-                domain = os.path.basename(filename).rsplit('.', 1)[0]
+            #            try:
+            #                domain = domains.pop()
+            #            except KeyError:  # all discarded
+            domain = os.path.basename(filename).rsplit('.', 1)[0]
         logging.info('discarded %d trace%s of %s',
                      removed, 's' if removed != 1 else '', domain)
     return out
@@ -351,8 +351,9 @@ def dict_to_panchenko(counter_dict, dirname='p_batch'):
         if 'background' in k:
             count = 0
             for instance in counter_list:
-                with file(os.path.join(
-                    dirname, 'output-tcp', '{}-{}'.format(k, count)), 'w') as f:
+                with file(os.path.join(dirname, 'output-tcp',
+                                       '{}-{}'.format(k, count)),
+                          'w') as f:
                     list_to_panchenko([instance], f)
                     count += 1
         else:
@@ -409,7 +410,8 @@ def dir_to_herrmann(dirname, clean=True):
 
 
 def dir_to_wang(dirname, remove_small=True, outlier_removal_lvl=0):
-    '''creates input to wang's classifier (in a =batch/= directory) for traces in dirname'''
+    '''creates input to wang's classifier (in a =batch/= directory) for
+    traces in dirname'''
     previous_dir = os.getcwd()
     os.chdir(dirname)
     counter_dict = all_from_dir('.', remove_small)
@@ -424,6 +426,7 @@ def dir_to_panchenko(dirname):
 dirname'''
     counter_dict = _dirname_helper(dirname, clean=False)
     dict_to_panchenko(counter_dict)
+
 
 def for_scenarios(scenarios, remove_small=True, or_level=0):
     '''For each scenario, add its traces to return dict. If empty take
@@ -684,7 +687,7 @@ class Counter(object):
                     tmp.extract_line(pkt.ip.src, pkt.ip.dst, pkt.ip.len,
                                      (pkt.sniff_time - start).total_seconds())
         except (KeyError, TSharkCrashException, TypeError) as ex:
-            logging.warn("pyshark crash: %s", e.message)
+            logging.warn("pyshark crash: %s", ex.message)
             tmp.warned = True
         finally:
             cap.close()
@@ -725,9 +728,8 @@ class Counter(object):
                 tmp.extract_line(src, dst, int(size)+14, time, line)
         if http:
             logging.info('http packets discarded for %s: %d', filename, http)
-        tshark.communicate() # close pipe
+        tshark.communicate()  # close pipe
         return tmp
-
 
     @staticmethod
     def from_wang(filename, its_url=None, its_time=None):
@@ -776,7 +778,7 @@ class Counter(object):
         return True
 
     def cumul(self, num_features=100):
-        '''@return CUMUL feature vector: inCount, outCount, outSize, inSize++'''
+        '''@return CUMUL features: inCount, outCount, outSize, inSize, ...'''
         c_abs = []
         # cumulated packetsizes
         c_rel = []
@@ -828,7 +830,6 @@ class Counter(object):
         except IndexError:
             # panchenko input data
             return DURATION_LIMIT_SECS
-
 
     def get_tpi(self):
         ''':returns: total incoming packet count'''

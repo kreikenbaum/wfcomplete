@@ -2,11 +2,10 @@
 ### loads sites via tor browser script, capturing pcap traces
 ## NUM_SITES are each loaded NUM_ITERATIONS times
 ## if TAIL is given, use only the /last/ TAIL of these sites, else use all
-# cloned at nobridge_retrieve, except for one_site vs d2g_one_site
-
+# clone of bridge_retrieve, except for one_site vs d2g_one_site
 
 if [ $# -lt 1 -o $# -gt 3 ]; then
-    echo Usage: bridge_retrieve.sh NUM_SITES [NUM_ITERATIONS=50] [TAIL=NUM_SITES]
+    echo Usage: nobridge_retrieve.sh NUM_SITES [NUM_ITERATIONS=50] [TAIL=NUM_SITES]
     exit 1
 fi
 
@@ -20,10 +19,10 @@ NAME=$(check_name.py $TAIL $NUM_ITERATIONS) || (echo "status invalid"; exit 1)
 
 for iteration in $(seq $NUM_ITERATIONS); do
     echo -e "======= ITERATION: $iteration =============\n"
-    for site in $(head -$NUM_SITES ~/sw/top/top-1m.csv.modified | tail -$TAIL | cut -d "," -f 2); do
+    for site in $(head -$NUM_SITES $SITES | tail -$TAIL | cut -d "," -f 2); do
         . start_xvfb_if_necessary.sh
         echo $site
-        d2g_one_site.py $site
+        one_site.py $site
     done
 done
 
