@@ -95,17 +95,17 @@ def _kill(*processes):
     _clean_up()
 
 
-def _navigate_or_fail(client, url, file_name, tries=0):
+def _navigate_or_fail(client, url, file_name, _tries=0):
     '''navigates client to url, on failure renames file'''
     try:
         client.navigate(url)
         if _check_text(_get_page_text(client).lower(), file_name, client):
             _write_text(client, file_name)
     except (errors.NoSuchElementException, DelayError, socket.error):
-        if tries < 3:
+        if _tries < 3:
             time.sleep(0.1)
-            logging.info("retry %d on %s", tries+1, file_name)
-            return _navigate_or_fail(client, url, file_name, tries+1)
+            logging.info("retry %d on %s", _tries+1, file_name)
+            return _navigate_or_fail(client, url, file_name, _tries+1)
         else:
             _handle_exception("failed repeatedly to get page text",
                               file_name, client)

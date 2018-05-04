@@ -317,7 +317,7 @@ def all_from_wang(dirname="batch"):
     for filename in glob.glob(os.path.join(dirname, '*')):
         if filename[-1] == 'f':  # preprocessed files for knn attack
             continue
-        if '-' in filename:
+        if '-' in os.path.basename(filename):
             (cls, inst) = os.path.basename(filename).split('-')
         else:
             (cls, inst) = "background", os.path.basename(filename)

@@ -237,7 +237,7 @@ class Scenario(object):
         @param num: size of background set, if 'auto', use as many as fg set
         @param same: only use scenarios of same defense (name, config, site)
         '''
-        if self.traces and 'background' in self.get_traces():
+        if self.traces and 'background' in self.get_traces(current_sites):
             logging.warn("scenario's traces already contain background set")
             return self
         filt = None

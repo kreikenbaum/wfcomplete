@@ -455,13 +455,6 @@ class TestScenario(unittest.TestCase):
         self.assertTrue("background" in s.get_traces().keys())
 
     @unittest.skipIf(QUICK, "slow test skipped")
-    def test_open_world_config_binary(self):
-        s = scenario.Scenario("disabled/2016-05-12--10@40")
-        s._open_world_config = {'binary': True, 'exclude_sites': [],
-                                'background_size': None}
-        self.assertEquals(2, len(s.get_traces().keys()))
-
-    @unittest.skipIf(QUICK, "slow test skipped")
     def test_open_world_config_current_sites_true(self):
         s = scenario.Scenario("disabled/2016-05-12--10@40")
         s._open_world_config = {'binary': False, 'exclude_sites': [],

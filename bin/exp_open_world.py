@@ -26,7 +26,7 @@ def my_config():
     background_size = 'auto'  # 'auto', number, None
     binarize = True
     exclude_sites = []
-    current_sites = True  # fix e.g. google duplicates in bg set
+    current_sites = False  # fix e.g. google duplicates in bg set
 # pylint: enable=unused-variable
 
 
