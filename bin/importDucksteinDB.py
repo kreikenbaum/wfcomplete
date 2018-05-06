@@ -36,7 +36,13 @@ def load(ssh_login):
                 stdin=subprocess.PIPE)
             imp.communicate(input=json.dumps(entry))
 
-    os.system("ssh {} 'mongoexport -d sacred -c runs > /home/mkreik/data/mongodump$(date +%F_%T)'".format(DEFAULT_LOGIN))
+    os.system("ssh {} 'mongoexport -d sacred -c runs "
+              "> /home/mkreik/data/mongodump$(date +%F_%T)'".format(
+                  DEFAULT_LOGIN))
+    for collection in ["fs.files", "fs.chunks"]:
+        os.system("ssh {0} -x 'mongoexport -d sacred -c {1}' "
+                  "| mongoimport -d sacred -c {1}".format(
+                      DEFAULT_LOGIN, collection))
     subprocess.call(
         ["ssh", DEFAULT_LOGIN,
          'mongo sacred --eval "printjson(db.dropDatabase())"'])

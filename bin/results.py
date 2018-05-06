@@ -9,8 +9,10 @@ import csv
 import collections
 import datetime
 import doctest
+import json
 import logging
 
+import gridfs
 import numpy as np
 import pymongo
 from sklearn import metrics, model_selection
@@ -123,12 +125,12 @@ class Result(object):
     @staticmethod
     def from_mongoentry(entry):
         git = _value_or_none(entry, 'experiment', 'repositories', 0, 'commit')
-        c = (_value_or_none(entry, 'result', 'C') or
-             _value_or_none(entry, 'result', 'clf', 'py/state', 'estimator',
-                            'py/state', 'C'))
-        gamma = (_value_or_none(entry, 'result', 'gamma') or
-                 _value_or_none(entry, 'result', 'clf', 'py/state',
-                                'estimator', 'py/state', 'gamma'))
+        c = (_value_or_none(entry, 'result', 'C')
+             or _value_or_none(entry, 'result', 'clf', 'py/state', 'estimator',
+                               'py/state', 'C'))
+        gamma = (_value_or_none(entry, 'result', 'gamma')
+                 or _value_or_none(entry, 'result', 'clf', 'py/state',
+                                   'estimator', 'py/state', 'gamma'))
         try:
             size = len(entry['result']['sites'])
         except (KeyError, TypeError):
@@ -175,7 +177,12 @@ class Result(object):
             else:
                 raise
         yt = (_value_or_none(entry, 'result', 'y_true', 'values')
-              or _value_or_none(entry, 'result', 'y_true'))
+              or _value_or_none(entry, 'result', 'y_true')
+              or _load_artifact_or_none(entry, "y_true"))
+        yp = (_value_or_none(entry, 'result', 'y_prediction')
+              or _load_artifact_or_none(entry, "y_prediction"))
+        yd = (_value_or_none(entry, 'result', 'y_domains')
+              or _load_artifact_or_none(entry, "y_domains"))
         return Result(
             scenario_obj,
             _value_or_none(entry, 'result', 'score'),
@@ -189,8 +196,9 @@ class Result(object):
             C=c, gamma=gamma,
             src=entry,
             ytrue=yt,
-            ypred=_value_or_none(entry, 'result', 'y_prediction'),
-            ydomains=_value_or_none(entry, 'result', 'y_domains'))
+            ypred=yp,
+            ydomains=yd)
+
 
     def __repr__(self):
         out = ("<Result({!r}, score={}, {}, {}, {}, size={}, "
@@ -276,6 +284,17 @@ def _duplicates(params=["config.scenario", "result.score"], db=_db()):
             {"result.score": {"$exists": 1}}]}},
         {"$project": project},
         {"$group": groups}])
+
+
+def _load_artifact_or_none(entry, filename):
+    '''loads artifact form mongodb'''
+    try:
+        objectid = next(a['file_id'] for a in entry['artifacts']
+                        if a['name'] == filename)
+    except (StopIteration, KeyError):
+        return None
+    artifact = gridfs.GridFS(_db()).get(objectid)
+    return json.load(artifact)
 
 
 def _next_id(db=_db()):

@@ -1,8 +1,10 @@
 #! /usr/bin/env python
 '''runs open world experiment'''
+import json
 import logging
 import os
 import random
+import tempfile
 
 import pymongo
 from sacred import Experiment
@@ -30,6 +32,14 @@ def my_config():
 # pylint: enable=unused-variable
 
 
+def _add_as_artifact(element, name):
+    '''add variables that are too big for sacred results'''
+    filename = tempfile.mktemp()
+    with open(filename, "w") as f:
+        json.dump(element, f)
+    ex.add_artifact(filename, name)
+
+
 # code duplication exp.py
 @ex.capture
 def run_exp(scenario, remove_small, or_level, auc_bound,
@@ -43,6 +53,9 @@ def run_exp(scenario, remove_small, or_level, auc_bound,
         scenario_obj, auc_bound=auc_bound, binary=binarize,
         bg_size=background_size, exclude_sites=exclude_sites,
         current_sites=current_sites)
+    _add_as_artifact(y.tolist(), "y_true")
+    _add_as_artifact(yp.tolist(), "y_prediction")
+    _add_as_artifact(yd, "y_domains")
     return {
         'C': C,
         'gamma': gamma,
@@ -54,10 +67,7 @@ def run_exp(scenario, remove_small, or_level, auc_bound,
         'time_increase': scenario_obj.time_increase(),
         'fpr': fpr,
         'tpr': tpr,
-        'auroc': auroc,
-        'y_true': y.tolist(),
-        'y_prediction': yp.tolist(),
-        'y_domains': yd
+        'auroc': auroc
     }
 
 

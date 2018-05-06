@@ -3,7 +3,7 @@ import logging
 LOGFORMAT = '%(levelname)s:%(filename)s:%(lineno)d:%(message)s'
 
 # WARN INFO DEBUG
-LOGLEVEL = logging.INFO
+LOGLEVEL = logging.WARN
 
 reload(logging)
 logging.basicConfig(format=LOGFORMAT, level=LOGLEVEL)
