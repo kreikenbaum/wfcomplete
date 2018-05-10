@@ -36,7 +36,8 @@ if os.uname()[1] == config.OLD_HOST:
 RENAME = {
     "defense-client": "LLaMA",
     "defense-client-nodelay": "LLaMA-nodelay",
-    "disabled": "no defense"
+    "disabled": "no defense",
+    "external": "WANG14"
 }
 for _ in ["0.15.3", "0.18.2", "0.19", "0.20", "0.21", "0.22",
           "simple2", "simple", config.COVER_NAME]:
@@ -70,7 +71,7 @@ class Scenario(object):
         self.path = os.path.normpath(name)
         if name in PATH_SKIP or skip or ".unison" in name:
             self.name = name
-            self.date = datetime.datetime(1000, 1, 1)
+            self.date = datetime.date(1000, 1, 1)
             logging.debug("skipped " + name)
             return
         if smart and not self.valid():
