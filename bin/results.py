@@ -74,7 +74,8 @@ class Result(object):
         if self._ytrue or compute:
             return collections.Counter(self.y_true)[-1]
         else:
-            return self.open_world['background_size']
+            return (str(self.open_world['background_size'])
+                    .replace('None', "max").replace('none', "max"))
 
     @property
     def duration(self):
@@ -395,6 +396,7 @@ def to_table(results, fields_plus_names=None):
                  "accuracy [%]", "size increase [%]", "time increase [%]"]
     import prettytable
     tbl = prettytable.PrettyTable()
+    tbl.junction_char = '|'  # org-mode
     tbl.field_names = names
     # names if names else fields
     for result in results:
