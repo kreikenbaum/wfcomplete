@@ -193,18 +193,18 @@ class Scenario(object):
     def config(self):
         '''@return configuration of addon if used'''
         if self.name != NEW_DEFENSE:
-            return "no config"
+            return ""
         try:
             fromsettings = INT_REGEXP.search(self.setting).group(1)
         except AttributeError:
-            return "no config"
+            return ""
         try:
             factor = self.status['addon']['factor']
             factor = 50 if factor is None else factor
             assert fromsettings.startswith(factor)
         except TypeError:
             pass
-        return fromsettings
+        return "({})".format(fromsettings)
 
     def date_from_trace(self):
         '''retrieve date from traces'''
