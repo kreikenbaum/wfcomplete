@@ -180,8 +180,12 @@ class Result(object):
         yt = (_value_or_none(entry, 'result', 'y_true', 'values')
               or _value_or_none(entry, 'result', 'y_true')
               or _load_artifact_or_none(entry, "y_true"))
-        yp = (_value_or_none(entry, 'result', 'y_prediction')
-              or _load_artifact_or_none(entry, "y_prediction"))
+        try:
+            yp = [x['values'] for x in _value_or_none(
+                entry, 'result', 'y_prediction')]
+        except TypeError:
+            yp = (_value_or_none(entry, 'result', 'y_prediction')
+                  or _load_artifact_or_none(entry, "y_prediction"))
         yd = (_value_or_none(entry, 'result', 'y_domains')
               or _load_artifact_or_none(entry, "y_domains"))
         return Result(
