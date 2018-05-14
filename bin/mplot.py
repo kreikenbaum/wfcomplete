@@ -298,10 +298,6 @@ def _splitdate(trace_name):
 
 
 
-# import scenario, mplot
-# s = scenario.Scenario("disabled/bridge--2018-02-02--100@50")
-# import config; config.JOBS_NUM = 3; config.FOLDS = 3; config.VERBOSE = 3
-# mplot.recall_curve_for_scenario(s)
 def ccdf_curve_for_scenario(scenario_obj, existing=True, axes=None,
                             filt=None, type_="recall"):
     if not axes:
@@ -314,7 +310,8 @@ def ccdf_curve_for_scenario(scenario_obj, existing=True, axes=None,
                 filt and not filt(result)):
             logging.debug("skipped %s", result)
             continue
-        size = len(result.scenario.get_traces()['background'])
+        # size = len(result.scenario.get_traces()['background'])
+        size = result.background_size
         if size in sizes:
             continue
         sizes.add(size)

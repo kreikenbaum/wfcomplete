@@ -1341,40 +1341,36 @@ Appendix [[#appendix-accuracy]] shows more evaluation results.
    [[#app-open-results]] contains all open-world results on 100 sites.
 
 
+#+CAPTION[Open-World Scenarios]: 100-site scenarios for further inspection.
+#+NAME: tab:open-world-scenarios
+#+ATTR_LATEX: :align |l||r | r | r |
+|                   |            |     <7> |     <7> |     <7> |
+| Scenario          |       Date | Accuracy | Size o.h. [%] | Time o.h. [%] |
+|-------------------+------------+---------+---------+---------|
+| no defense        | 2018-02-02 |    0.92 |    0.00 |    0.00 |
+| new defense (20)  | 2018-02-13 |    0.43 |   61.81 |   22.23 |
+| new defense (100) | 2018-03-28 |    0.26 |  142.22 |   28.16 |
+| LLaMA-nodelay     | 2018-02-25 |    0.36 |  205.18 |   29.04 |
    To evaluate the new defense, and to compare and contrast to
    LLaMA\cite{DBLP:journals/popets/CherubinHJ17}, four 100-site
-   captures were selected. Their closed-world analysis results is
-   again presented in Table
-|               |            |     <7> |     <7> |     <7> |
-| Scenario      |       Date | Accuracy | Size o.h. [%] | Time o.h. [%] |
-|---------------+------------+---------+---------+---------|
-| no defense    | 2018-02-02 |    0.92 |    0.00 |    0.00 |
-| new defense   | 2018-02-13 |    0.43 |   61.81 |   22.23 |
-| new defense   | 2018-03-28 |    0.26 |  142.22 |   28.16 |
-| LLaMA-nodelay | 2018-02-25 |    0.36 |  205.18 |   29.04 |
+   captures were selected. Their closed-world accuracy and size
+   overhead results is again presented in Table
+   [[tab:open-world-scenarios]]. As mentioned previously, LLaMA's traces
+   show higher accuracy for the same overhead.
 
    - so what are the results
      - detailed comparison
        - of scenarios
-         - sd = scenario.Scenario("disabled/bridge--2018-02-02--100@50")
-         - s100 = scenario.Scenario("wf-cover/bridge-100aI--2018-03-28--100@50")
-         - sl = scenario.Scenario("defense-client-nodelay/bridge--2018-02-25--100@50")
-         - s20 = scenario.Scenario("wf-cover/bridge-20aI--2018-02-13--100@50")
+         #+BEGIN_SRC python
+           sd = scenario.Scenario("disabled/bridge--2018-02-02--100@50")
+           s100 = scenario.Scenario("wf-cover/bridge-100aI--2018-03-28--100@50")
+           sl = scenario.Scenario("defense-client-nodelay/bridge--2018-02-25--100@50")
+           s20 = scenario.Scenario("wf-cover/bridge-20aI--2018-02-13--100@50")
+         #+END_SRC
 
            scenario.Scenario("disabled/bridge--2018-03-15--100@50") ,
            is newer, but currently lacks open world results
-       - list overhead (size/time), accuracy in closed world, (date?)
-       - roc-curves
-       - instances (?)
-       - confusion matrices
-         [[./pictures/confmat_s2018-02-02_r679.pdf]]
-         # rd = (r for r in results.for_scenario(sd) if r._ydomains and r.open_world['background_size'] == "auto" and not r.open_world['binary']).next()
-         # mplot.confusion_matrix_from_result(rd, zero0=True)
-         [[./pictures/confmat_s2018-02-13_r667.pdf]]
-         # same for s20 with r20
-     - [also for google-captures]
-     - [also for nobridge]
-
+       - ccdf-curves
   [[./pictures/ccdf-recall-no-defense-on-2018-02-02.pdf]]
   # mplot.ccdf_curve_for_scenario( scenario.Scenario("disabled/bridge--2018-02-02--100@50"), filt=lambda x: len(x.scenario.get_traces()['background']) >= 1000)
 
@@ -1387,6 +1383,20 @@ Appendix [[#appendix-accuracy]] shows more evaluation results.
 
   [[./pictures/ccdf-recall-defense-client-nodelay-on-2018-02-25.pdf]]
   # mplot.ccdf_curve_for_scenario(...)
+
+  [[./pictures/ccdf-recall-new-defense-on-2018-02-13.pdf]]
+  # mplot.ccdf_curve_for_scenario( s20, filt=lambda r: r._ydomains and  r.background_size >= 1000)
+       - roc-curves (?)
+       - instances (?)
+       - confusion matrices
+         [[./pictures/confmat_s2018-02-02_r679.pdf]]
+         # rd = (r for r in results.for_scenario(sd) if r._ydomains and r.open_world['background_size'] == "auto" and not r.open_world['binary']).next()
+         # mplot.confusion_matrix_from_result(rd, zero0=True)
+         [[./pictures/confmat_s2018-02-13_r667.pdf]]
+         # same for s20 with r20
+     - [also for google-captures]
+     - [also for nobridge]
+
 
 
   Llama: also low value, but much higher overhead (200%, vs 67%)
