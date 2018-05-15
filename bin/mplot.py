@@ -306,6 +306,8 @@ def ccdf_curve_for_scenario(scenario_obj, existing=True, axes=None,
     for result in (r for r in results.for_scenario_open(scenario_obj)
                    if not r.open_world['binary']):
         logging.debug(result)
+        if len(sizes) >= 6:
+            break
         if (existing and not result._ypred or
                 filt and not filt(result)):
             logging.debug("skipped %s", result)
@@ -315,7 +317,7 @@ def ccdf_curve_for_scenario(scenario_obj, existing=True, axes=None,
         if size in sizes:
             continue
         sizes.add(size)
-        ccdf_curve(result.get_confusion_matrix(), size, axes=axes)
+        ccdf_curve(result.get_confusion_matrix(), size, axes=axes, type_=type_)
     plt.legend()
     plt.title("CCDF-{} curve for {}".format(type_, scenario_obj))
 

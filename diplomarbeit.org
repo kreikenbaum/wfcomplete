@@ -1235,8 +1235,11 @@ overhead.
 
 #+CAPTION[Accuracy to Overheads on 100 sites]: Comparison of LLaMA to this thesis's defense on 100 sites. The table was sorted by size increase. This also illustrates the new defense's configurability.
 #+NAME: tab:ohs-vs-acc-100
-|---------------+--------+------------+---------+---------+---------|
-| Scenario      | Site   |       Date | \open Accuracy \close | \open Size o.h. [%]\close | \open Time o.h. [%]\close |
+|----------+------+------+--------------+------------------+------------------|
+| Scenario | Site | Date | \open Accuracy \close | \open Size o.h. [%]\close | \open Time o.h. [%]\close |
+
+
+
 |               |        |            |     <7> |     <7> |     <7> |
 |---------------+--------+------------+---------+---------+---------|
 | no defense    | mlsec  | 2018-01-17 |    0.93 |    0.00 |    0.00 |
@@ -1328,7 +1331,7 @@ Appendix [[#appendix-accuracy]] shows more evaluation results.
 #+CAPTION[Open-World Validation]: Validation on 100 sites of the WANG14 \citep{panchenko2} dataset. Since multi-class true-, and false-positive-rate have multiple possible definitions \citep{sokolova2009systematic}, only the two-class values were compared.
 #+NAME: tab:open-world-validation
 #+ATTR_LATEX: :align |l||r | r | r |
-| Data source                    | \open Number of instances \close | \open True-Positive-Rate [%] \close | \open False-Positive-Rate [%]\close |
+| Data source                    | \open Num. inst. \close       | \open TPR [%] \close | \open FPR [%]\close |
 | <30>                           |       <10> |       <10> |       <10> |
 |--------------------------------+------------+------------+------------|
 | \citet[Table III]{panchenko2}, two-class |         90 |      96.92 |       1.98 |
@@ -1340,37 +1343,32 @@ Appendix [[#appendix-accuracy]] shows more evaluation results.
    re-implementation. Table [[tab:open-world-all-100]] in Appendix
    [[#app-open-results]] contains all open-world results on 100 sites.
 
+# sd = scenario.Scenario("disabled/bridge--2018-02-02--100@50")
+# s100 = scenario.Scenario("wf-cover/bridge-100aI--2018-03-28--100@50")
+# sl = scenario.Scenario("defense-client-nodelay/bridge--2018-02-25--100@50")
+# s20 = scenario.Scenario("wf-cover/bridge-20aI--2018-02-13--100@50")
 
 #+CAPTION[Open-World Scenarios]: 100-site scenarios for further inspection.
 #+NAME: tab:open-world-scenarios
-#+ATTR_LATEX: :align |l||r | r | r |
+#+ATTR_LATEX: :align |l|l||r | r | r |
 |                   |            |     <7> |     <7> |     <7> |
-| Scenario          |       Date | Accuracy | Size o.h. [%] | Time o.h. [%] |
+| Scenario          |       Date | \open Accuracy \close | \open Size o.h. [%] \close | \open Time o.h. [%]  \close |
 |-------------------+------------+---------+---------+---------|
 | no defense        | 2018-02-02 |    0.92 |    0.00 |    0.00 |
 | new defense (20)  | 2018-02-13 |    0.43 |   61.81 |   22.23 |
 | new defense (100) | 2018-03-28 |    0.26 |  142.22 |   28.16 |
 | LLaMA-nodelay     | 2018-02-25 |    0.36 |  205.18 |   29.04 |
-   To evaluate the new defense, and to compare and contrast to
-   LLaMA\cite{DBLP:journals/popets/CherubinHJ17}, four 100-site
-   captures were selected. Their closed-world accuracy and size
-   overhead results is again presented in Table
-   [[tab:open-world-scenarios]]. As mentioned previously, LLaMA's traces
-   show higher accuracy for the same overhead.
+To evaluate the new defense, and to compare and contrast to LLaMA
+\citep{DBLP:journals/popets/CherubinHJ17}, four 100-site captures were
+selected. Their closed-world accuracy and size overhead results is
+again presented in Table [[tab:open-world-scenarios]]. As mentioned
+previously, LLaMA's traces exhibit less accuracy reduction for the
+same overhead.
 
    - so what are the results
      - detailed comparison
-       - of scenarios
-         #+BEGIN_SRC python
-           sd = scenario.Scenario("disabled/bridge--2018-02-02--100@50")
-           s100 = scenario.Scenario("wf-cover/bridge-100aI--2018-03-28--100@50")
-           sl = scenario.Scenario("defense-client-nodelay/bridge--2018-02-25--100@50")
-           s20 = scenario.Scenario("wf-cover/bridge-20aI--2018-02-13--100@50")
-         #+END_SRC
-
-           scenario.Scenario("disabled/bridge--2018-03-15--100@50") ,
-           is newer, but currently lacks open world results
        - ccdf-curves
+         - recall
   [[./pictures/ccdf-recall-no-defense-on-2018-02-02.pdf]]
   # mplot.ccdf_curve_for_scenario( scenario.Scenario("disabled/bridge--2018-02-02--100@50"), filt=lambda x: len(x.scenario.get_traces()['background']) >= 1000)
 
@@ -1386,6 +1384,8 @@ Appendix [[#appendix-accuracy]] shows more evaluation results.
 
   [[./pictures/ccdf-recall-new-defense-on-2018-02-13.pdf]]
   # mplot.ccdf_curve_for_scenario( s20, filt=lambda r: r._ydomains and  r.background_size >= 1000)
+         - precision
+           # mplot.ccdf_curve_for_scenario( s20, filt=lambda r: r._ydomains and  r.background_size >= 1000)
        - roc-curves (?)
        - instances (?)
        - confusion matrices
@@ -1394,8 +1394,8 @@ Appendix [[#appendix-accuracy]] shows more evaluation results.
          # mplot.confusion_matrix_from_result(rd, zero0=True)
          [[./pictures/confmat_s2018-02-13_r667.pdf]]
          # same for s20 with r20
-     - [also for google-captures]
-     - [also for nobridge]
+       - [also for google-captures]
+       - [also for nobridge]
 
 
 
@@ -3263,6 +3263,17 @@ not.
 - does the attack work
   - yes, seems so (same results)
 - result similar to CUMUL
+** Analyse 2: Open World
+       - of scenarios
+         #+BEGIN_SRC python
+           sd = scenario.Scenario("disabled/bridge--2018-02-02--100@50")
+           s100 = scenario.Scenario("wf-cover/bridge-100aI--2018-03-28--100@50")
+           sl = scenario.Scenario("defense-client-nodelay/bridge--2018-02-25--100@50")
+           s20 = scenario.Scenario("wf-cover/bridge-20aI--2018-02-13--100@50")
+         #+END_SRC
+
+           scenario.Scenario("disabled/bridge--2018-03-15--100@50") ,
+           is newer, but currently lacks open world results
 ** appendix: open-world results
      - table
        - [ ] update with WANG
