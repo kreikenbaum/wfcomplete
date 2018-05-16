@@ -22,5 +22,10 @@ echo "{
         \"version\": $(get_version.sh),
         \"factor\":  $(get_factor.sh)
     },
-    \"host\": \"$(hostname -f)\"
+    \"host\": \"$(hostname -f)\",
+    \"versions\": {
+       \"tbb\": $(get_pref.sh extensions.lastTorBrowserVersion),
+       \"local-tor\": \"$(tor --version)\",
+       \"remote-tor\": \"$(ssh $BRIDGE_LOGIN -x tor --version)\"
+    }
 }"

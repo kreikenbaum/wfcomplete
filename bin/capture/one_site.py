@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 '''starts tor-browser -marionette, tests connection, starts tshark,
 loads url, finishes, stops both'''
+from __future__ import print_function
 import collections
 import logging
 import os
@@ -20,10 +21,10 @@ import config
 import logconfig
 ERRFILENAME = os.path.join('/tmp', "one_site_err.txt")
 logconfig.add_file_output(ERRFILENAME)
-#FIREFOX_PATH = os.path.join(os.getenv("HOME"), 'bin', 'tor-browser_en-US',
-#                            'Browser', 'firefox')
 FIREFOX_PATH = os.path.join(os.getenv("HOME"), 'bin', 'tor-browser_en-US',
-                            'Browser', 'start-tor-browser')
+                            'Browser', 'firefox')
+# FIREFOX_PATH = os.path.join(os.getenv("HOME"), 'bin', 'tor-browser_en-US',
+#                            'Browser', 'start-tor-browser -v')
 
 PROBLEMATIC_DELAY = [
     "test tor network settings",
@@ -142,19 +143,19 @@ def _normalize_url(url='google.com'):
 
 def _open_browser(exe=FIREFOX_PATH + ' -marionette', open_timeout=60):
     '''returns an initialized browser instance with marionette'''
-    #env_with_debug = os.environ.copy()
-    #env_with_debug["MOZ_DISABLE_AUTO_SAFE_MODE"] = 'set'
+    env_with_debug = os.environ.copy()
+    env_with_debug["MOZ_DISABLE_AUTO_SAFE_MODE"] = 'set'
     exewholepath, exeargs = exe.split(' ', 1)
     (exedir, _) = os.path.split(exewholepath)
     # sorry, this is linux/osx-specific, try appending to PATH on windows
-    #env_with_debug["LD_LIBRARY_PATH"] = '/lib:/usr/lib:' + (
-    #    exedir + '/TorBrowser/Tor')
+    env_with_debug["LD_LIBRARY_PATH"] = ('/lib:/usr/lib:'
+                                         + exedir + '/TorBrowser/Tor')
     _avoid_safe_mode(exedir)
     # print 'lpath: %s' % env_with_debug["LD_LIBRARY_PATH"]
     browser = subprocess.Popen(
         args=[exewholepath, exeargs], cwd=exedir, stdout=subprocess.PIPE,
-        stderr=open(os.path.join(config.SAVETO, ERRFILENAME), "a"))
-        #env=env_with_debug)
+        stderr=open(os.path.join(config.SAVETO, ERRFILENAME), "a"),  # )
+        env=env_with_debug)
 
     thread = threading.Thread(target=_wait_browser_ready,
                               kwargs={'browser': browser})
@@ -163,11 +164,12 @@ def _open_browser(exe=FIREFOX_PATH + ' -marionette', open_timeout=60):
 
     start = time.time()
     while thread.is_alive():
+        print('.', sep="", end='')
         time.sleep(.1)
         if time.time() - start > open_timeout:
             _kill(browser)
             raise Exception("browser connection not working")
-    print 'slept for {0:.3f} seconds'.format(time.time() - start)
+    print('slept for {0:.3f} seconds'.format(time.time() - start))
     return browser
 
 
