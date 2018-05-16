@@ -612,6 +612,16 @@ class TestUtils(unittest.TestCase):
         self.assertTrue(clf.estimator.class_weight)
 
 
+class TestStatus(unittest.TestCase):
+    @unittest.skipIf(QUICK, "slow test skipped")
+    def test_valid_json(self):
+        code = os.system(
+            "ssh mkreik@duckstein -t "
+            + "'bash -l -c /home/mkreik/bin/capture/status.sh' "
+            + "| python -m json.tool > /dev/null")
+        self.assertEqual(0, code)
+
+
 class MockWriter(object):
     '''simulates file-like object with =write= method'''
     def __init__(self):
