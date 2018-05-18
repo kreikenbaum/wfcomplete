@@ -7,6 +7,7 @@ then compute mean and variance/std
 from __future__ import print_function
 import csv
 import collections
+import copy
 import datetime
 import doctest
 import json
@@ -72,7 +73,7 @@ class Result(object):
         '''@return background size, real if available, else config parameter'''
         assert self.open_world
         if self._ytrue or compute:
-            return collections.Counter(self.y_true)[-1]
+            return str(collections.Counter(self.y_true)[-1])
         else:
             return (str(self.open_world['background_size'])
                     .replace('None', "max").replace('none', "max"))
@@ -204,14 +205,17 @@ class Result(object):
             ypred=yp,
             ydomains=yd)
 
-
     def __repr__(self):
         out = ("<Result({!r}, score={}, {}, {}, {}, size={}, "
                "size_overhead={}, time_overhead={}".format(
                    self.scenario, self.score, self.git, self.date, self.type_,
                    self.size, self.size_overhead, self.time_overhead))
         if self.open_world:
-            out += ', open_world={}'.format(self.open_world)
+            open_copy = copy.deepcopy(self.open_world)
+            if open_copy['exclude_sites']:
+                open_copy['exclude_sites'] = "[...({} sites)]".format(
+                    len(open_copy['exclude_sites']))
+            out += ', open_world={}'.format(open_copy)
         return out + ')>'
 
     def __str__(self):
@@ -251,7 +255,7 @@ class Result(object):
         if self.open_world:
             for key in self.open_world:
                 out[key] = self.open_world[key]
-        for prop in ['background_size', 'duration']:  # bg:overwrite open_world
+        for prop in ['duration']:  # 'background_size', overwrite open_world
             try:
                 out[prop] = getattr(self, prop)
             except AssertionError:  # fail for closed-world

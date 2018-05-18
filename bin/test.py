@@ -501,12 +501,12 @@ class TestScenario(unittest.TestCase):
 
     def test_config(self):
         self.assertEqual(
-            '(5)', scenario.Scenario(u'simple2/5--2016-09-23--100').config)
+            '5', scenario.Scenario(u'simple2/5--2016-09-23--100').config)
         self.assertEqual('', scenario.Scenario('0.21/2016-06-30').config)
         self.assertEqual(
             '', scenario.Scenario('0.15.3/nocache--2016-06-17--10@30').config)
         self.assertEqual(
-            '(10aI)',
+            '10aI',
             scenario.Scenario('0.22/10aI--2016-11-04--100@50').config)
 
     def test_date_from_trace(self):

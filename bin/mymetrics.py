@@ -58,7 +58,7 @@ def pos_label(y_true):
 
 
 def tpr_fpr_tpa(confusion_matrix):
-    '''@return array of (tpr/recall, fpr, tpa/precision) tuples'''
+    '''@return vector/np.array of (tpr/recall, fpr, tpa/precision) tuples'''
     TP = np.diag(confusion_matrix) * 1.0
     FP = confusion_matrix.sum(axis=0) - TP
     FN = confusion_matrix.sum(axis=1) - TP

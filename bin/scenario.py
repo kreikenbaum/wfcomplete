@@ -204,7 +204,7 @@ class Scenario(object):
             assert fromsettings.startswith(factor)
         except TypeError:
             pass
-        return "({})".format(fromsettings)
+        return fromsettings
 
     def date_from_trace(self):
         '''retrieve date from traces'''
@@ -212,6 +212,13 @@ class Scenario(object):
         all_traces = itertools.chain.from_iterable(self.get_traces().values())
         first = min((x.starttime for x in all_traces))
         return datetime.datetime.fromtimestamp(float(first)).date()
+
+    def describe(self):
+        '''@return name if not new defense, else add config'''
+        if not self.config:
+            return self.name
+        else:
+            return "{}@{}".format(self.name, self.config)
 
     # # todo: codup counter.py?
     def get_features_cumul(self, current_sites=True):

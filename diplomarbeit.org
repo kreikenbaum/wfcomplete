@@ -1235,11 +1235,8 @@ overhead.
 
 #+CAPTION[Accuracy to Overheads on 100 sites]: Comparison of LLaMA to this thesis's defense on 100 sites. The table was sorted by size increase. This also illustrates the new defense's configurability.
 #+NAME: tab:ohs-vs-acc-100
-|----------+------+------+--------------+------------------+------------------|
-| Scenario | Site | Date | \open Accuracy \close | \open Size o.h. [%]\close | \open Time o.h. [%]\close |
-
-
-
+|---------------+--------+------------+---------+---------+---------|
+| Scenario      | Site   |       Date | \open Accuracy \close | \open Size o.h. [%]\close | \open Time o.h. [%]\close |
 |               |        |            |     <7> |     <7> |     <7> |
 |---------------+--------+------------+---------+---------+---------|
 | no defense    | mlsec  | 2018-01-17 |    0.93 |    0.00 |    0.00 |
@@ -1269,10 +1266,18 @@ defense reduces accuracy more, for the same overhead, or requires less
 overhead, for a similar accuracy reduction. The main difference
 between LLaMA and the new defense lies in the HTTP-specific
 distributions to generate cover traffic. This difference is again
-illustrated in Figures [[fig:oh2acc100]] and [[fig:oh2acc]].
+illustrated in Figures [[fig:oh2acc100]] and [[fig:oh2acc]]. The difference in
+to results as reported by \citet{DBLP:journals/popets/CherubinHJ17}
+could stem from the difference in site layout: whereas Tor hidden
+service sites contain fewer embedded elements, especially JavaScript
+and CSS files\citep[Table 1]{DBLP:journals/popets/CherubinHJ17}. These
+trigger LLaMA's cover traffic behavior, and could thus could explain
+higher overhead on Alexa's top sites.
 
 
-#+CAPTION: Size Overhead to Accuracy Trade-Off for Thesis' Defense, LLaMA-nodelay, and no defense on 100 sites.
+
+
+#+CAPTION: Size Overhead to Accuracy Trade-Off for Thesis' Defense, LLaMA-nodelay, and no defense on 100 sites, captured at U. of Bruswick.
 #+NAME: fig:oh2acc100
 [[./pictures/oh2acc_2018_nogoogle.pdf]]
 # mplot.accuracy_vs_overhead([max(results.for_scenario_closed(s), key=lambda r: r.score) for s in [s for s in scenario.list_all() if hasattr(s, "date") and s.date  > datetime.date(2018, 1, 1) and "google" not in s and s.num_sites == 100]])
@@ -1283,6 +1288,8 @@ illustrated in Figures [[fig:oh2acc100]] and [[fig:oh2acc]].
 # code: see [[file:bin/results.py::%20scatter%20plot%20of%20accuracy%20vs%20overhead]]
 # - include llama-delay @ 30
 
+In addition to providing the visual difference to LLaMA, Figures
+[[fig:oh2acc100]] and [[fig:oh2acc]] show the new defenses's configurability.
 Appendix [[#appendix-accuracy]] shows more evaluation results.
 *** more                                                            :ARCHIVE:
     - how is data analyzed
@@ -1331,7 +1338,7 @@ Appendix [[#appendix-accuracy]] shows more evaluation results.
 #+CAPTION[Open-World Validation]: Validation on 100 sites of the WANG14 \citep{panchenko2} dataset. Since multi-class true-, and false-positive-rate have multiple possible definitions \citep{sokolova2009systematic}, only the two-class values were compared.
 #+NAME: tab:open-world-validation
 #+ATTR_LATEX: :align |l||r | r | r |
-| Data source                    | \open Num. inst. \close       | \open TPR [%] \close | \open FPR [%]\close |
+| Data source                    | \open Num. inst. \close | \open TPR [%] \close | \open FPR [%]\close |
 | <30>                           |       <10> |       <10> |       <10> |
 |--------------------------------+------------+------------+------------|
 | \citet[Table III]{panchenko2}, two-class |         90 |      96.92 |       1.98 |
@@ -1350,12 +1357,12 @@ Appendix [[#appendix-accuracy]] shows more evaluation results.
 #+CAPTION[Open-World Scenarios]: 100-site scenarios for further inspection.
 #+NAME: tab:open-world-scenarios
 #+ATTR_LATEX: :align |l|l||r | r | r |
-|                   |            |     <7> |     <7> |     <7> |
-| Scenario          |       Date | \open Accuracy \close | \open Size o.h. [%] \close | \open Time o.h. [%]  \close |
-|-------------------+------------+---------+---------+---------|
-| no defense        | 2018-02-02 |    0.92 |    0.00 |    0.00 |
-| new defense (20)  | 2018-02-13 |    0.43 |   61.81 |   22.23 |
-| LLaMA-nodelay     | 2018-02-25 |    0.36 |  205.18 |   29.04 |
+|                  |            |     <7> |     <7> |     <7> |
+| Scenario         |       Date | \open Accuracy \close | \open Size o.h. [%] \close | \open Time o.h. [%]  \close |
+|------------------+------------+---------+---------+---------|
+| no defense       | 2018-02-02 |    0.92 |    0.00 |    0.00 |
+| new defense (20) | 2018-02-13 |    0.43 |   61.81 |   22.23 |
+| LLaMA-nodelay    | 2018-02-25 |    0.36 |  205.18 |   29.04 |
 To evaluate the new defense, and to compare and contrast to LLaMA
 \citep{DBLP:journals/popets/CherubinHJ17}, defenseless captures were
 compared and contrasted to those protected by LLaMA-nodelay and the
@@ -1365,6 +1372,11 @@ previously, LLaMA's traces exhibit less accuracy reduction for the
 same overhead.
 
    - so what are the results
+     - results on defense
+       - relationship factor-overhead, especially tunability
+         graphic for 30 sites, link to table appendix
+         - [#C recreate table dynamically]
+       - defense worsens classification
      - detailed comparison
        - ccdf-curves
          - recall
@@ -1397,13 +1409,13 @@ same overhead.
 
   Llama: also low value, but much higher overhead (200%, vs 67%)
 
-          - validate attack
-          - tpr/fpr
-          - auroc
-          - conclusion
+- validate attack
+- tpr/fpr
+- auroc
+- conclusion
 - what are open-world results
 - are those results reliable
-     - also "validated" by CUMUL ccdf-curves
+  - also "validated" by CUMUL ccdf-curves
 *** removed sites
 #+INDEX: cumul traces:linkedin
 #+INDEX: cumul traces:removed:linkedin
@@ -1918,15 +1930,13 @@ The results decreased over time, until the capture process was fixed.
 | new defense (100aI) | 2018-03-28 |     0.39 |       3000 | 0.444 | 0.245 |
 | new defense (100aI) | 2018-03-28 |     0.59 |       6557 | 0.000 | 0.000 |
 |---------------------+------------+----------+------------+-------+-------|
-
-
-# def fix(r):
-#     if math.isnan(r.size_overhead):
-#         r.size_overhead = 0
-#     return r
-# totable = [fix(r) for r in results.list_all() if r.open_world and r.size > 90]
-# totable.sort(key=lambda r: r.scenario.date)
-# print results.to_table(totable, fields_plus_names=(lambda r: [r.scenario.name, r.scenario.date, "{:.2f}".format(r.score), r.background_size, "{:.3f}".format(r.open_world['tpr']), "{:.3f}".format(r.open_world['fpr']), "{:.2f}".format(r.size_overhead)], ["Scenario","Date", "Accuracy", "Background-size", "TPR", "FPR", "Size increase"]))
+def fix(r):
+    if math.isnan(r.size_overhead):
+        r.size_overhead = 0
+    return r
+totable = [fix(r) for r in results.list_all() if r.open_world and r.size > 90]
+totable.sort(key=lambda r: r.scenario.date)
+print results.to_table(totable, fields_plus_names=(lambda r: [r.scenario.name + " (" + r.scenario.config + ")", r.scenario.date, "{:.2f}".format(r.score), r.background_size, "{:.3f}".format(r.open_world['tpr']), "{:.3f}".format(r.open_world['fpr']), r.size], ["Scenario","Date", "Accuracy", "BG-size", "TPR", "FPR", "Num. sites"]))
 * KEYWORDS [#C] The Base Rate Fallacy
   :PROPERTIES:
   :CUSTOM_ID: base-rate

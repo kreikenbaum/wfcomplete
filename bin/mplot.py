@@ -154,7 +154,7 @@ def _init_roc(titleadd=None):
     return out
 
 
-def roc_helper_open_world_binary(result, current_sites=True, axes=None):
+def roc_helper_open_world_binary(result, current_sites=True, fig=None):
     assert result.open_world and result.open_world['binary'], "no-owbin result"
     num = result.open_world['background_size']
     auc_bound = result.open_world['auc_bound']
@@ -165,8 +165,8 @@ def roc_helper_open_world_binary(result, current_sites=True, axes=None):
     return fpr_array, tpr_array, roc(
         fpr_array, tpr_array,
         '({}), max_fpr: {}, background_size: {}'.format(
-            result.scenario, auc_bound, num),
-        axes)
+            result.scenario, auc_bound, num), fig,
+        fig)
 
 
 def roc(fpr, tpr, titleadd=None, fig=None, dot=0.01):
@@ -299,7 +299,7 @@ def _splitdate(trace_name):
 
 
 def ccdf_curve_for_scenario(scenario_obj, existing=True, axes=None,
-                            filt=None, type_="recall"):
+                            filt=None, type_="recall", save=False):
     if not axes:
         _, axes = plt.subplots()
     sizes = set()
@@ -320,6 +320,10 @@ def ccdf_curve_for_scenario(scenario_obj, existing=True, axes=None,
         ccdf_curve(result.get_confusion_matrix(), size, axes=axes, type_=type_)
     plt.legend()
     plt.title("CCDF-{} curve for {}".format(type_, scenario_obj))
+    if save:
+        plt.savefig("/tmp/ccdf-{}-{}.pdf"
+                    .format(type_, scenario_obj)
+                    .replace(" ", "-"))
 
 
 def ccdf_curve_for_results(results, type_="recall", axes=None, **kwargs):
