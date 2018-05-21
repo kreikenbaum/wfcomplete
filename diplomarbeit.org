@@ -678,6 +678,8 @@ of future work in section [[#future-work]].
    :PROPERTIES:
    :CUSTOM_ID: sub2-wf-def
    :END:
+   #+INDEX: LLaMA
+   #+INDEX: defenses!LLaMA
    This section describes defenses against \gls{wf} as described
    [[#sub2-wf][previously]] in section [[#sub2-wf]]: \gls{wf} attacks have become
    increasingly better using \gls{ml}. \Gls{wf} thus effectively
@@ -836,6 +838,8 @@ of future work in section [[#future-work]].
   :PROPERTIES:
   :CUSTOM_ID: ch3-newdefense
   :END:
+  #+INDEX: new defense
+  #+INDEX: defenses!new defense
 \Gls{wf} has deanonymized Tor under laboratory conditions
 \citep{panchenko}, and has continued to improve (\citet{panchenko2},
 \citet{197185}, \citet{rimmerautomated}). Several approaches have been
@@ -1198,7 +1202,7 @@ method of evaluating the extension. The kNN-attack by
 \citet{effective2014} showed worse results, as validated by the above
 literature.
 
-#+CAPTION[Comparison of LLaMA to this thesis's defense on 30 sites]: Comparison of LLaMA to this thesis's defense on 30 sites. The top lines shows LLaMA stats, the next two lines try to match first the accuracy, then the size overhead with the new defense. Capturing LLaMA on 100 sites proved infeasible due to the long duration.
+#+CAPTION[Comparison of LLaMA to this thesis's defense on 30 sites]: Comparison of LLaMA to this thesis's defense on 30 sites. The top lines shows LLaMA stats, the next two lines try to match first the accuracy, then the size overhead with the new defense. Capturing delayed LLaMA on 100 sites proved infeasible due to the long duration.
 #+NAME: tab:closed_world
 #+ATTR_LATEX: :align |l||n{2}{2}|n{3}{2}|n{4}{2}|
 | <17>              |       <10> |       <10> |       <10> |
@@ -1233,8 +1237,10 @@ overhead. Even compared to non-delayed LLaMA, the new defense offers
 similar accuracy/size overhead relationship for a much lower time
 overhead.
 
+# n{2}{2}|n{3}{2}|n{4}{2}|
 #+CAPTION[Accuracy to Overheads on 100 sites]: Comparison of LLaMA to this thesis's defense on 100 sites. The table was sorted by size increase. This also illustrates the new defense's configurability.
 #+NAME: tab:ohs-vs-acc-100
+#+ATTR_LATEX: :align |l|l|r||r | r|r
 |---------------+--------+------------+---------+---------+---------|
 | Scenario      | Site   |       Date | \open Accuracy \close | \open Size o.h. [%]\close | \open Time o.h. [%]\close |
 |               |        |            |     <7> |     <7> |     <7> |
@@ -1277,7 +1283,7 @@ higher overhead on Alexa's top sites.
 
 
 
-#+CAPTION: Size Overhead to Accuracy Trade-Off for Thesis' Defense, LLaMA-nodelay, and no defense on 100 sites, captured at U. of Bruswick.
+#+CAPTION: Size Overhead to Accuracy Trade-Off for Thesis' Defense, LLaMA-nodelay, and no defense on 100 sites, traces captured at local VM.
 #+NAME: fig:oh2acc100
 [[./pictures/oh2acc_2018_nogoogle.pdf]]
 # mplot.accuracy_vs_overhead([max(results.for_scenario_closed(s), key=lambda r: r.score) for s in [s for s in scenario.list_all() if hasattr(s, "date") and s.date  > datetime.date(2018, 1, 1) and "google" not in s and s.num_sites == 100]])
@@ -1422,9 +1428,9 @@ same overhead.
 - are those results reliable
   - also "validated" by CUMUL ccdf-curves
 *** removed sites
-#+INDEX: cumul traces:linkedin
-#+INDEX: cumul traces:removed:linkedin
-#+INDEX: cumul traces:removed:cutoff
+#+INDEX: cumul traces!linkedin
+#+INDEX: cumul traces!removed!linkedin
+#+INDEX: cumul traces!removed!cutoff
 #+CAPTION: Removed traces at cutoff point of 10 FP sites (linkedin.com). These show high variability as compared to Figure [[fig:cumul-well-open]].
 #+ATTR_LATEX: :float nil :width 0.5\textwidth
 #+NAME: fig:traces_cumul_linkedin
@@ -1589,10 +1595,6 @@ tpr           &  0.024 & -0.235 & -0.122 &        -0.697 &  0.577 &  0.223 &  0.
    :PROPERTIES:
    :CUSTOM_ID: future-work
    :END:
-*** purpose
-*** limits
-*** vision
-*** brainstorm
     - add-on-SDK replaced by web-extensions
       - not that much to do
       - when/if necessary for Tor's ESR-version-based browser
@@ -1616,10 +1618,10 @@ differs from how it should be used, see next section.
 - classification code at
 
 - works against attacks such as \citep{torben}?
-**** How to Distinguish HTML and Embedded Objects
-     :PROPERTIES:
-     :CUSTOM_ID: distinguish_HTML_embedded
-     :END:
+*** How to Distinguish HTML and Embedded Objects
+    :PROPERTIES:
+    :CUSTOM_ID: distinguish_HTML_embedded
+    :END:
      The traffic model \citep{newtrafficmodel} distinguishes between
      HTML and embedded object requests. This is usually done via HTTP's
      =content-type= header\citep[sec.3.1.1.5]{rfc7231}, yet that is only
@@ -1935,13 +1937,13 @@ The results decreased over time, until the capture process was fixed.
 | new defense (100aI) | 2018-03-28 |     0.39 |       3000 | 0.444 | 0.245 |
 | new defense (100aI) | 2018-03-28 |     0.59 |       6557 | 0.000 | 0.000 |
 |---------------------+------------+----------+------------+-------+-------|
-def fix(r):
-    if math.isnan(r.size_overhead):
-        r.size_overhead = 0
-    return r
-totable = [fix(r) for r in results.list_all() if r.open_world and r.size > 90]
-totable.sort(key=lambda r: r.scenario.date)
-print results.to_table(totable, fields_plus_names=(lambda r: [r.scenario.name + " (" + r.scenario.config + ")", r.scenario.date, "{:.2f}".format(r.score), r.background_size, "{:.3f}".format(r.open_world['tpr']), "{:.3f}".format(r.open_world['fpr']), r.size], ["Scenario","Date", "Accuracy", "BG-size", "TPR", "FPR", "Num. sites"]))
+# def fix(r):
+#     if math.isnan(r.size_overhead):
+#         r.size_overhead = 0
+#     return r
+# totable = [fix(r) for r in results.list_all() if r.open_world and r.size > 90]
+# totable.sort(key=lambda r: r.scenario.date)
+# print results.to_table(totable, fields_plus_names=(lambda r: [r.scenario.name + " (" + r.scenario.config + ")", r.scenario.date, "{:.2f}".format(r.score), r.background_size, "{:.3f}".format(r.open_world['tpr']), "{:.3f}".format(r.open_world['fpr']), r.size], ["Scenario","Date", "Accuracy", "BG-size", "TPR", "FPR", "Num. sites"]))
 * KEYWORDS [#C] The Base Rate Fallacy
   :PROPERTIES:
   :CUSTOM_ID: base-rate
