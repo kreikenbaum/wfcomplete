@@ -219,7 +219,7 @@ class Result(object):
         return out + ')>'
 
     def __str__(self):
-        return "Result {} for {}".format(self._id, self.scenario)
+        return "{} (result {})".format(self.scenario, self._id)
 
     def get_classifier(self, probability=True):
         '''@return classifier that achieved this result'''

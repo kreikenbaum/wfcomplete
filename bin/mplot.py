@@ -141,9 +141,8 @@ def date_accuracy(size=30):
     return plot
 
 
-def _init_roc(titleadd=None):
+def _init_roc(title="ROC curve", titleadd=None):
     '''initializes ROC plot'''
-    title = "ROC curve"
     if titleadd:
         title += " " + titleadd
     out = plt.figure()
@@ -155,33 +154,28 @@ def _init_roc(titleadd=None):
 
 
 def roc_helper_open_world_binary(result, current_sites=True, fig=None):
+    '''@return fpr-array, tpr-array, figure'''
     assert result.open_world and result.open_world['binary'], "no-owbin result"
-    num = result.open_world['background_size']
-    auc_bound = result.open_world['auc_bound']
     yt = mymetrics.binarize(result.y_true, transform_to=1)
     fpr_array, tpr_array, _ = metrics.roc_curve(
         yt, mymetrics.binarize_probability(result.y_prediction)[:, 1],
         mymetrics.pos_label(yt))
     return fpr_array, tpr_array, roc(
-        fpr_array, tpr_array,
-        '({}), max_fpr: {}, background_size: {}'.format(
-            result.scenario, auc_bound, num), fig,
-        fig)
+        fpr_array, tpr_array, '{}'.format(result), fig)
 
 
-def roc(fpr, tpr, titleadd=None, fig=None, dot=0.01):
-    '''@return fig object with roc curve, use =.savefig(filename)=
-to save, and =.show()= to display.
-    @params If =fig=, draw another curve into existing figure
-        if dot > 0, draw a dot at this fpr rate (<1)'''
+def roc(fpr, tpr, curvelabel="ROC-curve", titleadd=None, fig=None,
+        dot_position=0.01):
+    '''@return fig object with roc curve, use =fig.savefig(filename)=
+to save, and =fig.show()= to display.
+    @param fig: draw another curve into existing figure
+    @param dot_position: (0<dot_position<1), draw dot at curve at this fpr'''
     if not fig:
         fig = _init_roc(titleadd)
     plt.plot(fpr, tpr, label='{} (AUC = {:0.2f})'.format(
-        "ROC-curve", metrics.auc(fpr, tpr)))
-    # one_percent = [y for (x, y) in zip(fpr, tpr) if x >= 0.01][0]
-    # line = plt.plot([0, 1], [one_percent] *2, "red", label='1% false positives')
-    if dot:
-        x1, y1 = [(x, y) for (x, y) in zip(fpr, tpr) if x < dot][-1]
+        curvelabel, metrics.auc(fpr, tpr)))
+    if dot_position:
+        x1, y1 = [(x, y) for (x, y) in zip(fpr, tpr) if x < dot_position][-1]
         plt.plot(x1, y1, "ro",
                  label='{:2.2f}% false-, {:2.2f}% true positives'.format(
                      x1*100, y1*100))
