@@ -355,6 +355,7 @@ class TestResults(unittest.TestCase):
         (fail_num, _) = doctest.testmod(results, optionflags=doctest.ELLIPSIS)
         self.assertEqual(0, fail_num)
 
+    @unittest.skipIf(QUICK, "slow test skipped")
     def test_open_world_config(self):
         '''
         1. create result with open world

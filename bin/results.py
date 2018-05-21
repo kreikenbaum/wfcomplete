@@ -97,6 +97,8 @@ class Result(object):
     @property
     def y_domains(self):
         '''@return domains of traces, with optional open world added'''
+        if isinstance(self._ydomains, tuple):
+            self._ydomains = self._ydomains[1]()
         if self._ydomains is None:
             logging.warn("%s had no saved domain array 'yd'", self)
             _, _, self._ydomains = self.scenario.get_features_cumul(
@@ -106,6 +108,8 @@ class Result(object):
     @property
     def y_prediction(self):
         '''@return predicted values (either pre-existing or computed)'''
+        if isinstance(self._ypred, tuple):
+            self._ypred = self._ypred[1]()
         if not self._ypred:
             logging.warn("%s had no saved prediction", self)
             X, y, _ = self.scenario.get_features_cumul(
@@ -118,6 +122,8 @@ class Result(object):
     @property
     def y_true(self):
         '''@return true classes of traces, with optional open world added'''
+        if isinstance(self._ytrue, tuple):
+            self._ytrue = self._ytrue[1]()
         if self._ytrue is None:
             logging.warn("%s had no saved class array 'y'", self)
             _, self._ytrue, _ = self.scenario.get_features_cumul(
@@ -296,14 +302,14 @@ def _duplicates(params=["config.scenario", "result.score"], db=_db()):
 
 
 def _load_artifact_or_none(entry, filename):
-    '''loads artifact form mongodb'''
+    '''(lazy-) loads artifact form mongodb'''
     try:
         objectid = next(a['file_id'] for a in entry['artifacts']
                         if a['name'] == filename)
     except (StopIteration, KeyError):
         return None
-    artifact = gridfs.GridFS(_db()).get(objectid)
-    return json.load(artifact)
+    return ("placeholder",
+            lambda: json.load(gridfs.GridFS(_db()).get(objectid)))
 
 
 def _next_id(db=_db()):
