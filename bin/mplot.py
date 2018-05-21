@@ -153,7 +153,7 @@ def _init_roc(title="ROC curve", titleadd=None):
     return out
 
 
-def roc_helper_open_world_binary(result, current_sites=True, fig=None):
+def roc_helper_open_world_binary(result, **kwargs):
     '''@return fpr-array, tpr-array, figure'''
     assert result.open_world and result.open_world['binary'], "no-owbin result"
     yt = mymetrics.binarize(result.y_true, transform_to=1)
@@ -161,7 +161,7 @@ def roc_helper_open_world_binary(result, current_sites=True, fig=None):
         yt, mymetrics.binarize_probability(result.y_prediction)[:, 1],
         mymetrics.pos_label(yt))
     return fpr_array, tpr_array, roc(
-        fpr_array, tpr_array, '{}'.format(result), fig)
+        fpr_array, tpr_array, '{}'.format(result.scenario), **kwargs)
 
 
 def roc(fpr, tpr, curvelabel="ROC-curve", titleadd=None, fig=None,
