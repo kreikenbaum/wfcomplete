@@ -43,9 +43,9 @@ function CoverTraffic(targetURLSpec, load=LOAD) {
         this.target.numEmbedded = this.numStrategyDist(targetURLSpec);
     }
 
-  this.prob = Math.max(
-    minProb_(this.site.numEmbedded),
-    Math.min(this.target.numEmbedded / this.site.numEmbedded,
+    this.prob = Math.max(
+        minProb_(this.site.numEmbedded),
+        Math.min(this.target.numEmbedded / this.site.numEmbedded,
              2 * Simple.prefs.factor));
     this.target.origNumEmbedded = this.target.numEmbedded;
 

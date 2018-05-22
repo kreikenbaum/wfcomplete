@@ -837,7 +837,7 @@ of future work in section [[#future-work]].
   :END:
   #+INDEX: new defense
   #+INDEX: defenses!new defense
-\Gls{wf} has deanonymized Tor under laboratory conditions
+\Gls{wf} has deanonymized Tor \citep{tor-design} under laboratory conditions
 \citep{panchenko}, and has continued to improve (\citet{panchenko2},
 \citet{197185}, \citet{rimmerautomated}). Several approaches have been
 taken to prevent \gls{wf} (\cite{panchenko},
@@ -903,7 +903,7 @@ all website requests. Algorithm \ref{algo1} describes the main idea:
    \State $\textit{requestCoverSized}(\textit{coverHttpSize})$
    \State $\textit{registerHost}(\textit{hostnameOf}(\textit{url}), \textit{coverNumEmbedded}, \textit{urlNumEmbedded})$
  \Else \Comment{known hostname: a resource request}
-   \State $\textit{requestProbability} \leftarrow \textit{computeProbability}(\textit{hostnameOf}(\textit{url}))$
+   \State $\textit{requestProbability} \leftarrow \textit{getProbability}(\textit{hostnameOf}(\textit{url}))$
    \While {$\textit{requestProbability} > 1$} \Comment{send multiple cover requests}
      \State $\textit{requestCoverSized}(\textit{randomEmbeddedSize}())$
      \State $\textit{updateHosts}(\textit{hostnameOf}(\textit{url}))$
@@ -921,41 +921,43 @@ all website requests. Algorithm \ref{algo1} describes the main idea:
 The retrieval of the (first) HTML page provides significant
 information to a \gls{wf} attacker \citep[sec.4.1]{panchenko}. To
 counter this information gain, this first load is always covered by
-additional traffic. Afterwards, the browser downloads the page
-resources: images, style sheets, JavaScript \citep{ecma} files,
-etc. Each of these transfers might be covered by additional dummy
-traffic: The actual number of resources is subtracted from the target
-number. This difference is randomly spread out among the actual
+additional traffic. After this first request, the browser downloads
+the page resources: images, style sheets, JavaScript \citep{ecma}
+files, etc. Each of these transfers might be covered by additional
+dummy traffic: The actual number of resources is subtracted from the
+target number. This difference is randomly spread out among the actual
 browser requests. The size of each cover response is adjusted to the
 page's actual values, if known. The addon augments data requests to
 match an imagined web page retrieval. After a timeout, the hostname
 and its data is removed from the data structure used by
-/registerHost/, /isRegistered/, /computeProbability/ and
+/registerHost/, /isRegistered/, /getProbability/ and
 /updateHosts/.
 
 
 
-Alice's defense sees the first load from =bob.com=, and checks if it
-has seen this site before. Since it is a new request, it has not. It
-thus considers this to be a main HTML request, and determines the
-actual, target, and cover values. Using these, it then sends a request
-for HTML cover traffic concurrently to the first HTML request. Since
-all traffic is encrypted and secured over Tor, only the sizes of the
-requests and responses are seen. By design, on the wire this cover
-request is simultaneous to the main HTML request. Bob's main website
-might be simple: it contains just a stylesheet, links to further
-posts, and a background image. The browser downloads the stylesheet,
-and the image after the first HTML page. The defense randomly chooses
-to accompany the image with two additional cover requests. It then
-decrements its embedded resource cover target by two.
+Alice's defense sees the first load request to =bob.com=, and checks
+if it has seen this site before. Since it is a new request, it has
+not. It thus considers this to be a main HTML request, and determines
+the actual, target, and cover values. Using these, it then sends a
+request for HTML cover traffic concurrently to the first HTML
+request. Since all traffic is encrypted and secured over Tor, only the
+sizes of the requests and responses are seen. By design, on the wire
+this cover request is simultaneous to the main HTML request. Bob's
+main website might be simple: it contains just a stylesheet, links to
+further posts, and a background image. The browser downloads the
+stylesheet, and the image after the first HTML page. The defense has
+determined to accompany each embedded resource with 1.37 additional
+cover requests. It randomly chooses to request two cover elements for
+the stylesheet, and one for the background image.
 
 
 The created traffic is based on the HTTP model \citep{newtrafficmodel}
 described in section [[#sub3-http]]. For each web page retrieval, the
 defense sets target retrieval parameters. From these, the web page's
-actual parameters are subtracted to set the amount of cover traffic
-for this web page. If the parameters are not known, they are guessed
-from the same distributions used to set the target values.
+actual parameters are subtracted to set the probability of cover
+traffic for each element of this web page. If the page sizes are not
+known, they are guessed from the same distributions used to set the
+target values.
 ** Modeling Web Retrieval
    :PROPERTIES:
    :CUSTOM_ID: sub3-http
@@ -1624,6 +1626,12 @@ differs from how it should be used, see next section.
 - classification code at
 
 - works against attacks such as \citep{torben}?
+
+- combine different approaches such as CUMUL \citep{panchenko2} and
+  timing-based \citep{DBLP:journals/tifs/FeghhiL16} using the
+  multi-kernel approach of \citet{mit2013kernel}
+
+- dynamically compute embedded probability based on remaining sites
 *** How to Distinguish HTML and Embedded Objects
     :PROPERTIES:
     :CUSTOM_ID: distinguish_HTML_embedded
