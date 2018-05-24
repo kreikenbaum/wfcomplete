@@ -39,9 +39,8 @@ def trace_args():
 
 # #### CROSS-VALIDATION
 FOLDS = 10
-JOBS_NUM = -3
+JOBS_NUM = -2  # maybe -4 for herrmann (2 == -3) used up all memory
 VERBOSE = 0
-# JOBS_NUM = -3  # 1. maybe -4 for herrmann (2 == -3) used up all memory
 # ### TESTING / DEBUGGING
 # JOBS_NUM = 1; FOLDS = 2
 # ## copy&paste:

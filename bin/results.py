@@ -218,7 +218,8 @@ class Result(object):
                    self.size, self.size_overhead, self.time_overhead))
         if self.open_world:
             open_copy = copy.deepcopy(self.open_world)
-            if open_copy['exclude_sites']:
+            if (open_copy['exclude_sites']
+                    and not isinstance(open_copy['exclude_sites'], int)):
                 open_copy['exclude_sites'] = "[...({} sites)]".format(
                     len(open_copy['exclude_sites']))
             out += ', open_world={}'.format(open_copy)

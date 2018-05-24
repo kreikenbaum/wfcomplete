@@ -171,7 +171,7 @@ to save, and =fig.show()= to display.
     @param fig: draw another curve into existing figure
     @param dot_position: (0<dot_position<1), draw dot at curve at this fpr'''
     if not fig:
-        fig = _init_roc(titleadd)
+        fig = _init_roc(titleadd=titleadd)
     plt.plot(fpr, tpr, label='{} (AUC = {:0.2f})'.format(
         curvelabel, metrics.auc(fpr, tpr)))
     if dot_position:

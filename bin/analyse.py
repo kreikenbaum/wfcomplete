@@ -273,7 +273,9 @@ def simulated_open_world(scenario_obj, auc_bound, binary, bg_size,
                          exclude_sites, current_sites):
     '''@return metrics for open world experiment'''
     if isinstance(exclude_sites, int):
-        exclude_sites = scenario_obj.get_traces(current_sites)[:exclude_sites]
+        exclude_sites = (scenario_obj
+                         .get_traces(current_sites)
+                         .keys())[:exclude_sites]
     for site in exclude_sites:
         try:
             del scenario_obj.get_traces(current_sites)[site]

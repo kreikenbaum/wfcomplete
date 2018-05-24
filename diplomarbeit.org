@@ -648,9 +648,11 @@ of future work in section [[#future-work]].
     tagesschau.de.
 
 
-    #+CAPTION[ROC curve example]: Example Receiver Operating Characteristic (ROC) curve. The point at the top left (0, 1) is optimal. The ROC-curve shows possible true- to false-positive ratios. Each point on the curve corresponds to one confusion matrix \citep[sec.4.0]{Fawcett:2006:IRA:1159473.1159475}.
-    #+NAME: fig:roc-example
-    [[./pictures/roc_example_2016-05_1_4000.pdf]]
+#+CAPTION[ROC curve example]: (Example) receiver operating characteristic (ROC) curve for the WANG14 \citep[sec.4.1]{panchenko2} data set. The point at the top left (0, 1) is optimal. The ROC-curve shows possible true- to false-positive ratios. Each point on the curve corresponds to one confusion matrix \citep[sec.4.0]{Fawcett:2006:IRA:1159473.1159475}: the farther to the right on the curve, the more classification tends towards positive classification.
+#+NAME: fig:roc-example
+[[./pictures/roc-WANG14-on-2014-05-23-(result-811).pdf]]
+# mplot.roc_helper_open_world_binary(results.for_id(811))
+
 
     Some classifiers not only yield the input's class, but also output
     a certainty or probability: This indicates how sure the classifier
@@ -664,14 +666,15 @@ of future work in section [[#future-work]].
 
 
     A /Receiver Operating Characteristic Curve/ (ROC-Curve)
-    \citep{Fawcett:2006:IRA:1159473.1159475} shows the classifier
-    strictness trade-off. This diagram contrasts classifier true-, and
-    false-positive-rate, see Figure [[fig:roc-example]]. The /area under/
-    this /curve/ (AUC) can be measured. The closer this value is to 1,
-    the better. If one is mainly interested in few false positives,
-    the leftmost section of the ROC-curve is of particular
-    interest. The area under the curve bounded up to a false positive
-    rate of, say 1%, is called /bounded AUC/ and denoted AUC_{0.01}.
+    \citep{Fawcett:2006:IRA:1159473.1159475} --- see Figure
+    [[fig:roc-example]] --- shows the classifier strictness
+    trade-off. This diagram contrasts classifier true-, and
+    false-positive-rate. The /area under/ this /curve/ (AUC) can be
+    measured. The closer this value is to 1, the better. If one is
+    mainly interested in few false positives, the leftmost section of
+    the ROC-curve is of particular interest. The area under the curve
+    bounded up to a false positive rate of, say 1%, is called /bounded
+    AUC/ and denoted AUC_{0.01}.
 ** Defending against Website Fingerprinting
    :PROPERTIES:
    :CUSTOM_ID: sub2-wf-def
@@ -1070,6 +1073,13 @@ errors.
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
   :END:
+This work proposes a new defense against \gls{wf}, which builds on the
+use of the HTTP traffic model \citep{newtrafficmodel} for efficient
+obfuscation of world-wide-web \citep{rfc1945} traffic. The complexity
+of HTTP traffic renders the theoretical analysis of \gls{wf}
+difficult, hence the prevalent technique for assessing the performance
+of a detection system is an empirical evaluation.
+
 In Evaluation, traffic data needs to first be captured and then
 analyzed. \citet{effective2014} and \citet{panchenko2} provide their
 capture data, but it does not contain the new defense's traces, so
@@ -1079,6 +1089,7 @@ the robustness of the attack, then compares the new defense with the
 latest defense by \citet{DBLP:journals/popets/CherubinHJ17}, both in a
 closed-world scenario. Section ... describes the open-world analysis,
 with concluding remarks in section ...
+** TODO section names
 ** old intro                                                        :ARCHIVE:
 This chapter compares the new defense to existing defenses. The first
 section illustrates the setup. The second section [[#sub4-tools][validates the
@@ -1321,10 +1332,6 @@ results.
    :CUSTOM_ID: sub4-open
    :END:
 
-#+CAPTION: ROC-Curve for WANG14 \citep[sec.4.1]{panchenko2} data set
-#+NAME: fig:wang-roc
-[[./pictures/roc-wang14-on-2014-05-23-(result-811).pdf]]
-# mplot.roc_helper_open_world_binary(results.for_id(811))
 Closed world evaluation sets a strong assumption
 \citep[sec.3.1]{ccs2014-critical} due to its limitation to known
 sites. As described in section [[#sub2-ml-measure]], the open world
@@ -1332,17 +1339,15 @@ setting compares a certain number of monitored sites against a bigger
 number of background pages, and is considered more realistic
 \citep[sec.5.1]{effective2014}. Say, Eve knows that her daughter Alice
 might visit any number of pages, but is only interested in whether she
-visits =bob.com=. As described in section [[#sub2-ml-measure]], all visits
-that are wrongly classified as =bob.com=, say Alice really visited
-=bbc.com=, are called /false positives/, whereas if Alice visited
-=bob.com= and it was classified as =bbc.com=, is called a /false
-negative/. Ideally, none of these exist. In practice, Eve has to weigh
-between leniency and strictness: would she rather let slip a visit to
-=bob.com= as =bbc.com=, or would she rather check in on her daughter
-when she just visits =bbc.com=, because it was classified as
-=bob.com=? Figure [[fig:wang-roc]] shows such a ROC-curve with its
-trade-off. This curve has a high area under the curve (AUC). The
-curves for data recorded for this thesis exhibit lower AUC-scores.
+visits =bob.com=. All visits that are wrongly classified as =bob.com=,
+say Alice really visited =bbc.com=, are called /false positives/,
+whereas if Alice visited =bob.com= and it was classified as =bbc.com=,
+is called a /false negative/. Ideally, none of these exist. In
+practice, Eve has to weigh between leniency and strictness: would she
+rather let slip a visit to =bob.com= as =bbc.com=, or would she rather
+check in on her daughter when she just visits =bbc.com=, because it
+was classified as =bob.com=? This trade-off was illustrated by Figure
+[[fig:roc-example]].
 
 #+CAPTION[Open-World Validation]: Validation on 100 sites of the WANG14 \citep{panchenko2} dataset. Since multi-class true-, and false-positive-rate have multiple possible definitions \citep{sokolova2009systematic}, only the two-class values were compared.
 #+NAME: tab:open-world-validation
@@ -1383,19 +1388,20 @@ previously, LLaMA's traces exhibit less accuracy reduction for the
 same overhead.
 
 
-
-A receiver operating characteristic (ROC) curve illustrates the
-classification strictness trade-off, shown in Figure
-[[fig:rocs-defenses]]. The curve of defenseless data is similar to
-\citet[Fig.~11]{wtfpad2015}. While LLaMA-nodelay and the new defense
-both exhibit close-to-random-guessing classification, the new defense
-does so at considerably lower overhead.
-#+CAPTION[Receiver operating characteristic (ROC)-curves for 50 sites]: Receiver operating characteristic (ROC)-curves for 50 sites. These were classified with 5000 background sites.
+#+CAPTION[Receiver operating characteristic (ROC)-curves for 50 sites]: Receiver operating characteristic (ROC)-curves that compare the new defense with no defense and LLaMA\cite{DBLP:journals/popets/CherubinHJ17}. There are 50 monitored pages in the foreground-set, the size of the world/background set is 5,000 pages.
 #+NAME: fig:rocs-defenses
 [[./pictures/rocs-837-838-839-840.pdf]]
 # rocfig = mplot._init_roc("Receiver operating characteristic (ROC) curves")
 # for r in [r for r in results.list_all() if 40 < r.size < 60 and r.open_world['binary'] and r.background_size == "5000"]:
 #     mplot.roc_helper_open_world_binary(r, fig=rocfig, dot_position=None)
+The receiver operating characteristic (ROC-) curve illustrates the
+classification strictness trade-off, shown in Figure
+[[fig:rocs-defenses]]. The curve of defenseless data is similar to
+\citet[Fig.~11]{wtfpad2015}. While LLaMA-nodelay and the new defense
+both exhibit close-to-random-guessing classification, the new defense
+does so at considerably lower overhead. The defense at 2018-23-13
+exhibits 62% data size overhead, while the defense at 2018-03-28 has
+142%.
 
    - so what are the results
      - results on defense
