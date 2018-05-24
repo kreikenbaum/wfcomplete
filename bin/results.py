@@ -69,10 +69,10 @@ class Result(object):
         self._ydomains = ydomains
 
     @property
-    def background_size(self, compute=False):
+    def background_size(self):
         '''@return background size, real if available, else config parameter'''
         assert self.open_world
-        if self._ytrue or compute:
+        if self._ytrue:
             return str(collections.Counter(self.y_true)[-1])
         else:
             return (str(self.open_world['background_size'])

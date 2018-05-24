@@ -1331,7 +1331,7 @@ results.
    :PROPERTIES:
    :CUSTOM_ID: sub4-open
    :END:
-
+#+INDEX: complementary cumulative distribution function (CCDF)
 Closed world evaluation sets a strong assumption
 \citep[sec.3.1]{ccs2014-critical} due to its limitation to known
 sites. As described in section [[#sub2-ml-measure]], the open world
@@ -1383,9 +1383,7 @@ To evaluate the new defense, and to compare and contrast to LLaMA
 \citep{DBLP:journals/popets/CherubinHJ17}, defenseless captures were
 compared and contrasted to those protected by LLaMA-nodelay and the
 new defense. Their closed-world accuracy and size overhead results is
-again presented in Table [[tab:open-world-scenarios]]. As mentioned
-previously, LLaMA's traces exhibit less accuracy reduction for the
-same overhead.
+again presented in Table [[tab:open-world-scenarios]].
 
 
 #+CAPTION[Receiver operating characteristic (ROC)-curves for 50 sites]: Receiver operating characteristic (ROC)-curves that compare the new defense with no defense and LLaMA\cite{DBLP:journals/popets/CherubinHJ17}. There are 50 monitored pages in the foreground-set, the size of the world/background set is 5,000 pages.
@@ -1397,36 +1395,37 @@ same overhead.
 The receiver operating characteristic (ROC-) curve illustrates the
 classification strictness trade-off, shown in Figure
 [[fig:rocs-defenses]]. The curve of defenseless data is similar to
-\citet[Fig.~11]{wtfpad2015}. While LLaMA-nodelay and the new defense
-both exhibit close-to-random-guessing classification, the new defense
-does so at considerably lower overhead. The defense at 2018-23-13
-exhibits 62% data size overhead, while the defense at 2018-03-28 has
-142%.
+\citet[Fig.~11]{wtfpad2015}. The new defense at 62% overhead visibly decreases classification efficacy. Both LLaMA-nodelay and the new defense at 142% overhead decrease classification to a level similar to random guessing.
+
+#+BEGIN_EXPORT latex
+\begin{figure}[tb]
+\includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-no-defense-on-2018-02-02.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-new-defense-on-2018-02-13.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-new-defense-on-2018-03-28.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-LLaMA-nodelay-on-2018-02-25.pdf}\\
+\includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-no-defense-on-2018-02-02.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-new-defense-on-2018-02-13.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-new-defense-on-2018-03-28.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-LLaMA-nodelay-on-2018-02-25.pdf}
+\caption[CCDF-curves for open-world scenarios]{\label{fig:ccdf-precision-all4}
+CCDF-curves for (left-to-right) (1) no defense, (2) new defense at 02-13, (3) new defense at 03-28, and (4) LLaMA-nodelay at 02-25. Top-to-bottom show (1) precision, and (2) recall}
+\end{figure}
+#+END_EXPORT
+# for s in [sd, s100, sl, s20]:
+#    for type_ in ["precision", "recall"]:
+#         mplot.ccdf_curve_for_scenario( s, filt=lambda r: r._ydomains and  r.background_size >= 1000, type_=type_, save=True)
+
+Figure \ref{fig:ccdf-precision-all4} shows the complementary
+cumulative distribution functions (CCDF)
+\citep[sec.~VII.2.D]{panchenko2} of four compared scenarios. The curve for defenseless data matches that reported by \citet{panchenko2}. As with
+the ROC-curve comparison, the new defense at 02-13 worsens
+classification results, but less so than the new defense at 03-28 and
+LLaMA-nodelay. These results repeat for the CCDF-recall curves. Figure
+\ref{fig:ccdf-false-positive-rate} in Appendix
+[[#appendix.eval.open.ccdf-false-positives]] shows the CCDFs for
+false-positive rates.
+
+
+
 
    - so what are the results
      - results on defense
-       - relationship factor-overhead, especially tunability
-         graphic for 30 sites, link to table appendix
-         - [#C recreate table dynamically]
        - defense worsens classification
      - detailed comparison
-       - ccdf-curves
-         - recall
-  [[./pictures/ccdf-recall-no-defense-on-2018-02-02.pdf]]
-  # mplot.ccdf_curve_for_scenario( scenario.Scenario("disabled/bridge--2018-02-02--100@50"), filt=lambda x: len(x.scenario.get_traces()['background']) >= 1000)
-
-  No defense, closely matches Panchenko's recall curve.
-
-  [[./pictures/ccdf-recall-new-defense-2018-02-13.pdf]]
-  # mplot.ccdf_curve_for_scenario( scenario.Scenario("wf-cover/bridge-20aI--2018-02-13--100@50"), filt=lambda x: len(x.scenario.get_traces()['background']) >= 1000)
-
-  Defense: much lower values.
-
-  [[./pictures/ccdf-recall-defense-client-nodelay-on-2018-02-25.pdf]]
-  # mplot.ccdf_curve_for_scenario(...)
-         - precision
-           # mplot.ccdf_curve_for_scenario( s20, filt=lambda r: r._ydomains and  r.background_size >= 1000)
-       - roc-curves (?)
        - instances (?)
        - confusion matrices
          [[./pictures/confmat_s2018-02-02_r679.pdf]]
@@ -1798,10 +1797,12 @@ The results decreased over time, until the capture process was fixed.
 *** 30 Sites Figure
     The thesis' configurability is shown in Figure [[fig:oh2acc]].
 ** TODO [#D] create remainder dynamically from database
+   aka [#C recreate table dynamically]
 * Open-World (False/True--Positive) Results
   :PROPERTIES:
   :CUSTOM_ID: app-open-results
   :END:
+** Table of all 100-Site Results
 #+CAPTION[Open-World Results with 100 sites]: Table of all results on 100 sites, sorted by date. If the background-size is "auto" the same number as in the foreground set were chosen; if "max", the maximum number was chosen. For size overheads, refer to the closed-world accuracy results in section [[*100 Sites, Sorted by Size Overhead][100 Sites, Sorted by Size Overhead]] above.
 #+NAME: tab:open-world-all-100
 #+ATTR_LATEX: :environment longtable :align |l | r || r | r | r | r |
@@ -1969,6 +1970,20 @@ The results decreased over time, until the capture process was fixed.
 # totable = [fix(r) for r in results.list_all() if r.open_world and r.size > 90]
 # totable.sort(key=lambda r: r.scenario.date)
 # print results.to_table(totable, fields_plus_names=(lambda r: [r.scenario.name + " (" + r.scenario.config + ")", r.scenario.date, "{:.2f}".format(r.score), r.background_size, "{:.3f}".format(r.open_world['tpr']), "{:.3f}".format(r.open_world['fpr']), r.size], ["Scenario","Date", "Accuracy", "BG-size", "TPR", "FPR", "Num. sites"]))
+** CCDF-curves for False-Positive-Rate
+   :PROPERTIES:
+   :CUSTOM_ID: appendix.eval.open.ccdf-false-positives
+   :END:
+#+BEGIN_EXPORT latex
+\begin{figure}[tb]
+\includegraphics[width=0.23\linewidth]{./pictures/ccdf-false-positive-rate-no-defense-on-2018-02-02.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-false-positive-rate-new-defense-on-2018-02-13.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-false-positive-rate-new-defense-on-2018-03-28.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-false-positive-rate-LLaMA-nodelay-on-2018-02-25.pdf}
+\caption[CCDF-false-positive-rates for open-world scenarios]{\label{fig:ccdf-false-positive-rate}
+CCDF-curves for false-positive-rate for (left-to-right) (1) no defense, (2) new defense at 02-13, (3) new defense at 03-28, and (4) LLaMA-nodelay at 02-25}
+\end{figure}
+#+END_EXPORT
+These curves drop off steeply.
+*** TODO [#D] interpretation
+*** TODO [#B] remove above todo                                 :PRE_RELEASE:
 * KEYWORDS [#C] The Base Rate Fallacy
   :PROPERTIES:
   :CUSTOM_ID: base-rate

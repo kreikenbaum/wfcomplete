@@ -297,8 +297,9 @@ def ccdf_curve_for_scenario(scenario_obj, existing=True, axes=None,
     if not axes:
         _, axes = plt.subplots()
     sizes = set()
-    for result in (r for r in results.for_scenario_open(scenario_obj)
-                   if not r.open_world['binary']):
+    for result in sorted((r for r in results.for_scenario_open(scenario_obj)
+                         if not r.open_world['binary']),
+                         key=lambda r: r.background_size):
         logging.debug(result)
         if len(sizes) >= 6:
             break
@@ -311,7 +312,9 @@ def ccdf_curve_for_scenario(scenario_obj, existing=True, axes=None,
         if size in sizes:
             continue
         sizes.add(size)
-        ccdf_curve(result.get_confusion_matrix(), size, axes=axes, type_=type_)
+        ccdf_curve(result.get_confusion_matrix(), size,
+                   # "{} ({})".format(size, result._id),
+                   axes=axes, type_=type_)
     plt.legend()
     plt.title("CCDF-{} curve for {}".format(type_, scenario_obj))
     if save:
@@ -327,12 +330,11 @@ def ccdf_curve_for_results(results, type_="recall", axes=None, **kwargs):
                    type_=type_, axes=axes, **kwargs)
 
 
-METRIC = {"recall": 0, "fpr": 1, "precision": 2}
+METRIC = {"recall": 0, "false-positive rate": 1, "precision": 2}
 
 
-def ccdf_curve(confmat, bg_size, step=0.1, type_="recall", axes=None,
-               **kwargs):
-    '''plots recall curve as in CUMUL paper Fig.8'''
+def ccdf_curve(confmat, bg_size, step=0.1, type_="recall", axes=None):
+    '''plots ccdf curve as in CUMUL paper Fig.8'''
     if not axes:
         _, axes = plt.subplots()
     plotx = np.arange(0, 1.01, step=step)
