@@ -69,15 +69,15 @@ def confusion_matrix_from_result(result, current_sites=True, **kwargs):
                 yt, yp, yd)
     except ValueError:
         logging.info("discarded existing prediction: did not match domains")
-        return confusion_matrix_helper(result.get_classifier(),
-                                       result.scenario, **kwargs)
+        return confusion_matrix_helper(
+            result.get_classifier(), result.scenario,
+            current_sites=current_sites, **kwargs)
 
 
 def confusion_matrix_from_scenario(scenario_obj, **kwargs):
     '''creates a confusion matrix plot for scenario_obj
 
-    @return confusion_helper output
-    '''
+    @return confusion_helper output'''
     r = max(results.for_scenario_smartly(scenario_obj), key=lambda x: x.score)
     return confusion_matrix_from_result(r, **kwargs)
 

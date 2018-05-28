@@ -379,14 +379,15 @@ class TestResults(unittest.TestCase):
         PARAM_NUM = 16  # how to get dynamically?
         with self.assertRaises(TypeError):
             results.Result(*range(PARAM_NUM + 1))
-        result = results.Result(*range(PARAM_NUM))
+        result = results.Result(*range(PARAM_NUM -1), src={})
         self.assertEqual(
             PARAM_NUM,
             len([x for x in result.__dict__.values() if x is not None]))
 
     def test_get_confusion_matrix(self):
         cm = results.Result(
-            *range(7), ytrue=[0, 1], ypred=[0, 0]).get_confusion_matrix()
+            *range(6), ytrue=[0, 1], ypred=[0, 0],
+            src={}).get_confusion_matrix()
         self.assertTrue(np.all(cm == np.array([[1, 0], [1, 0]])))
 
 

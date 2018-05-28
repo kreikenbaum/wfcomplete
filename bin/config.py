@@ -34,8 +34,9 @@ REMOVE_SMALL = True
 # combine these
 def trace_args():
     '''@return combined values as used in code'''
-    return {"remove_small": REMOVE_SMALL, "or_level": OR_LEVEL}
-
+    return ta_helper(REMOVE_SMALL, OR_LEVEL)
+def ta_helper(rs, orl):
+    return {"remove_small": rs, "or_level": orl}
 
 # #### CROSS-VALIDATION
 FOLDS = 10

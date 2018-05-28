@@ -62,6 +62,7 @@ def run_exp(scenario, remove_small, or_level, auc_bound,
         'sites': scenario_obj.get_traces().keys(),
         'score': acc,
         'type': "accuracy",
+        # todo: remove duplicates (or_level...), after checking that they match
         'outlier_removal': scenario_obj.trace_args,
         'size_increase': scenario_obj.size_increase(),
         'time_increase': scenario_obj.time_increase(),

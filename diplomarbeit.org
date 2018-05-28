@@ -1135,7 +1135,13 @@ the case of the new defense, it is configured, if necessary. The Tor
 Browser Bundle clears its cache and saved data on each restart. This
 takes care of resetting the circuit and deletes all cached data. This
 procedure also reproduces the time gaps described in
-\citet{effective2014}.
+\citet{effective2014}. One of the captured defenses,
+WTF-PAD[fn::available at
+https://bitbucket.org/mjuarezm/obfsproxy_wfpadtools.git, this thesis'
+version at https://github.com/kreikenbaum/capture.git] by
+\citet{wtfpad2015}, seemed to be working according to debug output,
+but failed to produce significant traffic, as seen in appendix
+[[#appendix-closed-30-cumul]].
 
 
 The data is analyzed via a re-implemented version of CUMUL
@@ -1267,8 +1273,6 @@ overhead relationship for a much lower time overhead.
 | LLaMA-nodelay | mlsec  | 2018-02-25 |    0.36 |  205.18 |   29.04 |
 | LLaMA-nodelay | gcloud | 2018-02-11 |    0.45 |  213.02 |   14.79 |
 |---------------+--------+------------+---------+---------+---------|
-
-
 # totable = [r for r in results.list_all() if not r.open_world and hasattr(r.scenario, "date") and r.scenario.date > datetime.date(2018, 1, 1) and r.scenario.num_sites == 100]
 # totable.sort(key=lambda x: x.size_overhead)
 # print results.to_table(totable, fields_plus_names=(lambda r: [r.scenario.name, r.scenario.site, r.scenario.date, r.score, r.size_overhead, r.time_overhead], ["Scenario","Site", "Date", "Accuracy", "Size o.h. [%]", "Time o.h. [%]"]))
@@ -1756,10 +1760,10 @@ training on data without defense, and testing on defended data.
 #+NAME: tab:100-sites
 #+ATTR_LATEX: :align |r||n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|
 #+INCLUDE: "data/skip/results/alternatives.org::#100-sites-pub" :only-contents t
-** complete result tables
-*** 100 Sites, Sorted by Size Overhead
-The results decreased over time, until the capture process was fixed.
-
+** Complete 100 Sites CUMUL Results, Sorted by Size Overhead
+   :PROPERTIES:
+   :CUSTOM_ID: appendix-closed-100-cumul
+   :END:
 |---------------+--------+------------+---------+---------+---------|
 | Scenario      | Site   |       Date | Accuracy | Size o.h. [%] | Time o.h. [%] |
 |               |        |            |     <7> |     <7> |     <7> |
@@ -1794,16 +1798,114 @@ The results decreased over time, until the capture process was fixed.
 | new defense   | mlsec  | 2017-11-24 |    0.30 |  654.68 |   80.88 |
 | LLaMA-nodelay | mlsec  | 2017-11-07 |    0.43 |  708.98 |   72.39 |
 |---------------+--------+------------+---------+---------+---------|
-*** 30 Sites Figure
-    The thesis' configurability is shown in Figure [[fig:oh2acc]].
-** TODO [#D] create remainder dynamically from database
-   aka [#C recreate table dynamically]
+** Complete 30 Sites CUMUL Results, Sorted by Date
+   :PROPERTIES:
+   :CUSTOM_ID: appendix-closed-30-cumul
+   :END:
+#+CAPTION: CUMUL-results on 30 site data sets. S. and T. o.h. denote size and time overhead, respectively. Acc. denotes Accuracy. OR-level refers to \citet{panchenko2}'s outlier removal levels, as described in \citet{panchenko} and given in the code at [[http://lorre.uni.lu/~andriy/zwiebelfreunde/]]. small-removed describes if sites with less than 30 instances were removed from the data set.
+#+ATTR_LATEX: :environment longtable
+| <20>                 |            |  <4> |    <6> |     <7> | <3> | <6>    |
+|----------------------+------------+------+--------+---------+-----+--------|
+| Scenario             |       Date | Acc. | S. o.h. [%] | T. o.h. [%] | OR-lvl. | small removed |
+|----------------------+------------+------+--------+---------+-----+--------|
+| wtf-pad              | 2016-07-05 | 0.95 |   9.74 |    6.49 |   2 | True   |
+| wtf-pad              | 2016-07-05 | 0.97 |   9.74 |    6.49 |   2 | True   |
+| simple1              | 2016-07-06 | 0.77 |  68.80 |   10.51 |   2 | True   |
+| simple1              | 2016-07-07 | 0.94 |   7.82 |    7.57 |   2 | True   |
+| new defense@30       | 2016-07-10 | 0.83 |  47.55 |   -4.33 |   2 | True   |
+| new defense@30-burst | 2016-07-11 | 0.83 |  49.35 |    3.86 |   2 | True   |
+| tamaraw              | 2016-07-11 | 0.94 |  18.02 |    4.84 |   2 | True   |
+| new defense@30aI     | 2016-07-13 | 0.58 |  99.51 |    1.48 |   2 | True   |
+| new defense@50aI     | 2016-07-13 | 0.53 | 118.26 |   13.12 |   2 | True   |
+| new defense          | 2016-07-15 | 0.62 | 119.57 |   -3.02 |   2 | True   |
+| new defense@20       | 2016-07-17 | 0.85 |  17.49 |   -5.74 |   2 | True   |
+| new defense@5        | 2016-07-17 | 0.91 |   0.39 |   -9.69 |   2 | True   |
+| new defense@5        | 2016-07-17 | 0.91 |   3.43 |   -9.02 |   2 | True   |
+| new defense@5aII     | 2016-07-18 | 0.69 |  38.62 |    0.18 |   2 | True   |
+| new defense@10-maybe-aI | 2016-07-23 | 0.61 |  51.05 |   13.48 |   2 | True   |
+| new defense@2aI      | 2016-07-23 | 0.73 |  34.51 |    2.23 |   2 | True   |
+| new defense@30aI     | 2016-07-25 | 0.56 |  81.13 |   27.80 |   2 | True   |
+| new defense@5aI      | 2016-07-25 | 0.69 |  46.36 |    4.73 |   2 | True   |
+| new defense@50aI     | 2016-07-26 | 0.52 |  96.25 |   15.53 |   2 | True   |
+| no defense           | 2016-08-14 | 0.97 |   0.00 |    0.00 |   2 | True   |
+| no defense           | 2016-08-15 | 0.97 |   0.00 |    0.00 |   2 | True   |
+| no defense           | 2016-08-15 | 0.98 |   0.00 |    0.00 |   2 | True   |
+| new defense@5aII     | 2016-08-25 | 0.63 |  40.59 |   14.12 |   2 | True   |
+| new defense@5aI      | 2016-08-26 | 0.67 |  30.35 |   16.82 |   2 | True   |
+| new defense@5bII     | 2016-08-27 | 0.63 |  31.56 |    3.44 |   2 | True   |
+| new defense@5bI      | 2016-08-27 | 0.67 |  37.07 |    9.08 |   2 | True   |
+| no defense           | 2016-08-29 | 0.91 |   0.00 |    0.00 |   2 | True   |
+| no defense           | 2016-08-29 | 0.91 |   0.00 |    0.00 |   2 | True   |
+| no defense           | 2016-08-29 | 0.91 |   0.00 |    0.00 |   2 | True   |
+| no defense           | 2016-09-09 | 0.89 |   0.00 |    0.00 |   2 | True   |
+| new defense@20aII    | 2016-09-10 | 0.61 |  65.77 |    9.41 |   2 | True   |
+| new defense@20aI     | 2016-09-10 | 0.63 |  64.78 |    9.11 |   2 | True   |
+| new defense@20aI     | 2016-09-10 | 0.64 |  64.78 |    9.11 |   2 | True   |
+| new defense@20bII    | 2016-09-12 | 0.62 |  59.92 |   26.70 |   2 | True   |
+| new defense@20bI     | 2016-09-13 | 0.63 |  52.80 |   13.17 |   2 | True   |
+| no defense           | 2016-09-18 | 0.89 |   0.00 |    0.00 |   2 | True   |
+| no defense           | 2016-09-30 | 0.89 |   0.00 |    0.00 |   2 | True   |
+| no defense           | 2016-10-03 | 0.93 |   0.16 |    0.15 |   2 | True   |
+| no defense           | 2016-10-03 | 0.87 |   0.00 |    0.00 |   2 | True   |
+| no defense           | 2016-10-06 | 0.96 |   0.00 |    0.00 |   2 | True   |
+| new defense@20aII    | 2016-10-07 | 0.62 |  67.56 |    4.99 |   2 | True   |
+| new defense@20aII    | 2016-10-07 | 0.62 |  67.38 |    5.02 |   2 | True   |
+| new defense@20aI     | 2016-10-07 | 0.63 |  72.47 |    1.50 |   2 | True   |
+| new defense@20bII    | 2016-10-08 | 0.59 |  74.02 |    2.75 |   2 | True   |
+| new defense@20bI     | 2016-10-08 | 0.64 | 136.92 |    0.85 |   2 | True   |
+| new defense@20bI     | 2016-10-08 | 0.64 | 136.92 |    0.85 |   2 | True   |
+| new defense@5aII     | 2016-10-09 | 0.66 |  47.25 |   -1.46 |   2 | True   |
+| new defense@5aII     | 2016-10-09 | 0.66 |  47.25 |   -1.46 |   2 | True   |
+| new defense@5aI      | 2016-10-09 | 0.69 |  57.92 |    3.22 |   2 | True   |
+| new defense@5aI      | 2016-10-09 | 0.69 |  57.92 |    3.22 |   2 | True   |
+| new defense@5bII     | 2016-10-10 | 0.65 |  67.76 |    3.97 |   2 | True   |
+| new defense@5bII     | 2016-10-10 | 0.65 |  67.76 |    3.97 |   2 | True   |
+| new defense@5bI      | 2016-10-10 | 0.70 | 136.93 |    7.89 |   2 | True   |
+| new defense@5bI      | 2016-10-10 | 0.70 | 136.93 |    7.89 |   2 | True   |
+| no defense           | 2016-10-16 | 0.74 |  -0.13 |    1.80 |   2 | True   |
+| no defense           | 2016-11-21 | 0.97 |   0.00 |    0.00 |   2 | True   |
+| no defense           | 2016-11-21 | 0.96 |  -0.41 |    1.59 |   2 | True   |
+| new defense@10-with-errors | 2017-01-19 | 0.64 | 128.28 |    4.99 |   2 | True   |
+| new defense@10       | 2017-01-19 | 0.65 | 128.28 |    4.99 |   2 | True   |
+| wtf-pad              | 2017-08-27 | 0.92 |  -1.05 |    6.26 |   2 | True   |
+| wtf-pad              | 2017-08-29 | 0.93 |   0.87 |   40.60 |   2 | True   |
+| no defense           | 2017-08-31 | 0.90 |   0.00 |    0.00 |   2 | True   |
+| wtf-pad              | 2017-09-06 | 0.94 |  -5.67 |   76.60 |   2 | True   |
+| LLaMA                | 2017-09-07 | 0.35 |  17.04 | 3031.46 |   2 | True   |
+| LLaMA                | 2017-09-07 | 0.26 |  17.04 | 3031.46 |   0 | False  |
+| LLaMA-nodelay        | 2017-09-25 | 0.63 | 279.67 |   58.86 |   0 | False  |
+| LLaMA-nodelay        | 2017-09-25 | 0.63 | 279.67 |   58.86 |   2 | True   |
+| new defense@175aI    | 2017-10-15 | 0.34 | 390.85 |  103.21 |   2 | True   |
+| no defense           | 2017-10-16 | 0.58 |   0.00 |    0.00 |   2 | True   |
+| new defense@150aI    | 2017-10-17 | 0.36 | 416.45 |   95.96 |   2 | True   |
+| new defense@100aI    | 2017-12-14 | 0.46 | 284.35 |   65.92 |   2 | True   |
+| no defense           | 2017-12-15 | 0.59 |   0.00 |    0.00 |   2 | True   |
+| LLaMA-nodelay        | 2017-12-17 | 0.72 | 348.13 |   56.64 |   2 | True   |
+| no defense           | 2017-12-18 | 0.62 |   0.00 |    0.00 |   2 | True   |
+| no defense           | 2017-12-25 | 0.98 |   0.00 |    0.00 |   2 | True   |
+| no defense           | 2017-12-26 | 0.96 |   0.00 |    0.00 |   2 | True   |
+| new defense@100aI    | 2017-12-27 | 0.42 | 162.20 |   -0.88 |   2 | True   |
+| LLaMA-nodelay        | 2017-12-29 | 0.68 | 163.08 |   -4.02 |   2 | True   |
+| no defense           | 2017-12-31 | 0.97 |   0.00 |    0.00 |   2 | True   |
+| LLaMA                | 2018-01-07 | 0.71 |  77.59 | 1126.55 |   2 | True   |
+| LLaMA                | 2018-01-07 | 0.55 |  94.25 | 1085.25 |   0 | False  |
+| no defense           | 2018-01-12 | 0.99 |   0.00 |    0.00 |   2 | True   |
+|----------------------+------------+------+--------+---------+-----+--------|
+# totable = [r for r in results.list_all() if not r.open_world and r.scenario.num_sites == 30]
+# totable.sort(key=lambda x: x.scenario.date)
+# print results.to_table(totable, fields_plus_names=(lambda r: [r.scenario.describe(), r.scenario.date, "{:.2f}".format(r.score), "{:.2f}".format(r.size_overhead), "{:.2f}".format(r.time_overhead), r.or_level, r.remove_small], ["Scenario", "Date", "Accuracy", "Size o.h. [%]", "Time o.h. [%]", "OR-lvl.", "small removed"]))
+** Discussion
+The classification results decreased over time, until the capture
+process was fixed: the loading process needed to check that a page was
+loaded, and retry several times, as Marionette sometimes returned from
+=.navigate= without the page being loaded. Sometimes, the loaded page
+was clearly not the real page. This needed to be noted as well.
 * Open-World (False/True--Positive) Results
   :PROPERTIES:
   :CUSTOM_ID: app-open-results
   :END:
 ** Table of all 100-Site Results
-#+CAPTION[Open-World Results with 100 sites]: Table of all results on 100 sites, sorted by date. If the background-size is "auto" the same number as in the foreground set were chosen; if "max", the maximum number was chosen. For size overheads, refer to the closed-world accuracy results in section [[*100 Sites, Sorted by Size Overhead][100 Sites, Sorted by Size Overhead]] above.
+#+CAPTION[Open-World Results with 100 sites]: Table of all results on 100 sites, sorted by date. If the background-size is "auto" the same number as in the foreground set were chosen; if "max", the maximum number was chosen. For size overheads, refer to the closed-world accuracy results in section [[#appendix-closed-100-cumul]] above.
 #+NAME: tab:open-world-all-100
 #+ATTR_LATEX: :environment longtable :align |l | r || r | r | r | r |
 |                     |            |          |       <10> |       |       |

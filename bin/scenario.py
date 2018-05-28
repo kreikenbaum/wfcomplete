@@ -168,8 +168,8 @@ class Scenario(object):
             closest_disabled = self._closest("disabled")
         if closest_disabled == self:
             return 0
-        return method(closest_disabled.get_traces(),
-                      trace_dict or self.get_traces())
+        return method(closest_disabled.get_traces(current_sites=False),
+                      trace_dict or self.get_traces(current_sites=False))
 
     def binarized(self, bg_label='background', fg_label='foreground'):
         '''@return scenario with bg_label as-is, others combined to fg_label'''

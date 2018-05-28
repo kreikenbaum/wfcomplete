@@ -47,8 +47,9 @@ class LastIter(object):
 class Result(object):
     def __init__(self, scenario_, accuracy, git, time, type_, size,
                  open_world=False, size_overhead=None,
-                 time_overhead=None, _id=None, gamma=None, C=None, src=None,
-                 ytrue=None, ypred=None, ydomains=None):
+                 time_overhead=None, _id=None, gamma=None, C=None,
+                 ytrue=None, ypred=None, ydomains=None,
+                 src=None):
         self._id = _id
         self.C = C
         self.date = time
@@ -63,10 +64,13 @@ class Result(object):
         self.type_ = type_
         if not self.date and hasattr(self.scenario, "date"):
             self.date = self.scenario.date
-        self.src = src
         self._ytrue = ytrue
         self._ypred = ypred
         self._ydomains = ydomains
+        self.src = src
+        if self.src:
+            self.scenario.trace_args = config.ta_helper(
+                self.remove_small, self.or_level)
 
     @property
     def background_size(self):
@@ -93,6 +97,24 @@ class Result(object):
             return self.src['host']['hostname']
         except KeyError:
             return "unknown"
+
+    @property
+    def or_level(self):
+        '''@return level of outlier removal'''
+        try:
+            orl = self.src['config']['trace_args']['or_level']
+        except KeyError:
+            orl = _value_or_none(self.src, 'config', 'or_level')
+        return config.OR_LEVEL if orl is None else orl
+
+    @property
+    def remove_small(self):
+        '''@return remove sites with few instances after outlier removal'''
+        try:
+            rs = self.src['config']['trace_args']['remove_small']
+        except KeyError:
+            rs = _value_or_none(self.src, 'config', 'remove_small')
+        return config.REMOVE_SMALL if rs is None else rs
 
     @property
     def y_domains(self):
@@ -171,13 +193,8 @@ class Result(object):
         size_overhead = _value_or_none(entry, 'result', 'size_increase')
         time_overhead = _value_or_none(entry, 'result', 'time_increase')
         try:
-            orl = _value_or_none(entry, 'config', 'or_level')
-            config.OR_LEVEL = config.OR_LEVEL if orl is None else orl
-            rems = _value_or_none(entry, 'config', 'remove_small')
-            config.REMOVE_SMALL = config.REMOVE_SMALL if rems is None else rems
             scenario_obj = scenario.Scenario(
                 entry['config']['scenario'], open_world=open_world)
-            reload(config)
         except ValueError:
             if entry['status'] not in ["COMPLETED", "EXTERNAL"]:
                 scenario_obj = "placeholder for scenario {}".format(
@@ -274,11 +291,11 @@ class Result(object):
             pass  # ok to not include (e.g. WANG14 external result)
         return out
 
-    # def _add_oh(self):
-    #     '''add overhead-helper for those experiments that lacked it'''
-    #     self.update(
-    #         {"result.size_increase": self.scenario.size_increase(),
-    #          "result.time_increase": self.scenario.time_increase()})
+    def _add_oh(self):
+        '''add overhead-helper for those experiments that lacked it'''
+        self.update(
+            {"result.size_increase": self.scenario.size_increase(),
+             "result.time_increase": self.scenario.time_increase()})
     def update(self, addthis, db=_db()):
         '''updates entry in db to also include addthis'''
         db.runs.find_one_and_update({"_id": self._id}, {"$set": addthis})
