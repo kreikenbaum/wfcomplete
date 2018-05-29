@@ -379,7 +379,7 @@ class TestResults(unittest.TestCase):
         PARAM_NUM = 16  # how to get dynamically?
         with self.assertRaises(TypeError):
             results.Result(*range(PARAM_NUM + 1))
-        result = results.Result(*range(PARAM_NUM -1), src={})
+        result = results.Result(*range(PARAM_NUM - 1), src={})
         self.assertEqual(
             PARAM_NUM,
             len([x for x in result.__dict__.values() if x is not None]))
