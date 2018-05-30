@@ -1327,7 +1327,7 @@ debug output, but failed to hinder \gls{wf}, as seen in appendix
       \cite{LLaMA}, \cite{a-systematic2014})?
     - walkie-talkie theoretical
 **** confusion matrices closed world: disabled, wf-cover, llama-nodelay
-** WRITE Analyzing Open World Scenarios
+** CHECK Analyzing Open World Scenarios
    :PROPERTIES:
    :CUSTOM_ID: sub4-open
    :END:
@@ -1337,17 +1337,20 @@ Closed world evaluation sets a strong assumption
 sites. As described in section [[#sub2-ml-measure]], the open world
 setting compares a certain number of monitored sites against a bigger
 number of background pages, and is considered more realistic
-\citep[sec.5.1]{effective2014}. Say, Eve knows that her daughter Alice
-might visit any number of pages, but is only interested in whether she
-visits =bob.com=. All visits that are wrongly classified as =bob.com=,
-say Alice really visited =bbc.com=, are called /false positives/,
-whereas if Alice visited =bob.com= and it was classified as =bbc.com=,
-is called a /false negative/. Ideally, none of these exist. In
-practice, Eve has to weigh between leniency and strictness: would she
-rather let slip a visit to =bob.com= as =bbc.com=, or would she rather
-check in on her daughter when she just visits =bbc.com=, because it
-was classified as =bob.com=? This trade-off was illustrated by Figure
-[[fig:roc-example]].
+\citep[sec.5.1]{effective2014}. This model adds additional background
+pages to the mix: An attacker's scenario is to find out if a web trace
+is to a sensitive site, say Wikileaks, as opposed to normal web
+browsing. The background pages model the "normal" web browsing. Say,
+Eve knows that her daughter Alice might visit any number of pages, but
+is only interested in whether she visits =bob.com=. All visits that
+are wrongly classified as =bob.com=, say Alice really visited
+=bbc.com=, are called /false positives/, whereas if Alice visited
+=bob.com= and it was classified as =bbc.com=, is called a /false
+negative/. Ideally, none of these exist. In practice, Eve has to weigh
+between leniency and strictness: would she rather let slip a visit to
+=bob.com= as =bbc.com=, or would she rather check in on her daughter
+when she just visits =bbc.com=, because it was classified as
+=bob.com=? This trade-off was illustrated by Figure [[fig:roc-example]].
 
 #+CAPTION[Open-World Validation]: Validation on 100 sites of the WANG14 \citep{panchenko2} dataset. Since multi-class true-, and false-positive-rate have multiple possible definitions \citep{sokolova2009systematic}, only the two-class values were compared.
 #+NAME: tab:open-world-validation
@@ -1363,7 +1366,7 @@ reimplementation closely match CUMUL's original, see Table
 [[tab:open-world-validation]]. This validates the re-implementation. Table
 [[tab:open-world-all-100]] in Appendix [[#app-open-results]] contains all
 open-world results on 100 sites. As visible from that table, the
-WANG14 data set is extraordinary in its classification accuracy. The CCDF-curves of defenseless data in Figures ... also closely match those reported by \citet{panchenko2}.
+WANG14 data set is extraordinary in its classification accuracy.
 
 # sd = scenario.Scenario("disabled/bridge--2018-02-02--100@50")
 # sl = scenario.Scenario("defense-client-nodelay/bridge--2018-02-25--100@50")
@@ -1381,24 +1384,14 @@ WANG14 data set is extraordinary in its classification accuracy. The CCDF-curves
 | LLaMA-nodelay     | 2018-02-25 |    0.36 |  205.18 |   29.04 |
 To evaluate the new defense, and to compare and contrast to LLaMA
 \citep{DBLP:journals/popets/CherubinHJ17}, defenseless captures were
-compared and contrasted to those protected by LLaMA-nodelay and the
-new defense. Their closed-world accuracy and size overhead results is
-again presented in Table [[tab:open-world-scenarios]].
+compared and contrasted to those protected by LLaMA-nodelay and two
+configurations of the new defense. Their closed-world accuracy and
+size overhead results is again presented in Table
+[[tab:open-world-scenarios]]: LLaMA-nodelay's fixed accuracy proved to be significantly higher in all experiments than the new defense's, even at a high-overhead setting.
 
-
-#+CAPTION[Receiver operating characteristic (ROC)-curves for 50 sites]: Receiver operating characteristic (ROC)-curves that compare the new defense with no defense and LLaMA\cite{DBLP:journals/popets/CherubinHJ17}. There are 50 monitored pages in the foreground-set, the size of the world/background set is 5,000 pages.
-#+NAME: fig:rocs-defenses
-[[./pictures/rocs-837-838-839-840.pdf]]
-# rocfig = mplot._init_roc("Receiver operating characteristic (ROC) curves")
-# for r in [r for r in results.list_all() if 40 < r.size < 60 and r.open_world['binary'] and r.background_size == "5000"]:
-#     mplot.roc_helper_open_world_binary(r, fig=rocfig, dot_position=None)
-The receiver operating characteristic (ROC-) curve illustrates the
-classification strictness trade-off, shown in Figure
-[[fig:rocs-defenses]]. The curve of defenseless data is similar to
-\citet[Fig.~11]{wtfpad2015}. The new defense at 62% overhead visibly decreases classification efficacy. Both LLaMA-nodelay and the new defense at 142% overhead decrease classification to a level similar to random guessing.
 
 #+BEGIN_EXPORT latex
-\begin{figure}[tb]
+\begin{figure}[bt]
 \includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-no-defense-on-2018-02-02.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-new-defense-on-2018-02-13.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-new-defense-on-2018-03-28.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-LLaMA-nodelay-on-2018-02-25.pdf}\\
 \includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-no-defense-on-2018-02-02.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-new-defense-on-2018-02-13.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-new-defense-on-2018-03-28.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-LLaMA-nodelay-on-2018-02-25.pdf}
 \caption[CCDF-curves for open-world scenarios]{\label{fig:ccdf-precision-all4}
@@ -1410,215 +1403,67 @@ CCDF-curves for (left-to-right) (1) no defense, (2) new defense at 02-13, (3) ne
 #         mplot.ccdf_curve_for_scenario( s, filt=lambda r: r._ydomains and  r.background_size >= 1000, type_=type_, save=True)
 
 Figure \ref{fig:ccdf-precision-all4} shows the complementary
-cumulative distribution functions (CCDF)
-\citep[sec.~VII.2.D]{panchenko2} of four compared scenarios. The curve for defenseless data matches that reported by \citet{panchenko2}. As with
-the ROC-curve comparison, the new defense at 02-13 worsens
-classification results, but less so than the new defense at 03-28 and
-LLaMA-nodelay. These results repeat for the CCDF-recall curves. Figure
-\ref{fig:ccdf-false-positive-rate} in Appendix
-[[#appendix.eval.open.ccdf-false-positives]] shows the CCDFs for
-false-positive rates.
+cumulative distribution functions (CCDF) that were used by
+\citet[sec.~VII.2.D]{panchenko2} to visualize CUMUL's efficacy. The curve
+for defenseless data is similar to those at \citet[Fig.7+8]{panchenko2}. As
+with the ROC-curve comparison, the new defense at 2018-02-13 worsens
+classification results, but less so than the new defense with
+high-overhead at 2018-03-28 and LLaMA-nodelay. These results repeat
+for the CCDF-recall curves. Figure \ref{fig:ccdf-false-positive-rate}
+in Appendix [[#appendix.eval.open.ccdf-false-positives]] shows the CCDFs
+for false-positive rates. All curves show evaluation on 100
+sites. After a certain threshold of errors, a weakness of CUMUL's
+default accuracy optimization becomes clear: the optimal strategy for
+a classifier in a multi-class scenario becomes to simply to always
+guess the background page if unsure. This explains the flat curves
+seen for high numbers of background sizes.
+
+
+#+CAPTION[Receiver operating characteristic (ROC)-curves for 50 sites]: Receiver operating characteristic (ROC)-curves that compare the new defense with no defense and LLaMA \citep{DBLP:journals/popets/CherubinHJ17}. There are 50 monitored pages in the foreground-set, the size of the world/background set is 5,000 pages.
+#+NAME: fig:rocs-defenses
+[[./pictures/rocs-837-838-839-840.pdf]]
+# rocfig = mplot._init_roc("Receiver operating characteristic (ROC) curves")
+# for r in [r for r in results.list_all() if 40 < r.size < 60 and r.open_world['binary'] and r.background_size == "5000"]:
+#     mplot.roc_helper_open_world_binary(r, fig=rocfig, dot_position=None)
+The receiver operating characteristic (ROC-) curve in Figure
+[[fig:rocs-defenses]] illustrates the classification strictness
+trade-off. Analogous to \citet[Fig.~11]{wtfpad2015}, the curves were
+computed for 50 sites and 5000 background instances /"world size". The
+curve of defenseless data has a similar AUC (0.92) to their reports
+(0.82). The difference could be due to CUMUL's \citep{panchenko2}
+increased accuracy as compared to KNNs \citep{effective2014}. The new
+defense at 62% overhead visibly decreases classification
+efficacy. Both LLaMA-nodelay with 205% overhead and the new defense at
+142% overhead decrease classification to a level similar to random
+guessing (AUC 0.53 and 0.49, respectively).
 
 
 
 
 #+BEGIN_EXPORT latex
 \begin{figure}[tb]
-\includegraphics[width=0.23\linewidth]{./pictures/confmat-no-defense-on-2018-02-02-(result-865).pdf}
-\includegraphics[width=0.23\linewidth]{./pictures/confmat-new-defense-on-2018-02-13-(result-869).pdf} % ok
-\includegraphics[width=0.23\linewidth]{./pictures/confmat-new-defense-on-2018-03-28-(result-862).pdf} % ok
-\includegraphics[width=0.23\linewidth]{./pictures/confmat-LLaMA-nodelay-on-2018-02-25-(result-864).pdf}
+\includegraphics[width=0.23\linewidth]{./pictures/confmat-no-defense-on-2018-02-02-(result-872).pdf}
+\includegraphics[width=0.23\linewidth]{./pictures/confmat-new-defense-on-2018-02-13-(result-869).pdf}
+\includegraphics[width=0.23\linewidth]{./pictures/confmat-new-defense-on-2018-03-28-(result-873).pdf}
+\includegraphics[width=0.23\linewidth]{./pictures/confmat-LLaMA-nodelay-on-2018-02-25-(result-871).pdf}
 \caption[20-subsite confusion matrices]{\label{fig:confusion-20-all4}
-Confusion matrices for 20-site subsets of scenarios. Background to background classifications were removed, as these greatly outnumbered the other values.}
+Confusion matrices for 20-site subsets of scenarios. Background to background classifications were removed from the visualization, as these greatly outnumbered all other values, coloring them black.}
 \end{figure}
 #+END_EXPORT
-# for s in [sd, s100, sl, s20]:
-#    for type_ in ["precision", "recall"]:
-#         mplot.ccdf_curve_for_scenario( s, filt=lambda r: r._ydomains and  r.background_size >= 1000, type_=type_, save=True)
-Another way of comparing scenarios are confusion matrices, as described in sec. ...
-
-
-
-
-
-
-   - so what are the results
-     - results on defense
-       - defense worsens classification
-     - detailed comparison
-       - instances (?)
-       - confusion matrices
-         [[./pictures/confmat_s2018-02-02_r679.pdf]]
-         # rd = (r for r in results.for_scenario(sd) if r._ydomains and r.open_world['background_size'] == "auto" and not r.open_world['binary']).next()
-         # mplot.confusion_matrix_from_result(rd, zero0=True)
-         [[./pictures/confmat_s2018-02-13_r667.pdf]]
-         # same for s20 with r20
-       - [also for google-captures]
-       - [also for nobridge]
-
-
-
-- Llama: also low value, but much higher overhead (200%, vs 67%)
-- validate attack
-- tpr/fpr
-- auroc
-- conclusion
-- what are open-world results
-- are those results reliable
-  - also "validated" by CUMUL ccdf-curves
-*** removed sites
-#+INDEX: cumul traces!linkedin
-#+INDEX: cumul traces!removed!linkedin
-#+INDEX: cumul traces!removed!cutoff
-#+CAPTION: Removed traces at cutoff point of 10 FP sites (linkedin.com). These show high variability as compared to Figure [[fig:cumul-well-open]].
-#+NAME: fig:traces_cumul_linkedin
-[[./pictures/traces_cumul_linkedin.com_2018-02-02.pdf]]
-*** CHECK Open World Accuracy
-    While closed-world results are easier to compare and analyze,
-    \gls{wf} is modeled more accurately by an [[#sub2-ml-measure][open-world model]]. This
-    model adds additional background pages to the mix: An attacker's
-    scenario is to find out if a web trace is to a sensitive site, say
-    Wikileaks, as opposed to normal web browsing. The background pages
-    model the "normal" web browsing.
-
-
-    Scikit-learn \citep{scikit-learn} has the advantage of /balanced
-    class weights/: classes can have different sizes, yet are considered
-    of the same importance when training classifiers. This useful
-    setting was enabled in the beginning of open world classification as
-    a carryover from closed-world analysis. In the open world setting,
-    it reduced accuracy to 55%.
-
-
-
-    As soon as this setting was disabled, accuracy rose to e.g. 83.55%,
-    with true positive rate of 81.39% and false-positive rate of
-    12.32%. This still does not match \cite{panchenko2}'s. To improve
-    further, the confusion matrix in Figure [[fig:open-world-confmat]] shows
-    which sites were mis-classified how often:
-
-    #+CAPTION[Open world confusion matrix]: Open world confusion matrix. Background to background classification (5928) was removed to normalize colors.
-    #+NAME: fig:open-world-confmat
-    [[./pictures/confmat_open_2018-02-02.pdf]]
-
-    One site that was exclusively classified as background is [[http://t.co][t.co]] (on
-    the chart between =microsoftonline.com= and =amazonaws.com=).  For
-    [[http://t.co][t.co]], 48 of 48 (valid) traces were classified as background
-    sites. The next-highest rates of false-negative mis-classification is
-    [[http://rakuten.co.jp][rakuten.co.jp]], which has 37 of 49 sites incorrectly classified as
-    background pages. This might be due to their highly varied traces,
-    as can be seen in Figure [[fig:t.co-rakuten-cumul-traces]]:
-
-    #+CAPTION[CUMUL traces for t.co]: CUMUL-Traces for the websites [[http://t.co][t.co]] and [[http://rakuten.co.jp][rakuten.co.jp]]. These show high (intra-class) variability, which could explain the high misclassification rates. Compare Figure [[fig:CUMUL_traces]] and [[fig:cumul-well-open]] for lower-variability CUMUL traces.
-    #+NAME: fig:t.co-rakuten-cumul-traces
-    [[./pictures/cumul__t.co_rakuten.co.jp__2018-02-02.pdf]]
-    # (f, a) = plt.subplots(1, 2)
-    # mplot.traces_cumul(r.scenario, "rakuten.co.jp", axes=a[1])
-    # mplot.traces_cumul(r.scenario, "t.co", axes=a[0])
-
-
-    This can be explained by the content: t.co shows only 3 lines of
-    text, and thus any variation in the download of its little content
-    leads to higher variability. rakuten.co.jp has shopping results,
-    which are bound to show high variation.
-
-    #+CAPTION[CUMUL traces for well-classified open world sites]: CUMUL-Traces for well-classified website dailymotion.com.
-    #+NAME: fig:cumul-well-open
-    [[./pictures/cumul__dailymotion.com__2018-02-02.pdf]]
-    As a contrast, the website [[http://dailymotion.com][dailymotion.com]] had 42 of 42 correctly
-    classified captures. Its CUMUL-traces show low variability in Figure
-    [[fig:cumul-well-open]].
-
-    #+CAPTION: Misclassification count (open world)
-    #+NAME: tab:high-error-open-world
-    #+ATTR_LATEX: :align |l||r | r|
-  |--------------------+-------------------------+-------------------------|
-  | site               | site as background (FN) | background as site (FP) |
-  |--------------------+-------------------------+-------------------------|
-  | ameblo.jp          |                      19 |                      30 |
-  | aliexpress.com     |                      17 |                      24 |
-  | godaddy.com        |                      22 |                      23 |
-  | youporn.com        |                      16 |                      21 |
-  | google.com         |                      30 |                      20 |
-  | aol.com            |                      32 |                      19 |
-  | dropbox.com        |                      31 |                      11 |
-  | netflix.com        |                      36 |                       5 |
-  | rakuten.co.jp      |                      37 |                       2 |
-  | t.co               |                      48 |                       0 |
-  |--------------------+-------------------------+-------------------------|
-
-    Table [[tab:high-error-open-world]] shows the mis-classification rates of
-    the sites that were mis-classified the most often (\ge 30 false
-    negatives or \ge 20 false positives). Let us examine the top-5
-    false-positive sites in detail. As Figure [[fig:high-fpr-four]] shows,
-    four of these show high intra-class variability:
-
-    #+CAPTION[CUMUL traces high-false-positives sites]: CUMUL-Traces for the websites with high false-positive rates. The sites are (left-to-right) ameblo.jp, youporn.com, aliexpress.com, and godaddy.com. These also show high (intra-class) variability, which could explain the high misclassification rates.
-    #+NAME: fig:high-fpr-four
-    [[./pictures/traces_cumul_no_defense_on_2018-02-02_ameblo.jp_youporn.com_aliexpress.com_godaddy.com.pdf]]
-    # s = scenario.Scenario("disabled/bridge--2018-02-02--100@50")
-    # a = ["ameblo.jp", "youporn.com", "aliexpress.com", "godaddy.com"]
-    # for (i, el) in enumerate(a): mplot.traces_cumul(s, el, axes=axess2[i]); axess2[i].set_title(" ")
-    # b = axess2[0]
-    # axess2[0].set_ylabel(" ")
-    # axess2[1].set_xlabel("Feature Index")
-    # plt.tight_layout()
-    # plt.savefig("/tmp/traces_cumul_{}_{}.pdf".format(s, "_".join(a)).replace(" ", "_"))
-    - ameblo.jp (and youporn.com) show a range of dynamic content
-    - aliexpress.com sells different items at different times. The
-      images at least are bound to have different byte sizes
-    - godaddy.com had versions in various languages, serving different
-      content, which explains the varied traces
-
-    #+CAPTION[CUMUL traces high-false-positive google.com]: CUMUL-Traces for the last website with high false-positive rates: google.com. It shows low variability. Its high misclassification rate is explained by other google sites being in the background set (e.g. google.fi).
-    #+NAME: fig:high-fpr-google
-    [[./pictures/traces_cumul_no_defense_on_2018-02-02_google.com.pdf]] The
-    fifth site, google.com also serves international content. Yet, its
-    traces show low variability, as seen in Figure
-    [[fig:high-fpr-google]]. While google.com sister sites, say google.fi,
-    were removed from the foreground set, the background set contained
-    hundreds of google sites as well. This of course made classification
-    infeasible.
-
-
-
-    Another low-res with 10 =exclude_sites=:
-    [[./pictures/traces_cumul_no_defense_on_2018-02-02_wikipedia.org.pdf]]
-
-
-**** Analyzing defenseless results
-     - correlation: _id increasing decreases fpr, tpr, score
-     - increasing bg size decreases fpr, tpr, similarly for scenario.date
-     - auroc: high positive correlation to fpr, high negative to tpr
-     - tpr correlated to fpr
-     - len of exclude_sites decreases (-0.4) fpr, (and -0.2 tpr)
-     - code
-     - cross-correlation table
-# df = pd.DataFrame(r.to_dict() for r in results.list_all() if r.open_world and "disabled")
-# df = df[df["background_size"] != 'none'][df["background_size"] != "auto"][df["background_size"].notnull()]
-# df['background_size'] = df['background_size'].to_numeric()
-# del df['auc_bound']
-# df.corr().to_latex()
-#+BEGIN_EXPORT latex
-\begin{tabular}{lrrrrrrrrrrr}
-\toprule
-{} &      C &    \_id &  auroc &  bg\_size &    fpr &  gamma &  score &   size &  size\_overhead &  time\_overhead &    tpr \\
-\midrule
-C             &  1.000 &  0.050 &  0.469 &        -0.111 & -0.117 & -0.077 &  0.118 & -0.485 &        -0.033 &        -0.058 &  0.024 \\
-\_id           &  0.050 &  1.000 &  0.741 &         0.285 & -0.133 &  0.035 & -0.156 &  0.152 &         0.151 &         0.126 & -0.235 \\
-auroc         &  0.469 &  0.741 &  1.000 &        -0.058 & -0.005 & -0.012 & -0.451 &  0.384 &        -0.071 &        -0.098 & -0.122 \\
-background... & -0.111 &  0.285 & -0.058 &         1.000 & -0.735 &  0.246 & -0.010 &  0.083 &        -0.058 &        -0.144 & -0.697 \\
-fpr           & -0.117 & -0.133 & -0.005 &        -0.735 &  1.000 & -0.371 & -0.198 &  0.275 &         0.189 &         0.303 &  0.577 \\
-gamma         & -0.077 &  0.035 & -0.012 &         0.246 & -0.371 &  1.000 &  0.444 &  0.003 &        -0.304 &        -0.367 &  0.223 \\
-score         &  0.118 & -0.156 & -0.451 &        -0.010 & -0.198 &  0.444 &  1.000 & -0.352 &        -0.577 &        -0.763 &  0.391 \\
-size          & -0.485 &  0.152 &  0.384 &         0.083 &  0.275 &  0.003 & -0.352 &  1.000 &         0.166 &         0.210 & -0.133 \\
-size\_overhead & -0.033 &  0.151 & -0.071 &        -0.058 &  0.189 & -0.304 & -0.577 &  0.166 &         1.000 &         0.858 & -0.274 \\
-time\_overhead & -0.058 &  0.126 & -0.098 &        -0.144 &  0.303 & -0.367 & -0.763 &  0.210 &         0.858 &         1.000 & -0.225 \\
-tpr           &  0.024 & -0.235 & -0.122 &        -0.697 &  0.577 &  0.223 &  0.391 & -0.133 &        -0.274 &        -0.225 &  1.000 \\
-\bottomrule
-\end{tabular}
-
-#+END_EXPORT
+# rd_20 = results.for_id(869)  # 871, 872, 873
+# _ = mplot.confusion_matrix_for_result(rd_20, zero0=True)
+A comparison utilized by \cite[Fig.11]{panchenko2} are confusion
+matrices, as described in section [[#sub2-ml-measure]]. These were
+computed for subsets of 20 pages, with the same number of background-
+and foreground-instances in Figure \ref{fig:confusion-20-all4}. The
+defenseless result has very few classification errors. As with the
+previous analysis results, the new defense at low-overhead creates a
+high number of mis-classifications as to already make \gls{wf}'s
+success doubtable. Both the high-overhead new-defense at 2018-03-28
+and LLaMA-nodelay \citep{DBLP:journals/popets/CherubinHJ17} decrease
+correct classification and show comparable results.
+*** TODO add multi-class values for wang data set in [[#sub4-open][tab:open-world-validation]] table, mention that should not matter greatly
+    - and add result _id as well
 ** KEYWORDS Summary
    :PROPERTIES:
    :CUSTOM_ID: sub4-summary
@@ -1921,7 +1766,7 @@ was clearly not the real page. This needed to be noted as well.
   :CUSTOM_ID: app-open-results
   :END:
 ** Table of all 100-Site Results
-#+CAPTION[Open-World Results with 100 sites]: Table of all results on 100 sites, sorted by date. If the background-size is "auto" the same number as in the foreground set were chosen; if "max", the maximum number was chosen. For size overheads, refer to the closed-world accuracy results in section [[#appendix-closed-100-cumul]] above.
+#+CAPTION[Open-World Results with 100 sites]: Table of all results on 100 sites, sorted by scenario capture date. If the background-size is "auto" the same number as in the foreground set were chosen; if "max", the maximum number was chosen. For size overheads, refer to the closed-world accuracy results in section [[#appendix-closed-100-cumul]] above.
 #+NAME: tab:open-world-all-100
 #+ATTR_LATEX: :environment longtable :align |l | r || r | r | r | r |
 |                     |            |          |       <10> |       |       |
@@ -2332,6 +2177,154 @@ These curves drop off steeply.
   this text indicated a load error, or a captcha, the capture was
   marked accordingly, and discarded in the analysis. Websites with a
   high number of capture errors were removed from the list of sites.
+* Open World Misclassification
+  While closed-world results are easier to compare and analyze,
+  \gls{wf} is modeled more accurately by an [[#sub2-ml-measure][open-world model]]. This
+  brought additional challenges in classification.
+
+
+  Scikit-learn \citep{scikit-learn} has the advantage of /balanced
+  class weights/: classes can have different sizes, yet are considered
+  of the same importance when training classifiers. This useful
+  setting was enabled in the beginning of open world classification as
+  a carryover from closed-world analysis. In the open world setting,
+  it reduced accuracy to 55%.
+
+
+
+  As soon as this setting was disabled, accuracy rose to e.g. 83.55%,
+  with true positive rate of 81.39% and false-positive rate of
+  12.32%. This still does not match \cite{panchenko2}'s. To improve
+  further, the confusion matrix in Figure [[fig:open-world-confmat]] shows
+  which sites were mis-classified how often:
+
+  #+CAPTION[Open world confusion matrix]: Open world confusion matrix. Background to background classification (5928) was removed to normalize colors.
+  #+NAME: fig:open-world-confmat
+  [[./pictures/confmat_open_2018-02-02.pdf]]
+
+  One site that was exclusively classified as background is [[http://t.co][t.co]] (on
+  the chart between =microsoftonline.com= and =amazonaws.com=).  For
+  [[http://t.co][t.co]], 48 of 48 (valid) traces were classified as background
+  sites. The next-highest rates of false-negative mis-classification is
+  [[http://rakuten.co.jp][rakuten.co.jp]], which has 37 of 49 sites incorrectly classified as
+  background pages. This might be due to their highly varied traces,
+  as can be seen in Figure [[fig:t.co-rakuten-cumul-traces]]:
+
+  #+CAPTION[CUMUL traces for t.co]: CUMUL-Traces for the websites [[http://t.co][t.co]] and [[http://rakuten.co.jp][rakuten.co.jp]]. These show high (intra-class) variability, which could explain the high misclassification rates. Compare Figure [[fig:CUMUL_traces]] and [[fig:cumul-well-open]] for lower-variability CUMUL traces.
+  #+NAME: fig:t.co-rakuten-cumul-traces
+  [[./pictures/cumul__t.co_rakuten.co.jp__2018-02-02.pdf]]
+  # (f, a) = plt.subplots(1, 2)
+  # mplot.traces_cumul(r.scenario, "rakuten.co.jp", axes=a[1])
+  # mplot.traces_cumul(r.scenario, "t.co", axes=a[0])
+
+
+  This can be explained by the content: t.co shows only 3 lines of
+  text, and thus any variation in the download of its little content
+  leads to higher variability. rakuten.co.jp has shopping results,
+  which are bound to show high variation.
+
+  #+CAPTION[CUMUL traces for well-classified open world sites]: CUMUL-Traces for well-classified website dailymotion.com.
+  #+NAME: fig:cumul-well-open
+  [[./pictures/cumul__dailymotion.com__2018-02-02.pdf]]
+  As a contrast, the website [[http://dailymotion.com][dailymotion.com]] had 42 of 42 correctly
+  classified captures. Its CUMUL-traces show low variability in Figure
+  [[fig:cumul-well-open]].
+
+  #+CAPTION: Misclassification count (open world)
+  #+NAME: tab:high-error-open-world
+  #+ATTR_LATEX: :align |l||r | r|
+|--------------------+-------------------------+-------------------------|
+| site               | site as background (FN) | background as site (FP) |
+|--------------------+-------------------------+-------------------------|
+| ameblo.jp          |                      19 |                      30 |
+| aliexpress.com     |                      17 |                      24 |
+| godaddy.com        |                      22 |                      23 |
+| youporn.com        |                      16 |                      21 |
+| google.com         |                      30 |                      20 |
+| aol.com            |                      32 |                      19 |
+| dropbox.com        |                      31 |                      11 |
+| netflix.com        |                      36 |                       5 |
+| rakuten.co.jp      |                      37 |                       2 |
+| t.co               |                      48 |                       0 |
+|--------------------+-------------------------+-------------------------|
+
+  Table [[tab:high-error-open-world]] shows the mis-classification rates of
+  the sites that were mis-classified the most often (\ge 30 false
+  negatives or \ge 20 false positives). Let us examine the top-5
+  false-positive sites in detail. As Figure [[fig:high-fpr-four]] shows,
+  four of these show high intra-class variability:
+
+  #+CAPTION[CUMUL traces high-false-positives sites]: CUMUL-Traces for the websites with high false-positive rates. The sites are (left-to-right) ameblo.jp, youporn.com, aliexpress.com, and godaddy.com. These also show high (intra-class) variability, which could explain the high misclassification rates.
+  #+NAME: fig:high-fpr-four
+  [[./pictures/traces_cumul_no_defense_on_2018-02-02_ameblo.jp_youporn.com_aliexpress.com_godaddy.com.pdf]]
+  # s = scenario.Scenario("disabled/bridge--2018-02-02--100@50")
+  # a = ["ameblo.jp", "youporn.com", "aliexpress.com", "godaddy.com"]
+  # for (i, el) in enumerate(a): mplot.traces_cumul(s, el, axes=axess2[i]); axess2[i].set_title(" ")
+  # b = axess2[0]
+  # axess2[0].set_ylabel(" ")
+  # axess2[1].set_xlabel("Feature Index")
+  # plt.tight_layout()
+  # plt.savefig("/tmp/traces_cumul_{}_{}.pdf".format(s, "_".join(a)).replace(" ", "_"))
+  - ameblo.jp (and youporn.com) show a range of dynamic content
+  - aliexpress.com sells different items at different times. The
+    images at least are bound to have different byte sizes
+  - godaddy.com had versions in various languages, serving different
+    content, which explains the varied traces
+
+  #+CAPTION[CUMUL traces high-false-positive google.com]: CUMUL-Traces for the last website with high false-positive rates: google.com. It shows low variability. Its high misclassification rate is explained by other google sites being in the background set (e.g. google.fi).
+  #+NAME: fig:high-fpr-google
+  [[./pictures/traces_cumul_no_defense_on_2018-02-02_google.com.pdf]] The
+  fifth site, google.com also serves international content. Yet, its
+  traces show low variability, as seen in Figure
+  [[fig:high-fpr-google]]. While google.com sister sites, say google.fi,
+  were removed from the foreground set, the background set contained
+  hundreds of google sites as well. This of course made classification
+  infeasible.
+
+
+
+  Another low-res with 10 =exclude_sites=:
+  [[./pictures/traces_cumul_no_defense_on_2018-02-02_wikipedia.org.pdf]]
+** WRITE Analyzing defenseless results
+     - correlation: _id increasing decreases fpr, tpr, score
+     - increasing bg size decreases fpr, tpr, similarly for scenario.date
+     - auroc: high positive correlation to fpr, high negative to tpr
+     - tpr correlated to fpr
+     - len of exclude_sites decreases (-0.4) fpr, (and -0.2 tpr)
+     - code
+     - cross-correlation table
+# df = pd.DataFrame(r.to_dict() for r in results.list_all() if r.open_world and "disabled")
+# df = df[df["background_size"] != 'none'][df["background_size"] != "auto"][df["background_size"].notnull()]
+# df['background_size'] = df['background_size'].to_numeric()
+# del df['auc_bound']
+# df.corr().to_latex()
+#+BEGIN_EXPORT latex
+\begin{tabular}{lrrrrrrrrrrr}
+\toprule
+{} &      C &    \_id &  auroc &  bg\_size &    fpr &  gamma &  score &   size &  size\_overhead &  time\_overhead &    tpr \\
+\midrule
+C             &  1.000 &  0.050 &  0.469 &        -0.111 & -0.117 & -0.077 &  0.118 & -0.485 &        -0.033 &        -0.058 &  0.024 \\
+\_id           &  0.050 &  1.000 &  0.741 &         0.285 & -0.133 &  0.035 & -0.156 &  0.152 &         0.151 &         0.126 & -0.235 \\
+auroc         &  0.469 &  0.741 &  1.000 &        -0.058 & -0.005 & -0.012 & -0.451 &  0.384 &        -0.071 &        -0.098 & -0.122 \\
+background... & -0.111 &  0.285 & -0.058 &         1.000 & -0.735 &  0.246 & -0.010 &  0.083 &        -0.058 &        -0.144 & -0.697 \\
+fpr           & -0.117 & -0.133 & -0.005 &        -0.735 &  1.000 & -0.371 & -0.198 &  0.275 &         0.189 &         0.303 &  0.577 \\
+gamma         & -0.077 &  0.035 & -0.012 &         0.246 & -0.371 &  1.000 &  0.444 &  0.003 &        -0.304 &        -0.367 &  0.223 \\
+score         &  0.118 & -0.156 & -0.451 &        -0.010 & -0.198 &  0.444 &  1.000 & -0.352 &        -0.577 &        -0.763 &  0.391 \\
+size          & -0.485 &  0.152 &  0.384 &         0.083 &  0.275 &  0.003 & -0.352 &  1.000 &         0.166 &         0.210 & -0.133 \\
+size\_overhead & -0.033 &  0.151 & -0.071 &        -0.058 &  0.189 & -0.304 & -0.577 &  0.166 &         1.000 &         0.858 & -0.274 \\
+time\_overhead & -0.058 &  0.126 & -0.098 &        -0.144 &  0.303 & -0.367 & -0.763 &  0.210 &         0.858 &         1.000 & -0.225 \\
+tpr           &  0.024 & -0.235 & -0.122 &        -0.697 &  0.577 &  0.223 &  0.391 & -0.133 &        -0.274 &        -0.225 &  1.000 \\
+\bottomrule
+\end{tabular}
+
+#+END_EXPORT
+** removed sites
+#+INDEX: cumul traces!linkedin
+#+INDEX: cumul traces!removed!linkedin
+#+INDEX: cumul traces!removed!cutoff
+#+CAPTION: Removed traces at cutoff point of 10 FP sites (linkedin.com). These show high variability as compared to Figure [[fig:cumul-well-open]].
+#+NAME: fig:traces_cumul_linkedin
+[[./pictures/traces_cumul_linkedin.com_2018-02-02.pdf]]
 * removed                                                           :ARCHIVE:
 ** DANIEL Website Fingerprinting Defenses
    :PROPERTIES:
@@ -3445,6 +3438,25 @@ not.
 
            scenario.Scenario("disabled/bridge--2018-03-15--100@50") ,
            is newer, but currently lacks open world results
+
+
+
+   - so what are the results
+     - results on defense
+       - defense worsens classification
+     - detailed comparison
+       - instances (?)
+       - [also for google-captures]
+       - [also for nobridge]
+
+- Llama: also low value, but much higher overhead (200%, vs 67%)
+- validate attack
+- tpr/fpr
+- auroc
+- conclusion
+- what are open-world results
+- are those results reliable
+  - also "validated" by CUMUL ccdf-curves
 ** appendix: open-world results
      - table
        - [ ] update with WANG
