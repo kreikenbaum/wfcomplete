@@ -54,7 +54,7 @@ PATH_SKIP = [
 class Scenario(object):
     '''meta-information about a scenario with optional loading of its traces'''
     def __init__(self, name, trace_args=None, smart=False, skip=False,
-                 open_world=False):
+                 open_world=False, exclude_sites=[]):
         ''' (further example usage in test.py)
         >>> Scenario('disabled/2016-11-13').date
         datetime.date(2016, 11, 13)
@@ -68,6 +68,7 @@ class Scenario(object):
         self.traces = None
         self.trace_args = trace_args or config.trace_args()
         self._open_world_config = open_world
+        self._exclude = exclude_sites
         self.path = os.path.normpath(name)
         if name in PATH_SKIP or skip or ".unison" in name:
             self.name = name
@@ -284,20 +285,25 @@ class Scenario(object):
         if not self.traces:
             self.traces = counter.all_from_dir(os.path.join(DIR, self.path),
                                                **self.trace_args)
-            if self._open_world_config:
-                for site in self._open_world_config['exclude_sites']:
+            if (current_sites
+                    or self._open_world_config
+                    and 'current_sites' in self._open_world_config
+                    and self._open_world_config['current_sites']):
+                self.traces = sites.clean(self.traces)
+            if self._exclude and isinstance(self._exclude, int):
+                num_sites = len(self.traces)
+                sorted_sites = self.traces.keys()
+                sorted_sites.sort(key=lambda x: sites.cache.index(x))
+                self._exclude = sorted_sites[num_sites - self._exclude:]
+            for site in self._exclude:
                     try:
                         del self.traces[site]
                     except KeyError:
-                        pass
-                if ('current_sites' in self._open_world_config
-                        and self._open_world_config['current_sites']):
-                    self.traces = sites.clean(self.traces)  # duplicate work
+                        logging.info("failed to exclude %s", site)
+            if self._open_world_config:
                 self.traces = self.get_open_world(
                     self._open_world_config['background_size'],
                     same=True, current_sites=current_sites).traces
-            elif current_sites:
-                self.traces = sites.clean(self.traces)
         return self.traces
 
     @property

@@ -56,9 +56,9 @@ def accuracy_vs_overhead(result_list, title="Size Overhead to Accuracy"):
 # import mplot, results, config, pickle
 # r = [r for r in results.list_all() if "2018" in r.scenario and "disabled" in r.scenario and r.open_world][-1]
 # config.JOBS_NUM = 3; config.FOLDS = 3; config.VERBOSE = 3
-# out = mplot.confusion_matrix_from_result(r)
+# out = mplot.confusion_matrix_for_result(r)
 # pickle.dump(out, file("out.pickle", "w"))
-def confusion_matrix_from_result(result, current_sites=True, **kwargs):
+def confusion_matrix_for_result(result, current_sites=True, **kwargs):
     '''creates a confusion matrix plot for result
 
     @return  confusion_helper output'''
@@ -79,7 +79,7 @@ def confusion_matrix_from_scenario(scenario_obj, **kwargs):
 
     @return confusion_helper output'''
     r = max(results.for_scenario_smartly(scenario_obj), key=lambda x: x.score)
-    return confusion_matrix_from_result(r, **kwargs)
+    return confusion_matrix_for_result(r, **kwargs)
 
 
 def confusion_matrix_helper(clf, scenario_obj, current_sites=True, **kwargs):

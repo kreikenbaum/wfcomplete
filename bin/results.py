@@ -182,9 +182,9 @@ class Result(object):
                     'auc_bound': _value_or_none(entry, 'config', 'auc_bound'),
                     'background_size': _value_or_none(
                         entry, 'config', 'background_size'),
-                    'binary': _value_or_none(entry, 'config', 'binarize'),
                     'exclude_sites': _value_or_(
                         entry, [], 'config', 'exclude_sites'),
+                    'binary': _value_or_none(entry, 'config', 'binarize'),
                     'current_sites': _value_or_none(
                         entry, 'config', 'current_sites')
                 }
@@ -194,7 +194,8 @@ class Result(object):
         time_overhead = _value_or_none(entry, 'result', 'time_increase')
         try:
             scenario_obj = scenario.Scenario(
-                entry['config']['scenario'], open_world=open_world)
+                entry['config']['scenario'], open_world=open_world,
+                exclude_sites=_value_or_none(entry, 'config', 'exclude_sites'))
         except ValueError:
             if entry['status'] not in ["COMPLETED", "EXTERNAL"]:
                 scenario_obj = "placeholder for scenario {}".format(

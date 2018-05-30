@@ -270,19 +270,8 @@ picks best result'''
 
 
 def simulated_open_world(scenario_obj, auc_bound, binary, bg_size,
-                         exclude_sites, current_sites):
+                         current_sites):
     '''@return metrics for open world experiment'''
-    if isinstance(exclude_sites, int):
-        exclude_sites = (scenario_obj
-                         .get_traces(current_sites)
-                         .keys())[:exclude_sites]
-    for site in exclude_sites:
-        try:
-            del scenario_obj.get_traces(current_sites)[site]
-            logging.info("removed %s", site)
-        except KeyError:
-            logging.debug("failed to remove %s", site)
-            pass
     if current_sites:  # necessary? todo: write test before removal
         scenario_obj.traces = sites.clean(scenario_obj.get_traces(
             current_sites))

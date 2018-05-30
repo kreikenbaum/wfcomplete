@@ -48,11 +48,11 @@ def run_exp(scenario, remove_small, or_level, auc_bound,
     config.OR_LEVEL = config.OR_LEVEL if or_level is None else or_level
     config.REMOVE_SMALL = (config.REMOVE_SMALL if remove_small is None
                            else remove_small)
-    scenario_obj = scenario_module.Scenario(scenario)
+    scenario_obj = scenario_module.Scenario(scenario,
+                                            exclude_sites=exclude_sites)
     (tpr, fpr, auroc, C, gamma, acc, y, yp, yd) = analyse.simulated_open_world(
         scenario_obj, auc_bound=auc_bound, binary=binarize,
-        bg_size=background_size, exclude_sites=exclude_sites,
-        current_sites=current_sites)
+        bg_size=background_size, current_sites=current_sites)
     _add_as_artifact(y.tolist(), "y_true")
     _add_as_artifact(yp.tolist(), "y_prediction")
     _add_as_artifact(yd, "y_domains")
