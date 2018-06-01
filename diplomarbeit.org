@@ -1304,9 +1304,7 @@ Alexa's top sites.
 Figures [[fig:oh2acc100][fig:oh2acc100]] and [[fig:oh2acc]] show the new defenses's
 configurability and contrasts its accuracy/overhead trade-off to
 LLaMA-nodelay. Appendix [[#appendix-accuracy]] shows more evaluation
-results. WTF-PAD \citep{wtfpad2015}, seemed to be working according to
-debug output, but failed to hinder \gls{wf}, as seen in appendix
-[[#appendix-closed-30-cumul]].
+results.
 *** more                                                            :ARCHIVE:
     - how is data analyzed
         aka how can the analysis be reproduced
@@ -1326,6 +1324,26 @@ debug output, but failed to hinder \gls{wf}, as seen in appendix
     - How does the defense compare to others (\cite{wtfpad2015},
       \cite{LLaMA}, \cite{a-systematic2014})?
     - walkie-talkie theoretical
+    - llama-delay: many sites removed in default config (remove-small, or-level=2)
+      - did not load correctly
+      #+BEGIN_EXAMPLE
+        WARNING - root - class msn.com had only 26 instances, removed
+        WARNING - root - class youtube.com had only 29 instances, removed
+        WARNING - root - class pinterest.com had only 21 instances, removed
+        WARNING - root - class yandex.ru had only 18 instances, removed
+        WARNING - root - class mail.ru had only 27 instances, removed
+        WARNING - root - class onclickads.net had only 29 instances, removed
+        WARNING - root - class reddit.com had only 21 instances, removed
+        WARNING - root - class amazon.com had only 28 instances, removed
+        WARNING - root - class apple.com had only 23 instances, removed
+        WARNING - root - class blogspot.com had only 9 instances, removed
+        WARNING - root - class yahoo.com had only 22 instances, removed
+        WARNING - root - class instagram.com had only 23 instances, removed
+        WARNING - root - class tumblr.com had only 27 instances, removed
+        WARNING - root - class microsoft.com had only 21 instances, removed
+        WARNING - root - class paypal.com had only 28 instances, removed
+        WARNING - root - class aliexpress.com had only 28 instances, removed
+      #+END_EXAMPLE
 **** confusion matrices closed world: disabled, wf-cover, llama-nodelay
 ** CHECK Analyzing Open World Scenarios
    :PROPERTIES:
@@ -1387,15 +1405,17 @@ To evaluate the new defense, and to compare and contrast to LLaMA
 compared and contrasted to those protected by LLaMA-nodelay and two
 configurations of the new defense. Their closed-world accuracy and
 size overhead results is again presented in Table
-[[tab:open-world-scenarios]]: LLaMA-nodelay's fixed accuracy proved to be significantly higher in all experiments than the new defense's, even at a high-overhead setting.
+[[tab:open-world-scenarios]].
 
 
 #+BEGIN_EXPORT latex
 \begin{figure}[bt]
-\includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-no-defense-on-2018-02-02.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-new-defense-on-2018-02-13.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-new-defense-on-2018-03-28.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-LLaMA-nodelay-on-2018-02-25.pdf}\\
-\includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-no-defense-on-2018-02-02.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-new-defense-on-2018-02-13.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-new-defense-on-2018-03-28.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-LLaMA-nodelay-on-2018-02-25.pdf}
+\includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-no-defense-on-2018-02-02.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-new-defense-on-2018-02-13.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-LLaMA-nodelay-on-2018-02-25.pdf}
+\includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-new-defense-on-2018-03-28.pdf} \\
+\includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-no-defense-on-2018-02-02.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-new-defense-on-2018-02-13.pdf}  \includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-LLaMA-nodelay-on-2018-02-25.pdf}
+\includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-new-defense-on-2018-03-28.pdf}
 \caption[CCDF-curves for open-world scenarios]{\label{fig:ccdf-precision-all4}
-CCDF-curves for (left-to-right) (1) no defense, (2) new defense at 02-13, (3) new defense at 03-28, and (4) LLaMA-nodelay at 02-25. Top-to-bottom show (1) precision, and (2) recall}
+CCDF-curves for (left-to-right) (1) no defense, (2) new defense at 02-13, (3) LLaMA-nodelay at 02-25, and (4) new defense at 03-28. Top shows precision, bottom shows recall. The defenses were sorted by the steepness of CCDF-decline.}
 \end{figure}
 #+END_EXPORT
 # for s in [sd, s100, sl, s20]:
@@ -1404,19 +1424,21 @@ CCDF-curves for (left-to-right) (1) no defense, (2) new defense at 02-13, (3) ne
 
 Figure \ref{fig:ccdf-precision-all4} shows the complementary
 cumulative distribution functions (CCDF) that were used by
-\citet[sec.~VII.2.D]{panchenko2} to visualize CUMUL's efficacy. The curve
-for defenseless data is similar to those at \citet[Fig.7+8]{panchenko2}. As
-with the ROC-curve comparison, the new defense at 2018-02-13 worsens
-classification results, but less so than the new defense with
-high-overhead at 2018-03-28 and LLaMA-nodelay. These results repeat
-for the CCDF-recall curves. Figure \ref{fig:ccdf-false-positive-rate}
-in Appendix [[#appendix.eval.open.ccdf-false-positives]] shows the CCDFs
-for false-positive rates. All curves show evaluation on 100
-sites. After a certain threshold of errors, a weakness of CUMUL's
-default accuracy optimization becomes clear: the optimal strategy for
-a classifier in a multi-class scenario becomes to simply to always
-guess the background page if unsure. This explains the flat curves
-seen for high numbers of background sizes.
+\citet[sec.~VII.2.D]{panchenko2} to visualize CUMUL's efficacy. The
+curve for defenseless data is similar to those at
+\citet[Fig.7+8]{panchenko2}. As with the ROC-curve comparison, the new
+defense at 2018-02-13 worsens classification results, but less so than
+the new defense with high-overhead at 2018-03-28 and
+LLaMA-nodelay. These results repeat for the CCDF-recall curves. Figure
+\ref{fig:ccdf-false-positive-rate} in Appendix
+[[#appendix.eval.open.ccdf-false-positives]] shows the CCDFs for
+false-positive rates. All curves show evaluation on 100 sites. The
+curves flatten for certain background sizes. This is conceivably due
+to accuracy as optimization metric: after a certain threshold of
+insecurity, the optimal strategy for a classifier in a multi-class
+scenario becomes to guess the background page if unsure, as the class
+sizes are not balanced. This would explain the flat curves seen for
+high numbers of background sizes.
 
 
 #+CAPTION[Receiver operating characteristic (ROC)-curves for 50 sites]: Receiver operating characteristic (ROC)-curves that compare the new defense with no defense and LLaMA \citep{DBLP:journals/popets/CherubinHJ17}. There are 50 monitored pages in the foreground-set, the size of the world/background set is 5,000 pages.
@@ -1470,6 +1492,9 @@ correct classification and show comparable results.
    :END:
 - what is the conclusion
 - (why) is this defense better than llama
+- LLaMA-nodelay's fixed overhead was higher in all experiments than
+  the new defense's, even at a high-overhead setting which yielded
+  better obfuscation in all comparisons.
 * Conclusions [0/10000]
   :PROPERTIES:
   :CUSTOM_ID: ch6-conclusion
@@ -3457,6 +3482,7 @@ not.
 - what are open-world results
 - are those results reliable
   - also "validated" by CUMUL ccdf-curves
+- This [flat ccdf curves] only appeared for defended traffic.
 ** appendix: open-world results
      - table
        - [ ] update with WANG
