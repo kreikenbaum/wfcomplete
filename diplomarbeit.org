@@ -675,6 +675,14 @@ of future work in section [[#future-work]].
     the ROC-curve is of particular interest. The area under the curve
     bounded up to a false positive rate of, say 1%, is called /bounded
     AUC/ and denoted AUC_{0.01}.
+**** more                                                           :ARCHIVE:
+- multi-class confusion matrix
+  - more than two classes
+  - here: denote one as negative/background, all others as positive/fg
+  - multiple definitions for tpr/fpr/...
+    - solokova
+    - info retrieval
+    - one assumedly used by panchenko
 ** Defending against Website Fingerprinting
    :PROPERTIES:
    :CUSTOM_ID: sub2-wf-def
@@ -834,6 +842,7 @@ of future work in section [[#future-work]].
     glimpse at this thesis' new defense.
 
     The next section presents the novel defense in depth.
+
 * A New Defense
   :PROPERTIES:
   :CUSTOM_ID: ch3-newdefense
@@ -1124,7 +1133,10 @@ be downloaded come from Alexa's top million sites list[fn:: available
 at [[http://s3.amazonaws.com/alexa-static/top-1m.csv.zip]]] with duplicate
 sites and sites with high load error rate removed. This increases the
 classification ratio, and thus makes it harder to defend. Making
-\gls{wf} easier is admissible in the evaluation of a \gls{wf} defense.
+\gls{wf} easier is admissible in the evaluation of a \gls{wf}
+defense. WTF-PAD \citep{wtfpad2015}'s main author co-authored LLaMA
+\citep{DBLP:journals/popets/CherubinHJ17}. This thesis compares its
+results to the latest defense.
 
 
 Web traces are captured in batches in a round-robin fashion: each site
@@ -1368,16 +1380,29 @@ negative/. Ideally, none of these exist. In practice, Eve has to weigh
 between leniency and strictness: would she rather let slip a visit to
 =bob.com= as =bbc.com=, or would she rather check in on her daughter
 when she just visits =bbc.com=, because it was classified as
-=bob.com=? This trade-off was illustrated by Figure [[fig:roc-example]].
+=bob.com=? This trade-off was illustrated in Figure [[fig:roc-example]].
 
-#+CAPTION[Open-World Validation]: Validation on 100 sites of the WANG14 \citep{panchenko2} dataset. Since multi-class true-, and false-positive-rate have multiple possible definitions \citep{sokolova2009systematic}, only the two-class values were compared.
+#+CAPTION[Open-World Validation]: Validation on 100 sites of the WANG14 \citep{panchenko2} dataset in the open-world setting (100 foreground sites with 90 instances each, 9000 background instances)
 #+NAME: tab:open-world-validation
-#+ATTR_LATEX: :align |l||r | r | r |
-| Data source                    | \open Num. inst. \close | \open TPR [%] \close | \open FPR [%]\close |
-| <30>                           |       <10> |       <10> |       <10> |
-|--------------------------------+------------+------------+------------|
-| \citet[Table III]{panchenko2}, two-class |         90 |      96.92 |       1.98 |
-| own experiment, two-class      |         90 |      97.29 |       1.43 |
+#+ATTR_LATEX: :align |l|l||r | r | r |
+| Data source          | Classes | \open Num. inst. \close | \open TPR [%] \close | \open FPR [%]\close |
+| <20>                 |         |       <10> |       <10> |       <10> |
+|----------------------+---------+------------+------------+------------|
+| \citet[Table III]{panchenko2} | two-    |         90 |      96.92 |       1.98 |
+|                      | multi-  |         90 |      96.64 |       9.61 |
+|----------------------+---------+------------+------------+------------|
+| own result (816)     | two-    |         90 |       96.9 |       1.87 |
+|                      | multi-  |         90 |      96.63 |       9.19 |
+# rwang = list(r for r in results.for_scenario(scenario.list_all("external")[0]) if r.open_world['background_size'] == None and r.or_level == 0)[1]  # id == 816
+# yt = np.array(rwang.y_true)
+# yp = np.array(rwang.y_prediction)
+# FP = np.logical_and(yt != yp, yp != -1).sum()
+# FN = np.logical_and(yt != yp, yp == -1).sum()
+# TP = np.logical_and(yt == yp, yt != -1).sum()
+# TN = np.logical_and(yt == yp, yt == -1).sum()
+# TPR = 1. * TP / (TP + FN)
+# FPR = 1. * FP / (FP + TN)
+
 On the WANG14 \citep[sec.4.1]{panchenko2} data set[fn::available at
 [[https://cs.uwaterloo.ca/~t55wang/wf.html]]], the results of the
 reimplementation closely match CUMUL's original, see Table
@@ -1484,14 +1509,17 @@ high number of mis-classifications as to already make \gls{wf}'s
 success doubtable. Both the high-overhead new-defense at 2018-03-28
 and LLaMA-nodelay \citep{DBLP:journals/popets/CherubinHJ17} decrease
 correct classification and show comparable results.
-*** TODO add multi-class values for wang data set in [[#sub4-open][tab:open-world-validation]] table, mention that should not matter greatly
-    - and add result _id as well
-** KEYWORDS Summary
+** WRITE Summary
    :PROPERTIES:
    :CUSTOM_ID: sub4-summary
    :END:
 - what is the conclusion
-- (why) is this defense better than llama
+  - attack-reimpl in python works
+    - similar results as CUMUL-paper for both open and closed world
+  - defense works
+    - decreases results shown, visualized with 3 literature-based methods
+    - higher obfuscation than llama
+    - configurable
 - LLaMA-nodelay's fixed overhead was higher in all experiments than
   the new defense's, even at a high-overhead setting which yielded
   better obfuscation in all comparisons.
