@@ -13,6 +13,7 @@ import config
 import counter
 import mymetrics
 import scenario
+import sites
 import results
 
 sns.set()  # sns.set_style("darkgrid")
@@ -233,7 +234,7 @@ def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):
         keys.remove('sina.com.cn')
     for other_dict in trace_dicts[1:]:
         keys = keys.intersection(other_dict.keys())
-        keys = list(keys)[:sitenum]
+    keys = sorted(keys, key=lambda x: sites.cache.index(x))[:sitenum]
 
     def color(x):
         return _color(x, keys)
@@ -249,9 +250,11 @@ def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):
              va="center", rotation="vertical")
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
     if save:
-        plt.savefig("/tmp/total_packets_in_"
-                    + '_'.join(names).replace('/', '___')+'__'
-                    + '_'.join(keys) + "__palette_colorblind.pdf")
+        plt.savefig(
+            str("/tmp/total_packets_in_" + '_'.join(names).replace('/', '___')
+                + '__' + '_'.join(keys) + "__palette_colorblind")[:250]
+            + ".pdf")
+    return trace_dicts
 
 
 # # traces_cumul usage (two sites):

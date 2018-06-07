@@ -218,7 +218,7 @@ presented in section [[#sub2-wf-def]].
 This thesis' new \gls{wf} defense is introduced in chapter
 [[#sub3-defense]]. It also presents the aspects the defense is based
 upon: section [[#sub3-http]] justifies the chosen HTTP traffic model;
-whereas the stochastic size cache based on Bloom-filters
+whereas the stochastic size cache based on Bloom filters
 \citep{Bloom70space/timetrade-offs} is described in section
 [[#sub3-bloom]]. Finally, section [[#sub3-defense]] explains the defense's
 itself.
@@ -871,7 +871,7 @@ obfuscation.
 
 This chapter first presents the main thesis's defense design in
 section [[#sub3-defense]]. Section [[#sub3-http]] goes into some detail about
-the traffic model. The optional Bloom-filter based stochastic data
+the traffic model. The optional Bloom filter based stochastic data
 structure that is used for size caches is described in section [[#sub3-bloom]].
 
 The advantages of this approach are: Firstly, the application layer is
@@ -1011,7 +1011,7 @@ log-normal distributions (truncated), as seen in Figure
 best in their analysis. A truncated gamma function models the number
 of embedded objects. This model provides the cover traffic target
 sizes. It also sets the page's actual sizes, if they are not known.
-** Caching Sizes using Bloom-Filters
+** Caching Sizes using Bloom Filters
    :PROPERTIES:
    :CUSTOM_ID: sub3-bloom
    :END:
@@ -1027,7 +1027,7 @@ The problem in caching is that
    less accurate,
 2. caching visited page sizes might yield an exact log of the visited
    web pages to an attacker who gains control over the defended
-   computer. \citep[sec.2.1]{tor-browser-design-impl} forbid writing
+   computer. \citet[sec.2.1]{tor-browser-design-impl} forbid writing
    sensitive data to disc, except on opt-in, and
 3. this cache cannot store all page sizes. Even in a closed world,
    using a default mapping of string to size could take as much space
@@ -1051,33 +1051,31 @@ fixed-width data structure to test membership in a set. In exchange
 for a small false-positive error rate, they require significantly less
 space than deterministic data structures: if an element is in the set,
 the filters accurately report this; if the element is not in the set,
-the Bloom-filter might report that it is contained. The error rate
-depends on the number of included elements in relation to the
-Bloom-filter's size. Bloom-filters were developed for spell
-checking. They have numerous uses in network applications, e.g. in
-distributed caches, and network
-analysis \citep{Broder02networkapplications}. Bloom-filters improve on
-basic hash-coding by offering a tunable false positive error rate.
+the Bloom filter might report that it is contained. The error rate
+depends on the number of included elements in relation to the Bloom
+filter's size. Bloom filters were developed for spell checking. This
+is similar to hash-coding, yet Bloom filters offer a tunable false
+positive error rate. They have numerous uses in network applications,
+e.g. in distributed caches, and network analysis
+\citep{Broder02networkapplications}.
 
 
 To approximately cache sizes of elements, this thesis uses a data
-structure based on Bloom-filters. The histogram of observed values is
-inspected, and split by quantiles into bins. For each bin, a Bloom
-filter is created. Each site/url is then binned: An element is added
-to this filter if its size is inside the bin. To approximate the size
-of an element, all filters are checked. If one filter reports
-containment, its size is chosen. If zero report containment, the size
-is not known; if two or more report containment, it is saved
-wrongly. In both of these latter cases, the default distribution is
-used. If the data structure is queried, the middle quantile of each
-bin is chosen to represent the bin. Each bin thus corresponds to a
-Bloom-filter that saves whether the element's URL is modeled by the
-bin. This data structure has the additional advantage that, even if
-visited page sizes were saved, an adversary could not safely determine
-that pages were visited due to the Bloom Filter's false positive
-errors.
-
-(See Appendix [[#bloom-sort]] for implementation details.)
+structure based on Bloom filters. The histogram of observed values is
+split by quantiles into bins. For each bin, a Bloom filter is
+created. Each site/url is then binned: An element is added to this
+filter if its size is inside the bin. To approximate the size of an
+element, all filters are checked. If one filter reports containment,
+its size is chosen. If zero report containment, the size is not known;
+if two or more report containment, it is saved wrongly. In both of
+these latter cases, the default distribution is used. If the data
+structure is queried, the middle quantile of each bin is chosen to
+represent the bin. Each bin thus corresponds to a Bloom filter that
+saves whether the element's URL is modeled by the bin. This data
+structure has the additional advantage that, even if visited page
+sizes were saved, an adversary could not safely determine that pages
+were visited due to the Bloom Filter's false positive errors. See
+Appendix [[#bloom-sort]] for implementation details.
 * Evaluation
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
@@ -1087,17 +1085,18 @@ use of the HTTP traffic model \citep{newtrafficmodel} for efficient
 obfuscation of world-wide-web \citep{rfc1945} traffic. The complexity
 of HTTP traffic renders the theoretical analysis of \gls{wf}
 difficult, hence the prevalent technique for assessing the performance
-of a detection system is an empirical evaluation.
+of a \gls{wf} defense is an empirical evaluation.
 
-In Evaluation, traffic data needs to first be captured and then
+In evaluation, traffic data needs to first be captured and then
 analyzed. \citet{effective2014} and \citet{panchenko2} provide their
-capture data, but it does not contain the new defense's traces, so
-new traffic data needed to be collected. The collection process is
-described in section [[#sub4-setup]]. Section [[#sub4-closed]] first studies
-the robustness of the attack, then compares the new defense with the
-latest defense by \citet{DBLP:journals/popets/CherubinHJ17}, both in a
-closed-world scenario. Section [[#sub4-open]] describes the open-world analysis,
-with concluding remarks in section [[#sub4-summary]].
+capture data, but it does not contain the new defense's traces, so new
+traffic data needed to be collected. The collection process is
+described in section [[#sub4-setup]]. Section [[#sub4-closed]] first validates
+the attack re-implementation, then evaluates the new defense, and
+compares it with the latest defense by
+\citet{DBLP:journals/popets/CherubinHJ17}, both in a closed-world
+scenario. Section [[#sub4-open]] describes the open-world analysis, with
+concluding remarks in section [[#sub4-summary]].
 ** old intro                                                        :ARCHIVE:
 This chapter compares the new defense to existing defenses. The first
 section illustrates the setup. The second section [[#sub4-tools][validates the
@@ -1291,11 +1290,13 @@ overhead, for a similar accuracy reduction. The main difference
 between LLaMA and the new defense lies in the HTTP-specific
 distributions to generate cover
 traffic. \citet{DBLP:journals/popets/CherubinHJ17} reported less
-overhead. This could stem from the difference in site layout: whereas
-Tor hidden service sites contain fewer embedded elements, especially
-JavaScript and CSS files \citep[Table 1]{DBLP:journals/popets/CherubinHJ17}. These trigger LLaMA's cover
-traffic behavior, and could thus could explain higher overhead on
-Alexa's top sites.
+overhead. This could stem from the difference in site layout. This
+thesis evaluates defenses on top WWW pages, while they inspect Tor's
+=.onion= hidden service \citep[sec.5]{tor-design} sites: Tor hidden
+service sites contain fewer embedded elements, especially JavaScript
+and CSS files \citep[Table~1]{DBLP:journals/popets/CherubinHJ17}. Each
+element triggers LLaMA's cover traffic behavior, and could thus could
+explain higher overhead on Alexa's top sites.
 
 
 
@@ -2636,12 +2637,12 @@ appropriate HTTP-related distributions \citep{newtrafficmodel}.
  [[fig:total_packets_in]] and [[fig:total_packets_in_thesis]]. As can be seen
  in the next chapter, the amazingly good defense that was achieved
  with up-to-date cached sizes (see next chapter) decreased over time
- to that of guessing sizes. These data structures use Bloom-filter
+ to that of guessing sizes. These data structures use Bloom filter
  \citep{Bloom70space/timetrade-offs} based binning (see section
  [[#sub3-bloomsort]]) to save values related to urls in a fixed space,
  while not allowing an adversary to exactly determine which urls are
  saved. See section [[#sub3-bloomfilters]] for a short introduction to
- their underlying Bloom-filters and section [[#sub3-bloomsort]] for their
+ their underlying Bloom filters and section [[#sub3-bloomsort]] for their
  application that saves these in a fixed-size probabilistic data
  structure.
 
@@ -2769,12 +2770,12 @@ following \cite{compgen}.
    for a small false-positive error rate, they require significantly
    less space than deterministic data structures: if an element is in
    the set, the filters accurately report this; if the element is not
-   in the set, the Bloom-filter might report that it is contained. The
+   in the set, the Bloom filter might report that it is contained. The
    error rate depends on the number of included elements in relation
-   to the Bloom-filter's size. Bloom-filters were developed for spell
+   to the Bloom filter's size. Bloom filters were developed for spell
    checking. They have numerous uses in network applications, e.g. in
    distributed caches, and network
-   analysis.\citep{Broder02networkapplications} Bloom-filters improve
+   analysis.\citep{Broder02networkapplications} Bloom filters improve
    on simple hash-coding by offering a tunable false positive error
    rate.
 
@@ -2858,7 +2859,7 @@ following \cite{compgen}.
      detemine that pages were visited due to the Bloom Filter's
      false positive errors.
 
-**** DANIEL Caching via Bloom-Filters
+**** DANIEL Caching via Bloom filters
      :PROPERTIES:
      :CUSTOM_ID: sub3-bloom
      :END:
@@ -3055,7 +3056,7 @@ following \cite{compgen}.
    traffic model\cite{newtrafficmodel} to morph the expected real
    traffic to another size; and it caches certain page characteristics
    in order to control the amount of cover traffic.
-*** DANIEL Caching via Bloom-Filters
+*** DANIEL Caching via Bloom filters
     :PROPERTIES:
     :CUSTOM_ID: sub3-bloom
     :END:
@@ -3122,19 +3123,19 @@ If a size is unknown, random variates from the [[#HTTP traffic
  [[fig:total_packets_in]] and [[fig:total_packets_in_thesis]]. As can be seen
  in the next chapter, the amazingly good defense that was achieved
  with up-to-date cached sizes (see next chapter) decreased over time
- to that of guessing sizes. These data structures use Bloom-filter
+ to that of guessing sizes. These data structures use Bloom filter
  \citep{Bloom70space/timetrade-offs} based binning (see section
  [[#sub3-bloomsort]]) to save values related to urls in a fixed space,
  while not allowing an adversary to exactly determine which urls are
  saved. See section [[#sub3-bloomfilters]] for a short introduction to
- their underlying Bloom-filters and section [[#sub3-bloomsort]] for their
+ their underlying Bloom filters and section [[#sub3-bloomsort]] for their
  application that saves these in a fixed-size probabilistic data
  structure.
 #+END_QUOTE
 
 
     Sizes can be saved approximately based on Bloom filters
-** how do bloom-filters work
+** how do bloom filters work
 - extend hash-coding
   - field of b bits
   - 1 bit whether cell is empty
