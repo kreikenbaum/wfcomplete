@@ -370,8 +370,8 @@ class TestResults(unittest.TestCase):
         1. create result with open world
         2. check that traces have background pages
         '''
-        smallresult = sorted((r for r in results.list_all() if r.open_world),
-                             key=lambda x: x.size)[0]
+        smallresult = min((r for r in results.list_all() if r.open_world),
+                          key=lambda x: x.size)
         self.assertTrue("background" in smallresult.scenario.get_traces(
             current_sites=False))
 
