@@ -285,7 +285,11 @@ class Scenario(object):
         if not self.traces:
             self.traces = counter.all_from_dir(os.path.join(DIR, self.path),
                                                **self.trace_args)
-            if (current_sites
+            if (self._open_world_config
+                    and 'current_sites' in self._open_world_config
+                    and not self._open_world_config['current_sites']):
+                pass
+            elif (current_sites
                     or self._open_world_config
                     and 'current_sites' in self._open_world_config
                     and self._open_world_config['current_sites']):
