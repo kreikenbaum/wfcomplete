@@ -195,7 +195,7 @@ class Result(object):
         try:
             scenario_obj = scenario.Scenario(
                 entry['config']['scenario'], open_world=open_world,
-                exclude_sites=_value_or_none(entry, 'config', 'exclude_sites'))
+                exclude_sites=_value_or_(entry, [], 'config', 'exclude_sites'))
         except ValueError:
             if entry['status'] not in ["COMPLETED", "EXTERNAL"]:
                 scenario_obj = "placeholder for scenario {}".format(
