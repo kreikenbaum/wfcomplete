@@ -702,7 +702,6 @@ of future work in section [[#future-work]].
    Figure [[fig:total_packets_in]],
    \citet{DBLP:journals/popets/CherubinHJ17} create additional
    packets, but preserve site separation and ordering.
-
    # created using mplot.total_packets_in_helper(['disabled/bridge--2018-01-12--30@50', 'defense-client/bridge--2018-01-07--30@50'])
    #+CAPTION[Distribution of number of total incoming packets]: Distribution of number of total incoming packets, once without defense, once using LLaMA \citep{DBLP:journals/popets/CherubinHJ17}.
    #+NAME: fig:total_packets_in
@@ -1290,14 +1289,14 @@ overhead, for a similar accuracy reduction. The main difference
 between LLaMA and the new defense lies in the HTTP-specific
 distributions to generate cover
 traffic. \citet{DBLP:journals/popets/CherubinHJ17} reported less
-overhead. This could stem from the difference in site layout. This
-thesis evaluates defenses on top WWW pages, while they inspect Tor's
-=.onion= hidden service \citep[sec.5]{tor-design} sites: Tor hidden
-service sites contain fewer embedded elements, especially JavaScript
-and CSS files \citep[Table~1]{DBLP:journals/popets/CherubinHJ17}. Each
-element triggers LLaMA's cover traffic behavior, and could thus could
-explain higher overhead on Alexa's top sites.
-
+overhead. This could stem from the difference in site layout. As
+mentioned in the previous section, this thesis evaluates defenses on
+Alexa's top sites, while they inspect Tor's =.onion= hidden service
+\citep[sec.5]{tor-design} sites: Tor hidden service sites contain
+fewer embedded elements, especially JavaScript and CSS files
+\citep[Table~1]{DBLP:journals/popets/CherubinHJ17}. Each element
+triggers LLaMA's cover traffic behavior, and could thus could explain
+higher overhead on Alexa's top sites.
 
 
 
@@ -1318,6 +1317,35 @@ Figures [[fig:oh2acc100][fig:oh2acc100]] and [[fig:oh2acc]] show the new defense
 configurability and contrasts its accuracy/overhead trade-off to
 LLaMA-nodelay. Appendix [[#appendix-accuracy]] shows more evaluation
 results.
+
+
+#+CAPTION: Relative histograms of number of incoming packets on top sites
+#+NAME: fig:relative-histogram-incoming-bytes-llama-0.22-disabled
+[[./pictures/total_packets_in_disabled___bridge--2018-02-02--100@50_wf-cover___bridge-100aI--2018-03-28--100@50_defense-client-nodelay___bridge--2018-02-25--100@50_wf-cover___bridge-20aI--2018-02-13--100@50__google.com_youtube.com_yahoo.com_amazon.com_wikipe.pdf]]
+# code: similar to total_packets_in_helper with sitenum=8
+# fig, axes = plt.subplots(2, 2, sharex=True, sharey=True)
+# color = lambda x: mplot._color(x, keys, "Set1")
+A comparison via relative histograms was presented in Figure
+[[#sub2-wf-def][fig:total_packets_in]]. This graphical method can also provide some
+insight into the effects of both LLaMA-nodelay
+\citep{DBLP:journals/popets/CherubinHJ17} and the new defense. Again,
+all defenses reduce the clarity of separation that is visible for
+defenseless data. At a first glance, LLaMA-nodelay seems to fare best
+of all, showing the lowest peaks of all defenses, and the widest
+kernels. At a second glance, the number of packets of several
+retrievals is lower than even for defenseless data. This could not
+happen if the transfer was completed correctly, and hints at
+incomplete web site retrievals. All defenses intermingle the peaks of
+this metric. The height of the relative histograms seems linked to
+defense overhead: defenseless data has the highest peaks, followed by
+the lower-overhead defense on 2018-02-13, the higher-overhead defense
+on 2018-03-28, and LLaMA-nodelay, which has the highest,
+non-configurable overhead.
+
+
+
+Does caching sizes help? The effect of the Bloom-cache described in
+[[#sub3-bloom][Caching Sizes using Bloom Filters]]
 *** more                                                            :ARCHIVE:
     - same as figure 2.6 [[#sub2-wf-def][fig:total_packets_in]] with thesis' defense
     - how is data analyzed
@@ -1511,6 +1539,10 @@ high number of mis-classifications as to already make \gls{wf}'s
 success doubtable. Both the high-overhead new-defense at 2018-03-28
 and LLaMA-nodelay \citep{DBLP:journals/popets/CherubinHJ17} decrease
 correct classification and show comparable results.
+
+
+
+
 ** WRITE Summary
    :PROPERTIES:
    :CUSTOM_ID: sub4-summary
