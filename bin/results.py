@@ -280,7 +280,7 @@ class Result(object):
         if self.open_world:
             for key in self.open_world:
                 out[key] = self.open_world[key]
-        for prop in ['duration']:  # 'background_size', overwrite open_world
+        for prop in ['duration', 'or_level']:  # 'background_size', overwrite open_world
             try:
                 out[prop] = getattr(self, prop)
             except AssertionError:  # fail for closed-world
