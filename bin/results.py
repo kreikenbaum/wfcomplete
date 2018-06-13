@@ -287,7 +287,7 @@ class Result(object):
                 pass
         try:
             for key in ['name', 'date', 'path']:  # (+num_sites etc)
-                out["scenario." + key] = self.scenario.__dict__[key]
+                out["scenario_" + key] = self.scenario.__dict__[key]
         except KeyError:
             pass  # ok to not include (e.g. WANG14 external result)
         return out

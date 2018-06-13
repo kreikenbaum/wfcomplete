@@ -855,11 +855,6 @@ of future work in section [[#future-work]].
   :END:
   #+INDEX: new defense
   #+INDEX: defenses!new defense
-#+CAPTION: Main functionality flowchart
-#+NAME: fig:flow-main
-#+ATTR_LATEX: :float t :width 0.7\textwidth
-[[./pictures/main_flowchart.pdf]]
-# generated with umlet
 \Gls{wf} has deanonymized Tor \citep{tor-design} under laboratory conditions
 \citep{panchenko}, and has continued to improve (\citet{panchenko2},
 \citet{197185}, \citet{rimmerautomated}). Several approaches have been
@@ -897,53 +892,55 @@ configurability.
 :PROPERTIES:
 :CUSTOM_ID: sub3-defense
 :END:
-Once again, let us consider Alice. When she opens =http://bob.com= in
-her browser, it first loads =bob.com='s main HTML \citep{html5}
-page. This page frequently contains other resources like CSS
-stylesheets, images, JavaScript \citep{ecma} files, etc. It might also
-contain elements that request other elements again, like nested HTML,
-CSS =@import=, or JavaScript AJAX requests. For each of these, the
-browser sends a request to obtain it.
-
-
+#+CAPTION: Main functionality flowchart
+#+NAME: fig:flow-main
+#+ATTR_LATEX: :float t :width 0.7\textwidth
+[[./pictures/main_flowchart.pdf]]
+# generated with umlet
 The defense obfuscates web traffic: For each load of a website,
-additional cover traffic is created. To do this, the defense observes
-all website requests. Algorithm \ref{algo1} describes the main idea:
+additional cover traffic is created. The defense's main flow is
+modeled in Figure [[fig:flow-main]]. To do this, the defense observes all
+web requests. If the website is not known, the defense determines
+parameters for HTML and embedded cover traffic, and directly sends a
+cover request for the HTML page. If the website is known, the
+pre-determined parameters determine the amount of embedded cover
+traffic sent. This is also described in Algorithm \ref{algo1}, which
+also details how the cover traffic parameters are set.
 
  #+BEGIN_EXPORT latex
  \begin{algorithm}
- \caption{Generate cover traffic}\label{covertraffic}
+ \caption{Generate cover traffic}
  \label{algo1}
  \begin{algorithmic}[1]
- \Procedure{OnHttpRequest}{$\textit{url}$}
- \If {$! \textit{isRegistered}(\textit{hostnameOf}(\textit{url}))$} \Comment{unknown hostname: main HTML request}
-   \State $\textit{targetHttpSize} \leftarrow \textit{randomHttpSize}()$
-   \State $\textit{targetNumEmbedded} \leftarrow \textit{randomNumEmbedded}()$
-   \State $\textit{urlHttpSize} \leftarrow \textit{lookupOrGuessHttpSize}(\textit{url})$
-   \State $\textit{urlNumEmbedded} \leftarrow \textit{lookupOrGuessNumEmbedded}(\textit{url})$
-   \State $\textit{coverHttpSize} \leftarrow \textit{targetHttpSize} - \textit{urlHttpSize}$
-   \State $\textit{coverNumEmbedded} \leftarrow \textit{targetNumEmbedded} - \textit{urlNumEmbedded}$
-   \State $\textit{requestCoverSized}(\textit{coverHttpSize})$
-   \State $\textit{registerHost}(\textit{hostnameOf}(\textit{url}), \textit{coverNumEmbedded}, \textit{urlNumEmbedded})$
+ \Procedure{OnHttpRequest}{$url$}
+ \If {$! isRegistered(hostnameOf(url))$} \Comment{unknown hostname: HTML request}
+   \State $targetHttpSize \leftarrow randomHttpSize()$
+   \State $targetNumEmbedded \leftarrow randomNumEmbedded()$
+   \State $urlHttpSize \leftarrow lookupOrGuessHttpSize(url)$
+   \State $urlNumEmbedded \leftarrow lookupOrGuessNumEmbedded(url)$
+   \State $coverHttpSize \leftarrow targetHttpSize - urlHttpSize$
+   \State $coverNumEmbedded \leftarrow targetNumEmbedded - urlNumEmbedded$
+   \State $requestCoverSized(coverHttpSize)$
+   \State $registerHost(hostnameOf(url), coverNumEmbedded, urlNumEmbedded)$
  \Else \Comment{known hostname: a resource request}
-   \State $\textit{requestProbability} \leftarrow \textit{getProbability}(\textit{hostnameOf}(\textit{url}))$
-   \While {$\textit{requestProbability} > 1$} \Comment{send multiple cover requests}
-     \State $\textit{requestCoverSized}(\textit{randomEmbeddedSize}())$
-     \State $\textit{updateHosts}(\textit{hostnameOf}(\textit{url}))$
-     \State $\textit{requestProbability} \leftarrow \textit{requestProbability} -1$
+   \State $requestProbability \leftarrow getProbability(hostnameOf(url))$
+   \While {$requestProbability > 1$} \Comment{send multiple cover requests}
+     \State $requestCoverSized(randomEmbeddedSize())$
+     \State $updateHosts(hostnameOf(url))$
+     \State $requestProbability \leftarrow requestProbability -1$
    \EndWhile
-   \If {$\textit{withProbability}(\textit{requestProbability})$} \Comment{maybe send cover request}
-     \State $\textit{requestCoverSized}(\textit{randomEmbeddedSize}())$
-     \State $\textit{updateHosts}(\textit{hostnameOf}(\textit{url}))$
+   \If {$withProbability(requestProbability)$} \Comment{maybe send cover request}
+     \State $requestCoverSized(randomEmbeddedSize())$
+     \State $updateHosts(hostnameOf(url))$
    \EndIf
  \EndIf
  \EndProcedure
  \end{algorithmic}
  \end{algorithm}
- #+END_EXPORT
+#+END_EXPORT
 The retrieval of the (first) HTML page provides significant
 information to a \gls{wf} attacker \citep[sec.4.1]{panchenko}. To
-counter this information gain, this first load is always covered by
+counter this information gain, a first load is always covered by
 additional traffic. After this first request, the browser downloads
 the page resources: images, style sheets, JavaScript \citep{ecma}
 files, etc. Each of these transfers might be covered by additional
@@ -951,28 +948,41 @@ dummy traffic: The actual number of resources is subtracted from the
 target number. This difference is randomly spread out among the actual
 browser requests. The size of each cover response is adjusted to the
 page's actual values, if known. The addon augments data requests to
-match an imagined web page retrieval. After a timeout, the hostname
-and its data is removed from the data structure used by
-/registerHost/, /isRegistered/, /getProbability/ and
-/updateHosts/.
+match an imagined web page retrieval. The /lookupOrGuess.../-functions
+need data structures to map urls to both HTTP sizes and number of
+embedded objects. These data structures use Bloom-filter
+\citep{Bloom70space/timetrade-offs} based binning (see section
+[[#sub3-bloom]]) to save values related to urls in a fixed space, while
+not allowing an adversary to exactly determine which urls are saved.
+After a timeout, the hostname and its data is removed from the data
+structure used by /registerHost/, /isRegistered/, /getProbability/ and
+/updateHosts/. Appendix ... shows a class diagram and implementation
+details on how the random target values and embedded probability are
+set.
 
 
 
-Alice's defense sees the first load request to =bob.com=, and checks
-if it has seen this site before. Since it is a new request, it has
-not. It thus considers this to be a main HTML request, and determines
-the actual, target, and cover values. Using these, it then sends a
-request for HTML cover traffic concurrently to the first HTML
-request. Since all traffic is encrypted and secured over Tor, only the
-sizes of the requests and responses are seen. By design, on the wire
-this cover request is simultaneous to the main HTML request. Bob's
-main website might be simple: it contains just a stylesheet, links to
-further posts, and a background image. The browser downloads the
-stylesheet, and the image after the first HTML page. The defense has
-determined to accompany each embedded resource with 1.37 additional
-cover requests. It randomly chooses to request two cover elements for
-the stylesheet, and one for the background image.
-
+Once again, let us consider Alice. When she opens =http://bob.com= in
+her browser, it first loads =bob.com='s main HTML \citep{html5}
+page. This page frequently contains other resources like CSS
+stylesheets, images, JavaScript \citep{ecma} files, etc. It might also
+contain elements that request other elements again, like nested HTML,
+CSS =@import=, or JavaScript AJAX requests. For each of these, the
+browser sends a request to obtain it.Alice's defense sees the first
+load request to =bob.com=, and checks if it has seen this site
+before. Since it is a new request, it has not. It thus considers this
+to be a main HTML request, and determines the actual, target, and
+cover values. Using these, it then sends a request for HTML cover
+traffic concurrently to the first HTML request. Since all traffic is
+encrypted and secured over Tor, only the sizes of the requests and
+responses are seen. By design, on the wire this cover request is
+simultaneous to the main HTML request. Bob's main website might be
+simple: it contains just a stylesheet, links to further posts, and a
+background image. The browser downloads the stylesheet, and the image
+after the first HTML page. The defense has determined to accompany
+each embedded resource with 1.37 additional cover requests. It
+randomly chooses to request two cover elements for the stylesheet, and
+one for the background image.
 
 The created traffic is based on the HTTP model \citep{newtrafficmodel}
 described in section [[#sub3-http]]. For each web page retrieval, the
@@ -1033,6 +1043,10 @@ further improve if the sizes of the webpage to be loaded are known
 beforehand: Cover traffic could be tailored more exactly, increasing
 obfuscation and/or reducing overhead. Knowing the exact retrieval
 pattern in advance even enables new defenses \citep{effective2014}.
+This section introduces Bloom filters, and their application to
+save data in a fixed-size probabilistic data structure.
+
+
 The problem in caching is that
 
 1. page properties change over time, making a fixed cache increasingly
@@ -1072,22 +1086,81 @@ e.g. in distributed caches, and network analysis
 \citep{Broder02networkapplications}.
 
 
-To approximately cache sizes of elements, this thesis uses a data
-structure based on Bloom filters. The histogram of observed values is
-split by quantiles into bins. For each bin, a Bloom filter is
-created. Each site/url is then binned: An element is added to this
-filter if its size is inside the bin. To approximate the size of an
-element, all filters are checked. If one filter reports containment,
-its size is chosen. If zero report containment, the size is not known;
-if two or more report containment, it is saved wrongly. In both of
-these latter cases, the default distribution is used. If the data
-structure is queried, the middle quantile of each bin is chosen to
-represent the bin. Each bin thus corresponds to a Bloom filter that
-saves whether the element's URL is modeled by the bin. This data
-structure has the additional advantage that, even if visited page
-sizes were saved, an adversary could not safely determine that pages
-were visited due to the Bloom Filter's false positive errors. See
-Appendix [[#bloom-sort]] for implementation details.
+By ordering data into bins, it becomes possible to use Bloom filters
+for the estimation of sizes, using one Bloom filter for each bin: the
+histogram of observed values is split by quantiles into bins. For each
+bin, a Bloom filter is created. Each site/url is then binned: An
+element is added to this filter if its size is inside the bin. To
+approximate the size of an element, all filters are checked. If one
+filter reports containment, its size is chosen. If zero report
+containment, the size is not known; if two or more report containment,
+it is saved wrongly. In both of these latter cases, the default
+distribution is used. If the data structure is queried, the middle
+quantile of each bin is chosen to represent the bin. Each bin thus
+corresponds to a Bloom filter that saves whether the element's URL is
+modeled by the bin. This data structure has the additional advantage
+that, even if visited page sizes were saved, an adversary could not
+safely determine that pages were visited due to the Bloom Filter's
+false positive errors. See Appendices [[#bloom-sort]] and [[#bloom-params]]
+for implementation details.
+
+
+
+This data-structure, called /BloomSort/ is initialized with an array
+of /splits/ between the bins, and an array of bin /sizes/. After
+initialization, it contains an array of Bloom /filters/.  Given these, it becomes possible to add the elements to their bins, as shown in Algorithm \ref{bloom.add}.
+
+#+BEGIN_EXPORT latex
+ \begin{algorithm}
+ \caption{Insert URL into BloomSort}\label{bloom.add}
+ \begin{algorithmic}[1]
+ \Procedure{BloomSort.add}{$url$, $size$}
+   \State $idx \leftarrow splits.index(size)$  \Comment{where $size$ would be
+       inserted into the sorted $splits$ array}
+   \State $filters[idx].add(url)$
+ \EndProcedure
+ \end{algorithmic}
+ \end{algorithm}
+#+END_EXPORT
+
+
+The retrieval of element sizes is described in Algorithm
+\ref{bloom.query}. It looks into each Bloom filter, checking whether
+it might contain the =url=. If one Bloom filter reports containment,
+its corresponding element- =size= is returned. If several or no Bloom
+filters report containment, an exception is thrown. The exception is
+used to allow all possible return values, not blocking one of them,
+say =-1=, for the error condition.
+#+BEGIN_EXPORT latex
+ \begin{algorithm}
+ \caption{Query URL size from BloomSort}\label{bloom.query}
+ \begin{algorithmic}[1]
+ \Procedure{BloomSort.query}{$url$}
+   \State $pos \leftarrow -1$
+   \For{$i \leftarrow 0$; $i < length(filters)$; $i \leftarrow i+1$}
+     \If{$filters$[$i$].$contains$($url$)}
+       \If{$pos = -1$}
+         \State $pos \leftarrow i$
+       \Else
+         \State throw({name: 'BloomError', message: 'Contains multiple entries'})
+       \EndIf
+     \EndIf
+   \EndFor
+   \If{$pos = -1$}
+     \State throw({name: 'BloomError', message: 'Contains no entries'})
+   \EndIf
+   \Return sizes[pos];
+ \EndProcedure
+ \end{algorithmic}
+ \end{algorithm}
+#+END_EXPORT
+
+Consider a /BloomSort/ named =htmlSizes= with parameters /sizes/
+$[400, 1000, 20000]$ and /splits/ $[700, 10000]$. An element is added
+via ~htmlSizes.add("http://google.com/", 613)~ . Querying via
+~htmlSizes.query("http://google.com/")~ would yield ~400~.
+** more                                                             :ARCHIVE:
+       - link to main bloom-sort, create custom-id there
 * Evaluation
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
@@ -1368,11 +1441,21 @@ has the highest, non-configurable overhead.
 
 
 
-Does caching sizes help? The effect of the Bloom-cache described in
-[[#sub3-bloom][Caching Sizes using Bloom Filters]].
-*** TODO effect of bloom - bache
-    - decrease for first measure
-    - not much effect later
+What is the effect of caching page statistics as described in
+described in section [[#sub3-bloom]]? A first comparison on the top 10
+pages yields approximately 7% lower accuracy when using the cache. On
+30 pages, this effect is reversed, albeit lower. All sets of traces
+were captured with a time-gap of one to three months after
+configuration variable for caching made it possible. The decrease
+might be due to the top sites increasing their sizes less, and being
+generally lighter, as visible in Figure
+[[fig:relative-histogram-incoming-bytes-over-time]] and documented by
+\citet{web-is-doom}.
+
+#+CAPTION: Change of number of incoming packets per site
+#+NAME: fig:relative-histogram-incoming-bytes-over-time
+#+ATTR_LATEX: :float t :width 0.7\textwidth
+[[./pictures/total_packets_in_disabled___2016-05-12--10@40_disabled___bridge--2018-03-15--100@50__wikipedia.org_yahoo.com_google.com_youtube.com_amazon.com__palette_colorblind.pdf]]
 *** more                                                            :ARCHIVE:
     - same as figure 2.6 [[#sub2-wf-def][fig:total_packets_in]] with thesis' defense
     - how is data analyzed
