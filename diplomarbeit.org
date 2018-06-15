@@ -952,11 +952,11 @@ target number. This difference is randomly spread out among the actual
 browser requests. The size of each cover response is adjusted to the
 page's actual values, if known. The addon augments data requests to
 match an imagined web page retrieval. The /lookupOrGuess.../-functions
-need data structures to map urls to both HTTP sizes and number of
+need data structures to map URLs to both HTTP sizes and number of
 embedded objects. These data structures use Bloom-filter
 \citep{Bloom70space/timetrade-offs} based binning (see section
-[[#sub3-bloom]]) to save values related to urls in a fixed space, while
-not allowing an adversary to exactly determine which urls are saved.
+[[#sub3-bloom]]) to save values related to URLs in a fixed space, while
+not allowing an adversary to exactly determine which URLs are saved.
 After a timeout, the hostname and its data is removed from the data
 structure used by /registerHost/, /isRegistered/, /getProbability/ and
 /updateHosts/. Appendix ... shows a class diagram and implementation
@@ -1092,7 +1092,7 @@ e.g. in distributed caches, and network analysis
 By ordering data into bins, it becomes possible to use Bloom filters
 for the estimation of sizes, using one Bloom filter for each bin: the
 histogram of observed values is split by quantiles into bins. For each
-bin, a Bloom filter is created. Each site/url is then binned: An
+bin, a Bloom filter is created. Each site/URL is then binned: An
 element is added to this filter if its size is inside the bin. To
 approximate the size of an element, all filters are checked. If one
 filter reports containment, its size is chosen. If zero report
@@ -1203,7 +1203,7 @@ of HTTP traffic renders the theoretical analysis of \gls{wf}
 difficult, hence the prevalent technique for assessing the performance
 of a \gls{wf} defense is an empirical evaluation.
 
-In evaluation, traffic data needs to first be captured and then
+In empirical evaluation, traffic data needs to first be captured and then
 analyzed. \citet{effective2014} and \citet{panchenko2} provide their
 capture data, but it does not contain the new defense's traces, so new
 traffic data needed to be collected. The collection process is
@@ -1239,7 +1239,7 @@ To do this, real Tor web browsing should be closely reproduced. [[https://www.to
 current Tor Browser Bundle]] downloads the web sites traces: it is based
 on the Firefox Browser, which provides the Marionette framework
 \citep{marionette} for instrumentation. To be able to evaluate the
-WTF-PAD \citep{wtfpad2015} defense[fn::provided at
+WTF-PAD \citep{wtfpad2015} defense[fn::original provided at
 [[https://bitbucket.org/mjuarezm/obfsproxy_wfpadtools]], this thesis'
 version at [[https://github.com/kreikenbaum/capture.git]]], all traffic is
 routed over a Tor Bridge \citep[sec.client~options]{tor-manual}, see
@@ -1251,7 +1251,7 @@ classification ratio, and thus makes it harder to defend. Making
 \gls{wf} easier is admissible in the evaluation of a \gls{wf}
 defense. WTF-PAD \citep{wtfpad2015}'s main author co-authored LLaMA
 \citep{DBLP:journals/popets/CherubinHJ17}. This thesis compares its
-results to the latest defense.
+results to that latest defense.
 
 
 Web traces are captured in batches in a round-robin fashion: each site
@@ -1682,41 +1682,50 @@ success doubtable. Both the high-overhead new-defense at 2018-03-28
 and LLaMA-nodelay \citep{DBLP:journals/popets/CherubinHJ17} decrease
 correct classification and show comparable results.
 
-** WRITE Summary
+** Summary
    :PROPERTIES:
    :CUSTOM_ID: sub4-summary
    :END:
 More than 20 GB of traces were collected. These serve both to validate
 the re-iplemented attack, and to evaluate the defenses. The attack
-re-implementation matches both the software's values, and the
-theoretic values of \citet{panchenko2}, both in the closed, and open
-world scenario.
+re-implementation matches both the provided software's values, as well
+as the theoretic values of \citet{panchenko2}, both in the closed--, and
+open--world scenario.
 
 
-In allc omparisons, the new defense shows its effectiveness, and
+In all comparisons, the new defense shows its effectiveness, and
 configurability. It compares favorably to
-LLaMA\cite{DBLP:journals/popets/CherubinHJ17} using four methods in
+LLaMA \citep{DBLP:journals/popets/CherubinHJ17} using four methods in
 \citet{panchenko2} and \citet{wtfpad2015}: where metrics exist, it
 yields the same accuracy reduction for lower overhead, or more
 accuracy reduction for comparable overhead. It is also configurable,
 offering a trade-off of security to size overhead. The defense has a
 slight time overhead that is not due to design, but to increased
-network traffic.
-
-
-- what is the conclusion
-  - defense works
-    - decreases results shown, visualized with 3 literature-based methods
-    - higher obfuscation than llama
-    - configurable
-- LLaMA-nodelay's fixed overhead was higher in all experiments than
-  the new defense's, even at a high-overhead setting which yielded
-  better obfuscation in all comparisons.
-* Conclusions [0/10000]
+network traffic. Using cached sizes did not consistently increase the
+defense's effectiveness.
+* KEYWORDS Conclusions [0/0]
   :PROPERTIES:
   :CUSTOM_ID: ch6-conclusion
   :END:
-** Future Work [/1000]
+- necessary, as still problem, \gls{ml} gets better, \gls{wf} gets better
+- yay, it works
+- long time, long effort to re-implement
+  - code defense
+  - test implementation
+  - compare on the same data sets
+  - long duration to capture data
+  - long duration to implement
+- paid off: effective defense that can be enabled on a case-by-case basis
+  - stochastic
+  - configurable overhead
+    aka more or less traffic/overhead configurable
+  - easy to install
+- default values work ok
+- compared to LLaMA-nondelay
+  - consistently outperforms
+  - but LLaMA-nondelay only research prototype
+    - they spent more time on server-side Alpaca defense for .onion sites
+** Future Work [0/0]
    :PROPERTIES:
    :CUSTOM_ID: future-work
    :END:
@@ -1739,20 +1748,25 @@ differs from how it should be used, see next section.
   - could easily cache sizes, reuse
     - or use list of servers
   - but this as proof of concept
-
 - classification code at
-
 - works against attacks such as \citep{torben}?
-
 - combine different approaches such as CUMUL \citep{panchenko2} and
   timing-based \citep{DBLP:journals/tifs/FeghhiL16} using the
   multi-kernel approach of \citet{mit2013kernel}
-
 - dynamically compute embedded probability based on remaining sites
-*** How to Distinguish HTML and Embedded Objects
-    :PROPERTIES:
-    :CUSTOM_ID: distinguish_HTML_embedded
-    :END:
+- integrate to Tor security slider
+- no server
+  - most important, as conceivably watch server, subtract from other
+    traffic, defeat defense
+- dynamically / periodically update sizes
+- avoid server
+  - if sizes cached anyways, use that for cover-traffic
+    - list of p.c. sites like google/wikipedia/yahoo/baidu?
+- update on web traffic distributions
+  - or use random elements
+- correctly compute number of embedded sites
+- distinguish first load/HTML from subsequent loads
+
      The traffic model \citep{newtrafficmodel} distinguishes between
      HTML and embedded object requests. This is usually done via HTTP's
      =content-type= header\citep[sec.3.1.1.5]{rfc7231}, yet that is only
@@ -2819,7 +2833,7 @@ appropriate HTTP-related distributions \citep{newtrafficmodel}.
  be sent. Its elements get removed after a certain time to allow for
  new traffic.
 
- The /lookupOrGuess.../-functions need data structures to map urls to
+ The /lookupOrGuess.../-functions need data structures to map URLs to
  both HTTP sizes and number of embedded objects. These change over
  time, just compare the topmost plots each of Figures
  [[fig:total_packets_in]] and [[fig:total_packets_in_thesis]]. As can be seen
@@ -2827,8 +2841,8 @@ appropriate HTTP-related distributions \citep{newtrafficmodel}.
  with up-to-date cached sizes (see next chapter) decreased over time
  to that of guessing sizes. These data structures use Bloom filter
  \citep{Bloom70space/timetrade-offs} based binning (see section
- [[#sub3-bloomsort]]) to save values related to urls in a fixed space,
- while not allowing an adversary to exactly determine which urls are
+ [[#sub3-bloomsort]]) to save values related to URLs in a fixed space,
+ while not allowing an adversary to exactly determine which URLs are
  saved. See section [[#sub3-bloomfilters]] for a short introduction to
  their underlying Bloom filters and section [[#sub3-bloomsort]] for their
  application that saves these in a fixed-size probabilistic data
@@ -2842,7 +2856,7 @@ appropriate HTTP-related distributions \citep{newtrafficmodel}.
 
 - why is this better
   - application layer: where problem is
-  - in-browser: know which url visited
+  - in-browser: know which URL visited
   - can send specific cover traffic
   - could even cache sizes dynamically in Bloom Filter
 - solution design: augment/increase traffic
@@ -3085,7 +3099,7 @@ following \cite{compgen}.
        - filter tells that is has element when it has not
      - how does error appear
        - collision: one of several, the other might be true
-       - replacement: simulates being another url
+       - replacement: simulates being another URL
      - rates of error
        - "add" the error rates of the filters? (times population density?)
      - error estimation?
@@ -3305,7 +3319,7 @@ If a size is unknown, random variates from the [[#HTTP traffic
 
 
 #+BEGIN_QUOTE
- The /lookupOrGuess.../-functions need data structures to map urls to
+ The /lookupOrGuess.../-functions need data structures to map URLs to
  both HTTP sizes and number of embedded objects. These change over
  time, just compare the topmost plots each of Figures
  [[fig:total_packets_in]] and [[fig:total_packets_in_thesis]]. As can be seen
@@ -3313,8 +3327,8 @@ If a size is unknown, random variates from the [[#HTTP traffic
  with up-to-date cached sizes (see next chapter) decreased over time
  to that of guessing sizes. These data structures use Bloom filter
  \citep{Bloom70space/timetrade-offs} based binning (see section
- [[#sub3-bloomsort]]) to save values related to urls in a fixed space,
- while not allowing an adversary to exactly determine which urls are
+ [[#sub3-bloomsort]]) to save values related to URLs in a fixed space,
+ while not allowing an adversary to exactly determine which URLs are
  saved. See section [[#sub3-bloomfilters]] for a short introduction to
  their underlying Bloom filters and section [[#sub3-bloomsort]] for their
  application that saves these in a fixed-size probabilistic data
@@ -3346,7 +3360,7 @@ not.
       - filter tells that is has element when it has not
     - how does error appear
       - collision: one of several, the other might be true
-      - replacement: simulates being another url
+      - replacement: simulates being another URL
     - rates of error
       - "add" the error rates of the filters? (times population density?)
     - error estimation?
