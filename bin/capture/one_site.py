@@ -46,6 +46,7 @@ PROBLEMATIC_TEXT = [
     "captcha",  # deprecated: could be contained otherwise (but worked well)
     "403 forbidden"  # also deprecated: could be contained otherwise
 ]
+TIME = 300
 
 
 # cheap hack
@@ -184,7 +185,7 @@ def _open_packet_dump(page, bridge):
                 loc)
 
 
-def _open_with_timeout(browser, page, timeout=600, burst_wait=3, bridge=None):
+def _open_with_timeout(browser, page, timeout=TIME, burst_wait=3, bridge=None):
     '''navigates browser to url while capturing the packet dump, aborts
     after timeout. If bridge, that is the IP address of the connected
     bridge, just capture traffic to there (need to set this by hand)
