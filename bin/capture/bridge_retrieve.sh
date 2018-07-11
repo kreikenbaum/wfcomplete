@@ -27,7 +27,7 @@ for iteration in $(seq $NUM_ITERATIONS); do
     done
 done
 
-cd $SAVETO && mv -i status *@* $NAME && echo traces are at $NAME
+cd $SAVETO && mv -b status *@* $NAME && echo traces are at $NAME
 (cd $NAME && \
      counter.py > /tmp/counter_out_$(date +%F:%T) 2>&1 && \
      zip pagetext.zip $(ls | grep -E '\.text') > /dev/null && \

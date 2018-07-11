@@ -6,6 +6,7 @@ import collections
 import logging
 import os
 import psutil
+import shutil
 import socket
 import subprocess
 import sys
@@ -19,12 +20,15 @@ from marionette_driver import errors
 
 import config
 import logconfig
+
+BACKUP_PATH = os.path.join(os.getenv("HOME"), 'bin', 'tbb-backup')
+BASE_PATH = os.path.join(os.getenv("HOME"), 'bin', 'tor-browser_en-US')
 ERRFILENAME = os.path.join('/tmp', "one_site_err.txt")
 logconfig.add_file_output(ERRFILENAME)
-FIREFOX_PATH = os.path.join(os.getenv("HOME"), 'bin', 'tor-browser_en-US',
-                            'Browser', 'firefox')
-# FIREFOX_PATH = os.path.join(os.getenv("HOME"), 'bin', 'tor-browser_en-US',
-#                            'Browser', 'start-tor-browser -v')
+FIREFOX_PATH = os.path.join(BASE_PATH, 'Browser', 'firefox')
+TOR_PATH = os.path.join(BASE_PATH, 'Browser', 'TorBrowser', 'Data', 'Tor')
+PROFILE_PATH = os.path.join(
+    BASE_PATH, 'Browser', 'TorBrowser', 'Data', 'Browser', 'profile.default')
 
 PROBLEMATIC_DELAY = [
     "test tor network settings",
@@ -84,9 +88,23 @@ def _clean_up():
             process.kill()
 
 
+def _fix_tor():
+    '''recreate tor data structure'''
+    # for desc in glob.glob(os.path.join(TOR_PATH, 'cached-microdesc*')):
+    #     os.remove(desc)
+    shutil.rmtree(BASE_PATH)
+    shutil.copytree(BACKUP_PATH, BASE_PATH)
+
+
 def _get_page_text(client):
     '''@return text of client's HTML page'''
-    return client.find_element(marionette_driver.By.TAG_NAME, "body").text
+    try:
+        text = client.find_element(marionette_driver.By.TAG_NAME, "body").text
+    except errors.InvalidSessionIdException:
+        client.start_session()
+        text = client.find_element(marionette_driver.By.TAG_NAME, "body").text
+    logging.debug(text)
+    return text
 
 
 def _kill(*processes):
@@ -94,16 +112,24 @@ def _kill(*processes):
     for process in processes:
         if process is not None:
             process.terminate()
+            process.kill()
     _clean_up()
 
 
 def _navigate_or_fail(client, url, file_name, _tries=0):
     '''navigates client to url, on failure renames file'''
+    logging.info(url)
     try:
+        # try:
         client.navigate(url)
+        # except errors.InvalidSessionIdException:
+        #     client.start_session()
+        #     client.navigate(url)
         if _check_text(_get_page_text(client).lower(), file_name, client):
             _write_text(client, file_name)
-    except (errors.NoSuchElementException, DelayError, socket.error):
+    except (errors.NoSuchElementException, DelayError, socket.error,
+            errors.UnknownException) as exc:
+        logging.debug("%s\n%s", exc, exc.message)
         if _tries < 3:
             time.sleep(0.1)
             logging.info("retry %d on %s", _tries+1, file_name)
@@ -111,7 +137,8 @@ def _navigate_or_fail(client, url, file_name, _tries=0):
         else:
             _handle_exception("failed repeatedly to get page text",
                               file_name, client)
-    except errors.TimeoutException as e:
+    except (errors.TimeoutException, socket.timeout,
+            errors.InvalidSessionIdException) as e:
         try:
             if _check_text(_get_page_text(client).lower(), file_name, client):
                 _handle_exception(e.message, file_name, client)
@@ -165,10 +192,11 @@ def _open_browser(exe=FIREFOX_PATH + ' -marionette', open_timeout=60):
 
     start = time.time()
     while thread.is_alive():
-        print('.', sep="", end='')
+        print('.', sep='', end='', flush=True)
         time.sleep(.1)
         if time.time() - start > open_timeout:
             _kill(browser)
+            _fix_tor()
             raise Exception("browser connection not working")
     print('slept for {0:.3f} seconds'.format(time.time() - start))
     return browser
@@ -193,6 +221,7 @@ def _open_with_timeout(browser, page, timeout=TIME, burst_wait=3, bridge=None):
     client = Marionette('localhost', port=2828, socket_timeout=(timeout-30))
     try:
         client.start_session()
+        client.set_page_load_timeout((timeout-30) * 1000)
     except socket.timeout:
         _kill(browser)
         raise
@@ -211,8 +240,8 @@ def _open_with_timeout(browser, page, timeout=TIME, burst_wait=3, bridge=None):
     while thread.is_alive():
         time.sleep(.1)
         if time.time() - start > timeout:
+            _handle_exception("aborted after timeout", file_name, client)
             _kill(browser, tshark_process)
-            os.rename(file_name, file_name + '_timeout')
             raise SystemExit("download aborted after timeout")
     time.sleep(burst_wait)
     _kill(browser, tshark_process)
@@ -254,6 +283,7 @@ class CaptureError(Exception):
     '''raised when capture text is buggy'''
     def __init__(self, message):
         self.message = message
+        logging.debug(message)
 
     def __repr__(self):
         return repr(self.message)
@@ -266,6 +296,7 @@ class DelayError(Exception):
     '''raised when capture needs to wait a bit (text is missing or greeter)'''
     def __init__(self, message):
         self.message = message
+        logging.debug(message)
 
     def __repr__(self):
         return 'DelayError({!r})'.format(self.message)
