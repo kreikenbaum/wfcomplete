@@ -153,7 +153,9 @@ def _handle_exception(exception, file_name, client):
     logging.warn('exception: %s', exception)
     to = '{}_{}'.format(
         file_name,
-        str(exception).split('\n')[0].replace(' ', '_').replace(os.sep, '___').replace("'", ''))[:255]
+        exception.__class__.__name__ + "_" + (
+            str(exception).split('\n')[0].replace(' ', '_')
+            .replace(os.sep, '___').replace("'", '')))[:255]
     try:
         os.rename(file_name, to)
     except OSError as e:
@@ -192,7 +194,7 @@ def _open_browser(exe=FIREFOX_PATH + ' -marionette', open_timeout=60):
 
     start = time.time()
     while thread.is_alive():
-        print('.', sep='', end='', flush=True)
+        print('.', sep='', end='')
         time.sleep(.1)
         if time.time() - start > open_timeout:
             _kill(browser)
