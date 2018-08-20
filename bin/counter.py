@@ -22,7 +22,7 @@ import logconfig
 AFTER_CAPTURE = datetime.date(2020, 1, 1)
 BEFORE_CAPTURE = datetime.date(2010, 1, 1)
 DURATION_LIMIT_SECS = 8 * 60
-PROTOCOL_DISCARD = re.compile('ARP|CDP|ICMP|IGMP|LLMNR|SSDP|SSH|STP|UDP')
+PROTOCOL_DISCARD = re.compile('ARP|CDP|DHCP|ICMP|IGMP|LLMNR|SSDP|SSH|STP|UDP')
 PCAP_NAME = re.compile(r".*@([0-9]*)")
 
 TOR_DATA_CELL_SIZE = 512
@@ -707,14 +707,16 @@ class Counter(object):
                                   stdout=subprocess.PIPE,
                                   close_fds=True)
         http = 0
+        discarded = 0
         for line in iter(tshark.stdout.readline, ''):
             if PROTOCOL_DISCARD.search(line):
+                discarded +=1
                 continue
             if 'HTTP' in line:
                 http += 1
                 continue
             if 'TCP' not in line:
-                logging.warn('discarded\n%s\nfrom %s', line, filename)
+                logging.info('discarded\n%s\nfrom %s', line, filename)
                 continue
             try:
                 (src, dst, size, protocol, time) = line.split()
@@ -728,6 +730,8 @@ class Counter(object):
                 tmp.extract_line(src, dst, int(size)+14, time, line)
         if http:
             logging.info('http packets discarded for %s: %d', filename, http)
+        if discarded:
+            logging.info('packets RE-discarded for %s: %d', filename, discarded)
         tshark.communicate()  # close pipe
         return tmp
 
