@@ -311,6 +311,12 @@ class TestMymetrics(unittest.TestCase):
                                         optionflags=doctest.ELLIPSIS)
         self.assertEqual(0, fail_num)
 
+    def test_binarize_probability(self):
+        self.assertTrue(np.all(
+            mymetrics.binarize_probability(
+                np.array([[0.5, 0.2, 0.3], [0.3, 0.2, 0.5]]))
+            == np.array([[ 0.5,  0.5], [ 0.3,  0.7]])))
+
     def test_tprfpr(self):
         '''test all tpr-fpr extraction'''
         right_cm = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])

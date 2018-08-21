@@ -21,7 +21,6 @@ import logconfig
 
 AFTER_CAPTURE = datetime.date(2020, 1, 1)
 BEFORE_CAPTURE = datetime.date(2010, 1, 1)
-DURATION_LIMIT_SECS = 8 * 60
 PROTOCOL_DISCARD = re.compile('ARP|CDP|DHCP|ICMP|IGMP|LLMNR|SSDP|SSH|STP|UDP')
 PCAP_NAME = re.compile(r".*@([0-9]*)")
 
@@ -833,7 +832,7 @@ class Counter(object):
             return self.timing[-1][0]
         except IndexError:
             # panchenko input data
-            return DURATION_LIMIT_SECS
+            return config.DURATION_LIMIT - 30
 
     def get_tpi(self):
         ''':returns: total incoming packet count'''
@@ -1087,7 +1086,7 @@ def p_or_toolong(counter_list):
 
     The capturing software seemingly did not remove the others, even
     though it should have.'''
-    return [x for x in counter_list if x.duration < DURATION_LIMIT_SECS]
+    return [x for x in counter_list if x.duration < config.DURATION_LIMIT]
 
 
 def outlier_removal(counter_dict, level=2):

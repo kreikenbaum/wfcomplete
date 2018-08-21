@@ -21,7 +21,7 @@ from marionette_driver import errors
 import config
 import logconfig
 
-BACKUP_PATH = os.path.join(os.getenv("HOME"), 'bin', 'tbb-backup')
+# BACKUP_PATH = os.path.join(os.getenv("HOME"), 'bin', 'tbb-backup')
 BASE_PATH = os.path.join(os.getenv("HOME"), 'bin', 'tor-browser_en-US')
 ERRFILENAME = os.path.join('/tmp', "one_site_err.txt")
 logconfig.add_file_output(ERRFILENAME)
@@ -50,7 +50,7 @@ PROBLEMATIC_TEXT = [
     "captcha",  # deprecated: could be contained otherwise (but worked well)
     "403 forbidden"  # also deprecated: could be contained otherwise
 ]
-TIME = 300
+
 
 
 # cheap hack
@@ -87,13 +87,22 @@ def _clean_up():
         if process.name() in ["tshark", "firefox"]:
             process.kill()
 
+# ## does not recreate addons and their state
+# def _fix_tor():
+#     '''recreate tor data structure'''
+#     # for desc in glob.glob(os.path.join(TOR_PATH, 'cached-microdesc*')):
+#     #     os.remove(desc)
+#     shutil.rmtree(BASE_PATH)
+#     shutil.copytree(BACKUP_PATH, BASE_PATH, symlinks=True)
 
-def _fix_tor():
-    '''recreate tor data structure'''
-    # for desc in glob.glob(os.path.join(TOR_PATH, 'cached-microdesc*')):
-    #     os.remove(desc)
-    shutil.rmtree(BASE_PATH)
-    shutil.copytree(BACKUP_PATH, BASE_PATH)
+
+def _remove_guard(text):
+    '''removes lines with 'Guard in' '''
+    out = ''
+    for line in text:
+        if 'Guard in' not in line:
+            out.append(line)
+    return out
 
 
 def _get_page_text(client):
@@ -198,7 +207,7 @@ def _open_browser(exe=FIREFOX_PATH + ' -marionette', open_timeout=60):
         time.sleep(.1)
         if time.time() - start > open_timeout:
             _kill(browser)
-            _fix_tor()
+            # _fix_tor() # does not recreate addons and their state
             raise Exception("browser connection not working")
     print('slept for {0:.3f} seconds'.format(time.time() - start))
     return browser
@@ -215,7 +224,8 @@ def _open_packet_dump(page, bridge):
                 loc)
 
 
-def _open_with_timeout(browser, page, timeout=TIME, burst_wait=3, bridge=None):
+def _open_with_timeout(browser, page, timeout=config.DURATION_LIMIT,
+                       burst_wait=3, bridge=None):
     '''navigates browser to url while capturing the packet dump, aborts
     after timeout. If bridge, that is the IP address of the connected
     bridge, just capture traffic to there (need to set this by hand)
