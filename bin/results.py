@@ -70,7 +70,7 @@ class Result(object):
         self.src = src
         if self.src:
             self.scenario.trace_args = config.ta_helper(
-                self.remove_small, self.or_level)
+                self.remove_small, self.or_level, self.remove_timeout)
 
     @property
     def background_size(self):
@@ -109,12 +109,21 @@ class Result(object):
 
     @property
     def remove_small(self):
-        '''@return remove sites with few instances after outlier removal'''
+        '''@return remove sites with few instances after outlier removal?'''
         try:
             rs = self.src['config']['trace_args']['remove_small']
         except KeyError:
             rs = _value_or_none(self.src, 'config', 'remove_small')
         return config.REMOVE_SMALL if rs is None else rs
+
+    @property
+    def remove_timeout(self):
+        '''@return remove traces where connection timed out?'''
+        try:
+            rs = self.src['config']['trace_args']['remove_timeout']
+        except KeyError:
+            rs = _value_or_none(self.src, 'config', 'remove_timeout')
+        return config.REMOVE_TIMEOUT if rs is None else rs
 
     @property
     def y_domains(self):

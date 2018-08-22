@@ -23,12 +23,14 @@ MIN_CLASS_SIZE = 30
 OR_LEVEL = 2
 # remove domains with <= MIN_CLASS_SIZE instances
 REMOVE_SMALL = True
+# remove domains with duration close to DURATION_LIMIT
+REMOVE_TIMEOUT = False
 # combine these
 def trace_args():
     '''@return combined values as used in code'''
-    return ta_helper(REMOVE_SMALL, OR_LEVEL)
-def ta_helper(rs, orl):
-    return {"remove_small": rs, "or_level": orl}
+    return ta_helper(REMOVE_SMALL, OR_LEVEL, REMOVE_TIMEOUT)
+def ta_helper(rs, orl, rt):
+    return {"remove_small": rs, "or_level": orl, "remove_timeout": rt}
 
 # ### SCENARIO
 # ## SCENARIO NAME WITH DEFENSE

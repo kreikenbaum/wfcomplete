@@ -212,11 +212,13 @@ def _sum_stream(packets):
 # td: use glob.iglob? instead of os.walk?
 
 
-def all_from_dir(dirname, remove_small=True, or_level=0):
+def all_from_dir(dirname, remove_small=True, or_level=0, remove_timeout=False):
     '''All packets traces of the name domain@tstamp are parsed to
     Counters. If there are JSON files created by =save()=, use those
     instead of the pcap files for their domains. If there are neither,
     try to use a =batch= directory for Wang-style counters.
+
+    @param or_level: if != 0, passed on to outlier_removal, else it is skipped
     '''
     global json_only
     out = {}
@@ -244,8 +246,8 @@ def all_from_dir(dirname, remove_small=True, or_level=0):
         out = all_from_panchenko(dirname)
     if not out:
         raise IOError('no counters in path "{}"'.format(dirname))
-    if or_level:
-        out = outlier_removal(out, or_level)
+    if or_level or remove_timeout:
+        out = outlier_removal(out, or_level, remove_timeout)
     if remove_small:
         return _remove_small_classes(out)
     return out
@@ -330,8 +332,8 @@ def all_from_wang(dirname="batch"):
 def dict_to_cai(counter_dict, writeto):
     '''write counter_dict's entries to writeto'''
     for counter_list in counter_dict.values():
-        for i in counter_list:
-            writeto.write('{}\n'.format(i.to_cai()))
+        for counter in counter_list:
+            writeto.write('{}\n'.format(counter.to_cai()))
 
 
 def dict_to_panchenko(counter_dict, dirname='p_batch'):
@@ -764,7 +766,7 @@ class Counter(object):
     def check(self):
         '''if wrong, set warned flag and @return =false=, else =true='''
         if min(self.packets) > 0 or max(self.packets) < 0:
-            logging.warn("file: %s's packets go only in one direction\n",
+            logging.debug("file: %s's packets go only in one direction\n",
                          self.name)
             self.warned = True
             return False
@@ -1082,14 +1084,14 @@ def p_or_quantiles(counter_list):
 
 
 def p_or_toolong(counter_list):
-    '''@return counter_list with counters shorter than 8 minutes.
+    '''@return counter_list with counters approximately shorter than DURATION_LIMIT.
 
     The capturing software seemingly did not remove the others, even
     though it should have.'''
-    return [x for x in counter_list if x.duration < config.DURATION_LIMIT]
+    return [x for x in counter_list if x.duration < config.DURATION_LIMIT - 10]
 
 
-def outlier_removal(counter_dict, level=2):
+def outlier_removal(counter_dict, level=2, remove_timeout=False):
     '''apply outlier removal to input of form
     {'domain1': [counter, ...], ... 'domainN': [..]}
 
@@ -1098,13 +1100,14 @@ def outlier_removal(counter_dict, level=2):
     for (k, counter_list) in counter_dict.iteritems():
         try:
             out[k] = p_or_tiny(counter_list[:])
-            out[k] = p_or_toolong(out[k])
+            if remove_timeout:
+                out[k] = p_or_toolong(out[k])
             # git commit d785e461978211b3f15a6c32f5ad399858ce8a1b still has this
             # if level == -1:
             #     out[k] = p_or_test(out[k])
-            if level > 2:
+            if level >= 3:
                 out[k] = p_or_median(out[k])
-            if level > 1:
+            if level >= 2:
                 out[k] = p_or_quantiles(out[k])
             if not out[k]:
                 raise ValueError

@@ -230,10 +230,10 @@ def _open_with_timeout(browser, page, timeout=config.DURATION_LIMIT,
     after timeout. If bridge, that is the IP address of the connected
     bridge, just capture traffic to there (need to set this by hand)
     '''
-    client = Marionette('localhost', port=2828, socket_timeout=(timeout-30))
+    client = Marionette('localhost', port=2828, socket_timeout=(timeout))
     try:
         client.start_session()
-        client.set_page_load_timeout((timeout-30) * 1000)
+        client.set_page_load_timeout((timeout) * 1000)
     except socket.timeout:
         _kill(browser)
         raise
@@ -251,8 +251,9 @@ def _open_with_timeout(browser, page, timeout=config.DURATION_LIMIT,
     start = time.time()
     while thread.is_alive():
         time.sleep(.1)
-        if time.time() - start > timeout:
-            _handle_exception("aborted after timeout", file_name, client)
+        # will this still happen after the timeout is set like above?
+        if time.time() - start > timeout + 30:
+            _handle_exception("aborted after timeout2", file_name, client)
             _kill(browser, tshark_process)
             raise SystemExit("download aborted after timeout")
     time.sleep(burst_wait)

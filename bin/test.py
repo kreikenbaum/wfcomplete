@@ -103,7 +103,7 @@ class TestConfig(unittest.TestCase):
 class TestCounter(unittest.TestCase):
     '''tests the counter module'''
     def setUp(self):
-        self.c_list = [counter._test(x) for x in [1, 2, 2, 2, 2, 3, 4]]  # len7
+        self.c_list = [counter._test(x) for x in [1, 2, 2, 2, 3, 3, 4]]  # len7
         self.big_val = [counter._test(3, val=10*60*1000)]  # very big, but ok
         logging.disable(logging.INFO)
 
@@ -125,11 +125,12 @@ class TestCounter(unittest.TestCase):
         '''test to cai conversion'''
         mock_writer = MockWriter()
         counter.dict_to_cai({'a': self.c_list}, mock_writer)
+        # this corresponds to c_list, if that is changed, change this, too
         self.assertEqual(mock_writer.data, '''test +
 test + +
 test + +
 test + +
-test + +
+test + + +
 test + + +
 test + + + +
 ''')
@@ -153,16 +154,17 @@ test + + + +
                                       [str(x) for x in self.c_list]))
 
     def test_outlier_removal(self):
-        '''take simple dict which removes stuff by methods 1-3 (one each),
+        '''take simple dict which removes stuff by method 1 (one each),
         check that original is still the same'''
         c_dict = {'url': self.c_list}
         c_dict['url'].extend(self.big_val)
+        # tiny is always removed
+        self.assertEqual(len(counter.outlier_removal(c_dict, 0)['url']), 7)
         self.assertEqual(len(counter.outlier_removal(c_dict, 1)['url']), 7)
         self.assertEqual(len(c_dict['url']), 8, 'has side effect')
-        self.assertEqual(len(counter.outlier_removal(c_dict, 1)['url']), 7)
 
     def test_p_or_tiny(self):
-        '''test tiny outlier removal'''
+        '''test tiny outlier removal: 1 of c_list is removed'''
         with_0 = self.c_list[:]
         with_0.append(counter._test(0))
         fixed = self.c_list[0]
@@ -174,13 +176,21 @@ test + + + +
 
     def test_p_or_toolong(self):
         '''test outlier removal of too-long trace'''
-        too_long = [counter._test(3, millisecs=4*60*1000)]
+        too_long = [counter._test(3, millisecs=config.DURATION_LIMIT*1000)]
         self.assertEqual(len(counter.p_or_toolong(self.c_list)), 7)
         self.assertEqual(len(self.c_list), 7, 'has side effect')
         self.assertEqual(len(counter.p_or_toolong(too_long)), 0)
         self.assertEqual(len(too_long), 1, 'has side effect')
         self.assertEqual(len(counter.p_or_toolong(self.big_val)), 1)
         self.assertEqual(len(self.big_val), 1, 'has side effect')
+        c_dict = {'url': list(self.c_list)}
+        c_dict['url'].pop(0)
+        # no change if all ok
+        self.assertEqual(len(counter.outlier_removal(c_dict, 0, True)['url']), 6)
+        # too long is removed
+        self.assertEqual(
+            len(counter.outlier_removal({"url": too_long}, 0, True)['url']),
+            0)
 
     def test_tf_cumul_background(self):
         X, y, yd = counter.to_features_cumul({'background': self.c_list})
@@ -315,7 +325,7 @@ class TestMymetrics(unittest.TestCase):
         self.assertTrue(np.all(
             mymetrics.binarize_probability(
                 np.array([[0.5, 0.2, 0.3], [0.3, 0.2, 0.5]]))
-            == np.array([[ 0.5,  0.5], [ 0.3,  0.7]])))
+            == np.array([[0.5, 0.5], [0.3, 0.7]])))
 
     def test_tprfpr(self):
         '''test all tpr-fpr extraction'''

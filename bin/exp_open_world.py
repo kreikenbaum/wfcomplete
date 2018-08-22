@@ -24,6 +24,7 @@ def my_config():
     scenario = random.choice(scenario_module.list_all()).path
     or_level = None
     remove_small = None
+    remove_timeout = None
     auc_bound = None
     background_size = 'auto'  # 'auto', number, None
     binarize = True
@@ -42,12 +43,14 @@ def _add_as_artifact(element, name):
 
 # code duplication exp.py
 @ex.capture
-def run_exp(scenario, remove_small, or_level, auc_bound,
+def run_exp(scenario, remove_small, remove_timeout, or_level, auc_bound,
             background_size, binarize, exclude_sites, current_sites,
             _rnd):
     config.OR_LEVEL = config.OR_LEVEL if or_level is None else or_level
     config.REMOVE_SMALL = (config.REMOVE_SMALL if remove_small is None
                            else remove_small)
+    config.REMOVE_TIMEOUT = (config.REMOVE_TIMEOUT if remove_timeout is None
+                             else remove_timeout)
     scenario_obj = scenario_module.Scenario(scenario,
                                             exclude_sites=exclude_sites)
     (tpr, fpr, auroc, C, gamma, acc, y, yp, yd) = analyse.simulated_open_world(
