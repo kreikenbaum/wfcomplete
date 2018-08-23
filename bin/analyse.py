@@ -258,15 +258,19 @@ def compare_stats(scenario_names):
 
 def simulated_original(trace_dict, name=None):
     '''simulates original panchenko: does 10-fold cv on _all_ data, just
-picks best result'''
+picks best result
+    '''
     if name is not None and name in ALL_MAP:
-        clf = ALL_MAP[name]
+        result = ALL_MAP[name]
     else:
-        clf = fit.my_grid_helper(counter.outlier_removal(trace_dict, 2),
-                                 cumul=True, folds=10)
-        ALL_MAP[name] = clf
-    print('10-fold result: {}'.format(clf.best_score_))
-    return clf
+        # the ALL_MAP seemingly does not account for outlier removal settings!
+        result = fit.my_grid_helper(
+            counter.outlier_removal(trace_dict,
+                                    config.OR_LEVEL, config.REMOVE_TIMEOUT),
+            cumul=True, folds=10)
+        ALL_MAP[name] = result
+    print('10-fold result: {}'.format(result.best_score_))
+    return result
 
 
 def simulated_open_world(scenario_obj, auc_bound, binary, bg_size,

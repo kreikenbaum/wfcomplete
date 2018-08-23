@@ -27,8 +27,8 @@ def binarized(y, keep=-1, transform_to=0):
 def binarize_probability(preds):
     '''binarizes a probability array:
     >>> binarize_probability(np.array([[0.5, 0.2, 0.3], [0.3, 0.2, 0.5]]))
-    array([[ 0.5,  0.5],
-           [ 0.3,  0.7]])'''
+    array([[0.5, 0.5],
+           [0.3, 0.7]])'''
     out = np.empty((preds.shape[0], 2))
     out[:, 0] = preds[:, 0]
     out[:, 1] = preds[:, 1:].sum(axis=1)
