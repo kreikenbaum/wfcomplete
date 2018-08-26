@@ -5,6 +5,7 @@ import doctest
 import json
 import logging
 import os
+import socket
 import subprocess
 import tempfile
 import time
@@ -293,9 +294,11 @@ class TestFit(unittest.TestCase):
         clf, _, _ = fit.my_grid(self.X, self.y, auc_bound=0.01)
         fpr, tpr, _, _ = fit.roc(clf, self.X, self.y)
         # 2. check that fpr/tpr has good structure (rises directly to 0.9fpr)
-        self.assertAlmostEqual(tpr[1], 0.9,
-                               msg='{}\n{}'.format(zip(tpr, fpr), clf))
-        self.assertAlmostEqual(fpr[1], 0, zip(tpr, fpr))
+        self.assertTrue((0.9, 0.0) in zip(tpr, fpr),
+                        msg='{}\n{}'.format(zip(tpr, fpr), clf))
+        #self.assertAlmostEqual(tpr[1], 0.9,
+        #                       msg='{}\n{}'.format(zip(tpr, fpr), clf))
+        #self.assertAlmostEqual(fpr[1], 0, zip(tpr, fpr))
 
 
 class TestMymetrics(unittest.TestCase):
@@ -633,11 +636,14 @@ class TestUtils(unittest.TestCase):
 class TestStatus(unittest.TestCase):
     @unittest.skipIf(QUICK, "slow test skipped")
     def test_valid_json(self):
-        code = os.system(
-            "ssh mkreik@duckstein -t "
-            + "'bash -l -c /home/mkreik/bin/capture/status.sh' "
-            + "| python -m json.tool > /dev/null")
-        self.assertEqual(0, code)
+        if _is_online():
+            code = os.system(
+                "ssh mkreik@duckstein -t "
+                + "'bash -l -c /home/mkreik/bin/capture/status.sh' "
+                + "| python -m json.tool > /dev/null")
+            self.assertEqual(0, code)
+        else:
+            logging.warn("skipped test: not online")
 
 
 class MockWriter(object):
@@ -683,6 +689,16 @@ def _init_X_y(size, random=True):
     y = [1] * size
     y.extend([-1] * size)
     return (X, y)
+
+
+def _is_online():
+    socket.setdefaulttimeout(1)
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect(("8.8.8.8", 53))
+        return True
+    except socket.timeout:
+        return False
 
 
 if __name__ == '__main__':
