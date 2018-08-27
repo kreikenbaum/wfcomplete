@@ -81,7 +81,11 @@ class Scenario(object):
         path = _prepend_if_ends(
             self.path,
             'with-errors', 'with-errs', 'with7777', 'failure-in-between')
-        (self.name, date) = path.rsplit('/', 1)
+        try:
+            (self.name, date) = path.rsplit('/', 1)
+        except ValueError:
+            logging.error("failed to parse path %s", path)
+            return
         numstr = None
         if '--' in date:
             if date.rindex('--') != date.index('--'):
