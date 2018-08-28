@@ -216,7 +216,7 @@ class Scenario(object):
         self.trace_args = {'remove_small': False, 'or_level': 0}
         all_traces = itertools.chain.from_iterable(self.get_traces().values())
         first = min((x.starttime for x in all_traces))
-        return datetime.datetime.fromtimestamp(float(first)).date()
+        return first.date()
 
     def describe(self):
         '''@return name if not new defense, else add config'''
@@ -313,6 +313,16 @@ class Scenario(object):
                     self._open_world_config['background_size'],
                     same=True, current_sites=current_sites).traces
         return self.traces
+
+    @property
+    def duration(self):
+        '''duration of the capture (time of last - time of first trace)'''
+        flat = list(itertools.chain.from_iterable(self.get_traces().values()))
+        cmax = max(flat)
+        cmin = min(flat)
+        return (cmax.starttime
+                + datetime.timedelta(0, cmax.duration)
+                - cmin.starttime)
 
     @property
     def num_sites(self):
@@ -430,8 +440,8 @@ def _compute_increase(base, compare):
     if base.keys() != compare.keys():
         keys = set(base.keys())
         keys = keys.intersection(compare.keys())
-        logging.warn("keys are different, just used %d common keys: %s",
-                     len(keys), keys)
+        logging.warn("keys are different, just used %d common keys", len(keys))
+        logging.info("keys: %s", keys)
     else:
         keys = base.keys()
     for k in keys:

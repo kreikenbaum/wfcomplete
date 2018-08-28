@@ -4,6 +4,7 @@ import collections
 import datetime
 import doctest
 import errno
+import functools
 import glob
 import itertools
 import json
@@ -555,7 +556,7 @@ def to_libsvm(X, y, fname='libsvm_in'):
                 f.write('{}:{} '.format(count + 1, val))
         f.write('\n')
 
-
+@functools.total_ordering
 class Counter(object):
     '''single trace file'''
 
@@ -569,8 +570,10 @@ class Counter(object):
 
     def __eq__(self, other):
         return (self.domain == other.domain
-                and float(self.starttime) == float(other.starttime)
+                and self.starttime == other.starttime
                 and self.packets == other.packets)
+    def __lt__(self, other):
+        return self.starttime < other.starttime
 
     def __str__(self):
         return 'counter (packet, time): {}'.format(self.timing)
@@ -598,12 +601,12 @@ class Counter(object):
     def starttime(self):
         '''starttime of counter if it has it, else None
         >>> a = _test(3); a.name = 'test@1234_error_name'; a.starttime
-        '1234'
+        datetime.datetime(1970, 1, 1, 1, 20, 34)
         '''
         time = self.name.split('@')[1] if self.name else None
         if time and '_' in time:
             time = time.split('_')[0]
-        return time
+        return datetime.datetime.fromtimestamp(float(time))
 
     @staticmethod
     def from_(*args, **kwargs):

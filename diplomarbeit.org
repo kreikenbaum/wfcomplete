@@ -960,7 +960,7 @@ After a timeout, the hostname and its data is removed from the data
 structure used by /registerHost/, /isRegistered/, /getProbability/ and
 /updateHosts/.
 
-#+CAPTION: Sequence chart of cover traffic for a known site with embedded probability $< 1$, triggered
+#+CAPTION[Sequence chart of cover traffic for a known site]: Sequence chart of cover traffic for a known site with embedded probability $< 1$, with triggered cover traffic. The color coding corresponds to Figure [[fig:flow-main]].
 #+NAME: fig:known-host-sequence
 #+ATTR_LATEX: :float t :width \textwidth
 [[./pictures/sequence_cover_traffic_existing.pdf]]
@@ -974,7 +974,7 @@ site. In our assumption, the probability of embedded cover traffic per
 element is less than 1, so the /coverTraffic/ object checks if it
 should send cover traffic. It then calls the /proxySumLoad/ class,
 which saves sizes that could not be fulfilled due to the HTTP
-protocol's minimal traffic size. After reoslving the =overflow=, the
+protocol's minimal traffic size. After resolving the =overflow=, the
 /load/ object is called to load cover traffic data. It receives the
 URL for the data from the /coverURL/ class, and loads it using a
 =XMLHttpRequest=.
@@ -1180,7 +1180,7 @@ Consider a /BloomSort/ named =htmlSizes= with parameters /sizes/
 $[400, 1000, 20000]$ and /splits/ $[700, 10000]$. An element is added
 via ~htmlSizes.add("http://google.com/", 613)~ . Querying via
 ~htmlSizes.query("http://google.com/")~ would yield ~400~.
-*** Defense Configurability
+** Defense Configurability
 These altogether enable the four configuration options: overhead
 factor, use of cached sizes, which target model to use, and whether to
 send bursts after retrieval has ended. E.g. in Table
@@ -1198,7 +1198,7 @@ encodes these:
   HTTP model in the following section.
 - The /target/ option determines how the target values are set: If the
   page is cached, its size is inside a bloom bin, and approximated by
-  that bin's size. In configuration =I= the bin's border is choosen as
+  that bin's size. In configuration =I= the bin's border is chosen as
   the target value. Configuration =II= samples from the traffic
   distributions presented in the previous section.
 - What happens when the retrieval finishes but the defense has not yet
@@ -1353,53 +1353,52 @@ method of evaluating the extension. The kNN-attack by
 \citet{effective2014} shows worse results, as validated by the above
 literature.
 
-#+CAPTION[Comparison of LLaMA to this thesis's defense on 30 sites]: Comparison of LLaMA to this thesis's defense on 30 sites. The top lines shows LLaMA stats, the next two lines try to match first the accuracy, then the size overhead with the new defense. Capturing delayed LLaMA on 100 sites proved infeasible due to the long duration.
-#+NAME: tab:closed_world
-#+ATTR_LATEX: :align |l||n{2}{2}|n{3}{2}|n{4}{2}|
-| <17>              |       <10> |       <10> |       <10> |
-| Scenario          | \open Accuracy [%] \close | \open Size overhead [%] \close | \open Time overhead [%] \close |
-|-------------------+------------+------------+------------|
-| no defense (2017-12-26) |      96.46 |          0 |          0 |
-|-------------------+------------+------------+------------|
-| LLaMA             |      55.46 |      94.25 |    1085.25 |
-| 30aI--2016-07-25  |      55.75 |      81.13 |      27.80 |
-| 50aI--2016-07-26  |      52.03 |      96.25 |      15.53 |
-|-------------------+------------+------------+------------|
-| LLaMA-nodelay     |      68.22 |     163.08 |      -4.02 |
-| 5aI--2016-10-09   |      68.59 |      57.92 |       3.22 |
-| 100aI--2017-12-27 |      42.43 |     162.20 |      -0.89 |
-# llama is from 2018-01-07
 
-| Scenario | captured total | text loaded  | fully loaded (no timeout) |
-|----------+----------------+--------------+---------------------------|
-| LLaMA    |           5055 | 2760 (54.6%) | 1038 (20.5%)              |
-| disabled |           4911 | 4858 (98.9%) | 4682 (95.3%)              |
-|          |                |              |                           |
-compare to my defense@... and disabled
+The following Table [[tab:llama-stats]] compares the captured trace
+statistics for defenseless traces to LLaMA traces. It clearly
+illustrates the effects of LLaMA's delaying action. For one, the
+duration to capture 50 traces each for 100 web pages increased from 2
+days 16 hours to 22 days. This is also illustrated by the loading
+statistics. At the timeout of 4 1/2 minutes, approximately half of all
+pages had not loaded the HTML text. Only approximately one fifth
+finished loading the whole content until the timeout of 4:30
+minutes. In the default setting with outlier removal
+\cite[sec.V.B]{panchenko2} and removal of sites with less than 30
+instances due to cross-validation limitations, also only 22.9% of
+traces were usable.
 
-# # total: cd dir; cat *json | wc -l
-# s = scenario.Scenario("defense-client/nobridge--2018-07-17--100@50")
-# s.trace_args['remove_small'] = False
-# s.trace_args['or_level'] = 0
+#+CAPTION[LLaMA capture results]: Results for capturing traces using LLaMA, as compared to no defense and selective cover traffic. LLaMA's randomly delays resource fetches. This often led to timeouts. All values are absolute and relative. Duration is days:hours:minutes.
+#+NAME: tab:llama-stats
+| Scenario   | captured | text loaded  | fully loaded | \gls{wf} default | duration |
+|            |   <5> | <12>         | <12>         | <12>         |      <8> |
+|------------+-------+--------------+--------------+--------------+----------|
+| no defense |  4911 | 4858 (98.9%) | 4682 (95.3%) | 4265 (86.8%) | 22:15:52 |
+| LLaMA      |  5055 | 2760 (54.6%) | 1038 (20.5%) | 1158 (22.9%) |  2:16:44 |
+
+# # LLaMA:    "defense-client/nobridge--2018-07-17--100@50"
+# # disabled: "disabled/nobridge--2018-08-03--100@50"
+# # sct:      "wf-cover/nobridge-50aI--2018-08-23--100@50"
+# todo: recapture disabled, compare sct to that (w/ dhcp removed)
+
+# # total (captured total): cd dir; cat *json | wc -l
+# # text loaded (1 and 3,4: always, trace_args is different)
+# s = scenario.Scenario("...")
+# s.trace_args = {'remove_small': False, 'or_level': 0, 'remove_timeout': False}
 # t = s.get_traces()
 # sum([len(t[x]) for x in t.keys()]) # 2760
-# s_notimeout = scenario.Scenario("defense-client/nobridge--2018-07-17--100@50")
+# # fully loaded (no timeout)
 # s_notimeout.trace_args = {'or_level': 0, 'remove_small': False, 'remove_timeout': True}
-# t2 = s_notimeout.get_traces()
-# sum([len(t2[x]) for x in t2.keys()]) # 1038
-# # same for "disabled/nobridge--2018-08-03--100@50"
+# # small classes removed (trace_args is default)
+# s_complete.trace_args = {'or_level': 2, 'remove_small': True, 'remove_timeout': False}
 
+# ### unused: outlier removal, timeout removed, no small classes
+# # w/ outlier removal (or-lvl 2)
+# s_or.trace_args = {'or_level': 2, 'remove_small': False, 'remove_timeout': True}
+# sum([len(t_or[x]) for x in t_or.keys()]) # 953, ..., 4897
 
-Table [[tab:closed_world]] compares LLaMA's
-\citep{DBLP:journals/popets/CherubinHJ17} performance with the new
-defense's on 30 sites. In this thesis' experiments, original LLaMA
-consistently delayed web surfing by an order of magnitude. This
-yielded 43.67% load errors due mostly to timeouts (after ~10
-minutes). After removing load errors, 16 of 30 sites had less than 30
-usable instances. If these sites were removed, accuracy against LLaMA
-rose from 55.46% to 71.26%. Overhead after site removal remained
-similar. As LLaMAs original time overhead seems prohibitive, the
-source code was edited (a constant was changed) to disable the
+As LLaMAs original time overhead seems prohibitive, the source
+code[fn::gratefully provided by Marc Juarez by email, also available
+at \citet{LLaMA}] was edited (a constant was changed) to disable the
 delay. This version is called /LLaMA-nodelay/.  Compared to the
 modified version of LLaMA, this thesis' defense offers both
 configurability and a lower size overhead. Both LLaMA-nodelay and the
@@ -1435,7 +1434,7 @@ overhead relationship for a much lower time overhead.
 
 Table [[tab:ohs-vs-acc-100]] shows the new defense's effects, and compares
 it to \citet{DBLP:journals/popets/CherubinHJ17}'s LLaMA, on 100
-sites. As Table [[tab:closed_world]] before, this shows that the new
+sites. As Table [[tab:llama-stats]] before, this shows that the new
 defense reduces accuracy more, for the same overhead, or requires less
 overhead, for a similar accuracy reduction. The main difference
 between LLaMA and the new defense lies in the HTTP-specific
@@ -3782,6 +3781,36 @@ training on data without defense, and testing on defended data.
 # #+NAME: tab:100-sites
 # #+ATTR_LATEX: :align |r||n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|n{3}{2}|
 # #+INCLUDE: "data/skip/results/alternatives.org::#100-sites-pub" :only-contents t
+** Analysing closed-world scenarios
+
+#+CAPTION[Comparison of LLaMA to this thesis's defense on 30 sites]: Comparison of LLaMA to this thesis's defense on 30 sites. The top lines shows LLaMA stats, the next two lines try to match first the accuracy, then the size overhead with the new defense. Capturing delayed LLaMA on 100 sites proved infeasible due to the long duration.
+#+NAME: tab:closed_world
+#+ATTR_LATEX: :align |l||n{2}{2}|n{3}{2}|n{4}{2}|
+| <17>              |       <10> |       <10> |       <10> |
+| Scenario          | \open Accuracy [%] \close | \open Size overhead [%] \close | \open Time overhead [%] \close |
+|-------------------+------------+------------+------------|
+| no defense (2017-12-26) |      96.46 |          0 |          0 |
+|-------------------+------------+------------+------------|
+| LLaMA             |      55.46 |      94.25 |    1085.25 |
+| 30aI--2016-07-25  |      55.75 |      81.13 |      27.80 |
+| 50aI--2016-07-26  |      52.03 |      96.25 |      15.53 |
+|-------------------+------------+------------+------------|
+| LLaMA-nodelay     |      68.22 |     163.08 |      -4.02 |
+| 5aI--2016-10-09   |      68.59 |      57.92 |       3.22 |
+| 100aI--2017-12-27 |      42.43 |     162.20 |      -0.89 |
+# llama is from 2018-01-07
+
+
+
+Table [[tab:closed_world]] compares LLaMA's
+\citep{DBLP:journals/popets/CherubinHJ17} performance with the new
+defense's on 30 sites. In this thesis' experiments, original LLaMA
+consistently delayed web surfing by an order of magnitude. This
+yielded 43.67% load errors due mostly to timeouts (after ~10
+minutes). After removing load errors, 16 of 30 sites had less than 30
+usable instances. If these sites were removed, accuracy against LLaMA
+rose from 55.46% to 71.26%. Overhead after site removal remained
+similar.
 * After Appendices: Bibliography and Index
 \bibliography{docs/master}
 \bibliographystyle{apalike}
