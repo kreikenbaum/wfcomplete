@@ -1119,6 +1119,7 @@ def outlier_removal(counter_dict, level=2, remove_timeout=False):
                           len(counter_list))
         except (ValueError, IndexError):  # somewhere, list got to []
             logging.warn('%s discarded in outlier removal', k)
+            del out[k]
     return out
 
 doctest.testmod(optionflags=doctest.ELLIPSIS)

@@ -1354,26 +1354,29 @@ method of evaluating the extension. The kNN-attack by
 literature.
 
 
-The following Table [[tab:llama-stats]] compares the captured trace
-statistics for defenseless traces to LLaMA traces. It clearly
-illustrates the effects of LLaMA's delaying action. For one, the
-duration to capture 50 traces each for 100 web pages increased from 2
-days 16 hours to 22 days. This is also illustrated by the loading
-statistics. At the timeout of 4 1/2 minutes, approximately half of all
-pages had not loaded the HTML text. Only approximately one fifth
-finished loading the whole content until the timeout of 4:30
-minutes. In the default setting with outlier removal
-\cite[sec.V.B]{panchenko2} and removal of sites with less than 30
-instances due to cross-validation limitations, also only 22.9% of
-traces were usable.
-
-#+CAPTION[LLaMA capture results]: Results for capturing traces using LLaMA, as compared to no defense and selective cover traffic. LLaMA's randomly delays resource fetches. This often led to timeouts. All values are absolute and relative. Duration is days:hours:minutes.
+#+CAPTION[LLaMA capture results]: Results for capturing traces using LLaMA, as compared to no defense. This compares all captured traces to those where text was successfully loaded, to those that completed loading. \gls{wf} defaults are keeping timeouts, and \cite[sec.V.B]{panchenko2}'s outlier removal, with removal of small sites.
 #+NAME: tab:llama-stats
-| Scenario   | captured | text loaded  | fully loaded | \gls{wf} default | duration |
-|            |   <5> | <12>         | <12>         | <12>         |      <8> |
+#+ATTR_LATEX: :align |l||r|r|r|r|r|
+| Scenario   | captured | text loaded  | fully loaded | \gls{wf} def | duration |
+|            |   <5> | <12>         | <12>         | <12>         | <8>      |
 |------------+-------+--------------+--------------+--------------+----------|
-| no defense |  4911 | 4858 (98.9%) | 4682 (95.3%) | 4265 (86.8%) | 22:15:52 |
-| LLaMA      |  5055 | 2760 (54.6%) | 1038 (20.5%) | 1158 (22.9%) |  2:16:44 |
+| no defense |  4911 | 4858 (98.9%) | 4682 (95.3%) | 4265 (86.8%) | 22d 15h  |
+| LLaMA      |  5055 | 2760 (54.6%) | 1038 (20.5%) | 1158 (22.9%) | 2d 16h   |
+
+Table [[tab:llama-stats]] compares the captured trace statistics for
+defenseless traces to LLaMA traces. It clearly illustrates the effects
+of LLaMA's delaying action. For one, the duration to capture 50 traces
+each for 100 web pages increased from 2 days 16 hours to 22 days. This
+is also illustrated by the loading statistics. At the timeout of 4 1/2
+minutes, approximately half of all pages had not loaded the HTML
+text. Only approximately one fifth finished loading the whole content
+until the timeout of 4:30 minutes. In the default setting with outlier
+removal \cite[sec.V.B]{panchenko2} and removal of sites with less than
+30 instances due to cross-validation limitations, also only 22.9% of
+traces were usable. The time overhead of all of LLaMA's traces which
+loaded at least the text is 845.82%. Reduced to the fully loaded
+traces, the time overhead compared to no defense is 228.98%.
+
 
 # # LLaMA:    "defense-client/nobridge--2018-07-17--100@50"
 # # disabled: "disabled/nobridge--2018-08-03--100@50"
@@ -1396,37 +1399,33 @@ traces were usable.
 # s_or.trace_args = {'or_level': 2, 'remove_small': False, 'remove_timeout': True}
 # sum([len(t_or[x]) for x in t_or.keys()]) # 953, ..., 4897
 
-As LLaMAs original time overhead seems prohibitive, the source
-code[fn::gratefully provided by Marc Juarez by email, also available
-at \citet{LLaMA}] was edited (a constant was changed) to disable the
-delay. This version is called /LLaMA-nodelay/.  Compared to the
-modified version of LLaMA, this thesis' defense offers both
-configurability and a lower size overhead. Both LLaMA-nodelay and the
-new defense have negligible time overhead. Even compared to
-non-delayed LLaMA, the new defense offers similar accuracy/size
-overhead relationship for a much lower time overhead.
+As LLaMA' randomly delayed resource fetches often led to timeouts, the
+source code[fn::gratefully provided by Marc Juarez by email, also
+available at \citet{LLaMA}] was edited (a constant was changed) to
+disable the delay. This version is called /LLaMA-nodelay/. Table
+[[tab:ohs-vs-acc-100]] compares this modified version of LLaMA to this
+thesis' selective cover traffic, and to no defense. This thesis'
+defense offers both configurability and a lower size overhead. Both
+LLaMA-nodelay and the new defense have negligible time overhead. Even
+compared to non-delayed LLaMA, the new defense offers similar
+accuracy/size overhead relationship for a much lower time overhead.
 
 # n{2}{2}|n{3}{2}|n{4}{2}|
-#+CAPTION[Accuracy to overheads on 100 sites]: Comparison of LLaMA to this thesis's defense on 100 sites. The table was sorted by size increase. This also illustrates the new defense's configurability.
+#+CAPTION[Accuracy to overheads on 100 sites]: Comparison of LLaMA to this thesis's defense on 100 sites, captured at TU Braunschweig. The table is sorted by size increase. It also illustrates the new defense's configurability.
 #+NAME: tab:ohs-vs-acc-100
 #+ATTR_LATEX: :align |l|l|r||r | r|r
-|                   |        |            |     <7> |     <7> |     <7> |
-|-------------------+--------+------------+---------+---------+---------|
-| Scenario          | Site   |       Date | Accuracy | Size o.h. [%] | Time o.h. [%] |
-|-------------------+--------+------------+---------+---------+---------|
-| no defense        | mlsec  | 2018-01-17 |    0.93 |    0.00 |    0.00 |
-| no defense        | gcloud | 2018-01-30 |    0.95 |    0.00 |    0.00 |
-| no defense        | mlsec  | 2018-02-02 |    0.92 |    0.00 |    0.00 |
-| no defense        | gcloud | 2018-02-11 |    0.95 |    0.00 |    0.00 |
-| no defense        | mlsec  | 2018-03-15 |    0.93 |    0.00 |    0.00 |
-| new defense@20aI  | gcloud | 2018-02-02 |    0.79 |   22.89 |   17.49 |
-| new defense@100aI | gcloud | 2018-02-02 |    0.66 |   37.82 |   14.69 |
-| new defense@20aI  | mlsec  | 2018-02-13 |    0.43 |   61.81 |   22.23 |
-| new defense@100aI | mlsec  | 2018-03-28 |    0.26 |  142.22 |   28.16 |
-| new defense@100aI | mlsec  | 2018-01-29 |    0.25 |  147.32 |   22.72 |
-| LLaMA-nodelay     | mlsec  | 2018-02-25 |    0.36 |  205.18 |   29.04 |
-| LLaMA-nodelay     | gcloud | 2018-02-11 |    0.45 |  213.02 |   14.79 |
-|-------------------+--------+------------+---------+---------+---------|
+|                      |            |     <7> |     <7> |     <7> |
+|----------------------+------------+---------+---------+---------|
+| Scenario             |       Date | Accuracy | Size o.h. [%] | Time o.h. [%] |
+|----------------------+------------+---------+---------+---------|
+| no defense           | 2018-01-17 |    0.93 |    0.00 |    0.00 |
+| no defense           | 2018-02-02 |    0.92 |    0.00 |    0.00 |
+| no defense           | 2018-03-15 |    0.93 |    0.00 |    0.00 |
+| low overhead s.c.t.  | 2018-02-13 |    0.43 |   61.81 |   22.23 |
+| high overhead s.c.t. | 2018-03-28 |    0.26 |  142.22 |   28.16 |
+| high overhead s.c.t. | 2018-01-29 |    0.25 |  147.32 |   22.72 |
+| LLaMA-nodelay        | 2018-02-25 |    0.36 |  205.18 |   29.04 |
+|----------------------+------------+---------+---------+---------|
 # totable = [r for r in results.list_all() if not r.open_world and hasattr(r.scenario, "date") and r.scenario.date > datetime.date(2018, 1, 1) and r.scenario.num_sites == 100]
 # totable.sort(key=lambda x: x.size_overhead)
 # print results.to_table(totable, fields_plus_names=(lambda r: [r.scenario.describe(), r.scenario.site, r.scenario.date, "{:.2f}".format(r.score), "{:.2f}".format(r.size_overhead), "{:.2f}".format(r.time_overhead)], ["Scenario","Site", "Date", "Accuracy", "Size o.h. [%]", "Time o.h. [%]"]))
@@ -1434,11 +1433,10 @@ overhead relationship for a much lower time overhead.
 
 Table [[tab:ohs-vs-acc-100]] shows the new defense's effects, and compares
 it to \citet{DBLP:journals/popets/CherubinHJ17}'s LLaMA, on 100
-sites. As Table [[tab:llama-stats]] before, this shows that the new
-defense reduces accuracy more, for the same overhead, or requires less
-overhead, for a similar accuracy reduction. The main difference
-between LLaMA and the new defense lies in the HTTP-specific
-distributions to generate cover
+sites. This shows that the new defense reduces accuracy more, for the
+same overhead, or requires less overhead, for a similar accuracy
+reduction. The main difference between LLaMA and the new defense lies
+in the HTTP-specific distributions to generate cover
 traffic. \citet{DBLP:journals/popets/CherubinHJ17} reported less
 overhead. This could stem from the difference in site layout. As
 mentioned in the previous section, this thesis evaluates defenses on
@@ -1446,8 +1444,8 @@ Alexa's top sites, while they inspect Tor's =.onion= hidden service
 \citep[sec.5]{tor-design} sites: Tor hidden service sites contain
 fewer embedded elements, especially JavaScript and CSS files
 \citep[Table~1]{DBLP:journals/popets/CherubinHJ17}. Each element
-triggers LLaMA's cover traffic behavior, and could thus explain
-higher overhead on Alexa's top sites.
+triggers LLaMA's cover traffic behavior, and could thus explain higher
+overhead on Alexa's top sites.
 
 
 
@@ -1466,7 +1464,7 @@ higher overhead on Alexa's top sites.
 # code: see [[file:bin/results.py::%20scatter%20plot%20of%20accuracy%20vs%20overhead]]
 # - include llama-delay @ 30
 
-Figures [[fig:oh2acc100][fig:oh2acc100]] and [[fig:oh2acc]] show the new defenses's
+Figures [[fig:oh2acc100]] and [[fig:oh2acc]] show the new defenses's
 configurability and contrasts its accuracy/overhead trade-off to
 LLaMA-nodelay. This scatter plot includes data for captures that were
 effected by retrieval inaccuracies. Still, it clearly shows that the
@@ -1485,9 +1483,9 @@ needs. Appendix [[#appendix-accuracy]] shows tables of evaluation results.
 # code: similar to total_packets_in_helper with sitenum=8
 # fig, axes = plt.subplots(2, 2, sharex=True, sharey=True)
 # color = lambda x: mplot._color(x, keys, "Set1")
-A comparison via relative histograms was presented in Figure
-[[fig:total_packets_in]]. This graphical method can also provide some
-insight into the effects of both LLaMA-nodelay
+Figure [[fig:total_packets_in]] compares the relative histograms of the
+total number of incoming packets. This graphical method can also
+provide some insight into the effects of both LLaMA-nodelay
 \citep{DBLP:journals/popets/CherubinHJ17} and the new defense in
 Figure
 [[fig:relative-histogram-incoming-bytes-llama-0.22-disabled]]. Again, all
@@ -1498,11 +1496,11 @@ kernels. At a second glance, the number of packets of several
 retrievals is lower than even for defenseless data, e.g. for
 wikipedia.org. This could not happen if the transfer was completed
 correctly, and hints at incomplete web site retrievals. All defenses
-flatten and intermingle the peaks of this feature. The height of the relative
-histograms seems linked to defense overhead: defenseless data has the
-highest peaks, followed by the lower-overhead defense on 2018-02-13,
-the higher-overhead defense on 2018-03-28, and LLaMA-nodelay, which
-has the highest, non-configurable overhead.
+flatten and intermingle the peaks of this feature. The height of the
+relative histograms seems linked to defense overhead: defenseless data
+has the highest peaks, followed by the lower-overhead defense on
+2018-02-13, the higher-overhead defense on 2018-03-28, and
+LLaMA-nodelay, which has the highest, non-configurable overhead.
 
 
 

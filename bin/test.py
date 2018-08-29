@@ -189,9 +189,9 @@ test + + + +
         # no change if all ok
         self.assertEqual(len(counter.outlier_removal(c_dict, 0, True)['url']), 6)
         # too long is removed
-        self.assertEqual(
-            len(counter.outlier_removal({"url": too_long}, 0, True)['url']),
-            0)
+        self.assertTrue(
+            'url' not in counter.outlier_removal({"url": too_long}, 0, True))
+
 
     def test_tf_cumul_background(self):
         X, y, yd = counter.to_features_cumul({'background': self.c_list})
