@@ -22,7 +22,7 @@ import logconfig
 
 AFTER_CAPTURE = datetime.date(2020, 1, 1)
 BEFORE_CAPTURE = datetime.date(2010, 1, 1)
-PROTOCOL_DISCARD = re.compile('ARP|CDP|DHCP|ICMP|IGMP|LLMNR|SSDP|SSH|STP|UDP')
+PROTOCOL_DISCARD = re.compile('ARP|CDP|ICMP|IGMP|LLMNR|SSDP|SSH|STP|UDP')
 PCAP_NAME = re.compile(r".*@([0-9]*)")
 
 TOR_DATA_CELL_SIZE = 512

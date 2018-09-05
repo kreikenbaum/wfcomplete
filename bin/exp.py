@@ -35,16 +35,17 @@ def my_config():
     remove_small = None
     current_sites = False  # fix e.g. google duplicates in bg set
     remove_timeout = None
+    exclude_sites = []
 
 @ex.capture
 def run_exp(scenario, remove_small, or_level, current_sites, remove_timeout,
-            _rnd):
+            exclude_sites, _rnd):
     config.OR_LEVEL = config.OR_LEVEL if or_level is None else or_level
     config.REMOVE_SMALL = (config.REMOVE_SMALL if remove_small is None
                            else remove_small)
     config.REMOVE_TIMEOUT = (config.REMOVE_TIMEOUT if remove_timeout is None
                              else remove_timeout)
-    scenario_obj = Scenario(scenario)
+    scenario_obj = Scenario(scenario, exclude_sites=exclude_sites)
     traces = scenario_obj.get_traces(current_sites=current_sites)
     result = analyse.simulated_original(traces)
     X, y, d = scenario_obj.get_features_cumul(current_sites)
