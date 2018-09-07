@@ -4,7 +4,10 @@ import json
 import os
 
 prefline = os.popen('get_pref.sh "extensions.xpiState"').read()
-state = json.loads(json.loads(prefline))
+try:
+    state = json.loads(json.loads(prefline))
+except TypeError:
+    state = {"app-profile": []}
 out = {}
 for name in state['app-profile']:
     if name in ['tor-launcher@torproject.org',

@@ -1362,22 +1362,6 @@ literature.
 |------------+-------+--------------+--------------+--------------+----------|
 | no defense |  4911 | 4858 (98.9%) | 4682 (95.3%) | 4265 (86.8%) | 2d 16h   |
 | LLaMA      |  5055 | 2760 (54.6%) | 1038 (20.5%) | 1158 (22.9%) | 22d 15h  |
-
-Table [[tab:llama-stats]] compares the captured trace statistics for
-defenseless traces to LLaMA traces. It clearly illustrates the effects
-of LLaMA's delaying action. For one, the duration to capture 50 traces
-each for 100 web pages increased from 2 days 16 hours to 22 days. This
-is also illustrated by the loading statistics. At the timeout of 4 1/2
-minutes, approximately half of all pages had not loaded the HTML
-text. Only approximately one fifth finished loading the whole content
-until the timeout of 4:30 minutes. In the default setting with outlier
-removal \cite[sec.V.B]{panchenko2} and removal of sites with less than
-30 instances due to cross-validation limitations, also only 22.9% of
-traces were usable. The time overhead of all of LLaMA's traces which
-loaded at least the text is 845.82%. Reduced to the fully loaded
-traces, the time overhead compared to no defense is 228.98%.
-
-
 # # LLaMA:    "defense-client/nobridge--2018-07-17--100@50"
 # # disabled: "disabled/nobridge--2018-08-03--100@50"
 # # sct:      "wf-cover/nobridge-50aI--2018-08-23--100@50"
@@ -1400,16 +1384,32 @@ traces, the time overhead compared to no defense is 228.98%.
 # s_or.trace_args = {'or_level': 2, 'remove_small': False, 'remove_timeout': True}
 # sum([len(t_or[x]) for x in t_or.keys()]) # 953, ..., 4897
 
-As LLaMA' randomly delayed resource fetches often led to timeouts, the
-source code[fn::gratefully provided by Marc Juarez by email, also
-available at \citet{LLaMA}] was edited (a constant was changed) to
-disable the delay. This version is called /LLaMA-nodelay/. Table
-[[tab:ohs-vs-acc-100]] compares this modified version of LLaMA to this
-thesis' selective cover traffic, and to no defense. This thesis'
-defense offers both configurability and a lower size overhead. Both
-LLaMA-nodelay and the new defense have negligible time overhead. Even
-compared to non-delayed LLaMA, the new defense offers similar
-accuracy/size overhead relationship for a much lower time overhead.
+
+Table [[tab:llama-stats]] compares the captured trace statistics for
+defenseless traces to \citet{DBLP:journals/popets/CherubinHJ17}'s
+LLaMA's traces. It clearly illustrates the effects of LLaMA's delaying
+action. For one, the duration to capture 50 traces each for 100 web
+pages increased from 2 days 16 hours to 22 days 15 hours. This is also
+illustrated by the loading statistics. At the timeout of 4 1/2
+minutes, approximately half of all pages had not loaded the HTML
+text. Only approximately one fifth finished loading the whole
+content. In the default \gls{ml} setting with outlier removal
+\cite[sec.V.B]{panchenko2} and removal of sites with less than 30
+instances due to cross-validation limitations, only 22.9% of traces
+were usable. If no outlier removal was performed, there were 42
+remaining sites with at least 30 instances for \gls{ml}. These are
+evidently easier to classify than the whole set of 100 sites. The time
+overhead of all of LLaMA's traces which loaded at least the text is
+845.82%. Reduced to the fully loaded traces, the time overhead
+compared to no defense is 228.98%. This could stem from the difference in site's structure. As
+mentioned in the previous section, this thesis evaluates defenses on
+Alexa's top sites, while they inspect Tor's =.onion= hidden servic
+\citep[sec.5]{tor-design} sites: Tor hidden service sites contain
+fewer embedded elements, especially JavaScript and CSS files
+\citep[Table~1]{DBLP:journals/popets/CherubinHJ17}. Each element
+triggers LLaMA's cover traffic behavior, and could thus explain higher
+overhead on Alexa's top sites.
+
 
 # n{2}{2}|n{3}{2}|n{4}{2}|
 #+CAPTION[Accuracy to overheads on 100 sites]: Comparison of LLaMA to this thesis's defense on 100 sites, captured at TU Braunschweig. The table is sorted by size increase. It also illustrates the new defense's configurability.
@@ -1431,23 +1431,26 @@ accuracy/size overhead relationship for a much lower time overhead.
 # totable.sort(key=lambda x: x.size_overhead)
 # print results.to_table(totable, fields_plus_names=(lambda r: [r.scenario.describe(), r.scenario.site, r.scenario.date, "{:.2f}".format(r.score), "{:.2f}".format(r.size_overhead), "{:.2f}".format(r.time_overhead)], ["Scenario","Site", "Date", "Accuracy", "Size o.h. [%]", "Time o.h. [%]"]))
 
+As LLaMA hinders web browsing to the point of non-usability \citep{brutlag2009speed}, the
+source code[fn::gratefully provided by Marc Juarez by email, also
+available at \citet{LLaMA}] was edited (a constant was changed) to
+disable the delay. This version is called /LLaMA-nodelay/. Table
+[[tab:ohs-vs-acc-100]] compares this modified version of LLaMA to this
+thesis' selective cover traffic, and to no defense. This thesis'
+defense offers both configurability and a lower size overhead. Both
+LLaMA-nodelay and the new defense have negligible time overhead. Even
+compared to non-delayed LLaMA, the new defense offers similar
+accuracy/size overhead relationship for a much lower time overhead.
+
+
 
 Table [[tab:ohs-vs-acc-100]] shows the new defense's effects, and compares
-it to \citet{DBLP:journals/popets/CherubinHJ17}'s LLaMA, on 100
-sites. This shows that the new defense reduces accuracy more, for the
-same overhead, or requires less overhead, for a similar accuracy
-reduction. The main difference between LLaMA and the new defense lies
-in the HTTP-specific distributions to generate cover
+it to LLaMA-nodelay, on 100 sites. This shows that the new defense reduces
+accuracy more, for the same overhead, or requires less overhead, for a
+similar accuracy reduction. The main difference between LLaMA-nodelay and the
+new defense lies in the HTTP-specific distributions to generate cover
 traffic. \citet{DBLP:journals/popets/CherubinHJ17} reported less
-overhead. This could stem from the difference in site layout. As
-mentioned in the previous section, this thesis evaluates defenses on
-Alexa's top sites, while they inspect Tor's =.onion= hidden service
-\citep[sec.5]{tor-design} sites: Tor hidden service sites contain
-fewer embedded elements, especially JavaScript and CSS files
-\citep[Table~1]{DBLP:journals/popets/CherubinHJ17}. Each element
-triggers LLaMA's cover traffic behavior, and could thus explain higher
-overhead on Alexa's top sites.
-
+overhead.
 
 
 #+CAPTION[Size overhead to accuracy trade-off on 100 sites]: Size overhead to accuracy trade-off for thesis' defense, LLaMA-nodelay, and no defense on 100 sites, captured at local VM.
