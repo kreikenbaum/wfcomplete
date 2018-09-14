@@ -5,6 +5,7 @@
 #+TODO: TODO | PENDING
 \listoffigures
 \listoftables
+\printnoidxglossaries
 * Configuration							    :ARCHIVE:
 #+BIBLIOGRAPHY: master plain option:-d
 #+LATEX_CLASS: scrreprt
@@ -33,7 +34,8 @@
 #+LATEX_HEADER: \newacronym{fn}{FN}{false negatives}
 #+LATEX_HEADER: \newacronym{fp}{FP}{false positives}
 #+LATEX_HEADER: \newacronym{tp}{TP}{true positives}
-#+LATEX_HEADER: \newacronym{s}{SCT.}{Selective Cover Traffic}
+#+LATEX_HEADER: \newacronym{s}{SCT}{Selective Cover Traffic}
+#+LATEX_HEADER: \newacronym{oh}{OH}{overhead}
 # end glossaries
 #+LATEX_HEADER: \pagenumbering{roman}
 #+LATEX_HEADER: \restylefloat{table}
@@ -41,7 +43,7 @@
 #+LATEX_HEADER: \npdecimalsign{.}
 #+LATEX_HEADER: \nprounddigits{2}
 #+LATEX_HEADER: \npthousandthpartsep{}
-#+LATEX_HEADER: \makeindex
+#+LATEX_HEADER: \makenoidxglossaries
 # begin HU preset
 #+LATEX_HEADER: \renewcommand*{\maketitle}{\thispagestyle{empty}
 #+LATEX_HEADER:
@@ -102,9 +104,7 @@
 #+LATEX_HEADER: \makeatother
 #+OPTIONS: H:6
 * Introduction
-#+BEGIN_LaTeX
 \pagenumbering{arabic}
-#+END_LaTeX
   #+INDEX: Tor
   #+INDEX: website fingerprinting
   #+INDEX: fingerprint
@@ -168,7 +168,7 @@
   (\citet{quantifying}, \citet{ssl-traffic-analysis}, \citet{hintz02},
   \citet{ccsw09-fingerprinting}, \citet{panchenko},
   \citet{ccs2012-fingerprinting}, \citet{effective2014},
-  \citet{panchenko2}, \citet{197185}).
+  \citet{panchenko2}, \citet{197185}, \cite{sirinam2018deep}).
 ** Contributions: a New Website Fingerprinting Defense and Tools
    :PROPERTIES:
    :CUSTOM_ID: intro.contribution
@@ -222,8 +222,7 @@ This thesis' new \gls{wf} defense is introduced in chapter
 upon: section [[#sub3-http]] justifies the chosen HTTP traffic model;
 whereas the stochastic size cache based on Bloom filters
 \citep{Bloom70space/timetrade-offs} is described in section
-[[#sub3-bloom]]. Finally, section [[#sub3-defense]] explains the defense
-itself.
+[[#sub3-bloom]].
 
 
 Chapter [[#ch4-evaluation]] puts the defense to the test, analyzing how it
@@ -488,8 +487,8 @@ of future work in section [[#future-work]].
     #+INDEX: classification!test data
     #+INDEX: machine learning!classification
     \Gls{wf} /classification/ tries to assign a website to a trace's
-    features extracted in the previous step.  The previous step
-    [[#sub2-ml-features][feature extraction]] transforms traces (raw input data) to
+    features extracted in the previous step.  The previous step ---
+    [[#sub2-ml-features][feature extraction]] --- transforms traces (raw input data) to
     features. In /classification/, these features are used for two
     purposes: some traces' features are used for training the
     classifier, others for testing.
@@ -574,12 +573,12 @@ of future work in section [[#future-work]].
     from working, their success can be measured. The simplest
     form of measurement is simply counting how many traces were
     classified correctly, and dividing by the total number of
-    traces. This is called /accuracy/.\citep{powers} For other types
+    traces. This is called /accuracy/ \citep{powers}. For other types
     of measurement, a /confusion matrix/ helps to
     illustrate the different cases that can occur in \gls{wf}. See
     Table [[tab:confusion_matrix]].
 
-    #+CAPTION[Confusion matrix]: (binary) Confusion matrix. Correctly classified traces are in bold.
+    #+CAPTION[Confusion matrix]: (binary) Confusion matrix. Correctly classified traces are in bold. The distinction positive/negative is chosen based on the classification objective.
     #+NAME: tab:confusion_matrix
     #+ATTR_LATEX: :align |l||l | l|
     |----------------------+-----------------------+-----------------------|
@@ -616,9 +615,9 @@ of future work in section [[#future-work]].
     pages are additionally captured. The previously captured (100)
     sites are called /foreground/ pages. The classifier's task is to
     distinguish between foreground and background pages. The scenario
-    is that there are certain censored sites, say wikileaks.org, which
+    is that there are certain censored sites, say wikipedia.org, which
     need to be distinguished from normal web browsing, say
-    tagesschau.de.
+    onclickads.net.
 
 
 #+CAPTION[ROC curve example]: (Example) receiver operating characteristic (ROC) curve for the WANG14 \citep[sec.4.1]{panchenko2} data set. The point at the top left (0, 1) is optimal. The ROC-curve shows possible true- to false-positive ratios. Each point on the curve corresponds to one confusion matrix \citep[sec.4.0]{Fawcett:2006:IRA:1159473.1159475}: the farther to the right on the curve, the more classification tends towards positive classification.
@@ -691,31 +690,29 @@ of future work in section [[#future-work]].
 
 
    To protect against \gls{wf}, several early attack authors also
-   mentioned possible defenses: \citet[sec.5]{Wagner96analysisof}
-   proposed padding SSL \citep{sslv3} so that HTTP GET
-   \citep[sec.4.3.1]{rfc7231} URLs would be
-   concealed. \citet[sec.3]{ssl-traffic-analysis} proposed three
+   mention possible defenses: \citet[sec.5]{Wagner96analysisof}
+   propose padding SSL \citep{sslv3} so that HTTP GET
+   \citep[sec.4.3.1]{rfc7231} URL's sizes would be
+   concealed. \citet[sec.3]{ssl-traffic-analysis} proposes three
    possible defenses: an additional padding layer between HTTP and
    SSL, modifying the web pages themselves, or using web proxies.
-   \citet[sec.8]{hintz02} suggested padding, switching off
-   e.g. images, and transferring a whole page in one connection.  The
-   first website fingerprinters considered only packet lengths. This
-   made it seem sensible to defend by altering the lengths of packets
-   by padding, as evaluated e.g.\space{}by
-   \citet[sec.5.1]{ssl-traffic-analysis}.
+   \citet[sec.8]{hintz02} suggests padding, switching off
+   e.g. images, and transferring a whole page in one connection.
 
 
-   The total number of incoming packets is a feature analysed by
-   almost all modern attacks. Figure [[fig:total_packets_in]] illustrates
-   the distribution of this main feature. As seen,
-   \citet{DBLP:journals/popets/CherubinHJ17} create additional
-   packets, but preserve site separation and ordering.
+   The first website fingerprinters considered only packet
+   lengths. This made it seem sensible to defend by altering the
+   lengths of packets by padding, as evaluated e.g.\space{}by
+   \citet[sec.5.1]{ssl-traffic-analysis}. The total number of incoming
+   packets is a feature analysed by almost all modern attacks. Figure
+   [[fig:total_packets_in]] illustrates the distribution of this main
+   feature. As seen, \citet{DBLP:journals/popets/CherubinHJ17} create
+   additional packets, but preserve site separation and ordering.
    # created using mplot.total_packets_in_helper(['disabled/bridge--2018-01-12--30@50', 'defense-client/bridge--2018-01-07--30@50'])
    #+CAPTION[Distribution of number of total incoming packets]: Distribution of number of total incoming packets, once without defense, once using LLaMA \citep{DBLP:journals/popets/CherubinHJ17}.
    #+NAME: fig:total_packets_in
    #+ATTR_LATEX: :float t :width 0.7\textwidth
 [[./pictures/total_packets_in_disabled___bridge--2018-01-12--30@50_defense-client___bridge--2018-01-07--30@50__bing.com_wordpress.com_gmw.cn_wikipedia.org__palette_colorblind.pdf]]
-
 
 
    While early defenses attempt to hinder \gls{wf} in general, not on
@@ -739,37 +736,37 @@ of future work in section [[#future-work]].
    altered specific \gls{ml} features, e.g. single packet size. This
    created an arms race between attacks and defenses - the attacks
    finding new feature combinations to use, the defenses obfuscating
-   these. To stop this, \citet{oakland2012-peekaboo} introduced the
-   idea of a /general defense/ into the context of website
-   fingerprinting. The aim is to transform groups of web retrievals so
-   that all members look the same. They proposed a traffic-flow
-   security \citep[ch.10.3]{applied96} solution called /BuFLO/:
-   fixed-rate transmission of all data, with dummy traffic for gaps,
-   for the estimated duration of web site retrieval. This idea was
-   improved on by \citep{a-systematic2014}. Both of these exhibit high
-   bandwidth overhead, as they send data at a fixed rate. Furthermore,
-   they have high time overhead, on average more than quadrupling the
-   required time to download a page
-   \citep[sec.6.2]{a-systematic2014}. As sub-second delays cause users
-   to use a service less \citep{brutlag2009speed}, the effect of
-   quadrupling the load time needs to be
-   studied. \citet{effective2014} proposed the (offline) defense of
+   these. To stop this, \citet{oakland2012-peekaboo} introduces the
+   idea of a /general defense/ into the context of \gls{wf}. The aim
+   is to transform groups of web retrievals so that all members look
+   the same. They propose a traffic-flow security
+   \citep[ch.10.3]{applied96} solution called /BuFLO/: fixed-rate
+   transmission of all data, with dummy traffic for gaps, for the
+   estimated duration of web site retrieval. This idea was improved on
+   by \citep{a-systematic2014}. Both of these exhibit high bandwidth
+   overhead, as they send data at a fixed rate. Furthermore, they have
+   high time overhead, on average more than quadrupling the required
+   time to download a page \citep[sec.6.2]{a-systematic2014}. As even
+   sub-second delays cause users to use a service less
+   \citep{brutlag2009speed}, the effect of quadrupling the load time
+   ought to be studied before these would be
+   adopted. \citet{effective2014} propose the (offline) defense of
    morphing all traffic to supersequences of traffic patterns. This
-   needs to know the traffic pattern beforehand, which for today's
+   defense needs to know the traffic pattern beforehand, which for today's
    ever-changing webpages seems feasible only for a small fixed page
    set.
 
 
    The stochastic defenses of \citet{wang2015walkie} and
    \citet{wtfpad2015} have less size overhead (33% and 64%
-   respectively, see \cite{sirinam2018deep}) than the previous
+   respectively \citep{sirinam2018deep}) than the previous
    deterministic general defenses. \citet{wtfpad2015} derives its
    basic mechanism from \citet{ShWa-Timing06}, which aims at generally
    hiding /that traffic occurs/, not just which website is visited. It
    works on the network level. \citet{wang2015walkie} changes the
    traffic patterns to half-duplex: It either only sends or only
-   receives, and modifies the Tor Browser Bundle source code. In 2017,
-   LLaMA was introduced by
+   receives, with added traffic. To do so, it modifies the Tor Browser
+   Bundle source code. In 2017, LLaMA was introduced by
    \citet{DBLP:journals/popets/CherubinHJ17}. They acknowledge the
    need for a client-side application-level defense. LLaMA delays
    traffic by a uniformly distributed delay. The authors provide LLaMA
@@ -781,8 +778,8 @@ of future work in section [[#future-work]].
   :END:
 #+INDEX: new defense
 #+INDEX: defenses!new defense
-#+INDEX: Selective Cover Traffic (SCT.)
-#+INDEX: defenses!Selective Cover Traffic (SCT.)
+#+INDEX: Selective Cover Traffic (SCT)
+#+INDEX: defenses!Selective Cover Traffic (SCT)
 \Gls{wf} has deanonymized Tor \citep{tor-design} under laboratory
 conditions \citep{panchenko}, and has continued to improve
 (\citet{panchenko2}, \citet{197185}, \citet{rimmerautomated},
@@ -792,7 +789,7 @@ prevent \gls{wf} (\cite{panchenko},
 mainline Tor \citep{tor-design}. This thesis presents a deployable
 defense. It uses domain-specific properties of HTTP traffic
 \citep{newtrafficmodel}. This is akin to \cite{newton2005preserving}
-who showed good results in obfuscating faces using eigenfaces.
+who show good results in obfuscating faces using eigenfaces.
 
 
 The question is whether this defense obfuscates effectively: Whether
@@ -962,10 +959,10 @@ simplicity, albeit at a high overhead.
 # see misc_gen_quantiles_numemb.py
 
 This is why HTTP \citep{rfc7230}-shaped cover traffic might prove more
-effective, as this would make it harder to separate cover and real
-traffic. In addition, it would work at the layer
-\citep[ch.1.7]{DBLP:books/daglib/0001977} where the problem
-originates, as it mimics the HTTP/HTML \citep{html5}-specific
+effective than chosing standard distributions: this would make it
+harder to separate cover and real traffic. In addition, it would work
+at the layer \citep[ch.1.7]{DBLP:books/daglib/0001977} where the
+problem originates, as it mimics the HTTP/HTML \citep{html5}-specific
 request-response interaction. Yet, World Wide Web \citep{rfc1945}
 traffic cannot be adequately modeled using standard distributions like
 normal or uniform \citep{crovella97}. This explains the many outliers
@@ -976,12 +973,12 @@ better fit web traffic. \cite{DBLP:conf/imc/IhmP11} repeatedly mention
 a /long tail/ of traffic. Several aspects of web traffic show
 subexponential distribution \citep{foss2011introduction} behavior,
 where high sampling values are not as unlikely as in, say, exponential
-or normal distributions. \citet{newtrafficmodel} found that
-log-normal distributions (truncated), as seen in Figure
-[[fig:distributions]] fit the sizes of both HTML and embedded resources
-best in their analysis. A truncated gamma function models the number
-of embedded objects. This model provides the cover traffic target
-sizes. It also sets the page's actual sizes, if they are not known.
+or normal distributions. \citet{newtrafficmodel} found that log-normal
+distributions (truncated), as seen in Figure [[fig:distributions]] fit the
+sizes of both HTML and embedded resources best in their analysis. A
+truncated gamma function models the number of embedded objects. This
+model provides the cover traffic target sizes. It also sets the page's
+actual sizes, if they are not known.
 ** Caching Sizes using Bloom Filters
    :PROPERTIES:
    :CUSTOM_ID: sub3-bloom
@@ -1028,10 +1025,10 @@ space than deterministic data structures: if an element is in the set,
 the filters accurately report this; if the element is not in the set,
 the Bloom filter might report that it is contained. The error rate
 depends on the number of included elements in relation to the Bloom
-filter's size. Bloom filters were developed for spell checking. This
-is similar to hash-coding, yet Bloom filters offer a tunable false
-positive error rate. They have numerous uses in network applications,
-e.g. in distributed caches, and network analysis
+filter's size. Bloom filters were developed for spell checking. They
+generalize on hash-coding, with a tunable false positive error
+rate. They have numerous uses in network applications, e.g. in
+distributed caches, and network analysis
 \citep{Broder02networkapplications}.
 
 
@@ -1112,12 +1109,12 @@ via ~htmlSizes.add("http://google.com/", 613)~ . Querying via
    :PROPERTIES:
    :CUSTOM_ID: model-config
    :END:
-#+INDEX:Selective Cover Traffic, light
-#+INDEX: SCT., light
-#+INDEX:Selective Cover Traffic, medium
-#+INDEX: SCT., medium
-#+INDEX:Selective Cover Traffic, heavy
-#+INDEX: SCT., heavy
+#+INDEX: Selective Cover Traffic, light
+#+INDEX: SCT, light
+#+INDEX: Selective Cover Traffic, medium
+#+INDEX: SCT, medium
+#+INDEX: Selective Cover Traffic, heavy
+#+INDEX: SCT, heavy
 
 These altogether enable the four configuration options: overhead
 factor, use of cached sizes, which target model to use, and whether to
@@ -1140,9 +1137,9 @@ send bursts after retrieval has ended.
 
 If the sizes for a URL are not known, the http model is a fallback both the cache and the target. While several scenarios were tested, the latter three options had little effect, except for very fresh caches (a week). For the sake of comparison, the defense is compared with up to three /factor/ values:
 
-- Selective Cover Traffic light (SCT. light) sets the factor to 20
-- Selective Cover Traffic medium (SCT. medium) sets the factor to 50 (the default)
-- Selective Cover Traffic heavy (SCT. heavy) sets the factor to 100
+- Selective Cover Traffic light (SCT light) sets the factor to 20
+- Selective Cover Traffic medium (SCT medium) sets the factor to 50 (the default)
+- Selective Cover Traffic heavy (SCT heavy) sets the factor to 100
 
 Users can select other values, depending on their personal security
 needs.
@@ -1184,16 +1181,17 @@ data first needs to be captured.
 [[./pictures/setup-unified.pdf]]
 
 To do this, real Tor web browsing should be closely reproduced. [[https://www.torproject.org/download/download-easy.html.en][The
-current Tor Browser Bundle]] downloads the web sites traces: it is based
-on the Firefox Browser, which provides the Marionette framework
-\citep{marionette} for instrumentation. To be able to evaluate the
-WTF-PAD \citep{wtfpad2015} defense[fn::original provided at
-[[https://bitbucket.org/mjuarezm/obfsproxy_wfpadtools]], this thesis'
-version at [[https://github.com/kreikenbaum/capture.git]]], all traffic is
-routed over a Tor Bridge \citep[sec.client~options]{tor-manual}, see
-Figure [[fig:setup]]. This also eases defense comparability. The sites to
-be downloaded come from Alexa's top million sites list[fn:: available
-at [[http://s3.amazonaws.com/alexa-static/top-1m.csv.zip]]] with duplicate
+current Tor Browser Bundle]] (up to version 7.5.6) downloads the web
+sites traces: it is based on the Firefox Browser, which provides the
+Marionette framework \citep{marionette} for instrumentation. To be
+able to evaluate the WTF-PAD \citep{wtfpad2015} defense[fn::original
+provided at [[https://bitbucket.org/mjuarezm/obfsproxy_wfpadtools]], this
+thesis' version at [[https://github.com/kreikenbaum/capture.git]]], all
+traffic is routed over a Tor Bridge
+\citep[sec.client~options]{tor-manual}, see Figure [[fig:setup]]. This
+also eases defense comparability. The sites to be downloaded come from
+Alexa's top million sites list[fn:: available at
+[[http://s3.amazonaws.com/alexa-static/top-1m.csv.zip]]] with duplicate
 sites and sites with high load error rate removed. This increases the
 classification ratio, that is: improves \gls{wf} accuracy. Making
 \gls{wf} easier is admissible in the evaluation of a \gls{wf}
@@ -1264,12 +1262,12 @@ re-implementation on defenseless traces.
 #+CAPTION[Closed-world validation]: Validation on 100 sites in a closed-world setup. The traces captured at Technische Universität (TU) Braunschweig show similar accuracy to \cite{panchenko2}. The traces captured using Google Cloud virtual machines show higher accuracy. A similar phenomenon was reported by \citet[sec.4.7]{ccs2014-critical}.
 #+NAME: tab:closed-world-validation
 #+ATTR_LATEX: :align |c||c | c|
-| Data source                   | Number of instances | Accuracy [%] |
-|-------------------------------+---------------------+--------------|
-| \cite{panchenko2}             |                  40 |        92.03 |
-| TU Braunschweig, using bridge |                  50 |        91.61 |
-| Google Cloud (/gcloud/)       |                  50 |        95.12 |
-| TU Braunschweig, direct       |                  50 |        86.99 |
+| Data source                             | Number of instances | Accuracy [%] |
+|-----------------------------------------+---------------------+--------------|
+| \cite{panchenko2}                       |                  40 |        92.03 |
+| TU Braunschweig (/mlsec/), using bridge |                  50 |        91.61 |
+| Google Cloud (/gcloud/)                 |                  50 |        95.12 |
+| TU Braunschweig (/mlsec/), direct       |                  50 |        86.99 |
 
 
 Recent studies (\citet{197185}
@@ -1297,7 +1295,7 @@ LLaMA-comparison does not use a bridge (see below).
 |-------------+-------+--------------+--------------+--------------+----------|
 | LLaMA       |  5055 | 2760 (54.6%) | 1038 (20.5%) | 1158 (22.9%) | 22d 16h  |
 | no defense  |  4930 | 4596 (91.9%) | 4560 (92.5%) | 4192 (85.0%) | 2d 2h    |
-| SCT. medium |  5000 | 4915 (98.3%) | 4716 (94.3%) | 4673 (93.5%) | 2d 13h   |
+| \gls{s} medium  |  5000 | 4915 (98.3%) | 4716 (94.3%) | 4673 (93.5%) | 2d 13h   |
 
 # # LLaMA:    "defense-client/nobridge--2018-07-17--100@50"
 # # disabled: "disabled/nobridge--2018-08-31--100@50" (broken!)
@@ -1311,15 +1309,15 @@ LLaMA-comparison does not use a bridge (see below).
 # s_or.trace_args = {'or_level': 2, 'remove_small': False, 'remove_timeout': True}
 # sum([len(t_or[x]) for x in t_or.keys()]) # 953, ..., 4897
 
-#+CAPTION[LLaMA evaluation results]: Results for evaluating LLaMA, compared to no defense, and \gls{s}. LLaMA only had 34 sites with at least 30 instances. The size and time overhead are for the \gls{wf} default setting, as described in the previous Table [[tab:llama-capture]].
+#+CAPTION[LLaMA evaluation results]: Results for evaluating LLaMA, compared to no defense, and \gls{s}. LLaMA only had 34 sites with at least 30 instances. The size and time \gls{oh} are for the \gls{wf} default setting, as described in the previous Table [[tab:llama-capture]].
 #+NAME: tab:llama-eval
 #+ATTR_LATEX: :align |l||r||r|r|r|
-| Scenario    | ~100 site accuracy [%] | ~34 site accuracy [%] | Size overhead [%] | Time overhead [%] |
-|             | <10>       |       <10> |       <10> |       <10> |
-|-------------+------------+------------+------------+------------|
-| LLaMA       | n.a.       |      33.19 |      23.03 |     845.82 |
-| no defense  | 86.99      |      93.10 |          0 |          0 |
-| SCT. medium | 35.54      |      52.55 |      83.88 |      45.76 |
+| Scenario       | ~100 site acc. [%] | ~34 site acc. [%] | Size \gls{oh} [%] | Time \gls{oh} [%] |
+|                | <10>       |       <10> |       <10> |       <10> |
+|----------------+------------+------------+------------+------------|
+| LLaMA          | n.a.       |      33.19 |      23.03 |     845.82 |
+| no defense     | 86.99      |      93.10 |          0 |          0 |
+| \gls{s} medium | 35.54      |      52.55 |      83.88 |      45.76 |
 
 
 # s_nodef_old = scenario.Scenario("disabled/nobridge--2018-08-03--100@50")
@@ -1374,18 +1372,18 @@ overhead on Alexa's top sites.
 #+CAPTION[Accuracy to overheads on 100 sites]: Comparison of LLaMA to this thesis's defense on 100 sites, captured at TU Braunschweig. The table is sorted by size increase. It also illustrates \gls{s}'s configurability.
 #+NAME: tab:ohs-vs-acc-100
 #+ATTR_LATEX: :align |l|l|r||r | r|r
-|                      |            |     <7> |     <7> |     <7> |
-|----------------------+------------+---------+---------+---------|
-| Scenario             |       Date | Accuracy | Size o.h. [%] | Time o.h. [%] |
-|----------------------+------------+---------+---------+---------|
-| no defense           | 2018-01-17 |    0.93 |    0.00 |    0.00 |
-| no defense           | 2018-02-02 |    0.92 |    0.00 |    0.00 |
-| no defense           | 2018-03-15 |    0.93 |    0.00 |    0.00 |
-| low overhead s.c.t.  | 2018-02-13 |    0.43 |   61.81 |   22.23 |
-| high overhead s.c.t. | 2018-03-28 |    0.26 |  142.22 |   28.16 |
-| high overhead s.c.t. | 2018-01-29 |    0.25 |  147.32 |   22.72 |
-| LLaMA-nodelay        | 2018-02-25 |    0.36 |  205.18 |   29.04 |
-|----------------------+------------+---------+---------+---------|
+|               |            |       <10> |       <10> |       <10> |
+|---------------+------------+------------+------------+------------|
+| Scenario      |       Date |   Accuracy | Size \gls{oh} [%] | Time \gls{oh} [%] |
+|---------------+------------+------------+------------+------------|
+| no defense    | 2018-01-17 |       0.93 |       0.00 |       0.00 |
+| no defense    | 2018-02-02 |       0.92 |       0.00 |       0.00 |
+| no defense    | 2018-03-15 |       0.93 |       0.00 |       0.00 |
+| \gls{s} light | 2018-02-13 |       0.43 |      61.81 |      22.23 |
+| \gls{s} heavy | 2018-03-28 |       0.26 |     142.22 |      28.16 |
+| \gls{s} heavy | 2018-01-29 |       0.25 |     147.32 |      22.72 |
+| LLaMA-nodelay | 2018-02-25 |       0.36 |     205.18 |      29.04 |
+|---------------+------------+------------+------------+------------|
 # totable = [r for r in results.list_all() if not r.open_world and hasattr(r.scenario, "date") and r.scenario.date > datetime.date(2018, 1, 1) and r.scenario.num_sites == 100]
 # totable.sort(key=lambda x: x.size_overhead)
 # print results.to_table(totable, fields_plus_names=(lambda r: [r.scenario.describe(), r.scenario.site, r.scenario.date, "{:.2f}".format(r.score), "{:.2f}".format(r.size_overhead), "{:.2f}".format(r.time_overhead)], ["Scenario","Site", "Date", "Accuracy", "Size o.h. [%]", "Time o.h. [%]"]))
@@ -1564,13 +1562,13 @@ WANG14 data set is extraordinary in its classification accuracy.
 #+CAPTION[Open-world scenarios]: 100-site scenarios for further inspection.
 #+NAME: tab:open-world-scenarios
 #+ATTR_LATEX: :align |l|l||r | r | r |
-|               |            |     <7> |     <7> |     <7> |
-| Scenario      |       Date | \open Accuracy \close | \open Size o.h. [%] \close | \open Time o.h. [%]  \close |
-|---------------+------------+---------+---------+---------|
-| no defense    | 2018-02-02 |    0.92 |    0.00 |    0.00 |
-| \gls{s} light | 2018-02-13 |    0.43 |   61.81 |   22.23 |
-| \gls{s} heavy | 2018-03-28 |    0.26 |  142.22 |   28.16 |
-| LLaMA-nodelay | 2018-02-25 |    0.36 |  205.18 |   29.04 |
+|               |            |         <12> |         <12> |         <12> |
+| Scenario      |       Date | \open Accuracy \close | \open Size \gls{oh} [%] \close | \open Time \gls{oh} [%]  \close |
+|---------------+------------+--------------+--------------+--------------|
+| no defense    | 2018-02-02 |         0.92 |         0.00 |         0.00 |
+| \gls{s} light | 2018-02-13 |         0.43 |        61.81 |        22.23 |
+| \gls{s} heavy | 2018-03-28 |         0.26 |       142.22 |        28.16 |
+| LLaMA-nodelay | 2018-02-25 |         0.36 |       205.18 |        29.04 |
 To evaluate \gls{s}, and to compare and contrast to LLaMA
 \citep{DBLP:journals/popets/CherubinHJ17}, defenseless captures were
 compared and contrasted to those protected by LLaMA-nodelay and two
