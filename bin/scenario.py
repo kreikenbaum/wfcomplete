@@ -17,6 +17,7 @@ import logging
 import os
 import random
 import re
+import subprocess
 
 import numpy as np
 
@@ -362,6 +363,38 @@ class Scenario(object):
             and not a == 'traces'
             and not callable(getattr(self, a)))}
 
+    def capture_success(self):
+        '''print how successful the capture was'''
+        s = Scenario(self.path)
+        lsproc = subprocess.Popen(
+            "cat *json | wc -l",
+            cwd=os.path.join(DIR, s.path),
+            stdout=subprocess.PIPE,
+            shell=True)
+        total_num = int(lsproc.stdout.next())
+        print("total: {}".format(total_num))
+        s = Scenario(self.path)
+        s.trace_args = {
+            'or_level': 0, 'remove_small': False, 'remove_timeout': False}
+        s._stats_helper("text loaded", total_num)
+        s = Scenario(self.path)
+        s.trace_args = {
+            'or_level': 0, 'remove_small': False, 'remove_timeout': True}
+        s._stats_helper("fully loaded", total_num)
+        s = Scenario(self.path)
+        s.trace_args = {
+            'or_level': 1, 'remove_small': True, 'remove_timeout': False}
+        s._stats_helper("or-level 1", total_num)
+        s = Scenario(self.path)
+        s._stats_helper("default", total_num)
+        print("duration: {}".format(s.duration))
+
+    def _stats_helper(self, name, total_num):
+        '''print single scenario's count'''
+        t = self.get_traces()
+        count = sum([len(t[x]) for x in t.keys()])
+        print("{}: {:d} ({:.1f}%)".format(
+            name, count, 100. * count / total_num))
 
 def _prepend_if_ends(whole, *parts):
     '''if whole ends with part, prepend it (modulo "-")
