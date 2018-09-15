@@ -1284,18 +1284,20 @@ method of evaluating the extension. The kNN-attack by
 literature. The traces captured at TU Braunschweig with a direct
 connection, without a Tor bridge, yielded less accuracy. This is
 presented for the sake of completeness, and because the
-LLaMA-comparison does not use a bridge (see below).
+LLaMA-comparison does not use a bridge (see
+below). \citet{panchenko2}'s accuracy results could be reproduced on
+the traces captured with bridge with the re-implementation.
 
 
 #+CAPTION[LLaMA capture results]: Results for capturing traces using LLaMA, as compared to no defense, and \gls{s}. This compares all captured traces to those where text was successfully loaded, to those that completed loading. \gls{wf} defaults are keeping timeouts, and \cite[sec.V.B]{panchenko2}'s outlier removal, with removal of small ($< 30$) sites.
 #+NAME: tab:llama-capture
 #+ATTR_LATEX: :align |l||r|r|r|r|r|
-| Scenario    | captured | text loaded  | fully loaded | \gls{wf} default | duration |
-|             |   <5> | <12>         | <12>         | <12>         | <8>      |
-|-------------+-------+--------------+--------------+--------------+----------|
-| LLaMA       |  5055 | 2760 (54.6%) | 1038 (20.5%) | 1158 (22.9%) | 22d 16h  |
-| no defense  |  4930 | 4596 (91.9%) | 4560 (92.5%) | 4192 (85.0%) | 2d 2h    |
-| \gls{s} medium  |  5000 | 4915 (98.3%) | 4716 (94.3%) | 4673 (93.5%) | 2d 13h   |
+| Scenario       | captured | text loaded | fully loaded | \gls{wf} default | duration |
+|                |   <5> | <10>       | <10>       | <10>       | <8>      |
+|----------------+-------+------------+------------+------------+----------|
+| LLaMA          |  5055 | 2760 (54.6%) | 1038 (20.5%) | 1158 (22.9%) | 22d 16h  |
+| no defense     |  4930 | 4596 (91.9%) | 4560 (92.5%) | 4192 (85.0%) | 2d 2h    |
+| \gls{s} medium |  5000 | 4915 (98.3%) | 4716 (94.3%) | 4673 (93.5%) | 2d 13h   |
 
 # # LLaMA:    "defense-client/nobridge--2018-07-17--100@50"
 # # disabled: "disabled/nobridge--2018-08-31--100@50" (broken!)
@@ -1308,6 +1310,27 @@ LLaMA-comparison does not use a bridge (see below).
 # # w/ outlier removal (or-lvl 2)
 # s_or.trace_args = {'or_level': 2, 'remove_small': False, 'remove_timeout': True}
 # sum([len(t_or[x]) for x in t_or.keys()]) # 953, ..., 4897
+
+Table [[tab:llama-capture]] compares the captured trace statistics for
+defenseless traces to \citet{DBLP:journals/popets/CherubinHJ17}'s
+LLaMA's traces, and this thesis' defense. It clearly illustrates the
+effects of LLaMA's delaying action. For one, the duration to capture
+50 traces each for 100 web pages increased from 2 days 2 hours to 22
+days 16 hours. This is also illustrated by the loading statistics. At
+the timeout of 4 1/2 minutes, approximately half of all pages had not
+loaded the HTML text. Only approximately one fifth finished loading
+the whole content. In the default \gls{ml} setting with outlier
+removal \cite[sec.V.B]{panchenko2} and removal of sites with less than
+30 instances (keeping the text-only loads) due to cross-validation
+limitations, only 22.9% of traces were usable. If no outlier removal
+was performed, there were 42 remaining sites with at least 30
+instances for \gls{ml}. These are evidently easier to classify than
+the whole set of 100 sites. The time overhead of all of LLaMA's traces
+which loaded at least the text is 881.83%. Reduced to the fully loaded
+traces, the time overhead compared to no defense is 228.98%. The
+slightly higher trace load rates of \gls{s} as compared to no defense
+are conceivably due to circuit performance variations in Tor.
+
 
 #+CAPTION[LLaMA evaluation results]: Results for evaluating LLaMA, compared to no defense, and \gls{s}. LLaMA only had 34 sites with at least 30 instances. The size and time \gls{oh} are for the \gls{wf} default setting, as described in the previous Table [[tab:llama-capture]].
 #+NAME: tab:llama-eval
@@ -1330,31 +1353,16 @@ LLaMA-comparison does not use a bridge (see below).
 # s34 = set(l34.src['result']['sites'])
 # s100 - s34 # len: 66
 
-Table [[tab:llama-capture]] compares the captured trace statistics for
-defenseless traces to \citet{DBLP:journals/popets/CherubinHJ17}'s
-LLaMA's traces, and this thesis' defense. It clearly illustrates the
-effects of LLaMA's delaying action. For one, the duration to capture
-50 traces each for 100 web pages increased from 2 days 2 hours to 22
-days 16 hours. This is also illustrated by the loading statistics. At
-the timeout of 4 1/2 minutes, approximately half of all pages had not
-loaded the HTML text. Only approximately one fifth finished loading
-the whole content. In the default \gls{ml} setting with outlier
-removal \cite[sec.V.B]{panchenko2} and removal of sites with less than
-30 instances (keeping the text-only loads) due to cross-validation
-limitations, only 22.9% of traces were usable. If no outlier removal
-was performed, there were 42 remaining sites with at least 30
-instances for \gls{ml}. These are evidently easier to classify than
-the whole set of 100 sites. The time overhead of all of LLaMA's traces
-which loaded at least the text is 881.83%. Reduced to the fully loaded
-traces, the time overhead compared to no defense is 228.98%.
-
-
 The classification results in Table [[tab:llama-eval]] compare CUMUL's
 \citep{panchenko2} results on these captures. While LLaMA decreases
 accuracy more than \gls{s}, keep in mind that this also compared 1722
-(versus 1038) non-completely loaded pages. If these were removed as
-well, no sites remained for analysis after outlier removal and removal
-of small sites.
+non-completely loaded pages, versus 1038 completely loaded. Obviously,
+the text-loaded traces are different, as they show less object
+requests/response pairs. If the non-complete-load-traces were removed
+as well, no sites remained for analysis after outlier removal and
+removal of small sites. As well, a time overhead of 846% (out of the
+half of traces that was loaded at all) might encumber Tor's usability
+design goal \citep[ch.3]{tor2014}.
 
 
 This obvious problem with LLaMA could stem from the difference in www
@@ -1394,11 +1402,11 @@ code[fn::gratefully provided by Marc Juarez by email, also available
 at \citet{LLaMA}] was edited (a constant was changed) to disable the
 delay. This version is called /LLaMA-nodelay/. Table
 [[tab:ohs-vs-acc-100]] compares this modified version of LLaMA to this
-thesis' selective cover traffic, and to no defense. This thesis'
-defense offers both configurability and a lower size overhead. Both
-LLaMA-nodelay and \gls{s} have negligible time overhead. Even compared
-to non-delayed LLaMA, \gls{s} offers similar accuracy/size overhead
-relationship for a much lower time overhead.
+thesis' \gls{s}, and to no defense. This thesis' defense offers both
+configurability and a lower size overhead. Both LLaMA-nodelay and
+\gls{s} have negligible time overhead. Even compared to non-delayed
+LLaMA, \gls{s} offers similar accuracy/size overhead relationship for
+a much lower time overhead.
 
 
 
