@@ -1145,7 +1145,7 @@ Users can select other values, depending on their personal security
 needs.
 ** more                                                             :
        - link to main bloom-sort, create custom-id there
-* Evaluation
+* TODO Evaluation
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
   :END:
@@ -1293,11 +1293,12 @@ the traces captured with bridge with the re-implementation.
 #+NAME: tab:llama-capture
 #+ATTR_LATEX: :align |l||r|r|r|r|r|
 | Scenario       | captured | text loaded | fully loaded | \gls{wf} default | duration |
-|                |   <5> | <10>       | <10>       | <10>       | <8>      |
-|----------------+-------+------------+------------+------------+----------|
+|                |   <5> | <11>        | <11>        | <11>        | <8>      |
+|----------------+-------+-------------+-------------+-------------+----------|
 | LLaMA          |  5055 | 2760 (54.6%) | 1038 (20.5%) | 1158 (22.9%) | 22d 16h  |
 | no defense     |  4930 | 4596 (91.9%) | 4560 (92.5%) | 4192 (85.0%) | 2d 2h    |
 | \gls{s} medium |  5000 | 4915 (98.3%) | 4716 (94.3%) | 4673 (93.5%) | 2d 13h   |
+| \gls{s} light  |  5000 | 4916 (98.3%) | 4700 (94.0%) | 4601 (92.0%) | 2d 13h   |
 
 # # LLaMA:    "defense-client/nobridge--2018-07-17--100@50"
 # # disabled: "disabled/nobridge--2018-08-31--100@50" (broken!)
@@ -1332,15 +1333,16 @@ slightly higher trace load rates of \gls{s} as compared to no defense
 are conceivably due to circuit performance variations in Tor.
 
 
-#+CAPTION[LLaMA evaluation results]: Results for evaluating LLaMA, compared to no defense, and \gls{s}. LLaMA only had 34 sites with at least 30 instances. The size and time \gls{oh} are for the \gls{wf} default setting, as described in the previous Table [[tab:llama-capture]].
+#+CAPTION[LLaMA evaluation results]: Results for evaluating LLaMA, compared to no defense, and \gls{s}. LLaMA only had 34 sites with at least 30 instances. The size and time \gls{oh} are for the \gls{wf} default setting, as described in the previous Table [[tab:llama-capture]]. Size and time overhead are for ~34 sites for comparability to LLaMA, the 100 sites values are similar.
 #+NAME: tab:llama-eval
 #+ATTR_LATEX: :align |l||r||r|r|r|
 | Scenario       | ~100 site acc. [%] | ~34 site acc. [%] | Size \gls{oh} [%] | Time \gls{oh} [%] |
-|                | <10>       |       <10> |       <10> |       <10> |
+|                |       <10> |       <10> |       <10> |       <10> |
 |----------------+------------+------------+------------+------------|
-| LLaMA          | n.a.       |      33.19 |      23.03 |     845.82 |
-| no defense     | 86.99      |      93.10 |          0 |          0 |
-| \gls{s} medium | 35.54      |      52.55 |      83.88 |      45.76 |
+| LLaMA          |       n.a. |      33.19 |      23.03 |     845.82 |
+| no defense     |      86.99 |      93.10 |          0 |          0 |
+| \gls{s} medium |      35.54 |      52.55 |      88.25 |      26.82 |
+| \gls{s} light  |      42.50 |      57.16 |      66.57 |      30.75 |
 
 
 # s_nodef_old = scenario.Scenario("disabled/nobridge--2018-08-03--100@50")
@@ -1352,6 +1354,7 @@ are conceivably due to circuit performance variations in Tor.
 # s100 = set(l100.src['result']['sites'])
 # s34 = set(l34.src['result']['sites'])
 # s100 - s34 # len: 66
+# use scenario.size/time_increase(s_nodef_old.get_traces(), s_....get_traces()
 
 The classification results in Table [[tab:llama-eval]] compare CUMUL's
 \citep{panchenko2} results on these captures. While LLaMA decreases
@@ -1362,7 +1365,8 @@ requests/response pairs. If the non-complete-load-traces were removed
 as well, no sites remained for analysis after outlier removal and
 removal of small sites. As well, a time overhead of 846% (out of the
 half of traces that was loaded at all) might encumber Tor's usability
-design goal \citep[ch.3]{tor2014}.
+design goal \citep[ch.3]{tor2014}. The variability in the time
+overhead could again be due to Tor circuit and web site changes.
 
 
 This obvious problem with LLaMA could stem from the difference in www
@@ -1377,7 +1381,7 @@ overhead on Alexa's top sites.
 
 
 # n{2}{2}|n{3}{2}|n{4}{2}|
-#+CAPTION[Accuracy to overheads on 100 sites]: Comparison of LLaMA to this thesis's defense on 100 sites, captured at TU Braunschweig. The table is sorted by size increase. It also illustrates \gls{s}'s configurability.
+#+CAPTION[Accuracy to overheads on 100 sites]: Comparison of LLaMA-nodelay to this thesis's defense on 100 sites, captured at TU Braunschweig, using the bridge. The table is sorted by size increase. It also illustrates \gls{s}'s configurability.
 #+NAME: tab:ohs-vs-acc-100
 #+ATTR_LATEX: :align |l|l|r||r | r|r
 |               |            |       <10> |       <10> |       <10> |
