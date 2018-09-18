@@ -433,7 +433,7 @@ class TestScenario(unittest.TestCase):
         self.assertEqual(datetime.date(2016, 11, 4),
                          scenario.Scenario('0.22/10aI--2016-11-04--100@50')
                          .date)
-        self.assertEqual('new defense',
+        self.assertEqual('SCT',
                          scenario.Scenario('./0.22/10aI--2016-11-04--100@50')
                          .name)
         self.assertEqual(datetime.date(2016, 7, 5),
@@ -442,7 +442,7 @@ class TestScenario(unittest.TestCase):
                          scenario.Scenario('wtf-pad/bridge--2016-07-05').name)
         self.assertEqual(
             '5', scenario.Scenario(u'simple2/5--2016-09-23--100').setting)
-        self.assertEqual('new defense',
+        self.assertEqual('SCT',
                          scenario.Scenario('0.21/2016-06-30').name)
         self.assertEqual(
             '0.21', scenario.Scenario('0.21/2016-06-30').version)

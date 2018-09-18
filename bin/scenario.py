@@ -29,7 +29,7 @@ from capture import utils
 
 INT_REGEXP = re.compile("-?([+-]?[0-9]+.*)")
 
-NEW_DEFENSE = "new defense"
+NEW_DEFENSE = "SCT"
 
 DIR = os.path.join(os.path.expanduser('~'), 'da', 'git', 'data')
 if os.uname()[1] == config.OLD_HOST:
@@ -149,7 +149,7 @@ class Scenario(object):
             return self.num_instances * self.num_sites
 
     def __str__(self):
-        return '{} on {}'.format(self.name, self.date)
+        return '{} on {}'.format(self.describe(), self.date)
 
     def __repr__(self):
         return '<scenario.Scenario("{}")>'.format(self.path)
@@ -207,7 +207,7 @@ class Scenario(object):
         try:
             factor = self.status['addon']['factor']
             factor = 50 if factor is None else factor
-            assert fromsettings.startswith(factor)
+            assert int(factor) == self.factor2
         except TypeError:
             pass
         return fromsettings
@@ -223,8 +223,21 @@ class Scenario(object):
         '''@return name if not new defense, else add config'''
         if not self.config:
             return self.name
+        if self.factor2 == 20:
+            add = "light"
+        elif self.factor2 == 50:
+            add = "medium"
+        elif self.factor2 == 100:
+            add = "heavy"
         else:
-            return "{}@{}".format(self.name, self.config)
+            logging.debug("%s from %s", self.factor2, self.setting)
+            add = self.config
+        return "{} {}".format(self.name, add)
+
+    @property
+    def factor2(self):
+        '''@return the factor from the settings (if new defense), else ""'''
+        return int(filter(unicode.isdigit, self.setting))
 
     # # todo: codup counter.py?
     def get_features_cumul(self, current_sites=True):
