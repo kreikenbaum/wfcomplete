@@ -5,6 +5,7 @@
 #+TODO: TODO | PENDING
 \listoffigures
 \listoftables
+\input{diplomarbeit.ind}
 \printnoidxglossaries
 * Configuration							    :ARCHIVE:
 #+BIBLIOGRAPHY: master plain option:-d
@@ -28,9 +29,10 @@
 # glossaries after hyperref
 #+LATEX_HEADER: \usepackage{glossaries}
 #+LATEX_HEADER: \setacronymstyle{long-short}
+#+LATEX_HEADER: \newacronym{auc}{AUC}{area under the ROC curve}
 #+LATEX_HEADER: \newacronym{ml}{ML}{machine learning}
 #+LATEX_HEADER: \newacronym{oh}{OH}{overhead}
-#+LATEX_HEADER: \newacronym{rocc}{ROC-curve}{receiver operating characteristic curve}
+#+LATEX_HEADER: \newacronym{roc}{ROC}{receiver operating characteristic}
 #+LATEX_HEADER: \newacronym{s}{SCT}{Selective Cover Traffic}
 #+LATEX_HEADER: \newacronym{fn}{FN}{false negatives}
 #+LATEX_HEADER: \newacronym{fp}{FP}{false positives}
@@ -1149,16 +1151,16 @@ needs.
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
   :END:
-This work proposes a new defense against \gls{wf}, which builds upon
-the HTTP traffic model \citep{newtrafficmodel} for efficient
-obfuscation of world-wide-web \citep{rfc1945} traffic. The complexity
-of HTTP traffic renders the theoretical analysis of \gls{wf}
-difficult, hence the prevalent technique for assessing the performance
-of a \gls{wf} defense is an empirical evaluation.
+This work proposes \gls{s}, a new defense against \gls{wf}, which
+builds upon the HTTP traffic model \citep{newtrafficmodel} for
+efficient obfuscation of world-wide-web \citep{rfc1945} traffic. The
+complexity of HTTP traffic renders the theoretical analysis of
+\gls{wf} difficult, hence the prevalent technique for assessing the
+performance of a \gls{wf} defense is an empirical evaluation.
 
 In empirical evaluation, traffic data needs to first be captured and then
 analyzed. \citet{effective2014} and \citet{panchenko2} provide their
-capture data, but it does not contain the new defense's traces, so new
+capture data, but it does not contain \gls{s}'s traces, so new
 traffic data needed to be collected. The collection process is
 described in section [[#sub4-setup]]. Section [[#sub4-closed]] first validates
 the attack re-implementation, then evaluates \gls{s}, and
@@ -1598,7 +1600,15 @@ high numbers of background sizes.
 # sent to daniel 2018-07-12
 
 
-Figure [[fig:rocs-defenses-100]] compares the defenses using a \gls{rocc}
+Figure [[fig:rocs-defenses-100]] compares the defenses using a
+\gls{roc}-curve with 100 pages. This already shows \gls{s}'s
+configurability, and the effect of its overhead configuration: the
+light-overhead version obfuscates traffic less than the heavy-overhead
+version. LLaMA \citep{DBLP:journals/popets/CherubinHJ17} is close to
+\gls{s} heavy in its obfuscation (for considerably higher size
+overhead). As all curves are close to the diagonal --- random guessing
+--- the world size of \citet[Fig.~11]{wtfpad2015} was used in the next
+Figure.
 
 
 #+CAPTION[Receiver operating characteristic (ROC)-curves for 50 sites]: Receiver operating characteristic (ROC)-curves that compare \gls{s} with no defense and LLaMA \citep{DBLP:journals/popets/CherubinHJ17}. There are 50 monitored pages in the foreground-set, the size of the world/background set is 5,000 pages.
@@ -1608,20 +1618,18 @@ Figure [[fig:rocs-defenses-100]] compares the defenses using a \gls{rocc}
 # rocfig = mplot._init_roc("Receiver operating characteristic (ROC) curves")
 # for r in [r for r in results.list_all() if 40 < r.size < 60 and r.open_world['binary'] and r.background_size == "5000"]:
 #     mplot.roc_helper_open_world_binary(r, fig=rocfig, dot_position=None)
-The receiver operating characteristic (ROC-) curve in Figure
-[[fig:rocs-defenses]] illustrates the classification strictness
-trade-off. As all curves are close to the diagonal --- random guessing
---- the world size of \citet[Fig.~11]{wtfpad2015} was used: the curves
-were computed for 50 sites and 5000 background instances. The curve of
-defenseless data has a similar AUC (0.92) to their reports (0.82). The
-difference could be due to CUMUL's \citep{panchenko2} increased
-accuracy as compared to KNNs \citep{effective2014}. \Gls{s} light at
-62% overhead visibly decreases classification efficacy. Both
-LLaMA-nodelay with 205% overhead and \gls{s} heavy at 142% overhead
-decrease classification to a level similar to random guessing (AUC
-0.53 and 0.49, respectively).
-
-
+The \gls{roc}-curve in Figure [[fig:rocs-defenses]] illustrates the
+classification strictness trade-off on 50 sites with an open world
+size of 5000 background traces. This is the same size configuration
+that \citet[Fig.~11]{wtfpad2015} used for their \gls{roc}-curve
+comparison. The curve of defenseless data has a similar AUC (0.92) to
+their reports (0.82). The difference could be due to CUMUL's
+\citep{panchenko2} increased accuracy as compared to KNNs
+\citep{effective2014}. \Gls{s} light at 62% overhead visibly decreases
+classification efficacy. Both LLaMA-nodelay with 205% overhead and
+\gls{s} heavy at 142% overhead decrease open-world classification
+accuracy to a level similar to random guessing (AUC 0.53 and 0.49,
+respectively).
 
 
 #+BEGIN_EXPORT latex
@@ -1643,9 +1651,9 @@ and foreground-instances in Figure \ref{fig:confusion-20-all4}. The
 defenseless result has very few classification errors. As with the
 previous analysis results, \gls{s} light creates a high number of
 mis-classifications as to already make \gls{wf}'s success
-doubtable. Both the high-overhead new-defense at 2018-03-28 and
-LLaMA-nodelay \citep{DBLP:journals/popets/CherubinHJ17} decrease
-correct classification and show comparable results.
+doubtable. Both \gls{s} heavy at 2018-03-28 and LLaMA-nodelay
+\citep{DBLP:journals/popets/CherubinHJ17} decrease correct
+classification and show comparable results.
 
 ** Summary
    :PROPERTIES:
@@ -1825,7 +1833,7 @@ differs from how it should be used, see next section.
 #+ATTR_LATEX: :environment longtable
 | <20>                 |            |  <4> |    <6> |     <7> | <3> | <6>    |
 |----------------------+------------+------+--------+---------+-----+--------|
-| Scenario             |       Date | Acc. | S. o.h. [%] | T. o.h. [%] | OR-lvl. | small removed |
+| Scenario             |       Date | Acc. | S. \gls{oh} [%]  | T. \gls{oh} [%] | OR-lvl. | small removed |
 |----------------------+------------+------+--------+---------+-----+--------|
 | wtf-pad              | 2016-07-05 | 0.95 |   9.74 |    6.49 |   2 | True   |
 | wtf-pad              | 2016-07-05 | 0.97 |   9.74 |    6.49 |   2 | True   |
@@ -3913,5 +3921,4 @@ how to do this.
 * After Appendices: Bibliography and Index
 \bibliography{docs/master}
 \bibliographystyle{apalike}
-\input{diplomarbeit.ind}
 * END: /above/ this headline are INDEX, and BIBLIOGRAPHY, etc       :ARCHIVE:
