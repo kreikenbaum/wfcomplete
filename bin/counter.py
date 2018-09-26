@@ -1068,7 +1068,7 @@ def p_or_median(counter_list):
             if x.total_bytes_in >= 0.2 * med and x.total_bytes_in <= 1.8 * med]
 
 
-def p_or_quantiles(counter_list):
+def p_or_quantiles(counter_list, domain=""):
     '''remove if total_in < (q1-1.5 * (q3-q1))
     or total_in > (q3+1.5 * (q3-q1)
     >>> [x.total_bytes_in/600 for x in p_or_quantiles(map(_test, [0, 2, 2, 2, 2, 2, 2, 4]))]
@@ -1077,6 +1077,7 @@ def p_or_quantiles(counter_list):
     counter_total_in = [counter.total_bytes_in for counter in counter_list]
     q1 = np.percentile(counter_total_in, 25)
     q3 = np.percentile(counter_total_in, 75)
+    logging.debug('{"domain": %s, "percentiles": [%f, %f]}', domain, q1, q3)
 
     out = []
     for counter in counter_list:
@@ -1100,26 +1101,26 @@ def outlier_removal(counter_dict, level=2, remove_timeout=False):
 
     panchenko's levels:: 1: minimal, 2: quantile-based, 3: median'''
     out = {}
-    for (k, counter_list) in counter_dict.iteritems():
+    for (domain, counter_list) in counter_dict.iteritems():
         try:
-            out[k] = p_or_tiny(counter_list[:])
+            out[domain] = p_or_tiny(counter_list[:])
             if remove_timeout:
-                out[k] = p_or_toolong(out[k])
+                out[domain] = p_or_toolong(out[domain])
             # git commit d785e461978211b3f15a6c32f5ad399858ce8a1b still has this
             # if level == -1:
-            #     out[k] = p_or_test(out[k])
+            #     out[domain] = p_or_test(out[domain])
             if level >= 3:
-                out[k] = p_or_median(out[k])
+                out[domain] = p_or_median(out[domain])
             if level >= 2:
-                out[k] = p_or_quantiles(out[k])
-            if not out[k]:
+                out[domain] = p_or_quantiles(out[domain], domain)
+            if not out[domain]:
                 raise ValueError
             logging.debug('%15s: outlier_removal(%d) removed %d from %d',
-                          k, level, (len(counter_list) - len(out[k])),
+                          domain, level, (len(counter_list) - len(out[domain])),
                           len(counter_list))
         except (ValueError, IndexError):  # somewhere, list got to []
-            logging.warn('%s discarded in outlier removal', k)
-            del out[k]
+            logging.warn('%s discarded in outlier removal', domain)
+            del out[domain]
     return out
 
 doctest.testmod(optionflags=doctest.ELLIPSIS)
