@@ -1121,24 +1121,42 @@
          a website fingerprinting attack will perform in general.
     6. [@6] Attack on Hardened Defenses
        - Table 1: Attack comparison under various website
-         fingerprinting defenses.
-| Defenses         | This work   | k-NN        | CUMUL       | Bandwidth overhead (%) |
-|                  |             |             |             | <10>       |
-|------------------+-------------+-------------+-------------+------------|
-| No defense       | 0.91 ± 0.01 | 0.91 ± 0.03 | 0.91 ± 0.04 | 0          |
-| Morphing         | 0.90 ±0.03  | 0.82 ± 0.06 | 0.75 ± 0.07 | 50 ± 10    |
-| Decoy pages      | 0.37 ±0.01  | 0.30 ± 0.06 | 0.21 ± 0.02 | 130 ± 20   |
-| Adaptive Padding | 0.30 ±0.04  | 0.19 ± 0.03 | 0.16 ± 0.03 | 54         |
-| BuFLO            | 0.21 ±0.02  | 0.10 ± 0.03 | 0.08 ± 0.03 | 190 ± 20   |
-| Tamaraw          | 0.10 ±0.01  | 0.09 ± 0.02 | 0.08 ± 0.03 | 96 ± 9     |
+         fingerprinting defenses. [WANG14]
+         | Defenses         | This work   | k-NN        | CUMUL       | Bandwidth overhead (%) |
+         |                  |             |             |             | <10>       |
+         |------------------+-------------+-------------+-------------+------------|
+         | No defense       | 0.91 ± 0.01 | 0.91 ± 0.03 | 0.91 ± 0.04 | 0          |
+         | Morphing         | 0.90 ±0.03  | 0.82 ± 0.06 | 0.75 ± 0.07 | 50 ± 10    |
+         | Decoy pages      | 0.37 ±0.01  | 0.30 ± 0.06 | 0.21 ± 0.02 | 130 ± 20   |
+         | Adaptive Padding | 0.30 ±0.04  | 0.19 ± 0.03 | 0.16 ± 0.03 | 54         |
+         | BuFLO            | 0.21 ±0.02  | 0.10 ± 0.03 | 0.08 ± 0.03 | 190 ± 20   |
+         | Tamaraw          | 0.10 ±0.01  | 0.09 ± 0.02 | 0.08 ± 0.03 | 96 ± 9     |
        - Table 1 shows the performance of k-fingerprinting against
          k-NN and CUMUL under various website fingerprinting defenses
          in a closed-world setting.
     8. [@8] Attack evaluation on DS_{Tor}
+
+       a monitored set of the top 55 Alexa web pages, with 100
+       instances for each web page.
        1. Alexa web pages monitored set
           - an attacker needs to train on less than 10% of the entire
             dataset to have nearly 70% confidence that classifier was
             correct when it claims to have detected a monitored page.
+          - Table 3: Attack results on top Alexa sites for k=2 while
+            varying the number of unmonitored training pages. [DFTOR]
+            | Training pages | TPR         | FPR           |  BDR |
+            |           2000 | 0.93 ± 0.03 | 0.032 ± 0.010 | 0.33 |
+            |           4000 | 0.93 ± 0.01 | 0.018 ± 0.007 | 0.47 |
+            |           8000 | 0.92 ± 0.01 | 0.008 ± 0.002 | 0.67 |
+            |          16000 | 0.91 ± 0.02 | 0.003 ± 0.001 | 0.86 |
+       2. Hidden services monitored set
+          - Table 4: Attack results on Tor hidden services for k=2
+            while varying the number of unmonitored training pages.
+            | Training pages | TPR         | FPR             |  BDR |
+            |           2000 | 0.82 ± 0.03 | 0.0020 ± 0.0015 | 0.72 |
+            |           4000 | 0.82 ± 0.04 | 0.0007 ± 0.0006 | 0.88 |
+            |           8000 | 0.82 ± 0.02 | 0.0002 ± 0.0001 | 0.96 |
+            |          16000 | 0.81 ± 0.02 | 0.0002 ± 0.0002 | 0.97 |
 *** questions
 **** TODO [#E]                                            :ARP:
       "training 1500 unmonitored web pages leads to a 98.3% chance the
@@ -1152,8 +1170,7 @@
        claims to have detected a monitored page.
 ***** is BDR the right metric???
 
-*** ref [[file:master.bib::197185][Hayes & Danezis 2016]]
-**** older [[file:master.bib::kfingerprint][Hayes & Danezis]]
+*** ref [[file:master.bib::hayes197185][Hayes & Danezis 2016]] (older: [[file:master.bib::kfingerprint][Hayes & Danezis]])
 ** [[../sw/js/jasondavies_bloomfilter.js%20%C2%B7%20GitHub.html][Davies - bloomfilter.js]]
 *** summary
     - bloom filter using Fowler–Noll–Vo hash function
@@ -4983,7 +5000,7 @@ Vorläufiger Zeitplan
     - tf–idf is the product of two statistics, term frequency and
       inverse document frequency. Various ways for determining the
       exact values of both statistics exist.
-** TODO [#B] [[./2016_ML1/][Kloft - ML 1]]
+** TODO [#E] [[./2016_ML1/][Kloft - ML 1]]
 *** Lesson 1
     - teaser
     - defs
@@ -5275,7 +5292,21 @@ Vorläufiger Zeitplan
      - np-hard
      - svm: replace 0-1 loss with convex hinge loss
 **** More loss functions
-** TODO [#D] [[file:/home/uni/da/git/docs/thesishelp/aristolo-ebook-01-Machs-68-techniken-gegen-aufschieberei-text-1.pdf][Gerlach - Machs-68-techniken-gegen-aufschieberei]]
+     | loss        | l(t)             | algorithm           |
+     |-------------+------------------+---------------------|
+     | 0-1         | sign(-t)         | n.a.                |
+     | hinge       | max(0, 1-t)      | SVM                 |
+     | exponential | exp(-t)          | AdaBoost            |
+     | logistic    | log(1 + exp(-t)) | logistic regression |
+     - all three are convex upper bounds on 0-1 loss
+**** Definition: loss function
+     l: R \to R+, t |\to l(t) is a *loss function*
+     if l(0) = 1 and lim_{t \to \infty} l(t) = 0.
+** TODO [#F] [[~/.webkeep/1801.02265..deep_wf.pdf][Sirinam - Deep Fingerprinting: Undermining Website Fingerprinting Defenses with Deep Learning]]
+** TODO (ch2+3) [#J] [[file:/home/uni/da/git/docs/thesishelp/aristolo-100-thesis-masterplan.pdf][Gerlach - thesis-masterplan]]
+   - phasen 1--8
+   - jetzt: 3: Kapitel 2 und 3 schreiben, link:
+** TODO [#I] [[file:/home/uni/da/git/docs/thesishelp/aristolo-ebook-01-Machs-68-techniken-gegen-aufschieberei-text-1.pdf][Gerlach - Machs-68-techniken-gegen-aufschieberei]]
 *** summary
     1. erledige sofort, spar andere tipps
     2. priorisiere. falls unwichtig, weg
@@ -5302,45 +5333,70 @@ Vorläufiger Zeitplan
     23. schreibe gruende, warum nicht, lache darueber, machs
     24. stell dir vor, zum psychologen zu gehen wegen solcher sachen, machs
     25. power song, dann machs
-** TODO [#G] [[./f156cdc8a479aa994eae875a0860d663d317.pdf][Schölkopf - Learning with Kernels (slides)]]
-** TODO [#C] [[~/.webkeep/1801.02265..deep_wf.pdf][Sirinam - Deep Fingerprinting: Undermining Website Fingerprinting Defenses with Deep Learning]]
-** TODO (ch2+3) [#D] [[file:/home/uni/da/git/docs/thesishelp/aristolo-100-thesis-masterplan.pdf][Gerlach - thesis-masterplan]]
-   - phasen 1--8
-   - jetzt: 3: Kapitel 2 und 3 schreiben, link:
-** TODO [#S] [[/home/web/Downloads/uml/UMLBasics.pdf][Bell - UML basics: An introduction to the Unified Modeling Language]]
+** TODO [#J] [[./10.1.1.115.3644.pdf][Müller - An Introduction to Kernel-Based Learning Algorithms]]
 *** summary
-    0. [@0]
-       - common notification standard
-    1. A little background
-       - ease UML-relevant people inside project
-    2. Use-case diagram
-       - actors (stick figure) linked to use cases (circles) by simple lines
-       - "functional requirements"
-       - also what system doesn't do: no lines from a to b means no
-         relationship
-    3. Class diagram
-       - types
-         - logical (business, e.g. rock band), or
-         - implementation (using List, Vector, int, etc)
-       - relationships
-         - extends (super/sub class): closed triangle
-         - two classes aware of each other: line
-         - one class aware of other: line with open arrow
-       - more: other articles
-    4. Sequence diagram
-       - objects, their calls
-       - self-explanatory
-       - vertical: sequence of messages/calls
-       - horizontal: object instances
-       - to draw:
-         1. identify instances,
-         2. put each in a box [ inst-name : class-name ]
-         3. message: line from inst to receiving inst with arrowhead
-            - optionally: return value with dotted line
-    5. Statechart diagram
-** TODO [#F] [[./bv_cvxbook.pdf][Boyd - Convex Optimization]]
+    1. Introduction
+       - SVMs,
+       - kernel Fisher discriminant (KFD)
+       - kernel principal component analysis (KPCA)
+       - review: useful in many areas
+    2. Learning to Classify - Some Theoretical Background
+       0. [@0]
+          - learning: find rule that assigns objects to classes
+            - simplest: 2 classes
+          - formalization: estimate f: R^{N} \to {-1, 1}
+            - using i.i.d. input-output pairs (!x!, y) \in R^{N} \times Y
+              - according to unknown probability distribution P(!x!, y)
+            - such that f will correctly estimate unseen examples
+              - drawn from same probability distribution P(!x!, y)
+            - best function f minimizes expected error/risk
+              R[f] = \int l(f(!x!), y) dP(!x!, y)
+              - l is /loss function/, f.ex. \Theta(-y f(!x!)
+                - \Theta(z) = 0 for z < 0, else \Theta(z) = 1
+                - regression, f.ex. l(f(!x!, y)) = (f(!x!) - y)^{2} /squared loss/
+              - not compute directly: P(!x!, y) not known
+                - induction principle
+                  - simple: approximate risk with
+                    R_{emp}[f] = 1/n \sum_{i=1}^{l}(f(!x_{i}!), y_{i}) /empirical risk/
+              - for small sample sizes, overfitting may occur
+                - avoid by restricting complexity of F \ni f
+                  - occama's razor
+              - control complexity by Vapnik-Chervonenkis (VC) theory and
+                structural risk minimization (SRM) principle
+                - function's VC-dimension: ~ how many separated data points
+                - R[f] \le R_{emp}[f] + \radic((h (ln (2n/h) +1) - ln (\delta /4))/n)
+                  - the simpler the class the higher R_{emp}, the lower the sqrt
+                  - vice versa
+                  - aim: find sweet spot in between
+                - bit like bias-variance dilemma
+       1. [@A] VC Dimension in Practice
+          - bound is "neither easily computable nor very helpful"
+            - bound \ge 1
+            - VC dimension infinite, or not known
+          - same problems for similar metrics
+       2. Margins and VC Dimension
+          - assume data separable
+          - VC bounded via margin
+          - h \le \Lambda^2 R^2 +1 for ||w||_{2} \le \Lambda
+            - R radius of smallest ball around the data
+            - h VC-dimension
+    3. Nonlinear Algorithms in Kernel Feature Spaces
+       - idea: nonlinear mapping R^N \to F
+       - same for
+         - (one hidden layer) NNs: hidden layer representation
+         - rbf: RBF bumps
+         - boosting algos: hypotheses space
+       - curse of dimensionality: gets harder as dimensions increase
+         - but reducible: use simple class of decision function (linear clf)
+       - trick: use kernel functions k(x, y) = (x \cdot y)^d, scalar product
+         - if k: C \times C \to R *continuous kernel of a positive integral
+           operator* on Hilbert space L_2(C),
+           - C \subset R^N compact \to \forall f \in L_2(C): \int k(x, y)f(x)f(y) dx dy \ge 0
+         - then \exist space F and mapping \Phi: R^N \to F: k(x, y) = (\Phi(x) \cdot \Phi(y))
+*** ref [[file:master.bib::914517][Muller et al. 2001]]
+** TODO [#K] [[./bv_cvxbook.pdf][Boyd - Convex Optimization]]
 *** ref [[file:master.bib::boyd2004convex][Boyd & Vandenberghe 2004: Convex]]
-** TODO [#F] [[./Thesis Writing-A Guide.pdf][Gruen - Thesis Writing]]
+** TODO [#K] [[./Thesis Writing-A Guide.pdf][Gruen - Thesis Writing]]
 ***  [#C] rest: resources, webpages, etc
 *** summary
     1. Before you start writing
@@ -5550,68 +5606,68 @@ Vorläufiger Zeitplan
        + www.rpi.edu/dept/grad/docs/ThesisGuide/manual.html
        + www.psy.gla.ac.uk
        + www.learnerassociates.net/dissthes/
-** TODO [#E] [[./10.1.1.115.3644.pdf][Müller - An Introduction to Kernel-Based Learning Algorithms]]
+** TODO [#L] [[./Axelsson.pdf][Axelsson - The Base-Rate Fallacy and its Implications for the Difficulty of Intrusion Detection]]
 *** summary
+    0. [@0] Abstract
+       - to achieve good bayesian detection rate, P(Intrusion|Alarm),
+         you need very small false alarm rate (=FPR)
+         - (== P(non-sensitive website|classified as sensitive))
     1. Introduction
-       - SVMs,
-       - kernel Fisher discriminant (KFD)
-       - kernel principal component analysis (KPCA)
-       - review: useful in many areas
-    2. Learning to Classify - Some Theoretical Background
-       0. [@0]
-          - learning: find rule that assigns objects to classes
-            - simplest: 2 classes
-          - formalization: estimate f: R^{N} \to {-1, 1}
-            - using i.i.d. input-output pairs (!x!, y) \in R^{N} \times Y
-              - according to unknown probability distribution P(!x!, y)
-            - such that f will correctly estimate unseen examples
-              - drawn from same probability distribution P(!x!, y)
-            - best function f minimizes expected error/risk
-              R[f] = \int l(f(!x!), y) dP(!x!, y)
-              - l is /loss function/, f.ex. \Theta(-y f(!x!)
-                - \Theta(z) = 0 for z < 0, else \Theta(z) = 1
-                - regression, f.ex. l(f(!x!, y)) = (f(!x!) - y)^{2} /squared loss/
-              - not compute directly: P(!x!, y) not known
-                - induction principle
-                  - simple: approximate risk with
-                    R_{emp}[f] = 1/n \sum_{i=1}^{l}(f(!x_{i}!), y_{i}) /empirical risk/
-              - for small sample sizes, overfitting may occur
-                - avoid by restricting complexity of F \ni f
-                  - occama's razor
-              - control complexity by Vapnik-Chervonenkis (VC) theory and
-                structural risk minimization (SRM) principle
-                - function's VC-dimension: ~ how many separated data points
-                - R[f] \le R_{emp}[f] + \radic((h (ln (2n/h) +1) - ln (\delta /4))/n)
-                  - the simpler the class the higher R_{emp}, the lower the sqrt
-                  - vice versa
-                  - aim: find sweet spot in between
-                - bit like bias-variance dilemma
-       1. [@A] VC Dimension in Practice
-          - bound is "neither easily computable nor very helpful"
-            - bound \ge 1
-            - VC dimension infinite, or not known
-          - same problems for similar metrics
-       2. Margins and VC Dimension
-          - assume data separable
-          - VC bounded via margin
-          - h \le \Lambda^2 R^2 +1 for ||w||_{2} \le \Lambda
-            - R radius of smallest ball around the data
-            - h VC-dimension
-    3. Nonlinear Algorithms in Kernel Feature Spaces
-       - idea: nonlinear mapping R^N \to F
-       - same for
-         - (one hidden layer) NNs: hidden layer representation
-         - rbf: RBF bumps
-         - boosting algos: hypotheses space
-       - curse of dimensionality: gets harder as dimensions increase
-         - but reducible: use simple class of decision function (linear clf)
-       - trick: use kernel functions k(x, y) = (x \cdot y)^d, scalar product
-         - if k: C \times C \to R *continuous kernel of a positive integral
-           operator* on Hilbert space L_2(C),
-           - C \subset R^N compact \to \forall f \in L_2(C): \int k(x, y)f(x)f(y) dx dy \ge 0
-         - then \exist space F and mapping \Phi: R^N \to F: k(x, y) = (\Phi(x) \cdot \Phi(y))
-*** ref [[file:master.bib::914517][Muller et al. 2001]]
-** TODO [#G] [[./ThesisWritingHints.new_model_etc.pdf][Ratiu - Hints for writing a PhD thesis]]
+       - much research, but base-rate fallacy problem unaddressed
+    2. Problems in Intrusion Detection
+       - basis: Anderson 80: masquerades shows abnormal pattern,
+         should be identifyable
+       - later work: two types
+         - anomaly detection: everything that is extraordinary usage
+         - policy detection: determined in advance
+       - questions:
+         - effectiveness: detect intrusions, reject false positives
+         - efficiency: how many resources are consumed
+         - ease of use: add new scenarios, how easy to field
+         - security: what about attacks against the IDS
+         - interoperability: different IDSs
+         - transparency: how intrusive to normal workflow, how much
+           manpower consumed
+    3. The Base-Rate Fallacy
+       - if rate of occurence is low, a positive test will most likely
+         still evidence a negative condition
+       - example test accuracy 99%, 1 in 10000 has condition, positive
+         test has 1% chance of really indicating condition
+    4. The Base-Rate Fallacy in Intrusion Detection
+       first find probabilities, or guesstimate
+       1. Basic frequency assumptions
+          - workstation, 1000,000 audit records per day
+          - 1 or 2 intrusions, each of about 10 records
+       2. Calculation of Bayesian detection rate
+*** quotes
+    3. [@3] The Base-Rate Fallacy
+       - That is, that even though the test is 99% certain, your
+         chance of actually having the disease is only 1/100, due to
+         the fact that the population of healthy people is much larger
+         than the population with the disease.
+*** ref [[file:master.bib::axelsson2000base][Axelsson 2000]]
+** TODO [#L] [[~/.webkeep/Better_decisions_thru_science.pdf][Better DECISIONS through SCIENCE]]
+*** ref [[file:master.bib::swets2000better][Swets et al. 2000: Better]]
+** TODO [#L] [[~/.webkeep/BOGV92.pdf][Boser - A Training Algorithm for Optimal Margin Classifiers]]
+*** ref [[file:master.bib::boser1992training][Boser et al. 1992]]
+** TODO [#L] [[./Trac_Analysis_of_the_HTTP_Protocol_over_TLS.pdf][Danezis - Traffic Analysis of the HTTP Protocol over TLS]]
+*** ref [[file:master.bib::danezis2010traffic][Danezis 2010: Traffic Analysis HTTP Protocol TLS]]
+** TODO [#L] [[file:/home/uni/da/git/docs/thesishelp/aristolo-114-noten-anforderungen.pdf][Gerlach - noten-anforderungen]]
+*** quotes
+    1. Sehr gut
+       - Forschungsfrage sauber formuliert
+       - Aktuelles, anspruchsvolles Thema
+       - Perfekt Entwickelung des Textes
+       - Stand der Forschung perfekt dargestellt
+       - Forschungsbedarf präzise abgeleitet
+       - Forschungsfrage sauber formuliert
+       - Sehr gutes methodisches Forschungsdesign
+       - Problemlösung exzellent
+       - Argumentation präzise und schlüssig
+       - Keine formellen Fehler
+       - Keine sprachlichen Fehler
+       - Praktisch makellose Arbeit
+** TODO [#L] [[./ThesisWritingHints.new_model_etc.pdf][Ratiu - Hints for writing a PhD thesis]]
 *** summary
     2. [@2] Scope of this Presentation
        - syntax (how to write), not semantics (content)
@@ -5700,67 +5756,7 @@ Vorläufiger Zeitplan
         - Make a bigger picture where you organize the related
           approaches
           - Categorize the work in logically coupled groups
-** TODO [#G] [[./Axelsson.pdf][Axelsson - The Base-Rate Fallacy and its Implications for the Difficulty of Intrusion Detection]]
-*** summary
-    0. [@0] Abstract
-       - to achieve good bayesian detection rate, P(Intrusion|Alarm),
-         you need very small false alarm rate (=FPR)
-         - (== P(non-sensitive website|classified as sensitive))
-    1. Introduction
-       - much research, but base-rate fallacy problem unaddressed
-    2. Problems in Intrusion Detection
-       - basis: Anderson 80: masquerades shows abnormal pattern,
-         should be identifyable
-       - later work: two types
-         - anomaly detection: everything that is extraordinary usage
-         - policy detection: determined in advance
-       - questions:
-         - effectiveness: detect intrusions, reject false positives
-         - efficiency: how many resources are consumed
-         - ease of use: add new scenarios, how easy to field
-         - security: what about attacks against the IDS
-         - interoperability: different IDSs
-         - transparency: how intrusive to normal workflow, how much
-           manpower consumed
-    3. The Base-Rate Fallacy
-       - if rate of occurence is low, a positive test will most likely
-         still evidence a negative condition
-       - example test accuracy 99%, 1 in 10000 has condition, positive
-         test has 1% chance of really indicating condition
-    4. The Base-Rate Fallacy in Intrusion Detection
-       first find probabilities, or guesstimate
-       1. Basic frequency assumptions
-          - workstation, 1000,000 audit records per day
-          - 1 or 2 intrusions, each of about 10 records
-       2. Calculation of Bayesian detection rate
-*** quotes
-    3. [@3] The Base-Rate Fallacy
-       - That is, that even though the test is 99% certain, your
-         chance of actually having the disease is only 1/100, due to
-         the fact that the population of healthy people is much larger
-         than the population with the disease.
-*** ref [[file:master.bib::axelsson2000base][Axelsson 2000]]
-** TODO [#G] [[./Trac_Analysis_of_the_HTTP_Protocol_over_TLS.pdf][Danezis - Traffic Analysis of the HTTP Protocol over TLS]]
-*** ref [[file:master.bib::danezis2010traffic][Danezis 2010: Traffic Analysis HTTP Protocol TLS]]
-** TODO [#G] [[file:/home/uni/da/git/docs/thesishelp/aristolo-114-noten-anforderungen.pdf][Gerlach - noten-anforderungen]]
-*** quotes
-    1. Sehr gut
-       - Forschungsfrage sauber formuliert
-       - Aktuelles, anspruchsvolles Thema
-       - Perfekt Entwickelung des Textes
-       - Stand der Forschung perfekt dargestellt
-       - Forschungsbedarf präzise abgeleitet
-       - Forschungsfrage sauber formuliert
-       - Sehr gutes methodisches Forschungsdesign
-       - Problemlösung exzellent
-       - Argumentation präzise und schlüssig
-       - Keine formellen Fehler
-       - Keine sprachlichen Fehler
-       - Praktisch makellose Arbeit
-** TODO [#G] [[~/.webkeep/Better_decisions_thru_science.pdf][Better DECISIONS through SCIENCE]]
-*** ref [[file:master.bib::swets2000better][Swets et al. 2000: Better]]
-** TODO [#G] [[~/.webkeep/BOGV92.pdf][Boser - A Training Algorithm for Optimal Margin Classifiers]]
-*** ref [[file:master.bib::boser1992training][Boser et al. 1992]]
+** TODO [#L] [[./f156cdc8a479aa994eae875a0860d663d317.pdf][Schölkopf - Learning with Kernels (slides)]]
 ** TODO [#R] (skim) [[./it2013..kloft_phd.pdf][Kloft - Kernel-Based Machine Learning with Multiple Sources of Information]]
 *** summary
     0. [@0] Summary
@@ -6924,6 +6920,37 @@ Vorläufiger Zeitplan
     6. [@6] Zu viel zu tun
        - Zu viel zu erledigen zu haben, schafft Hoffnung.
        - wenigstens wissen wir, was wir tun müssen.
+** TODO [#S] [[/home/web/Downloads/uml/UMLBasics.pdf][Bell - UML basics: An introduction to the Unified Modeling Language]]
+*** summary
+    0. [@0]
+       - common notification standard
+    1. A little background
+       - ease UML-relevant people inside project
+    2. Use-case diagram
+       - actors (stick figure) linked to use cases (circles) by simple lines
+       - "functional requirements"
+       - also what system doesn't do: no lines from a to b means no
+         relationship
+    3. Class diagram
+       - types
+         - logical (business, e.g. rock band), or
+         - implementation (using List, Vector, int, etc)
+       - relationships
+         - extends (super/sub class): closed triangle
+         - two classes aware of each other: line
+         - one class aware of other: line with open arrow
+       - more: other articles
+    4. Sequence diagram
+       - objects, their calls
+       - self-explanatory
+       - vertical: sequence of messages/calls
+       - horizontal: object instances
+       - to draw:
+         1. identify instances,
+         2. put each in a box [ inst-name : class-name ]
+         3. message: line from inst to receiving inst with arrowhead
+            - optionally: return value with dotted line
+    5. Statechart diagram
 ** TODO [[./rfc7540.txt][Belshe - Hypertext Transfer Protocol Version 2 (HTTP/2)]]
 *** ref [[file:master.bib::rfc7540][Belshe et al. 2015: Hypertext Transfer Protocol]]
 ** TODO [[./Hypertext Style: Cool URIs don't change..html][Berners-Lee - Cool URIs don't change]]

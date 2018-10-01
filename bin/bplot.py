@@ -12,7 +12,8 @@ from bokeh.transform import transform
 
 # ((df0, _), y, yp, yd) = mplot.confusion_matrix_from_result(r, zero0=True)
 # bplot.confusion_matrix(df)
-def confusion_matrix(df, file_name='/tmp/bokeh.html'):
+def confusion_matrix(
+        df, file_name='/tmp/bokeh.html', title="Confusion matrix"):
     '''shows df-confusion matrix in bokeh'''
     df = df.stack().rename("value").reset_index()
 
@@ -31,7 +32,7 @@ def confusion_matrix(df, file_name='/tmp/bokeh.html'):
     p = figure(
         plot_width=1500,
         plot_height=700,
-        title="My plot",
+        title=title,
         x_range=list(df.Prediction.drop_duplicates()),
         y_range=list(df.Treatment.drop_duplicates()),
         toolbar_location=None,
