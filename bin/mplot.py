@@ -62,7 +62,7 @@ def accuracy_vs_overhead(result_list, title="Size Overhead to Accuracy"):
 def confusion_matrix_for_result(result, current_sites=True, **kwargs):
     '''creates a confusion matrix plot for result
 
-    @return  confusion_helper output'''
+    @return  confusion_matrix_helper output'''
     try:
         yt, yp, yd = result.y_true, result.y_prediction, result.y_domains
         return (confusion_matrix(
@@ -78,7 +78,7 @@ def confusion_matrix_for_result(result, current_sites=True, **kwargs):
 def confusion_matrix_from_scenario(scenario_obj, **kwargs):
     '''creates a confusion matrix plot for scenario_obj
 
-    @return confusion_helper output'''
+    @return confusion_matrix_helper output'''
     r = max(results.for_scenario_smartly(scenario_obj), key=lambda x: x.score)
     return confusion_matrix_for_result(r, **kwargs)
 
@@ -215,6 +215,18 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False,
         ax.legend()
     if save:
         plt.savefig("/tmp/total_packets_in_"+'_'.join(subkeys)+".pdf")
+
+
+def total_packets_in_site(scenarios, site):
+    '''plot of site's total number of incoming packets for each scenario'''
+    ARGS = {'or_level': 0, 'remove_timeout': True, 'remove_small': False}
+    for s in scenarios:
+        if s.trace_args != ARGS:
+            s.traces = None
+            s.trace_args = ARGS
+        sns.distplot(scenario.tpi(s.get_traces()[site]),
+                     label=s.describe(), color=s.color)
+    plt.legend()
 
 
 def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):

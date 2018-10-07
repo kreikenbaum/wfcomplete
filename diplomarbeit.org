@@ -21,6 +21,7 @@
 #+LATEX_HEADER: \usepackage[tracking=true]{microtype}
 #+LATEX_HEADER: \usepackage{natbib}
 #+LATEX_HEADER: \usepackage{numprint}
+#+LATEX_HEADER: \usepackage[section]{placeins}
 #+LATEX_HEADER: \usepackage{pgf}
 #+LATEX_HEADER: \usepackage{setspace}
 #+LATEX_HEADER: \onehalfspacing
@@ -1254,12 +1255,10 @@ defenseless web site traces. In most cases, the original CUMUL attack
 and the reimplementation had similar results. This validates that the
 CUMUL-reimplementation[fn::available at
 https://gitlab.com/kreikenbaum/classify.git] was used as the main
-method of evaluating the extension. The kNN-attack by
-\citet{effective2014} shows worse results, as validated by the above
-literature. The traces captured at TU Braunschweig with a direct
-connection, without a Tor bridge, yielded less accuracy. This is
-presented for the sake of completeness, and because the
-LLaMA-comparison does not use a bridge (see
+method of evaluating the extension. The traces captured at TU
+Braunschweig with a direct connection, without a Tor bridge, yielded
+less accuracy. This is presented for the sake of completeness, and
+because the LLaMA-comparison does not use a bridge (see
 below). \citet{panchenko2}'s accuracy results could be reproduced on
 the traces captured with bridge with the re-implementation.
 
@@ -1287,6 +1286,8 @@ the traces captured with bridge with the re-implementation.
 # # w/ outlier removal (or-lvl 2)
 # s_or.trace_args = {'or_level': 2, 'remove_small': False, 'remove_timeout': True}
 # sum([len(t_or[x]) for x in t_or.keys()]) # 953, ..., 4897
+# s20 = scenario.Scenario("wf-cover/nobridge-20aI--2018-09-13--100@50")
+# s100 = scenario.Scenario("wf-cover/nobridge-100aI-part--2018-09-16--100@50")
 
 Table [[tab:llama-capture]] compares the captured trace statistics for
 defenseless traces to \citet{DBLP:journals/popets/CherubinHJ17}'s
@@ -1307,7 +1308,7 @@ which loaded at least the text is 881.83%. Reduced to the fully loaded
 traces, the time overhead compared to no defense is 228.98%. The
 slightly higher trace load rates of \gls{s} as compared to no defense
 are conceivably due to circuit performance variations in Tor. Another
-explanation might be the percentiles in outlier removal:
+explanation might be the percentiles in outlier removal.
 
 
 #+CAPTION[LLaMA evaluation results]: Results for evaluating LLaMA, compared to no defense, and \gls{s}. LLaMA only had 34 sites with at least 30 instances. The size and time \gls{oh} are for the \gls{wf} default setting, as described in the previous Table [[tab:llama-capture]]. Size and time overhead are for ~34 sites for comparability to LLaMA, 100 site values are similar.
@@ -1340,7 +1341,7 @@ accuracy more than \gls{s}, keep in mind that this also compared 1722
 non-completely loaded pages, versus 1038 completely loaded. Obviously,
 the text-loaded traces are different, as they show less object
 requests/response pairs. If the non-complete-load-traces were removed
-as well, no sites remained for analysis after removal of small sites,
+as well, no sites remain for analysis after removal of small sites,
 with no outlier removal. A time overhead of 846% (out of the half of
 traces that was loaded at all) might encumber Tor's usability design
 goal \citep[ch.3]{tor2014}. The variability in the time overhead could
@@ -1398,7 +1399,7 @@ more, for the same overhead, or requires less overhead, for a similar
 accuracy reduction. The main difference between LLaMA-nodelay and
 \gls{s} lies in the HTTP-specific distributions to generate cover
 traffic. \citet{DBLP:journals/popets/CherubinHJ17} reported less
-overhead.
+overhead on Tor hidden service \citep[sec.5] {tor-design} sites.
 
 
 #+CAPTION[Size overhead to accuracy trade-off on 100 sites]: Size overhead to accuracy trade-off for thesis' defense, LLaMA-nodelay, and no defense on 100 sites, captured at TU Braunschweig.
@@ -1452,6 +1453,23 @@ relative histograms seems linked to defense overhead: defenseless data
 has the highest peaks, followed by the lower-overhead defense on
 2018-02-13, the higher-overhead defense on 2018-03-28, and
 LLaMA-nodelay, which has the highest, non-configurable overhead.
+
+
+
+#+CAPTION[Total incoming packets for defenses for quora.com]: Relative histograms of the number of incoming packets for quora.com for each defense --- with kernel-density estimation (kde).
+#+NAME: fig:tpi-quora
+#+ATTR_LATEX: :float t :width 0.7\textwidth
+[[./pictures/tpi_quora.pdf]]
+# sd = scenario.Scenario("disabled/bridge--2018-02-02--100@50"); s20 = scenario.Scenario("wf-cover/bridge-20aI--2018-02-13--100@50"); s100 = scenario.Scenario("wf-cover/bridge-100aI--2018-03-28--100@50"); sl = scenario.Scenario("defense-client-nodelay/bridge--2018-02-25--100@50")
+# mplot.total_packets_in_site([sd, s20, s100, sl], 'quora.com')
+Figure [[fig:tpi-quora]] compares the number of incoming packets for a
+single site. The site is https://quora.com, which was randomly
+picked. In the figure, the curves for defended data are all
+considerably flatter than the defenseless data. \Gls{s} light is
+steeper than \gls{s} heavy, which is again steeper than LLaMA
+\citep{DBLP:journals/popets/CherubinHJ17}. The aim is a flat curve
+that still has its values as far as possible to the left. \Gls{s}
+offers configurability in the amount of cover traffic produced.
 
 
 
@@ -1572,6 +1590,7 @@ Figure.
 # rocfig = mplot._init_roc("Receiver operating characteristic (ROC) curves")
 # for r in [r for r in results.list_all() if 40 < r.size < 60 and r.open_world['binary'] and r.background_size == "5000"]:
 #     mplot.roc_helper_open_world_binary(r, fig=rocfig, dot_position=None)
+# that way generated, to redo: map(results.for_id, [837, 838, 839, 840])
 The \gls{roc}-curve in Figure [[fig:rocs-defenses]] illustrates the
 classification strictness trade-off on 50 sites with an open world
 size of 5000 background traces. This is the same size configuration

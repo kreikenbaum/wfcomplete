@@ -27,6 +27,15 @@ import mymetrics
 import sites
 from capture import utils
 
+COLORS = {
+    "no defense": "grey",
+    "LLaMA": "red",
+    "LLaMA-nodelay": "orange",
+    "SCT light": "blue",
+    "SCT medium": "green",
+    "SCT heavy": "yellow"
+}
+
 INT_REGEXP = re.compile("-?([+-]?[0-9]+.*)")
 
 NEW_DEFENSE = "SCT"
@@ -196,6 +205,18 @@ class Scenario(object):
         return self.path.endswith("@1")
 
     @property
+    def color(self):
+        '''@return pre-defined or set color for graphs etc'''
+        try:
+            return self._color
+        except AttributeError:
+            return COLORS[self.describe()]
+
+    def set_color(self, color):
+        '''sets colors for graphs etc'''
+        self._color = color
+
+    @property
     def config(self):
         '''@return configuration of addon if used'''
         if self.name != NEW_DEFENSE:
@@ -237,7 +258,7 @@ class Scenario(object):
     @property
     def factor2(self):
         '''@return the factor from the settings (if new defense), else ""'''
-        return int(filter(unicode.isdigit, self.setting))
+        return int(filter(str.isdigit, self.setting))
 
     # # todo: codup counter.py?
     def get_features_cumul(self, current_sites=True):
@@ -385,27 +406,31 @@ class Scenario(object):
             stdout=subprocess.PIPE,
             shell=True)
         total_num = int(lsproc.stdout.next())
+        out = {"total": total_num}
         print("total: {}".format(total_num))
         s = Scenario(self.path)
         s.trace_args = {
             'or_level': 0, 'remove_small': False, 'remove_timeout': False}
-        s._stats_helper("text loaded", total_num)
+        s._stats_helper("text loaded", total_num, out)
         s = Scenario(self.path)
         s.trace_args = {
             'or_level': 0, 'remove_small': False, 'remove_timeout': True}
-        s._stats_helper("fully loaded", total_num)
+        s._stats_helper("fully loaded", total_num, out)
         s = Scenario(self.path)
         s.trace_args = {
             'or_level': 1, 'remove_small': True, 'remove_timeout': False}
-        s._stats_helper("or-level 1", total_num)
+        s._stats_helper("or-level 1", total_num, out)
         s = Scenario(self.path)
-        s._stats_helper("default", total_num)
+        s._stats_helper("default", total_num, out)
         print("duration: {}".format(s.duration))
+        return out
 
-    def _stats_helper(self, name, total_num):
+    def _stats_helper(self, name, total_num, out=None):
         '''print single scenario's count'''
         t = self.get_traces()
         count = sum([len(t[x]) for x in t.keys()])
+        if out:
+            out[name] = {x: len(t[x]) for x in t.keys()}
         print("{}: {:d} ({:.1f}%)".format(
             name, count, 100. * count / total_num))
 
