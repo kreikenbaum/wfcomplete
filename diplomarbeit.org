@@ -1148,7 +1148,7 @@ If the sizes for a URL are not known, the http model is a fallback both the cach
 
 Users can select other values, depending on their personal security
 needs.
-* TODO Evaluation [0/3]
+* Evaluation
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
   :END:
@@ -1218,7 +1218,7 @@ cached data. This procedure also reproduces the time gaps described in
 The data is analyzed via a re-implemented version of CUMUL
 \citep{panchenko2}, which is used as state-of-the-art comparison in
 the latest attacks by \citet{hayes197185} and \citet{rimmerautomated}.
-** PENDING (capture disabled, see Tab 4.2) Analyzing Closed World Scenarios
+** Analyzing Closed World Scenarios
    :PROPERTIES:
    :CUSTOM_ID: sub4-closed
    :END:
@@ -1314,15 +1314,14 @@ explanation might be the percentiles in outlier removal.
 #+CAPTION[LLaMA evaluation results]: Results for evaluating LLaMA, compared to no defense, and \gls{s}. LLaMA only had 34 sites with at least 30 instances. The size and time \gls{oh} are for the \gls{wf} default setting, as described in the previous Table [[tab:llama-capture]]. Size and time overhead are for ~34 sites for comparability to LLaMA, 100 site values are similar.
 #+NAME: tab:llama-eval
 #+ATTR_LATEX: :align |l||r||r|r|r|
-| Scenario       | ~100 site acc. [%] | ~34 site acc. [%] | Size \gls{oh} [%] | Time \gls{oh} [%] |
+| Defense        | ~100 site acc. [%] | ~34 site acc. [%] | Size \gls{oh} [%] | Time \gls{oh} [%] |
 |                |       <10> |       <10> |       <10> |       <10> |
 |----------------+------------+------------+------------+------------|
-| LLaMA          |       n.a. |      33.19 |      23.03 |     845.82 |
-| no defense     |      86.99 |      93.10 |          0 |          0 |
+| none           |      86.99 |      93.10 |          0 |          0 |
 | \gls{s} light  |      42.50 |      57.16 |      66.57 |      30.75 |
 | \gls{s} medium |      35.54 |      52.55 |      88.25 |      26.82 |
 | \gls{s} heavy  |      30.21 |      46.25 |     130.04 |      50.37 |
-
+| LLaMA          |       n.a. |      33.19 |      23.03 |     845.82 |
 
 # s_nodef_old = scenario.Scenario("disabled/nobridge--2018-08-03--100@50")
 # s_cover = scenario.Scenario("wf-cover/nobridge-50aI--2018-09-10--100@50")
@@ -1488,7 +1487,7 @@ generally lighter, as visible in Figure
 #+NAME: fig:relative-histogram-incoming-bytes-over-time
 #+ATTR_LATEX: :float t :width 0.7\textwidth
 [[./pictures/total_packets_in_disabled___2016-05-12--10@40_disabled___bridge--2018-03-15--100@50__wikipedia.org_yahoo.com_google.com_youtube.com_amazon.com__palette_colorblind.pdf]]
-** TODO Analyzing Open World Scenarios
+** Analyzing Open World Scenarios
    :PROPERTIES:
    :CUSTOM_ID: sub4-open
    :END:
@@ -1591,19 +1590,19 @@ Figure.
 # for r in [r for r in results.list_all() if 40 < r.size < 60 and r.open_world['binary'] and r.background_size == "5000"]:
 #     mplot.roc_helper_open_world_binary(r, fig=rocfig, dot_position=None)
 # that way generated, to redo: map(results.for_id, [837, 838, 839, 840])
-The \gls{roc}-curve in Figure [[fig:rocs-defenses]] illustrates the
+The above \gls{roc}-curve for 100 sites shows the curves close to each
+other. The \gls{roc}-curve in Figure [[fig:rocs-defenses]] illustrates the
 classification strictness trade-off on 50 sites with an open world
-size of 5000 background traces. This is the same size configuration
-that \citet[Fig.~11]{wtfpad2015} used for their \gls{roc}-curve
-comparison. The curve of defenseless data has a similar \gls{auc} (0.92) to
-their reports (0.82). The difference could be due to CUMUL's
-\citep{panchenko2} increased accuracy as compared to KNNs
-\citep{effective2014}. \Gls{s} light at 62% overhead visibly decreases
-classification efficacy. Both LLaMA-nodelay with 205% overhead and
-\gls{s} heavy at 142% overhead decrease open-world classification
-accuracy to a level similar to random guessing (\gls{auc} 0.53 and 0.49,
-respectively).
-** TODO Summary
+size of 5000 background traces. \citet[Fig.~11]{wtfpad2015} use this
+size configuration their \gls{roc}-curve comparison. The curve of
+defenseless data has a similar \gls{auc} (0.92) to their reports
+(0.82). The difference could be due to CUMUL's \citep{panchenko2}
+increased accuracy as compared to KNNs \citep{effective2014}. \Gls{s}
+light at 62% overhead visibly decreases classification efficacy. Both
+LLaMA-nodelay with 205% overhead and \gls{s} heavy at 142% overhead
+decrease open-world classification accuracy to a level similar to
+random guessing (\gls{auc} 0.53 and 0.49, respectively).
+** Summary
    :PROPERTIES:
    :CUSTOM_ID: sub4-summary
    :END:
@@ -1624,11 +1623,10 @@ offering a trade-off of security to size overhead. The defense has a
 slight time overhead that is not due to design, but to increased
 network traffic. Using cached sizes did not consistently increase the
 defense's effectiveness.
-* TODO Conclusions [0/1]
+* TODO Conclusions [0/2]
   :PROPERTIES:
   :CUSTOM_ID: ch6-conclusion
   :END:
-** WRITE Summary of Results
 To counter the increasing threat of \gls{wf}, general defenses need to
 create traffic that is easily confused with other websites's. The
 current defenses have several drawbacks, as detailed in
@@ -1646,8 +1644,23 @@ traffic so as to effectively obfuscate web page patterns. The creation
 of cover traffic is realized using the Firefox Addon-SDK.
 
 
-
-
+The selective cover traffic is rooted in the web traffic model of
+\citet{newtrafficmodel}. This model supports the generation of cover
+traffic that closely resembles real WWW \citep{rfc1945} traffic. While
+\gls{s} does not defend against any particular attack, it obfuscates
+traffic so as to defeat any conceivable attack. This is based on
+\cite{panchenko}'s camouflage traffic, but adjusts it so that the
+whole page load is accompanied by cover traffic. It also enables users
+to select their level of \gls{wf} defense as it behooves them.
+** WRITE Summary of Results
+- defense
+  - www-based
+  - addon sdk
+  - works
+  - configurable
+- BloomSort-cache
+  - benefit only for fresh data
+  - old data: worse than guessing
 - long time, long effort to re-implement
   - code defense
   - test implementation
@@ -1664,7 +1677,7 @@ of cover traffic is realized using the Firefox Addon-SDK.
   - consistently outperforms
   - but LLaMA-nondelay only research prototype
     - they spent more time on server-side Alpaca defense for .onion sites
-** Future Work [0/0]
+** WRITE Future Work [0/0]
    :PROPERTIES:
    :CUSTOM_ID: future-work
    :END:

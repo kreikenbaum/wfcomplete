@@ -30,6 +30,7 @@ config.FOLDS = 2
 
 VERYQUICK = os.getenv('VERYQUICK', False)
 QUICK = os.getenv('QUICK', False) or VERYQUICK
+ALWAYS = True
 
 
 class TestAnalyse(unittest.TestCase):
@@ -634,7 +635,7 @@ class TestUtils(unittest.TestCase):
 
 
 class TestStatus(unittest.TestCase):
-    @unittest.skipIf(QUICK, "slow test skipped")
+    @unittest.skipIf(ALWAYS, "takes veeeeery long")
     def test_valid_json(self):
         if _is_online():
             code = os.system(
