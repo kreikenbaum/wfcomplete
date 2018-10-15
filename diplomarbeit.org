@@ -772,8 +772,9 @@ of future work in section [[#future-work]].
    Bundle source code. In 2017, LLaMA was introduced by
    \citet{DBLP:journals/popets/CherubinHJ17}. They acknowledge the
    need for a client-side application-level defense. LLaMA delays
-   traffic by a uniformly distributed delay. The authors provide LLaMA
-   as a secondary defense to the server-side ALPaCA defense, and
+   traffic by a uniformly distributed delay and uses the URLs of
+   retrieved elements to provide cover traffic.  The authors provide
+   LLaMA as a secondary defense to the server-side ALPaCA defense, and
    emphasize its prototype status \citep{LLaMA}.
 * A New Defense
   :PROPERTIES:
@@ -1623,18 +1624,19 @@ offering a trade-off of security to size overhead. The defense has a
 slight time overhead that is not due to design, but to increased
 network traffic. Using cached sizes did not consistently increase the
 defense's effectiveness.
-* TODO Conclusions [0/2]
+* Conclusions
   :PROPERTIES:
   :CUSTOM_ID: ch6-conclusion
   :END:
 To counter the increasing threat of \gls{wf}, general defenses need to
 create traffic that is easily confused with other websites's. The
 current defenses have several drawbacks, as detailed in
-[[#sub2-wf-def]]. While the base rate fallacy (\citet{axelsson2000base},
-\citet{koehler1996base}) might hinder this detection due to the large
-number of background sites, \citet{axelsson2000base}'s original
-arguments have been disproved by e.g. \citet{rieckdiss}'s
-effectiveness.
+[[#sub2-wf-def]]. While the base rate fallacy \citep{axelsson2000base},
+might hinder this detection due to the large number of background
+sites, \citet{axelsson2000base}'s original arguments have been
+disproved by e.g. \citet{rieckdiss}'s effectiveness. As of
+\citet{koehler1996base}, the base rate fallacy should generally be
+considered with a grain of salt.
 
 
 This thesis addresses the problem of creating cover traffic at the
@@ -1653,19 +1655,19 @@ traffic so as to defeat any conceivable attack. This is based on
 \cite{panchenko}'s camouflage traffic, but adjusts it so that the
 whole page load is accompanied by cover traffic. It also enables users
 to select their level of \gls{wf} defense as it behooves them.
-** CHECK Summary of Results
+** Summary of Results
 The main result of this thesis can by summarized in three contributions:
 
-- \gls{s}, introduced in section [[#sub3-defense]], is a web-model based
-  \citep{newtrafficmodel} easy-to-use \gls{wf} defense that allows for
-  various levels of protection. This defense easily integrates into
-  the Tor Browser Bundle, and works out of the box (given a cover
-  traffic server). The default settings weigh protection with extra
-  network traffic. For the security-conscious, increasing protection
-  is as easy as changing a preference. For evaluation purposes,
-  \gls{s} offers other options, such as the exact way of setting cover
-  traffic targets, whether to use the BloomSort size cache, and wether
-  to send additional burst traffic at the end.
+- \gls{s}, introduced in section [[#sub3-defense]], is a web-model
+  \citep{newtrafficmodel} based, easy-to-use \gls{wf} defense that
+  allows for various levels of protection. This defense easily
+  integrates into the Tor Browser Bundle, and works out of the box
+  (given a cover traffic server). The default settings weigh
+  protection with extra network traffic. For the security-conscious,
+  increasing protection is as easy as changing a preference. For
+  evaluation purposes, \gls{s} offers other options, such as the exact
+  way of setting cover traffic targets, whether to use the BloomSort
+  size cache, and wether to send additional burst traffic at the end.
 - Section [[#sub3-bloom]] proposes BloomSort, an approximate size cache
   based on Bloom filters \citep{Bloom70space/timetrade-offs}. These
   use Bloom filters's configurable error rate to approximately save
@@ -1685,77 +1687,30 @@ The main result of this thesis can by summarized in three contributions:
   improvements only for very fresh caches. It thus confirms that the
   cache works, yet points to the need for fresh data, if it were to be
   used.
-** WRITE Future Work [0/0]
+** Future Work
    :PROPERTIES:
    :CUSTOM_ID: future-work
    :END:
-main
-*** def
-- works against attacks such as \citep{torben}?
-- dynamically compute embedded probability based on remaining sites
-- UI: integrate to Tor security slider
-- dynamically / periodically update sizes
-- correctly compute number of embedded sites
-- distinguish first load/HTML from subsequent loads
+As it seems to provide adequate protection, the main improvement for
+the defense would be an update to the web extension framework, which
+succeeds the Add-On SDK. As the extension was thought as a prototype,
+a server was used instead of more elaborate solutions, such as caching
+retrieved sizes, and using these. Minor possible improvements would be
+UI-based approximating overhead, and a web model that is updated to
+modern sites. Further research is if this defense could possibly
+defeat targeted attacks such as \citet{torben}, and if it can defeat
+the modern deep-learning based attacks by \citet{rimmerautomated} and
+\citet{sirinam2018deep}.
 
-     The traffic model \citep{newtrafficmodel} distinguishes between
-     HTML and embedded object requests. This is usually done via HTTP's
-     =content-type= header\citep[sec.3.1.1.5]{rfc7231}, yet that is only
-     accessible when the content has been received, whereas this
-     defense needs to distinguish at the time it is requested.
 
-     World Wide Web URLs increasingly move away from including a file
-     type suffix\cite{cooluri}, so that distinguishing HTTP elements at
-     request time only by URL would not work reliably. The work-around
-     in this add-on is to consider the first request to a host as the
-     HTML page, while subsequent requests while the page is being
-     loaded[fn::until the body's =load=
-     event\cite[ch.1.6.5]{dom2-events}] are considered requests for
-     embedded objects.
-
-     This accurately distinguishes between start of a page load and the
-     loading of its embedded objects, but a drawback is that is does
-     not recognize embedded iframes etc. as HTML.
-
-     Providing an accurate estimate of embedded objects /per web page/
-     would be [[#future-work][future work]].
-**** sdk
-     - add-on-SDK replaced by web-extensions
-       - not that much to do
-       - when/if necessary for Tor's ESR-version-based browser
-       - advantage: also Google Chrome
-     - seems like connection establishment leaks data, as of ch4
-     - distributions new traffic model
-**** web distribs /model
- These distributions have two drawbacks. Firstly, web traffic has
- evolved since 2007 \citep{DBLP:conf/imc/IhmP11}, as also documented for
- total web page size by \citet{web-is-doom}. Secondly, as mentioned in
- \citet{newtrafficmodel}, the number of embedded objects are computed
- per each HTML page, including frames, and possibly including
- redirects. How the number of embedded elements is used in this thesis
- differs from how it should be used, see next section.
-
- - update on web traffic distributions
-   - or use random elements
-**** server
- - why a server
-   - could easily cache sizes, reuse
-     - or use list of servers
-   - but this as proof of concept
- - no server
-   - most important, as conceivably watch server, subtract from other
-     traffic, defeat defense
- - avoid server
-   - if sizes cached anyways, use that for cover-traffic
-     - list of p.c. sites like google/wikipedia/yahoo/baidu?
-*** atk
-- combine different approaches such as CUMUL \citep{panchenko2} and
-  timing-based \citep{DBLP:journals/tifs/FeghhiL16} using the
-  multi-kernel approach of \citet{mit2013kernel}
-- use page-based hmm attack
-- why not rimmer / deep wf
-    - lots (!) of data needed
-    - high-power GPU needed
+On the attack side, \citet{ssl-traffic-analysis} confirm the general
+usefulness of hidden markov models in traffic analysis
+\citet{introta}. They could be combined with recent improvements in
+single-page detection, as written in the last paragraph. For single
+page detection, it could be explored if multiple kernel learning as
+presented by \cite{kloft2011lp} that incorporates timing-based
+features \cite{DBLP:journals/tifs/FeghhiL16} can surpass current
+deep-learning based approaches.
 
 \appendix
 \part{Appendix}
@@ -3930,7 +3885,74 @@ how to do this.
 - compared to LLaMA-nondelay
   - consistently outperforms
   - but LLaMA-nondelay only research prototype
-    - they spent more time on server-side Alpaca defense for .onion sites
+  - they spent more time on server-side Alpaca defense for .onion sites
+** Conclusions.Further Work
+*** def
+- dynamically compute embedded probability based on remaining sites
+- UI: integrate to Tor security slider
+- dynamically / periodically update sizes
+- correctly compute number of embedded sites
+- distinguish first load/HTML from subsequent loads
+
+     The traffic model \citep{newtrafficmodel} distinguishes between
+     HTML and embedded object requests. This is usually done via HTTP's
+     =content-type= header\citep[sec.3.1.1.5]{rfc7231}, yet that is only
+     accessible when the content has been received, whereas this
+     defense needs to distinguish at the time it is requested.
+
+     World Wide Web URLs increasingly move away from including a file
+     type suffix\cite{cooluri}, so that distinguishing HTTP elements at
+     request time only by URL would not work reliably. The work-around
+     in this add-on is to consider the first request to a host as the
+     HTML page, while subsequent requests while the page is being
+     loaded[fn::until the body's =load=
+     event\cite[ch.1.6.5]{dom2-events}] are considered requests for
+     embedded objects.
+
+     This accurately distinguishes between start of a page load and the
+     loading of its embedded objects, but a drawback is that is does
+     not recognize embedded iframes etc. as HTML.
+
+     Providing an accurate estimate of embedded objects /per web page/
+     would be [[#future-work][future work]].
+**** sdk
+     - add-on-SDK replaced by web-extensions
+       - not that much to do
+       - when/if necessary for Tor's ESR-version-based browser
+       - advantage: also Google Chrome
+     - seems like connection establishment leaks data, as of ch4
+     - distributions new traffic model
+**** web distribs /model
+ These distributions have two drawbacks. Firstly, web traffic has
+ evolved since 2007 \citep{DBLP:conf/imc/IhmP11}, as also documented for
+ total web page size by \citet{web-is-doom}. Secondly, as mentioned in
+ \citet{newtrafficmodel}, the number of embedded objects are computed
+ per each HTML page, including frames, and possibly including
+ redirects. How the number of embedded elements is used in this thesis
+ differs from how it should be used, see next section.
+
+ - update on web traffic distributions
+   - or use random elements
+**** server
+ - why a server
+   - could easily cache sizes, reuse
+     - or use list of servers
+   - but this as proof of concept
+ - no server
+   - most important, as conceivably watch server, subtract from other
+     traffic, defeat defense
+ - avoid server
+   - if sizes cached anyways, use that for cover-traffic
+     - list of p.c. sites like google/wikipedia/yahoo/baidu?
+*** atk
+- combine different approaches such as CUMUL \citep{panchenko2} and
+  timing-based \citep{DBLP:journals/tifs/FeghhiL16} using the
+  multi-kernel approach of \citet{mit2013kernel}
+- use page-based hmm attack
+- why not rimmer / deep wf
+    - lots (!) of data needed
+    - high-power GPU needed
+
 * After Appendices: Bibliography and Index
 \bibliography{docs/master}
 \bibliographystyle{apalike}
