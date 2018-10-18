@@ -27,8 +27,9 @@ import mymetrics
 import sites
 from capture import utils
 
+NODEF = "defenseless"
 COLORS = {
-    "no defense": "grey",
+    NODEF: "grey",
     "LLaMA": "red",
     "LLaMA-nodelay": "orange",
     "SCT light": "blue",
@@ -46,7 +47,7 @@ if os.uname()[1] == config.OLD_HOST:
 RENAME = {
     "defense-client": "LLaMA",
     "defense-client-nodelay": "LLaMA-nodelay",
-    "disabled": "no defense",
+    "disabled": "defenseless",
     "external": "WANG14"
 }
 for _ in ["0.15.3", "0.18.2", "0.19", "0.20", "0.21", "0.22",
@@ -69,7 +70,7 @@ class Scenario(object):
         >>> Scenario('disabled/2016-11-13').date
         datetime.date(2016, 11, 13)
         >>> Scenario('disabled/2016-11-13').name # same as str(Scenario...)
-        'no defense'
+        'defenseless'
         >>> Scenario("disabled/2016-05-12--10@40").num_sites
         10
         >>> Scenario("0.22/10aI--2016-11-04--100@50").setting
@@ -536,6 +537,11 @@ def _mean_std(trace_dict, property_name):
 def tpi(trace_list):
     '''returns total incoming packets for each trace in list'''
     return [x.get_tpi() for x in trace_list]
+
+# code duplication
+def tpo(trace_list):
+    '''returns total outgoing packets for each trace in list'''
+    return [x.get_tpo() for x in trace_list]
 
 
 def _trace_append(X, y, y_names, x_add, y_add, name_add):

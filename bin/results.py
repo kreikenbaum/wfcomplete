@@ -475,7 +475,7 @@ if __name__ == "__main__":
 # ### scatter plot of accuracy vs overhead
 # SIZE = 30
 # import results, mplot
-# b = [x for x in results.list_all() if (x.scenario.name == 'new defense' or 'defense-client-nodelay' in x.scenario or 'disabled' in x.scenario) and x.scenario.num_sites == SIZE]
+# b = [x for x in results.list_all() if (x.scenario.name == scenario.NEW_DEFENSE or 'defense-client-nodelay' in x.scenario or 'disabled' in x.scenario) and x.scenario.num_sites == SIZE and "nobridge" not in x.scenario and x.scenario.site == "mlsec"]
 # plot = mplot.accuracy_vs_overhead(b)
 # ## plot through
 # d30 = pd.DataFrame([x.to_dict() for x in results.list_all() if x.scenario.num_sites == SIZE and '0.22' in x.scenario.name])

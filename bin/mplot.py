@@ -37,11 +37,11 @@ def _color(name, all_names, palette="colorblind"):
 def accuracy_vs_overhead(result_list, title="Size Overhead to Accuracy"):
     '''plots scatter plot of results's accuracy vs overhead'''
     df = pd.DataFrame([r.to_dict() for r in result_list])
-    names = set(df['scenario.name'])
+    names = set(df['scenario_name'])
 
     def color(x):
         return _color(x, names)
-    df['color'] = df['scenario.name'].map(color)
+    df['color'] = df['scenario_name'].map(color)
     df = df.rename(columns={'size_overhead': 'Size Overhead [%]',
                             'score': 'Accuracy'})
     plot = df.plot.scatter('Size Overhead [%]', 'Accuracy', c=df.color)

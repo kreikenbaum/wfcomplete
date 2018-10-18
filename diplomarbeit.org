@@ -1147,8 +1147,9 @@ If the sizes for a URL are not known, the http model is a fallback both the cach
 - Selective Cover Traffic medium (SCT medium) sets the factor to 50 (the default)
 - Selective Cover Traffic heavy (SCT heavy) sets the factor to 100
 
-Users can select other values, depending on their personal security
-needs.
+These values should to illustrate configurability, and show usable
+presets. Users can select other values, depending on their personal
+security needs.
 * Evaluation
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
@@ -1271,7 +1272,7 @@ the traces captured with bridge with the re-implementation.
 |                |   <5> | <11>        | <11>        | <11>        | <8>      |
 |----------------+-------+-------------+-------------+-------------+----------|
 | LLaMA          |  5055 | 2760 (54.6%) | 1038 (20.5%) | 1158 (22.9%) | 22d 16h  |
-| no defense     |  4930 | 4596 (93.2%) | 4560 (92.5%) | 4192 (85.0%) | 2d 2h    |
+| defenseless     |  4930 | 4596 (93.2%) | 4560 (92.5%) | 4192 (85.0%) | 2d 2h    |
 | \gls{s} light  |  5000 | 4916 (98.3%) | 4700 (94.0%) | 4601 (92.0%) | 2d 13h   |
 | \gls{s} medium |  5000 | 4915 (98.3%) | 4716 (94.3%) | 4673 (93.5%) | 2d 13h   |
 | \gls{s} heavy  |  4996 | 4917 (98.4%) | 4718 (94.4%) | 4633 (92.7%) | 2d 15h   |
@@ -1309,7 +1310,9 @@ which loaded at least the text is 881.83%. Reduced to the fully loaded
 traces, the time overhead compared to no defense is 228.98%. The
 slightly higher trace load rates of \gls{s} as compared to no defense
 are conceivably due to circuit performance variations in Tor. Another
-explanation might be the percentiles in outlier removal.
+explanation might be the percentiles in outlier removal. All of the
+LLaMA comparison data was captured without a Tor bridge to further
+reduce the possible causes of errors.
 
 
 #+CAPTION[LLaMA evaluation results]: Results for evaluating LLaMA, compared to no defense, and \gls{s}. LLaMA only had 34 sites with at least 30 instances. The size and time \gls{oh} are for the \gls{wf} default setting, as described in the previous Table [[tab:llama-capture]]. Size and time overhead are for ~34 sites for comparability to LLaMA, 100 site values are similar.
@@ -1318,7 +1321,7 @@ explanation might be the percentiles in outlier removal.
 | Defense        | ~100 site acc. [%] | ~34 site acc. [%] | Size \gls{oh} [%] | Time \gls{oh} [%] |
 |                |       <10> |       <10> |       <10> |       <10> |
 |----------------+------------+------------+------------+------------|
-| none           |      86.99 |      93.10 |          0 |          0 |
+| defenseless     |      86.99 |      93.10 |          0 |          0 |
 | \gls{s} light  |      42.50 |      57.16 |      66.57 |      30.75 |
 | \gls{s} medium |      35.54 |      52.55 |      88.25 |      26.82 |
 | \gls{s} heavy  |      30.21 |      46.25 |     130.04 |      50.37 |
@@ -1363,21 +1366,20 @@ overhead on Alexa's top sites.
 #+CAPTION[Accuracy to overheads on 100 sites]: Comparison of LLaMA-nodelay to this thesis's defense on 100 sites, captured at TU Braunschweig, using the bridge. The table is sorted by size increase. It also illustrates \gls{s}'s configurability.
 #+NAME: tab:ohs-vs-acc-100
 #+ATTR_LATEX: :align |l|l|r||r | r|r
-|               |            |       <10> |       <10> |       <10> |
-|---------------+------------+------------+------------+------------|
-| Scenario      |       Date |   Accuracy | Size \gls{oh} [%] | Time \gls{oh} [%] |
-|---------------+------------+------------+------------+------------|
-| no defense    | 2018-01-17 |       0.93 |       0.00 |       0.00 |
-| no defense    | 2018-02-02 |       0.92 |       0.00 |       0.00 |
-| no defense    | 2018-03-15 |       0.93 |       0.00 |       0.00 |
-| \gls{s} light | 2018-02-13 |       0.43 |      61.81 |      22.23 |
-| \gls{s} heavy | 2018-03-28 |       0.26 |     142.22 |      28.16 |
-| \gls{s} heavy | 2018-01-29 |       0.25 |     147.32 |      22.72 |
-| LLaMA-nodelay | 2018-02-25 |       0.36 |     205.18 |      29.04 |
-|---------------+------------+------------+------------+------------|
+|                |       <10> |       <10> |       <10> |
+|----------------+------------+------------+------------|
+| Scenario       |   Accuracy | Size \gls{oh} [%] | Time \gls{oh} [%] |
+|----------------+------------+------------+------------|
+| defenseless     |       0.93 |       0.00 |       0.00 |
+| \gls{s} light  |       0.43 |      61.81 |      22.23 |
+| \gls{s} medium |       0.39 |      xx |      yy |
+| \gls{s} heavy  |       0.26 |     142.22 |      28.16 |
+| LLaMA-nodelay  |       0.36 |     205.18 |      29.04 |
+|----------------+------------+------------+------------|
 # totable = [r for r in results.list_all() if not r.open_world and hasattr(r.scenario, "date") and r.scenario.date > datetime.date(2018, 1, 1) and r.scenario.num_sites == 100]
 # totable.sort(key=lambda x: x.size_overhead)
 # print results.to_table(totable, fields_plus_names=(lambda r: [r.scenario.describe(), r.scenario.site, r.scenario.date, "{:.2f}".format(r.score), "{:.2f}".format(r.size_overhead), "{:.2f}".format(r.time_overhead)], ["Scenario","Site", "Date", "Accuracy", "Size o.h. [%]", "Time o.h. [%]"]))
+# dates: light: 2018-02-13 --- heavy 2018-03-28 --- llama-nodel 2018 -02-25
 
 As LLaMA hinders web browsing, where even minimal delays make users
 less likely to use a service \citep{brutlag2009speed}, the source
@@ -1410,14 +1412,7 @@ overhead on Tor hidden service \citep[sec.5]{tor-design} sites.
 
 
 
-#+CAPTION[Size overhead to accuracy trade-off on 30 sites]: Size overhead to accuracy trade-off for thesis' defense, LLaMA-nodelay, and no defense on 30 sites, captured at TU Braunschweig.
-#+NAME: fig:oh2acc
-#+ATTR_LATEX: :float t :width 0.7\textwidth
-[[./pictures/oh2acc--llama-0.22-disabled.pdf]]
-# code: see [[file:bin/results.py::%20scatter%20plot%20of%20accuracy%20vs%20overhead]]
-# - include llama-delay @ 30
-
-Figures [[fig:oh2acc100]] and [[fig:oh2acc]] show \gls{s}'s configurability
+Figure [[fig:oh2acc100]] shows \gls{s}'s configurability
 and contrasts its accuracy/overhead trade-off to LLaMA-nodelay. This
 scatter plot includes data for captures that were effected by
 retrieval inaccuracies. Still, it clearly shows that \gls{s} surpasses
@@ -1450,9 +1445,9 @@ wikipedia.org. This could not happen if the transfer was completed
 correctly, and hints at incomplete web site retrievals. All defenses
 flatten and intermingle the peaks of this feature. The height of the
 relative histograms seems linked to defense overhead: defenseless data
-has the highest peaks, followed by the lower-overhead defense on
-2018-02-13, the higher-overhead defense on 2018-03-28, and
-LLaMA-nodelay, which has the highest, non-configurable overhead.
+has the highest peaks, followed by \gls{s} light on 2018-02-13,
+\gls{s} heavy on 2018-03-28, and LLaMA-nodelay, which has the highest,
+non-configurable overhead.
 
 
 
@@ -1553,7 +1548,7 @@ WANG14 data set is extraordinary in its classification accuracy.
 |               |            |         <12> |         <12> |         <12> |
 | Scenario      |       Date | \open Accuracy \close | \open Size \gls{oh} [%] \close | \open Time \gls{oh} [%]  \close |
 |---------------+------------+--------------+--------------+--------------|
-| no defense    | 2018-02-02 |         0.92 |         0.00 |         0.00 |
+| defenseless    | 2018-02-02 |         0.92 |         0.00 |         0.00 |
 | \gls{s} light | 2018-02-13 |         0.43 |        61.81 |        22.23 |
 | \gls{s} heavy | 2018-03-28 |         0.26 |       142.22 |        28.16 |
 | LLaMA-nodelay | 2018-02-25 |         0.36 |       205.18 |        29.04 |
@@ -1728,20 +1723,20 @@ deep-learning based approaches.
 | Scenario      | Site   |       Date | Accuracy | Size o.h. [%] | Time o.h. [%] |
 |               |        |            |     <7> |     <7> |     <7> |
 |---------------+--------+------------+---------+---------+---------|
-| no defense    | mlsec  | 2016-06-17 |    0.90 |    0.00 |    0.00 |
-| no defense    | mlsec  | 2017-10-22 |    0.43 |    0.00 |    0.00 |
-| no defense    | mlsec  | 2017-10-22 |    0.44 |    0.00 |    0.00 |
-| no defense    | mlsec  | 2016-06-17 |    0.91 |    0.00 |    0.00 |
-| no defense    | mlsec  | 2017-10-08 |    0.47 |    0.00 |    0.00 |
-| no defense    | mlsec  | 2017-11-05 |    0.48 |    0.00 |    0.00 |
-| no defense    | mlsec  | 2017-11-15 |    0.50 |    0.00 |    0.00 |
-| no defense    | mlsec  | 2016-06-17 |    0.91 |    0.00 |    0.00 |
-| no defense    | mlsec  | 2016-11-04 |    0.71 |    0.00 |    0.00 |
-| no defense    | mlsec  | 2018-01-17 |    0.93 |    0.00 |    0.00 |
-| no defense    | gcloud | 2018-01-30 |    0.95 |    0.00 |    0.00 |
-| no defense    | mlsec  | 2018-02-02 |    0.92 |    0.00 |    0.00 |
-| no defense    | gcloud | 2018-02-11 |    0.95 |    0.00 |    0.00 |
-| no defense    | mlsec  | 2018-03-15 |    0.93 |    0.00 |    0.00 |
+| defenseless    | mlsec  | 2016-06-17 |    0.90 |    0.00 |    0.00 |
+| defenseless    | mlsec  | 2017-10-22 |    0.43 |    0.00 |    0.00 |
+| defenseless    | mlsec  | 2017-10-22 |    0.44 |    0.00 |    0.00 |
+| defenseless    | mlsec  | 2016-06-17 |    0.91 |    0.00 |    0.00 |
+| defenseless    | mlsec  | 2017-10-08 |    0.47 |    0.00 |    0.00 |
+| defenseless    | mlsec  | 2017-11-05 |    0.48 |    0.00 |    0.00 |
+| defenseless    | mlsec  | 2017-11-15 |    0.50 |    0.00 |    0.00 |
+| defenseless    | mlsec  | 2016-06-17 |    0.91 |    0.00 |    0.00 |
+| defenseless    | mlsec  | 2016-11-04 |    0.71 |    0.00 |    0.00 |
+| defenseless    | mlsec  | 2018-01-17 |    0.93 |    0.00 |    0.00 |
+| defenseless    | gcloud | 2018-01-30 |    0.95 |    0.00 |    0.00 |
+| defenseless    | mlsec  | 2018-02-02 |    0.92 |    0.00 |    0.00 |
+| defenseless    | gcloud | 2018-02-11 |    0.95 |    0.00 |    0.00 |
+| defenseless    | mlsec  | 2018-03-15 |    0.93 |    0.00 |    0.00 |
  | \gls{s}   | mlsec  | 2016-09-23 |    0.87 |    7.03 |    2.83 |
 | \gls{s}   | mlsec  | 2016-06-04 |    0.78 |   14.94 |   26.32 |
 | \gls{s}   | gcloud | 2018-02-02 |    0.79 |   22.89 |   17.49 |
@@ -1787,27 +1782,27 @@ deep-learning based approaches.
 | new defense@30aI     | 2016-07-25 | 0.56 |  81.13 |   27.80 |   2 | True   |
 | new defense@5aI      | 2016-07-25 | 0.69 |  46.36 |    4.73 |   2 | True   |
 | new defense@50aI     | 2016-07-26 | 0.52 |  96.25 |   15.53 |   2 | True   |
-| no defense           | 2016-08-14 | 0.97 |   0.00 |    0.00 |   2 | True   |
-| no defense           | 2016-08-15 | 0.97 |   0.00 |    0.00 |   2 | True   |
-| no defense           | 2016-08-15 | 0.98 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2016-08-14 | 0.97 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2016-08-15 | 0.97 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2016-08-15 | 0.98 |   0.00 |    0.00 |   2 | True   |
 | new defense@5aII     | 2016-08-25 | 0.63 |  40.59 |   14.12 |   2 | True   |
 | new defense@5aI      | 2016-08-26 | 0.67 |  30.35 |   16.82 |   2 | True   |
 | new defense@5bII     | 2016-08-27 | 0.63 |  31.56 |    3.44 |   2 | True   |
 | new defense@5bI      | 2016-08-27 | 0.67 |  37.07 |    9.08 |   2 | True   |
-| no defense           | 2016-08-29 | 0.91 |   0.00 |    0.00 |   2 | True   |
-| no defense           | 2016-08-29 | 0.91 |   0.00 |    0.00 |   2 | True   |
-| no defense           | 2016-08-29 | 0.91 |   0.00 |    0.00 |   2 | True   |
-| no defense           | 2016-09-09 | 0.89 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2016-08-29 | 0.91 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2016-08-29 | 0.91 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2016-08-29 | 0.91 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2016-09-09 | 0.89 |   0.00 |    0.00 |   2 | True   |
 | new defense@20aII    | 2016-09-10 | 0.61 |  65.77 |    9.41 |   2 | True   |
 | new defense@20aI     | 2016-09-10 | 0.63 |  64.78 |    9.11 |   2 | True   |
 | new defense@20aI     | 2016-09-10 | 0.64 |  64.78 |    9.11 |   2 | True   |
 | new defense@20bII    | 2016-09-12 | 0.62 |  59.92 |   26.70 |   2 | True   |
 | new defense@20bI     | 2016-09-13 | 0.63 |  52.80 |   13.17 |   2 | True   |
-| no defense           | 2016-09-18 | 0.89 |   0.00 |    0.00 |   2 | True   |
-| no defense           | 2016-09-30 | 0.89 |   0.00 |    0.00 |   2 | True   |
-| no defense           | 2016-10-03 | 0.93 |   0.16 |    0.15 |   2 | True   |
-| no defense           | 2016-10-03 | 0.87 |   0.00 |    0.00 |   2 | True   |
-| no defense           | 2016-10-06 | 0.96 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2016-09-18 | 0.89 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2016-09-30 | 0.89 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2016-10-03 | 0.93 |   0.16 |    0.15 |   2 | True   |
+| defenseless           | 2016-10-03 | 0.87 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2016-10-06 | 0.96 |   0.00 |    0.00 |   2 | True   |
 | new defense@20aII    | 2016-10-07 | 0.62 |  67.56 |    4.99 |   2 | True   |
 | new defense@20aII    | 2016-10-07 | 0.62 |  67.38 |    5.02 |   2 | True   |
 | new defense@20aI     | 2016-10-07 | 0.63 |  72.47 |    1.50 |   2 | True   |
@@ -1822,34 +1817,34 @@ deep-learning based approaches.
 | new defense@5bII     | 2016-10-10 | 0.65 |  67.76 |    3.97 |   2 | True   |
 | new defense@5bI      | 2016-10-10 | 0.70 | 136.93 |    7.89 |   2 | True   |
 | new defense@5bI      | 2016-10-10 | 0.70 | 136.93 |    7.89 |   2 | True   |
-| no defense           | 2016-10-16 | 0.74 |  -0.13 |    1.80 |   2 | True   |
-| no defense           | 2016-11-21 | 0.97 |   0.00 |    0.00 |   2 | True   |
-| no defense           | 2016-11-21 | 0.96 |  -0.41 |    1.59 |   2 | True   |
+| defenseless           | 2016-10-16 | 0.74 |  -0.13 |    1.80 |   2 | True   |
+| defenseless           | 2016-11-21 | 0.97 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2016-11-21 | 0.96 |  -0.41 |    1.59 |   2 | True   |
 | new defense@10-with-errors | 2017-01-19 | 0.64 | 128.28 |    4.99 |   2 | True   |
 | new defense@10       | 2017-01-19 | 0.65 | 128.28 |    4.99 |   2 | True   |
 | wtf-pad              | 2017-08-27 | 0.92 |  -1.05 |    6.26 |   2 | True   |
 | wtf-pad              | 2017-08-29 | 0.93 |   0.87 |   40.60 |   2 | True   |
-| no defense           | 2017-08-31 | 0.90 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2017-08-31 | 0.90 |   0.00 |    0.00 |   2 | True   |
 | wtf-pad              | 2017-09-06 | 0.94 |  -5.67 |   76.60 |   2 | True   |
 | LLaMA                | 2017-09-07 | 0.35 |  17.04 | 3031.46 |   2 | True   |
 | LLaMA                | 2017-09-07 | 0.26 |  17.04 | 3031.46 |   0 | False  |
 | LLaMA-nodelay        | 2017-09-25 | 0.63 | 279.67 |   58.86 |   0 | False  |
 | LLaMA-nodelay        | 2017-09-25 | 0.63 | 279.67 |   58.86 |   2 | True   |
 | new defense@175aI    | 2017-10-15 | 0.34 | 390.85 |  103.21 |   2 | True   |
-| no defense           | 2017-10-16 | 0.58 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2017-10-16 | 0.58 |   0.00 |    0.00 |   2 | True   |
 | new defense@150aI    | 2017-10-17 | 0.36 | 416.45 |   95.96 |   2 | True   |
 | new defense@100aI    | 2017-12-14 | 0.46 | 284.35 |   65.92 |   2 | True   |
-| no defense           | 2017-12-15 | 0.59 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2017-12-15 | 0.59 |   0.00 |    0.00 |   2 | True   |
 | LLaMA-nodelay        | 2017-12-17 | 0.72 | 348.13 |   56.64 |   2 | True   |
-| no defense           | 2017-12-18 | 0.62 |   0.00 |    0.00 |   2 | True   |
-| no defense           | 2017-12-25 | 0.98 |   0.00 |    0.00 |   2 | True   |
-| no defense           | 2017-12-26 | 0.96 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2017-12-18 | 0.62 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2017-12-25 | 0.98 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2017-12-26 | 0.96 |   0.00 |    0.00 |   2 | True   |
 | new defense@100aI    | 2017-12-27 | 0.42 | 162.20 |   -0.88 |   2 | True   |
 | LLaMA-nodelay        | 2017-12-29 | 0.68 | 163.08 |   -4.02 |   2 | True   |
-| no defense           | 2017-12-31 | 0.97 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2017-12-31 | 0.97 |   0.00 |    0.00 |   2 | True   |
 | LLaMA                | 2018-01-07 | 0.71 |  77.59 | 1126.55 |   2 | True   |
 | LLaMA                | 2018-01-07 | 0.55 |  94.25 | 1085.25 |   0 | False  |
-| no defense           | 2018-01-12 | 0.99 |   0.00 |    0.00 |   2 | True   |
+| defenseless           | 2018-01-12 | 0.99 |   0.00 |    0.00 |   2 | True   |
 |----------------------+------------+------+--------+---------+-----+--------|
 # totable = [r for r in results.list_all() if not r.open_world and r.scenario.num_sites == 30]
 # totable.sort(key=lambda x: x.scenario.date)
@@ -1900,76 +1895,76 @@ well.
 | WANG14              | 2014-05-23 |     0.95 |       5000 | 0.977 | 0.019 |
 | WANG14              | 2014-05-23 |     0.96 |       9000 | 0.973 | 0.014 |
 | WANG14              | 2014-05-23 |     0.95 |       8303 | 0.968 | 0.013 |
-| no defense          | 2016-06-17 |     0.92 |        max | 0.817 | 0.024 |
-| no defense          | 2016-06-17 |     0.92 |       auto | 0.923 | 0.036 |
-| no defense          | 2016-08-30 |     0.84 |       auto | 0.920 | 0.064 |
-| no defense          | 2016-09-21 |     0.56 |        max | 0.497 | 0.263 |
-| no defense          | 2016-09-21 |     0.78 |       auto | 0.795 | 0.142 |
-| no defense          | 2016-09-26 |     0.84 |       auto | 0.907 | 0.073 |
-| no defense          | 2016-11-04 |     0.60 |        max | 0.586 | 0.221 |
-| no defense          | 2016-11-04 |     0.75 |       auto | 0.821 | 0.123 |
-| no defense          | 2016-11-27 |     0.56 |        max | 0.396 | 0.188 |
-| no defense          | 2016-11-27 |     0.80 |       auto | 0.829 | 0.140 |
-| no defense          | 2016-12-02 |     0.84 |       auto | 0.849 | 0.069 |
-| no defense          | 2016-12-23 |     0.74 |        max | 0.741 | 0.181 |
-| no defense          | 2016-12-23 |     0.83 |       auto | 0.854 | 0.082 |
-| no defense          | 2016-12-26 |     0.84 |       auto | 0.926 | 0.046 |
-| no defense          | 2016-12-26 |     0.87 |       auto | 0.899 | 0.044 |
-| no defense          | 2018-01-17 |     0.85 |       auto | 0.875 | 0.126 |
-| no defense          | 2018-02-02 |     0.55 |       auto | 0.609 | 0.425 |
-| no defense          | 2018-02-02 |     0.54 |        max | 0.646 | 0.523 |
+| defenseless          | 2016-06-17 |     0.92 |        max | 0.817 | 0.024 |
+| defenseless          | 2016-06-17 |     0.92 |       auto | 0.923 | 0.036 |
+| defenseless          | 2016-08-30 |     0.84 |       auto | 0.920 | 0.064 |
+| defenseless          | 2016-09-21 |     0.56 |        max | 0.497 | 0.263 |
+| defenseless          | 2016-09-21 |     0.78 |       auto | 0.795 | 0.142 |
+| defenseless          | 2016-09-26 |     0.84 |       auto | 0.907 | 0.073 |
+| defenseless          | 2016-11-04 |     0.60 |        max | 0.586 | 0.221 |
+| defenseless          | 2016-11-04 |     0.75 |       auto | 0.821 | 0.123 |
+| defenseless          | 2016-11-27 |     0.56 |        max | 0.396 | 0.188 |
+| defenseless          | 2016-11-27 |     0.80 |       auto | 0.829 | 0.140 |
+| defenseless          | 2016-12-02 |     0.84 |       auto | 0.849 | 0.069 |
+| defenseless          | 2016-12-23 |     0.74 |        max | 0.741 | 0.181 |
+| defenseless          | 2016-12-23 |     0.83 |       auto | 0.854 | 0.082 |
+| defenseless          | 2016-12-26 |     0.84 |       auto | 0.926 | 0.046 |
+| defenseless          | 2016-12-26 |     0.87 |       auto | 0.899 | 0.044 |
+| defenseless          | 2018-01-17 |     0.85 |       auto | 0.875 | 0.126 |
+| defenseless          | 2018-02-02 |     0.55 |       auto | 0.609 | 0.425 |
+| defenseless          | 2018-02-02 |     0.54 |        max | 0.646 | 0.523 |
 | new defense (100aI) | 2018-02-02 |     0.61 |       auto | 0.711 | 0.304 |
-| no defense          | 2018-02-02 |     0.82 |       auto | 0.846 | 0.171 |
-| no defense          | 2018-02-02 |     0.89 |        100 | 0.992 | 0.900 |
-| no defense          | 2018-02-02 |     0.87 |        200 | 0.988 | 0.855 |
-| no defense          | 2018-02-02 |     0.84 |        500 | 0.973 | 0.710 |
-| no defense          | 2018-02-02 |     0.81 |       1000 | 0.953 | 0.530 |
-| no defense          | 2018-02-02 |     0.80 |       2000 | 0.897 | 0.305 |
-| no defense          | 2018-02-02 |     0.80 |       3000 | 0.878 | 0.236 |
-| no defense          | 2018-02-02 |     0.82 |       5000 | 0.827 | 0.149 |
-| no defense          | 2018-02-02 |     0.84 |        max | 0.814 | 0.123 |
+| defenseless          | 2018-02-02 |     0.82 |       auto | 0.846 | 0.171 |
+| defenseless          | 2018-02-02 |     0.89 |        100 | 0.992 | 0.900 |
+| defenseless          | 2018-02-02 |     0.87 |        200 | 0.988 | 0.855 |
+| defenseless          | 2018-02-02 |     0.84 |        500 | 0.973 | 0.710 |
+| defenseless          | 2018-02-02 |     0.81 |       1000 | 0.953 | 0.530 |
+| defenseless          | 2018-02-02 |     0.80 |       2000 | 0.897 | 0.305 |
+| defenseless          | 2018-02-02 |     0.80 |       3000 | 0.878 | 0.236 |
+| defenseless          | 2018-02-02 |     0.82 |       5000 | 0.827 | 0.149 |
+| defenseless          | 2018-02-02 |     0.84 |        max | 0.814 | 0.123 |
 | new defense (20aI)  | 2018-02-02 |     0.71 |       auto | 0.725 | 0.209 |
-| no defense          | 2018-02-02 |     0.82 |       auto | 0.843 | 0.162 |
-| no defense          | 2018-02-02 |     0.86 |        300 | 0.977 | 0.670 |
-| no defense          | 2018-02-02 |     0.89 |        100 | 0.994 | 0.880 |
-| no defense          | 2018-02-02 |     0.88 |        200 | 0.989 | 0.855 |
-| no defense          | 2018-02-02 |     0.85 |        500 | 0.965 | 0.566 |
-| no defense          | 2018-02-02 |     0.82 |       1000 | 0.943 | 0.446 |
-| no defense          | 2018-02-02 |     0.80 |       2000 | 0.907 | 0.312 |
-| no defense          | 2018-02-02 |     0.81 |       3000 | 0.875 | 0.219 |
-| no defense          | 2018-02-02 |     0.82 |       5000 | 0.842 | 0.157 |
-| no defense          | 2018-02-02 |     0.84 |        max | 0.814 | 0.123 |
-| no defense          | 2018-02-02 |     0.83 |       auto | 0.829 | 0.137 |
-| no defense          | 2018-02-02 |     0.85 |       4586 | 0.881 | 0.138 |
-| no defense          | 2018-02-02 |     0.85 |       4586 | 0.869 | 0.123 |
-| no defense          | 2018-02-02 |     0.60 |       5000 | 0.544 | 0.346 |
-| no defense          | 2018-02-02 |     0.83 |       5000 | 0.839 | 0.140 |
-| no defense          | 2018-02-02 |     0.85 |       4622 | 0.879 | 0.138 |
-| no defense          | 2018-02-02 |     0.86 |       4538 | 0.879 | 0.131 |
-| no defense          | 2018-02-02 |     0.61 |       4586 | 0.528 | 0.315 |
-| no defense          | 2018-02-02 |     0.86 |       4586 | 0.877 | 0.131 |
-| no defense          | 2018-02-02 |     0.85 |       4586 | 0.877 | 0.150 |
-| no defense          | 2018-02-02 |     0.86 |       4586 | 0.880 | 0.133 |
-| no defense          | 2018-02-02 |     0.61 |       4586 | 0.511 | 0.310 |
-| no defense          | 2018-02-02 |     0.61 |       4586 | 0.527 | 0.316 |
-| no defense          | 2018-02-02 |     0.61 |       4586 | 0.523 | 0.313 |
-| no defense          | 2018-02-02 |     0.61 |       4586 | 0.521 | 0.311 |
-| no defense          | 2018-02-02 |     0.61 |       4586 | 0.530 | 0.312 |
-| no defense          | 2018-02-02 |     0.61 |       4538 | 0.527 | 0.318 |
-| no defense          | 2018-02-02 |     0.61 |       4622 | 0.565 | 0.347 |
-| no defense          | 2018-02-02 |     0.82 |       1000 | 0.999 | 0.998 |
-| no defense          | 2018-02-02 |     0.70 |       2000 | 1.000 | 0.996 |
-| no defense          | 2018-02-02 |     0.66 |       3000 | 0.874 | 0.658 |
-| no defense          | 2018-02-02 |     0.60 |       5000 | 0.542 | 0.345 |
-| no defense          | 2018-02-02 |     0.60 |       6754 | 0.000 | 0.000 |
-| no defense          | 2018-02-02 |     0.62 |       4538 | 0.731 | 0.500 |
-| no defense          | 2018-02-02 |     0.82 |       1000 | 0.945 | 0.439 |
-| no defense          | 2018-02-02 |     0.82 |       1000 | 0.946 | 0.456 |
-| no defense          | 2018-02-02 |     0.80 |       2000 | 0.914 | 0.313 |
-| no defense          | 2018-02-02 |     0.82 |       3000 | 0.891 | 0.219 |
-| no defense          | 2018-02-02 |     0.83 |       5000 | 0.847 | 0.158 |
-| no defense          | 2018-02-02 |     0.84 |       6754 | 0.827 | 0.119 |
-| no defense          | 2018-02-02 |     0.82 |       4538 | 0.846 | 0.153 |
+| defenseless          | 2018-02-02 |     0.82 |       auto | 0.843 | 0.162 |
+| defenseless          | 2018-02-02 |     0.86 |        300 | 0.977 | 0.670 |
+| defenseless          | 2018-02-02 |     0.89 |        100 | 0.994 | 0.880 |
+| defenseless          | 2018-02-02 |     0.88 |        200 | 0.989 | 0.855 |
+| defenseless          | 2018-02-02 |     0.85 |        500 | 0.965 | 0.566 |
+| defenseless          | 2018-02-02 |     0.82 |       1000 | 0.943 | 0.446 |
+| defenseless          | 2018-02-02 |     0.80 |       2000 | 0.907 | 0.312 |
+| defenseless          | 2018-02-02 |     0.81 |       3000 | 0.875 | 0.219 |
+| defenseless          | 2018-02-02 |     0.82 |       5000 | 0.842 | 0.157 |
+| defenseless          | 2018-02-02 |     0.84 |        max | 0.814 | 0.123 |
+| defenseless          | 2018-02-02 |     0.83 |       auto | 0.829 | 0.137 |
+| defenseless          | 2018-02-02 |     0.85 |       4586 | 0.881 | 0.138 |
+| defenseless          | 2018-02-02 |     0.85 |       4586 | 0.869 | 0.123 |
+| defenseless          | 2018-02-02 |     0.60 |       5000 | 0.544 | 0.346 |
+| defenseless          | 2018-02-02 |     0.83 |       5000 | 0.839 | 0.140 |
+| defenseless          | 2018-02-02 |     0.85 |       4622 | 0.879 | 0.138 |
+| defenseless          | 2018-02-02 |     0.86 |       4538 | 0.879 | 0.131 |
+| defenseless          | 2018-02-02 |     0.61 |       4586 | 0.528 | 0.315 |
+| defenseless          | 2018-02-02 |     0.86 |       4586 | 0.877 | 0.131 |
+| defenseless          | 2018-02-02 |     0.85 |       4586 | 0.877 | 0.150 |
+| defenseless          | 2018-02-02 |     0.86 |       4586 | 0.880 | 0.133 |
+| defenseless          | 2018-02-02 |     0.61 |       4586 | 0.511 | 0.310 |
+| defenseless          | 2018-02-02 |     0.61 |       4586 | 0.527 | 0.316 |
+| defenseless          | 2018-02-02 |     0.61 |       4586 | 0.523 | 0.313 |
+| defenseless          | 2018-02-02 |     0.61 |       4586 | 0.521 | 0.311 |
+| defenseless          | 2018-02-02 |     0.61 |       4586 | 0.530 | 0.312 |
+| defenseless          | 2018-02-02 |     0.61 |       4538 | 0.527 | 0.318 |
+| defenseless          | 2018-02-02 |     0.61 |       4622 | 0.565 | 0.347 |
+| defenseless          | 2018-02-02 |     0.82 |       1000 | 0.999 | 0.998 |
+| defenseless          | 2018-02-02 |     0.70 |       2000 | 1.000 | 0.996 |
+| defenseless          | 2018-02-02 |     0.66 |       3000 | 0.874 | 0.658 |
+| defenseless          | 2018-02-02 |     0.60 |       5000 | 0.542 | 0.345 |
+| defenseless          | 2018-02-02 |     0.60 |       6754 | 0.000 | 0.000 |
+| defenseless          | 2018-02-02 |     0.62 |       4538 | 0.731 | 0.500 |
+| defenseless          | 2018-02-02 |     0.82 |       1000 | 0.945 | 0.439 |
+| defenseless          | 2018-02-02 |     0.82 |       1000 | 0.946 | 0.456 |
+| defenseless          | 2018-02-02 |     0.80 |       2000 | 0.914 | 0.313 |
+| defenseless          | 2018-02-02 |     0.82 |       3000 | 0.891 | 0.219 |
+| defenseless          | 2018-02-02 |     0.83 |       5000 | 0.847 | 0.158 |
+| defenseless          | 2018-02-02 |     0.84 |       6754 | 0.827 | 0.119 |
+| defenseless          | 2018-02-02 |     0.82 |       4538 | 0.846 | 0.153 |
 | new defense (100aI) | 2018-02-02 |     0.82 |       1000 | 1.000 | 0.991 |
 | new defense (100aI) | 2018-02-02 |     0.70 |       2000 | 1.000 | 0.993 |
 | new defense (100aI) | 2018-02-02 |     0.65 |       3000 | 0.859 | 0.683 |
@@ -3628,7 +3623,7 @@ not.
    | <17>              |       <10> |       <10> |       <10> |
    | scenario          | \open accuracy [%] \close | \open size overhead [%] \close | \open time overhead [%] \close |
    |-------------------+------------+------------+------------|
-   | no defense (2017-12-26) |      96.46 |          0 |          0 |
+   | defenseless (2017-12-26) |      96.46 |          0 |          0 |
    |-------------------+------------+------------+------------|
    | LLaMA             |      55.46 |      94.25 |    1085.25 |
    | 30aI--2016-07-25  |      55.75 |      81.13 |      27.80 |
@@ -3658,6 +3653,13 @@ not.
    #+NAME: fig:oh2acc
    [[./pictures/oh2acc--llama-0.22-disabled.pdf]]
    # code: see [[file:bin/results.py::%20scatter%20plot%20of%20accuracy%20vs%20overhead]]
+
+#+CAPTION[Size overhead to accuracy trade-off on 30 sites]: Size overhead to accuracy trade-off for thesis' defense, LLaMA-nodelay, and no defense on 30 sites, captured at TU Braunschweig.
+#+NAME: fig:oh2acc
+#+ATTR_LATEX: :float t :width 0.7\textwidth
+[[./pictures/oh2acc--llama-0.22-disabled.pdf]]
+# code: see [[file:bin/results.py::%20scatter%20plot%20of%20accuracy%20vs%20overhead]]
+# - include llama-delay @ 30
 *** PENDING (llama-delay) [#C] accuracy/overhead plot    :duckstein:internet:
     :PROPERTIES:
     :Effort:   0:30
@@ -3776,7 +3778,7 @@ training on data without defense, and testing on defended data.
 | <17>              |       <10> |       <10> |       <10> |
 | Scenario          | \open Accuracy [%] \close | \open Size overhead [%] \close | \open Time overhead [%] \close |
 |-------------------+------------+------------+------------|
-| no defense (2017-12-26) |      96.46 |          0 |          0 |
+| defenseless (2017-12-26) |      96.46 |          0 |          0 |
 |-------------------+------------+------------+------------|
 | LLaMA             |      55.46 |      94.25 |    1085.25 |
 | 30aI--2016-07-25  |      55.75 |      81.13 |      27.80 |

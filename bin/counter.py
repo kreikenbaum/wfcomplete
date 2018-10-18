@@ -843,6 +843,10 @@ class Counter(object):
         ''':returns: total incoming packet count'''
         return _num_packets(self.packets)[0]
 
+    def get_tpo(self):
+        ''':returns: total outgoing packet count'''
+        return _num_packets(self.packets)[0]
+
     @property
     def total_bytes_in(self):
         '''returns total incoming bytes'''
