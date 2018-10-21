@@ -259,7 +259,10 @@ class Scenario(object):
     @property
     def factor2(self):
         '''@return the factor from the settings (if new defense), else ""'''
-        return int(filter(str.isdigit, self.setting))
+        try:
+            return int(filter(str.isdigit, self.setting))
+        except TypeError:
+            return int(filter(unicode.isdigit, self.setting))
 
     # # todo: codup counter.py?
     def get_features_cumul(self, current_sites=True):

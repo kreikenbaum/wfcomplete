@@ -1,5 +1,7 @@
 '''plotting methods using matplotlib'''
+import datetime
 import logging
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
@@ -125,19 +127,22 @@ def confusion_matrix(y_true, y_pred, domains, title='Confusion matrix',
 
 def date_accuracy(size=30):
     '''@return accuracy over time for disabled data of size =size='''
-    scenarios = [x for x in results.list_all()
-                 if x.scenario.num_sites == size
-                 and 'no defense' in x.scenario.name]
-    df = pd.DataFrame([x.__dict__ for x in scenarios])
+    result_list = [r for r in results.list_all()
+                   if r.scenario.num_sites == size
+                   and scenario.NODEF in r.scenario.name
+                   and "nobridge" not in r.scenario.name
+                   and not r.open_world
+                   and r.scenario.date < datetime.date(2017, 12, 24)]
+    df = pd.DataFrame([x.__dict__ for x in result_list])
     df = df.rename(columns={'score': 'Accuracy'})  # todo: * 100 and ..cy [%]
-    df['Scenario Date [ordinal]'] = df['scenario'].map(
-        lambda x: x.date.toordinal())
-    plot = df.plot.scatter('Scenario Date [ordinal]', 'Accuracy')  # here, too?
+    df['Date of Capture'] = df['scenario'].map(lambda x: x.date.toordinal())
+    plot = df.plot.scatter('Date of Capture', 'Accuracy', color='grey')  # here, too?
     plot.legend(handles=[mpatches.Patch(
-        color=sns.color_palette("colorblind", 1)[0],
-        label=scenarios[0].name)])
+        color="grey",
+        label=result_list[0].scenario.name)])
     plot.set_title("Accuracy Ratio by Date (on {} sites)".format(size))
     plot.set_ybound(0, 1)
+    plot.xaxis.set_major_formatter(mdates.DateFormatter('%m.%Y'))
     plt.tight_layout()
     return plot
 
@@ -187,10 +192,10 @@ to save, and =fig.show()= to display.
     return fig
 
 
-
+# should be rename to sth general
 def total_packets_in(counter_dict, subkeys=None, ax=None, save=False,
-                     color=None):
-    '''plots total incoming packets stat, rugplot with kde
+                     color=None, method=scenario.tpi):
+    '''plots total incoming packets (see method) stat, rugplot with kde
 
     - plot size histogram colored by domain
       - with kde
@@ -203,7 +208,7 @@ def total_packets_in(counter_dict, subkeys=None, ax=None, save=False,
     for domain in subkeys:
         #        sns.distplot(stats.tpi(v), hist=False, rug=True, label=k)
         c = color(domain) if color else None
-        sns.distplot(scenario.tpi(counter_dict[domain]), label=domain,
+        sns.distplot(method(counter_dict[domain]), label=domain,
                      ax=ax, color=c)
 
     if not ax:
@@ -238,7 +243,7 @@ def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):
     '''
     if not trace_dicts:
         trace_dicts = [scenario.Scenario(name).get_traces() for name in names]
-    fig, axes = plt.subplots(len(names), 1, sharex=True, sharey=False)
+        fig, axes = plt.subplots(len(names), 1, sharex=True, sharey=False)
     plt.suptitle("Number of incoming packets per trace")
     mm = counter.MinMaxer()
     keys = set(trace_dicts[0].keys())
