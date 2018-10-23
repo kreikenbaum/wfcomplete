@@ -178,10 +178,14 @@ class Scenario(object):
 
     def _increase(self, method, trace_dict=None):
         try:
-            closest_disabled = self._closest("disabled")
+            closest_disabled = self._closest(
+                "disabled",
+                filter_scenario=lambda so: so.uses_bridge == self.uses_bridge)
         except AttributeError:
             self.date = self.date_from_trace()
-            closest_disabled = self._closest("disabled")
+            closest_disabled = self._closest(
+                "disabled",
+                filter_scenario=lambda so: so.uses_bridge == self.uses_bridge)
         if closest_disabled == self:
             return 0
         return method(closest_disabled.get_traces(current_sites=False),
@@ -233,6 +237,13 @@ class Scenario(object):
         except TypeError:
             pass
         return fromsettings
+
+    @property
+    def uses_bridge(self):
+        '''crude approximation if this scenario uses a bridge'''
+        return (hasattr(self, "setting")
+                and "bridge" in self.setting
+                and "nobridge" not in self.setting)
 
     def date_from_trace(self):
         '''retrieve date from traces'''
