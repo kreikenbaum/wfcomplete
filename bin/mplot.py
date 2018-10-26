@@ -41,9 +41,7 @@ def accuracy_vs_overhead(result_list, title="Size Overhead to Accuracy"):
     df = pd.DataFrame([r.to_dict() for r in result_list])
     names = set(df['scenario_name'])
 
-    def color(x):
-        return _color(x, names)
-    df['color'] = df['scenario_name'].map(color)
+    df['color'] = df['scenario'].map(lambda scnr: scnr.color)
     df = df.rename(columns={'size_overhead': 'Size Overhead [%]',
                             'score': 'Accuracy'})
     plot = df.plot.scatter('Size Overhead [%]', 'Accuracy', c=df.color)
@@ -136,9 +134,10 @@ def date_accuracy(size=30):
     df = pd.DataFrame([x.__dict__ for x in result_list])
     df = df.rename(columns={'score': 'Accuracy'})  # todo: * 100 and ..cy [%]
     df['Date of Capture'] = df['scenario'].map(lambda x: x.date.toordinal())
-    plot = df.plot.scatter('Date of Capture', 'Accuracy', color='grey')  # here, too?
+    plot = df.plot.scatter('Date of Capture', 'Accuracy',
+                           color=scenario.COLORS[scenario.NODEF])  # here, too?
     plot.legend(handles=[mpatches.Patch(
-        color="grey",
+        color=scenario.COLORS[scenario.NODEF],
         label=result_list[0].scenario.name)])
     plot.set_title("Accuracy Ratio by Date (on {} sites)".format(size))
     plot.set_ybound(0, 1)
@@ -171,7 +170,7 @@ def roc_helper_open_world_binary(result, **kwargs):
 
 
 def roc(fpr, tpr, curvelabel="ROC-curve", titleadd=None, fig=None,
-        dot_position=0.01):
+        dot_position=0.01, color=None):
     '''@return fig object with roc curve, use =fig.savefig(filename)=
 to save, and =fig.show()= to display.
     @param fig: draw another curve into existing figure
@@ -179,7 +178,7 @@ to save, and =fig.show()= to display.
     if not fig:
         fig = _init_roc(titleadd=titleadd)
     plt.plot(fpr, tpr, label='{} (AUC = {:0.2f})'.format(
-        curvelabel, metrics.auc(fpr, tpr)))
+        curvelabel, metrics.auc(fpr, tpr)), color=color)
     if dot_position:
         x1, y1 = [(x, y) for (x, y) in zip(fpr, tpr) if x < dot_position][-1]
         plt.plot(x1, y1, "ro",
@@ -316,23 +315,26 @@ def ccdf_curve_for_scenario(scenario_obj, existing=True, axes=None,
                             filt=None, type_="recall", save=False):
     if not axes:
         _, axes = plt.subplots()
-    sizes = set()
+    used = set()
     for result in sorted((r for r in results.for_scenario_open(scenario_obj)
                          if not r.open_world['binary']),
                          key=lambda r: r.background_size):
         logging.debug(result)
-        if len(sizes) >= 6:
+        if result.open_world['tpr'] == 0.0 and result.open_world['fpr'] == 0.0:
+            logging.debug("skipped %s", result)
+            continue
+        if len(used) >= 6:
             break
-        if (existing and not result._ypred or
+        if (existing and not (result._ypred and result._ytrue) or
                 filt and not filt(result)):
             logging.debug("skipped %s", result)
             continue
         # size = len(result.scenario.get_traces()['background'])
-        size = result.background_size
-        if size in sizes:
+        if result.background_size in (r.background_size for r in used):
             continue
-        sizes.add(size)
-        ccdf_curve(result.get_confusion_matrix(), size,
+        used.add(result)
+    for result in sorted(used, key=lambda x: int(x.background_size)):
+        ccdf_curve(result.get_confusion_matrix(), result.background_size,
                    # "{} ({})".format(size, result._id),
                    axes=axes, type_=type_)
     plt.legend()
@@ -341,6 +343,7 @@ def ccdf_curve_for_scenario(scenario_obj, existing=True, axes=None,
         plt.savefig("/tmp/ccdf-{}-{}.pdf"
                     .format(type_, scenario_obj)
                     .replace(" ", "-"))
+    return used
 
 
 def ccdf_curve_for_results(results, type_="recall", axes=None, **kwargs):

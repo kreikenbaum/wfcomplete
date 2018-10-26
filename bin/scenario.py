@@ -29,12 +29,12 @@ from capture import utils
 
 NODEF = "defenseless"
 COLORS = {
-    NODEF: "grey",
-    "LLaMA": "red",
-    "LLaMA-nodelay": "orange",
-    "SCT light": "blue",
-    "SCT medium": "green",
-    "SCT heavy": "yellow"
+    NODEF: "#d55e00",
+    "LLaMA": "#cc79a7",
+    "LLaMA-nodelay": "#cc79a7",
+    "SCT light": "#56b4e9",
+    "SCT medium": "#009e73",
+    "SCT heavy": "#0072b2"
 }
 
 INT_REGEXP = re.compile("-?([+-]?[0-9]+.*)")

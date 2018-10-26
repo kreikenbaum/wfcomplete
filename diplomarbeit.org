@@ -1116,8 +1116,6 @@ via ~htmlSizes.add("http://google.com/", 613)~ . Querying via
    :END:
 #+INDEX: Selective Cover Traffic, light
 #+INDEX: SCT, light
-#+INDEX: Selective Cover Traffic, medium
-#+INDEX: SCT, medium
 #+INDEX: Selective Cover Traffic, heavy
 #+INDEX: SCT, heavy
 
@@ -1140,11 +1138,10 @@ send bursts after retrieval has ended.
   sent all the traffic it should send? The =burst= option sends all of
   this traffic at the end, while the =noburst= discards this.
 
-If the sizes for a URL are not known, the http model is a fallback both the cache and the target. While several scenarios were tested, the latter three options had little effect, except for very fresh caches (a week). For the sake of comparison, the defense is compared with up to three /factor/ values:
+If the sizes for a URL are not known, the http model is a fallback both the cache and the target. While several scenarios were tested, the latter three options had little effect, except for very fresh caches (a week). For the sake of comparison, the defense is compared with two /factor/ values:
 
-- Selective Cover Traffic light (SCT light) sets the factor to 20
-- Selective Cover Traffic medium (SCT medium) sets the factor to 50 (the default)
-- Selective Cover Traffic heavy (SCT heavy) sets the factor to 100
+- Selective Cover Traffic light (SCT light) sets the factor to 20, and
+- Selective Cover Traffic heavy (SCT heavy) sets the factor to 100.
 
 These values should to illustrate configurability, and show usable
 presets. Users can select other values, depending on their personal
@@ -1278,7 +1275,6 @@ the traces captured with bridge with the re-implementation.
 | LLaMA          |  5055 | 2760 (54.6%) | 1038 (20.5%) | 1158 (22.9%) | 22d 16h  |
 | defenseless     |  4930 | 4596 (93.2%) | 4560 (92.5%) | 4192 (85.0%) | 2d 2h    |
 | \gls{s} light  |  5000 | 4916 (98.3%) | 4700 (94.0%) | 4601 (92.0%) | 2d 13h   |
-| \gls{s} medium |  5000 | 4915 (98.3%) | 4716 (94.3%) | 4673 (93.5%) | 2d 13h   |
 | \gls{s} heavy  |  4996 | 4917 (98.4%) | 4718 (94.4%) | 4633 (92.7%) | 2d 15h   |
 
 # # LLaMA:    "defense-client/nobridge--2018-07-17--100@50"
@@ -1327,7 +1323,6 @@ reduce the possible causes of errors.
 |----------------+------------+------------+------------+------------|
 | defenseless     |      86.99 |      93.10 |          0 |          0 |
 | \gls{s} light  |      42.50 |      57.16 |      66.57 |      30.75 |
-| \gls{s} medium |      35.54 |      52.55 |      88.25 |      26.82 |
 | \gls{s} heavy  |      30.21 |      46.25 |     130.04 |      50.37 |
 | LLaMA          |       n.a. |      33.19 |      23.03 |     845.82 |
 
@@ -1376,7 +1371,6 @@ overhead on Alexa's top sites.
 |----------------+------------+------------+------------|
 | defenseless    |       0.93 |       0.00 |       0.00 |
 | \gls{s} light  |       0.43 |      61.81 |      22.23 |
-| \gls{s} medium |       0.39 |      87.20 |      19.13 |
 | \gls{s} heavy  |       0.26 |     142.22 |      28.16 |
 | LLaMA-nodelay  |       0.36 |     205.18 |      29.04 |
 |----------------+------------+------------+------------|
@@ -1431,7 +1425,7 @@ tables of evaluation results.
 #+CAPTION: Relative histograms of number of incoming packets on top sites
 #+NAME: fig:relative-histogram-incoming-bytes-llama-0.22-disabled
 #+ATTR_LATEX: :float t :width \textwidth
-[[./pictures/total_packets_in_disabled___bridge--2018-01-12--30@50_defense-client___bridge--2018-01-07--30@50__bing.com_wordpress.com_gmw.cn_wikipedia.org__palette_colorblind.pdf]]
+[[./pictures/total_packets_in_disabled___bridge--2018-02-02--100@50_wf-cover___bridge-100aI--2018-03-28--100@50_defense-client-nodelay___bridge--2018-02-25--100@50_wf-cover___bridge-20aI--2018-02-13--100@50__google.com_youtube.com_yahoo.com_amazon.com_wikipe.pdf]]
 # code: similar to total_packets_in_helper with sitenum=8
 # fig, axes = plt.subplots(2, 2, sharex=True, sharey=True)
 # color = lambda x: mplot._color(x, keys, "Set1")
@@ -1555,7 +1549,6 @@ WANG14 data set is extraordinary in its classification accuracy.
 |----------------+--------------+--------------+--------------|
 | defenseless    |         0.92 |         0.00 |         0.00 |
 | \gls{s} light  |         0.43 |        61.81 |        22.23 |
-| \gls{s} medium |         0.39 |        87.20 |        19.13 |
 | \gls{s} heavy  |         0.26 |       142.22 |        28.16 |
 | LLaMA-nodelay  |         0.36 |       205.18 |        29.04 |
 To evaluate \gls{s}, and to compare and contrast to LLaMA
@@ -1571,6 +1564,11 @@ size overhead results is again presented in Table
 #+ATTR_LATEX: :float t :width 0.7\textwidth
 [[./pictures/rocs-629-848-706-654.pdf]]
 # sent to daniel 2018-07-12
+# if result-ids are clear, use
+# rocfig = mplot._init_roc("Receiver operating characteristic (ROC) curves")
+# for r in map(results.for_id, [629, 848, 706, 654, 1025]):
+#     mplot.roc_helper_open_world_binary(r, fig=rocfig, dot_position=None, color=r.scenario.color)
+
 
 
 Figure [[fig:rocs-defenses-100]] compares the defenses using a
@@ -1590,20 +1588,22 @@ Figure.
 [[./pictures/rocs-837-838-839-840.pdf]]
 # rocfig = mplot._init_roc("Receiver operating characteristic (ROC) curves")
 # for r in [r for r in results.list_all() if 40 < r.size < 60 and r.open_world['binary'] and r.background_size == "5000"]:
-#     mplot.roc_helper_open_world_binary(r, fig=rocfig, dot_position=None)
-# that way generated, to redo: map(results.for_id, [837, 838, 839, 840])
+#     mplot.roc_helper_open_world_binary(r, fig=rocfig, dot_position=None, color=r.scenario.color)
+# that way generated, to redo sorted: map(results.for_id, [840, 838, 837, 839])
 The above \gls{roc}-curve for 100 sites shows the curves close to each
-other. The \gls{roc}-curve in Figure [[fig:rocs-defenses]] illustrates the
-classification strictness trade-off on 50 sites with an open world
-size of 5000 background traces. \citet[Fig.~11]{wtfpad2015} use this
-size configuration their \gls{roc}-curve comparison. The curve of
-defenseless data has a similar \gls{auc} (0.92) to their reports
-(0.82). The difference could be due to CUMUL's \citep{panchenko2}
-increased accuracy as compared to KNNs \citep{effective2014}. \Gls{s}
-light at 62% overhead visibly decreases classification efficacy. Both
-LLaMA-nodelay with 205% overhead and \gls{s} heavy at 142% overhead
-decrease open-world classification accuracy to a level similar to
-random guessing (\gls{auc} 0.53 and 0.49, respectively).
+other. To better distinguish between the defenses, the \gls{roc}-curve
+in Figure [[fig:rocs-defenses]] illustrates the classification strictness
+trade-off on 50 sites with an open world size of 5000 background
+traces. This is the same size configuration that
+\citet[Fig.~11]{wtfpad2015} use in their \gls{roc}-curve
+comparison. The curve of defenseless data has a similar \gls{auc}
+(0.92) to their reports (0.82). The slightly higher value could be due
+to CUMUL's \citep{panchenko2} increased accuracy as compared to KNNs
+\citep{effective2014}. \Gls{s} light at 62% overhead visibly decreases
+classification efficacy. Both LLaMA-nodelay with 205% overhead and
+\gls{s} heavy at 142% overhead decrease open-world classification
+accuracy to a level similar to random guessing (\gls{auc} 0.53 and
+0.49, respectively).
 ** Capture Pitfalls
    :PROPERTIES:
    :CUSTOM_ID: sub4-pitfalls
@@ -1894,20 +1894,19 @@ the modern deep-learning based attacks by \citet{rimmerautomated} and
 \citet{sirinam2018deep}.
 
 
-On the attack side, \citet{ssl-traffic-analysis} confirm the general
-usefulness of hidden markov models in traffic analysis
+On the attack side, \citet{ssl-traffic-analysis} confirm that \gls{wf}
+profitsfrom using hidden markov models in traffic analysis
 \citet{introta}. They could be combined with recent improvements in
 single-page detection, as written in the last paragraph. For single
 page detection, it could be explored if multiple kernel learning as
 presented by \cite{kloft2011lp} that incorporates timing-based
 features \cite{DBLP:journals/tifs/FeghhiL16} can surpass current
 deep-learning based approaches.
-
 \appendix
 \part{Appendix}
 * appendices (begin above this headline; this is for searching)     :ARCHIVE:
   above, as in this section cuts it out (due to ARCHIVE tag)
-* [#D] Closed-World (Accuracy) Results [0/1]
+* [#D] Closed-World (Accuracy) Results
   :PROPERTIES:
   :CUSTOM_ID: appendix-accuracy
   :END:

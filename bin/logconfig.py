@@ -12,3 +12,7 @@ def add_file_output(filename):
     sh = logging.FileHandler(filename)
     sh.setFormatter(logging.Formatter(LOGFORMAT))
     logging.getLogger().addHandler(sh)
+
+def reset(level):
+    reload(logging)
+    logging.basicConfig(format=LOGFORMAT, level=level)
