@@ -63,7 +63,8 @@ class Result(object):
         self.time_overhead = time_overhead
         self.type_ = type_
         if not self.date and hasattr(self.scenario, "date"):
-            self.date = self.scenario.date
+            self.date = datetime.datetime.combine(
+                self.scenario.date, datetime.datetime.min.time())
         self._ytrue = ytrue
         self._ypred = ypred
         self._ydomains = ydomains
