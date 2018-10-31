@@ -260,7 +260,7 @@ def total_packets_in_helper(names, trace_dicts=None, sitenum=4, save=True):
         subset = [counter_dict[x] for x in keys]
         mm.set_if(min(min([scenario.tpi(v) for v in subset])),
                   max(max([scenario.tpi(v) for v in subset])))
-        ax.set_title('{}'.format(scenario.Scenario(name)))
+        ax.set_title('{}'.format(scenario.Scenario(name).describe()))
     for ax in axes:
         ax.set_xlim(mm.min * 0.8, mm.max * 1.2)
     fig.text(0, 0.5, "relative histograms with kernel-density-estimation",
