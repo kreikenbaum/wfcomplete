@@ -39,19 +39,20 @@ def _color(name, all_names, palette="colorblind"):
 def accuracy_vs_overhead(result_list, title="Size Overhead to Accuracy"):
     '''plots scatter plot of results's accuracy vs overhead'''
     df = pd.DataFrame([r.to_dict() for r in result_list])
-    names = set(df['scenario_name'])
+    names = sorted(set(df['scenario_name']), reverse=True)  # hack, but enough
 
-    df['color'] = df['scenario'].map(lambda scnr: scnr.color)
+    def color(x):
+        return scenario.COLORS[x]
+    df['color'] = df['scenario_name'].map(color)
     df = df.rename(columns={'size_overhead': 'Size Overhead [%]',
                             'score': 'Accuracy'})
-    plot = df.plot.scatter('Size Overhead [%]', 'Accuracy', c=df.color)
-    plot.legend(handles=[mpatches.Patch(
+    ax = df.plot.scatter('Size Overhead [%]', 'Accuracy', c=df.color)
+    ax.legend(handles=[mpatches.Patch(
         color=color(x), label=x) for x in names])
-    plot.set_ybound(0, 1)
-    plot.set_title(title)
+    ax.set_ybound(0, 1)
+    ax.set_title(title)
     plt.tight_layout()
-    return plot
-
+    return ax
 
 
 # import mplot, results, config, pickle

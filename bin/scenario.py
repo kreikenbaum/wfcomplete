@@ -28,13 +28,15 @@ import sites
 from capture import utils
 
 NODEF = "defenseless"
+# # muted
 COLORS = {
-    NODEF: "#d55e00",
-    "LLaMA": "#cc79a7",
-    "LLaMA-nodelay": "#cc79a7",
-    "SCT light": "#56b4e9",
-    "SCT medium": "#009e73",
-    "SCT heavy": "#0072b2"
+    NODEF: "#d65f5f",            # 2
+    "LLaMA": "#b47cc7",          # 3
+    "LLaMA-nodelay": "#b47cc7",  # 3
+    "SCT light": "#77bedb",      # 5
+    "SCT medium": "#6acc65",     # 1
+    "SCT heavy": "#4878cf",      # 0
+    "SCT": "#4878cf"  # same as SCT heavy
 }
 
 INT_REGEXP = re.compile("-?([+-]?[0-9]+.*)")

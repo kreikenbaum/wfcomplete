@@ -2,7 +2,7 @@
 '''import pre-dumped data from HU
 
 call exportMongo.sh on hosts first, then e.g.
-wget -r -np www2.informatik.hu-berlin.de/~kreikenb/data/$(date +%F)
+wget -r -np -l 1 www2.informatik.hu-berlin.de/~kreikenb/data/$(date +%F)
 importLocalDb $(date +%F)/*-dump-runs
 mongoimport -d sacred -c fs.files $(date +%F)/*-dump-files
 mongoimport -d sacred -c fs.chunks $(date +%F)/*-dump-chunks
