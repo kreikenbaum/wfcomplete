@@ -49,7 +49,7 @@ def _append_features(keys, filename):
         counter.check()
         keys[domain].append(counter)
     else:
-        logging.warn('%s discarded', counter.name)
+        logging.warn('%s discarded (no packets or warning flag)', counter.name)
 
 
 def _discretize(number, step):
