@@ -35,6 +35,7 @@
 #+LATEX_HEADER: \newacronym{oh}{OH}{overhead} % use in table captions, headers, etc
 #+LATEX_HEADER: \newacronym{roc}{ROC}{receiver operating characteristic}
 #+LATEX_HEADER: \newacronym{s}{SCT}{Selective Cover Traffic}
+#+LATEX_HEADER: \newacronym{svm}{SVM}{support vector machine}
 #+LATEX_HEADER: \newacronym{fn}{FN}{false negatives}
 #+LATEX_HEADER: \newacronym{fp}{FP}{false positives}
 #+LATEX_HEADER: \newacronym{tn}{TN}{true negatives}
@@ -387,8 +388,10 @@ of future work in Section [[#future-work]].
    distinguishes between 30 and many more sites with high accuracy
    (\citet{panchenko2}, \citet{effective2014} \citet{hayes197185},
    \cite{sirinam2018deep}). The main attack used to test \gls{s} is
-   CUMUL\citep{panchenko2}. Section [[#sub2-ml-features]] describes it
-   further.
+   CUMUL \citep{panchenko2}. Section [[#sub2-ml-features]] describes its
+   features. CUMUL's features are analysed using a \gls{svm}
+   classifier \citep{cortes1995support} with 10-fold cross-validation,
+   which is described in [[#sub2-ml-measure]].
 ** Machine Learning
    :PROPERTIES:
    :CUSTOM_ID: sub2-ml
@@ -481,25 +484,27 @@ of future work in Section [[#future-work]].
     [[./pictures/CUMUL_2017-12-31.pdf]]
     # code: see [[file:bin/mplot.py::traces_cumul%20usage]]
 
-    \citet{panchenko} increased closed-world website fingerprinting accuracy on
-    \citet{ccsw09-fingerprinting}'s dataset from 2.96% to 54.61%
-    (Section [[#sub2-ml-measure]] defines accuracy etc.). They added
-    website fingerprinting-specific features, such as the percentage of incoming
-    packets, the estimated size of the HTML \citep{html5} page,
-    etc. \citet{effective2014} used close to 4000 features. On a
-    smaller dataset, they achieved a true-positive rate of 84%, with a
-    false-positive rate of 0.6%. \citet{panchenko2} use a cumulative
-    size metric, CUMUL. As seen in Figure [[fig:CUMUL_traces]] these provide
-    a graphical representation of traces, while still allowing for
-    computer-based comparison after normalization. To create this,
-    they sum the incoming and outgoing bytes. To extract the same
-    number of features from each trace, they interpolate 100 data
-    points from these. \citet{kfingerprint} provide a state-of-the-art
-    website fingerprinting attack. They also measure how much each feature adds to
-    classification. Their approach uses approximately 150 features
-    with a unique Random Forest \citep{DBLP:journals/ml/Breiman01}
-    fingerprint classification that appears to use error-correcting
-    output codes (\citet[sec.3.1]{hayes197185},
+    \citet{panchenko} increased closed-world website fingerprinting
+    accuracy on \citet{ccsw09-fingerprinting}'s dataset from 2.96% to
+    54.61% (Section [[#sub2-ml-measure]] defines accuracy etc.). They
+    added website fingerprinting-specific features, such as the
+    percentage of incoming packets, the estimated size of the HTML
+    \citep{html5} page, etc. \citet{effective2014} used close to 4000
+    features. On a smaller dataset, they achieved a true-positive rate
+    of 84%, with a false-positive rate of 0.6%. \citet{panchenko2} use
+    a cumulative size metric, CUMUL. As seen in Figure
+    [[fig:CUMUL_traces]] these provide a graphical representation of
+    traces, while still allowing for computer-based comparison after
+    normalization. To create this, they sum the incoming and outgoing
+    bytes, producing a list of steps of uploaded and downloaded
+    bytes. To extract the same number of features from each trace,
+    they interpolate 100 data points from these. \citet{kfingerprint}
+    in addition to the website fingerprinting attack also measure how
+    much each feature adds to classification. Their approach uses
+    approximately 150 features with a unique Random Forest
+    \citep{DBLP:journals/ml/Breiman01} fingerprint classification that
+    appears to use error-correcting output codes
+    (\citet[sec.3.1]{hayes197185},
     \citet{DBLP:journals/jair/DietterichB95}).
 *** Classification
     :PROPERTIES:
@@ -558,24 +563,26 @@ of future work in Section [[#future-work]].
 
 
 
-    While classification input can have many types, in website fingerprinting it is
-    always a vector, most often of numbers. In classifier /training/
-    \cite[sec.1.3.1]{iml}, a classifier gets as input several feature
-    vectors $\{x_1, \ldots, x_n\} \subset X$ and their respective classes
-    $\{y_1, \ldots, y_n\} \subset Y$ as pairs $(x_i, y_i)$ and tries to
-    generalize a relationship. This combination of feature vectors and
-    their classes is called /training data/ \citep[sec.2.2]{esl}. In
-    actual /classification/, the classifier only receives input
-    feature vectors, and needs to predict the class label. In
-    website fingerprinting, this is: the web page. This data is called /test data/
-    and is used to test classifier performance.
+    While classification input can have many types, in website
+    fingerprinting it is always a vector, most often of numbers. In
+    classifier /training/ \cite[sec.1.3.1]{iml}, a classifier gets as
+    input several feature vectors $\{x_1, \ldots, x_n\} \subset X$ and their
+    respective classes $\{y_1, \ldots, y_n\} \subset Y$ as pairs $(x_i,
+    y_i)$ and tries to generalize a relationship. This combination of
+    feature vectors and their classes is called /training data/
+    \citep[sec.2.2]{esl}. In actual /classification/, the classifier
+    only receives input feature vectors, and needs to predict the
+    class label. In website fingerprinting, this is: the web
+    page. This data is called /test data/ and is used to test
+    classifier performance.
 
 
     What happens in classification steps depends on the
-    classifier. Most classifiers, such as support vector machines form
-    an internal model from which further input data is
-    classified. Others, notably k-Nearest-Neighbors, classify directly
-    without an intermediary model.
+    classifier. Most classifiers, such as \gls{svm}
+    \citep{cortes1995support} form an internal model from which
+    further input data is classified. Others, notably
+    k-Nearest-Neighbors, classify directly without an intermediary
+    model.
 *** Measuring Performance
     :PROPERTIES:
     :CUSTOM_ID: sub2-ml-measure
@@ -672,6 +679,32 @@ of future work in Section [[#future-work]].
     particular interest. The area under the curve bounded up to a
     false positive rate of, say 1%, is called /bounded \gls{auc}/ and
     denoted AUC_{0.01} \citep[sec.5.1.3]{rieckdiss}.
+
+    - outlier removal
+      - automatically detect non-normal data
+      - remove before classification
+      - how to detect?
+      - standard: ... based, remove top and bottom ...%
+    - cross-validation
+      - why? avoid overfitting in model selection
+      - models have parameters (svn: penalty C and here kernel width
+        \gamma), knn num of neighbors
+      - if just fit model to training data, evaluate on test data, can
+        have averse effect, select wrong parameters
+      - repeat several times, average result
+      - how to repeat: split data set into k folds, use one for validation, others combined for training
+
+    whole dataset
+    | folds        | 1     | 2     | 3     | 4     | 5     |
+    |--------------+-------+-------+-------+-------+-------|
+    | experiment 1 | test  | train | train | train | train |
+    | experiment 2 | train | test  | train | train | train |
+    | experiment 3 | train | train | test  | train | train |
+    | experiment 4 | train | train | train | test  | train |
+    | experiment 5 | train | train | train | train | test  |
+
+    average accuracy.
+
 **** MAYBE more                                                           :
 - multi-class confusion matrix
   - more than two classes
@@ -1453,8 +1486,7 @@ LLaMA-nodelay in the accuracy-overhead trade-off. Furthermore, its
 configurability can be seen: low size overhead in the 20% yields
 accuracy decrease from ~90% to ~65%. Higher size overheads yields
 accuracies of ~35%. This allows users to configure the defense based
-on their individual security needs. Appendix [[#appendix-accuracy]] shows
-tables of evaluation results.
+on their individual security needs. Interested readers can find further  evaluation results in Appendix [[#appendix-accuracy]].
 
 
 #+CAPTION[Relative histograms of number of incoming packets on top sites]: Relative histograms of number of incoming packets on top sites. They were  capped at y=0.025 to clearly show the defense's differences, even though wikipedia.org's bars on defenseless traces go above 0.06

@@ -3,7 +3,7 @@
 [[./master.bib]]
 [[~/archiv/other/locallit.org]]
 # * sort first by [alpha(a), then] prio (p), then by todo state reversed (O)
-* TODO [#B] lit [0/380]                                                 :lit:
+* TODO [#B] lit [0/385]                                                 :lit:
 ** [[Arp - diplomarbeit_kommentare_von_daniel.pdf]]
    - siehe [[file:~/da/da.org::*daniels%20review][daniels review]]
 ** [[./wtfpad-setup.pdf][Arp - Setup der Obfuscation-Tools]]
@@ -252,7 +252,7 @@
             - needs to control exit node, tcp level (not app)
     7. Conclusion
 *** ref
-** [[~/.webkeep/google_delayexp.pdf][Brutlag - Speed Matters for Google Web Search]]
+** [[./google_delayexp.pdf][Brutlag - Speed Matters for Google Web Search]]
 *** summary
     - less user searches (up to -0.59% for 0.4s post-header) the
       longer the load delay (0.05, 0.1, 0.2, 0.4s)
@@ -5041,7 +5041,83 @@ Vorläufiger Zeitplan
     - tf–idf is the product of two statistics, term frequency and
       inverse document frequency. Various ways for determining the
       exact values of both statistics exist.
-** TODO [#E] [[./2016_ML1/][Kloft - ML 1]]
+** TODO [#E] [[./10.1.1.115.3644.pdf][Müller - An Introduction to Kernel-Based Learning Algorithms]]
+*** summary
+    1. Introduction
+       - SVMs,
+       - kernel Fisher discriminant (KFD)
+       - kernel principal component analysis (KPCA)
+       - review: useful in many areas
+    2. Learning to Classify - Some Theoretical Background
+       0. [@0]
+          - learning: find rule that assigns objects to classes
+            - simplest: 2 classes
+          - formalization: estimate f: R^{N} \to {-1, 1}
+            - using i.i.d. input-output pairs (!x!, y) \in R^{N} \times Y
+              - according to unknown probability distribution P(!x!, y)
+            - such that f will correctly estimate unseen examples
+              - drawn from same probability distribution P(!x!, y)
+            - best function f minimizes expected error/risk
+              R[f] = \int l(f(!x!), y) dP(!x!, y)
+              - l is /loss function/, f.ex. \Theta(-y f(!x!)
+                - \Theta(z) = 0 for z < 0, else \Theta(z) = 1
+                - regression, f.ex. l(f(!x!, y)) = (f(!x!) - y)^{2} /squared loss/
+              - not compute directly: P(!x!, y) not known
+                - induction principle
+                  - simple: approximate risk with
+                    R_{emp}[f] = 1/n \sum_{i=1}^{l}(f(!x_{i}!), y_{i}) /empirical risk/
+              - for small sample sizes, overfitting may occur
+                - avoid by restricting complexity of F \ni f
+                  - occama's razor
+              - control complexity by Vapnik-Chervonenkis (VC) theory and
+                structural risk minimization (SRM) principle
+                - function's VC-dimension: ~ how many separated data points
+                - R[f] \le R_{emp}[f] + \radic((h (ln (2n/h) +1) - ln (\delta /4))/n)
+                  - the simpler the class the higher R_{emp}, the lower the sqrt
+                  - vice versa
+                  - aim: find sweet spot in between
+                - bit like bias-variance dilemma
+       1. [@A] VC Dimension in Practice
+          - bound is "neither easily computable nor very helpful"
+            - bound \ge 1
+            - VC dimension infinite, or not known
+          - same problems for similar metrics
+       2. Margins and VC Dimension
+          - assume data separable
+          - VC bounded via margin
+          - h \le \Lambda^2 R^2 +1 for ||w||_{2} \le \Lambda
+            - R radius of smallest ball around the data
+            - h VC-dimension
+    3. Nonlinear Algorithms in Kernel Feature Spaces
+       - idea: nonlinear mapping R^N \to F
+       - same for
+         - (one hidden layer) NNs: hidden layer representation
+         - rbf: RBF bumps
+         - boosting algos: hypotheses space
+       - curse of dimensionality: gets harder as dimensions increase
+         - but reducible: use simple class of decision function (linear clf)
+       - /kernel trick/: use kernel functions k(x, y) = (x \cdot y)^d,
+         scalar product
+         - if k: C \times C \to R *continuous kernel of a positive integral
+           operator* on Hilbert space L_2(C),
+           - C \subset R^N compact \to \forall f \in L_2(C): \int k(x, y)f(x)f(y) dx dy \ge 0
+         - then \exist space F and mapping \Phi
+           s.t. R^N \to F: k(x, y) = (\Phi(x) \cdot \Phi(y))
+       - kernels are regularizers
+       - e.g. gaussian: C^\infty
+       - kernels allow to compute in spaces that would otherwise not be used
+         - applicable to "every linear algorithm that uses scalar products"
+    4. Supervised Learning
+*** quotes
+    3. [@3] Nonlinear Algorithms in Kernel Feature Spaces
+       - Gaussian kernels (7) correspond to a general smoothness
+         assumption in all kth-order derivatives
+         - src: [58] A. J. Smola, B. Schölkopf, and K.-R. Müller, “The
+           connection between regularization operators and support
+           vector kernels,” Neural Networks, vol. 11,
+           pp. 637–649, 1998.
+*** ref [[file:master.bib::914517][Muller et al. 2001]]
+** TODO [#G] [[./2016_ML1/][Kloft - ML 1]]
 *** Lesson 1
     - teaser
     - defs
@@ -5468,8 +5544,24 @@ etc.
 **** References
      A. K. Jain, M. N. Murty, and P. J. Flynn. Data clustering: a
      review. ACM computing surveys (CSUR), 31(3):264–323, 1999.
-*** [[file:2016_ML1/Lecture10.pdf][Dimensionality Reduction]]
-** TODO [#F] [[~/.webkeep/1801.02265..deep_wf.pdf][Sirinam - Deep Fingerprinting: Undermining Website Fingerprinting Defenses with Deep Learning]]
+*** TODO [[file:2016_ML1/Lecture10.pdf][10 - Dimensionality Reduction]]
+*** TODO [[file:2016_ML1/Lecture11a.pdf][11a - Tricks of the trade]]
+*** TODO [[file:2016_ML1/Lecture12.pdf][12 - Deep Learning]]
+    - ann: like neurons
+      - activation threshold
+      - learning weights
+    - convolutional
+      - many layers, learn in patches
+      - learn, collect, learn, ...
+    - deep learning
+      - \ge 10 layers
+      - can learn any continuous function
+    - when to stop?
+      - validation set
+        - stop learning when error on this increases again
+      - stochastic gradient descent
+    - compute using backpropagation
+** TODO [#G] [[~/.webkeep/1801.02265..deep_wf.pdf][Sirinam - Deep Fingerprinting: Undermining Website Fingerprinting Defenses with Deep Learning]]
 ** TODO [#G] [[./2009-diss.pdf][Rieck - Machine Learning for Application-Layer Intrusion Detection]]
 *** summary
     0. [@0] Summary
@@ -5701,6 +5793,13 @@ etc.
        2. Application Domains
        3. Future Work
 *** ref [[file:master.bib::rieckdiss][Rieck 2009: Machine Learning Application]]
+** TODO [#G] [[./197.pdf][Breiman - SUBMODEL SELECTION AND EVALUATION IN REGRESSION- THE X-RANDOM CASE]]
+*** summary
+    - 5-fold cv better than leave-one-out cv :-)
+*** ref [[file:master.bib::breiman1992submodel][Breiman & Spector 1992: Submodel]]
+** TODO [#G] [[./Cortes-Vapnik1995_Article_Support-vectorNetworks.pdf][Cortes - Support-Vector Networks]]
+*** ref [[file:master.bib::cortes1995support][Cortes & Vapnik 1995: Support]]
+** TODO [#H] [[./10.1.1.368.2254.pdf][Samuel - Some Studies in Machine Learning Using the Game of Checkers]]
 ** TODO [#I] [[file:/home/uni/da/git/docs/thesishelp/aristolo-ebook-01-Machs-68-techniken-gegen-aufschieberei-text-1.pdf][Gerlach - Machs-68-techniken-gegen-aufschieberei]]
 *** summary
     1. erledige sofort, spar andere tipps
@@ -5733,67 +5832,6 @@ etc.
 ** TODO (ch2+3) [#J] [[file:/home/uni/da/git/docs/thesishelp/aristolo-100-thesis-masterplan.pdf][Gerlach - thesis-masterplan]]
    - phasen 1--8
    - jetzt: 3: Kapitel 2 und 3 schreiben, link:
-** TODO [#J] [[./10.1.1.115.3644.pdf][Müller - An Introduction to Kernel-Based Learning Algorithms]]
-*** summary
-    1. Introduction
-       - SVMs,
-       - kernel Fisher discriminant (KFD)
-       - kernel principal component analysis (KPCA)
-       - review: useful in many areas
-    2. Learning to Classify - Some Theoretical Background
-       0. [@0]
-          - learning: find rule that assigns objects to classes
-            - simplest: 2 classes
-          - formalization: estimate f: R^{N} \to {-1, 1}
-            - using i.i.d. input-output pairs (!x!, y) \in R^{N} \times Y
-              - according to unknown probability distribution P(!x!, y)
-            - such that f will correctly estimate unseen examples
-              - drawn from same probability distribution P(!x!, y)
-            - best function f minimizes expected error/risk
-              R[f] = \int l(f(!x!), y) dP(!x!, y)
-              - l is /loss function/, f.ex. \Theta(-y f(!x!)
-                - \Theta(z) = 0 for z < 0, else \Theta(z) = 1
-                - regression, f.ex. l(f(!x!, y)) = (f(!x!) - y)^{2} /squared loss/
-              - not compute directly: P(!x!, y) not known
-                - induction principle
-                  - simple: approximate risk with
-                    R_{emp}[f] = 1/n \sum_{i=1}^{l}(f(!x_{i}!), y_{i}) /empirical risk/
-              - for small sample sizes, overfitting may occur
-                - avoid by restricting complexity of F \ni f
-                  - occama's razor
-              - control complexity by Vapnik-Chervonenkis (VC) theory and
-                structural risk minimization (SRM) principle
-                - function's VC-dimension: ~ how many separated data points
-                - R[f] \le R_{emp}[f] + \radic((h (ln (2n/h) +1) - ln (\delta /4))/n)
-                  - the simpler the class the higher R_{emp}, the lower the sqrt
-                  - vice versa
-                  - aim: find sweet spot in between
-                - bit like bias-variance dilemma
-       1. [@A] VC Dimension in Practice
-          - bound is "neither easily computable nor very helpful"
-            - bound \ge 1
-            - VC dimension infinite, or not known
-          - same problems for similar metrics
-       2. Margins and VC Dimension
-          - assume data separable
-          - VC bounded via margin
-          - h \le \Lambda^2 R^2 +1 for ||w||_{2} \le \Lambda
-            - R radius of smallest ball around the data
-            - h VC-dimension
-    3. Nonlinear Algorithms in Kernel Feature Spaces
-       - idea: nonlinear mapping R^N \to F
-       - same for
-         - (one hidden layer) NNs: hidden layer representation
-         - rbf: RBF bumps
-         - boosting algos: hypotheses space
-       - curse of dimensionality: gets harder as dimensions increase
-         - but reducible: use simple class of decision function (linear clf)
-       - trick: use kernel functions k(x, y) = (x \cdot y)^d, scalar product
-         - if k: C \times C \to R *continuous kernel of a positive integral
-           operator* on Hilbert space L_2(C),
-           - C \subset R^N compact \to \forall f \in L_2(C): \int k(x, y)f(x)f(y) dx dy \ge 0
-         - then \exist space F and mapping \Phi: R^N \to F: k(x, y) = (\Phi(x) \cdot \Phi(y))
-*** ref [[file:master.bib::914517][Muller et al. 2001]]
 ** TODO [#K] [[./bv_cvxbook.pdf][Boyd - Convex Optimization]]
 *** ref [[file:master.bib::boyd2004convex][Boyd & Vandenberghe 2004: Convex]]
 ** TODO [#K] [[./Thesis Writing-A Guide.pdf][Gruen - Thesis Writing]]
@@ -6048,7 +6086,7 @@ etc.
 *** ref [[file:master.bib::axelsson2000base][Axelsson 2000]]
 ** TODO [#L] [[~/.webkeep/Better_decisions_thru_science.pdf][Better DECISIONS through SCIENCE]]
 *** ref [[file:master.bib::swets2000better][Swets et al. 2000: Better]]
-** TODO [#L] [[~/.webkeep/BOGV92.pdf][Boser - A Training Algorithm for Optimal Margin Classifiers]]
+** TODO [#L] [[./BOGV92.pdf][Boser - A Training Algorithm for Optimal Margin Classifiers]]
 *** ref [[file:master.bib::boser1992training][Boser et al. 1992]]
 ** TODO [#L] [[./Trac_Analysis_of_the_HTTP_Protocol_over_TLS.pdf][Danezis - Traffic Analysis of the HTTP Protocol over TLS]]
 *** ref [[file:master.bib::danezis2010traffic][Danezis 2010: Traffic Analysis HTTP Protocol TLS]]
@@ -16405,7 +16443,6 @@ https://gitweb.torproject.org/pluggable-transports/meek.git/tree/meek-server/tor
         - A video camera for robotic applications might produce a
           million 24-bit pixels at 60 Hz; a rate of 10 GB per minute.
 *** ref [[file:master.bib::russell1995modern][Russell et al. 1995]]
-** TODO [[./10.1.1.368.2254.pdf][Samuel - Some Studies in Machine Learning Using the Game of Checkers]]
 ** TODO [[./comp.ai.neural-nets FAQ, Part 2 of 7: Learning.html][Sarle - comp.ai.neural-nets FAQ, Part 2 of 7: Learning]]
 *** summary
     - Should I normalize/standardize/rescale the data?
@@ -20651,7 +20688,8 @@ V.L. Voydock and S.T. Kent. Security Mechanisms in High-Level Network Protocols.
                   that_is_another_thing):
                   do_something()
             #+END_SRC
-** TODO [#G] [[~/.webkeep/ARCHIV/DA/197.pdf][Breiman - SUBMODEL SELECTION AND EVALUATION IN REGRESSION- THE X-RANDOM CASE]]
+** TODO [#K] [[./TR96-21.pdf][Martin - Small Sample Statistics for Classi cation Error Rates I: Error Rate Measurements]]
 *** summary
-    - 5-fold cv better than leave-one-out cv :-)
-*** ref [[file:master.bib::breiman1992submodel][Breiman & Spector 1992: Submodel]]
+    best to use 10-fold CV
+*** ref [[file:master.bib::martin1996small][Martin & Hirschberg 1996: Small I]]
+** [[./197.pdf]]
