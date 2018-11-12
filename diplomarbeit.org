@@ -155,9 +155,9 @@
   activities. One as-of-yet-unfixed vulnerability in Tor is
   website fingerprinting. In website fingerprinting, the sizes and timing of each data packet for
   a web page retrieval are collected to form a /fingerprint/. This is
-  matched to other  observed retrievals to predict which page was
-  visited. Originally, website fingerprinting was briefly mentioned by
-  \citet{SSL}. \citet{panchenko} were the first to successfully attack
+  matched to other observed retrievals to predict which page was
+  visited. Originally, website fingerprinting is briefly mentioned by
+  \citet{SSL}. \citet{panchenko} are the first to successfully attack
   Tor by website fingerprinting under laboratory conditions. The Tor project
   encourages research into website fingerprinting attacks and
   defenses against Tor \citep{experimental}.
@@ -168,9 +168,9 @@
   \citet{oakland2012-peekaboo}, \citet{effective2014},
   \citet{a-systematic2014}, \citet{wtfpad2015} \citet{wang2015walkie},
   \citet{DBLP:journals/popets/CherubinHJ17}). None have been deployed
-  with the Tor Browser. The reasons are manifold: Defenses delayed
-  \citep{brutlag2009speed} web browsing, required tuning by hand or
-  changes to the Tor code base, complicated setup, were only presented
+  with the Tor Browser. The reasons are manifold: Defenses delay
+  \citep{brutlag2009speed} web browsing, require tuning by hand or
+  changes to the Tor code base, complicated setup, are only presented
   conceptually, etc. Still, website fingerprinting attacks have continued to improve
   (\citet{quantifying}, \citet{ssl-traffic-analysis}, \citet{hintz02},
   \citet{ccsw09-fingerprinting}, \citet{panchenko},
@@ -203,9 +203,9 @@
    reimplements and validates the state-of-the art attack by
    \citet{panchenko2}; it also provides a way to record web page
    browsing via Tor. The assorted data in trace format includes more
-   than 150 captures. A capture took more than a day on average. More
-   than 50 captures are without defense. This data needs more than
-   20 GB of disk space, in a format similar to those of
+   than 150 capture sets. A capture set took more than a day on
+   average. More than 50 captures are without defense. This data needs
+   more than 20 GB of disk space, in a format similar to those of
    \citet{effective2014} and \citet{panchenko2}. The included code can
    convert from and to their formats.
 ** Structure: Foundations, Design, Evaluation
@@ -391,7 +391,7 @@ of future work in Section [[#future-work]].
    CUMUL \citep{panchenko2}. Section [[#sub2-ml-features]] describes its
    features. CUMUL's features are analysed using a \gls{svm}
    classifier \citep{cortes1995support} with 10-fold cross-validation,
-   which is described in [[#sub2-ml-measure]].
+   which is described in [[#sub2-ml-class]].
 ** Machine Learning
    :PROPERTIES:
    :CUSTOM_ID: sub2-ml
@@ -449,7 +449,7 @@ of future work in Section [[#future-work]].
     format. The trick is as always: keeping the signals and discarding
     the noise; in other words: finding those features with the biggest
     difference of the class means relative to class standard
-    deviations.\citep[sec.10.14.2]{duda}
+    deviations \citep[sec.10.14.2]{duda}.
 
 
     The source data in website fingerprinting are traces, say in
@@ -468,14 +468,14 @@ of future work in Section [[#future-work]].
 
 
     The earliest website fingerprinting attacks (\citet{quantifying},
-    \citet{ssl-traffic-analysis}, \cite{hintz02}) only used packet
+    \citet{ssl-traffic-analysis}, \cite{hintz02}) only use packet
     sizes as features to attack SSL
-    \citep{sslv3}. \citep[sec.7]{tor-design} conjectured that website fingerprinting
-    against Tor would be hampered by Tor's fixed (data) cell size
-    \citep[sec.0.2,3]{tor-spec}. Five years later,
-    \cite{ccsw09-fingerprinting} confirmed this resilience in
-    comparison with other privacy-enhancing technologies, but still
-    showed better-than-random classification.
+    \citep{sslv3}. \citep[sec.7]{tor-design} conjecture that website
+    fingerprinting against Tor would be hampered by Tor's fixed (data)
+    cell size \citep[sec.0.2,3]{tor-spec}. Five years later,
+    \cite{ccsw09-fingerprinting} confirm this resilience in comparison
+    with other privacy-enhancing technologies, but still show slightly
+    better-than-random classification.
 
 
     #+CAPTION[CUMUL features example]: CUMUL features example
@@ -487,10 +487,10 @@ of future work in Section [[#future-work]].
     \citet{panchenko} increased closed-world website fingerprinting
     accuracy on \citet{ccsw09-fingerprinting}'s dataset from 2.96% to
     54.61% (Section [[#sub2-ml-measure]] defines accuracy etc.). They
-    added website fingerprinting-specific features, such as the
+    add website fingerprinting-specific features, such as the
     percentage of incoming packets, the estimated size of the HTML
-    \citep{html5} page, etc. \citet{effective2014} used close to 4000
-    features. On a smaller dataset, they achieved a true-positive rate
+    \citep{html5} page, etc. \citet{effective2014} use close to 4000
+    features. On a smaller dataset, they achieve a true-positive rate
     of 84%, with a false-positive rate of 0.6%. \citet{panchenko2} use
     a cumulative size metric, CUMUL. As seen in Figure
     [[fig:CUMUL_traces]] these provide a graphical representation of
@@ -498,10 +498,12 @@ of future work in Section [[#future-work]].
     normalization. To create this, they sum the incoming and outgoing
     bytes, producing a list of steps of uploaded and downloaded
     bytes. To extract the same number of features from each trace,
-    they interpolate 100 data points from these. \citet{kfingerprint}
-    in addition to the website fingerprinting attack also measure how
-    much each feature adds to classification. Their approach uses
-    approximately 150 features with a unique Random Forest
+    they interpolate 100 data points from these.  After feature
+    extraction, CUMUL removes outliers from the data
+    \citep[sec.V-B]{panchenko2}. \citet{kfingerprint}, in addition to
+    the website fingerprinting attack, also measure how much each
+    feature adds to classification. Their approach uses approximately
+    150 features with a unique Random Forest
     \citep{DBLP:journals/ml/Breiman01} fingerprint classification that
     appears to use error-correcting output codes
     (\citet[sec.3.1]{hayes197185},
@@ -516,6 +518,7 @@ of future work in Section [[#future-work]].
     #+INDEX: classification!training data
     #+INDEX: classification!test data
     #+INDEX: machine learning!classification
+    #+INDEX: cross-validation
     Website fingerprinting /classification/ tries to assign a website to a trace's
     features extracted in the previous step.  The previous step ---
     [[#sub2-ml-features][feature extraction]] --- transforms traces (raw input data) to
@@ -577,12 +580,46 @@ of future work in Section [[#future-work]].
     classifier performance.
 
 
-    What happens in classification steps depends on the
-    classifier. Most classifiers, such as \gls{svm}
-    \citep{cortes1995support} form an internal model from which
-    further input data is classified. Others, notably
-    k-Nearest-Neighbors, classify directly without an intermediary
-    model.
+    What happens in classification depends on the classifier. Most
+    classifiers, such as \gls{svm} \citep{cortes1995support} form an
+    internal model from which further input data is
+    classified. Others, notably k-Nearest-Neighbors, classify directly
+    without an intermediary model. Most classifiers have configuration
+    parameters. For \glspl{svm}, which CUMUL \cite{panchenko2}
+    applies, these are the regularization parameter $C$ which weighs
+    how much to penalize outliers and the RBF-kernel width $\gamma$, see
+    Figure [[fig:C-gamma-effect]].
+
+     #+CAPTION[Example svm-rbf classification with different parameters for $C$ and \gamma]: Example svm-rbf classification with different parameters for $C$ and \gamma. Source \cite[Figure 42.328]{scikit-user-guide}, recreated for higher resolution.
+     #+ATTR_LATEX: :width 0.6\textwidth
+     #+NAME: fig:C-gamma-effect
+     [[./pictures/skl-fig-42.328.pdf]]
+#     [[./pictures/skl-fig-42.328.eps]]
+
+     These parameters need to be adjusted to achieve optimal
+     classification accuracy, while avoiding overfitting to the
+     training data. One way to avoid this overfitting is
+     cross-validation \citep{breiman1992submodel}: The data set is
+     split into $k$ disjoint subsets, called /folds/, of equal
+     size. Of those, $k-1$ are used combinedly for training the
+     classifier, while the last is used for prediction evaluation. In
+     other words, for each run, $k-1$ folds are used as training data,
+     while the last fold is used as testing data. The accuracy over
+     all folds is averaged. CUMUL\citep{panchenko2} uses 10-fold
+     cross-validation.
+
+    #+CAPTION[Cross-validation splits]: Cross-validation splits. The training folds are combined, the classifier is trained on them, then accuracy is computed on the test fold. This is done $k$ times, the results are averaged.
+    #+NAME: tab:confusion_matrix
+    #+ATTR_LATEX: :align |l||l | l| l | l | l| :placement [t]
+    |--------------+--------+--------+--------+--------+--------|
+    | folds        | 1      | 2      | 3      | 4      | 5      |
+    |--------------+--------+--------+--------+--------+--------|
+    | experiment 1 | *test* | train  | train  | train  | train  |
+    | experiment 2 | train  | *test* | train  | train  | train  |
+    | experiment 3 | train  | train  | *test* | train  | train  |
+    | experiment 4 | train  | train  | train  | *test* | train  |
+    | experiment 5 | train  | train  | train  | train  | *test* |
+    |--------------+--------+--------+--------+--------+--------|
 *** Measuring Performance
     :PROPERTIES:
     :CUSTOM_ID: sub2-ml-measure
@@ -603,7 +640,7 @@ of future work in Section [[#future-work]].
     #+INDEX: world!open
     To find out if website fingerprinting attacks work, and if defenses prevent them
     from working, their success can be measured. The simplest
-    form of measurement is simply counting how many traces were
+    form of measurement is simply counting how many traces are
     classified correctly, and dividing by the total number of
     traces. This is called /accuracy/ \citep{powers}. For other types
     of measurement, a /confusion matrix/ helps to
@@ -612,7 +649,7 @@ of future work in Section [[#future-work]].
 
     #+CAPTION[Confusion matrix]: (binary) Confusion matrix. Correctly classified traces are in bold. The distinction positive/negative is chosen based on the classification objective.
     #+NAME: tab:confusion_matrix
-    #+ATTR_LATEX: :align |l||l | l|
+    #+ATTR_LATEX: :align |l||l | l| :placement [b]
     |----------------------+-----------------------+-----------------------|
     | <20>                 |                       |                       |
     |                      | real wikipedia.org    | real onclickads.net   |
@@ -623,12 +660,12 @@ of future work in Section [[#future-work]].
 
 
     This matrix counts the number of classifications. For example, if
-    a trace that was recorded from /wikipedia.org/ is classified as
-    /onclickads.net/, this increases the \gls{fn} count by 1. Each
-    trace is categorized by whether it /is/ a sensitive website (here:
-    wikipedia.org), and whether it is /classified/ as such. From these
-    values, metrics can be derived. Apart from /accuracy/, the main
-    metrics used in website fingerprinting literature are /True-/, and
+    a trace from /wikipedia.org/ is classified as /onclickads.net/,
+    this increases the \gls{fn} count by 1. Each trace is categorized
+    by whether it /is/ a sensitive website (here: wikipedia.org), and
+    whether it is /classified/ as such. From these values, metrics can
+    be derived. Apart from /accuracy/, the main metrics used in
+    website fingerprinting literature are /True-/, and
     /False-Positive-Rate/. These are defined as
 
     #+ATTR_LATEX: :align r c l
@@ -679,62 +716,29 @@ of future work in Section [[#future-work]].
     particular interest. The area under the curve bounded up to a
     false positive rate of, say 1%, is called /bounded \gls{auc}/ and
     denoted AUC_{0.01} \citep[sec.5.1.3]{rieckdiss}.
-
-    - outlier removal
-      - automatically detect non-normal data
-      - remove before classification
-      - how to detect?
-      - standard: ... based, remove top and bottom ...%
-    - cross-validation
-      - why? avoid overfitting in model selection
-      - models have parameters (svn: penalty C and here kernel width
-        \gamma), knn num of neighbors
-      - if just fit model to training data, evaluate on test data, can
-        have averse effect, select wrong parameters
-      - repeat several times, average result
-      - how to repeat: split data set into k folds, use one for validation, others combined for training
-
-    whole dataset
-    | folds        | 1     | 2     | 3     | 4     | 5     |
-    |--------------+-------+-------+-------+-------+-------|
-    | experiment 1 | test  | train | train | train | train |
-    | experiment 2 | train | test  | train | train | train |
-    | experiment 3 | train | train | test  | train | train |
-    | experiment 4 | train | train | train | test  | train |
-    | experiment 5 | train | train | train | train | test  |
-
-    average accuracy.
-
-**** MAYBE more                                                           :
-- multi-class confusion matrix
-  - more than two classes
-  - here: denote one as negative/background, all others as positive/fg
-  - multiple definitions for tpr/fpr/...
-    - solokova
-    - info retrieval
-    - one assumedly used by panchenko
 ** Defending against Website Fingerprinting
    :PROPERTIES:
    :CUSTOM_ID: sub2-wf-def
    :END:
    #+INDEX: LLaMA
    #+INDEX: defenses!LLaMA
-   This section describes defenses against website fingerprinting as described
-   [[#sub2-wf][previously]] in Section [[#sub2-wf]]: website fingerprinting attacks have become
-   increasingly better using machine learning. Website fingerprinting thus effectively
-   de-anonymizes the traffic that users thought private: it could for
-   example expose a dissident to his nation state, nullifying this
-   part of Tor's protection.  The task of defenses is to confuse such
-   a website fingerprinting attacker. As most machine learning, website fingerprinting uses statistical
-   properties of the underlying data. It could possibly be defeated by
-   shuffling these properties.
+   This section describes defenses against website fingerprinting as
+   described in Section [[#sub2-wf]]: website fingerprinting attacks have
+   become increasingly better using machine learning. Website
+   fingerprinting thus effectively de-anonymizes the traffic that
+   users thought private: it could for example expose a dissident to
+   his nation state, nullifying this part of Tor's protection.  The
+   task of defenses is to confuse such a website fingerprinting
+   attacker. As most machine learning, website fingerprinting uses
+   statistical properties of the underlying data. It could possibly be
+   defeated by shuffling these properties.
 
 
    Traffic analysis \citep{introta} assumes that encryption is
    unbreakable, and tries to find information from metadata:
    observable streams of traffic, e.g. radio wave origin, or IP packet
    size and timing. From inception, Tor \citep[sec.3.1]{tor-design}
-   provided some defense against traffic analysis. For one, all Tor
+   provides some defense against traffic analysis. For one, all Tor
    /data/ cells have the same size, which protects against identifying
    them by size only. Tor also multiplexes all traffic into a single
    stream, making it hard to distinguish the multiple streams that
@@ -1006,7 +1010,7 @@ to generate HTTP-shaped traffic. The naïve way, using HTTP dummy
 traffic \citep{panchenko}, loads another page simultaneously in the
 background. \citet{ccs2012-fingerprinting}, \citet{a-systematic2014},
 \citet{kfingerprint}, \citet{effective2014}, \citet{panchenko}, and
-\citet{wtfpad2015} found it to be surprisingly effective for all its
+\citet{wtfpad2015} evaluate it to be surprisingly effective for all its
 simplicity, albeit at a high overhead.
 
 
@@ -1031,7 +1035,7 @@ better fit web traffic. \cite{DBLP:conf/imc/IhmP11} repeatedly mention
 a /long tail/ of traffic. Several aspects of web traffic show
 subexponential distribution \citep{foss2011introduction} behavior,
 where high sampling values are not as unlikely as in, say, exponential
-or normal distributions. \citet{newtrafficmodel} found that log-normal
+or normal distributions. \citet{newtrafficmodel} show that log-normal
 distributions (truncated), as seen in Figure [[fig:distributions]] fit the
 sizes of both HTML and embedded resources best in their analysis. A
 truncated gamma function models the number of embedded objects. This
@@ -1193,7 +1197,7 @@ send bursts after retrieval has ended.
   sent all the traffic it should send? The =burst= option sends all of
   this traffic at the end, while the =noburst= discards this.
 
-If the sizes for a URL are not known, the http model is a fallback both the cache and the target. While several scenarios were tested, the latter three options had little effect, except for very fresh caches (a week). For the sake of comparison, the defense is compared with two /factor/ values:
+If the sizes for a URL are not known, the http model is a fallback both the cache and the target. While several scenarios were tested, the latter three options have little effect, except for very fresh caches (a week). For the sake of comparison, the defense is compared with two /factor/ values:
 
 - Selective Cover Traffic light (SCT light) sets the factor to 20, and
 - Selective Cover Traffic heavy (SCT heavy) sets the factor to 100.
@@ -1355,15 +1359,16 @@ the traces captured with bridge with the re-implementation.
 
 Table [[tab:llama-capture]] compares the captured trace statistics for
 defenseless traces to \citet{DBLP:journals/popets/CherubinHJ17}'s
-LLaMA's traces, and this thesis' defense. It clearly illustrates the
-effects of LLaMA's delaying action. For one, the duration to capture
-50 traces each for 100 web pages increased from 2 days 2 hours to 22
-days 16 hours. This is also illustrated by the loading statistics. At
-the timeout of 4 1/2 minutes, approximately half of all pages had not
-loaded the HTML text. Only approximately one fifth finished loading
-the whole content. In the default machine learning setting with
-outlier removal \cite[sec.V.B]{panchenko2} and removal of sites with
-less than 30 instances (keeping the text-only loads) due to
+LLaMA's traces, and this thesis' defense. While \gls{s} only
+moderately slows the loading process, the table clearly illustrates
+the effects of LLaMA's delaying action. For one, the duration to
+capture 50 traces each for 100 web pages increased from 2 days 2 hours
+to 22 days 16 hours. This is also illustrated by the loading
+statistics. At the timeout of 4 1/2 minutes, approximately half of all
+pages had not loaded the HTML text. Only approximately one fifth
+finished loading the whole content. In the default machine learning
+setting with outlier removal \cite[sec.V.B]{panchenko2} and removal of
+sites with less than 30 instances (keeping the text-only loads) due to
 cross-validation limitations, only 22.9% of traces were usable. If no
 outlier removal was performed, there were 42 remaining sites with at
 least 30 instances for machine learning. These are evidently easier to
@@ -1379,7 +1384,7 @@ was captured without a Tor bridge to further reduce the possible
 causes of errors.
 
 
-#+CAPTION[LLaMA evaluation results]: Results for evaluating LLaMA, compared to no defense, and \gls{s}. LLaMA only had 34 sites with at least 30 instances. The size and time \gls{oh} are for the website fingerprinting default setting, as described in the previous Table [[tab:llama-capture]]. Size and time \gls{oh} are for ~34 sites for comparability to LLaMA, 100 site values are similar. These were also captured without a bridge at TU Braunschweig.
+#+CAPTION[LLaMA evaluation results]: Results for evaluating LLaMA, compared to no defense, and \gls{s}. LLaMA only has 34 sites with at least 30 instances. The size and time \gls{oh} are for the website fingerprinting default setting, as described in the previous Table [[tab:llama-capture]]. Size and time \gls{oh} are for ~34 sites for comparability to LLaMA, 100 site values are similar. These were also captured without a bridge at TU Braunschweig.
 #+NAME: tab:llama-eval
 #+ATTR_LATEX: :align |l||r||r|r|r|  :placement [b]
 | Defense        | ~100 site acc. [%] | ~34 site acc. [%] | Size \gls{oh} [%] | Time \gls{oh} [%] |
@@ -1402,16 +1407,20 @@ causes of errors.
 # use scenario.size/time_increase(s_nodef_old.get_traces(), s_....get_traces()
 
 The classification results in Table [[tab:llama-eval]] compare CUMUL's
-\citep{panchenko2} results on these captures. While LLaMA decreases
-accuracy more than \gls{s}, keep in mind that this also compared 1722
-non-completely loaded pages, versus 1038 completely loaded. Obviously,
-the text-loaded traces are different, as they show less object
-requests/response pairs. If the non-complete-load-traces were removed
-as well, no sites remain for analysis after removal of small sites,
-with no outlier removal. A time overhead of 846% (out of the half of
-traces that was loaded at all) might encumber Tor's usability design
-goal \citep[ch.3]{tor2014}. The variability in the time overhead could
-again be due to Tor circuit and web site changes.
+\citep{panchenko2} results on these captures. Both variants of \gls{s}
+decrease accuracy enough to make website fingerprinting seem
+impractical, for moderate and configurable overhead. While LLaMA
+decreases accuracy more than \gls{s}, keep in mind that this also
+compares 1722 non-completely loaded pages, combined with 1038
+completely loaded. Obviously, the text-loaded traces are different, as
+they show less object requests/response pairs. If the
+non-complete-load-traces are removed as well, no sites remain for
+analysis after removal of small ($\le 30$ instance) sites, with CUMUL's
+outlier removal \cite[sec.5-B]{panchenko2} disabled. A time overhead
+of 846% (out of the half of traces that were loaded at all) might
+encumber Tor's usability design goal \citep[ch.3]{tor2014}. The
+variability in the time overhead could again be due to Tor circuit and
+web site changes.
 
 
 This obvious problem with LLaMA could stem from the difference in www
@@ -1450,10 +1459,13 @@ at \citet{LLaMA}] was edited (a constant was changed) to disable the
 delay. This version is called /LLaMA-nodelay/. Table
 [[tab:ohs-vs-acc-100]] compares this modified version of LLaMA to this
 thesis' \gls{s}, and to no defense. This thesis' defense offers both
-configurability and a lower size overhead. Both LLaMA-nodelay and
-\gls{s} have negligible time overhead. Even compared to non-delayed
-LLaMA, \gls{s} offers similar accuracy/size overhead relationship for
-a much lower time overhead. All further data was captured using the bridge setup described in Section [[#sub4-setup]].
+configurability and a lower size overhead: \Gls{s} light decreases accuracy by ~50%, for only 60% size overhead. \Gls{s} heavy decreases
+accuracy by 10% more than LLaMA-nodelay for 60% lower time overhead
+and comparable size overhead. Both LLaMA-nodelay and \gls{s} have
+negligible time overhead. Even compared to non-delayed LLaMA, \gls{s}
+offers similar accuracy/size overhead relationship for a much lower
+time overhead. All further data was captured using the bridge setup
+described in Section [[#sub4-setup]].
 
 
 
@@ -1462,12 +1474,13 @@ LLaMA-nodelay, on 100 sites. This shows that \gls{s} reduces accuracy
 more, for the same overhead, or requires less overhead, for a similar
 accuracy reduction. The main difference between LLaMA-nodelay and
 \gls{s} lies in the HTTP-specific distributions to generate cover
-traffic. \citet{DBLP:journals/popets/CherubinHJ17} reported less
+traffic. \citet{DBLP:journals/popets/CherubinHJ17} report less
 overhead on Tor hidden service \citep[sec.5]{tor-design} sites. This
 is arguably due to the high number of embedded objects for standard
-websites as compared to Tor, as each element potentially triggers a
-request for an already-seen element with LLaMA-nodelay, as well as a
-delay with LLaMA.
+websites as compared to Tor
+\citep[sec.5.2]{DBLP:journals/popets/CherubinHJ17}, bas each element
+potentially triggers a request for an already-seen element with
+LLaMA-nodelay, as well as a delay with LLaMA.
 
 
 #+CAPTION[Size overhead to accuracy trade-off on 100 sites]: Size overhead to accuracy trade-off for \glsentryshort{s}, LLaMA-nodelay, and no defense on 100 sites, captured at TU Braunschweig.
@@ -1796,7 +1809,7 @@ hope that future researchers will not have to repeat these.
     #+CAPTION[CUMUL traces for well-classified open world sites]: CUMUL-Traces for well-classified website dailymotion.com.
     #+NAME: fig:cumul-well-open
     [[./pictures/cumul__dailymotion.com__2018-02-02.pdf]]
-    As a contrast, the website [[http://dailymotion.com][dailymotion.com]] had 42 of 42 correctly
+    As a contrast, the website [[http://dailymotion.com][dailymotion.com]] has 42 of 42 correctly
     classified captures. Its CUMUL-traces show low variability in Figure
     [[fig:cumul-well-open]].
 
@@ -1838,7 +1851,7 @@ hope that future researchers will not have to repeat these.
     - ameblo.jp (and youporn.com) show a range of dynamic content
     - aliexpress.com sells different items at different times. The
       images at least are bound to have different byte sizes
-    - godaddy.com had versions in various languages, serving different
+    - godaddy.com has versions in various languages, serving different
       content, which explains the varied traces
 
     #+CAPTION[CUMUL traces high-false-positive google.com]: CUMUL-Traces for the last website with high false-positive rates: google.com. It shows low variability. Its high misclassification rate is explained by other google sites being in the background set (e.g. google.fi).
@@ -1947,7 +1960,10 @@ UI-based approximating overhead, and a web model that is updated to
 modern sites. Further research is if this defense could possibly
 defeat targeted attacks such as \citet{torben}, and if it can defeat
 the modern deep-learning based attacks by \citet{rimmerautomated} and
-\citet{sirinam2018deep}.
+\citet{sirinam2018deep}. In case the defense is found wanting, the
+methods of \citet{guan1999preventing} might be used to strengthen
+obfuscation by selective rerouting, as Tor could already provide for
+this with the =.exit= domain names \citep[sec.2]{address-spec}.
 
 
 On the attack side, \citet{ssl-traffic-analysis} confirm that website fingerprinting
@@ -1966,49 +1982,93 @@ deep-learning based approaches.
   :PROPERTIES:
   :CUSTOM_ID: appendix-accuracy
   :END:
+The classification results decreased over time, see Section
+[[#app.decay]], until the capture process was fixed: the loading process
+needed to check that a page was loaded, and retry several times, as
+the Marionette framework \citep{marionette} sometimes returned from
+the =.navigate= method without the page being loaded. Sometimes, the
+loaded page was clearly not the real page. This needed to be noted as
+well.
 ** Complete 100 Sites CUMUL Results, Sorted by Size Overhead
    :PROPERTIES:
    :CUSTOM_ID: appendix-closed-100-cumul
    :END:
-|---------------+--------+------------+---------+---------+---------|
-| Scenario      | Site   |       Date | Accuracy | Size o.h. [%] | Time o.h. [%] |
-|               |        |            |     <7> |     <7> |     <7> |
-|---------------+--------+------------+---------+---------+---------|
-| defenseless    | mlsec  | 2016-06-17 |    0.90 |    0.00 |    0.00 |
-| defenseless    | mlsec  | 2017-10-22 |    0.43 |    0.00 |    0.00 |
-| defenseless    | mlsec  | 2017-10-22 |    0.44 |    0.00 |    0.00 |
-| defenseless    | mlsec  | 2016-06-17 |    0.91 |    0.00 |    0.00 |
-| defenseless    | mlsec  | 2017-10-08 |    0.47 |    0.00 |    0.00 |
-| defenseless    | mlsec  | 2017-11-05 |    0.48 |    0.00 |    0.00 |
-| defenseless    | mlsec  | 2017-11-15 |    0.50 |    0.00 |    0.00 |
-| defenseless    | mlsec  | 2016-06-17 |    0.91 |    0.00 |    0.00 |
-| defenseless    | mlsec  | 2016-11-04 |    0.71 |    0.00 |    0.00 |
-| defenseless    | mlsec  | 2018-01-17 |    0.93 |    0.00 |    0.00 |
-| defenseless    | gcloud | 2018-01-30 |    0.95 |    0.00 |    0.00 |
-| defenseless    | mlsec  | 2018-02-02 |    0.92 |    0.00 |    0.00 |
-| defenseless    | gcloud | 2018-02-11 |    0.95 |    0.00 |    0.00 |
-| defenseless    | mlsec  | 2018-03-15 |    0.93 |    0.00 |    0.00 |
- | \gls{s}   | mlsec  | 2016-09-23 |    0.87 |    7.03 |    2.83 |
-| \gls{s}   | mlsec  | 2016-06-04 |    0.78 |   14.94 |   26.32 |
-| \gls{s}   | gcloud | 2018-02-02 |    0.79 |   22.89 |   17.49 |
-| \gls{s}   | gcloud | 2018-02-02 |    0.66 |   37.82 |   14.69 |
-| \gls{s}   | mlsec  | 2018-02-13 |    0.43 |   61.81 |   22.23 |
-| \gls{s}   | mlsec  | 2018-03-28 |    0.26 |  142.22 |   28.16 |
-| \gls{s}   | mlsec  | 2018-01-29 |    0.25 |  147.32 |   22.72 |
-| LLaMA-nodelay | mlsec  | 2018-02-25 |    0.36 |  205.18 |   29.04 |
-| LLaMA-nodelay | gcloud | 2018-02-11 |    0.45 |  213.02 |   14.79 |
-| LLaMA-nodelay | mlsec  | 2017-11-28 |    0.61 |  254.32 |  318.52 |
-| LLaMA-nodelay | mlsec  | 2017-10-18 |    0.41 |  294.80 |   75.02 |
-| LLaMA-nodelay | mlsec  | 2017-10-18 |    0.43 |  294.80 |   75.02 |
-| \gls{s}   | mlsec  | 2017-11-21 |    0.37 |  397.37 |   69.82 |
-| \gls{s}   | mlsec  | 2017-11-24 |    0.30 |  654.68 |   80.88 |
-| LLaMA-nodelay | mlsec  | 2017-11-07 |    0.43 |  708.98 |   72.39 |
-|---------------+--------+------------+---------+---------+---------|
+# code, see [[tab:ohs-vs-acc-100]]
+
+|               |        |            |  <4> |     <7> |     <7> |     <7> |
+|---------------+--------+------------+------+---------+---------+---------|
+| Scenario      | Site   |       Date | OR-Level | Accuracy | Size o.h. [%] | Time o.h. [%] |
+|---------------+--------+------------+------+---------+---------+---------|
+| SCT           | mlsec  | 2016-06-04 |    2 |    0.78 |   14.94 |   26.32 |
+| SCT           | mlsec  | 2016-06-04 |    0 |    0.79 |   18.23 |   41.70 |
+| defenseless   | mlsec  | 2016-06-17 |    2 |    0.90 |    0.00 |    0.00 |
+| defenseless   | mlsec  | 2016-06-17 |    2 |    0.91 |    0.00 |    0.00 |
+| defenseless   | mlsec  | 2016-06-17 |    2 |    0.91 |    0.00 |    0.00 |
+| SCT 5         | mlsec  | 2016-09-23 |    2 |    0.87 |    7.03 |    2.83 |
+| defenseless   | mlsec  | 2016-11-04 |    2 |    0.71 |    0.00 |    0.00 |
+| defenseless   | mlsec  | 2017-10-08 |    2 |    0.47 |    0.00 |    0.00 |
+| LLaMA-nodelay | mlsec  | 2017-10-18 |    2 |    0.41 |  294.80 |   75.02 |
+| LLaMA-nodelay | mlsec  | 2017-10-18 |    2 |    0.43 |  294.80 |   75.02 |
+| defenseless   | mlsec  | 2017-10-22 |    0 |    0.43 |    0.00 |    0.00 |
+| defenseless   | mlsec  | 2017-10-22 |    2 |    0.44 |    0.00 |    0.00 |
+| defenseless   | mlsec  | 2017-11-05 |    2 |    0.48 |    0.00 |    0.00 |
+| LLaMA-nodelay | mlsec  | 2017-11-07 |    2 |    0.43 |  708.98 |   72.39 |
+| defenseless   | mlsec  | 2017-11-15 |    2 |    0.50 |    0.00 |    0.00 |
+| SCT           | mlsec  | 2017-11-21 |    2 |    0.37 |  397.37 |   69.82 |
+| SCT           | mlsec  | 2017-11-24 |    2 |    0.30 |  654.68 |   80.88 |
+| LLaMA-nodelay | mlsec  | 2017-11-28 |    2 |    0.61 |  254.32 |  318.52 |
+| defenseless   | mlsec  | 2018-01-17 |    2 |    0.93 |    0.00 |    0.00 |
+| SCT heavy     | mlsec  | 2018-01-29 |    2 |    0.25 |  147.32 |   22.72 |
+| defenseless   | gcloud | 2018-01-30 |    2 |    0.95 |    0.00 |    0.00 |
+| defenseless   | mlsec  | 2018-02-02 |    2 |    0.92 |    0.00 |    0.00 |
+| SCT light     | gcloud | 2018-02-02 |    2 |    0.79 |   22.89 |   17.49 |
+| SCT heavy     | gcloud | 2018-02-02 |    2 |    0.66 |   37.82 |   14.69 |
+| LLaMA-nodelay | gcloud | 2018-02-11 |    2 |    0.45 |  213.02 |   14.79 |
+| defenseless   | gcloud | 2018-02-11 |    2 |    0.95 |    0.00 |    0.00 |
+| SCT light     | mlsec  | 2018-02-13 |    2 |    0.43 |   61.81 |   22.23 |
+| LLaMA-nodelay | mlsec  | 2018-02-25 |    2 |    0.36 |  205.18 |   29.04 |
+| defenseless   | mlsec  | 2018-03-15 |    2 |    0.93 |    0.00 |    0.00 |
+| SCT heavy     | mlsec  | 2018-03-28 |    2 |    0.26 |  142.22 |   28.16 |
+| SCT 5aI       | mlsec  | 2018-05-16 |    2 |    0.61 |   61.54 |   19.38 |
+| LLaMA         | mlsec  | 2018-07-17 |    2 |    0.33 |   28.03 |  845.82 |
+| LLaMA         | mlsec  | 2018-07-17 |    2 |    0.33 |   28.03 |  845.82 |
+| LLaMA         | mlsec  | 2018-07-17 |    2 |    0.21 |     nan |     nan |
+| LLaMA         | mlsec  | 2018-07-17 |    0 |    0.31 |   44.44 |  765.05 |
+| defenseless   | mlsec  | 2018-08-03 |    2 |    0.87 |    0.00 |    0.00 |
+| defenseless   | mlsec  | 2018-08-03 |    2 |    0.87 |    0.00 |    0.00 |
+| defenseless   | mlsec  | 2018-08-03 |    2 |    0.87 |    0.00 |    0.00 |
+| defenseless   | mlsec  | 2018-08-03 |    2 |    0.93 |    0.00 |    0.00 |
+| defenseless   | mlsec  | 2018-08-03 |    2 |    0.93 |    0.00 |    0.00 |
+| defenseless   | mlsec  | 2018-08-03 |    2 |    0.87 |    0.00 |    0.00 |
+| SCT medium    | mlsec  | 2018-08-23 |    2 |    0.08 |  -77.30 |  -12.13 |
+| SCT medium    | mlsec  | 2018-08-23 |    2 |    0.16 |   74.95 |   24.17 |
+| SCT medium    | mlsec  | 2018-08-23 |    2 |    0.08 |  -77.30 |  -12.13 |
+| defenseless   | mlsec  | 2018-08-31 |    2 |    0.51 |    0.00 |    0.00 |
+| defenseless   | mlsec  | 2018-08-31 |    2 |    0.34 |    0.00 |    0.00 |
+| defenseless   | mlsec  | 2018-08-31 |    2 |    0.34 |    0.00 |    0.00 |
+| defenseless   | mlsec  | 2018-08-31 |    2 |    0.50 |    0.00 |    0.00 |
+| defenseless   | mlsec  | 2018-09-07 |    2 |    0.94 |    0.00 |    0.00 |
+| SCT medium    | mlsec  | 2018-09-10 |    2 |    0.36 |   91.66 |   44.53 |
+| SCT medium    | mlsec  | 2018-09-10 |    2 |    0.53 |   81.91 |   44.74 |
+| SCT medium    | mlsec  | 2018-09-10 |    2 |    0.53 |   83.88 |   45.76 |
+| SCT light     | mlsec  | 2018-09-13 |    2 |    0.58 |   60.43 |   64.73 |
+| SCT light     | mlsec  | 2018-09-13 |    2 |    0.43 |   64.15 |   54.28 |
+| SCT light     | mlsec  | 2018-09-13 |    2 |    0.57 |   63.37 |   65.59 |
+| SCT heavy     | mlsec  | 2018-09-16 |    2 |    0.39 |   95.07 |   52.15 |
+| SCT heavy     | mlsec  | 2018-09-16 |    2 |    0.30 |  118.73 |   47.33 |
+| SCT heavy     | mlsec  | 2018-09-16 |    2 |    0.46 |  130.04 |   50.37 |
+| SCT heavy     | mlsec  | 2018-10-01 |    2 |    0.28 |  146.68 |    6.74 |
+| SCT medium    | mlsec  | 2018-10-05 |    2 |    0.39 |   91.50 |    3.89 |
+| SCT medium    | mlsec  | 2018-10-05 |    2 |    0.39 |   91.50 |    3.89 |
+| SCT medium    | mlsec  | 2018-10-05 |    2 |    0.39 |   91.50 |    3.89 |
+| defenseless   | mlsec  | 2018-10-17 |    2 |    0.92 |    0.00 |    0.00 |
+| LLaMA-nodelay | mlsec  | 2018-10-29 |    2 |    0.48 |  250.38 |   20.04 |
+|---------------+--------+------------+------+---------+---------+---------|
 ** Complete 30 Sites CUMUL Results, Sorted by Date
    :PROPERTIES:
    :CUSTOM_ID: appendix-closed-30-cumul
    :END:
-#+CAPTION[CUMUL-results on 30 site data sets]: CUMUL-results on 30 site data sets. S. and T. o.h. denote size and time overhead, respectively. Acc. denotes Accuracy. OR-level refers to \citet{panchenko2}'s outlier removal levels, as described in \citet{panchenko} and given in the code at [[http://lorre.uni.lu/~andriy/zwiebelfreunde/]]. small-removed describes if sites with less than 30 instances were removed from the data set.
+#+CAPTION[CUMUL-results on 30 site data sets]: CUMUL-results on 30 site data sets. S. and T. \gls{oh} denote size and time overhead, respectively. Acc. denotes Accuracy. OR-level refers to \citet{panchenko2}'s outlier removal levels, as described in \citet{panchenko} and given in the code at [[http://lorre.uni.lu/~andriy/zwiebelfreunde/]]. small-removed describes if sites with less than 30 instances were removed from the data set.
 #+ATTR_LATEX: :environment longtable
 | <20>                 |            |  <4> |    <6> |     <7> | <3> | <6>    |
 |----------------------+------------+------+--------+---------+-----+--------|
@@ -2114,14 +2174,6 @@ deep-learning based approaches.
 
 If the sizes for a URL are not known, =b= is a fallback for =a= and
 =II= the fallback for =I=.
-** Discussion
-The classification results decreased over time, see appendix
-[[#app.decay]], until the capture process was fixed: the loading process
-needed to check that a page was loaded, and retry several times, as
-the Marionette framework \citep{marionette} sometimes returned from
-the =.navigate= method without the page being loaded. Sometimes, the
-loaded page was clearly not the real page. This needed to be noted as
-well.
 * Open-World (False/True--Positive) Results
   :PROPERTIES:
   :CUSTOM_ID: app-open-results
@@ -2325,7 +2377,7 @@ These curves drop off steeply.
       - just need a few %
       - but: theoretical concept, better be a bit skeptical
         - \cite{koehler1996base} in general (original authors skeptical, too)
-        - rieck\cite{rieckdiss} had success in IDS
+        - rieck\cite{rieckdiss} has success in IDS
 
    This knowledge helps in understanding and creating defenses. As of
    \cite{a-systematic2014}, \cite{ccs2014-critical} and \cite{panchenko2},
@@ -3562,42 +3614,6 @@ not.
      \cite{panchenko2}. While the algorithms still finds a straight
      line in a projected space, the resulting decision boundaries in
      the original feature space are more varied.
-**** Parameter Estimation
-     #+INDEX: cross-validation
-     #+INDEX: grid search
-     #+INDEX: $\gamma$ (gamma)
-     #+INDEX: gamma
-     Each [[#soft-margin-svm][soft margin classifier has an error term $C$]] which states
-     how much to penalize outliers. The gaussian radial basis
-     function kernel used by \cite{panchenko2} also has a $\gamma$ (gamma)
-     term which varies the width of the area, see Figure
-     [[fig:C-gamma-effect]].
-
-     #+CAPTION[Example svm-rbf classification with different parameters for $C$ and \gamma]: Example svm-rbf classification with different parameters for $C$ and \gamma. Source \cite[Figure 42.328]{scikit-user-guide}, recreated for higher resolution.
-     #+ATTR_LATEX: :width 0.4\textwidth
-     #+NAME: fig:C-gamma-effect
-     [[./pictures/skl-fig-42.328.png]]
-#     [[./pictures/skl-fig-42.328.eps]]
-
-     These parameters have to be provided externally for the Support
-     Vector Machine to achieve high
-     accuracy. \cite[sec.3.2]{Hsu10apractical} recommend grid-search
-     with cross-validation to find optimal parameters.
-
-     In /grid-search/, several parameters of $C$ and $\gamma$ are
-     evaluated, and the best one, depending on the metric, is chosen.
-
-     In /cross-validation/, the data set is split into $k$ disjoint
-     subsets, called /folds/, of equal size. Of those, $k-1$ are used
-     combinedly for training the classifier, while the last is used
-     for prediction evaluation. This is done $k$ times, and averaged
-     for the result.
-
-     It might be possible to evaluate these meta-parameters together
-     with the main classification problem \cite[secs.2.8.3, 6.7]{esl},
-     but analogously to \cite[sec.2.8.3]{esl}, this would probably
-     become "combinatorially hard".
-
 *** K-Nearest-Neighbor-Classifier
     #+INDEX: classifier!kNN
     #+INDEX: classifier!k-nearest-neighbors
@@ -4023,6 +4039,36 @@ tpr           &  0.024 & -0.235 & -0.122 &        -0.697 &  0.577 &  0.223 &  0.
     - lots (!) of data needed
     - high-power GPU needed
 
+** Machine Learning.Classification
+, depending on their
+    - outlier removal
+      - used in wf, not found when searching for the term "outlier" in the textbooks
+        \cite{duda}, \cite{esl}, and \cite{mitchell}, but advised by \cite{udacity}
+      - automatically detect non-normal data
+      - remove before classification
+      - how to detect?
+      - standard: ... based, remove top and bottom ...%
+    - cross-validation
+      - why? avoid overfitting in model selection
+      - models have parameters (svn: penalty C and here kernel width
+        \gamma), knn num of neighbors
+      - if just fit model to training data, evaluate on test data, can
+        have averse effect, select wrong parameters
+      - repeat several times, average result
+      - how to repeat: split data set into k folds, use one for validation, others combined for training
+
+    whole dataset
+
+    average accuracy.
+** Machine Learning.Measuring Performance
+*** more
+- multi-class confusion matrix
+  - more than two classes
+  - here: denote one as negative/background, all others as positive/fg
+  - multiple definitions for tpr/fpr/...
+    - solokova
+    - info retrieval
+    - one assumedly used by panchenko
 * After Appendices: Bibliography and Index
 \bibliography{docs/master}
 \bibliographystyle{unsrtnat}
