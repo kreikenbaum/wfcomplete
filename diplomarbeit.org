@@ -1,7 +1,7 @@
 #+TITLE: Selective Cover Traffic
 #+PRIORITIES: A D B
 #+TODO: MAYBE KEYWORDS WRITE CHECK | DANIEL FINAL
-#+TODO: RECHECK | DANIEL FINAL
+#+TODO: PRERELEASE | DANIEL FINAL
 #+TODO: TODO | PENDING
 \listoffigures
 \listoftables
@@ -317,9 +317,9 @@ of future work in Section [[#future-work]].
   address. Using this, they can contact a rendezvous point, which
   holds a Tor connection to the server, and forwards all data along
   this connection. Thus, the server's IP address stays hidden from all
-  actors. Web services that run behind Tor hidden services tend to be
-  much smaller and contain a smaller number of embedded objects
-  \citep[sec.5.2]{DBLP:journals/popets/CherubinHJ17}.
+  actors. As of \citet[sec.5.2]{DBLP:journals/popets/CherubinHJ17},
+  web services that run behind Tor hidden services tend to have
+  smaller HTML-pages and contain less embedded objects.
 ** Website Fingerprinting Attack
    :PROPERTIES:
    :CUSTOM_ID: sub2-wf
@@ -492,7 +492,7 @@ of future work in Section [[#future-work]].
     bytes. To extract the same number of features from each trace,
     they interpolate 100 data points from these.  After feature
     extraction, CUMUL removes outliers from the data
-    \citep[sec.V-B]{panchenko2}. \citet{kfingerprint}, in addition to
+    \citep[sec.V-B]{panchenko2}. \citet{hayes197185}, in addition to
     the website fingerprinting attack, also measure how much each
     feature adds to classification. Their approach uses approximately
     150 features with a unique Random Forest
@@ -519,14 +519,15 @@ of future work in Section [[#future-work]].
     classifier, others for testing.
 
 
-    For \citet[sec.1.1]{mitchell}, in machine learning, a computer program
-    learns how to do a task /T/ from experience /E/ according to
-    performance measure /P/, if it improves at /T/ as measured by /P/,
-    given /E/. \cite{914517} provide a formal definition: The task of
-    (binary) classification is to approximate a function $f:
-    \mathbb{R}^n \to \{-1, 1\}$. The given /training data/ points
-    $(\mathbf{x}, y) \in X \times Y = \mathbb{R}^n \times \{-1, 1\}$ are drawn
-    from an independent and identically distributed (i.i.d.)
+    For \citet[sec.1.1]{mitchell}, in machine learning, a computer
+    program needs to learn how to do a task /T/. It learns from
+    experience /E/. The program's success is measured by a performance
+    measure /P/. The program is said to /learn/ from /E/, if it
+    improves at /T/ as measured by /P/. \cite{914517} provide a formal
+    definition: The task of (binary) classification is to approximate
+    a function $f: \mathbb{R}^n \to \{-1, 1\}$. The given /training
+    data/ points $(\mathbf{x}, y) \in X \times Y = \mathbb{R}^n \times \{-1, 1\}$
+    are drawn from an independent and identically distributed (i.i.d.)
     distribution. Using these, a hypothesis $h$
     \citep[sec.18.2]{russell1995modern} can be estimated. The aim is
     to minimize the /hypothesis's error/
@@ -535,8 +536,8 @@ of future work in Section [[#future-work]].
     R[h] = \int l(h(\mathbf{x}), y) \mathrm{d}P(\mathbf{x}, y)
     \end{equation}
     #+END_EXPORT
-    with an adequately defined /loss function/ $l$, for example $l(x, y) = 0$
-    if $x == y$ else $1$. As the probability distribution $P$ is not
+    with an adequately defined /loss function/ $l$, for example $l(h(x), y) = 0$
+    if $h(x) == y$ else $1$. As the probability distribution $P$ is not
     known, the hypothesis error is often estimated as the /empirical risk/
     #+BEGIN_EXPORT latex
     \begin{equation}
@@ -619,8 +620,6 @@ of future work in Section [[#future-work]].
     #+INDEX: Accuracy
     #+INDEX: Area Under [the \glsentrytext{roc}] Curve (AUC)
     #+INDEX: AUC
-    #+INDEX: AUC$_{0.01}$
-    #+INDEX: AUC!bounded
     #+INDEX: closed world
     #+INDEX: confusion matrix
     #+INDEX: False Positive Rate (FPR)
@@ -705,9 +704,7 @@ of future work in Section [[#future-work]].
     false-positive-rate. The \gls{auc} can be measured. The closer
     this value is to 1, the better. If one is mainly interested in few
     false positives, the leftmost Section of the \gls{roc}-curve is of
-    particular interest. The area under the curve bounded up to a
-    fixed false positive rate, for example 1%, is called /bounded
-    \gls{auc}/ and denoted AUC_{0.01} \citep[sec.5.1.3]{rieckdiss}.
+    particular interest.
 ** Defending against Website Fingerprinting
    :PROPERTIES:
    :CUSTOM_ID: sub2-wf-def
@@ -772,7 +769,7 @@ of future work in Section [[#future-work]].
    \citet[sec.6]{panchenko} add noise to traffic. They /camouflage/ by
    loading another page simultaneously in the
    background. \citet{ccs2012-fingerprinting},
-   \citet{a-systematic2014}, \citet{kfingerprint},
+   \citet{a-systematic2014}, \citet{hayes197185},
    \citet{effective2014}, \citet{panchenko}, and \citet{wtfpad2015}
    found this simple defense to be surprisingly effective, albeit at a
    high overhead. As more and more features were used to classify the
@@ -905,7 +902,7 @@ are set.
    \State $registerHost(hostnameOf(url), coverNumEmbedded, urlNumEmbedded)$
  \Else \Comment{known hostname: a resource request}
    \State $requestProbability \leftarrow getProbability(hostnameOf(url))$
-   \While {$requestProbability > 1$} \Comment{send multiple cover requests}
+   \While {$requestProbability > 1$} \Comment{if $> 1$, send multiple cover requests, else check probability}
      \State $requestCoverSized(randomEmbeddedSize())$
      \State $updateHosts(hostnameOf(url))$
      \State $requestProbability \leftarrow requestProbability -1$
@@ -920,18 +917,20 @@ are set.
  \end{algorithm}
 #+END_EXPORT
 The retrieval of the (first) HTML page provides significant
-information to a website fingerprinting attacker \citep[sec.4.1]{panchenko}. To
-counter this information gain, a first load is always covered by
-additional traffic. After this first request, the browser downloads
-the page resources: images, style sheets, JavaScript \citep{ecma}
-files, etc. Each of these transfers might be covered by additional
-dummy traffic: The actual number of resources is subtracted from the
-target number. This difference is randomly spread out among the actual
-browser requests. The size of each cover response is adjusted to the
-page's actual values, if known. The addon augments data requests to
-match an imagined web page retrieval. The /lookupOrGuess.../-functions
-need data structures to map URLs to both HTTP sizes and number of
-embedded objects. These data structures use Bloom-filter
+information to a website fingerprinting attacker
+\citep[sec.4.1]{panchenko}. To counter this information gain, a first
+load is always covered by additional traffic. After this first
+request, the browser downloads the page resources: images, style
+sheets, JavaScript \citep{ecma} files, etc. Each of these transfers
+might be covered by additional dummy traffic: The actual number of
+resources is subtracted from the target number. This difference is
+randomly spread out among the actual browser requests. The size of
+each cover response is adjusted to the page's actual values, if
+known. The addon augments data requests to match an imagined web page
+retrieval. The dummy traffic is currently provided by a server, see
+also Future Work [[#future-work]]. The /lookupOrGuess.../-functions need
+data structures to map URLs to both HTTP sizes and number of embedded
+objects. These data structures use Bloom-filter
 \citep{Bloom70space/timetrade-offs} based binning (see Section
 [[#sub3-bloom]]) to save values related to URLs in a fixed space, while
 not allowing an adversary to exactly determine which URLs are saved.
@@ -1001,7 +1000,7 @@ embedded resources per HTML page. There are several approaches on how
 to generate HTTP-shaped traffic. The naïve way, using HTTP dummy
 traffic \citep{panchenko}, loads another page simultaneously in the
 background. \citet{ccs2012-fingerprinting}, \citet{a-systematic2014},
-\citet{kfingerprint}, \citet{effective2014}, \citet{panchenko}, and
+\citet{hayes197185}, \citet{effective2014}, \citet{panchenko}, and
 \citet{wtfpad2015} evaluate it to be surprisingly effective for all its
 simplicity, albeit at a high overhead.
 
@@ -1197,6 +1196,15 @@ If the sizes for a URL are not known, the http model is a fallback both the cach
 These values should to illustrate configurability, and show usable
 presets. Users can select other values, depending on their personal
 security needs.
+** Summary
+While website fingerprinting attacks continue to evolve, its defenses have been found wanting. \Gls{s}'s main advantages are
+
+- works at the application layer, using a traffic model
+  \citep{newtrafficmodel} to augment traffic
+- easily deployable due to using Firefox's Add-on SDK
+- configurable to personal security needs
+
+Its efficiency and configurability are examined in the next chapter.
 * Evaluation
   :PROPERTIES:
   :CUSTOM_ID: ch4-evaluation
@@ -1265,7 +1273,7 @@ each restart. This takes care of resetting the circuit and deletes all
 cached data. This procedure also reproduces the time gaps described in
 \citet[sec.5.1]{effective2014}: By fetching websites in a round-robin fashion,
 there is a delay between two consecutive fetches of the same page: the
-time for the other pages to be fetched.
+time for the other pages to be fetched in between.
 
 The data is analyzed via a re-implemented version of CUMUL
 \citep{panchenko2}, which is used as state-of-the-art comparison in
@@ -1530,13 +1538,13 @@ offers configurability in the amount of cover traffic produced.
 
 What is the effect of caching page statistics as described in
 described in Section [[#sub3-bloom]]? This cache saves the size of the
-HTML page, plus the number of embedded elements, possibly providing more
-closely tailored cover traffic. A first comparison on the top 10 pages
-yields approximately 7% higher accuracy reduction when using the cache. On 30
-pages, this effect is reversed, albeit lower. All sets of traces were
-captured with a time-gap of one to three months after configuration
-variable for caching made it possible. The decrease might be due to
-the top sites increasing their sizes less, and being generally
+HTML page, plus the number of embedded elements, possibly providing
+more closely tailored cover traffic. A first comparison on the top 10
+pages yields approximately 7% higher accuracy reduction when using the
+cache. On 30 pages, this effect is reversed, albeit lower. All sets of
+traces were captured with a time-gap of one to three months after
+configuration was enabled in the source code. The decrease might be
+due to the top sites increasing their sizes less, and being generally
 lighter, as visible in Figure
 [[fig:relative-histogram-incoming-bytes-over-time]] and documented by
 \citet{web-is-doom}.
@@ -1657,7 +1665,7 @@ guessing at \gls{auc} 0.49; as does LLaMA-nodelay at \gls{auc} 0.53,
 but with 205% size overhead. \gls{s}'s web-model-based
 \citep{newtrafficmodel} defense seems to surpass LLaMA-nodelay's
 load-repeating defense in this scenario, too, yielding close to total
-obfuscation for much less space overhead.
+obfuscation for much less space overhead, and added configurability.
 ** Capture Pitfalls
    :PROPERTIES:
    :CUSTOM_ID: sub4-pitfalls
@@ -1688,14 +1696,12 @@ hope that future researchers will not have to repeat these.
     capture methodology.\\
 
 
-    Surprisingly, the capture's accuracies decayed over time: On
-    end-of-2017 data, neither the wf-attack-reimplementation,
-    Panchenkos original, nor a student group at TU Braunschweig was
-    able to provide good accuracy. The accuracy on 30 sites decayed
-    from 97.93% on 2016-08-15 to 58.41% on 2017-10-16, as
-    displayed in Figure [[fig:date-vs-acc--30sites]]. On 100 sites, the
-    accuracy likewise fell from 90.57% on 2016-06-17 to 43.46% on
-    2017-10-22, as displayed in Figure [[fig:date-vs-acc--100sites]].\\
+    Surprisingly, the capture's accuracies decayed over time: The
+    accuracy on 30 sites decayed from 97.93% on 2016-08-15 to 58.41%
+    on 2017-10-16, as displayed in Figure [[fig:date-vs-acc--30sites]]. On
+    100 sites, the accuracy likewise fell from 90.57% on 2016-06-17 to
+    43.46% on 2017-10-22, as displayed in Figure
+    [[fig:date-vs-acc--100sites]].\\
 
 
     #+CAPTION: Confusion matrix for 30 sites at 2016-08-15, overall accuracy at 98%.
@@ -1729,42 +1735,25 @@ hope that future researchers will not have to repeat these.
 
 
     For several low-accuracy retrievals, very little data is received
-    back from the server. This could possibly be due to cloudflare
-    recaptcha protection etc, which can sometimes be observed when
-    browsing with Tor. A possible solution as future work would be to
-    filter traces with fewer bytes incoming than outgoing.
-
-
-    To re-increase accuracy, the text of the loaded page was
-    checked. This revealed that the Marionette framework
-    \citep{marionette} sometimes returned from the =.navigate= method
-    without the page being loaded. If this text indicated a load error,
-    or a captcha, the capture was marked accordingly, and discarded in
-    the analysis. Websites with a high number of capture errors were
+    back from the server. To re-increase accuracy, the text of the
+    loaded page was checked. This revealed that the Marionette
+    framework \citep{marionette} sometimes returned from the
+    =.navigate= method without the page being loaded. If this text
+    indicated a load error, or a captcha, the capture was marked
+    accordingly, and discarded in the analysis. Additionally, the code
+    was modified to ensuring that the Marionette framework
+    \citep{marionette} reports successful connection to the Tor
+    Browser. Also, websites with a high number of capture errors were
     removed from the list of sites.
 *** Open World Misclassification
     :PROPERTIES:
     :CUSTOM_ID: sub4-owmiss
     :END:
     While closed-world results are easier to compare and analyze,
-    website fingerprinting is modeled more accurately by an [[#sub2-ml-measure][open-world model]]. This
-    brought additional challenges in classification.
-
-
-    Scikit-learn \citep{scikit-learn} has the advantage of /balanced
-    class weights/: classes can have different sizes, yet are considered
-    of the same importance when training classifiers. This useful
-    setting was enabled in the beginning of open world classification as
-    a carryover from closed-world analysis. In the open world setting,
-    it reduced accuracy to 55%.
-
-
-
-    As soon as this setting was disabled, accuracy rose to 83.55%,
-    with true positive rate of 81.39% and false-positive rate of
-    12.32%. This still does not match \cite{panchenko2}'s. To improve
-    further, the confusion matrix in Figure [[fig:open-world-confmat]] shows
-    which sites were mis-classified how often:
+    website fingerprinting is modeled more accurately by an [[#sub2-ml-measure][open-world
+    model]]. This brought additional challenges in classification. The
+    confusion matrix in Figure [[fig:open-world-confmat]] shows which
+    sites were mis-classified how often:
 
     #+CAPTION[Open world confusion matrix]: Open world confusion matrix. Background to background classification (5928) was removed to normalize colors.
     #+NAME: fig:open-world-confmat
@@ -1880,7 +1869,7 @@ current defenses have several drawbacks, as detailed in
 [[#sub2-wf-def]]. While the base rate fallacy \citep{axelsson2000base},
 might hinder this detection due to the large number of background
 sites, \citet{axelsson2000base}'s original arguments have been
-disproved by \citet{rieckdiss}'s effectiveness. As of
+called into question by \citet{rieckdiss}'s effectiveness. As of
 \citet{koehler1996base}, the base rate fallacy should generally be
 considered with a grain of salt.
 
@@ -1922,7 +1911,7 @@ The main result of this thesis can by summarized in three contributions:
   disadvantageous error rate could protect users if the filter were
   updated dynamically, obfuscating on-disk storage of properties.
 - Chapter [[#ch4-evaluation]] evaluates this new method using real Tor
-  traffic covering a period of two years, and comprising over 400'000
+  traffic covering a period of two years, and comprising over 400,000
   instances of web retrievals. In the open world setting, the
   prototype matches the performance of the latest LLaMA
   \citep{DBLP:journals/popets/CherubinHJ17} client-side defense, for
@@ -2385,7 +2374,7 @@ These curves drop off steeply.
   for each file-URL, choosing the lower one. This could increase
   traffic, but the opposite might be too little traffic, thus easier
   website fingerprinting, which should be avoided.
-** WAIT github link for =html_top_100= script, and =htmlsizetojson.py=
+** PRERELEASE github link for =html_top_100= script, and =htmlsizetojson.py=
 * TODO [#D] Cached: Number of Embedded Objects                    :BASTI_WEG:
   :PROPERTIES:
   :CUSTOM_ID: number_embedded
@@ -2407,17 +2396,7 @@ These curves drop off steeply.
   underestimate the number of embedded elements. This might generate
   more traffic than strictly necessary, but here, safe seems better
   than sorry.
-** WAIT link to =lxml= website
-** WAIT github links
-* WRITE [#D] Add-on: Factor to Overhead
-  - add-on has factor setting
-  - how to estimate overhead from this
-    - useful for matching llama overhead
-  - from list of tuples of =(defense-factor: overhead)=
-  - result: 1.47 * factor + 39.63
-  - estimate to get to overhead of 295 is 175: i(175) \approx 296.9
-  [[./pictures/factor_to_overhead.eps]]
-  # creation see code at: [[file:~/da/da.org_archive::*factor%20to%20overhead%20at%200.22aI][factor to overhead at 0.22aI]]
+** PRERELEASE github links
 * WRITE [#D] Bloom-sort
   :PROPERTIES:
   :CUSTOM_ID: bloom-sort
@@ -2507,7 +2486,7 @@ These curves drop off steeply.
    would yield =400=. See usage in =size-cache=.
 
    - link to main bloom-sort, create custom-id there
-** WAIT github link
+** PRERELEASE github link
 * CHECK [#D] Determining Bloom-Sort Parameters
   :PROPERTIES:
   :CUSTOM_ID: bloom-params
@@ -2985,7 +2964,7 @@ request-response interaction.
 There are several approaches on how to generate HTTP-shaped
 traffic. The naïve way, using HTTP dummy traffic \citep{panchenko},
 loads another page simultaneously in the background. \citet{ccs2012-fingerprinting},
-\citet{a-systematic2014}, \citet{kfingerprint}, \citet{effective2014},
+\citet{a-systematic2014}, \citet{hayes197185}, \citet{effective2014},
 \citet{panchenko}, and \citet{wtfpad2015} found it to be surprisingly
 effective for all its simplicity, albeit at a high overhead.
 
@@ -4058,6 +4037,16 @@ tpr           &  0.024 & -0.235 & -0.122 &        -0.697 &  0.577 &  0.223 &  0.
    website fingerprinting-scenarios. This means that finding people who might have
    accessed a certain site is easier than making sure that they really
    visited the site.
+
+** WRITE [#D] Add-on: Factor to Overhead
+   - add-on has factor setting
+   - how to estimate overhead from this
+     - useful for matching llama overhead
+   - from list of tuples of =(defense-factor: overhead)=
+   - result: 1.47 * factor + 39.63
+   - estimate to get to overhead of 295 is 175: i(175) \approx 296.9
+   [[./pictures/factor_to_overhead.eps]]
+   # creation see code at: [[file:~/da/da.org_archive::*factor%20to%20overhead%20at%200.22aI][factor to overhead at 0.22aI]]
 
 * After Appendices: Bibliography and Index
 \bibliography{docs/master}
