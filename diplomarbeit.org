@@ -511,12 +511,29 @@ of future work in Section [[#future-work]].
     #+INDEX: classification!test data
     #+INDEX: machine learning!classification
     #+INDEX: cross-validation
-    Website fingerprinting /classification/ tries to assign a website to a trace's
-    features extracted in the previous step.  The previous step ---
-    [[#sub2-ml-features][feature extraction]] --- transforms traces (raw input data) to
-    features. In /classification/, these features are used for two
-    purposes: some traces' features are used for training the
-    classifier, others for testing.
+    #+INDEX: classifier!Support Vector Machine
+    #+INDEX: classifier!SVM
+    #+INDEX: Support Vector Machine
+    #+INDEX: SVM
+    #+INDEX: linear classifier
+    #+INDEX: binary classification
+    #+INDEX: classification!binary
+    #+INDEX: margin
+    #+INDEX: SVM!margin
+    #+INDEX: soft-margin
+    #+INDEX: SVM!soft-margin
+    #+INDEX: classifier!soft-margin
+    #+INDEX: C
+    #+INDEX: SVM!C
+    #+INDEX: kernel
+    #+INDEX: kernel!radial basis function (RBF)
+    #+INDEX: radial basis function (RBF) kernel
+    Website fingerprinting /classification/ tries to assign a website
+    to a trace's features extracted in the previous step.  The
+    previous step --- [[#sub2-ml-features][feature extraction]] --- transforms traces (raw
+    input data) to features. In /classification/, these features are
+    used for two purposes: some traces' features are used for training
+    the classifier, others for testing.
 
 
     For \citet[sec.1.1]{mitchell}, in machine learning, a computer
@@ -577,29 +594,74 @@ of future work in Section [[#future-work]].
     classifiers, such as \gls{svm} \citep{cortes1995support} form an
     internal model from which further input data is
     classified. Others, notably k-Nearest-Neighbors, classify directly
-    without an intermediary model. Most classifiers have configuration
-    parameters. For \glspl{svm}, which CUMUL \cite{panchenko2}
-    applies, these are the regularization parameter $C$ which weighs
-    how much to penalize outliers and the RBF-kernel width $\gamma$, see
-    Figure [[fig:C-gamma-effect]].
+    without an intermediary model. \Glspl{svm}
+    \citep{cortes1995support} are a linear classifier: they find a
+    linear boundary between points. Given a set $X = \{x_1, ...,
+    x_n\}$ with a dot product $\langle\cdot, \cdot\rangle: X \times X \to \mathbb R$ and tuples
+    $(x_1, y_1), ..., (x_m, y_m)$, with $x_i \in X, y_i \in \{-1, 1\}$ as
+    a /binary classification/ task \citep[ch.6f]{iml}.  The SVM's job
+    is to find a separating hyperplane / affine set
+    #+BEGIN_EXPORT latex
+    \begin{equation}
+      \{x \in X \mid \langle w, x \rangle +b = 0\}
+    \end{equation}
+    #+END_EXPORT
+    such that the data lie on the correct sides: $\langle w, x_i \rangle +b \ge 0$
+    whenever $y_i = 1$, and $\langle w, x_i \rangle +b < 0$ whenever $y_i =
+    -1$. With added normalization, this can be rewritten as \[y_i \cdot (\langle
+    w, xi \rangle +b) \ge 1.\] A \gls{svm} tries to find a hyperplane between
+    two groups of points and maximize its distance to the closest
+    points, called /margin/. If the data points lie such that a line
+    cannot be found, a /soft-margin classifier/ introduces slack
+    variables $\xi \ge 0$, which it tries to reduce while maximizing the
+    margin.  This alters the equations to $y_i( \langle w, xi \rangle +b) \ge 1 -
+    \xi_i$ for the optimization problem
 
-     #+CAPTION[Example svm-rbf classification with different parameters for $C$ and \gamma]: Example svm-rbf classification with different parameters for $C$ and \gamma. Source \cite[Figure 42.328]{scikit-user-guide}, recreated for higher resolution.
-     #+ATTR_LATEX: :width 0.6\textwidth
-     #+NAME: fig:C-gamma-effect
-     [[./pictures/skl-fig-42.328.pdf]]
+    #+BEGIN_EXPORT latex
+    \begin{equation}
+      \min_{w, b, \xi} \frac{1}{2} ||w||^2 + \frac{C}{m} \sum_{i=1..m} \xi_i
+    \end{equation}
+    #+END_EXPORT
+
+    The /error term/ $C$ weighs minimizing training errors against
+    maximizing the margin \citep[sec.7.2.1]{iml}.  Straight lines do
+    not always distinguish classes correctly. This would seem a
+    drawback to using \glspl{svm}, yet they can compute these not only
+    on the original data, but also on a projected /feature space/
+    $\cal F$. This allows for complex decision boundaries. By using
+    the kernel trick \cite[sec.2.2.2]{kernels}, a \gls{svm} can not
+    only use the dot product $\langle.,.\rangle$, but another kernel $k(., .)$
+    instead to efficiently find a solution, without computing the
+    mapping to the feature space \citep[sec.III]{914517}. The default
+    kernel used by \citet{Hsu10apractical} for \glspl{svm} is the
+    (gaussian) /radial basis function/ (RBF) kernel
+    \citep[sec.5]{smola1998connection}.
+
+    #+BEGIN_EXPORT latex
+    \begin{equation}
+         k(x, y) = \exp \left ( - { \|x - y\|^2 \over 2 \gamma^2 } \right ).
+    \end{equation}
+    #+END_EXPORT
+
+    #+CAPTION[Example svm-rbf classification with different parameters for $C$ and \gamma]: Example svm-rbf classification with different parameters for $C$ and \gamma. Source \cite[Figure 42.328]{scikit-user-guide}, recreated for higher resolution.
+    #+ATTR_LATEX: :width 0.6\textwidth
+    #+NAME: fig:C-gamma-effect
+    [[./pictures/skl-fig-42.328.pdf]]
 #     [[./pictures/skl-fig-42.328.eps]]
 
-     These parameters need to be adjusted to achieve optimal
-     classification accuracy, while avoiding overfitting to the
-     training data. One way to avoid this overfitting is
-     cross-validation \citep{breiman1992submodel}: The data set is
-     split into $k$ disjoint subsets, called /folds/, of equal
-     size. Of those, $k-1$ are used combinedly for training the
-     classifier, while the last is used for prediction evaluation. In
-     other words, for each run, $k-1$ folds are used as training data,
-     while the last fold is used as testing data. The accuracy over
-     all folds is averaged. CUMUL\citep{panchenko2} uses 10-fold
-     cross-validation.
+    The effect of regularization parameter $C$ which weighs how much
+    to penalize outliers and the RBF-kernel width $\gamma$ can be seen in
+    Figure [[fig:C-gamma-effect]].  These parameters need to be adjusted
+    to achieve optimal classification accuracy, while avoiding
+    overfitting to the training data. One way to avoid this
+    overfitting is cross-validation \citep{breiman1992submodel}: The
+    data set is split into $k$ disjoint subsets, called /folds/, of
+    equal size $\pm 1$. Of those, $k-1$ are used combinedly for training the
+    classifier, while the last is used for prediction evaluation. In
+    other words, for each run, $k-1$ folds are used as training data,
+    while the last fold is used as testing data. The accuracy over all
+    folds is averaged. CUMUL\citep{panchenko2} uses 10-fold
+    cross-validation.
 
     #+CAPTION[Cross-validation splits]: Cross-validation splits. The training folds are combined, the classifier is trained on them, then accuracy is computed on the test fold. This is done $k$ times, the results are averaged.
     #+NAME: tab:confusion_matrix
@@ -3447,118 +3509,6 @@ not.
      cleans the cache between captures by restarting the Tor Browser
      Bundle.
 ** PENDING Machine Learning Algorithms
-*** Support Vector Machines
-    #+INDEX: classifier!Support Vector Machine
-    #+INDEX: classifier!SVM
-    #+INDEX: Support Vector Machine
-    #+INDEX: SVM
-    #+INDEX: linear classifier
-    #+INDEX: binary classification
-    #+INDEX: classification!binary
-    /Support Vector Machines/ (SVMs) are a linear classifier:
-    they find a linear boundary between points, see Figure
-    [[fig:linear_boundary]] for a simple example.
-
-    #+CAPTION[Example binary linear classification]: Example binary linear classification from \cite[Figure 1.5]{iml}.
-    #+ATTR_LATEX: :width 0.4\textwidth
-    #+NAME: fig:linear_boundary
-    [[./pictures/iml_fig1.5.png]]
-
-    [fn::This and the following parts are mostly based on
-    \cite[ch.6f]{iml}] Given a set $X = \{x_1, ..., x_n\}$ with a dot
-    product $\langle\cdot, \cdot\rangle: X \times X \to \mathbb R$ and tuples $(x_1, y_1), ...,
-    (x_m, y_m)$, with $x_i \in X, y_i \in \{-1, 1\}$ as a /binary
-    classification/ task.
-
-    The SVM's job is to find a hyperplane[fn::as \cite[ch.4.1]{esl}
-    mention, this is actually an affine set, as it need not pass
-    through the origin. This thesis keeps the tradition (as long as
-    those things formed by quarks are still called atoms ...).]
-    #+BEGIN_EXPORT latex
-      \[\{x \in X \mid \langle w, x \rangle +b = 0\}\]
-    #+END_EXPORT
-    such that $\langle w, x_i \rangle +b \ge 0$ whenever $y_i = 1$, and $\langle w, x_i \rangle
-    +b < 0$ whenever $y_i = -1$. With added normalization, this can
-    be compressed to the form \[y_i \cdot (\langle w, xi \rangle +b) \ge 1.\]
-**** Soft Margin Classifiers
-     :PROPERTIES:
-     :CUSTOM_ID: soft-margin-svm
-     :END:
-     #+INDEX: margin
-     #+INDEX: SVM!margin
-     #+INDEX: soft-margin
-     #+INDEX: SVM!soft-margin
-     #+INDEX: classifier!soft-margin
-     #+INDEX: C
-     #+INDEX: SVM!C
-     A support vector machine tries to find a hyperplane between two
-     groups of points and maximize its distance to the closest points,
-     called /margin/. What happens if the points lie such that a line
-     cannot be found, as e.g. in Figure [[fig:non-linear-data]]?
-
-     #+CAPTION[Example simple non-linearly separable data]: Non-linearly separable data; source: \url{https://en.wikipedia.org/wiki/File:Separability_NO.svg}
-     #+ATTR_LATEX: :width 0.4\textwidth
-     #+NAME: fig:non-linear-data
-     [[./pictures/Separability_NO.eps]]
-
-     To solve this, a /soft-margin classifier/ introduces slack
-     variables $\xi \ge 0$, which it tries to reduce while maximizing the
-     margin.
-
-     This alters the equations to $y_i( \langle w, xi \rangle +b) \ge 1 - \xi_i$ for the
-     optimization problem
-
-     \[\min_{w, b, \xi} \frac{1}{2} ||w||^2 + \frac{C}{m} \sum_{i=1..m} \xi_i\]
-
-     The /error term/ $C$ weighs minimizing training errors against
-     maximizing the margin\cite[sec.7.2.1]{iml}.
-**** Multi-Class Strategies
-     :PROPERTIES:
-     :CUSTOM_ID: multi-class
-     :END:
-     #+INDEX: binary classification
-     #+INDEX: multi-class classification
-     #+INDEX: classification!binary
-     #+INDEX: classification!multi-class
-     The SVMs as described above solve the binary classification
-     problem \cite[sec.1.1.3]{iml}: they propose a boundary between
-     two classes of objects.
-
-     In website fingerprinting[fn::as in e.g.\space{}handwriting
-     recognition], there are most often more classes than two.
-
-     Several strategies exist to distinguish more than two
-     classes. The main are to train one classifier for each class ---
-     called /One-Vs-Rest/ (OVR) --- and one for each class-class
-     combination --- called /One-Vs-One/ (OVO). One-Vs-Rest trains
-     fewer classifiers, while One-Vs-One trains more, but evaluates
-     fewer samples per fitting.\cite[sec.4.12.3]{scikit-user-guide}.
-**** Kernel Trick
-     #+INDEX: kernel
-     #+INDEX: kernel!radial basis function (RBF)
-     #+INDEX: radial basis function (RBF) kernel
-     Straight lines do not always distinguish classes correctly, as
-     e.g. example in Figure [[hastie_kerneltrick]]. This would seem a
-     drawback to using Support Vector Machines, yet they can compute
-     these not only on the original data, but also on a projected
-     space. This allows for complex decision boundaries. By using the
-     kernel trick\cite[sec.2.2.2]{kernels}[fn::A kernel is a function
-     with specific properties. The dot product is such a kernel. The
-     kernel trick enables a algorithm with a kernel to use any other
-     kernel], a SVM can not only use the dot product $\langle.,.\rangle$, but
-     another kernel $k(., .)$ instead.
-
-     #+CAPTION: Kernel trick application example from Hastie et al.\cite[ch.4.1]{esl}. The left side shows linear boundaries on $X$ and $Y$ --- the right side linear boundaries computed with added $X^2$, $Y^2$ and $XY$.
-     #+NAME: hastie_kerneltrick
-     [[./pictures/hastie.png]]
-
-     The kernel used by default by \cite{Hsu10apractical} for SVMs is
-     the (gaussian) /radial basis function/ (RBF)
-     kernel\cite[sec.2.3]{kernels} \[k(x, y) = \exp \left ( - { \|x -
-     y\|^2 \over 2 \gamma^2 } \right )\] This is also used by
-     \cite{panchenko2}. While the algorithms still finds a straight
-     line in a projected space, the resulting decision boundaries in
-     the original feature space are more varied.
 *** K-Nearest-Neighbor-Classifier
     #+INDEX: classifier!kNN
     #+INDEX: classifier!k-nearest-neighbors
@@ -4047,6 +3997,28 @@ tpr           &  0.024 & -0.235 & -0.122 &        -0.697 &  0.577 &  0.223 &  0.
    - estimate to get to overhead of 295 is 175: i(175) \approx 296.9
    [[./pictures/factor_to_overhead.eps]]
    # creation see code at: [[file:~/da/da.org_archive::*factor%20to%20overhead%20at%200.22aI][factor to overhead at 0.22aI]]
+
+** Multi-Class Strategies
+   :PROPERTIES:
+   :CUSTOM_ID: multi-class
+   :END:
+   #+INDEX: binary classification
+   #+INDEX: multi-class classification
+   #+INDEX: classification!binary
+   #+INDEX: classification!multi-class
+   The SVMs as described above solve the binary classification
+   problem \cite[sec.1.1.3]{iml}: they propose a boundary between
+   two classes of objects.
+
+   In website fingerprinting[fn::as in e.g.\space{}handwriting
+   recognition], there are most often more classes than two.
+
+   Several strategies exist to distinguish more than two
+   classes. The main are to train one classifier for each class ---
+   called /One-Vs-Rest/ (OVR) --- and one for each class-class
+   combination --- called /One-Vs-One/ (OVO). One-Vs-Rest trains
+   fewer classifiers, while One-Vs-One trains more, but evaluates
+   fewer samples per fitting.\cite[sec.4.12.3]{scikit-user-guide}.
 
 * After Appendices: Bibliography and Index
 \bibliography{docs/master}
