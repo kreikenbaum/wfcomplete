@@ -3,9 +3,37 @@
 #+TODO: MAYBE KEYWORDS WRITE CHECK | DANIEL FINAL
 #+TODO: PRERELEASE | DANIEL FINAL
 #+TODO: TODO | PENDING
+#+OPTIONS: toc:nil
+\section*{To Gigi}
+\vfill
+\subsubsection*{Acknowledgements}
+- shoulders of giants
+- Daniel: polishing, rejecting, improving, good training
+- Basti and his family: encouragement, can-do attitude
+- support from family
+  - parents
+  - Peter and Barbara Boczianowski, Ute Irala
+  - Karin Kühner
+
+\section*{Summary}
+
+The anonymity network Tor is under attack. It provides access to an
+uncensored internet for people in oppressive regimes, and enables for
+example whistleblowers to report wrongdoing with no fear of
+retribution. If its provided anonymity were to be reduced, this would
+hamper its purpose, both in actual terms, and because this would
+discourage users, as its number of users increase its anonymity.
+
+Website fingerprinting can allow a local passive adversary, a very
+limited attacker, to fathom which websites a user is visiting,
+effectively cancelling Tor's anonymity. While this
+
+website fingerprinting can detect the websites visited during anonymized browsing. there is no defense included with Tor yet. new, easily installable defense that has little overhead, is configurable, uses the properties of web traffic to hide which page was visited
+
+- why number of users? answer or understandable
+#+TOC: headlines 2
 \listoffigures
 \listoftables
-\input{diplomarbeit.ind}
 \printnoidxglossaries
 * Configuration							    :ARCHIVE:
 #+BIBLIOGRAPHY: master plain option:-d
@@ -15,8 +43,10 @@
 #+LATEX_HEADER: \usepackage{algorithm}
 #+LATEX_HEADER: \usepackage[noend]{algpseudocode}
 #+LATEX_HEADER: \usepackage{amsmath}
+#+LATEX_HEADER: \usepackage[ngerman,english]{babel}
 #+LATEX_HEADER: \usepackage{booktabs} % for \toprule
 #+LATEX_HEADER: \usepackage{float}
+#+LATEX_HEADER: \usepackage{titletoc} % before hyperref
 #+LATEX_HEADER: \usepackage{hyperref}
 #+LATEX_HEADER: \usepackage[tracking=true]{microtype}
 #+LATEX_HEADER: \usepackage[numbers]{natbib}
@@ -609,7 +639,7 @@ of future work in Section [[#future-work]].
     such that the data lie on the correct sides: $\langle w, x_i \rangle +b \ge 0$
     whenever $y_i = 1$, and $\langle w, x_i \rangle +b < 0$ whenever $y_i =
     -1$. With added normalization, this can be rewritten as \[y_i \cdot (\langle
-    w, xi \rangle +b) \ge 1.\] A \gls{svm} tries to find a hyperplane between
+    w, x_i \rangle +b) \ge 1.\] A \gls{svm} tries to find a hyperplane between
     two groups of points and maximize its distance to the closest
     points, called /margin/. If the data points lie such that a line
     cannot be found, a /soft-margin classifier/ introduces slack
@@ -624,14 +654,14 @@ of future work in Section [[#future-work]].
     #+END_EXPORT
 
     The /error term/ $C$ weighs minimizing training errors against
-    maximizing the margin \citep[sec.7.2.1]{iml}.  Straight lines do
+    maximizing the margin \citep[sec.7.2.1]{iml}.  Yet, straight lines do
     not always distinguish classes correctly. This would seem a
     drawback to using \glspl{svm}, yet they can compute these not only
     on the original data, but also on a projected /feature space/
     $\cal F$. This allows for complex decision boundaries. By using
     the kernel trick \cite[sec.2.2.2]{kernels}, a \gls{svm} can not
-    only use the dot product $\langle.,.\rangle$, but another kernel $k(., .)$
-    instead to efficiently find a solution, without computing the
+    only use the dot product $\langle\cdot , \cdot\rangle$, but another kernel $k(\cdot, \cdot)$
+    instead to efficiently find a solution, without explicitly computing the
     mapping to the feature space \citep[sec.III]{914517}. The default
     kernel used by \citet{Hsu10apractical} for \glspl{svm} is the
     (gaussian) /radial basis function/ (RBF) kernel
@@ -646,8 +676,8 @@ of future work in Section [[#future-work]].
     #+CAPTION[Example svm-rbf classification with different parameters for $C$ and \gamma]: Example svm-rbf classification with different parameters for $C$ and \gamma. Source \cite[Figure 42.328]{scikit-user-guide}, recreated for higher resolution.
     #+ATTR_LATEX: :width 0.6\textwidth
     #+NAME: fig:C-gamma-effect
-    [[./pictures/skl-fig-42.328.pdf]]
-#     [[./pictures/skl-fig-42.328.eps]]
+    [[./pictures/skl-fig-42.328.png]]
+#    [[./pictures/skl-fig-42.328.pdf]]
 
     The effect of regularization parameter $C$ which weighs how much
     to penalize outliers and the RBF-kernel width $\gamma$ can be seen in
@@ -1926,15 +1956,15 @@ defense's effectiveness.
   :PROPERTIES:
   :CUSTOM_ID: ch6-conclusion
   :END:
-To counter the increasing threat of website fingerprinting, general defenses need to
-create traffic that is easily confused with other websites's. The
-current defenses have several drawbacks, as detailed in
-[[#sub2-wf-def]]. While the base rate fallacy \citep{axelsson2000base},
-might hinder this detection due to the large number of background
-sites, \citet{axelsson2000base}'s original arguments have been
-called into question by \citet{rieckdiss}'s effectiveness. As of
-\citet{koehler1996base}, the base rate fallacy should generally be
-considered with a grain of salt.
+To counter the increasing threat of website fingerprinting, general
+defenses need to create traffic that is easily confused with other
+websites's. The current defenses have several drawbacks, mostly high
+overhead, hard to deploy, and static overhead. While the base rate fallacy
+\citep{axelsson2000base}, might hinder this detection due to the large
+number of background sites, \citet{axelsson2000base}'s original
+arguments have been called into question by \citet{rieckdiss}'s
+effectiveness. As of \citet{koehler1996base}, the base rate fallacy
+should generally be considered with a grain of salt.
 
 
 This thesis addresses the problem of creating cover traffic at the
@@ -1950,7 +1980,7 @@ The selective cover traffic is rooted in the web traffic model of
 traffic that closely resembles real WWW \citep{rfc1945} traffic. While
 \gls{s} does not defend against any particular attack, it obfuscates
 traffic so as to defeat any conceivable attack. This is based on
-\cite{panchenko}'s camouflage traffic, but adjusts it so that the
+\citet{panchenko}'s camouflage traffic, but adjusts it so that the
 whole page load is accompanied by cover traffic. It also enables users
 to select their level of website fingerprinting defense as it behooves them.
 ** Summary of Results
@@ -4020,10 +4050,10 @@ tpr           &  0.024 & -0.235 & -0.122 &        -0.697 &  0.577 &  0.223 &  0.
 
 ** from Determining Bloom-Sort Parameters
 *** WAIT [#C] graphics: histogram with bins (colored bars, black bin limits)
-* After Appendices: Bibliography and Index
-\part{Bibliography}
+* After Appendices: Bibliography and Index                           :ignore:
 \bibliography{docs/master}
 \bibliographystyle{unsrtnat}
+\input{diplomarbeit.ind}
 
 
 
