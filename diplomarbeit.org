@@ -4,33 +4,44 @@
 #+TODO: PRERELEASE | DANIEL FINAL
 #+TODO: TODO | PENDING
 #+OPTIONS: toc:nil
-\section*{To Gigi}
-\vfill
-\subsubsection*{Acknowledgements}
-- shoulders of giants
-- Daniel: polishing, rejecting, improving, good training
-- Basti and his family: encouragement, can-do attitude
-- support from family
-  - parents
-  - Peter and Barbara Boczianowski, Ute Irala
-  - Karin Kühner
-
 \section*{Summary}
 
 The anonymity network Tor is under attack. It provides access to an
 uncensored internet for people in oppressive regimes, and enables for
 example whistleblowers to report wrongdoing with no fear of
-retribution. If its provided anonymity were to be reduced, this would
-hamper its purpose, both in actual terms, and because this would
-discourage users, as its number of users increase its anonymity.
+retribution. If its anonymity were to be reduced, this would hamper
+its purpose, both in actual terms, and because this would dissuade
+users, as the number of users increase its anonymity.
 
 Website fingerprinting can allow a local passive adversary, a very
 limited attacker, to fathom which websites a user is visiting,
-effectively cancelling Tor's anonymity. While this
+reducing Tor's anonymity. This has continued to improve as AI
+continues to improve, and researchers publish new website
+fingerprinting attacks against Tor.
 
-website fingerprinting can detect the websites visited during anonymized browsing. there is no defense included with Tor yet. new, easily installable defense that has little overhead, is configurable, uses the properties of web traffic to hide which page was visited
+This thesis presents a new defense against website fingerprinting. The
+defense creates camouflage traffic tailored to WWW distributions to
+hide which page the user visits. It is easily configurable for the
+level of required anonymity, and does not burden the user overly,
+neither in installation, nor in the time and size delay it imposes.
 
-- why number of users? answer or understandable
+\Needspace{20\baselineskip}
+\section*{Zusammenfassung}
+
+Das Tor-Netzwerk wird angegriffen. Es gibt Menschen in Diktaturen die Möglichkeit, sich frei zu informieren, und erlaubt unter anderem Whistleblowern, ohne Furcht vor Vergeltung auf Verbrechen hinzuweisen. Eine Angriff auf Tors Anonymität reduziert die konkrete Nutzbarkeit, und bringt Nutzer von Tor ab. Dies würde die Anonymität zusätzlich vermindern.
+
+
+Website Fingerprinting erlaubt einem minimalem, lokal passiven
+Angreifer zu erkennen, welche Websites besucht werden. Somit wird Tors
+Anonymität reduziert. Diese Angriffsart wird immer weiter verbessert, sowohl mit Fortschritten in KI, als auch mit neuen publizierten Angriffen gegen Tor.
+
+
+Diese Arbeit präsentiert eine Verteidung gegen Website
+Fingerprinting. Die neue Verteidung erzeugt an WWW-Datenverkehr
+angepasste Camouflage-Daten, um die besuchte Seite zu verbergen. Die
+Benutzer können die Verteidungsstärke an die benötigte Schutzklasse
+anpassen. Die Verteidigung ist leicht zu installieren sein und
+verzögert Tor weniger als vergleichbare Verteidungen.
 #+TOC: headlines 2
 \listoffigures
 \listoftables
@@ -38,7 +49,7 @@ website fingerprinting can detect the websites visited during anonymized browsin
 * Configuration							    :ARCHIVE:
 #+BIBLIOGRAPHY: master plain option:-d
 #+LATEX_CLASS: scrreprt
-#+LATEX_CLASS_OPTIONS: [a4paper,12pt]
+#+LATEX_CLASS_OPTIONS: [a4paper,12pt,twoside=true]
 #+LATEX_HEADER: \usepackage{adjustbox}
 #+LATEX_HEADER: \usepackage{algorithm}
 #+LATEX_HEADER: \usepackage[noend]{algpseudocode}
@@ -49,6 +60,7 @@ website fingerprinting can detect the websites visited during anonymized browsin
 #+LATEX_HEADER: \usepackage{titletoc} % before hyperref
 #+LATEX_HEADER: \usepackage{hyperref}
 #+LATEX_HEADER: \usepackage[tracking=true]{microtype}
+#+LATEX_HEADER: \usepackage{needspace}
 #+LATEX_HEADER: \usepackage[numbers]{natbib}
 #+LATEX_HEADER: \usepackage{numprint}
 #+LATEX_HEADER: \usepackage[section]{placeins}
@@ -748,9 +760,10 @@ of future work in Section [[#future-work]].
     this increases the \gls{fn} count by 1. Each trace is categorized
     by whether it /is/ a sensitive website (here: wikipedia.org), and
     whether it is /classified/ as such. From these values, metrics can
-    be derived. Apart from /accuracy/, the main metrics used in
-    website fingerprinting literature are /True-/, and
-    /False-Positive-Rate/. These are defined as
+    be derived \citep{powers}. Apart from /accuracy/, the main metrics
+    used in website fingerprinting literature are /True-/, and
+    /False-Positive-Rate/. True-Positive-Rate is also known as
+    recall. These are defined as
 
     #+ATTR_LATEX: :align r c l
     | Accuracy            | := | $(TP + TN) / (TP + FP + FN + TN)$ |
@@ -1249,10 +1262,13 @@ for example =-1=, for the error condition.
  \end{algorithm}
 #+END_EXPORT
 
+\pagebreak
+
 Consider a /BloomSort/ named =htmlSizes= with parameters /sizes/
 $[400, 1000, 20000]$ and /splits/ $[700, 10000]$. An element is added
-via ~htmlSizes.add("http://google.com/", 613)~ . Querying via
+via ~htmlSizes.add("http://google.com/", 613)~.  Querying via
 ~htmlSizes.query("http://google.com/")~ would yield ~400~.
+
 ** Defense Configurability
    :PROPERTIES:
    :CUSTOM_ID: model-config
@@ -1282,6 +1298,8 @@ send bursts after retrieval has ended.
   this traffic at the end, while the =noburst= discards this.
 
 If the sizes for a URL are not known, the http model is a fallback both the cache and the target. While several scenarios were tested, the latter three options have little effect, except for very fresh caches (a week). For the sake of comparison, the defense is compared with two /factor/ values:
+
+\pagebreak
 
 - Selective Cover Traffic light (SCT light) sets the factor to 20, and
 - Selective Cover Traffic heavy (SCT heavy) sets the factor to 100.
@@ -1650,7 +1668,6 @@ lighter, as visible in Figure
    :PROPERTIES:
    :CUSTOM_ID: sub4-open
    :END:
-#+INDEX: complementary cumulative distribution function (CCDF)
 Closed world evaluation sets a strong assumption
 \citep[sec.3.1]{ccs2014-critical} due to its limitation to known
 sites. As described in Section [[#sub2-ml-measure]], the open world
@@ -1985,8 +2002,11 @@ whole page load is accompanied by cover traffic. It also enables users
 to select their level of website fingerprinting defense as it behooves them.
 ** Summary of Results
 The main result of this thesis can by summarized in three contributions:
-
-- \gls{s}, introduced in Section [[#sub3-defense]], is a web-model
+*** Web-model Based Defense
+    :PROPERTIES:
+    :UNNUMBERED: t
+    :END:
+\gls{s}, introduced in Section [[#sub3-defense]], is a web-model
   \citep{newtrafficmodel} based, easy-to-use website fingerprinting defense that
   allows for various levels of protection. This defense easily
   integrates into the Tor Browser Bundle, and works out of the box
@@ -1996,14 +2016,22 @@ The main result of this thesis can by summarized in three contributions:
   evaluation purposes, \gls{s} offers other options, such as the exact
   way of setting cover traffic targets, whether to use the BloomSort
   size cache, and wether to send additional burst traffic at the end.
-- Section [[#sub3-bloom]] proposes BloomSort, an approximate size cache
+*** Bloom-filter Based Cache
+    :PROPERTIES:
+    :UNNUMBERED: t
+    :END:
+Section [[#sub3-bloom]] proposes BloomSort, an approximate size cache
   based on Bloom filters \citep{Bloom70space/timetrade-offs}. These
   use Bloom filters's configurable error rate to approximately save
   target page values. Bloom filters's size benefit allows for
   efficient disk storage of page properties, whereas their otherwise
   disadvantageous error rate could protect users if the filter were
   updated dynamically, obfuscating on-disk storage of properties.
-- Chapter [[#ch4-evaluation]] evaluates this new method using real Tor
+*** Website Fingerprinting Traces
+    :PROPERTIES:
+    :UNNUMBERED: t
+    :END:
+Chapter [[#ch4-evaluation]] evaluates this new method using real Tor
   traffic covering a period of two years, and comprising over 400,000
   instances of web retrievals. In the open world setting, the
   prototype matches the performance of the latest LLaMA
@@ -2250,7 +2278,6 @@ If the sizes for a URL are not known, =b= is a fallback for =a= and
 The WANG14 data set shows higher accuracy than many other captures. It
 also shows higher true- and lower false- positive rates. Its original
 data files were lost in a hard drive crash.
-
 ** Table of all 100-Site Results
 #+CAPTION[Open-world results with 100 sites]: Table of all results on 100 sites, sorted by scenario capture date. If the background-size is "auto" the same number as in the foreground set were chosen; if "max", the maximum number was chosen. For size overheads, refer to the closed-world accuracy results in section [[#appendix-closed-100-cumul]] above.
 #+NAME: tab:open-world-all-100
@@ -2419,21 +2446,40 @@ data files were lost in a hard drive crash.
 # totable = [fix(r) for r in results.list_all() if r.open_world and r.size > 90]
 # totable.sort(key=lambda r: r.scenario.date)
 # print results.to_table(totable, fields_plus_names=(lambda r: [r.scenario.name + " (" + r.scenario.config + ")", r.scenario.date, "{:.2f}".format(r.score), r.background_size, "{:.3f}".format(r.open_world['tpr']), "{:.3f}".format(r.open_world['fpr']), r.size], ["Scenario","Date", "Accuracy", "BG-size", "TPR", "FPR", "Num. sites"]))
-** CCDF-curves for False-Positive-Rate
+\newpage
+** CCDF-curves
    :PROPERTIES:
    :CUSTOM_ID: appendix.eval.open.ccdf-false-positives
    :END:
+#+INDEX: complementary cumulative distribution function (CCDF)
 #+BEGIN_EXPORT latex
-\begin{figure}[tb]
-\includegraphics[width=0.23\linewidth]{./pictures/ccdf-false-positive-rate-no-defense-on-2018-02-02.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-false-positive-rate-new-defense-on-2018-02-13.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-false-positive-rate-new-defense-on-2018-03-28.pdf} \includegraphics[width=0.23\linewidth]{./pictures/ccdf-false-positive-rate-LLaMA-nodelay-on-2018-02-25.pdf}
-\caption[CCDF-false-positive-rates for open-world scenarios]{\label{fig:ccdf-false-positive-rate}
-CCDF-curves for false-positive-rate for (left-to-right) (1) no defense, (2) new defense at 02-13, (3) new defense at 03-28, and (4) LLaMA-nodelay at 02-25}
+\begin{figure}[H]
+\includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-defenseless-on-2018-02-02.pdf}
+\includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-SCT-light-on-2018-02-13.pdf}
+\includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-SCT-heavy-on-2018-03-28.pdf}
+\includegraphics[width=0.23\linewidth]{./pictures/ccdf-recall-LLaMA-nodelay-on-2018-02-25.pdf}
+\caption[CCDF-recall-rates for open-world scenarios]{\label{fig:ccdf-recall-rate}
+CCDF-curves for true-positive-rates for (left-to-right) (1) no defense, (2) new defense at 02-13, (3) new defense at 03-28, and (4) LLaMA-nodelay at 02-25. The number in the legend is the size of the background set/open world}.
 \end{figure}
 #+END_EXPORT
-These curves drop off steeply.
-*** TODO [#D] interpretation
-*** TODO [#B] remove above todo                                 :PRE_RELEASE:
-* [#D] Determining Size of HTML-Documents for the Cache
+
+#+BEGIN_EXPORT latex
+\begin{figure}[H]
+\includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-defenseless-on-2018-02-02.pdf}
+\includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-SCT-light-on-2018-02-13.pdf}
+\includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-SCT-heavy-on-2018-03-28.pdf}
+\includegraphics[width=0.23\linewidth]{./pictures/ccdf-precision-LLaMA-nodelay-on-2018-02-25.pdf}
+\caption[CCDF-precision-rates for open-world scenarios]{\label{fig:ccdf-precision-rate}
+CCDF-curves for precision-rate for (left-to-right) (1) no defense, (2) new defense at 02-13, (3) new defense at 03-28, and (4) LLaMA-nodelay at 02-25. The number in the legend is the size of the background set/open world}.
+\end{figure}
+#+END_EXPORT
+Both sets of curves drop off steeply. Defenseless data has a very high
+true-positive rate and precision overall. \gls{s} light already shows an effect
+in reducing true-positive rate and precision. Both LLaMA-nodelay and \gls{s}
+reduce both true-positive rate and precision so much as to yield little to no
+positive tpr for bigger background sizes. /Precision/ is defined as \cite{powers} (terms from [[tab:confusion_matrix]]).
+\[TP /(TP + FP).\]
+* Determining Size of HTML-Documents for the Cache
   :PROPERTIES:
   :CUSTOM_ID: find sizes of HTML-documents
   :END:
@@ -2449,7 +2495,7 @@ These curves drop off steeply.
   files with =wget= via Squid, and reading the sizes from the Squid
   log.
 
-  Retrieval is implemented in the =html_top_100.sh= script.  It
+  Retrieval is implemented in the [[https://github.com/kreikenbaum/website-fingerprinting-thesis/blob/master/scripts/html_top_100.sh][=html_top_100.sh=]] script. It
   initially empties Squid's log file and cache by restarting
   it. Afterwards, the [[#top100][top-100] files are retrieved with =wget= via
   Squid.
@@ -2463,21 +2509,17 @@ These curves drop off steeply.
   #+END_SRC
 
   These sizes are then converted to a JSON\cite{rfc7159}-array via
-  the =htmlSizeToJSON.py=-file. It also checks for duplicate sizes
+  the [[https://github.com/kreikenbaum/website-fingerprinting-thesis/blob/master/scripts/htmlSizeToJSON.py][=htmlSizeToJSON.py=]]-file. It also checks for duplicate sizes
   for each file-URL, choosing the lower one. This could increase
   traffic, but the opposite might be too little traffic, thus easier
   website fingerprinting, which should be avoided.
-** PRERELEASE github link for =html_top_100= script, and =htmlsizetojson.py=
-* [#D] Cached: Number of Embedded Objects
+* Cached: Number of Embedded Objects
   :PROPERTIES:
   :CUSTOM_ID: number_embedded
   :END:
-  The second parameter for generating cover traffic is the number
-  of embedded objects per HTML-page.
-
-  These are extracted via the python script ~htmlToNumEmbedded.py~
-  which is called for each of the top-100's main web pages by
-  ~retrieve-100-embedded.sh~.
+  The second parameter for generating cover traffic is the number of
+  embedded objects per HTML-page. These are extracted via the python
+  script [[https://github.com/kreikenbaum/website-fingerprinting-thesis/blob/master/scripts/htmlToNumEmbedded.py][~htmlToNumEmbedded.py~]].
 
   To extract, Python's =lxml= module to parse the HTML's
   DOM \citep{dom3} extracts the URLs of embedded files from the features of
@@ -2489,7 +2531,6 @@ These curves drop off steeply.
   underestimate the number of embedded elements. This might generate
   more traffic than strictly necessary, but here, safe seems better
   than sorry.
-** PRERELEASE github links
 * Bloom-sort
   :PROPERTIES:
   :CUSTOM_ID: bloom-sort
@@ -2576,9 +2617,8 @@ These curves drop off steeply.
 
    then adding elements via =htmlSizes.add("http://google.com/", 613)=
    and querying via =htmlSizes.query("http://google.com/")=, which
-   would yield =400=. See usage in =size-cache=.
-** PRERELEASE github link
-* [#D] Determining Bloom-Sort Parameters
+   would yield =400=. See usage in [[https://github.com/kreikenbaum/website-fingerprinting-thesis/blob/master/ff-addon/js/size-cache.js][=size-cache.js=]].
+* Determining Bloom-Sort Parameters
   :PROPERTIES:
   :CUSTOM_ID: bloom-params
   :END:

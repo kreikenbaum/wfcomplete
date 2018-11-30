@@ -321,7 +321,9 @@ def ccdf_curve_for_scenario(scenario_obj, existing=True, axes=None,
                          if not r.open_world['binary']),
                          key=lambda r: r.background_size):
         logging.debug(result)
-        if result.open_world['tpr'] == 0.0 and result.open_world['fpr'] == 0.0:
+        if (result.open_world['tpr'] == 0.0 and result.open_world['fpr'] == 0.0
+            or result.open_world['tpr'] <= 0.01
+            or scenario_obj.num_sites - result.size > 10):
             logging.debug("skipped %s", result)
             continue
         if len(used) >= 6:
