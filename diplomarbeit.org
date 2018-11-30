@@ -40,8 +40,8 @@ Diese Arbeit präsentiert eine Verteidung gegen Website
 Fingerprinting. Die neue Verteidung erzeugt an WWW-Datenverkehr
 angepasste Camouflage-Daten, um die besuchte Seite zu verbergen. Die
 Benutzer können die Verteidungsstärke an die benötigte Schutzklasse
-anpassen. Die Verteidigung ist leicht zu installieren sein und
-verzögert Tor weniger als vergleichbare Verteidungen.
+anpassen. Die Verteidigung ist leicht zu installieren und verzögert
+Tor weniger als vergleichbare Verteidungen.
 #+TOC: headlines 2
 \listoffigures
 \listoftables
@@ -157,6 +157,14 @@ verzögert Tor weniger als vergleichbare Verteidungen.
   #+INDEX: Tor
   #+INDEX: website fingerprinting
   #+INDEX: fingerprint
+  Imagine you are talking in private to a good friend. You feel that
+  you can talk about things you would avoid otherwise, as you are in a
+  private space. How would you feel if the topics of conversation
+  became known to others? Maybe it was due to your friend, maybe
+  someone eavesdropped. Maybe you would stop trusting, either only the
+  feeling of privacy, or also your good friend.
+
+
   Many parties like to observe users' online browsing: shops and
   advertisers want to tailor advertisement to focus groups; people who
   share your wireless LAN might just be curious; governments could aim for
@@ -258,8 +266,8 @@ explained in Section [[#sub2-ml]]. How to defend against website fingerprinting 
 presented in Section [[#sub2-wf-def]].
 
 
-This thesis' new website fingerprinting defense is introduced in Chapter
-[[#sub3-defense]]. It also presents the aspects the defense is based
+This thesis' new website fingerprinting defense is introduced in Section
+[[#sub3-defense]]. Chapter [[#ch3-newdefense]] also presents the aspects the defense is based
 upon: Section [[#sub3-http]] justifies the chosen HTTP traffic model;
 whereas the stochastic size cache based on Bloom filters
 \citep{Bloom70space/timetrade-offs} is described in Section
@@ -276,7 +284,7 @@ sites in Section [[#sub4-open]]. All results are summarized in Section
 [[#sub4-summary]].
 
 
-Chapter [[#ch6-conclusion]] summarizes the findings and presents courses
+Chapter [[#ch6-conclusion]] summarizes the findings (Section [[#sub6-summary]]) and presents courses
 of future work in Section [[#future-work]].
 * Tor Basics, Attacking and Defending with Website Fingerprinting
   :PROPERTIES:
@@ -354,7 +362,7 @@ of future work in Section [[#future-work]].
   While the above allows Tor's users to anonymously use all
   TCP-related servers, which comprise most of the internet, Tor also
   provides server anonymity via its location-hidden
-  services\citep[sec.5]{tor2014}. Here, a host's IP address is hidden
+  services \citep[sec.5]{tor2014}. Here, a host's IP address is hidden
   behind the Tor network. Clients need to know the host's =.onion=
   address. Using this, they can contact a rendezvous point, which
   holds a Tor connection to the server, and forwards all data along
@@ -367,6 +375,7 @@ of future work in Section [[#future-work]].
    :CUSTOM_ID: sub2-wf
    :END:
    #+INDEX: trace
+   \glsreset{s}
    Some groups dislike other people's privacy. It's too
    resource-intensive to protect against all of them. Tor, as any
    privacy system, has elected to protect against certain threats
@@ -421,11 +430,12 @@ of future work in Section [[#future-work]].
    every retrieval retrieves similar content. Website fingerprinting
    distinguishes between 30 and many more sites with high accuracy
    (\citep{panchenko2}, \citep{effective2014} \citep{hayes197185},
-   \cite{sirinam2018deep}). The main attack used to test \gls{s} is
-   CUMUL \citep{panchenko2}. Section [[#sub2-ml-features]] describes its
-   features. CUMUL's features are analysed using a \gls{svm}
-   classifier \citep{cortes1995support} with 10-fold cross-validation,
-   which is described in [[#sub2-ml-class]].
+   \cite{sirinam2018deep}). The main attack used to test \gls{s}, the
+   new defense, is CUMUL \citep{panchenko2}. Section
+   [[#sub2-ml-features]] describes its features. CUMUL's features are
+   analysed using a \gls{svm} classifier \citep{cortes1995support}
+   with 10-fold cross-validation, which is described in
+   [[#sub2-ml-class]].
 ** Machine Learning
    :PROPERTIES:
    :CUSTOM_ID: sub2-ml
@@ -504,10 +514,10 @@ of future work in Section [[#future-work]].
     The earliest website fingerprinting attacks (\citep{quantifying},
     \citep{ssl-traffic-analysis}, \cite{hintz02}) only use packet
     sizes as features to attack SSL
-    \citep{sslv3}. \citep[sec.7]{tor-design} conjecture that website
+    \citep{sslv3}. \citet[sec.7]{tor-design} conjecture that website
     fingerprinting against Tor would be hampered by Tor's fixed (data)
     cell size \citep[sec.0.2,3]{tor-spec}. Five years later,
-    \cite{ccsw09-fingerprinting} confirm this resilience in comparison
+    \citet{ccsw09-fingerprinting} confirm this resilience in comparison
     with other privacy-enhancing technologies, but still show slightly
     better-than-random classification.
 
@@ -518,7 +528,7 @@ of future work in Section [[#future-work]].
     [[./pictures/CUMUL_2017-12-31.pdf]]
     # code: see [[file:bin/mplot.py::traces_cumul%20usage]]
 
-    \citet{panchenko} increased closed-world website fingerprinting
+    \citet{panchenko} increase closed-world website fingerprinting
     accuracy on \citet{ccsw09-fingerprinting}'s dataset from 2.96% to
     54.61% (Section [[#sub2-ml-measure]] defines accuracy etc.). They
     add website fingerprinting-specific features, such as the
@@ -595,8 +605,8 @@ of future work in Section [[#future-work]].
     R[h] = \int l(h(\mathbf{x}), y) \mathrm{d}P(\mathbf{x}, y)
     \end{equation}
     #+END_EXPORT
-    with an adequately defined /loss function/ $l$, for example $l(h(x), y) = 0$
-    if $h(x) == y$ else $1$. As the probability distribution $P$ is not
+    with an adequately defined /loss function/ $l$, for example $l(h(\mathbf{x}), y) = 0$
+    if $h(\mathbf{x}) == y$ else $1$. As the probability distribution $P$ is not
     known, the hypothesis error is often estimated as the /empirical risk/
     #+BEGIN_EXPORT latex
     \begin{equation}
@@ -606,7 +616,7 @@ of future work in Section [[#future-work]].
     over all points of training data. As of \citet[sec.1.1]{iml}, this
     can be extended to multi-class-classification, where $Y$ contains
     more than two labels. More and other classes of input and output
-    are possible. \citet[sec.18.1]{russell1995modern} makes the
+    are possible. \citet[sec.18.1]{russell1995modern} make the
     distinction that class labels are not always provided. Providing
     the labels is called /supervised learning/. Finding patterns in
     unlabeled data is called /unsupervised learning/. In between
@@ -621,8 +631,8 @@ of future work in Section [[#future-work]].
     While classification input can have many types, in website
     fingerprinting it is always a vector, most often of numbers. In
     classifier /training/ \cite[sec.1.3.1]{iml}, a classifier gets as
-    input several feature vectors $\{x_1, \ldots, x_n\} \subset X$ and their
-    respective classes $\{y_1, \ldots, y_n\} \subset Y$ as pairs $(x_i,
+    input several feature vectors $\{\mathbf{x}_1, \ldots, \mathbf{x}_n\} \subset X$ and their
+    respective classes $\{y_1, \ldots, y_n\} \subset Y$ as pairs $(\mathbf{x}_i,
     y_i)$ and tries to generalize a relationship. This combination of
     feature vectors and their classes is called /training data/
     \citep[sec.2.2]{esl}. In actual /classification/, the classifier
@@ -638,30 +648,30 @@ of future work in Section [[#future-work]].
     classified. Others, notably k-Nearest-Neighbors, classify directly
     without an intermediary model. \Glspl{svm}
     \citep{cortes1995support} are a linear classifier: they find a
-    linear boundary between points. Given a set $X = \{x_1, ...,
-    x_n\}$ with a dot product $\langle\cdot, \cdot\rangle: X \times X \to \mathbb R$ and tuples
-    $(x_1, y_1), ..., (x_m, y_m)$, with $x_i \in X, y_i \in \{-1, 1\}$ as
+    linear boundary between points. Given a set $X = \{\mathbf{x}_1, ...,
+    \mathbf{x}_n\}$ with a dot product $\langle\cdot, \cdot\rangle: X \times X \to \mathbb R$ and tuples
+    $(\mathbf{x}_1, y_1), ..., (\mathbf{x}_m, y_m)$, with $\mathbf{x}_i \in X, y_i \in \{-1, 1\}$ as
     a /binary classification/ task \citep[ch.6f]{iml}.  The SVM's job
     is to find a separating hyperplane / affine set
     #+BEGIN_EXPORT latex
     \begin{equation}
-      \{x \in X \mid \langle w, x \rangle +b = 0\}
+      \{\mathbf{x} \in X \mid \langle \mathbf{w}, \mathbf{x} \rangle +b = 0\}
     \end{equation}
     #+END_EXPORT
-    such that the data lie on the correct sides: $\langle w, x_i \rangle +b \ge 0$
-    whenever $y_i = 1$, and $\langle w, x_i \rangle +b < 0$ whenever $y_i =
+    such that the data lie on the correct sides: $\langle \mathbf{w}, \mathbf{x}_i \rangle +b \ge 0$
+    whenever $y_i = 1$, and $\langle \mathbf{w}, \mathbf{x}_i \rangle +b < 0$ whenever $y_i =
     -1$. With added normalization, this can be rewritten as \[y_i \cdot (\langle
-    w, x_i \rangle +b) \ge 1.\] A \gls{svm} tries to find a hyperplane between
+    \mathbf{w}, \mathbf{x}_i \rangle +b) \ge 1.\] A \gls{svm} tries to find a hyperplane between
     two groups of points and maximize its distance to the closest
     points, called /margin/. If the data points lie such that a line
     cannot be found, a /soft-margin classifier/ introduces slack
     variables $\xi \ge 0$, which it tries to reduce while maximizing the
-    margin.  This alters the equations to $y_i( \langle w, xi \rangle +b) \ge 1 -
+    margin.  This alters the equations to $y_i( \langle \mathbf{w}, \mathbf{x}_i \rangle +b) \ge 1 -
     \xi_i$ for the optimization problem
 
     #+BEGIN_EXPORT latex
     \begin{equation}
-      \min_{w, b, \xi} \frac{1}{2} ||w||^2 + \frac{C}{m} \sum_{i=1..m} \xi_i
+      \min_{\mathbf{w}, b, \xi} \frac{1}{2} ||\mathbf{w}||^2 + \frac{C}{m} \sum_{i=1..m} \xi_i
     \end{equation}
     #+END_EXPORT
 
@@ -681,7 +691,7 @@ of future work in Section [[#future-work]].
 
     #+BEGIN_EXPORT latex
     \begin{equation}
-         k(x, y) = \exp \left ( - { \|x - y\|^2 \over 2 \gamma^2 } \right ).
+         k(\mathbf{x}, \mathbf{z}) = \exp \left ( - { \|\mathbf{x} - \mathbf{z}\|^2 \over 2 \gamma^2 } \right ).
     \end{equation}
     #+END_EXPORT
 
@@ -763,7 +773,7 @@ of future work in Section [[#future-work]].
     be derived \citep{powers}. Apart from /accuracy/, the main metrics
     used in website fingerprinting literature are /True-/, and
     /False-Positive-Rate/. True-Positive-Rate is also known as
-    recall. These are defined as
+    /recall/. These are defined as
 
     #+ATTR_LATEX: :align r c l
     | Accuracy            | := | $(TP + TN) / (TP + FP + FN + TN)$ |
@@ -841,7 +851,7 @@ of future work in Section [[#future-work]].
    Unavoidably, Tor also increases traffic latency
    \citep[sec.2.2]{rfc1925}, so that attacks have a harder time
    relying on packet timing \citep{challenges}. This makes website fingerprinting
-   harder, to the point that it was mentioned, but not hindered, in
+   harder, to the point that it was mentioned, but not hindered, by
    \citet[sec.7]{tor-design}.
 
 
@@ -898,7 +908,7 @@ of future work in Section [[#future-work]].
    \citep[ch.10.3]{applied96} solution called /BuFLO/: fixed-rate
    transmission of all data, with dummy traffic for gaps, for the
    estimated duration of web site retrieval. This idea was improved on
-   by \citep{a-systematic2014}. Both of these exhibit high bandwidth
+   by \citet{a-systematic2014}. Both of these exhibit high bandwidth
    overhead, as they send data at a fixed rate. Furthermore, they have
    high time overhead, on average more than quadrupling the required
    time to download a page \citep[sec.6.2]{a-systematic2014}. As even
@@ -924,7 +934,7 @@ of future work in Section [[#future-work]].
    \citet{DBLP:journals/popets/CherubinHJ17}. They acknowledge the
    need for a client-side application-level defense. LLaMA delays
    traffic by a uniformly distributed delay, up to the median time
-   observed to load a site\cite[index.js:18]{LLaMA}, and uses the URLs
+   observed to load a site \citep[index.js:18]{LLaMA}, and uses the URLs
    of previously retrieved elements to provide cover traffic. It is
    implemented using the Mozilla Add-on SDK. The authors provide LLaMA
    as a secondary defense to the server-side ALPaCA defense, and
@@ -1055,7 +1065,7 @@ Figure [[fig:known-host-sequence]] shows a sequence diagram for a known
 host. The /watcher/ class sees the request, notifies the /user/ class,
 which has an already initialized /coverTraffic/ object for this
 site. In our assumption, the probability of embedded cover traffic per
-element is less than 1, so the /coverTraffic/ object checks if it
+element is less than 1, so the /coverTraffic/ object only checks if it
 should send cover traffic. It then calls the /proxySumLoad/ class,
 which saves sizes that could not be fulfilled due to the HTTP
 protocol's minimal traffic size. After resolving the =overflow=, the
@@ -1128,7 +1138,7 @@ normal or uniform \citep{crovella97}. This explains the many outliers
 reported by
 \citet[sec.5.2]{DBLP:journals/popets/CherubinHJ17}. \citet[sec.5.A]{wtfpad2015}
 also distribute its website fingerprinting defense data partitions exponentially to
-better fit web traffic. \cite{DBLP:conf/imc/IhmP11} repeatedly mention
+better fit web traffic. \citet{DBLP:conf/imc/IhmP11} repeatedly mention
 a /long tail/ of traffic. Several aspects of web traffic show
 subexponential distribution \citep{foss2011introduction} behavior,
 where high sampling values are not as unlikely as in for example exponential
@@ -1304,7 +1314,7 @@ If the sizes for a URL are not known, the http model is a fallback both the cach
 - Selective Cover Traffic light (SCT light) sets the factor to 20, and
 - Selective Cover Traffic heavy (SCT heavy) sets the factor to 100.
 
-These values should to illustrate configurability, and show usable
+These values should illustrate configurability, and show usable
 presets. Users can select other values, depending on their personal
 security needs.
 ** Summary
@@ -1388,7 +1398,7 @@ time for the other pages to be fetched in between.
 
 The data is analyzed via a re-implemented version of CUMUL
 \citep{panchenko2}, which is used as state-of-the-art comparison in
-the latest attacks by \citet{hayes197185} and \citet{rimmerautomated}.
+the latest attacks by \citet{hayes197185}, \citet{rimmerautomated}, and \citet{sirinam2018deep}.
 ** Analyzing Closed World Scenarios
    :PROPERTIES:
    :CUSTOM_ID: sub4-closed
@@ -1410,7 +1420,7 @@ Eve. This section presents the results of closed-world analysis. It
 first compares the accuracy of \citet{panchenko2}'s original to the
 re-implementation on defenseless traces.
 
-#+CAPTION[Closed-world validation]: Validation on 100 sites in a closed-world setup. The traces captured at Technische Universität (TU) Braunschweig show similar accuracy to \cite{panchenko2}. The traces captured using Google Cloud virtual machines show higher accuracy. A similar phenomenon was reported by \citet[sec.4.7]{ccs2014-critical}.
+#+CAPTION[Closed-world validation]: Validation on 100 sites in a closed-world setup. The traces captured at Technische Universität (TU) Braunschweig show similar accuracy to \citet{panchenko2}. The traces captured using Google Cloud virtual machines show higher accuracy. A similar phenomenon was reported by \citet[sec.4.7]{ccs2014-critical}.
 #+NAME: tab:closed-world-validation
 #+ATTR_LATEX: :align |c||c | c|
 | Data source                             | Number of instances | Accuracy [%] |
@@ -2001,6 +2011,9 @@ traffic so as to defeat any conceivable attack. This is based on
 whole page load is accompanied by cover traffic. It also enables users
 to select their level of website fingerprinting defense as it behooves them.
 ** Summary of Results
+   :PROPERTIES:
+   :CUSTOM_ID: sub6-summary
+   :END:
 The main result of this thesis can by summarized in three contributions:
 *** Web-model Based Defense
     :PROPERTIES:
